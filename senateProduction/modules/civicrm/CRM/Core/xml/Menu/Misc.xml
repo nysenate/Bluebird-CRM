@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<menu>
+  <item>
+     <path>civicrm/upgrade</path>
+     <title>Upgrade CiviCRM</title>
+     <page_callback>CRM_Upgrade_Page_Upgrade</page_callback>
+     <access_arguments>administer CiviCRM,access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/export</path>
+     <title>Download Errors</title>
+     <page_callback>CRM_Export_BAO_Export::invoke</page_callback>
+  </item>
+  <item>
+     <path>civicrm/export/contact</path>
+     <title>Export Contacts</title>
+     <weight>0</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/options/acl_role</path>
+     <title>ACL Roles</title>
+     <path_arguments>group=acl_role</path_arguments>
+     <page_callback>CRM_Admin_Page_Options</page_callback>
+     <access_arguments>administer CiviCRM,access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/acl</path>
+     <title>Manage ACLs</title>
+     <page_callback>CRM_ACL_Page_ACL</page_callback>
+     <access_arguments>administer CiviCRM,access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/acl/entityrole</path>
+     <title>Assign Users to ACL Roles</title>
+     <page_callback>CRM_ACL_Page_EntityRole</page_callback>
+     <access_arguments>administer CiviCRM,access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/acl/basic</path>
+     <title>ACL</title>
+     <page_callback>CRM_ACL_Page_ACLBasic</page_callback>
+     <access_arguments>administer CiviCRM,access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/standalone/register</path>
+     <title>Registration Page</title>
+     <page_callback>CRM_Standalone_Form_Register</page_callback>
+     <access_callback>1</access_callback>
+     <is_public>true</is_public>
+  </item>
+  <item>
+     <path>civicrm/file</path>
+     <title>Browse Uploaded files</title>
+     <access_arguments>access uploaded files</access_arguments>
+     <page_callback>CRM_Core_Page_File</page_callback>
+  </item>
+  <item>
+     <path>civicrm/friend</path>
+     <title>Tell a Friend</title>
+     <page_callback>CRM_Friend_Form</page_callback>
+     <access_callback>1</access_callback>
+     <is_public>true</is_public>
+  </item>
+  <item>
+     <path>civicrm/logout</path>
+     <title>Log out</title>
+     <page_callback>CRM_Utils_System::logout</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+     <weight>9999</weight>
+     <page_type>1</page_type>
+  </item>
+  <item>
+    <path>civicrm/i18n</path>
+    <page_callback>CRM_Core_I18n_Form</page_callback>
+    <access_arguments>translate CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/ajax/rest</path>
+     <page_callback>CRM_Utils_REST::ajax</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/ajax/chart</path>
+     <page_callback>CRM_Contribute_Form_ContributionCharts</page_callback> 
+     <access_arguments>access CiviCRM</access_arguments> 
+  </item>
+  <item>
+     <path>civicrm/contribute/ajax/tableview</path>
+     <page_callback>CRM_Contribute_Page_DashBoard</page_callback> 
+     <access_arguments>access CiviCRM</access_arguments> 
+  </item>
+</menu>

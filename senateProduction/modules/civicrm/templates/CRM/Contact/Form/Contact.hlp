@@ -1,0 +1,66 @@
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.1                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+{htxt id="id-emailFormat"}
+{ts}Select the email format preferred by this contact. Select 'Both' to send HTML and Text formats.{/ts}
+{/htxt}
+
+{htxt id="id-bulkmail"}
+{ts}If you are using the CiviMail component to send mailings to contacts, this field provides additional control over which email address is used. By default, CiviMail sends mail to each contact's preferred email address. If the contact has multiple locations, then the preferred email of the primary location is used. However, if the contact prefers to have CiviMail ('bulk') mailings set to an alternate email address - check the 'Use for Bulk Mailings' box next to that email address.{/ts}
+{/htxt} 
+
+{htxt id="id-optOut"}
+{ts}This option is designed to be set by the contact themselves when they don't want to receive bulk email from your organization (they set it using the opt-out action from a CiviMail mailing).   Please think before changing it, as it will override the preference they have set.{/ts}
+{/htxt}
+
+{htxt id="id-onhold"}
+{ts}This flag is most commonly used to mark an email address that is bouncing. If you are using the CiviMail component, emails that bounce excessively are automatically placed on hold and mailings are not sent to this address as long as it is marked hold. You can also set (or unset) this option manually - but remember that emails will not be sent to this address as long as it is marked 'On Hold'.{/ts}
+{/htxt}
+
+{htxt id="id-preferred_communication_method"}
+{ts}Select the preferred method(s) of communicating with this contact.{/ts}
+{/htxt}
+
+{htxt id="id-privacy"}
+{ts}Select the preferred method for Privacy.{/ts}
+{/htxt}
+
+{htxt id="id-usehousehold"}
+{ts}Check this option if you want to use a shared household address for this individual. You can either select an existing household.<br /> To create a new one just enter the name of desired household, select the same from drop down and press enter.{/ts}
+{/htxt}
+
+{htxt id="id-greeting"}
+{capture assign=docLink}{docURL page="Mail-merge Tokens for Contact Data"}{/capture}
+<p>{ts}Use the greeting/address options to determine how you would like the contact's salutation and name displayed for different communication methods. When you send an email or export a list of records to a .csv file for mail merging, the greeting and addressee fields will reflect your preferences.{/ts}</p>
+<p>{ts 1=$docLink}You may also create a customized greeting and use field tokens to insert fields of your choice. For more information on available tokens, see the online documentation %1.{/ts}</p>
+{/htxt}
+
+{htxt id="id-edit-street-elements"}
+<p>{ts}CiviCRM will attempt to split street addresses into separate elements (street number, street name and unit/apt) to help you make lists and reports where you need to sort by street number (and/or separate addresses with odd and even numbers). For most addresses, this is done for you automatically. However, you can manually edit these elements, and potentially handle addresses that are in unusual formats, by clicking 'Edit Address Elements'.{/ts}</p>
+{/htxt}
+
+{htxt id="id-edit-complete-street"}
+<p>{ts}Click here to return to editing the street address as a single field. Addresses which don't fit the expected format for address elements can still be saved by entering them in the single 'Street Address' field.{/ts}
+{/htxt}

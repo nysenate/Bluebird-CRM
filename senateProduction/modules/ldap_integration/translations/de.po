@@ -1,0 +1,642 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Drupal LDAP Authentication\n"
+"POT-Creation-Date: 2008-08-11 17:26+0200\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Frank Tartler <frank.tartler@googlemail.com>\n"
+"Language-Team: Frank Tartler <frank.tartler@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ldapauth.admin.inc:20
+msgid "Mixed mode. The LDAP authentication is performed only if Drupal authentication fails"
+msgstr "Gemischter Modus. LDAP-Authentifizierung wird nur durchgeführt, wenn die Drupal-Authentifizierung fehlschlägt."
+
+#: ldapauth.admin.inc:21
+msgid "LDAP directory only"
+msgstr "Nur LDAP-Verzeichnis"
+
+#: ldapauth.admin.inc:24
+msgid "Disallow login and log the conflict"
+msgstr "Anmeldung verbieten und den Konflikt protokollieren"
+
+#: ldapauth.admin.inc:25
+msgid "Associate local account with the LDAP entry"
+msgstr "lokales Konto mit dem LDAP-Eintrag verbinden"
+
+#: ldapauth.admin.inc:30
+msgid "Authentication mode"
+msgstr "Authentifizierungs-Modus"
+
+#: ldapauth.admin.inc:31
+msgid "<strong>NOTE:</strong> These settings have no effect on Drupal user with uid 1. The admin account never uses LDAP."
+msgstr "<strong>HINWEIS:</strong>Diese Einstellungen haben keine Auswirkung auf den Drupal-Benutzer mit der ID 1. Das Administatorkonto verwendet niemals LDAP."
+
+#: ldapauth.admin.inc:38
+msgid "Choose authentication mode"
+msgstr "Authentifizierungs-Modus wählen"
+
+#: ldapauth.admin.inc:39
+msgid "Pick the mode based on the types of user accounts and other configuration decisions. If <i>LDAP directory only</i> option is activated some UI modications will be applied."
+msgstr "Der Modus sollte auf Basis der Typen von Benutzerkonten und anderen Konfigurationsentscheidungen ausgewählt werden. Wenn die Option <i>Nur LDAP-Verzeichnis</i> aktiviert ist, werden ein paar Veränderungen an der Benutzeroberfläche vorgenommen."
+
+#: ldapauth.admin.inc:47
+msgid "Choose user conflict resolve procedure"
+msgstr "Vorgehen zur Auflösung von Benutzerkonflikten auswählen"
+
+#: ldapauth.admin.inc:48
+msgid "Pick what should be done if the local drupal account already exists with the same login name."
+msgstr "Auswahl, was getan werden soll wenn das lokale Benutzerkonto mit dem selbene Anmeldenamen bereits existiert."
+
+#: ldapauth.admin.inc:56
+msgid "Security Options"
+msgstr "Sicherheits-Optionen"
+
+#: ldapauth.admin.inc:58
+msgid "<p>If you use the <strong>ldapdata</strong> module and want to allow users to modify their LDAP attributes, you have two options:</p><ul><li>Setup a special ldap manager DN that has (limited) permissions to edit the requisite LDAP records - using this method means Drupal's built in password reset will work;</li> <li>or allow this module to store the user's LDAP password, in clear text, during the session;</li></ul><p>Physically, these passwords are stored in the Drupal's session table in clear text. This is not ideal and is not the recomended configuration.</p><p>Unless you need to use the latter configuration, leave this checked.</p>"
+msgstr "<p>Wenn es beim Modul <strong>ldapdata</strong> den Benutzern erlaubt sein soll, ihre LDAP-Attribute zu ändern, gibt es zwei Möglichkeiten:</p><ul><li>Einrichtung eines besonderen LDAP-Manager-DN der (eingeschränkte) Berechtigungen hat, die erforderlichen LDAP-Daten zu ändern - bei dieser Methode funktioniert das in Drupal verwendete Zurücksetzen des Passwortes;</li><li>oder dieses Modul darf das Passwort des Benutzers in Klartext während der Sitzung speichern speichern;</li></ul><p>Physikalisch werden diese Passwörter in Klartext in der Session-Tabelle von Drupal gespeichert. Dies ist nicht ideal und daher keine empfohlene Konfiguration.</p><p>Solange letztere Konfiguration nicht verwendet werden muss, sollte der Standard belassen werden."
+
+#: ldapauth.admin.inc:64
+msgid "Do not store users' passwords during sessions"
+msgstr "Die Passwörter der Benutzer nicht während der Sitzungen speichern"
+
+#: ldapauth.admin.inc:71
+msgid "LDAP UI Options"
+msgstr "LDAP-Benutzeroberfläche-Optionen"
+
+#: ldapauth.admin.inc:72
+msgid "<p>Alters LDAP users' interface only, though admin accounts can still access email and password fields of LDAP users regardless of selections. Does not effect non-LDAP authenticated accounts. </p>"
+msgstr "<p>Ändert nur die Oberfläche für LDAP-Benutzer, trotzdem können Administratoren unabhängig von der Auswahl weiterhin auf E-Mail- und Passwort-Felder zugreifen. Betrifft nicht Konten, die keine Authentifizierung über LDAP durchführen.</p>"
+
+#: ldapauth.admin.inc:79
+msgid "Remove password change fields from user edit form"
+msgstr "Passwortänderungs-Felder vom Formular zum Bearbeiten der Benutzer entfernen"
+
+#: ldapauth.admin.inc:81
+msgid "<strong>NOTE:</strong> Request new password feature will be disabled for all users even for the user with uid 1."
+msgstr "<strong>HINWEIS:</strong>Die Funktion des Anforderns eines neuen Passwortes wird für alle Benutzer, auch den Benutzer mit der ID 1, deaktiviert."
+
+#: ldapauth.admin.inc:85
+msgid "Do nothing"
+msgstr "keine Änderung"
+
+#: ldapauth.admin.inc:86
+msgid "Remove email field from form"
+msgstr "E-Mail-Feld vom Formular entfernen"
+
+#: ldapauth.admin.inc:87
+msgid "Disable email field on form"
+msgstr "E-Mail-Feld auf Formular deaktivieren"
+
+#: ldapauth.admin.inc:92
+msgid "Alter email field on user edit form"
+msgstr "E-Mail-Feld im Benutzer-Formular ändern"
+
+#: ldapauth.admin.inc:93
+msgid "Remove or disable email field from user edit form for LDAP authenticated users."
+msgstr "Entfernt oder deaktiviert das E-Mail-Feld vom Benutzerformular für Benutzer mit LDAP-Authentifizierung."
+
+#: ldapauth.admin.inc:101;326
+msgid "Save configuration"
+msgstr "Konfiguration speichern"
+
+#: ldapauth.admin.inc:105
+msgid "Reset to defaults"
+msgstr "Auf Standardwerte zurücksetzen"
+
+#: ldapauth.admin.inc:125
+#: ldapdata.admin.inc:261
+#: ldapgroups.admin.inc:171
+msgid "The configuration options have been saved."
+msgstr "Die Konfigurations-Optionen wurden gespeichert."
+
+#: ldapauth.admin.inc:134
+#: ldapdata.admin.inc:218
+#: ldapgroups.admin.inc:165
+msgid "The configuration options have been reset to their default values."
+msgstr "Die Konfigurations-Optionen wurden auf ihre Standardwerte zurückgesetzt."
+
+#: ldapauth.admin.inc:154
+#: ldapdata.admin.inc:24
+#: ldapgroups.admin.inc:24
+#: ldapauth.module:271
+msgid "edit"
+msgstr "bearbeiten"
+
+#: ldapauth.admin.inc:155
+msgid "de-activate"
+msgstr "deaktivieren"
+
+#: ldapauth.admin.inc:155
+msgid "activate"
+msgstr "aktivieren"
+
+#: ldapauth.admin.inc:156
+msgid "delete"
+msgstr "löschen"
+
+#: ldapauth.admin.inc:161
+#: ldapdata.admin.inc:30
+#: ldapgroups.admin.inc:30
+msgid "LDAP Config"
+msgstr "LDAP-Konfiguration"
+
+#: ldapauth.admin.inc:162
+#: ldapdata.admin.inc:31
+#: ldapgroups.admin.inc:31
+msgid "Operations"
+msgstr "Operationen"
+
+#: ldapauth.admin.inc:207
+msgid "Server settings"
+msgstr "Server-Einstellungen"
+
+#: ldapauth.admin.inc:214
+msgid "Name"
+msgstr "Name"
+
+#: ldapauth.admin.inc:216
+msgid "Choose a <em><strong>unique</strong></em> name for this server configuration."
+msgstr "Ein <em><strong>eindeutiger</strong></em> Name für diese Server-Konfiguration muss festgelegt werden."
+
+#: ldapauth.admin.inc:224
+#: ldapauth.module:134
+msgid "LDAP server"
+msgstr "LDAP-Server"
+
+#: ldapauth.admin.inc:228
+msgid "The domain name or IP address of your LDAP Server."
+msgstr "Der (DNS-) Domänen-Name oder die IP-Adresse des LDAP-Servers."
+
+#: ldapauth.admin.inc:234
+msgid "LDAP port"
+msgstr "LDAP-Port"
+
+#: ldapauth.admin.inc:238
+msgid "The TCP/IP port on the above server which accepts LDAP connections. Must be an integer."
+msgstr "Der TCP/IP-Port des obigen Server, der LDAP-Verbindungen akzeptiert. Muss eine ganze Zahl sein."
+
+#: ldapauth.admin.inc:243
+msgid "Use Start-TLS"
+msgstr "Start-TLS verwenden"
+
+#: ldapauth.admin.inc:246
+msgid "Secure the connection between the Drupal and the LDAP servers using TLS.<br /><em>Note: To use START-TLS, you must set the LDAP Port to 389.</em>"
+msgstr "Sichert die Verbindung zwischen Drupal und den LDAP-Servern durch TLS.<br/><em>Hinweis: Um Start-TLS zu verwenden, muss der LDAP-Port auf 389 eingestellt sein.</em>"
+
+#: ldapauth.admin.inc:251
+msgid "Store passwords in encrypted form"
+msgstr "Passwörter verschlüsselt speichern"
+
+#: ldapauth.admin.inc:254
+msgid "Secure the password in LDAP by storing it MD5 encrypted (use with care, as some LDAP directories may do this automatically, what would cause logins problems)."
+msgstr "Sichert das Passwort in LDAP durch Speicherung mit MD5-Verschlüsselung (vorsichtig verwenden, da manche LDAP-Verzeichnisse dies automatisch machen, was Anmeldeproblem verursachen würde)."
+
+#: ldapauth.admin.inc:259
+msgid "Login procedure"
+msgstr "Anmeldeprozedur"
+
+#: ldapauth.admin.inc:266
+msgid "Base DNs"
+msgstr "Basis-DNs"
+
+#: ldapauth.admin.inc:270
+msgid "Base DNs for users. Enter one per line in case you need several of them."
+msgstr "Basis-DNs für Benutzer. Falls mehrere benötigt werden muss einer pro Zeile eingegeben werden."
+
+#: ldapauth.admin.inc:275
+msgid "UserName attribute"
+msgstr "UserName-Attribut"
+
+#: ldapauth.admin.inc:279
+msgid "The attribute that holds the users' login name. (eg. <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">cn</em> for eDir or <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">sAMAccountName</em> for Active Directory)."
+msgstr "Das Attribut, das dem Anmeldenamen des Benutzers enthält. (z.B. <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">cn</em> für eDir oder <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">sAMAccountName</em> für Active Directory)."
+
+#: ldapauth.admin.inc:284
+msgid "Email attribute"
+msgstr "E-Mail-Attribut"
+
+#: ldapauth.admin.inc:288
+msgid "The attribute that holds the users' email address. (eg. <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">mail</em>)."
+msgstr "Das Attribut, das die E-Mail-Adresse des Benutzers beinhaltet (z.B. <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">mail</em>)."
+
+#: ldapauth.admin.inc:293
+#: ldapdata.admin.inc:162
+msgid "Advanced configuration"
+msgstr "Erweiterte Konfiguration"
+
+#: ldapauth.admin.inc:294
+msgid "<p>The process of authentication starts by establishing an anonymous connection to the LDAP directory and looking up for the user on it. Once this user is found, LDAP authentication is performed on them.</p><p>However, some LDAP configurations (specially common in <strong>Active Directory</strong> setups) restrict anonymous searches.</p><p>If your LDAP setup does not allow anonymous searches, or these are restricted in such a way that login names for users cannot be retrieved as a result of them, then you have to specify here a DN//password pair that will be used for these searches.</p><p>For security reasons, this pair should belong to an LDAP account with stripped down permissions.</p>"
+msgstr "<p>Der Authentifizierungsprozess beginnt mit dem Aufbau einer anonymen Verbindung zum LDAP-Verzeichnis und der dortigen Suche nach dem Benutzer. Sobald der Benutzer gefunden wird, erfolgt die LDAP-Authentifizierung.</p><p>Manche LDAP-Konfigurationen (vor allem in <strong>Active-Directory</strong>-Umgebungen beschränken jedoch anonyme Suchanfragen.</p><p>Wenn die LDAP-Umgebung keine anonymen Suchanfragen erlaubt oder sie so eingeschränkt sind, dass im Ergebnis Anmeldenamen nicht abgefragt werden können, dann muss hier ein DN/Passwort-Paar angegeben werden, das für diese Suchanfagen benutzt wird.</p><p>Aus Sicherheitsgründen sollte dieses Paar zu einem LDAP-Konto gehören, dass nur minimale Rechte hat.</p>"
+
+#: ldapauth.admin.inc:301
+msgid "DN for non-anonymous search"
+msgstr "DN für nicht-anonyme Suche"
+
+#: ldapauth.admin.inc:310
+msgid "Password for non-anonymous search"
+msgstr "Passwort für nicht-anonyme Suche"
+
+#: ldapauth.admin.inc:319
+#: ldapdata.admin.inc:187
+msgid "Clear current password"
+msgstr "Aktuelles Passwort löschen"
+
+#: ldapauth.admin.inc:340
+msgid "An LDAP config with the  name %name already exists."
+msgstr "Eine LDAP-Konfiguration mit dem Namen %name existiert bereits."
+
+#: ldapauth.admin.inc:344
+msgid "The TCP/IP port must be an integer."
+msgstr "Der TCP/IP-Port muss eine ganze Zahl sein."
+
+#: ldapauth.admin.inc:356;357
+msgid "LDAP configuration %name has been added."
+msgstr "LDAP-Konfiguration %name wurde hinzugefügt."
+
+#: ldapauth.admin.inc:367;368
+msgid "LDAP Configuration %name has been updated."
+msgstr "LDAP-Konfiguration %name wurde aktualisiert."
+
+#: ldapauth.admin.inc:386
+msgid "LDAP Configuration %name has been de-activated."
+msgstr "LDAP-Konfiguration %name wurde deaktiviert."
+
+#: ldapauth.admin.inc:404
+msgid "LDAP Configuration %name has been activated."
+msgstr "LDAP-Konfiguration %name wurde aktiviert."
+
+#: ldapauth.admin.inc:433
+msgid "Are you sure you want to delete the LDAP server named <em><strong>%name</strong></em>?"
+msgstr "Soll der LDAP-Server <em><strong>%name</strong></em> wirklich gelöscht werden?"
+
+#: ldapauth.admin.inc:435
+msgid "<p>This action cannot be undone.</p>"
+msgstr "<p>Diese Aktion kann nicht rückgängig gemacht werden.</p>"
+
+#: ldapauth.admin.inc:436
+msgid "Delete"
+msgstr "Löschen"
+
+#: ldapauth.admin.inc:437
+#: ldapdata.admin.inc:62
+#: ldapgroups.admin.inc:63
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: ldapauth.admin.inc:450;451
+msgid "LDAP Configuration %name has been deleted."
+msgstr "LDAP-Konfiguration %name wurde gelöscht."
+
+#: ldapauth.admin.inc:357;368;387;405;451
+#: ldapauth.module:271;284;392;0
+msgid "ldapauth"
+msgstr "ldapauth"
+
+#: ldapauth.admin.inc:387
+msgid "LDAP server %name was de-activated."
+msgstr "LDAP-Server %name wurde deaktiviert."
+
+#: ldapauth.admin.inc:405
+msgid "LDAP server %name was activated."
+msgstr "LDAP-Server %name wurde aktiviert."
+
+#: ldapdata.admin.inc:25
+#: ldapgroups.admin.inc:25
+msgid "reset"
+msgstr "zurücksetzen"
+
+#: ldapdata.admin.inc:58
+msgid "Are you sure you want to reset the fields mapping to defaults ?"
+msgstr "Sollen die Feld-Zuordnung wirklich auf ihre Standardwerte zurückgesetzt werden?"
+
+#: ldapdata.admin.inc:60
+#: ldapgroups.admin.inc:61
+msgid "<em>This action cannot be undone.</p>"
+msgstr "<em>Diese Aktion kann nicht rückgängig gemacht werden.</p>"
+
+#: ldapdata.admin.inc:61;214
+#: ldapgroups.admin.inc:62;161
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: ldapdata.admin.inc:78
+msgid "Drupal-LDAP fields mapping"
+msgstr "Drupal-LDAP-Feldzuordnung"
+
+#: ldapdata.admin.inc:79
+msgid "<p><strong style=\"color: red;\">PLEASE NOTE</strong>: advanced configuration for this module can be set by editing the module's config file, located at <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">modules/ldap_integration/ldap_integration/ldapdata.conf.php</em> in your Drupal install.</p>"
+msgstr "<p><strong style=\"color: red;\">BITTE BEACHTEN</strong>: eine erweiterte Konfiguration dieses Moduls kann durch Bearbeten der Konfigurationsdatei des Moduls erfolgen, zu finden unter <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">modules/ldap_integration/ldap_integration/ldapdata.conf.php</em> in der Drupal-Installation.</p>"
+
+#: ldapdata.admin.inc:84
+msgid "Should Drupal account fields be mapped to LDAP Attributes?"
+msgstr "Sollen Felder von Drupal-Benutzerkonten auf LDAP-Attribute abgebildet werden und umgekehrt?"
+
+#: ldapdata.admin.inc:87
+msgid "Changes in account fields will be mapped to LDAP attributes and back."
+msgstr "Änderungen in Feldern der Benutzerkonten werden auf LDAP-Attribute angewendet und umgekehrt"
+
+#: ldapdata.admin.inc:88
+msgid "Same, but read-only mode."
+msgstr "Genauso, aber Nur-Lesen-Modus."
+
+#: ldapdata.admin.inc:89
+msgid "No attribute mapping will be done at all (<strong><em>Clears any existing mappings</em></strong>)."
+msgstr "Es erfolgt keine Zuordnung von Attributen (<strong><em>Löscht alle bestehenden Zuordnungen</em></strong>)."
+
+#: ldapdata.admin.inc:96
+msgid "<div class=\"form-item\"><label>If you selected the first or the second option above, please specify here: </label><table><thead><tr><th> Drupal field</th><th>LDAP attribute</th></tr></thead><tbody>"
+msgstr "<div class=\"form-item\"><label>Bei obiger Auswahl der ersten oder zweiten Option muss hier angegeben werden: </label><table><thead><tr><th>Drupal-Feld</th><th>LDAP-Attribut</th></tr></thead><tbody>"
+
+#: ldapdata.admin.inc:118
+msgid "Attribute visibility & access control"
+msgstr "Sichtbarkeit & Zugriffssteuerung für Attribute"
+
+#: ldapdata.admin.inc:120
+msgid "<p>Users may be able to view their LDAP attributes' values, as well as edit them. You can configure this feature here.</p>"
+msgstr "<p>Es kann Benutzern erlaubt werden, ihre LDAP-Attribute zu sehen und zu bearbeiten. Diese Funktionalität kann hier konfiguriert werden.</p>"
+
+#: ldapdata.admin.inc:153
+msgid "Attribute Name"
+msgstr "Attribut-Name"
+
+#: ldapdata.admin.inc:154
+msgid "Readable by User?"
+msgstr "Durch Benutzer lesbar?"
+
+#: ldapdata.admin.inc:155
+msgid "Editable by User?"
+msgstr "Durch Benutzer editierbar?"
+
+#: ldapdata.admin.inc:163
+msgid "<p>When reading/editing attributes, this module logs on to the LDAP directory using the user's DN//pass pair. However, many LDAP setups do not allow their users to edit attributes.</p><p>If this is your case, but still you want users to edit their LDAP attributes via Drupal, you should set up an special user on your directory, with special access to edit your users' attributes. Then this module will use it to log on and edit data.</p>"
+msgstr "<p>Beim Lesen/Bearbeiten von Attributen meldet sich dieses Modul am LDAP-Verzeichnis unter Verwendung von DN und Passwort an. Viele LDAP-Installationen erlauben jedoch ihren Anwendern nicht, Attribute der Benutzer zu bearbeiten.</p><p>Wenn dies hier der Fall ist, aber Benutzer dennoch ihre LDAP-Attribute via Drupal bearbeiten können sollen, sollte ein besonderer Benutzer im Verzeichnis mit der speziellen Berechtigung eingerichtet werden, Benutzer-Attribute zu bearbeiten. Dann wird dieses Modul ihn zur Anmeldung und zum Bearbeiten von Daten verwenden.</p>"
+
+#: ldapdata.admin.inc:169
+msgid "DN for reading/editing attributes"
+msgstr "DN zum Lesen/Bearbeiten von Attributen"
+
+#: ldapdata.admin.inc:177
+msgid "Password for reading/editing attributes"
+msgstr "Passwort für das Lesen/Bearbeiten von Attributen"
+
+#: ldapdata.admin.inc:198
+#: ldapgroups.admin.inc:145
+msgid "Update"
+msgstr "Aktualisieren"
+
+#: ldapgroups.admin.inc:59
+msgid "Are you sure you want to reset the groups mapping to defaults ?"
+msgstr "Sollen die Gruppenzuordnungen wirklich auf ihre Standardwerte zurückgesetzt werden?"
+
+#: ldapgroups.admin.inc:71
+msgid "Group by DN"
+msgstr "nach DN gruppieren"
+
+#: ldapgroups.admin.inc:77
+msgid "Group is specified in user's DN"
+msgstr "Gruppe ist im DN des Benutzers angegeben"
+
+#: ldapgroups.admin.inc:83
+msgid "Attribute of the DN which contains the group name"
+msgstr "Attribut des DN, das den Gruppennamen beinhaltet"
+
+#: ldapgroups.admin.inc:87
+msgid "The name of the attribute which contains the group name. In the example above, it would be <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">ou</em>, as the DN contains the string <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">ou=Group1</em> and <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">Group1</em> happens to be the desired group name."
+msgstr "Der Name des Attributs, das den Gruppennamen beinhaltet. In obigem Beispiel wäre es <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">ou</em>, da der DN die Zeichenkette <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">ou=Group1</em> beinhaltet und <em style=\"font-style: normal; padding: 1px 3px; border: 1px solid #8888CC; background-color: #DDDDFF\">Group1</em> der gewünschte Gruppenname ist."
+
+#: ldapgroups.admin.inc:92
+msgid "Group by attribute"
+msgstr "Nach Attributen gruppieren"
+
+#: ldapgroups.admin.inc:98
+msgid "Groups are specified by LDAP attributes"
+msgstr "Gruppen werden durch LDAP-Attribute angegeben"
+
+#: ldapgroups.admin.inc:103
+msgid "Attribute names (one per line)"
+msgstr "Attribut-Namen (einer pro Zeile)"
+
+#: ldapgroups.admin.inc:107
+msgid "If the groups are stored in the user entries, along with the rest of their data, then enter here a list of attributes which may contain them."
+msgstr "Wenn Gruppen in Benutzereinträgen gespeichert werden, zusammen mit ihren übrigen Daten, dann muss hier eine Liste von Attributen angegeben werden, die sie beinhalten."
+
+#: ldapgroups.admin.inc:112
+msgid "Group by entry"
+msgstr "nach Eintrag gruppieren"
+
+#: ldapgroups.admin.inc:118
+msgid "Groups exist as LDAP entries where a multivalued attribute contains the members' CNs"
+msgstr "Gruppen existieren als LDAP-Einträge, wo ein Attribut mit mehreren Werten die CNs der Mitglieder beinhaltet"
+
+#: ldapgroups.admin.inc:123
+msgid "Nodes containing groups (one per line)"
+msgstr "Knoten, die Gruppen enthalten (einer pro Zeile)"
+
+#: ldapgroups.admin.inc:127
+msgid "Enter here a list of nodes from where groups should be searched for. The module will look them up recursively from the given nodes."
+msgstr "Es muss eine Liste von Knoten eingegeben werden, wo nach Gruppen gesucht wird. Das Modul wird danach rekursiv von den angegeben Knoten suchen."
+
+#: ldapgroups.admin.inc:131
+msgid "Attribute holding group members"
+msgstr "Attribut, das die Gruppenmitglieder beinhaltet"
+
+#: ldapgroups.admin.inc:135
+msgid "Name of the multivalued attribute which holds the CNs of group members, for example: !attr"
+msgstr "Name des Attributs mit mehreren Werten, das die CNs von Gruppenmitgliedern beinhaltet, zum Beispiel !attr"
+
+#: ldapauth.module:47
+msgid "A system wide settings will affect all configured LDAP servers."
+msgstr "Systemweite Einstellungen, die alle konfigurierten LDAP-Server betreffen."
+
+#: ldapauth.module:135
+msgid "LDAP dn"
+msgstr "LDAP DN"
+
+#: ldapauth.module:285
+msgid "Another user already exists in the system with the same login name. You should contact the system administrator in order to solve this conflict."
+msgstr "Es existiert bereits ein anderer Benutzer mit dem selben Anmeldenamen. Der Systemadministrator sollte kontaktiert werden, um diesen Konflikt zu lösen."
+
+#: ldapauth.module:271
+msgid "New external user %name created from the LDAP server %server."
+msgstr "Neuer externer Benutzer %name erstellt vom LDAP-Server %server."
+
+#: ldapauth.module:284
+msgid "LDAP user with DN %dn has a naming conflict with a local drupal user %name"
+msgstr "LDAP-Benutzer mit DN %dn hat einen Namenskonflikt mit dem lokalen Drupal-Benutzer %name."
+
+#: ldapauth.module:392
+msgid "Error: %num_matches users found with $%filter under %base_dn."
+msgstr "Fehler: %num_matches Benutzer mit $%filter unter %base_dn gefunden."
+
+#: ldapauth.module:154
+msgid "administer ldap modules"
+msgstr "LDAP-Module verwalten"
+
+#: ldapauth.module:58
+msgid "LDAP Authentication"
+msgstr "LDAP-Authentifizierung"
+
+#: ldapauth.module:61
+msgid "Configure LDAP settings"
+msgstr "LDAP-Einstellungen konfigurieren"
+
+#: ldapauth.module:66
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: ldapauth.module:70
+msgid "List"
+msgstr "Liste"
+
+#: ldapauth.module:78
+msgid "Add Server"
+msgstr "Server hinzufügen"
+
+#: ldapauth.module:87
+msgid "Configure LDAP Server"
+msgstr "LDAP-Server konfigurieren"
+
+#: ldapauth.module:95
+msgid "Delete LDAP Server"
+msgstr "LDAP-Server löschen"
+
+#: ldapauth.module:103
+msgid "Activate LDAP Source"
+msgstr "LDAP-Quelle aktivieren"
+
+#: ldapauth.module:111
+msgid "De-Activate LDAP Source"
+msgstr "LDAP-Quelle deaktivieren"
+
+#: ldapdata.module:163;209;303;327;0
+msgid "ldapdata"
+msgstr "ldapdata"
+
+#: ldapdata.module:163
+msgid "User form: user %name's data could not be read in the LDAP directory"
+msgstr "Benutzerformular: die Daten von Benutzer %name konnten nicht aus dem LDAP-Verzeichnis gelesen werden"
+
+#: ldapdata.module:209
+msgid "User load: user %name's data could not be read in the LDAP directory"
+msgstr "Laden des Benutzers: die Daten von Benutzer %name konnten nicht aus dem LDAP-Verzeichnis gelesen werden"
+
+#: ldapdata.module:248
+#: ldap_integration/LDAPInterface.php:144;148;151;164
+msgid "user"
+msgstr "Benutzer"
+
+#: ldapdata.module:248
+msgid "User login: user %name's data could not be read in the LDAP directory"
+msgstr "Benutzeranmeldung: Die Daten von Benutzer %name konnten nicht aus dem LDAP-Verzeichnis gelesen werden"
+
+#: ldapdata.module:303
+msgid "User update: user %name's data could not be updated in the LDAP directory"
+msgstr "Aktualisierung des Benutzers: die Daten des Benutzers %name konnten im LDAP-Verzeichnis nicht aktualisiert werden."
+
+#: ldapdata.module:327
+msgid "User view: user %name's data could not be read in the LDAP directory"
+msgstr "Anzeigen des Benutzers: die Daten des Benutzers %name konnten nicht aus dem LDAP-Verzeichnis gelesen werden"
+
+#: ldapdata.module:64;80;89
+msgid "LDAP Data"
+msgstr "LDAP-Daten"
+
+#: ldapdata.module:65
+msgid "Configure LDAP Data"
+msgstr "LDAP-Daten konfigurieren"
+
+#: ldapdata.module:71
+msgid "LDAP DATA"
+msgstr ""
+
+#: ldapgroups.module:175;0
+msgid "ldapgroups"
+msgstr "ldapgroups"
+
+#: ldapgroups.module:175
+msgid "User login: user %name data could not be read in the LDAP directory"
+msgstr "Benutzeranmeldung: die Daten von Benutzer %user konnten nicht aus dem LDAP-Verzeichnis gelesen werden"
+
+#: ldapgroups.module:33;40;49
+msgid "LDAP Groups"
+msgstr "LDAP-Gruppen"
+
+#: ldapgroups.module:34
+msgid "Configure LDAP Groups Settings"
+msgstr "Einstellungen von LDAP-Gruppen konfigurieren"
+
+#: ldapauth.info:0
+msgid "Authentication"
+msgstr "Authentifizierung"
+
+#: ldapauth.info:0
+msgid "Implements LDAP Authentication."
+msgstr "Implementiert LDAP-Authentifizierung"
+
+#: ldapauth.info:0
+#: ldapdata.info:0
+#: ldapgroups.info:0
+msgid "LDAP integration"
+msgstr "LDAP-Integration"
+
+#: ldapdata.info:0
+msgid "Data"
+msgstr ""
+
+#: ldapdata.info:0
+msgid "Implements LDAP Data."
+msgstr "Implementiert LDAP-Daten"
+
+#: ldapgroups.info:0
+msgid "Groups"
+msgstr "Gruppen"
+
+#: ldapgroups.info:0
+msgid "Integrated LDAP Groups with Drupal Roles."
+msgstr "Integriert LDAP-Gruppen mit Drupal-Rollen."
+
+#: ldap_integration/LDAPInterface.php:154
+msgid "Could not start TLS. (Error %errno: %error)."
+msgstr "TLS konnte nicht gestartet werden (Fehler %errno: %error)."
+
+#: ldap_integration/LDAPInterface.php:144
+msgid "Could not get LDAP protocol version."
+msgstr "LDAP-Protokoll-Version konnte nicht ermittelt werden."
+
+#: ldap_integration/LDAPInterface.php:148
+msgid "Could not start TLS, only supported by LDAP v3."
+msgstr "TLS konnte nicht gestartet werden, nur unterstützt von LDAP v3."
+
+#: ldap_integration/LDAPInterface.php:151
+msgid "Could not start TLS. It does not seem to be supported by this PHP setup."
+msgstr "TLS konnte nicht gestartet werden. Es scheint durch die PHP-Einstellungen nicht unterstützt zu sein."
+
+#: ldap_integration/LDAPInterface.php:164
+msgid "LDAP Bind failure for user %user. Error %errno: %error"
+msgstr "LDAP-Bindungsfehler für Benutzer %user. Fehler %errno: %error"
+
+#: ldap_integration/ldapdata.conf.php:37
+msgid "First Name"
+msgstr "Vorname"
+
+#: ldap_integration/ldapdata.conf.php:38
+msgid "Last Name"
+msgstr "Nachname"
+
+#: ldap_integration/ldapdata.conf.php:39
+msgid "Common Name"
+msgstr ""
+
+#: ldap_integration/ldapdata.conf.php:41
+msgid "Email"
+msgstr "E-Mail"
+
+#~ msgid "Advanced Configuration"
+#~ msgstr "Erweiterte Configuration"
+

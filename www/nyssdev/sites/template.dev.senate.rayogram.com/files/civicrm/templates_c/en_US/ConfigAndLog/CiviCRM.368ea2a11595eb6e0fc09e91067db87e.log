@@ -1,0 +1,14 @@
+Jul 26 17:17:17  [info] $Fatal Error Details = Array
+(
+    [message] => You do not have permission to execute this url
+    [code] => 
+)
+
+
+Jul 26 17:17:17  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, fatal, 78
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+

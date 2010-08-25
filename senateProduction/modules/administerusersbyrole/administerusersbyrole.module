@@ -1,0 +1,122 @@
+<?php
+// $Id: administerusersbyrole.module,v 1.1.2.4 2009/01/28 03:44:27 smokris Exp $
+
+/**
+ * @file
+ * Allows users with 'administer users' permission and a role (specified in 'Permissions') to edit/delete other users with a specified role.  If the user being edited has multiple roles, the user doing the editing must have permission to edit ALL of the user being edited's roles.  Also provides control over user creation.  Works well in conjunction with <a href='http://drupal.org/project/role_delegation'>role_delegation</a>.
+ */
+
+function administerusersbyrole_perm() {
+  $roles = db_query('SELECT name FROM {role} WHERE rid > 2 ORDER BY name');
+  $perms = array();
+  $perms[] = 'create users';
+  while ($role=db_fetch_array($roles)) {
+    $perms[] = 'edit users with role '. $role['name'];
+    $perms[] = 'delete users with role '. $role['name'];
+  }
+  return $perms;
+}
+
+function administerusersbyrole_init() {
+  $items = array();
+  if (arg(0)==='admin' && arg(1)==='user' && arg(2)==='user' && arg(3)==='create') {
+    if (!user_access('create users')) {
+      drupal_set_message(t('You do not have permission to create users.'), 'error');
+      drupal_goto("");
+    }
+  }
+  else if (arg(0)==='user') {
+    switch (arg(2)) {
+      case 'edit':
+        $uid = arg(1);
+        $account = user_load( array('uid' => $uid) );
+
+        if (!_administerusersbyrole_can_edit_user($account)) {
+          drupal_set_message(t('You do not have permission to edit %user.', array('%user' => $account->name)), 'error');
+          drupal_goto('user/'. $account->uid);
+        }
+
+        break;
+
+      case 'delete':
+        $uid = arg(1);
+        $account = user_load( array('uid' => $uid) );
+
+        if (!_administerusersbyrole_can_delete_user($account)) {
+          drupal_set_message(t('You do not have permission to delete %user.', array('%user' => $account->name)), 'error');
+          drupal_goto('user/'. $account->uid);
+        }
+
+        break;
+    }
+  }
+  return $items;
+}
+
+function _administerusersbyrole_can_edit_user($account) {
+  global $user;
+  if ($account->uid == $user->uid) {
+    return TRUE;
+  }
+
+  // allow only uid1 to edit uid1
+  if ($account->uid == 1) {
+    return FALSE;
+  }
+
+  foreach ($account->roles as $rid => $role) {
+    if ($rid === DRUPAL_AUTHENTICATED_RID) {
+      continue;
+    }
+    if (!user_access('edit users with role '. $role)) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+function _administerusersbyrole_can_delete_user($account) {
+  if ($account->uid == 1) {
+    return FALSE;
+  }
+
+  foreach ($account->roles as $rid => $role) {
+    if ($rid === DRUPAL_AUTHENTICATED_RID) {
+      continue;
+    }
+    if (!user_access('delete users with role '. $role)) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+function administerusersbyrole_form_user_multiple_delete_confirm_alter(&$form, &$form_state) {
+  $anyallowed = FALSE;
+  foreach (array_filter($form_state['post']['accounts']) as $uid => $value) {
+    $account = user_load($uid);
+    if (_administerusersbyrole_can_delete_user($account)) {
+      $anyallowed = TRUE;
+    }
+    else {
+      drupal_set_message(t('You do not have permission to delete %user.', array('%user' => $account->name)), 'error');
+      unset($form_state['post']['accounts'][$uid]);
+      unset($form['accounts'][$uid]);
+    }
+  }
+  if (!$anyallowed) {
+    drupal_goto( substr($form['#action'], 1) );
+  }
+}
+
+function administerusersbyrole_user($op, &$edit, &$account, $category = NULL) {
+  if ($op === 'update' && $category === 'account') {
+    if (!_administerusersbyrole_can_edit_user($account)) {
+      if (isset($edit['status'])) {
+        $action = $edit['status'] ? t('unblock') : t('block');
+        drupal_set_message(t('You do not have permission to !action %user.', array('!action' => $action, '%user' => $account->name)), 'error');
+        unset($edit['status']);
+      }
+    }
+  }
+}

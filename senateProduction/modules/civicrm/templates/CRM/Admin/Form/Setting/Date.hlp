@@ -1,0 +1,48 @@
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.1                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+{htxt id='date-format'}
+<p>{ts}Use this screen to configure formats for date display and date input fields. Defaults are provided for standard United States formats. Settings use standard POSIX specifiers. Available specifiers and the values produced will vary based on your operating system and locale.{/ts}</p>
+<p>
+<strong>{ts}Commonly Used Specifiers{/ts}</strong>
+<ul>
+<li>%b - abbreviated month name ('Jan'..'Dec')</li>
+<li>%B - full month name ('January'..'December')</li>
+<li>%d - day of the month as a decimal number, 0-padded ('01'..'31')</li>
+<li>%e - day of the month as a decimal number, blank-padded (' 1'..'31')</li>
+<li>%E - day of the month as a decimal number ('1'..'31')</li>
+<li>%f - English ordinal suffix for the day of the month ('st', 'nd', 'rd', 'th')</li>
+<li>%H - hour in 24-hour format, 0-padded ('00'..'23')</li>
+<li>%I - hour in 12-hour format, 0-padded ('01'..'12')</li>
+<li>%k - hour in 24-hour format, blank-padded (' 0'..'23')</li>
+<li>%l - hour in 12-hour format, blank-padded (' 1'..'12')</li>
+<li>%m - month as a decimal number, 0-padded ('01'..'12')</li>
+<li>%M - minute, 0-padded ('00'..'60')</li>
+<li>%p - lowercase ante/post meridiem ('am', 'pm')</li>
+<li>%P - uppercase ante/post meridiem ('AM', 'PM')</li>
+<li>%Y - year as a decimal number including the century ('2005')</li>
+</ul>
+</p>
+{/htxt}

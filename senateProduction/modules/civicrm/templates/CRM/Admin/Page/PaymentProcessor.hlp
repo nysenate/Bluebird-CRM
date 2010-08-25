@@ -1,0 +1,461 @@
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.1                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+{htxt id='proc-type'}
+{capture assign=docLink}{docURL page="CiviContribute Payment Processor Configuration" text="configuration procedures for each Payment Processor"}{/capture}
+{ts 1=$docLink}Review the %1 first. If you're not sure which processor to use - we recommend reviewing terms, limitations and coverage areas on each processor's website before proceeding. If your preferred processor is not in the list, consider partnering with a developer and contributing a plugin.{/ts}
+{/htxt}
+
+{htxt id='AuthNet_AIM-live-user-name'}
+<strong>{ts}API Login (LIVE account):{/ts}</strong>
+<br />{ts}Generate your API Login and Transaction Key by logging in to your Merchant Account and navigating to <strong>Settings &raquo; General Security Settings</strong>.{/ts}</p>
+{/htxt}
+{htxt id='AuthNet_AIM-live-password'}
+<strong>{ts}Transaction Key (LIVE account):{/ts}</strong>
+<br />{ts}Generate your API Login and Transaction Key by logging in to your Merchant Account and navigating to <strong>Settings &raquo; General Security Settings</strong>.{/ts}</p>
+{/htxt}
+{htxt id='AuthNet_AIM-live-signature'}
+<strong>{ts}MD5-Hash (LIVE account):{/ts}</strong>
+<br />{ts}You may also optionally set an MD5 Hash Key to verify that responses come directly from Authorize.Net. Login to your merchant account and navigate to <strong>Account Settings</strong>. Select MD5-Hash and enter a new hash value. This can be just about any string of characters or words. Then enter the exact same value here.{/ts}</p>
+{/htxt}
+{htxt id='AuthNet_AIM-live-url-site'}
+{ts}The URL for Authorize.net's LIVE Payment server. Use the default value unless otherwise advised by the processor.{/ts}
+{/htxt}
+{htxt id='AuthNet_AIM-live-url-recur'}
+{ts}The URL for recurring payments. Use the default value unless otherwise advised by the processor.{/ts}
+{/htxt}
+{htxt id='AuthNet_AIM-test-user-name'}
+<strong>{ts}API Login (TEST account):{/ts}</strong>
+<br />{ts}Generate your API Login and Transaction Key by logging in to your Merchant Account and navigating to <strong>Settings &raquo; General Security Settings</strong>.{/ts}</p>
+{/htxt}
+{htxt id='AuthNet_AIM-test-password'}
+<strong>{ts}Transaction Key (TEST account):{/ts}</strong>
+<br />{ts}Generate your API Login and Transaction Key by logging in to your Merchant Account and navigating to <strong>Settings &raquo; General Security Settings</strong>.{/ts}</p>
+{/htxt}
+{htxt id='AuthNet_AIM-test-signature'}
+<strong>{ts}MD5-Hash (TEST account):{/ts}</strong>
+<br />{ts}You may also optionally set an MD5 Hash Key to verify that responses come directly from Authorize.Net. Login to your merchant account and navigate to <strong>Account Settings</strong>. Select MD5-Hash and enter a new hash value. This can be just about any string of characters or words. Then enter the exact same value here.{/ts}</p>
+{/htxt}
+{htxt id='AuthNet_AIM-test-url-site'}
+{ts}The URL for Authorize.net's TEST Payment server. Use the default value unless otherwise advised by the processor.{/ts}
+{/htxt}
+{htxt id='AuthNet_AIM-test-url-recur'}
+{ts}The URL for recurring payments. Use the default value unless otherwise advised by the processor.{/ts}
+{/htxt}
+
+{htxt id='PayPal-live-user-name'}
+<strong>{ts}LIVE Account API Username:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Username</strong> as displayed in your LIVE account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal-live-password'}
+<strong>{ts}LIVE Account API Password:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Password</strong> as displayed in your LIVE account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal-live-signature'}
+<strong>{ts}LIVE Account API Signature:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Signature</strong> as displayed in your LIVE account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal-live-url-site'}
+{ts}The URL for PayPal's LIVE Payment server. Use the default value (unless otherwise advised by PayPal):{/ts}<br /> https://www.paypal.com/
+{/htxt}
+{htxt id='PayPal-live-url-api'}
+{ts}The URL for PayPal's LIVE API gateway server. Use the default value (unless otherwise advised by PayPal):{/ts}<br />https://api-3t.paypal.com/
+{/htxt}
+{htxt id='PayPal-live-url-button'}
+{ts}The URL for displaying PayPal's 'Pay with PayPal' payment button image. Use the default value unless otherwise advised by PayPal.{/ts}
+{/htxt}
+{htxt id='PayPal-test-user-name'}
+<strong>{ts}TEST Account API Username:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Username</strong> as displayed in your TEST (sandbox) account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal-test-password'}
+<strong>{ts}TEST Account API Password:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Password</strong> as displayed in your TEST (sandbox) account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal-test-signature'}
+<strong>{ts}TEST Account API Signature:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Signature</strong> as displayed in your TEST (sandbox) account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal-test-url-site'}
+{ts}The URL for PayPal's TEST Payment server. Use the default value (unless otherwise advised by PayPal):{/ts}<br />https://www.sandbox.paypal.com/
+{/htxt}
+{htxt id='PayPal-test-url-api'}
+{ts}The URL for PayPal's TEST API gateway server. Use the default value (unless otherwise advised by PayPal):{/ts}<br />https://api-3t.sandbox.paypal.com/
+{/htxt}
+{htxt id='PayPal-test-url-button'}
+{ts}The URL for displaying PayPal's 'Pay with PayPal' payment button image. Use the default value unless otherwise advised by PayPal.{/ts}
+{/htxt}
+
+{htxt id='PayPal_Express-live-user-name'}
+<strong>{ts}LIVE Account API Username:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Username</strong> as displayed in your LIVE account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Express-live-password'}
+<strong>{ts}LIVE Account API Password:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Password</strong> as displayed in your LIVE account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Express-live-signature'}
+<strong>{ts}LIVE Account API Signature:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Signature</strong> as displayed in your LIVE account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Express-live-url-site'}
+{ts}The URL for PayPal's LIVE Payment server. Use the default value (unless otherwise advised by PayPal):{/ts}<br /> https://www.paypal.com/
+{/htxt}
+{htxt id='PayPal_Express-live-url-api'}
+{ts}The URL for PayPal's LIVE API gateway server. Use the default value (unless otherwise advised by PayPal):{/ts}<br />https://api-3t.paypal.com/
+{/htxt}
+{htxt id='PayPal_Express-live-url-button'}
+{ts}The URL for displaying PayPal's 'Pay with PayPal' payment button image. Use the default value unless otherwise advised by PayPal.{/ts}
+{/htxt}
+{htxt id='PayPal_Express-test-user-name'}
+<strong>{ts}TEST Account API Username:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Username</strong> as displayed in your TEST (sandbox) account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Express-test-password'}
+<strong>{ts}TEST Account API Password:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Password</strong> as displayed in your TEST (sandbox) account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Express-test-signature'}
+<strong>{ts}TEST Account API Signature:{/ts}</strong>
+<br />{ts}CiviCRM requires that you use the <strong>Signature-based API Credentials</strong> for PayPal Pro and Express. Enter your <strong>API Signature</strong> as displayed in your TEST (sandbox) account's <strong>Profile - View API Signature</strong> screen.{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Express-test-url-site'}
+{ts}The URL for PayPal's TEST Payment server. Use the default value (unless otherwise advised by PayPal):{/ts}<br />https://www.sandbox.paypal.com/
+{/htxt}
+{htxt id='PayPal_Express-test-url-api'}
+{ts}The URL for PayPal's TEST API gateway server. Use the default value (unless otherwise advised by PayPal):{/ts}<br />https://api-3t.sandbox.paypal.com/
+{/htxt}
+{htxt id='PayPal_Express-test-url-button'}
+{ts}The URL for displaying PayPal's 'Pay with PayPal' payment button image. Use the default value unless otherwise advised by PayPal.{/ts}
+{/htxt}
+
+{htxt id='PayPal_Standard-live-user-name'}
+<strong>{ts}LIVE Merchant Account Email Address:{/ts}</strong>
+<br />{ts}Enter the Merchant Account Email Address linked to your LIVE PayPal Merchant Account.{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Standard-live-url-site'}
+{ts}The URL for PayPal's LIVE Payment server. Use the default value unless otherwise indicated by PayPal.{/ts}
+{/htxt}
+{htxt id='PayPal_Standard-live-url-recur'}
+{ts}The URL for PayPal Standard recurring payments. Use the default value unless otherwise indicated by PayPal.{/ts}
+{/htxt}
+{htxt id='PayPal_Standard-test-user-name'}
+<strong>{ts}TEST Merchant Account Email Address:{/ts}</strong>
+<br />{ts}Enter the Merchant Account Email Address linked to your PayPal Sandbox merchant account (NOT your Developer Central login - unless it's the same).{/ts}</p>
+{/htxt}
+{htxt id='PayPal_Standard-test-url-site'}
+{ts}The URL for PayPal's TEST Payment server. Use the default value unless otherwise indicated by PayPal.{/ts}
+{/htxt}
+{htxt id='PayPal_Standard-test-url-recur'}
+{ts}The URL for PayPal Standard recurring payments. Use the default value unless otherwise indicated by PayPal.{/ts}
+{/htxt}
+
+{htxt id='PayJunction-test-user-name'}
+<strong>{ts}User Name (TEST account):{/ts}</strong>
+<p>{ts}Enter <strong>pj-ql-01</strong>. This is the User Name associated with the shared PayJunction test account.{/ts}</p>
+{/htxt}
+{htxt id='PayJunction-test-password'}
+<strong>{ts}Password (TEST account):{/ts}</strong>
+<p>{ts}Enter <strong>pj-ql-01p</strong>. This is the Password associated with the shared PayJunction test account.{/ts}</p>
+{/htxt}
+{htxt id='PayJunction-test-url-site'}
+{ts}The URL for PayJunction's Payment server. This is the same for TEST and LIVE transactions. Use the default value unless otherwise advised by PayPal.{/ts}
+{/htxt}
+{htxt id='PayJunction-test-url-recur'}
+<p>{ts}The Recurring Payments URL is not currently used.{/ts}</p>
+{/htxt}
+
+{htxt id='PayJunction-live-user-name'}
+<strong>{ts}User Name (LIVE account):{/ts}</strong>
+<p>{ts}Enter the User Name associated with your LIVE merchant account.{/ts}</p>
+{/htxt}
+{htxt id='PayJunction-live-password'}
+<strong>{ts}Password (LIVE account):{/ts}</strong>
+<p>{ts}Enter the Password associated with your LIVE merchant account.{/ts}</p>
+{/htxt}
+{htxt id='PayJunction-live-url-site'}
+{ts}The URL for PayJunction's Payment server. This is the same for TEST and LIVE transactions. Use the default value unless otherwise advised by PayPal.{/ts}
+{/htxt}
+{htxt id='PayJunction-live-url-recur'}
+<p>{ts}The Recurring Payments URL is not currently used.{/ts}</p>
+{/htxt}
+
+{htxt id='Google_Checkout-live-user-name'}
+<strong>{ts}LIVE Account Merchant ID:{/ts}</strong>
+<p>{ts}Enter the Merchant ID from your Live account.{/ts}</p>
+<p><strong>{ts}How do I Find my Merchant-ID?{/ts}</strong></p>
+<p>{ts}After signing in to your account, click on the Settings tab. Then click on the Integration link on the left side of the page. Your 10- or 15-digit Merchant ID and your Merchant Key will both be listed under the Account information header.{/ts}</p>
+{/htxt}
+{htxt id='Google_Checkout-live-password'}
+<strong>{ts}LIVE Account Merchant Key:{/ts}</strong>
+<p>{ts}Enter the Merchant Key from your Live account.{/ts}</p>
+<p><strong>{ts}How do I Find my Merchant Key?{/ts}</strong></p>
+<p>{ts}After signing in to your account, click on the Settings tab. Then click on the Integration link on the left side of the page. Your 10- or 15-digit Merchant ID and your Merchant Key will both be listed under the Account information header.{/ts}</p>
+{/htxt}
+{htxt id='Google_Checkout-test-user-name'}
+<strong>{ts}TEST/Sandbox Account Merchant ID:{/ts}</strong>
+<p>{ts}Enter the Merchant ID from your Sandbox account.{/ts}</p>
+<p><strong>{ts}How do I Find my Merchant-ID?{/ts}</strong></p>
+<p>{ts}After signing in to your account, click on the Settings tab. Then click on the Integration link on the left side of the page. Your 10- or 15-digit Merchant ID and your Merchant Key will both be listed under the Account information header.{/ts}</p>
+{/htxt}
+{htxt id='Google_Checkout-test-password'}
+<strong>{ts}TEST/Sandbox Account Merchant Key:{/ts}</strong>
+<p>{ts}Enter the Merchant Key from your Sandbox account.{/ts}</p>
+<p><strong>{ts}How do I Find my Merchant Key?{/ts}</strong></p>
+<p>{ts}After signing in to your account, click on the Settings tab. Then click on the Integration link on the left side of the page. Your 10- or 15-digit Merchant ID and your Merchant Key will both be listed under the Account information header.{/ts}</p>
+{/htxt}
+{htxt id='Google_Checkout-test-url-site'}
+{ts}The URL for Google Checkout's TEST Payment server. Use the default value unless otherwise indicated by Google.{/ts}
+{/htxt}
+{htxt id='Google_Checkout-live-url-site'}
+{ts}The URL for Google Checkout's LIVE Payment server. Use the default value unless otherwise indicated by Google.{/ts}
+{/htxt}
+{htxt id='Google_Checkout-test-url-button'}
+<strong>{ts}Google Checkout Button:{/ts}</strong>
+<p>{ts 1=http://sandbox.google.com/checkout/buttons/checkout.gif}The base URL for the <strong>TEST - Image</strong> is: %1{/ts}</p>
+<p>{ts}To display an image, you must add several parameters to this URL as name=value pairs.{/ts}</p>
+<table>
+<tr><th>{ts}Parameters{/ts}</th><th>{ts}Values{/ts}</th><th>{ts}Description{/ts}</th></tr>
+<tr>
+	<td>w</td>
+	<td>180/168/160 ({ts}large/medium/small{/ts})</td>
+	<td>{ts}width of the button in pixels{/ts}</td>
+</tr>
+<tr>
+	<td>h</td>
+	<td>46/44/43 ({ts}large/medium/small{/ts})</td>
+	<td>{ts}height of the button in pixels{/ts}</td>
+</tr>
+<tr>
+	<td>style</td>
+	<td>white/trans..</td>
+	<td>{ts}background color for the button{/ts}</td>
+</tr>
+<tr>
+	<td>variant</td>
+	<td>text/disabled</td>
+	<td>{ts}whether the button is clickable or disabled{/ts}</td>
+</tr>
+<tr>
+	<td>loc</td>
+	<td>en_US</td>
+	<td>{ts}a locale associated with the transaction (optional){/ts}</td>
+</tr>
+<tr>
+	<td>merchant_id</td>
+	<td>{ts 1=1234567890}(e.g %1){/ts}</td>
+	<td>{ts}Merchant ID{/ts}</td>
+</tr>
+</table>
+
+<p><strong>{ts}Example of a large Google Checkout button on a white background (For TEST Account):{/ts}</strong></p>
+<p>http://sandbox.google.com/checkout/buttons/checkout.gif?merchant_id=1234567890&amp;w=180&amp;h=46&amp;style=white&amp;variant=text&amp;loc=en_US</p>
+{/htxt}
+
+{htxt id='Google_Checkout-live-url-button'}
+<strong>{ts}Google Checkout Button:{/ts}</strong>
+<p>{ts 1=http://checkout.google.com/buttons/checkout.gif}The base URL for the <strong>LIVE - Image</strong> is: %1{/ts}</p>
+<p>{ts}To display an image, you must add several parameters to this URL as name=value pairs.{/ts}</p>
+<table>
+<tr><th>{ts}Parameters{/ts}</th><th>{ts}Values{/ts}</th><th>{ts}Description{/ts}</th></tr>
+<tr>
+	<td>w</td>
+	<td>180/168/160 ({ts}large/medium/small{/ts})</td>
+	<td>{ts}width of the button in pixels{/ts}</td>
+</tr>
+<tr>
+	<td>h</td>
+	<td>46/44/43 ({ts}large/medium/small{/ts})</td>
+	<td>{ts}height of the button in pixels{/ts}</td>
+</tr>
+<tr>
+	<td>style</td>
+	<td>white/trans..</td>
+	<td>{ts}background color for the button{/ts}</td>
+</tr>
+<tr>
+	<td>variant</td>
+	<td>text/disabled</td>
+	<td>{ts}whether the button is clickable or disabled{/ts}</td>
+</tr>
+<tr>
+	<td>loc</td>
+	<td>en_US</td>
+	<td>{ts}a locale associated with the transaction (optional){/ts}</td>
+</tr>
+<tr>
+	<td>merchant_id</td>
+	<td>{ts 1=1234567890}(e.g %1){/ts}</td>
+	<td>{ts}Merchant ID{/ts}</td>
+</tr>
+</table>
+<p><strong>{ts}Example of a large Google Checkout button on a white background (For LIVE Account):{/ts}</strong></p>
+<p>http://checkout.google.com/buttons/checkout.gif?merchant_id=1234567890&amp;w=180&amp;h=46&amp;style=white&amp;variant=text&amp;loc=en_US</p>
+{/htxt}
+
+{htxt id='Moneris-live-user-name'}
+<p>{ts}Moneris doesn't currently use the Username field. Enter 'ignoreme' as a placeholder since the field can't be left blank.{/ts}</p>
+{/htxt}
+{htxt id='Moneris-live-password'}
+<strong>{ts}API Token (TEST account){/ts}</strong>
+<p>{ts}Enter the API Token from your live merchant account.{/ts}</p>
+{/htxt}
+{htxt id='Moneris-live-signature'}
+<strong>{ts}Store ID (LIVE account){/ts}</strong>
+<p>{ts}Enter your live merchant account Store ID.{/ts}</p>
+{/htxt}
+{htxt id='Moneris-live-url-site'}
+{ts}The URL for the Moneris LIVE Payment server. Use the default value unless otherwise advised by the processor.{/ts}
+{/htxt}
+{htxt id='Moneris-live-url-recur'}
+<p>{ts}The Recurring Payments URL is not currently used for Moneris.{/ts}</p>
+{/htxt}
+{htxt id='Moneris-test-user-name'}
+<p>{ts}Moneris doesn't currently use the Username field. Enter 'ignoreme' as a placeholder since the field can't be left blank.{/ts}</p>
+{/htxt}
+{htxt id='Moneris-test-password'}
+<strong>{ts}API Token (TEST account){/ts}</strong>
+<p>{ts 1='yesguy'}All Moneris test transactions are submitted to a shared test merchant account. Enter <strong>%1</strong> here, which is the API Token for this test account.{/ts}</p>
+{/htxt}
+{htxt id='Moneris-test-signature'}
+<strong>{ts}Store ID (TEST account){/ts}</strong>
+<p>{ts 1='store3' 2='store1' 3='store2'}All Moneris test transactions are submitted to a shared merchant account. You can use <strong>%1</strong> as your test store ID. '%2' and '%3' also work, but only '%1' accepts recurring payments.{/ts}</p>
+{/htxt}
+{htxt id='Moneris-test-url-site'}
+{ts}The URL for the Moneris TEST Payment server. Use the default value unless otherwise advised by the processor.{/ts}
+{/htxt}
+{htxt id='Moneris-test-url-recur'}
+<p>{ts}The Recurring Payments URL is not currently used for Moneris.{/ts}</p>
+{/htxt}
+
+
+{htxt id='Dummy-live-user-name'}
+<strong>{ts}Dummy Processor{/ts}</strong>
+<br />{ts}Set up a 'Dummy' Processor if you want to test Online Contribution pages or Event Registration pages prior to selecting and configuring a real payment processor. You can enter any values for User Name and Site URL.{/ts}</p>
+{/htxt}
+{htxt id='Dummy-live-url-site'}
+<strong>{ts}Dummy Processor{/ts}</strong>
+<br />{ts}Set up a 'Dummy' Processor if you want to test Online Contribution pages or Event Registration pages prior to selecting and configuring a real payment processor. You can enter any values for User Name and Site URL.{/ts}</p>
+{/htxt}
+{htxt id='Dummy-test-user-name'}
+<strong>{ts}Dummy Processor{/ts}</strong>
+<br />{ts}Set up a 'Dummy' Processor if you want to test Online Contribution pages or Event Registration pages prior to selecting and configuring a real payment processor. You can enter any values for User Name and Site URL.{/ts}</p>
+{/htxt}
+{htxt id='Dummy-test-url-site'}
+<strong>{ts}Dummy Processor{/ts}</strong>
+<br />{ts}Set up a 'Dummy' Processor if you want to test Online Contribution pages or Event Registration pages prior to selecting and configuring a real payment processor. You can enter any values for User Name and Site URL.{/ts}</p>
+{/htxt}
+
+{htxt id='eWAY-test-user-name'}
+<strong>{ts}eWAY CustomerID (TEST account):{/ts}</strong>
+<p>{ts 1='<strong>eWAYCustomerID</strong>'}This is the TEST %1 used solely for testing.{/ts}
+<br />{ts 1='<strong>87654321</strong>'}Use %1 unless otherwise advised by eWAY.{/ts}
+<br />{ts 1='<strong>4444333322221111</strong>'}The test Credit Card number is %1 - this is the only credit card number that will work on the test gateway.{/ts}
+<br />{ts 1='00' 2='08'}The test Total Amount should end in <strong>%1</strong> or <strong>%2</strong> to get a successful response (e.g. $10.%1 or $10.%2) - all other amounts will return a failed response.{/ts}</p>
+{/htxt}
+{htxt id='eWAY-test-url-site'}
+{ts}The <strong>URL</strong> for eWAY's TEST Gateway.{/ts}
+<br />{ts 1='<strong>https://www.eway.com.au/gateway_cvn/xmltest/testpage.asp</strong>'}Use %1 unless otherwise advised by eWAY.{/ts}
+{/htxt}
+
+{htxt id='eWAY-live-user-name'}
+<strong>{ts}eWAY CustomerID (LIVE account):{/ts}</strong>
+<p>{ts}This is the LIVE <strong>eWAYCustomerID</strong> associated with your eWAY account.{/ts}</p>
+{/htxt}
+{htxt id='eWAY-live-url-site'}
+{ts}The <strong>URL</strong> for eWAY's LIVE Gateway.{/ts}
+<br />{ts 1='<strong>https://www.eway.com.au/gateway_cvn/xmlpayment.asp</strong>'}Use %1 unless otherwise advised by eWAY.{/ts}
+{/htxt}
+
+{htxt id='Payment_Express-test-user-name'} {ts}Payment Express UserID (Development account):{/ts} 
+{ts}This is the development user name provided to you by DPS/Payment Express.{/ts}
+{ts 1='4111111111111111' 2='76'}The test Credit Card number is %1 - this is the only credit card number that will work on the test gateway. The test Total Amount can be any amount except one that ends in a value of .%2 (e.g. $10.%2) - all amounts ending in .%2 will return a failed response.{/ts}
+{/htxt}
+
+{htxt id='Payment_Express-test-url-site'} {ts}This is the URL which is used to access the DPS/Payment Express service.  Generally, you will use https://www.paymentexpress.com/pxpay/pxpay.aspx.{/ts} {/htxt}
+
+{htxt id='Payment_Express-live-user-name'} {ts}Payment Express UserID (LIVE account):{/ts} 
+{ts}This is the live user name provided to you by DPS/Payment Express.{/ts}{/htxt}
+
+{htxt id='Payment_Express-live-url-site'} {ts}This is the URL for accessing the DPS/Payment Express live payment site.  Generally, you will use https://www.paymentexpress.com/pxpay/pxpay.aspx.{/ts} {/htxt} 
+
+{htxt id='Elavon-live-user-name'}
+<strong>{ts}Elavon Merchant ID (LIVE account):{/ts}</strong>
+<p>{ts}This is the LIVE <strong>Elavon Merchant ID</strong> associated with your Elavon account.{/ts}</p>
+{/htxt}
+{htxt id='Elavon-live-password'}
+<strong>{ts}Elavon User ID (LIVE account):{/ts}</strong>
+<p>{ts}This is the LIVE <strong>Elavon User ID</strong> associated with your Elavon account.{/ts}</p>
+{/htxt}
+{htxt id='Elavon-live-signature'}
+<strong>{ts}Elavon SSL PIN (LIVE account):{/ts}</strong>
+<p>{ts}This is the LIVE <strong>Elavon SSL PIN</strong> associated with your Elavon account.{/ts}</p>
+{/htxt}
+{htxt id='Elavon-live-url-site'}
+<strong>{ts}The URL for Elavon LIVE Gateway(LIVE account):{/ts}</strong>
+<p>{ts}Use 'https://www.myvirtualmerchant.com/VirtualMerchant/processxml.do' unless otherwise advised by Elavon..{/ts}</p>
+{/htxt}
+
+{htxt id='Elavon-test-user-name'}
+<strong>{ts}Elavon Merchant ID (TEST account):{/ts}</strong>
+<p>{ts}This is the TEST <strong>Elavon Merchant ID</strong> associated with your Elavon account.{/ts}</p>
+{/htxt}
+{htxt id='Elavon-test-password'}
+<strong>{ts}Elavon User ID (TEST account):{/ts}</strong>
+<p>{ts}This is the TEST <strong>Elavon User ID</strong> associated with your Elavon account.{/ts}</p>
+{/htxt}
+{htxt id='Elavon-test-signature'}
+<strong>{ts}Elavon SSL PIN (TEST account):{/ts}</strong>
+<p>{ts}This is the TEST <strong>Elavon SSL PIN</strong> associated with your Elavon account.{/ts}</p>
+{/htxt}
+{htxt id='Elavon-test-url-site'}
+<strong>{ts}The URL for Elavon TEST Gateway(TEST account):{/ts}</strong>
+<p>{ts}Use 'https://www.myvirtualmerchant.com/VirtualMerchant/processxml.do' unless otherwise advised by Elavon..{/ts}</p>
+{/htxt}
+
+{htxt id='FirstData-live-user-name'}
+<strong>{ts}First Data Store Name (LIVE account):{/ts}</strong>
+<p>{ts}This is the LIVE <strong>First Data Store Name</strong> associated with your First Data account (This is Certificate file number without the extension).{/ts}</p>
+{/htxt}
+{htxt id='FirstData-live-password'}
+<strong>{ts}First Data Certificate Path (LIVE account):{/ts}</strong>
+<p>{ts}This is the LIVE <strong>Certificate Path</strong> associated with your First Data account.{/ts}</p>
+{/htxt}
+{htxt id='FirstData-live-url-site'}
+<strong>{ts}The URL for First Data Live Gateway(LIVE account):{/ts}</strong>
+<p>{ts}The URL for First Data's Live Payment server. Use the default value (unless otherwise advised by First Data):{/ts}<br />https://secure.linkpt.net</p>
+{/htxt}
+{htxt id='FirstData-test-user-name'}
+<strong>{ts}First Data Store Name (TEST account):{/ts}</strong>
+<p>{ts}This is the TEST <strong>First Data Store Name</strong> associated with your First Data account (This is Certificate file number without the extension).{/ts}</p>
+{/htxt}
+{htxt id='FirstData-test-password'}
+<strong>{ts}First Data Certificate Path (TEST account):{/ts}</strong>
+<p>{ts}This is the TEST <strong>Certificate Path</strong> associated with your First Data account.{/ts}</p>
+{/htxt}
+{htxt id='FirstData-test-url-site'}
+<strong>{ts}The URL for First Data TEST Gateway (TEST account):{/ts}</strong>
+<p>{ts}The URL for First Data's TEST Payment server. Use the default value (unless otherwise advised by First Data):{/ts}<br />https://staging.linkpt.net</p>
+{/htxt}

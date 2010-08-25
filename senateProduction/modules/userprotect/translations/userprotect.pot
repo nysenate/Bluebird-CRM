@@ -1,0 +1,342 @@
+# $Id: userprotect.pot,v 1.1.2.1 2009/11/06 02:21:24 thehunmonkgroup Exp $
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  userprotect.module,v 1.39.2.3 2009/11/04 13:36:54 thehunmonkgroup
+#  userprotect.info,v 1.5 2007/11/26 20:41:12 thehunmonkgroup
+#  userprotect.install,v 1.12.2.1 2009/11/04 13:36:54 thehunmonkgroup
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2009-11-05 20:18-0600\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: userprotect.module:14
+msgid "These settings override any !protected_roles for the user in question. For more information on how to configure userprotect settings, see the !help."
+msgstr ""
+
+#: userprotect.module:14;17;20;23
+msgid "help section"
+msgstr ""
+
+#: userprotect.module:14
+msgid "role-based protections"
+msgstr ""
+
+#: userprotect.module:17
+msgid "These settings add protections to any user who is in the specified role. They are overridden by any !protected_users for the user in question. For more information on how to configure userprotect settings, see the !help."
+msgstr ""
+
+#: userprotect.module:17
+msgid "per-user protections"
+msgstr ""
+
+#: userprotect.module:20
+msgid "These settings add bypasses to any user who has the 'administer users' permission. They override the !protection_defaults for the user in question. For more information on how to configure userprotect settings, see the !help."
+msgstr ""
+
+#: userprotect.module:20
+msgid "defaults"
+msgstr ""
+
+#: userprotect.module:23
+msgid "Set global default protection values here. For more information on how to configure userprotect settings, see the !help."
+msgstr ""
+
+#: userprotect.module:27
+msgid "Administer"
+msgstr ""
+
+#: userprotect.module:28
+msgid "User management"
+msgstr ""
+
+#: userprotect.module:29;327 userprotect.info:0
+msgid "User Protect"
+msgstr ""
+
+#: userprotect.module:30;336
+msgid "Protected users"
+msgstr ""
+
+#: userprotect.module:31;344
+msgid "Protected roles"
+msgstr ""
+
+#: userprotect.module:32;354
+msgid "Administrator bypass"
+msgstr ""
+
+#: userprotect.module:33;364
+msgid "Protection defaults"
+msgstr ""
+
+#: userprotect.module:34
+msgid "Permissions"
+msgstr ""
+
+#: userprotect.module:37
+msgid "<p>This module provides various editing protection for users.\nThe protections can be specific to a user, or applied to all users in a role.\nThe following protections are supported:</p>\n<ul>\n  <li>username</li>\n  <li>e-mail address</li>\n  <li>password</li>\n  <li>status changes</li>\n  <li>roles</li>\n  <li>deletion</li>\n  <li>all edits (any accessed via user/X/edit)</li>\n</ul>\n\n<p>When a protection is enabled for a specified user (or the protection is\nenabled because the user belongs to a role that has the protection), it\nprevents the editing operation in question that anyone might try to perform\non the user--unless an administrator who is permitted to bypass the protection\nis editing the specified user.  The module will protect fields by disabling\nthem at user/X/edit.<p>\n\n<p>User administrators my be configured to bypass specified protections, on either\na global or per-administrator basis.</p>\n\n<p>These protections are valid both when trying to edit the user directly from their\nuser/X/edit page, or using the !admin_user.</p>\n\n<p>The module also provides protection at the paths user/X/edit and user/X/delete,\nshould anyone try to visit those paths directly.</p>\n\n<p><em>Note: this module is compatible with the !roleassign module.</em></p>\n\n<h4>SETTINGS:</h4>\n\n<p>At !userprotect_settings,\nyou'll find the settings for the module. When the module is initially enabled,\nthe default settings are such:</p>\n\n<ul>\n  <li>User administrators bypass all protections.</li>\n  <li>The root user specifically bypasses all protections.</li>\n  <li>The anonymous user is specifically protected from all edits.</li>\n  <li>The root user is specifically protected from all edits.</li>\n  <li>All role protections are disabled.</li>\n  <li>The 'change own e-mail', 'change own password' and 'change own openid' permissions\n  are enabled for authenticated users in the userprotect section at\n  !access_control.\n</ul>\n\n<p>This effectively amounts to no protections.  It is suggested that you turn off\nas many default administrator bypass settings as possible, and set bypass settings\nfor specific user administrators--this allows you to take advantage of the status,\nroles, deletion, openid, and edit protections in a meaningful way.  Because of the per-user\nbypass/protection settings for the anonymous and root user, this will also\nbegin protecting those users, without compromising the root user's access to the\nentire site.\n</p>\n\n<p>Important note: In order to protect a user from deletion (by visiting\nuser/X/delete directly) and/or OpenID edits (by visiting user/X/openid\ndirectly), you must enable the 'delete' and/or 'openid' protection specifically.\nEnabling 'all account edits' does not enable these protections!</p>\n\n<p>Also note that this module only provides protection against actions via the website\ninterface--operations that a module takes directly are not protected! This module\nshould play well with other contributed modules, but there is no guarantee that all\nprotections will remain intact if you install modules outside of the drupal core\ninstallation.</p>\n\n<h4>ADDING PROTECTIONS FOR A SINGLE USER:</h4>\n\n<p>This is done at !protected_users.\nAny time a user is added for protection, they will initially receive the default\nprotections enabled at !protection_defaults.</p>\n\n\n<h4>ADDING PROTECTIONS FOR ROLES:</h4>\n\n<p>This is done at !protected_roles.\n<em>Be cautious</em> about adding protections by role, or you can lock out users\nfrom things unintentionally!</p>\n\n<p>In particular, note the if you enable role protections for a specific role, and\nyou have no bypasses enabled, you've effectively locked out any role editing for\nthat role by anybody, unless you come back to the settings page and disable the role\nprotection!</p>\n\n<h4>ADDING ADMINISTRATOR BYPASS RULES:</h4>\n\n<p>One of the more powerful features of the module is administrator bypass\nAny user that has been granted the 'administer users' permission can\nbe configured to bypass any protection, either via the default administrator\nbypass settings at !protection_defaults,\nor via a per-administrator setting at !administrator_bypass.\nIf a bypass is enabled for a user administrator, they will be given editing rights\non that protection regardless if it is enabled for a single user or an entire role.</p>\n\n<p>Note that the per-administrator bypass settings override the default bypass\nsettings.</p>\n\n<h4>DEFAULT PROTECTION SETTINGS:</h4>\n\n<p>Set the default protections for newly protected users at !protection_defaults.\nIn addition, you can enable the auto-protect feature, which will automatically\nadd the default protections to any newly created user accounts, and set default\nbypass options for all user administrators.</p>\n\n\n<h4>HOW THE MODULE DETERMINES A PROTECTION:</h4>\n\n<p>In order to properly use User Protect, it's important to understand how the\nmodule determines if a specified field is to be protected.  Here is the basic\nlogic:</p>\n<ol>\n  <li>If the current user is a user administrator, check if they have\n  per-administrator bypass settings.  If so, then check to see if they are allowed\n  to bypass the protection.  If so, then stop the checks and allow editing\n  of the field.</li>\n  <li>If not, then if the current user is a user administrator, check if the\n  default administrator bypass is enabled for the protection in question. If\n  so, then stop the checks and allow editing of the field.\n  <li>If not, check if the user is editing their own account.  If so, determine\n  the protections for e-mail and password by examining the userprotect permissions\n  for 'change own e-mail', 'change own password' and 'change own openid', then\n  continue with the rest of the checks below.\n  <li>If not, check if the protection is set for the individual user being edited.\n  If so, then stop the checks here, and prevent editing of the field (this effectively\n  means that individual protections override role protections).</li>\n  <li>If not, then examine all the roles for the user being edited.  If any of\n  those roles have the protection enabled, then prevent editing of the field.</li>\n  <li>If not, then allow the field to be edited.</li>\n</ol>\n</p>"
+msgstr ""
+
+#: userprotect.module:332
+msgid "Protect inidividual users and/or roles from editing operations."
+msgstr ""
+
+#: userprotect.module:415
+msgid "%user is currently being protected from any edits."
+msgstr ""
+
+#: userprotect.module:443
+msgid "%user is currently being protected from deletion."
+msgstr ""
+
+#: userprotect.module:527
+msgid "User"
+msgstr ""
+
+#: userprotect.module:533
+msgid "Operations"
+msgstr ""
+
+#: userprotect.module:539
+msgid "delete"
+msgstr ""
+
+#: userprotect.module:593
+msgid "Add user"
+msgstr ""
+
+#: userprotect.module:603
+msgid "Save"
+msgstr ""
+
+#: userprotect.module:652
+msgid "%user does not have user administration privileges."
+msgstr ""
+
+#: userprotect.module:661
+msgid "%user is already on this list."
+msgstr ""
+
+#: userprotect.module:667
+msgid "The username is invalid."
+msgstr ""
+
+#: userprotect.module:684
+msgid "%user is now protected."
+msgstr ""
+
+#: userprotect.module:687
+msgid "%user now has bypass capabilities matching the default protections for newly protected users."
+msgstr ""
+
+#: userprotect.module:711
+msgid "Protection settings updated."
+msgstr ""
+
+#: userprotect.module:714
+msgid "Bypass settings updated."
+msgstr ""
+
+#: userprotect.module:725
+msgid "protections"
+msgstr ""
+
+#: userprotect.module:729
+msgid "administrator bypass"
+msgstr ""
+
+#: userprotect.module:736
+msgid "Are you sure you want to delete the individual !type for %user?"
+msgstr ""
+
+#: userprotect.module:749
+msgid "%user is no longer protected."
+msgstr ""
+
+#: userprotect.module:752
+msgid "%user is no longer enabled for bypass."
+msgstr ""
+
+#: userprotect.module:771
+msgid "Role"
+msgstr ""
+
+#: userprotect.module:823
+msgid "User protection defaults"
+msgstr ""
+
+#: userprotect.module:824
+msgid "The selected protections will be assigned to users when they are first added for protection."
+msgstr ""
+
+#: userprotect.module:830
+msgid "Auto-protect new users"
+msgstr ""
+
+#: userprotect.module:831
+msgid "If selected, all newly created users will automatically be protected and assigned the default protections above."
+msgstr ""
+
+#: userprotect.module:836
+msgid "Administrator bypass defaults"
+msgstr ""
+
+#: userprotect.module:837
+msgid "If selected, all users with the 'administer users' permission will be allowed to bypass the protection<br \\><em>Note: this default setting is overridden by the !per_user_bypass.</em>."
+msgstr ""
+
+#: userprotect.module:837
+msgid "per-user administrator bypass settings"
+msgstr ""
+
+#: userprotect.module:865
+msgid "<h3>Protections by role</h3>"
+msgstr ""
+
+#: userprotect.module:867
+msgid "<div class=\"description\">Setting a protection for a role will enable that protection for all users in the role.</div>"
+msgstr ""
+
+#: userprotect.module:896
+msgid "%user is protected from status changes, and was not updated."
+msgstr ""
+
+#: userprotect.module:908
+msgid "%user is protected from deletion, and was not deleted."
+msgstr ""
+
+#: userprotect.module:922
+msgid "%user is protected from role changes, and was not updated."
+msgstr ""
+
+#: userprotect.module:975
+msgid "username"
+msgstr ""
+
+#: userprotect.module:976
+msgid "e-mail"
+msgstr ""
+
+#: userprotect.module:977
+msgid "password"
+msgstr ""
+
+#: userprotect.module:978
+msgid "status"
+msgstr ""
+
+#: userprotect.module:979
+msgid "roles"
+msgstr ""
+
+#: userprotect.module:980
+msgid "openid"
+msgstr ""
+
+#: userprotect.module:981
+msgid "deletion"
+msgstr ""
+
+#: userprotect.module:982
+msgid "all account edits"
+msgstr ""
+
+#: userprotect.module:1023
+msgid "%user has been protected from the following editing operations: !operations"
+msgstr ""
+
+#: userprotect.module:459
+msgid "change own e-mail"
+msgstr ""
+
+#: userprotect.module:460
+msgid "change own password"
+msgstr ""
+
+#: userprotect.module:461
+msgid "change own openid"
+msgstr ""
+
+#: userprotect.module:462
+msgid "administer userprotect"
+msgstr ""
+
+#: userprotect.module:374
+msgid "Delete protected user"
+msgstr ""
+
+#: userprotect.install:26
+msgid "User Protect module installed successfully."
+msgstr ""
+
+#: userprotect.install:29
+msgid "Errors occurred while inserting the default data for the User Protect module."
+msgstr ""
+
+#: userprotect.install:33
+msgid "Table installation for the User Protect module was unsuccessful. The following queries failed: !queries"
+msgstr ""
+
+#: userprotect.install:39
+msgid "Stores information about administer protections for users."
+msgstr ""
+
+#: userprotect.install:42
+msgid "User ID."
+msgstr ""
+
+#: userprotect.install:52
+msgid "Name protection."
+msgstr ""
+
+#: userprotect.install:59
+msgid "E-mail protection."
+msgstr ""
+
+#: userprotect.install:66
+msgid "Password protection."
+msgstr ""
+
+#: userprotect.install:73
+msgid "Status protection."
+msgstr ""
+
+#: userprotect.install:80
+msgid "Role protection."
+msgstr ""
+
+#: userprotect.install:87
+msgid "Deletion protection."
+msgstr ""
+
+#: userprotect.install:94
+msgid "All edits protection."
+msgstr ""
+
+#: userprotect.install:101
+msgid "Protection type."
+msgstr ""
+
+#: userprotect.install:108;127
+msgid "OpenID protection."
+msgstr ""
+
+#: userprotect.install:171
+msgid "The User Protect module was uninstalled successfully."
+msgstr ""
+
+#: userprotect.info:0
+msgid "Allows admins to protect users from being edited or deleted, on a per-user basis."
+msgstr ""
+

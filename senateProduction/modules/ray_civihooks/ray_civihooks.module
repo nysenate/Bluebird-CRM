@@ -1,0 +1,8 @@
+<?php 
+
+function ray_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
+    $tasks[100] = array( 'title'  => 'Export for Print Print Production',
+                         'class'  => 'CRM_Contact_Form_Task_ExportPrintProduction',
+                         'result' => true );
+}
+

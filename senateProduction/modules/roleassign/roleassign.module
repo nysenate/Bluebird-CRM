@@ -1,0 +1,355 @@
+<?php
+
+// $Id: roleassign.module,v 1.19.2.3 2009/04/21 19:22:43 tobiassjosten Exp $
+
+/**
+ * @file
+ * Allows site administrators to further delegate the task of managing user's
+ * roles.
+ */
+
+
+/*
+ * PHP4 implementation of the PHP5 function array_intersect_key().
+ * See http://php.net/manual/function.array-intersect-key.php#68179.
+ * Thanks pjb <http://drupal.org/user/77935> for point it out.
+ */
+if (!function_exists('array_intersect_key')) {
+  function array_intersect_key() {
+    $arrs = func_get_args();
+    $result = array_shift($arrs);
+    foreach ($arrs as $array) {
+      foreach ($result as $key => $v) {
+        if (!array_key_exists($key, $array)) {
+          unset($result[$key]);
+        }
+      }
+    }
+    return $result;
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ *
+ * Returns various help texts.
+ */
+function roleassign_help($path = "admin/help#roleassign", $arg) {
+  switch ($path) {
+    case 'admin/user/roleassign':
+      return _roleassign_settings_help();
+    case 'admin/help#roleassign':
+      return _roleassign_help_help();
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * While editing a user's account information, a user with <code>assign
+ * roles</code> permission will be able to select roles for the user from
+ * a set of available roles. Roles available are configured by the site
+ * administrator.
+ */
+function roleassign_perm() {
+  return array('assign roles');
+}
+
+/**
+ * Implementation of hook_menu().
+ *
+ * Adds <code>role assign</code> to <code>administer » user management</code>.
+ */
+function roleassign_menu() {
+  $items = array();
+
+  $items['admin/user/roleassign'] = array
+  (
+    'title' => 'Role assign',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('roleassign_admin'),
+    'description' => "Allows site administrators to further delegate the task of managing user's roles.",
+    'access arguments' => array('administer permissions')
+  );
+
+  return $items;
+}
+
+/**
+ * Returns a system settings form for the administrator to select which roles
+ * will be avaiable to assign for users with the <code>assign roles</code>
+ * permission.
+ */
+function roleassign_admin() {
+  // To admister roleassign, 'administer permissions' permission is required.
+  if (!user_access('administer permissions')) {
+    return;
+  }
+
+  // Get all avaiable roles except for 'anonymous user'
+  // and 'authenticated user'.
+  $roles = user_roles(true);
+  unset($roles[DRUPAL_AUTHENTICATED_RID]);
+
+  // Show checkboxes with roles that can be delegated if any.
+  if ($roles) {
+    $form['roleassign_roles'] = array
+    (
+      '#type' => 'checkboxes',
+      '#title' => t('Roles'),
+      '#options' => $roles,
+      '#default_value' => variable_get('roleassign_roles',  array()),
+      '#description' => t('Select roles that should be available for assignment.')
+    );
+  }
+  else {
+    $form['roleassign_roles'] = array
+    (
+      '#type' => 'markup',
+      '#value' => '<p>No assignable roles avaiable. You have to '. l(t('create roles'), 'admin/user/roles') .' that can be assigned.</p>'
+    );
+  }
+
+  // Return system settings form.
+  return system_settings_form($form);
+}
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * Adds checkboxes for assignable roles to the user edit form.
+ */
+function roleassign_form_alter(&$form, &$form_state, $form_id) {
+  // Do nothing if the user already has 'administer permissions' permission.
+  if (user_access('administer permissions')) {
+    return;
+  }
+
+  // Do nothing if the user hasn't both 'administer users' and
+  // 'assign roles' permissions.
+  if (!user_access('administer users') || !user_access('assign roles')) {
+    return;
+  }
+
+  // Do nothing if right form isn't shown.
+  if ($form_id != 'user_register' && ($form_id != 'user_profile_form' || !isset($form['account']))) {
+    return;
+  }
+
+  // Get all roles that are available.
+  $roles = user_roles(true);
+
+  // Get roles that are available for assignment.
+  $assignable_roles = _roleassign_assignable_roles($roles);
+
+  // Get roles already assigned to the user.
+  // The use of the superfluous $user variable is required by PHP4.
+  $user = user_load(array('uid' => arg(1)));
+  $assigned_roles = $user->roles;
+
+  // A user might already have a role that isn't avaiable for assignment
+  // through this module. Such a role is called "sticky".
+  // Get sticky roles.
+  $sticky_roles = array_diff($assigned_roles, $assignable_roles);
+  $sticky_roles = array_intersect_key($roles, $sticky_roles);
+
+  // Store sticky roles for later use in roleassign_user().
+  _roleassign_sticky_roles($sticky_roles);
+
+  // Make a string of all sticky roles.
+  $sticky_roles[DRUPAL_AUTHENTICATED_RID] = $roles[DRUPAL_AUTHENTICATED_RID];
+  $sticky_roles_str = implode(', ', $sticky_roles);
+
+  // Build the assign roles checkboxes.
+  $roles_field = array
+  (
+    '#type' => 'checkboxes',
+    '#title' => t('Assignable roles'),
+    '#options' => $assignable_roles,
+    '#default_value' => array_keys($assigned_roles),
+    '#description' => t('The user receives the combined permissions of all roles selected here and following roles: %roles.', array('%roles' => $sticky_roles_str)),
+  );
+
+  // The user form is sometimes within an 'account' fieldset.
+  if (isset($form['account'])) {
+    $user_form =& $form['account'];
+  }
+  else {
+    $user_form =& $form;
+  }
+
+  // Add the assign roles checkboxes to the user form, and make sure
+  // that the notify user checkbox comes last.
+  $notify_field = $user_form['notify'];
+  unset($user_form['notify']);
+  $user_form['roleassign_roles'] = $roles_field;
+  $user_form['notify'] = $notify_field;
+}
+
+/**
+ * Implementation of hook_user().
+ *
+ * Replace the validation of the user form field 'roles' by using
+ * another user form field 'roleassign_roles'. Copies the form field
+ * roleassign_roles into form field roles on insert or submit.
+ */
+function roleassign_user($type, &$edit, &$user, $category = NULL) {
+  // If this isn't the account category, or there is no roleassign_roles
+  // field, there isn't much to do.
+  if ($category != 'account' || !isset($edit['roleassign_roles'])) {
+    return;
+  }
+
+  // If someone is trying to update user's roles, it's a malicious
+  // attempt to alter user's roles.
+  if ($type == 'validate' && !user_access('assign roles')) {
+    $message = t('Detected malicious attempt to alter user\'s roles.');
+    watchdog('security', $message, WATCHDOG_WARNING);
+    form_set_error('category', $message);
+  }
+
+  // On submit, copy sticky and assigned roles from 'roleassign_roles'
+  // to 'roles'.
+  if ($type == 'insert' || $type == 'submit') {
+    $edit['roles'] = array_filter(_roleassign_sticky_roles() + $edit['roleassign_roles']);
+  }
+}
+
+/**
+ * Implementation of hook_user_operations().
+ *
+ * Add or remove roles to selected users.
+ * Thanks hunmonk <http://drupal.org/user/22079> for the original code.
+ */
+function roleassign_user_operations() {
+  // Do nothing if add and remove roles operations already is shown or
+  // the user hasn't right to assign roles.
+  if (user_access('administer permissions') || !user_access('assign roles')) {
+    return;
+  }
+
+  // Get roles that are available for assignment.
+  $assignable_roles = _roleassign_assignable_roles(user_roles(true));
+
+  // Build an array of available operations.
+  if (count($assignable_roles)) {
+    foreach ($assignable_roles as $key => $value) {
+      $add_roles['roleassign_add_role-'. $key] = $value;
+      $remove_roles['roleassign_remove_role-'. $key] = $value;
+    }
+    $operations = array
+    (
+      t('Add a role to the selected users') => array('label' => $add_roles),
+      t('Remove a role from the selected users') => array('label' => $remove_roles)
+    );
+  }
+  else {
+    $operations = array();
+  }
+
+  // the global variable $form_values is not available anymore:
+  // the $_POST values are "sanitized" below
+  $operation = $_POST['operation'];
+
+  // The required 'callback' key and optional 'callback arguments' key are
+  // actually only needed when someone has posted. We therefore postpone
+  // the attachement of these until $form_values is set.
+  if ($operation) {
+    // Get operation and role id.
+    $op = explode('-', $operation);
+    $rid = intval($op[1]);
+    $op = $op[0];
+
+    // If not a RoleAssign operation, there is not much to do.
+    if ($op != 'roleassign_add_role' && $op != 'roleassign_remove_role')
+      return;
+
+    // If someone is trying to update user's roles, it's a malicious
+    // attempt to alter user's roles.
+    if (!user_access('assign roles')) {
+      $message = t('Detected malicious attempt to alter user\'s roles.');
+      watchdog('security', $message, WATCHDOG_WARNING);
+      form_set_error('category', $message);
+    }
+
+    // Form the name of the core callback functions for adding and
+    // removing roles by choping off the 'roleassign_' part of the
+    // operation string.
+    $operations[$operation] = array
+    (
+      'callback' => 'user_multiple_role_edit',
+      'callback arguments' => array(substr($op, 11), $rid)
+    );
+  }
+
+  return $operations;
+}
+
+/**
+ * Returns assignable roles.
+ */
+function _roleassign_assignable_roles($roles) {
+  return array_intersect_key($roles, array_filter(variable_get('roleassign_roles',  array())));
+}
+
+/**
+ * Store and retrive sticky roles.
+ */
+function _roleassign_sticky_roles($new_sticky_roles = null) {
+  static $sticky_roles = array();
+  if (isset($new_sticky_roles)) {
+    $sticky_roles = $new_sticky_roles;
+  }
+  return $sticky_roles;
+}
+
+/**
+ * Returns short helptext to be used on the settings page.
+ */
+function _roleassign_settings_help() {
+  return t
+  (
+    '<p>Users with both <code>administer users</code> and <code>assign roles</code> permissions are allowed to assign the roles selected below. For more information, see the !help.</p>',
+    array('!help' => l(t('help page'), 'admin/help/roleassign'))
+  );
+}
+
+/**
+ * Returns full help text.
+ */
+function _roleassign_help_help() {
+  $version = str_replace(array('$Re'.'vision:', ' $'), array('', ''), '$Revision: 1.19.2.3 $');
+  $year = substr('$Date: 2009/04/21 19:22:43 $', 7, 4);
+  drupal_add_css(drupal_get_path('module', 'roleassign') .'/roleassign.css', 'module', 'all', false);
+  return t
+  (
+'<p>RoleAssign specifically allows site administrators to further delegate the task of managing user\'s roles.</p>
+<p>RoleAssign introduces a new permission called <code>assign roles</code>. Users with this permission are able to assign selected roles to still other users. Only users with the <code>administer access control</code> permission may select which roles are available for assignment through this module.</p>
+<p>This module is sponsored by <a href="http://www.webbredaktoren.se/">Webbredaktören</a>.</p>
+<!--break-->
+<h2>Background</h2>
+<p>It is possible for site administrators to delegate the user administration through the <code>administer users</code> permission. But that doesn\'t include the right to assign roles to users. That is necessary if the delegatee should be able to administrate user accounts without intervention from a site administrator.</p>
+<p>To delegate the assignment of roles, site administrators have had until now no other choice than also grant the <code>administer access control</code> permission. But that is not advisable, since it gives right to access all roles, and worse, to grant any rights to any role. That can be abused by the delegatee, who can assign himself all rights and thereby take control over the site.</p>
+<p>This module solves this dilemma by introducing the <code>assign roles</code> permission. While editing a user\'s account information, a user with this permission will be able to select roles for the user from a set of available roles. Roles available are configured by users with the <code>administer access control</code> permission.</p>
+<h2>Install</h2>
+<ol>
+  <li>Copy the entire <kbd>roleassign</kbd> directory, containing the <kbd>roleassign.module</kbd> and other files, to your Drupal modules directory.</li>
+  <li>Log in as site administrator.</li>
+  <li>Go to the administration page for modules and enable the module.</li>
+</ol>
+<h2>Configuration</h2>
+<ol>
+  <li>Log in as site administrator.</li>
+  <li>Go to the administration page for access control and grant <code>assign roles</code> permission to those roles that should be able to assign roles to other users. Notice that besides the <code>assign roles</code> permission, these roles also must have the <code>administer users</code> permission.</li>
+  <li>Go to the administration page for role assign and select those roles that should be available for assignment by users with <code>assign roles</code> permission.</li>
+  <li>For each user that should be able to assign roles, go to the user\'s account and select a role with both the <code>assign roles</code> and the <code>administer users</code> permissions.</li>
+</ol>
+<h2>Usage</h2>
+<ol>
+  <li>Log in as a user with both the <code>assign roles</code> and the <code>administer users</code> permissions.</li>
+  <li>To change the roles of a user, go to the user\'s account and review the assignable roles and change them as necessary.</li>
+</ol>
+',
+    array('!version' => $version, '!year' => $year)
+  );
+}

@@ -1,0 +1,72 @@
+Jun 11 13:24:42  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+Jun 11 13:24:42  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(215) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 215
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+Jun 11 13:24:51  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+Jun 11 13:24:51  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(215) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 215
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+Jun 28 08:03:09  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+Jun 28 08:03:09  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(215) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 215
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+Jun 28 08:03:12  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+Jun 28 08:03:12  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(215) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 215
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+

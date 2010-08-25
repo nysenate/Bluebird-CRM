@@ -1,0 +1,10 @@
+<?php
+
+/* $Id: roleassign.install,v 1.1.6.2 2008/12/01 16:13:33 tobiassjosten Exp $ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function roleassign_uninstall() {
+	variable_del('roleassign_roles');
+}

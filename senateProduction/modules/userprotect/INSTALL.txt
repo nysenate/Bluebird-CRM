@@ -1,0 +1,23 @@
+$Id: INSTALL.txt,v 1.3.4.1 2009/10/29 22:12:32 thehunmonkgroup Exp $
+
+****************************************************
+User Protect Module -- Installation Instructions
+
+written by Chad Phillips: thehunmonkgroup at yahoo dot com
+****************************************************
+
+1. Place the entire folder in the /modules directory in a mulitsite folder, or
+   in the /sites/all/modules directory.
+
+2. Enable the module at administer -> site building -> modules.
+
+3. Visit administer -> user management -> access control, and grant users
+   permissions to administer the module.
+
+4. Visit administer -> user management -> userprotect to set up the module.
+   See the help located at administer -> help -> userprotect for details
+   on how to properly configure the module for your needs.
+
+5. Protection by roles takes effect immediately for all users that belong to
+   the role.  Individual user protections override the role protections for
+   the given user.

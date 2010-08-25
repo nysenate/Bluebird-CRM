@@ -1,0 +1,2050 @@
+'03 Budget Override - Con~Y
+'03 Budget Override - Pro~Y
+10 Month Employment for Teachers - con~Y
+10 Month Employment for Teachers - pro~N
+10th through 12th grade-no~Y
+10th through 12th grade-yes~Y
+1988 Merge/Purge additions~Y
+1989 Merge/Purge additions~Y
+1994 Correspondence~Y
+1994 Telephone call~Y
+1995 Correspondence~Y
+1995 Form letter~Y
+1995 Telephone Call~Y
+1996 Correspondence~Y
+1996 Form letter~Y
+1996 Telephone call~Y
+1997 Correspondence~Y
+1997 Form letter (incoming form letters and postcar~N
+1997 Telephone call~Y
+1998 Correspondence~Y
+1998 Form letters (incoming form letters & postcard~N
+1998 Telephone calls~Y
+1998 Tornado Recovery Program~N
+1999 Correspondence~Y
+1999 Form letters (incoming form letters & postcard~N
+1999 Telephone calls~Y
+2000 Correspondence/e-mail~Y
+2000 /form letters(incoming letters, postcards, pet~N
+2000 Telephone Calls~Y
+2003 Legislative Questionnaire~Y
+2004 Budget Overide - pro~N
+2005 Correspondence~Y
+2008 Legislative Questionnaire~Y
+2008 merge/purge~Y
+2008 Merge/Purge Telephone~Y
+2009 Merge/Purge~Y
+2% Zero emissions vehicles~N
+459 4 Most Important - Breast Cancer~Y
+459 4 Most Important - Environment~Y
+4 Most Important - Crime/Drugs~Y
+4 Most Important - Education~Y
+4 Most Important - Family Values~Y
+4 Most Important - Health Care~Y
+4 Most Important - Jobs & Economy~Y
+4 Most Important - School Safety~Y
+4 Most Important - Transportation~Y
+55 mph speed limit - con~N
+55 mph speed limit - pro~N
+5/6/08_TTH_accepted~Y
+5/6/08_TTH_answering~Y
+5/6/08_TTH_declined~Y
+5/6/08_TTH_requested~N
+5/6/08_TTH_talked~N
+6/18TTHAccepted~Y
+6/18_TTH_answer~Y
+6/18_TTH_declined~Y
+6/18_TTH_requested~N
+6/18_TTH_talked~N
+65 mph speed limit - against~N
+65 mph speed limit - for~N
+70% Courses Taught by Full-Time Faculty~N
+7th through 9th grade-no~Y
+7th through 9th grade-yes~Y
+9-11 Worker Prot.Task Force Act~N
+96 Bond Act requests/Clean Water-Clean Air funds~N
+ABC Violations~N
+Abestos problem in schools~N
+Abolishment of State Commissions & Boards~N
+Abortion - con~Y
+Abortion - general~Y
+Abortion - pro~Y
+Absentee voting~N
+Access NY Housing Registry of Access.Housing for Di~N
+Acid rain~Y
+Addl Military Leave for corrections officers~N
+Addl ret.credit-Tier III/IV contrib.in excess of 10~N
+Adequate-yes~Y
+Adirondack Park~Y
+Adirondack Park developments - con~N
+Adirondack Railroad~N
+Administrators~N
+Admissions Support Let.~N
+Admission Test~N
+Adolescent Tobacco Use Prevention Act/support of~N
+Adoption & records~Y
+Adult Daycare~Y
+Adult education~Y
+Adult homes/care~N
+Adult Stem Cell Research - con~N
+Adult Stem Cell Research - pro~Y
+Adverse Possession~N
+AFDC~N
+Against Pataki budget 96~N
+Age limitation for Police Officers~N
+Agency shop - con~N
+Agency shop - pro~N
+Agent Orange~N
+AGING~N
+Aging - miscellaneous~Y
+"Aging Out"~N
+Agricultural assessments/property taxes~N
+Agricultural Pollution Program S.4067~N
+Agricultural use values~N
+AGRICULTURE~N
+Agriculture Credits~N
+Agriculture districts~N
+Agriculture finances~N
+Agriculture - miscellaneous~Y
+Agritourism & Educ. grant~N
+AIDS~Y
+Airports~Y
+Air quality~Y
+Air quality reducing emissions~Y
+Air travel~N
+Alcohol~Y
+Alcohol and controlled substances - misc.~N
+Alcoholism~Y
+Allows Collective Bargain.for Health Care Providers~N
+Allows Hospital Access of Psychologist~N
+Allows Limited PhyT Trtmt. w/out referral~N
+Allows NYS Univ Police-Transfer Other Police Agenci~N
+Allows parental input for Vending Machines at Schoo~N
+Allows Tier II,III,IV retire w/ unreduced benefits~N
+Alternate energy development~Y
+Alternatives to incarceration~N
+Alzheimers disease~N
+Ambulance service~N
+Amend Eminent Domain Law - Pro~N
+Amendment to the '94 Raffle Law~N
+Animal/Eco. Terror Org. (s2996) - Con~N
+Animal Electrocution~N
+Animal Identification Regulations~N
+Animal Lemon Law~N
+Animal protection~Y
+Animals and livestock~Y
+Animals in research/testing~Y
+"Any car store" legislation- for~N
+any first degree premediated murder-no~Y
+Appliance Rebate Program~N
+Appointed vs. Elected Assessors~N
+Apprenticeship - bricklayers~N
+Architects/3rd party claims~N
+ARC List~N
+Are Children Adequately Protected at School - no~N
+Are Children Adequately Protected at School - yes~N
+Are You or Family Enrolled in EPIC - no~Y
+Are You or Family Enrolled in EPIC - yes~Y
+Are you or is anyone in household a veteran-no~N
+Are you or is anyone inn your household a veteran-y~N
+Arts and historic preservation - misc.~Y
+ARTS & HISTORIC PRESERVATION~N
+Assessment of special franchise property~N
+Assessment review~N
+Assessors~Y
+Assessor training and certification~N
+Assigned risk pool~N
+Assisted Liv. Fac.-Reg & Inspect(s-5437)~Y
+Associates~Y
+Athletic programs~Y
+Athletic trainers licensing~N
+Attorney & court fees~N
+Attorneys~Y
+Attorneys/50SD~Y
+ATV Ownership~Y
+ATV's~Y
+ATV's for Agriculture~N
+ATV trails - con~Y
+ATV trails - pro~Y
+Auction licensing/regulation~N
+Audit & Control/State Comptroller~N
+Auth. Blue Lights on Police Veh-Con~N
+Auto insurance~Y
+Automatic teller machines~N
+Availability of Health Ins.~Y
+Background checks~N
+Background Checks for Flight Training - con~N
+Balanced Billing (S.6313)~N
+Ballistic Fingerprinting - Con~N
+Balsam Lake Boat Launch-pro~Y
+Ban/assault weapons - con~Y
+Ban/assault weapons - pro~Y
+Ban Crow Shoots - con~N
+Bank Fees~N
+Banking - miscellaneous~Y
+Banking Reform of Real Prop.Equity Theft Act (S.474~N
+Bank regulation~Y
+Bank sale of insurance~N
+Bank sale of insurance - con~N
+Bank service~N
+Bank taxes~N
+Banning of Radar Detectors~N
+Ban on Smoking in Cars - Pro~N
+Barge Canal/NYS Thruway Authority~N
+Barn Restoration grants/letters~N
+Basset Hospital Open Heart Surgery Program~N
+Bear hunting~Y
+Beaver River Land Access~N
+Beeper tax/opposition to~N
+Bellayre Resort Proj (Greene Co.)~N
+Bell Jar Raffles/Games of Chance~N
+Benefits-State Police Injured Line of Duty-pro~N
+Better housing for Tompkins County, Inc.~N
+Bias Related/Hate Crime Bill - con~N
+Bias Related/Hate Crimes Bill - pro~N
+Bias Related Violence Bill (not use after 6/20/00)~N
+Bicycle helmets - for~N
+Bicycles and bicycle safety~N
+Bike Paths~N
+Bilingual Education - Pro~N
+Binding Arbitration - con~N
+Binding arbitration - general~N
+Binding Arbitration - pro~Y
+Bingo~N
+Bio-diesel-no~Y
+Bio-diesel-yes~Y
+Bioterrism Issues General~N
+Black bear population management - con~N
+Black bear population management - pro~N
+Black River Flow Regulation~N
+Board of Regents~N
+Boaters list~Y
+Boating/Navigation~Y
+BOCES~Y
+Bond issue - con~N
+Bond issue - general~N
+Bottle deposit increase~N
+Bottle Law - against~Y
+Bottle law - general~N
+Bottle law - pro~Y
+Bovine Growth Hormone (BST)~N
+Breastfeeding in public~N
+Bridge and highway repairs~Y
+Brochure requests/Coloring Books~Y
+Brownfields~N
+Budget items~Y
+Budget Items~N
+Bumper quality stickers - con~N
+Bundy Aid~Y
+Burn barrel ban - con~Y
+Burn barrel ban - pro~Y
+Business and economic developments - misc.~N
+BUSINESS & ECONOMIC DEVELOPMENT~N
+Business taxes~Y
+Bus System~Y
+"Butt Hutts" - state offices~N
+Cable TV~Y
+Cable TV-pornography~N
+Cable TV rates~Y
+Caller ID~N
+Cameras in the court room - con~N
+Cameras in the court room - pro~N
+Campaign financing~Y
+Campaign reform~N
+Campground reservation system~N
+Camp Pharsalia Closing - Con~Y
+Camp Pharsalia Sex Offender Facility - Con~N
+Camp Pharsalia Sex Offender Facility-Pro~N
+Canadarago Boat Launch~Y
+Canadarago Lake Property Owners~Y
+Canalway Trails~N
+Cancer/testing-See 52925 for ins. coverage of cance~N
+Canned Shoots Ban - Con~Y
+Canned Shoots Ban - Pro~Y
+Capital gains tax~N
+Capture Unclaimed Balance from Gift Cards~N
+Carbon Dioxide Emiss. From Power Plants-con~N
+Case Mix Cap~N
+Casino gambling (Indian reservations) - against~N
+Casino gambling (Indian reservations) - for~N
+Casino in Greene Co. - pro~N
+Catalyst Renewable Energy Plant - con~N
+Catskills~N
+Cayuga Medical Center~N
+Cell phone ban/while driving - against~N
+Cell phone ban/while driving - for~N
+Cell Phone Tax~Y
+Cemeteries-Winter Burial - Con~Y
+Cemeteries-Winter Burial - Pro~N
+Centralized Control of Elec. Admin.- pro~N
+Certification~N
+Certification of Dental Assistants - against~N
+Certification of Dental Assistants - for~N
+Chaining/Tethering Dogs More than 6 Hrs.-Pro~N
+Chamber of Commerce Members~Y
+CHANGE N.Y. mailings~Y
+Charter Schools - con~Y
+Charter Schools - pro~N
+Checking~N
+Chenango Co Democrat Com petitions/Northeast Dairy~N
+Child abouse/false reports~N
+Child abuse & testimony~N
+Child Attending College - no~Y
+Child Attending College - yes~Y
+Child Attending High School - no~Y
+Child Attending High School - yes~Y
+Child Attending Pre-K Through 8th Grade - no~N
+Child Attending Pre-K Through 8th Grade - yes~N
+Child care~Y
+Child Care Salaries~N
+Child custody~Y
+Child health/Child Health Plus~Y
+Child Health Insurance Reform Plan~N
+Children and Families - miscellaneous~Y
+Children Better Educated Now Than 5 Yrs. Ago - no~N
+Children Better Educated Now Than 5 Yrs ago - yes~N
+CHILDREN & FAMILIES~N
+Child restraints~N
+Child Safety ID Kits~Y
+Child support & collection~Y
+Chips funding~Y
+Chiropractic fees/workers comp.~N
+Chiropractic Insurance equality~Y
+Chiropractors~N
+Cities - misc.~Y
+City Clerks~N
+City Court Judges~N
+City Mayors~N
+City Officials~Y
+Civil Litigation vs. violators of Env. Regs. - con~N
+Civil Litigation vs. violators of Env. Regs. - pro~N
+Civil Rights~N
+Civil Service & tests~Y
+Classification of prop & tax allocation~Y
+Classifications~N
+Clean Air Act/emissions regulations - con~N
+Clean Air Act/emissions regulations - pro~N
+Clean Elections-Clean Money - Con~N
+Clean Elections-Clean Money - Pro~N
+Cleaning hazardous waste sites~Y
+Clean Water State Revl.Fund (sewers) grants/support~N
+Clinical Laboratory Technology Practice Act~N
+Collection agencies/Credit bureaus~N
+Collections on student loans~N
+Collective Bargaining for deputy sheriffs (S-5414)~N
+College-no~Y
+College Presidents~N
+College Tuition Tax Credit~N
+College-yes~Y
+Commercial drivers license & exemptions legislation~N
+Commercial Loans~N
+Commission for Deaf~N
+Commission on Health Care "Berger Commission"~N
+Community Based Programs funding~N
+Community colleges~Y
+Community development block grant~N
+Community Dispute Resolution - pro~N
+Community Mental Health Resources Bill/Reinvestment~N
+Community Preserv. Fund Act (S.6949)~Y
+Community Rating~Y
+Community residences (separate file)~Y
+Compensation for 911 Police/Fire - Pro~N
+Compensations and pensions~N
+Competitive Bidding~N
+Competitive utility service activities ("Plumbers B~N
+Comptroller Issue~Y
+Compulsory school age~Y
+Computer access~N
+Concealed Fire Arms Carry - con~N
+Concealed Fire Arms Carry - pro~Y
+Condominiums and Cooperatives~N
+Condoms in schools - against~N
+Congratulations/Condolences~Y
+Conservation~N
+Conservation and recreation - misc.~Y
+Conservation Fund~N
+CONSERVATION & RECREATION~N
+Consolidation/Human Services~N
+Conspicuous cross~N
+Const Contract Sum Kept in Interest Account~N
+Constitutional Amendments (NYS)~N
+Const.Right to Hunt,Trap,Fish (S-158) - con~N
+CONSUMER PROTECTION~Y
+Consumer protection - miscellaneous~Y
+Contest for Wildlife - con~N
+Continuing education requirements~N
+Contracts and negotiations~Y
+Convention Delegates~N
+Cooperative Extensions~N
+Cornell Local Roads Program~N
+Corporal punishment - pro~N
+Correction of Erroneous Tax Bills~N
+Corrections officer~Y
+Corr. Fac. to Provide Treatment to Inmates/Phyc Dis~N
+Cortland Co. Economic Development Com.~N
+Cortland County Pistol Club~Y
+Cortland Estates Mobile Home PArk~N
+Cortland housing assistance council~N
+Cortland Manufacturers/Major Employers List~N
+Cortland repertory theatre~N
+Cortlandville Railroad Spur Project~N
+Cost of doing business in N.Y.~Y
+Counties - misc.~Y
+County Action Programs~N
+County Board Clerks~N
+County Clerk Fees~N
+County Clerks~N
+County Court Judges~N
+County Highway Superintendents~N
+County Mental Health Agencies~N
+County Officials~Y
+County Weatherization Directors~N
+Court Fees~N
+Courthouses~N
+Court of Appeals (appointees)~N
+Court Reporters~N
+COURTS~N
+Courts - miscellaneous~Y
+Court structure and reform~N
+Coverage for Autism Spectum Disorders~Y
+Coverage for Massage Therapy~N
+Coverage for Occupational Therapy~N
+Coverage for Psychiatric Treatment~N
+Coxsackie Boat Launch - pro~N
+CPA's~Y
+Creation of New Business Incentives - no~Y
+Creation of New Business Incentives - yes~N
+Credit~N
+Credit cards~N
+Credit for Out-of-State Teaching~N
+Credit Report/Scores~Y
+Credit Unions~N
+Crime~Y
+Crime and corrections - miscellaneous~Y
+Crime and crime rates~N
+Crime and Home Safety~Y
+CRIME & CORRECTIONS~N
+Crime prevention funds~N
+Crime victims compensation~N
+Criminal penalties~Y
+Criminal penalties for drug use/trafficking~N
+Criminal Screening for Home Care Workers~N
+CROP Program (Creating Rural Opportunity Partnershi~N
+Crossbow hunting - con~Y
+Crossbow - pro~N
+CSEA~Y
+Cultural Development Ares~N
+Cut business costs~Y
+cut red tape and regulations~Y
+Cytology Labs~N
+Dairy Producers and Agribusiness~Y
+D.A.'s Salaries (also above)~N
+Daycare~Y
+Daycare funding - opposition~N
+Day Care Workers to Unionize - pro~N
+Dealer Agrmt.for Sale of All Types of Equipment~N
+Dealer Franchise Act~N
+Death and dying~N
+Death penalty - con~Y
+Death penalty - no position~N
+Death penalty - pro~Y
+DE CON/Westford~N
+DEC/Permits/Regulations~Y
+DEC Problems~N
+Dedicated Highway Fund~Y
+Deer hunting~Y
+Deer hunting w/rifle - con~Y
+Deer hunting w/rifle - pro~N
+Deinstitutionalization~N
+Dental Hygienist - con~N
+Dental Hygienist - pro~N
+Dentist Perform Any Procedure in Oral/maxillofacial~N
+Dentists~Y
+Department of Ag. and Mkts.~Y
+Department of Labor(inspections)~Y
+Dept of state- grants etc.~N
+Deputy Sheriff bills~N
+Deregulation/competition-utilities~Y
+DestiNY USA - Con~N
+Detention Block Grant~N
+Developmental Centers~N
+DHCR~Y
+D&H/D&O~N
+Diabetes~N
+Dial-a-Porn Bill~N
+Dietary Supplement Bill - con~Y
+Dietary Supplement Bill - pro~N
+Dietitian/Nutritionist Certification~N
+Digital Television conversion~N
+Dignity for All Students Act - con~N
+Dignity for All Students Act - pro~Y
+Direct Ship NY Wines Other States/Import Wines Also~N
+Disability benefits~Y
+Disability benefits/firemen~N
+Disaster planning~N
+Disaster Relief~N
+Discipline in schools~N
+Discretionary Release/Parole pro~N
+Discrimination~Y
+Diseases~N
+Displaced homemakers~Y
+Displaced Homemakers Program~Y
+Dispute Resolution~N
+Dissatisfaction with Politicians/Government~N
+Distinctive license plates~N
+Distinctive Plates for Repeat DWI - con~N
+District Attorneys~N
+Division for Youth/DFY Grants~Y
+Div. of Substance Abuse Services (code no longer us~N
+Divorce~Y
+Divorce Legislation~N
+DMV problems~Y
+Doctors~Y
+Doctors and nurses issues;shortages~Y
+Does the state & county protect against welfare fra~N
+Dog and animal complaints~N
+Dog/animal Legislation~Y
+Dog Owners to Maintain Ins. on Dogs-con~Y
+Doing Enough to Help Farm Families - no~Y
+Doing Enough to Help Farm Families - yes~Y
+Domestic Violence~Y
+Donation of Game to Food Banks~N
+"Do Not Call" - after Aug. 1st~Y
+"Do Not Call" - all issues -after 10-1-02~N
+"Do Not Call" Registry - After Apr. 1st~Y
+"Do Not Call" Registry before 1/1/02~N
+"Do Not Call" Registry before Apr. 1~Y
+"Do Not Call Registry" before April 1, 2002~N
+"Do Not Call" Registry Before July 1, 2002~N
+"Do Not Call Registry" before Oct. 1, 02~N
+DOT problems~Y
+DOT/waterways~N
+Double Bunking - con~N
+Downtown Renewal~N
+Do you believe that pub schools are adequately fund~N
+Do you believe the STAR prog has reduced your taxes~N
+Do you believe the STAR program has reduced taxes-n~N
+Do you have children residing in household in schoo~N
+Do you have enough info for preparing for nat.disas~N
+Do you own your own home-no~Y
+Do you own your own home-yes~Y
+Do you rent your home or apartment-no~Y
+Do you rent your home or apartment-yes~Y
+Do You Rent Your House/Apt. - no~Y
+Do You Rent Your House/Apt.- yes~Y
+Do you support phasing out school tax pro~N
+Do you support phasing out the school prop tax con~N
+Drinking age~Y
+Drivers License for Illegal Aliens-con~Y
+Drivers License for Illegal Aliens-pro~Y
+Drivers' Responsibility Assmt. Prog.~N
+Dr. O'Keefe Matter ( Herk Co.)~Y
+Dropout prevention/attendance improvement~N
+Drs. Disclose Gifts REceived from Drug Companies~N
+Drug abuse~N
+Drug abuse treatment~N
+Drug Companies Public Disclosure Practices~N
+Drug Dealers/Users Get Lighter Sentence - no~N
+Drug Dealers/Users Get Lighter Sentence - yes~N
+Drug  education & awareness programs~Y
+Drugs After 1/01 See Ins. 52095 or 52096~N
+Drunk driving/.08% blood alcohol level - against~N
+Drunk driving/.08% blood alcohol level - for~N
+DSS day care regulations and registration~N
+DSS grants/federal grants~N
+DSS Problems~N
+Dual Eligibility~N
+DWAI~N
+DWI~Y
+DWI - Stiffer penalties - pro~N
+E911~Y
+Early Intervention Planning Project~N
+Early Intervention Programs~N
+Early retirement~Y
+Eccleston Bill - against~N
+EcclestonBill - for~N
+Economic conditions~Y
+Economic Development~Y
+Economic development bill/reduced rates~N
+Economic Development Meetings~Y
+Education~Y
+EDUCATION~Y
+Educational programs~Y
+Education benefits~N
+Education financing~Y
+Education - miscellaneous~Y
+Education Tax Credits - con~N
+Education Tax Credits - pro~Y
+Elder Abuse~N
+Elderly/special elderly programs~N
+Election law reform~N
+ELECTIONS~N
+Elections - miscellaneous~Y
+Elections process~N
+Electoral College~N
+Electoral College - con~N
+Electronic Monitoring of Sex Offend. - pro~N
+Eligible civil service list/top ten~N
+Elim. Mandatory Contrib. in Optional Retrmt w/1- yr~N
+Elim. Stat.of Lim. Child Rape, Sex Asslt.~N
+Embryonic Stem Cell Research - con~Y
+Embryonic Stem Cell Research - pro~Y
+Emergency Contraception - con~Y
+Emergency Contraception for Rape Victims - con~N
+Emergency Contraception for Rape Victims- pro~N
+Emergency Contraception - pro~Y
+Emergency/disaster aid~Y
+Emergency Health Powers Act - con~N
+Emergency Health Powers Act- pro~N
+Emergency medical services/training~Y
+EMERG. PREPAREDNESS TASK FORCE~N
+Emerg.Serv-Do You Have Enough Info/Preparedness-no~N
+Emerg.Serv-Do You Have Enough Info/Preparedness-yes~N
+Emerg.Serv-Safe From Attacks - no~Y
+Emerg.Serv-Safe From Attacks - yes~Y
+Emerg.Serv-Your Comm. Prepared for Disaster - no~N
+Emerg.Serv-Your Comm. Prepared for Disaster - yes~N
+Eminent Domain~Y
+Emission testing~N
+Empire Bc/BS issues~N
+Empire Blue Cross/Blue Shield After 1/01 use Ins. 5~N
+Empire Connection (Albany - NYC)~N
+Empire State Golf Trails Program~N
+Empire Zone Board Members~N
+Empire Zones/Economic Development Zones~Y
+Employment~Y
+EMS/Ambulance Captains or Unit Heads (51SD)~N
+EMS and Ambulance Squads Co. (SD51)~Y
+EMT's to Carry Defib. in Personal Vehicles~N
+EMT/Volunteer Firemen List (51st S.D.)~Y
+EMT/Volunteer Firemen List (Out-of district)~N
+Endangered spiecies protection~N
+Energy and utilities - miscellaneous~Y
+Energy committee~N
+Energy conservation~Y
+Energy Consumer Prot. Act.of '02(S-6778-A)~N
+Energy Master Plan legislation~N
+Energy prices~Y
+Engineered Septic Systems-con (Kuhl)~N
+English - Official NYS Language~N
+ENREGY & UTILITIES~N
+Enrolled agents representing the taxpayers~N
+Entwistle opposition~N
+Environmental Bond Act (1990) - General~N
+Environmental Bond Act - con~N
+Environmental Bond Act - pro~N
+Environmental Management Councils (EMC)~N
+ENVIRONMENTAL PROTECTION~Y
+Environmental Protection Fund (EPF) grants/support~N
+Environmental protection - miscellaneous~Y
+Environmental Trust Fund- pro~N
+Environmetally Sound Packaging Act - pro~N
+EPA Grants/Federal Grants~N
+EPIC Plus Program~Y
+EPIC program~Y
+Equalization and assessment~N
+Equalization rates~N
+Est. Addl. Penalties for Right-of-Way Crashes~N
+Estate and Gift taxes~N
+Estate Tax Phase Out~N
+Ethics~N
+Ethics Bill~N
+Euthanasia~N
+"Excellence in Leadership" Bill~N
+Excellence in Teaching funds - con~N
+Excellence in Teaching funds - pro~N
+Excellent-yes~Y
+EXCELL NY~N
+Excess medical malpractice coverage~N
+Excise Tax on Wine/Alcohol~N
+Exemption for Churches From Adverse Possession~N
+Exemption for farm silos~N
+Exemption for the handicapped~N
+Exemption of state lands~N
+Expand Wrongful Death Lawsuit-con~N
+Exposure to toxic substances - right to sue~N
+Extended School Day - con~N
+Extended School Day - pro~N
+Extending Scope of Bottle Law - con~Y
+Extending Scope of Bottle Law - pro~Y
+Extend sunset on school dist. retirees' health ins~N
+Extradition (Grasso)~N
+E-Z Pass Problems/Issues~N
+Fairness in H.s. Athl. Competition - con~N
+Fairness in H.S. Athl. Competition - pro~N
+Fair Pay Act~Y
+Fair-yes~Y
+Family Access to Health Care Act~N
+Family Care Program~N
+Family court~N
+Family Planning~Y
+Family Protection/Domestic Violence Intervention Ac~N
+Family Support Programs~N
+Farmers~Y
+Farmland preservation~N
+Farmland Protection Bill~N
+Farm Vehicles~N
+Farm Workers' Benefits/Wages~Y
+Father's rights~N
+Fax Advertising~N
+Federal Firearms Licensees~Y
+Federal Government and Referrals~Y
+Federal Grants~N
+Federal pension exemption/refunds (Escher bill)~N
+Federal programs/grants~Y
+Fed/State-T.E.P.(Trans. Enhancement Prog)~N
+Felony to display noose symbol-con~N
+Fetal Death Certificates Confidentiality- pro~N
+Financial Aid Info/Paying for College~Y
+Financial aid pro~Y
+Finger printing & background checks-con~N
+Finger printing & bakcground checks-pro~N
+Fire and property insurance~N
+Fire/Building Code - Bed & Breakfast~N
+Fire/Building Code - general~N
+Fire Chiefs - 51SD~Y
+Fire Coordinators - 51st~Y
+Fire Coordinators/NYS Assn. of Fire Chiefs - statew~N
+Fire districts~Y
+Fire protection~Y
+Fish and game licenses~Y
+Fish and wildlife~Y
+Fisheries~Y
+Fishing~Y
+Flag burning amendment - pro~N
+Flavored Cigarette Ban - con~N
+Flavored Cigarette Ban - pro~Y
+Flood control~Y
+Flooding Issues 2006, FEMA/SEMO~Y
+Fluoridation/local law prohibiting - for~N
+Food labelling~N
+Food stamps~N
+Force Feeding Ducks Ban~N
+Foreign trade zone~N
+Forest and forestry~Y
+Forest Ranger Police Office Status~N
+Formula for Child Support (S.2381)~N
+Foster care~N
+Foster grandparents~N
+Four fishing lines - pro & con~N
+Four-year term--pro~N
+Fraud and abuse~N
+Freedom of information~N
+Freedom of Speech at Shopping Center Bills~N
+Free Exercise of Religion - Pro~N
+Free hunting license for instructors - pro & con~N
+Freight service~N
+Fuel assistance~N
+Fuel Costs~Y
+Fuel Oil Storage Tank Credit~N
+Funding for Alcoholism Programs~Y
+Funeral Homes/Directors~N
+Gambling~Y
+Games of Chance Applications/Racing & Wagering~N
+Gas/Oil drilling/Leasing~Y
+Gas Prices/diesel/diesel prices~Y
+Gas Tax~Y
+Gas tax holiday-con~Y
+Gas tax holiday-pro~Y
+Gay rights~Y
+Gay rights - con~Y
+Gay rights - pro~Y
+GENERAL CONSTITUENT SERVICE~Y
+Generic drugs~N
+Genetically Engineered Crops - pro~N
+Gifted and talented programs~Y
+Gilboa Dam Flooding Issues~Y
+Give Meds to Chrn Temporarily (S.6364) pro~N
+Glimmerglass Opera~N
+Glimmerglass State Park/Boat Launch~Y
+Global Warning~Y
+Government employees~N
+Government Waste~Y
+Governor/Executive Orders~Y
+Governor's appointments - boards etc.~N
+Grand Jury proceedings and reform~N
+Grandparents Rights - Pro~N
+Grannis nomination-con~Y
+Grannis nomination-pro~N
+Grants~Y
+Grants and Support Letters~N
+Grants (DED,UDC etc)~Y
+Grants for Age Appropriate Sex Ed~Y
+Grants (state & federal)~Y
+Grants/support letters (EPF see 24006)~N
+Greene Co.-EmUrgentCare-health reimbursement~N
+Green Thumb Program~N
+Gr. Lakes/St. Lawrence River Basin Water Res. Compa~N
+Gross Receipts Tax~Y
+Gun control - con~Y
+Gun control - pro~Y
+Halfway Houses~N
+HANDICAPPED~N
+Handicapped Access-New Voting Machines (HAVA)~N
+Handicapped access to polling place~N
+Handicapped assessibility~N
+Handicapped care~N
+Handicapped Children (Preschool)~N
+Handicapped List~N
+Handicapped - miscellaneous~Y
+Handicapped parking~N
+Handicapped rights - generally~N
+Hanger Theatre~N
+Have Access to Internet at Home - no~Y
+Have Access to Internet At Home - yes~Y
+Have Access to Internet at School/Lib - no~N
+Have Access to Internet at School/Lib - yes~N
+Have Access to Internet at Work - no~Y
+Have Access to Internet at Work - yes~Y
+Have a Child Home Schooled - no~Y
+Have a Child Home Schooled - yes~Y
+Have a Child in College - no~Y
+Have a Child in College - yes~Y
+Have a Child in Jr/Sr HS - no~Y
+Have a Child in Jr/Sr HS - yes~Y
+Have a Child in K-6 - no~Y
+Have a Child in K-6 - yes~Y
+Have a Child in Preschool - no~Y
+Have a Child-in Preschool - yes~Y
+Have you applied for STAR - no~Y
+Have you applied for STAR - yes~Y
+Have You Signed Up "Do Not Call" - no~Y
+Have You signed Up "Do Not Call" - yes~Y
+Hazardous duty pay for DOT employees~N
+Hazardous Waste~N
+HCRA 99/Family Health Plus~Y
+HCRA 99/surcharge~N
+HCRA 99/tobacco settlement-pro~N
+HCRA 99/Tobbaco setlement-con~Y
+Health and health care financing - misc.~Y
+Health care~N
+Health Care Agent Bill~N
+Health Care Bill of Rights - Against~N
+Health Care Bill of Rights - For~N
+Health care costs After 1/01 use 52092~Y
+Health Care Costs for Businesses~Y
+Health Care Costs for Individuals~Y
+Health Care Costs for Seniors~N
+Health Care Facilities Access Bill - con~Y
+Health Care Facilities Access Bill - pro~Y
+Health care for the elderly~Y
+Health Care - no~Y
+Health care services/delivery~Y
+Health Care - yes~Y
+Health Code Violations - grace period~N
+Health Department~Y
+Health Dept Grants(drinking water see 24004 after 6~N
+HEALTH & HEALTH CARE FINANCING~Y
+Health Ins. Mandate Commission-pro~Y
+Health Ins. problems/patient's rights (in dist. onl~N
+Health insurance After 1/01 see Insurance codes~N
+Health Insurance Benefits for retirees & Surviving~N
+Health Insurance - Dental Insurance After 1/01 use~N
+Health insurance rates After 1/01 See Ins. 52092~N
+Health Systems Agencies/Legislations~N
+Healthy NY Labor Mgmt. Benefit Fund~N
+Healthy NY Labor Mgmt.Benefit Fund Dem. Proj.~N
+Healthy Teens Act~Y
+Hearing Aid Coverage~N
+Hearing aid dispensers/registration~N
+Hek. Co. Jail Closing~N
+HIGHER EDUCATION~N
+Higher education - miscellaneous~Y
+Highways~Y
+Highway safety and motor vehicles - misc.~N
+HIGHWAY SAFETY & MOTOR VEHICLES~N
+Highway Use Tax - con~N
+Hilliary for Senate - pro~N
+Hillside Children's Center~N
+Hinckley Dam Water Level/Canal~N
+Hiring Consultants/"Outsourcing" - Con~N
+Historic preservation~N
+HMO's After 1/01 See 52090~Y
+HMO's/Managed care~N
+Hold in a "Rainy Day" Debt Reserve - no~Y
+Hold in a "Rainy Day" Debt Reserve - yes~Y
+Home birth~N
+Home care services~Y
+Home child care tax credit/family providers~N
+Home day care~N
+Home energy assistance program (HEAP,weatherization~N
+Home Health Agencies/Home Aides~N
+Homeless~Y
+Homeowners ins. based on type of dog~Y
+Home relief~N
+Home schooled-no~Y
+Home Schooled to College (s.6094) pro~N
+Home Schooled-yes~Y
+Home schooling~Y
+Home School (S-2060) pro~N
+Home services~N
+Horses Transported out of NY for consumption~N
+Hospice care~Y
+Hospital Administrators~N
+Hospital Infections Disclosure Act - pro~Y
+Hospital Privileges for Psychologists etc.~N
+Hospital Reimbursement~Y
+Hospitals~Y
+Hosp. to Report Uninsured/Underinsured Patients~N
+Hotel/motel tax - All Counties~Y
+"Hot Stick" Bill~N
+Hours Worked Bill~Y
+Housing~N
+HOUSING~N
+Housing Agencies in 50th~N
+Housing discrimination based upon sexual orientatio~N
+Housing(do not use after '99-see Housing 48012)~N
+Housing - miscellaneous~Y
+Hudson River Dredging - con~Y
+Hudson River dredging - pro~N
+Human Cloning - Con~N
+Humane Euthanasia of Trapped Animals-pro~N
+Human rights - miscellaneous~Y
+Human Trafficking~N
+Hunting and fishing~Y
+HURD aid~N
+Hydroelectric power(James Bay)~N
+Hydro-no~Y
+Hydro-yes~Y
+I-88 Exit for E. Worcester~Y
+I Care About Health Care Mailing~Y
+IDA Bills~N
+Identify Theft Legislation-con~N
+Identity Theft legislation - pro~Y
+If yes are you aware of a tax break avail for rente~N
+If yes are you aware of tax break avail for renters~N
+If Yes, Have Calls Been Reduced - no~Y
+If Yes, Have Calls Been Reduced - yes~Y
+If yes have you applied for your STAR exemption-no~N
+If yes have you applied for your STAR exemption-yes~N
+Illegal Immigration~Y
+"I Love NY" campaign~N
+Immigration Issues~Y
+Importation of Russianh Milk - con~N
+Imported Rx Drugs - pro~N
+Improve Visibility of Ag Vehicles on Pbl Hwys PRO~N
+Incineration - con~N
+Incineration - general~N
+Incineration - pro~Y
+Include Co.Rt.54 in Rt. 20 Scenic Byway~N
+Income tax~Y
+Income Taxes~Y
+Inc. Penalty for Killing/failing to Feed Animals~N
+Increase benefits~N
+Increased reimbursement of fines and levies~N
+Increased state aid for local jails~N
+Increase in Spending for Education - no~Y
+Increase in Spending for Education - yes~Y
+Increase in sports license fees - con~Y
+Increase in sports license fees - pro~N
+Increase Penalty for Boating While Intoxicated~N
+Increasing support of TAP - no~Y
+Increasing support of TAP - yes~Y
+Independent living centers~Y
+Indian Claims - con~N
+Indian Claims - pro~N
+Indian Reservation exemption - against~Y
+Indian Reservation exemption- for~N
+Indigent Inmate Fund~N
+Industrial Dev.Agencies/bond cap/bond tax~N
+Industrial revenue bond~N
+Infertility coverage - con~N
+Infertility coverage - pro (See 52908 for Con)~N
+Infrastructure Trust Fund~N
+Initiative and referendum~N
+Initiative & Referendum - con~N
+Initiative & Referendum - pro~N
+Inmates~Y
+Inmate w/Mental Illness Confinement Conds.~N
+"In Rem" Foreclosures~N
+Ins. Conscience Clause - con~N
+Ins. Conscience Clause - pro~Y
+Ins. (health) Mandates - con~Y
+Ins. (health) Mandates - pro~N
+Insider 1~Y
+Insider 2~Y
+Insider 3 (Independence)~Y
+Inspection fee/exempt coin operated laundries~N
+Inspection fees~N
+Inspections/repair shops~Y
+INSURANCE~N
+Insurance agents and brokers~Y
+Insurance binders/mortgage~N
+Insurance Conversion~N
+Insurance Coverage - dental, TMJ~Y
+Insurance coverage/emerg health care services~N
+Insurance Coverage for prescriptions/Drugs~N
+Insurance Department problems~N
+Insurance Fraud Protection Act~N
+Insurance - miscellaneous~Y
+Insurance regulations~Y
+Intelligent Design as Component of Science-Con~N
+Intercity bus system~N
+Interest rates~N
+Interior Designers' Bill~N
+Internet Hunting (s-2822) - con~N
+Internet Privacy - con~N
+Internet Privacy - pro~N
+Internet Safety~N
+Internet Sales of Cigarettes - Con~N
+Internet Sales of Cigarettes - Pro~N
+Internet sales tax collection - con~N
+Internet Service Issues~Y
+Internet Spam - con~N
+Internships~N
+Interscholastic athletics/austerity budget - agains~N
+Interscholastic athletics/austerity budget - for~N
+Interstate Fuel Tax Agreement~N
+Interst rate deregulation~N
+Invasive Species Concerns~N
+Investment Tax Credit (s-2578)-pro~N
+Iraq War '03 - con/referrals~Y
+Iraq War '03 - pro/refedrrals~N
+IRA's~N
+Irradiated Foods~N
+Is NY doing enough to create climate of econ.growth~N
+Is Personal INfo. Protected Adequately - no~N
+Is Personal Info. Protected Adequately - yes~N
+ISSUEDESCRIPTION~N
+Is your community prepared for natural disasters-no~N
+Is your community prepared for natural disasters-ye~N
+It-214 Tax form~Y
+It-214 Tax form - Seward list~Y
+Item pricing - pro~N
+Ithaca Area Retired Teachers Association (50th SD o~N
+Ithaca Income tax proposal~N
+Jacksonville water contamination~N
+Jails and prisons (ACF & Cay. County)~Y
+JAK Casework - Auto Ins./Cancellations~N
+JAK Casework-Health/Life Ins./Cancellations~N
+JAK Casework - Homeowners Ins./Cancellations~N
+Jets Stadium - con~Y
+Jets Stadium - pro~N
+Job Development~Y
+Job Development Authority~N
+Job opportunities~N
+Jobs Bond Act - pro~N
+Jobs/Economic Dev.~Y
+Job seekers/support for~Y
+Job training~Y
+Joint Custody Bill - pro~N
+Joint Terrorism Task Force Withdrawal - pro~N
+Judges~Y
+Judicial ethics~N
+Judicial Pension Reform - Pro~N
+Judicial salary increase - against~N
+Judicial salary increase - for~Y
+Judicial selection~N
+Judiciary Budget/state aid~N
+Junk Mail~Y
+Junkyards~Y
+Jury exemption~N
+Jury Reform Bill~N
+Jury selection/compensation~N
+Juvenile offenders~N
+Killer trading cards~N
+Killing of a police officer-no~Y
+Killing of a police officer-yes~Y
+Kindergarten to 6th grade-no~Y
+Kindergarten to 6th grade-yes~Y
+LABOR~N
+Labor hours~N
+Labor - miscellaneous~Y
+Lag Payroll~N
+Landfill closure - pro~N
+Landfills~Y
+Landowners' liability/recreational activities~N
+Land Trusts~N
+Land use regulations~N
+Late Budget complaints/Budget reform~Y
+Lawsuits~N
+Lead Abatement bill - against~N
+Lead Abatement Bill - pro~N
+Lead Poisoning~N
+Learning Disabled~N
+Leatherstocking Railroad~N
+Legal Aid/Assigned Counsel/Public Defenders~N
+Legal ethics~N
+Legal Notices through Electronic Means~N
+Legislative Budget~Y
+Legislative compensation/Lulus~N
+Legislative reform~N
+LEGISLATURE~N
+Legislature - miscellaneous~Y
+Liability for emancipated children~N
+Liability insurance general~Y
+Liability Insurance - Increase in Minimum - pro~N
+Liability Insurance - underground storage tanks~N
+Liability/Negligence~N
+Liberty Partnership and Youth at Risk~Y
+Liberty Scholarships~N
+Libraries/librarians Concerns~Y
+Library Bill/Electronic Doorway~Y
+Licensing fees~Y
+Licensing of assault weapons - con~N
+Licensing of assault weapons - pro~N
+Licensing of Marriage & Familly Therapists~N
+Licensing of Mental Health Therapists~N
+Licensing of nurses~N
+Licensing of social workers~N
+Lifeguard Rule/Public Health Council~N
+Life insurance~Y
+Lifeline Emergency Response System~N
+Lifetime funding cap/Rural & Neighbor. Preservation~N
+Life without parole - pro~N
+LILCO takeover~N
+Limit Consecutive Hrs. Reg. Nurse Can Work~N
+Limit damages in wrongful death - con~N
+Limited Funding - aid local govt - no~Y
+Limited Funding - aid local govt - yes~Y
+Limited Funding - econ. dev. - no~Y
+Limited Funding - econ. dev. - yes~Y
+Limited Funding - education - no~Y
+Limited Funding - emerg. prep/homeland - no~N
+Limited Funding - emerg. prep/homeland - yes~N
+Limited Funding - environment - no~Y
+Limited Funding - environment - yes~Y
+Limited Funding Issue - education - yes~Y
+Limited Funding - law enforcement - no~Y
+Limited Funding - law enforcement - yes~Y
+Limited Funding - soc. serv/health - no~Y
+Limited Funding - soc. serv/health - yes~Y
+Limited Funding - tax cuts - no~Y
+Limited Funding - tax cuts - yes~Y
+Limited Funding - trans- no~Y
+Limited Funding - trans - yes~Y
+Limited liability companies~N
+Limit of Consecutive Hrs. RN's to work~N
+Literacy Program - pro~Y
+Lobbying/Reform Act of 1999~N
+Local ABC Boards~N
+Local Election Boards~N
+LOCAL GOVERNMENT~Y
+Local Government Ethics Legislation~N
+Local government finances~N
+Local government liability~N
+Local government - miscellaneous~Y
+Local Government records~Y
+Local government referrals~N
+Local Govt. Contrib. to St. Pension Fund~N
+Local Govt Mergers-con~Y
+Local Govt Mergers-pro~N
+Local health departments~N
+Local issue~N
+Local Mental Health Directors~N
+Local mental health services~Y
+Local recycling~N
+Local Referendums~N
+Local sales tax legislation (Tompkins/Cayuga/Cortla~N
+Local services~N
+Local Sidewalks, Curbing/Multi-Modal Funds~N
+Loft conversions~N
+Long term health care~Y
+Lottery~Y
+Lower DWI BAC threshold from .10 to .08 - no~N
+Lower DWI BAC threshold from .10 to .08 - yes~N
+Lowering Taxes - no~Y
+Lowering Taxes - yes~Y
+Low Income NYrs Elig. Low Cost Spay Neuter Pets~N
+Low-level radioactive waste sites (West Valley)~N
+Maintenance of drainage ditches etc.~N
+Make Theft of Pet Crime of GRand Larceny~N
+Malpractice insurance rates~N
+Mandated family leave - con~Y
+Mandated family leave - pro~Y
+Mandatory Medicare Assignment~N
+Mandatory retirement - con~N
+Marijuana for medical purposes - pro~Y
+Marijuana legalization - pro~Y
+Mass transit~N
+MATRIX - con~N
+Maximum Reimbursement to County Agencies~N
+MCI/Charitable contributions~N
+Medicaid~Y
+Medicaid funds for abortion - con~N
+Medicaid funds for abortion - pro~N
+Medicaid takeover~N
+Medical and dental education~N
+Medical Liability Reform Act~N
+Medical malpractice After 1/01 use Ins. 52097~N
+Medical malpractice insurance~Y
+Medical Malpractice issues~Y
+Medical malpractice reform - con Use Ins. 52099~N
+Medical Malpractice reform - For Us Ins. 52098~N
+Medical Malpractice Reform - pro~N
+Medicare~Y
+Member Item inquiry/info.~Y
+Member items~Y
+Members ofSuspended Teach.Retire.Get Credit for Ser~N
+Mental health facilities~Y
+Mental Health Parity Bill (coverage of m.h. service~N
+Mental health treatment~Y
+Mental Hygiene - miscellaneous~Y
+Merge/Purge '07~Y
+Merge/Purge Additions 1990~Y
+Merge/Purge Additions 1991~Y
+Merge/Purge Additions 1992~Y
+Merge/Purge Additions 1993~Y
+Merge/Purge Additions 1994~Y
+Merge/Purge Additions 1995~Y
+Merge/Purge Additions 1996~Y
+Merge/Purge Additions 1997~Y
+Merge/Purge Additions 1998~Y
+Merge/Purge Additions 1999~Y
+Merge/Purge Additions 2001~Y
+Merge/Purge Additions 2002~Y
+Merge/Purge Additions 2003~Y
+Merge/Purge Additions 2004~Y
+Merge/Purge Additions 2005~Y
+Merge/Purge Adds 2006~Y
+Merit time/good time~N
+Metering fuel deliveries~N
+Midwifery - Profession~N
+Miford School district - special list~N
+Military Buy Back teachers - pro~N
+Military Certs. of Appreciation~Y
+Milk Pricing~Y
+Millbrook watershed~N
+Minimum wage - con~Y
+Minimum wage- pro~Y
+Mining - State Regulations/Legislation~Y
+Minority business development~N
+Minority employ~N
+Miscellaneous tax exemptions~N
+Misc. (not when applicable by subject)~Y
+Mobile homes~Y
+Mohawk Valley Regional Economic Development Council~N
+MOPP (maintenance of purchasing power)~N
+Moravia Sewage Treatment & Owasco Lake Pollution~N
+Mortgage availability~N
+Mortgage Company/Title Insurance~N
+Mortgages~Y
+Motorcycle helmets - con~N
+Motorcycle helmets - pro~N
+Motorcycle safety fund/rider education~N
+Motorcycles - general~N
+Motor taxes (motor oil, lubricants etc.)~N
+Motor Vehicle Body Repair Shops~N
+Motor Vehicle Rights - Lemon Law~Y
+MTA~Y
+Municipal cooperative health benefit plans~N
+Municipal deposits in savings banks & credit unions~N
+Municipal Electric~N
+Municipal employees~N
+Municipal Police Officers (Sheriffs,Town, Village)~N
+Museum Bill - pro~N
+Museums and historical societies~N
+Mutual Funds - Abandoned Property~N
+Muzzle loading/black powder hunting~Y
+Nasty Letters~N
+National Animal Identification System-Pro~N
+National Grid Issues (formerly NYMO)~Y
+National Guard~N
+National Homeland Security Issues - pro~N
+National Voter Registration Act~N
+Natural gas lines/drilling~Y
+Nautural Gas~N
+New car lemon laws~N
+Newsletter return clips (How Can You Help?)~N
+New Voters~Y
+New voters 1987~Y
+NEW YORK CITY~N
+New York City miscellaneous~Y
+New York Racing Association (NYRA)~N
+New York State Council on the Arts/Grants~N
+New York State Veterans Offices/Counselors~N
+No access to internet~Y
+No care elder family member home~Y
+No children in household-no~Y
+No children in household-yes~Y
+No-Fault Cov. for Insureds w/DWI/Drugs - pro~N
+No-fault Fraud~N
+No-fault insurance fraud~N
+No guidelines children internet~Y
+No Local Purchase-Updated Code Books by DOS~N
+Non-point Source Pollution Abatement Program~N
+Non Regeants Diploma-pro~Y
+Northeast Interstate Dairy Compact~Y
+Not-for-profit corporations~N
+Not-for-Profit Organizations List (Joan only)~N
+Notice/Cancellation/Changes~N
+Nrse. Practitioners/Workers Comp System~N
+Nuclear power - con~N
+Nuclear power - general~N
+Nuclear waste~N
+NUGS (Non-Utility Generators)~N
+Nurse Practioners~N
+Nurse Practitioner Bill - con~N
+Nurse Practitioner Bill - pro~Y
+Nurse Practitioners to Sign Death Cert.- Pro~N
+Nurses Mailing List~Y
+Nursing home~Y
+Nursing Home Facilities~Y
+Nursing Home Stafing Shortages~Y
+Nutrition~Y
+NYC Marshalls~N
+NYC Parking tickets/TLC~N
+NYC Watershed~N
+NY Health Care Reform Act of 1996~Y
+NYPHRM bills~Y
+NYPIA Extenders~N
+NYRI Proposed Power Line - Con~Y
+NYRI Proposed Power Line - Pro~N
+NYS Anti-Terrorism Preparedness Act~N
+NYSEG issues~Y
+NYS Energy Research and Development Authority (NYSE~N
+NYS Theatre Institute~N
+NY Thoroughbred~N
+"NY Wired for Education"~N
+N.Y. Youth Build Act~N
+OCCA/Otsego 2000 Lake Committee~N
+Occupancy tax repeal~N
+Occupational health and safety~Y
+Office for aging/local~N
+Office of Alcoholism and Substance Abuse~Y
+Office of Parks & Rec./OPR Grants~Y
+Office of Professional Misconduct inquiries~N
+Officer Misconduct~N
+Oil/Gas Leaks~N
+OMH Grants/Support Letters~N
+Omnibus Consumer Protection & Banking Deregulation~N
+Omnibus Mental Health Bill moved to 64923~N
+OMRD Peace to Police Status (S.2983) - pro~N
+On Board Diagnostic REgulations - con~N
+Oneonta School District/state aid~Y
+On Site Septic Systems-con (S.877)~N
+On Track Safety Stan.NYC Transit Emp. (s.6884-A)~N
+Open Space Conservation Plan~N
+Open Space Conservation Plan - general~N
+Open Space Purchases - no~Y
+Open Space Purchases - yes~Y
+Ophthalmologists~N
+Opportunities for Chenango~N
+Opportunity Programs (HEOP/EOP)~Y
+Opposition to Pataki budget~Y
+Optometrists to Prescribe Drugs - con~N
+Optometrists to Prescribe Drugs - pro~N
+Optometrists - treatment w/drugs - opposed~N
+Optometrists - treatment with drugs - for~N
+Orange vest - con~N
+Orange vest - pro~N
+Organized labor and unions~Y
+ORMDD~Y
+OTB~Y
+Otego Juvenile Detenson Facility~Y
+other~Y
+Other~Y
+Other taxes(container etc)~Y
+Otsego Arts list~Y
+Otsego County Sportsmen's Federation (1997)~N
+Otsego Lake & Watershed~Y
+Otsego Pomona Grange (1993)~Y
+Otsego Rural Housing Assistance, Inc.~N
+Out of district/referrals~Y
+Out-of-State Indian Tribes to Run Casinos-con~N
+Out-of-state Indian Tribes to Run Casinos-pro~N
+Oversided vehicle/loads~N
+Owasco Lake water level~N
+Own Your Own Home - no~Y
+Own Your Own Home - yes~Y
+PACE Program~N
+Paid EMT/Fireman List (51st)~Y
+Paper Ballot/Optical Scanners-Con~N
+Paper Ballot/Optical Scanners-Pro~Y
+Pardons/Clemency~N
+Parental consent/notification legislation - con~N
+Parental consent/notification legislation - pro~N
+Parking tickets~N
+Parole for violent felons (Jenna's law)~N
+Paroles~Y
+Partial birth abortion ban - against~N
+Partial birth abortion ban - for~Y
+Part-time Faculty to Receive Unemployment Benies-Pr~N
+Pay Equity Bill~N
+Pay/police officers,others/line of duty injury S-52~N
+Pay raise - con~Y
+PEF~Y
+Pension buy back(do not use after '99-See 80901)~N
+Pension fund~Y
+Pensions~N
+Percent of Fire Ins. Prem. Tax Pd. to Prof. Fire As~N
+Performance COLA~N
+Permanent Cola'00 (consumer price index)~Y
+Permit Process Reform~N
+Permit Sale of Small Fire Crackers~N
+Personal Needs Allowance Increase-pro~N
+Pesticide Reporting Bill - against~N
+Pesticide Reporting Bill - for~Y
+Pesticide Residues in foreign fruits & vegetables~N
+Pesticides~Y
+Pesticide use on school grounds-con~Y
+Pesticide Use Reduction - for~N
+Petroleum Business Tax (PBT)~N
+Petroleum Overcharge Funds~N
+Petroleum Pipeline Safety Concerns~N
+Pet store dealers/standard of care~N
+Pharmacies to Post Retail Drug Prices~Y
+Pharmacists~Y
+Pharmacists-Drug Therapy/Health Facil.(S.1879B)~N
+Pharmacistss to Perform Drug Therapy Mgmt~N
+Photo license/Driver Licenses~Y
+Physical Therapists~N
+Physical Therapists Direct Access~N
+Physician/Script Call-in-Refill Proposal - Con~N
+Physician shortage~N
+PINS~Y
+PINS & PUSH legislation~N
+Pistol Licenses-S.2733-con~N
+Pistol Permits~Y
+Pistol permits & fees~Y
+PKU infants formula coverage~N
+Plant closing/store closings~N
+Plight of the family farm~Y
+Plum Valley/So Otselic Park~N
+Podiatrists~N
+Police~Y
+Police and fire retirement~Y
+Police & Fire (paid)~N
+Police officers status for SUNY security - for~N
+Police Officer Status for Forest Rangers~N
+Police Officer status for SUNY security - against~N
+Poor-yes~Y
+Pornography/obscenity~N
+Power Authority of the State of NY (PASNY)~N
+Power for Jobs applications/support letters~N
+Power lines~Y
+Prayer in schools - pro~N
+Preble Aggregate~N
+Preble property reassessment~N
+Predatory Banking Bill (S-5005) - pro~Y
+Prejudgment interest/personal injury~N
+Pre-K or Nursery School-no~Y
+Pre-k or nursery schoo-yes~Y
+Prenatal care~Y
+Pre-Need Funeral Insurance - pro~N
+Pre-need legislation- Funeral Services~N
+Prescription Costs~Y
+Prescription drugs~N
+Prescription Drugs - Bulk Buying of~Y
+Preserving habitats for wildlife~Y
+Preserving open space~Y
+Prevailing wage in public works - con~N
+Prevent.of Workplace Violence~N
+Primary elections~N
+Prison expansion/construction~N
+Prison industry~N
+Prison labor/community service programs~N
+Prison Transfer Situations~N
+Privacy Protection~N
+Private Schools~Y
+Privatization~N
+Probation~Y
+Producer Licensing Bill~N
+Product liability~N
+Product safety~Y
+Product warranties~N
+Professional liability insurance~N
+Professions - miscellaneous~Y
+Prohibits Animal Fighting (s-5172-A)~Y
+Prohibits discl testimony-peer review-pro~N
+Prohibits Vaccines w/Mercury to Preg Women & Chrn U~N
+Promote the state's cultural and tourist resources~N
+Prompt contracting/payment~N
+Prompt Pay~N
+Propane~Y
+Proper shelter for domestic animals (S-3945)~N
+Property assessment~Y
+Property Condition Disclosure (PCD)~N
+Property/school taxes~Y
+Property Tax~Y
+Property Taxes~Y
+Property Tax Exemption for Fraternal Orders (S-2078~N
+Property tax exemptions~Y
+Property tax relief-con~N
+Property tax relief-pro~Y
+Proposed legislation~N
+Pro Seward Encouragement~Y
+Prosthetic Parity~N
+Protection of Retiree's Health Ins. Benefits~N
+Protect White Deer Herd at Seneca Depot~N
+Psychologists~N
+Public assistance benefit levels~Y
+Public assistance employment programs~N
+Public Broadcasting (support)~Y
+Public campaign financing - con~N
+Public employees and pension - misc.~Y
+PUBLIC EMPLOYEES & PENSIONS~N
+Public employees/Workfare~Y
+Public employee unions~N
+Public Libraries/Librarians of the 51st~Y
+Public officials in retirement system~N
+Public pension increase (COLA)~Y
+Public pensions and retirement system~Y
+Public right of passage on waterways - con~N
+Public right of passage on waterways - no opinion~N
+Public right of passage on waterways - pro~N
+Public Schools of the District~Y
+Public service commission~Y
+Public TV~N
+Questionnaire 2000~Y
+Questionnaire response~Y
+Quick Draw Reinstatement~Y
+Rabies~N
+Racing~N
+Racing and wagering - miscellaneous~Y
+Radiologists/Inject Contrast ID's (s.4016-A) con~N
+Radiologists/Inject Contrast ID's (s.4016-A) pro~N
+Radon testing~N
+Railroads - General~N
+Rainchecks by retailers - con~N
+Raised drinking age~N
+Raising compulsory education age to 17 - con~N
+Rape and sex offenses~Y
+Rape Crisis Programs~N
+Rapp's Canadarago list (ones not on ours)~N
+Rate increases~Y
+Real Estate appraisals/appraisers~N
+Real Estate Brokers/Salesmen~Y
+Real Estate Transfer Tax~Y
+Real property tax exemption legislation~N
+Real property tax - miscellaneous~Y
+Realty and real estate~N
+Reapportionment~N
+REBATE-NY- Con~N
+REBATE-NY- Pro~Y
+Recording conveyances~N
+Recreation~Y
+Recreational Programs~N
+Recycling~Y
+Recycling - con~N
+Recycling Grants~N
+Recycling -pro~Y
+Reduced Telephone Rates for Religious Org.~N
+reduce energy costs~Y
+Refundable income tax credit~N
+Regents action plan~N
+Regents Decision (Channel One)~N
+Regents scholarships~N
+Regional Jails~N
+Registration~Y
+Registration Refunds~Y
+Regist.& Regul. Natural/Complementary practitioners~N
+Reg. of Outdoor Wood Burning Device-Con~Y
+Reg. of Outdoor Wood Burning Device-Pro~N
+Regs/Standards Boarding Kennels/Grooming Estab.~N
+Regulate Outdoor Night Lighting - con~N
+Regulate Outdoor Night Lighting - pro~N
+Regulatory issues (Card returns)~N
+Regulatory process/reform~N
+Reimbursement for Fire Coordinators activities~N
+Reimbursement for fulltime D.A.'s~N
+Release of medical records~N
+Release of Pers.Info fr Voter Regist-con~N
+Religion~Y
+Religious Corp.~N
+Relocation to Kingston~N
+Removal of Snow From Automobiles - con~N
+Rental cars~N
+Rental housing~Y
+Reporting of Animal Abuse/Mal Treatment~Y
+Requests general~Y
+Rescind Full Face Ballot - pro~N
+Rescind State Applns.for Fed.Const.~N
+Research & development grants~N
+Residential electric rates~Y
+Residential Facilities~Y
+Residential heating rates~Y
+Residential housing~N
+Resolutions~Y
+Respiratory Therapists Bill~N
+Respite~N
+Restore NY Program - Pro~N
+Restrictions on ultraviolet radiation at tanning sa~N
+Retired Teachers' Health Insurance (S-3236)~N
+Retirement Benefits for Firefighters~N
+Retirement-bridges prior service~N
+Retirement Credit for Military Service(S-8101)~N
+Retirement upgrade 911 dispatchers~N
+Returned to Taxpayers - no~Y
+Returned to Taxpayers - yes~Y
+Reverse mortgages~N
+Revise Power Plant Siting Process - con~N
+Revise Power Plant Siting Process - pro~N
+Revolving Loan Account~Y
+Revolving loan fund for fire equipment~N
+Reynolds Game Farm closing-con~N
+Rifle/shotgun issues~Y
+RMCA's~Y
+Road Rage Issues~N
+Roadside litter~Y
+Rockefeller Drug Laws - con~Y
+Rockefeller Drug Laws - pro~N
+Rogers environmental center~N
+RSVP funding S.407~N
+Rt. 12 Expansion - pro~N
+Rt. 28 Corridor Issues-Herk/Adirondacks~N
+Rt. 28 Corridor Issues - Otsego Co.~N
+Runaway & Homeless Youth Programs~N
+Rural housing~Y
+Rural issues~Y
+Rural transportation~N
+S.417 pro literacy volunteer program~N
+Safe Place to Work (Scaffolding)~N
+Safety/Inspections~Y
+Safety Security Officers/pension~N
+Sale of alcohol beverages, kegs~Y
+Sale of automotive refinish material~N
+Sale of Cayuga County Jail~N
+Sale of Oneonta Armory~N
+Sales tax~Y
+Sales tax on home heating fuel~N
+Sales Tax Vendor Credit~N
+Sales & Use Tax/temporary help agencies~N
+Same Day Voter Registration- Pro~Y
+Same sex marriages - against~Y
+Same sex marriages - for~Y
+Sanctity of Human Life~N
+Satisfied with health care system - no~Y
+Satisfied with health care system - yes~Y
+Satisfied with quality of long term care for srs. -~N
+Savings~N
+Scenic Byways Designation - pro~N
+Sch.dist to Phase Out Prop Tax as Edu. Fund.-pro~N
+Schoharie Cable/community access grant~N
+Schoharie Co. Economic Group~Y
+Schoharie Community Hospital Transition Board~N
+Schoharie County Conservation Association~N
+Schoharie Co. voter registration list~Y
+Schoharie Hospital/Bassett~Y
+Schoharie Senior Expo 2008~Y
+School Based Health Clinics~Y
+School board members~Y
+School Breakfast Program - against~N
+School Breakfast Program- for~N
+School buses for other transportation needs~N
+School bus safety~N
+School district budgets and elections~Y
+School district mergers~N
+School district projects~N
+School employees~N
+School grounds - contraceptives/counseling~N
+School health services~Y
+School Nurse to be RN~N
+School Property Tax Reduction Act - for~N
+Seat belt law - con~N
+Seat belt law - pro~N
+Seat belts on school buses - against~N
+Seatbelts on school buses - for~N
+Secession of Upstate~N
+Security guard exemption~N
+SED library standards~N
+See 58006~Y
+See code 38130~N
+SEIU Override Mailer~Y
+Senate HOME Bill~N
+Senate Perspective~Y
+Senate Tax Cut Plans Rebate Ny - con~N
+Senate Tax Cut Plans Rebate NY - pro~Y
+Senior citizen exemption~N
+Senior Heat Program~Y
+Sentencing~Y
+Sewage treatment~Y
+Seward's Club~Y
+Seward's Health Care Plan - pro~Y
+Sewer districts~N
+Sewer/Water/Filtration Grants~N
+Sex education in schools - con~N
+Sex education in schools - for~N
+Sex Offender Legislation - pro~Y
+Sex Offenders Registration Act~N
+Sexual Assault Forensic Exam Pay Act(S-2194-B)~N
+Sexual harassment at work~N
+sharon Springs Juvenile Detension Facility~N
+Shelter issues~N
+Sheriff as joint employer - for~N
+Sherrif Mileage Reimbursement~N
+Shooting Ranges - Pro~N
+Should the state continue tax rebate checks-no~N
+Should the state continue the school prop tax-yes~N
+Sick tax/opposition to~Y
+Signs on Highways~N
+Signs on Thruway/Interstates~N
+Silo Bill~N
+"Sin taxes"~Y
+Site engineer/practice of land surveying~N
+Site engineer/practice of land surveying - against~N
+Site selection~N
+Small business~Y
+Small businesses~Y
+Small Buss.Health Ins.(Seward/Morelle)-sole proprie~N
+Small Cities Dev. Grants~N
+Small city school budget vote - against~Y
+Small claims court~N
+Small game hunting~Y
+Smith Corona closing~N
+Smoking~Y
+Smoking ban in restaurants - con~Y
+Smoking ban in restaurants - pro~Y
+Smoking Filtration System - con~N
+Smoking Filtration System - pro~N
+Smoking restrictions - con~Y
+Smoking restrictions - pro~Y
+Snowmobile Rights & Resp. Act~N
+Snowmobilers List~Y
+Snowmobile/Trail Insurance Issues~N
+Snowmobile Trails/snowmobiles (general)~Y
+Soccer Hall of Fame~N
+Social Security(notch babies)~N
+SOCIAL SERVICES~N
+Social Services Commissioners~N
+Social services - miscellaneous~Y
+Social Workers to Treat Worker Comp patients~N
+Soil & Water Conservation Districts~N
+Solar energy~Y
+Solar-no~Y
+Solar-yes~Y
+Solid waste~Y
+SONYMA mortgages~N
+Special Education~Y
+Special usage rates~N
+Speed limits/Enforcement~Y
+Spending cuts~N
+Spending Reform/Spending Cap~Y
+Spend on School Construct. vs. Tax Reduction - no~N
+Spend on School Construct. vs. Tax Reduction - yes~N
+Spinal Manipulation bill (s-2052)~N
+Sporting Arms Workers Sec. Act 2000 - pro~N
+Sports betting - con~N
+Sports blackouts~N
+Sportsmen Issues~Y
+Spousal impoverishment legislation~N
+Spouse Code~Y
+Spyware, etc.~N
+Sr. Citizen Renter~Y
+Sr. Citizen STAR Homeowner~Y
+SSI~Y
+Staffing shortages in Mental Health Facilities~N
+STAR - Enhanced/Srs.~Y
+STAR Exemption for Small Buss. Prop.~N
+STAR program~Y
+STAR Program (general)~Y
+Starting date of Vietnam War~N
+State aid for libraries~Y
+State aid for sports stadium- against~N
+State aid for sports stadiums - for~N
+State aid for the arts~N
+State aid for treatment and education~Y
+State aid to business~Y
+State aid to education~Y
+State aid to localities~Y
+State Board of Realtors~N
+State borrowing (against)~N
+State budget~Y
+State Budget~Y
+State Budget/Elimination of Pork Barrel~Y
+State budget item~Y
+State budget items~Y
+State Budget items~Y
+State BudgetItems~Y
+State Budget Items~N
+State Commissions & Boards~N
+State compensation~N
+State Constitutional Convention - con~N
+State Constitutional Convention - pro~N
+State Education Department (SED)~Y
+State Emergency Readiness - pro~N
+State employement~N
+State/Federal grants & funds (ISTEA)~N
+State/Fed. Housing Proj. Non-discrimintion for Disa~N
+State funding~N
+State governmental operations - misc.~Y
+STATE GOVERNMENT OPERATIONS~N
+State insurance fund~Y
+State layoffs/furloughs~Y
+State licensing of professions~Y
+State Liquor Authority licensing~Y
+State mandates~Y
+Statement filing fee reduction/directors & addresse~N
+State Parks~Y
+State Police~Y
+State Police Officers~N
+State purchasing and contracting~Y
+State regulations~Y
+State revenue sharing~Y
+Statewide Smoking Ban - Con~Y
+Statewide Smoking Ban - Pro~Y
+Statewide standards for wind generators-no~N
+Statewide standards for wind generators-yes~N
+Statler Bill - con~N
+Statute of Limitations/malpractice actions~N
+St. Lawrence Cement Greenpoint - con~N
+St. Lawrence Cement Greenpoint - pro~N
+St. Luke's Hospital Utica/Mohawk~N
+STOP DWI~N
+Storage of De-icing Compounds~N
+St. Police Disciplinary Hearing - pro~N
+St. Police to Engage in Outside Employ.~N
+St., Rds, Sidewalks & general maintenance~N
+Streamline Cred.Process of Dr's by Health Care Plan~N
+"Strike Breakers Bill"~N
+Student/parent loans~Y
+SUCO Field House~N
+Summer Camps/Sanitary Code~N
+Sunday Hunting Bill - con~Y
+Sunday Hunting Bill - pro~Y
+SUNT tuition waiver for National Guard members~N
+SUNY~Y
+SUNY faculty & staff~Y
+SUNY programs~N
+SUNY tuition increase- against~Y
+SUNY tuition increase - for~N
+sup death penalty for 1st degree premediated murder~N
+Superfund~Y
+Supplemental Retirement Benefits~Y
+Support for Pataki budget ('95)~Y
+Support for Pataki budget 96~N
+Supreme Court~N
+Supreme Court Libraries~N
+Surplus Equipment & Land~N
+Surrogate Court~N
+Surrogate Decision-making Bill~Y
+Susquehanna River Basin/Commission~N
+Taggants in explosives~N
+TANF/Post Adoptive Services~N
+TANF/Summer Youth Programs~N
+Tannersville Bike Path~N
+TAP/STAP~Y
+Target competition~Y
+Tax amnesty~N
+Tax and finance - miscellaneous~Y
+Tax Assistance for College vs. Income Tax Deduction~N
+Taxation of alcoholic beverages~N
+Tax Break for Members of Vol. Fire Depts.~N
+Tax Cedit for Historic Homes~N
+Tax Checkoff for Animal Pop. Control Fund~N
+Tax Check Off for Charities~N
+Tax Cuts - no~Y
+Tax Cuts - yes~Y
+Tax department problems~Y
+Taxes~Y
+Taxes on utility bills~Y
+Tax-exempt income expenses~N
+Tax exempt status~N
+TAX & FINANCE~N
+Tax incentives~N
+Tax increase - con~Y
+Tax increase - pro~N
+Tax on Amusement Park Adm. Charges - pro~N
+Tax on foreign fire ins. companies~N
+Tax on property transfers~N
+Taxpayer Groups~N
+Tax reduction~N
+Tax reduction - con~Y
+Tax reduction - pro~Y
+Tax reform~Y
+Tax Relief for Equine Farriers~N
+Tax Relief for Home Schooled Materials~N
+Taylor law~N
+Teach CPR & Defibrillators (S-1071) - con~N
+Teach CPR & Defibrillators (S-1071) - pro~N
+Teachers~N
+Teachers centers~N
+Teachers disciplinary hearings~N
+Teachers retirement system~Y
+Teachers salaries~N
+Teachers/Teacher centers~Y
+Teenage pregnancy~N
+Telecommunications~Y
+Telemarketing~N
+Telephone rates/charges~Y
+Telephone services~Y
+Television~Y
+Temporary employees~N
+Tenants rights~N
+Ten Day Window for DMV Inspections-con~N
+Tenure~Y
+Tenure for School Principals~Y
+Term Limitations - for~N
+Thank you's~Y
+Third party reimbursement/nurses/physicians assts.~N
+Threatening calls, letters, behaviors~N
+Thruway Authority~Y
+Thruway truck mileage exemption~N
+TIAA-CREF~Y
+Tier Equity - (Tiers 2 and 4)~N
+Tier III~Y
+Tier IV~Y
+Title insurance~N
+Titles~Y
+Tolls on Interstates - con~N
+Tompkins Arts list~N
+Tompkins Landfill~N
+Tort Reform Bill~Y
+Tort Reform - Collateral Source Bill~Y
+Tourist industry (Tourism/general)~Y
+Town and village courts~Y
+Town Board~Y
+Town Clerks~Y
+Town Highway Superintendents~Y
+Towns - misc.~Y
+Town Supervisors~Y
+Toxic Waste~N
+Transfer Tax (s-6949)-pro~N
+Transp. non-consent adult for eval.-pro~N
+Transportation~Y
+TRANSPORTATION~N
+Transportation Federation (DOT,Thwy,Bridge Auth.)~N
+Transportation - miscellaneous~Y
+Transportation of Hazardous materials~N
+Trapping~Y
+Traumatic brain injury~N
+Treatment for the deaf~N
+Tri-County Solid Waste Authority~Y
+Trucks~Y
+Truth in advertising~N
+TTH 9/10/2008 Accepted~Y
+TTH 9/10/2008 Answering machine~Y
+TTH 9/10/2008 Declined~Y
+TTH 9/10/2008 Requested to talk~N
+TTH 9/10/2008 Talked~N
+TTH-Accepted call~N
+TTH-Answered Questions~Y
+TTH-Answering Machine~N
+TTH Received call~Y
+Tuition cost/handicapped~N
+UFP & BC - local enforcement~N
+UFP & BC - state enforcement~N
+Ultimate Fighting (dogs/game) - con~N
+Unborn Victims of Violence-Supports~Y
+Unemployment~Y
+Unemployment and job service office~N
+Unemployment Ins. - Employers Fees/Fines~N
+Unemployment insurance~Y
+Unemployment Insurance - experience rating~N
+Unemployment Insurance Raise~N
+Uniform Fire Prevention and Building Code - revisio~N
+Uniform Fire Prevention & Building Code - Public Bu~N
+Universal Coverage~N
+Universal Pre-K Program~Y
+Unredeemed bottle deposits~N
+Urban Development Corp (UDC)/Empire State Developme~N
+use 32014 and 32015~Y
+Used car lemon laws~N
+Used oil collection~N
+Used Tire Disposal/Recycling; Waste Tire Mgmt. - Co~N
+Use of "infrastructure bond" money~N
+Use of Lottery monies~Y
+Use Prior Year's Budget if Late - no~Y
+Use Prior Year's Budget if Late - yes~Y
+User Fees~N
+Utility problems~N
+Utility service~Y
+Utility Truck Exempt. from Hrs. of Restrict~N
+Vaccinations/Immunizations~Y
+Value-added tax~N
+Veal Calves (S.8545)~N
+Vehicle safety~Y
+Very Good-yes~Y
+Vet College~N
+Veterans~Y
+VETERANS~N
+Veterans affairs - miscellaneous~Y
+Veterans Awards~N
+Veterans benefit~N
+Veterans cemetaries~N
+Veterans exemptions~N
+Veterans groups~N
+Veterans Homes~N
+Veterans Organizations - utility bills~N
+Veterans Outreach Centers~N
+Veterans' Purple Heart Award~N
+Veteran's Retirement Incentive Bill~N
+Veterans Thruway Bill~N
+Veterinarians~Y
+Veto Overide '06 - pro~Y
+VFBL benefits~Y
+Video Lottery (in favor of)~Y
+Video Lottery Term. Expan. - con~N
+Video Lottery Term. Expan. - pro~N
+Vietnam veterans benefits~N
+Vietnam veterans memorial~N
+Village Clerks~Y
+Village Mayors~Y
+Village Officials--other than Mayors,clerks~N
+Villages - misc.~Y
+Violence in schools~Y
+Violence Prevention Programs~N
+Vol. Recruitment Service Scholarship Prog.~N
+Volunteer Ambulance Service~Y
+Volunteer Fire Departments (50 SD)~Y
+Volunteer fire personnel~Y
+Volunteer Program~N
+Volunteers (charities etc)~N
+Voter registration~N
+Voter Systems Standards Act~N
+Wage Equalization~N
+Wage violations~N
+Waive Inerest & Penalties on Assesmts.~N
+Walmart Bill (S.7090) fair share health ins mandate~N
+Walmart Bill (S.7090) fair share health ins. mandte~N
+Wal-Mart/Schoharie~N
+Walmart Tax Loophole~N
+Waste on agricultural land~Y
+Water districts~N
+Water levels~N
+Water pollution~N
+Water provision/protection~N
+Water quality~Y
+Watershed Issues~Y
+Water supply~N
+Weapons and firearms~Y
+Weed control~N
+Welfare~Y
+Welfare Costs~Y
+Welfare Reform (both sides)~Y
+Wetlands~Y
+Whistle Blower~N
+Wicks law - con~Y
+Wicks law - pro~N
+Widewater Dev. Ithaca~N
+Wild animals~Y
+Wind-no~Y
+Wind Power - con~Y
+Wind Power - pro~Y
+Wind-yes~Y
+Wineries t Sell Spirits Frm.Ag Fermented Prods.~N
+Wine sales in grocery stores - con~Y
+Wine sales in grocery stores - pro~Y
+Wireless Telephone Consumer Prot. Act - pro~N
+Women & employment~N
+Women Rights~N
+Women's Congraceptive Coverage - con~N
+Women's Contraceptive Coverage - pro~N
+Women's Health & Wellness Act~Y
+Woodburning facilities~N
+Worker's Comp Board Issues~N
+Workers compensation~Y
+Workers compensation (increase)~N
+Workers Compensation (no increase)~N
+Workers Comp Reform - against~N
+Workers Comp Reform - for~Y
+Workforce Investment Act (WAI)~N
+Working conditions~N
+Work release & furlough~N
+World Trade Center 9-11 Terrorist Attack~N
+Would you support a assessment freeze or tax cap co~N
+Would you support a assessment freeze or tax cap pr~N
+WRAP Bill~N
+Wrongful death actions~Y
+XXX~N
+XXXX~Y
+XXXXX~N
+Y2K Compliance - year 2000~N
+Yes access to internet~Y
+Yes care elder family member home~Y
+Yes guidelines children internet~Y
+Youth Bureaus~Y
+Youth Development Delinquency Program/DFY Funds~N
+Youthful offender status~N
+Zero tolerance~N
+Zoning and Planning~Y

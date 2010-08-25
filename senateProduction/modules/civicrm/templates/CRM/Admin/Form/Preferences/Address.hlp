@@ -1,0 +1,77 @@
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.1                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+{htxt id='label-tokens'}
+<p>{ts}The following tokens are available to format Mailing Labels. Address fields are taken from the contact's <strong>primary</strong> location.{/ts}</p>
+<div class="form-item">
+<table style="">
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.addressee}{/literal}</td><td>{ts}Used for mailing labels only. Replaced by the Addressee option selected on contact add/edit screen.{/ts}</td></tr>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.current_employer}{/literal}</td><td>{ts}Current employer name as configured in the individual contact edit form. Note that this field is only available for contacts which are the contact type individual.{/ts}</td></tr>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.address_name}{/literal}</td><td>{ts}Address Name (e.g. Johnson Paviliont).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.street_address}{/literal}</td><td>{ts}Full street address (e.g. 110 Main Street).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.supplemental_address_1}{/literal}</td><td>{ts}Supplemental address 1 (line is skipped if empty).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.supplemental_address_2}{/literal}</td><td>{ts}Supplemental address 2 (line is skipped if empty).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.city}{/literal}</td><td>{ts}City.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.county}{/literal}</td><td>{ts}County name. If you want to include the county in your mailing labels, the <strong>Include Counties</strong> setting must be enabled on this screen, and county names must be added to the civicrm_county table in your database.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.state_province}{/literal}</td><td>{ts}State or province <strong>abbreviation</strong>.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.state_province_name}{/literal}</td><td>{ts}State or province <strong>full name</strong>.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.postal_code}{/literal}</td><td>{ts}Postal code.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.country}{/literal}</td><td>{ts}Country name (e.g. Canada).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{, }{/literal}</td><td>{ts}Add spaces or punctuation to layout by surrounding them with brackets.{/ts}</td>
+</table>
+</div>
+{/htxt}
+{htxt id='address-tokens'}
+<p>{ts}The following tokens are available to format Address display on Contact and Event screens.{/ts}</p>
+<div class="form-item">
+<table style="">
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.address_name}{/literal}</td><td>{ts}Descriptive name assigned to a contact or event address. EXAMPLES: 'College address' for a person. 'Johnson Pavilion' for an event.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.street_address}{/literal}</td><td>{ts}Full street address (e.g. 110 Main Street).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.supplemental_address_1}{/literal}</td><td>{ts}Supplemental address 1 (line is skipped if empty).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.supplemental_address_2}{/literal}</td><td>{ts}Supplemental address 2 (line is skipped if empty).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.city}{/literal}</td><td>{ts}City.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.county}{/literal}</td><td>{ts}County name. If you want to include the county in your screen displays, the <strong>County</strong> checkbox should be set under <strong>Address Editing &raquo; Address Fields</strong> on this screen, and county names must be added to the civicrm_county table in your database.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.state_province}{/literal}</td><td>{ts}State or province <strong>abbreviation</strong>.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.state_province_name}{/literal}</td><td>{ts}State or province <strong>full name</strong>.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.postal_code}{/literal}</td><td>{ts}Postal code.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.country}{/literal}</td><td>{ts}Country name (e.g. Canada).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{, }{/literal}</td><td>{ts}Add spaces or punctuation to layout by surrounding them with brackets.{/ts}</td>
+</table>
+</div>
+{/htxt}
+{htxt id='name-tokens'}
+<p>{ts}The following tokens are available to control the format of individuals' contact names when they are included in <strong>mailing labels</strong>.{/ts}</p>
+<div class="form-item">
+<table style="">
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.individual_prefix}{/literal}</td><td>{ts}Assigned name prefix, if any (e.g. 'Ms.', 'Dr.', 'Hon.' etc.).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.individual_suffix}{/literal}</td><td>{ts}Assigned name suffix, if any (e.g. 'II', 'Jr.', 'Sr.' etc.).{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.first_name}{/literal}</td><td>{ts}Contact's first name.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.middle_name}{/literal}</td><td>{ts}Contact's middle name.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.last_name}{/literal}</td><td>{ts}Contact's last name.{/ts}</td>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{contact.current_employer}{/literal}</td><td>{ts}Current employer name as configured in the individual contact edit form. You will probably want this on a separate line, so use the Enter key to create a line-break after the name fields.{/ts}</td></tr>
+<tr style="vertical-align:top;"><td style="padding-right:1em;">{literal}{, }{/literal}</td><td>{ts}Add spaces or punctuation to layout by surrounding them with brackets.{/ts}</td>
+</table>
+</div>
+{/htxt}

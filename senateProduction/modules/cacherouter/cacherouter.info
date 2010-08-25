@@ -1,0 +1,14 @@
+; $Id: cacherouter.info,v 1.1.2.4 2009/09/03 06:45:02 slantview Exp $
+name = CacheRouter
+description = "Controls access to split caching functionality into self contained objects."
+package = Caching
+version = VERSION
+core = 6.x
+
+
+; Information added by drupal.org packaging script on 2009-09-05
+version = "6.x-1.0-rc1"
+core = "6.x"
+project = "cacherouter"
+datestamp = "1252157422"
+

@@ -1,0 +1,46 @@
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.1                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+{htxt id="id-contrib_source"}
+{ts}Optional identifier for the contribution source (campaign name, event, mailer, etc.).{/ts}
+{/htxt}
+
+{htxt id="id-contribution_type"}
+{ts}Select the appropriate contribution type for this transaction.{/ts}
+{/htxt}
+
+{htxt id="id-trans_id"}
+{ts}Unique payment ID for this transaction. The Payment Processor's transaction ID will be automatically stored here on online contributions.{/ts} {ts}For offline contributions you can record a bank transfer ID or other identifier if applicable.{/ts}
+{/htxt}
+
+{htxt id="id-soft_credit"}
+<p>
+{ts}Use Soft Credits to indicate that a contact has a relationship with the actual donor and / or was indirectly responsible for the contribution. For example, if one family member makes a large contribution - it is often useful to record a Soft Credit for the other family member(s). You can record a soft credit while adding or editing a contribution record from this tab.{/ts}
+</p>
+<p>
+{ts}When a contribution is made via a Personal Campaign Page, a soft credit for that contribution is automatically assigned to the contact who created the Personal Campaign Page.{/ts}
+</p>
+{/htxt} 
+

@@ -1,0 +1,6 @@
+name = NYSS Contact List Query module
+description = Limit contactlist queries to staff group for activity assignees and case roles
+dependencies[] = civicrm
+package = CiviCRM
+core = 6.x
+version = 3.2

@@ -1,0 +1,251 @@
+<?php
+
+/*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.1                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*/
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2010
+ * $Id$
+ *
+ */
+
+/**
+ * Implementation of hook_nodeapi
+ * http://api.drupal.org/api/function/hook_nodeapi/5
+ *	
+ */
+function civicrm_og_sync_nodeapi( &$node, $op, $a3 = null, $a4 = null ) {
+    // check if the node if of type og
+    if ( ! og_is_group_type( $node->type ) ) {
+        return;
+    }
+
+    if ( ! civicrm_initialize( ) ) {
+        return;
+    }
+    
+    require_once 'CRM/Bridge/OG/Drupal.php';
+    
+    $title  = trim( $node->title );
+    $params = array( 'name'        => $title,
+                     'title'       => $title,
+                     'description' => trim( $node->og_description ),
+                     'is_active'   => 1,
+                     'og_id'       => $node->nid );
+    
+    switch ( $op ) {
+    case 'insert':
+    case 'update':
+        if ( ! _civicrm_og_sync_set_context( 'drupal' ) ) {
+            return;
+        }
+
+        CRM_Bridge_OG_Drupal::nodeapi( $params, 'add' );
+
+        // also call the user hook since OG does not for admin
+        civicrm_og_sync_og( 'user update', $node->nid, $node->uid, array( 'is_admin' => 1 ) );
+        break;
+
+    case 'delete':
+        if ( ! _civicrm_og_sync_set_context( 'drupal' ) ) {
+            return;
+        }
+
+        // OG has been deleted, but we dont really care about this in CiviCRM land
+        // We ignore this for now
+        // for delete we dont need to call the user hook since we blow away both the groups
+        // and anything connected to it including acl's
+        CRM_Bridge_OG_Drupal::nodeapi( $params, 'delete' );
+        break;
+
+    default:
+        break;
+    }
+}
+
+function civicrm_og_sync_og( $op, $nid, $uid, $args = array( ) ) {
+    // check if civicrm is present
+    if ( ! function_exists( 'civicrm_initialize' ) ||
+         empty( $nid ) ||
+         empty( $uid ) ) {
+        return;
+    }
+
+    if ( ! civicrm_initialize( ) ) {
+        return;
+    }
+
+    // create the CiviCRM groups if they dont exist
+    $node = node_load(array('nid' => $nid ));
+    $title  = trim( $node->title );
+    $params = array( 'name'        => $title,
+                     'title'       => $title,
+                     'description' => trim( $node->og_description ),
+                     'is_active'   => 1,
+                     'og_id'       => $node->nid );
+    
+    // add the group
+    require_once 'CRM/Bridge/OG/Drupal.php';
+    CRM_Bridge_OG_Drupal::nodeapi( $params, 'add' );
+
+    $params = array( 'og_id'     => $nid,
+                     'uf_id'     => $uid,
+                     'is_active' => isset( $args['is_active'] ) ? $args['is_active'] : null,
+                     'is_admin'  => isset( $args['is_admin' ] ) ? $args['is_admin' ] : null,
+                     );
+
+    switch ( $op ) {
+
+    case 'user insert':
+    case 'user update':
+        if ( ! _civicrm_og_sync_set_context( 'drupal' ) ) {
+            return;
+        }
+
+        CRM_Bridge_OG_Drupal::og( $params, 'add' );
+        break;
+
+    case 'user delete':
+        if ( ! _civicrm_og_sync_set_context( 'drupal' ) ) {
+            return;
+        }
+
+        CRM_Bridge_OG_Drupal::og( $params, 'delete' );
+        break;
+
+    }
+}
+
+function civicrm_og_sync_civicrm_post( $op, $objectName, $objectID, $objectRef ) {
+    require_once 'CRM/Bridge/OG/Utils.php';
+    if ( ! CRM_Bridge_OG_Utils::syncFromCiviCRM( ) ) {
+        return;
+    }
+    
+    switch ( $objectName ) {
+    case 'Group':
+        require_once 'CRM/Bridge/OG/CiviCRM.php';
+        switch ( $op ) {
+        case 'create':
+        case 'edit':
+            if ( ! _civicrm_og_sync_set_context( 'civicrm' ) ) {
+                return;
+            }
+            CRM_Bridge_OG_CiviCRM::group( $objectID, $objectRef, 'add' );
+            break;
+
+        case 'delete':
+            if ( ! _civicrm_og_sync_set_context( 'civicrm' ) ) {
+                return;
+            }
+            CRM_Bridge_OG_CiviCRM::group( $objectID, $objectRef, 'delete' );
+            break;
+
+        default:
+            break;
+        }
+        break;
+
+    case 'GroupContact':
+        require_once 'CRM/Bridge/OG/CiviCRM.php';
+        switch ( $op ) {
+        case 'create':
+        case 'edit':
+            if ( ! _civicrm_og_sync_set_context( 'civicrm' ) ) {
+                return;
+            }
+            CRM_Bridge_OG_CiviCRM::groupContact( $objectID, $objectRef, 'add' );
+            break;
+
+        case 'delete':
+            if ( ! _civicrm_og_sync_set_context( 'civicrm' ) ) {
+                return;
+            }
+            CRM_Bridge_OG_CiviCRM::groupContact( $objectID, $objectRef, 'delete' );
+            break;
+
+        default:
+            break;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+}
+
+/**
+ * Implemenation of hook_enable.  Use to synchronise with pre-existing groups
+ * @return 
+ */
+function civicrm_og_sync_enable() 
+{
+    if ( ! civicrm_initialize( ) ) {
+        return;
+    }
+    
+    require_once 'CRM/Bridge/OG/Drupal.php';
+    
+    // get OG content types
+    $og_types_str = implode("', '", og_get_types('group'));
+    //build the query
+    $results = db_query("SELECT n.nid FROM {node} n WHERE n.type IN ('%s')", $og_types_str);
+    
+    while ($result = db_fetch_array($results)) {
+        $node = node_load(array('nid' => $result['nid']));
+        
+        $title  = trim( $node->title );
+        $params = array( 'name'        => $title,
+                         'title'       => $title,
+                         'description' => trim( $node->og_description ),
+                         'is_active'   => 1,
+                         'og_id'       => $node->nid );
+        
+        // add the group
+        CRM_Bridge_OG_Drupal::nodeapi( $params, 'add' );
+        
+        // add the subscribers
+        $subscribers = db_query(og_list_users_sql(1), $node->nid);
+        while ($subscriber = db_fetch_array($subscribers)) {
+            $uid = $subscriber['uid'];
+            $is_admin = $subscriber['is_admin'];
+            civicrm_og_sync_og( 'user update', $node->nid, $uid, array( 'is_admin' => $is_admin, 'is_active' => 1 ) );
+        }
+    }
+}
+
+function _civicrm_og_sync_set_context( $currentContext ) {
+    static $_context = null;
+    if ( ! $_context ) {
+        $_context = $currentContext;
+    }
+    return $_context == $currentContext;
+}
+
+

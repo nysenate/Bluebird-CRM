@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="Contributions" >
+	     <message>	
+	     </message>
+	</layout>
+    <state>
+        <name>CiviCRM Contribution Pages</name>
+        <creationDate>04/01/2008</creationDate>
+        <copyright>(C) CiviCRM LLC</copyright>
+        <author>CiviCRM LLC</author>
+        <authorEmail>info@civicrm.org</authorEmail>
+        <authorUrl>civicrm.org</authorUrl>
+        <version>2.2</version>
+        <description>CiviCRM Contribution Pages</description>
+        <params>
+	  <param name="task" type="hidden" default="civicrm/contribute/transact" label="Choose CiviCRM task" />
+	  <param name="id" type="sql" default="10" label="Contribution Page" query="SELECT id,title FROM civicrm_contribution_page WHERE is_active = 1 ORDER BY title" key_field="id" value_field="title" />
+	  <param name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
+        </params>
+    </state>
+ </metadata>
+  

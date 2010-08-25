@@ -1,0 +1,11 @@
+; $Id: userprotect.info,v 1.5 2007/11/26 20:41:12 thehunmonkgroup Exp $
+name = "User Protect"
+description = "Allows admins to protect users from being edited or deleted, on a per-user basis."
+core = "6.x"
+
+; Information added by drupal.org packaging script on 2009-11-06
+version = "6.x-1.4"
+core = "6.x"
+project = "userprotect"
+datestamp = "1257475912"
+
