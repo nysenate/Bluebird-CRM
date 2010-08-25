@@ -1,0 +1,172 @@
+<?php
+
+// $Id: userprotect.install,v 1.12.2.1 2009/11/04 13:36:54 thehunmonkgroup Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function userprotect_install() {
+
+  $ret = drupal_install_schema('userprotect');
+
+  $failed = array();
+  foreach ($ret as $query) {
+    if (!$query['success']) {
+      $failed[] = $query['query'];
+    }
+  }
+  if (empty($failed)) {
+    // Default settings
+    $q1 = db_query("INSERT INTO {userprotect} (uid, up_name, up_mail, up_pass, up_status, up_roles, up_delete, up_edit, up_type, up_openid) VALUES (0, 0, 0, 0, 0, 0, 1, 1, 'user', 1)");
+    $q2 = db_query("INSERT INTO {userprotect} (uid, up_name, up_mail, up_pass, up_status, up_roles, up_delete, up_edit, up_type, up_openid) VALUES (1, 0, 0, 0, 0, 0, 1, 1, 'user', 1)");
+    $q3 = db_query("INSERT INTO {userprotect} (uid, up_name, up_mail, up_pass, up_status, up_roles, up_delete, up_edit, up_type, up_openid) VALUES (1, 1, 1, 1, 1, 1, 1, 1, 'admin', 1)");
+    $q4 = db_result(db_query('SELECT perm FROM {permission} WHERE rid = %d', DRUPAL_AUTHENTICATED_RID));
+    $q5 = db_query("UPDATE {permission} SET perm = '%s' WHERE rid = %d", $q4 .', change own e-mail, change own password, change own openid', DRUPAL_AUTHENTICATED_RID);
+    if ($q1 && $q2 && $q3 && $q4 && $q5) {
+      drupal_set_message(t('User Protect module installed successfully.'));
+    }
+    else {
+      drupal_set_message(t('Errors occurred while inserting the default data for the User Protect module.'), 'error');
+    }
+  }
+  else {
+    drupal_set_message(t('Table installation for the User Protect module was unsuccessful. The following queries failed: !queries', array('!queries' => theme('item_list', $failed))), 'error');
+  }
+}
+
+function userprotect_schema() {
+  $schema['userprotect'] = array(
+    'description' => t('Stores information about administer protections for users.'),
+    'fields' => array(
+      'uid' => array(
+        'description' => t('User ID.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'up_name' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("Name protection."),
+      ),
+      'up_mail' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("E-mail protection."),
+      ),
+      'up_pass' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("Password protection."),
+      ),
+      'up_status' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("Status protection."),
+      ),
+      'up_roles' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("Role protection."),
+      ),
+      'up_delete' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("Deletion protection."),
+      ),
+      'up_edit' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("All edits protection."),
+      ),
+      'up_type' => array(
+        'type' => 'char',
+        'length' => 20,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('Protection type.'),
+      ),
+      'up_openid' => array(
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("OpenID protection."),
+      ),
+    ),
+    'unique keys' => array('uid_up_type' => array('uid', 'up_type')),
+  );
+
+  return $schema;
+}
+
+/**
+ * Add protections for OpenID.
+ */
+function userprotect_update_6001() {
+  $ret = array();
+  $spec = array(
+    'type' => 'int',
+    'size' => 'small',
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => t("OpenID protection."),
+  );
+  db_add_field($ret, 'userprotect', 'up_openid', $spec);
+  // Protect OpenID editing for the anonymous user and uid 1 by default, and
+  // allow uid 1 to bypass the protections.
+  $ret[] = update_sql("UPDATE {userprotect} SET up_openid = 1 WHERE up_type = 'user' AND uid IN (0, 1)");
+  $ret[] = update_sql("UPDATE {userprotect} SET up_openid = 1 WHERE up_type = 'admin' AND uid = 1");
+  // Allow users to edit their own OpenID identities by default.
+  $perms = db_result(db_query('SELECT perm FROM {permission} WHERE rid = %d', DRUPAL_AUTHENTICATED_RID));
+  db_query("UPDATE {permission} SET perm = '%s' WHERE rid = %d", $perms .', change own openid', DRUPAL_AUTHENTICATED_RID);
+  $ret[] = array('success' => TRUE, 'query' => "Authenticated users have been granted the 'change own openid' permission by default.");
+
+  return $ret;
+}
+
+/**
+ * Rebuilds the menu due to code changes.
+ */
+function userprotect_update_6002() {
+  $ret = array();
+  menu_rebuild();
+  $ret[] = array('success' => TRUE, 'query' => "Successfully rebuilt menus.");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function userprotect_uninstall() {
+
+  // Drop tables.
+  drupal_uninstall_schema('userprotect');
+
+  // Drop variables.
+  $variables = array(
+    'userprotect_protection_defaults',
+    'userprotect_autoprotect',
+    'userprotect_administrator_bypass_defaults',
+    'userprotect_role_protections',
+  );
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
+
+  drupal_set_message(t('The User Protect module was uninstalled successfully.'));
+}

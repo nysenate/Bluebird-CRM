@@ -1,0 +1,16 @@
+/* put IE hacks in here */
+#crm-contact-actions-link {
+    width:90px;
+    }
+
+.crm-actions-ribbon {z-index:5}
+
+#crm-contact-actions-list {overflow: visible;}
+
+.crm-contact-actions-list-inner { zoom:1; width:490px;}
+
+#crm-container #mainTabContainer li.crm-tab-button a { background-image: none;}
+
+#crm-container #mainTabContainer li.crm-tab-button a span {display: none;}
+
+#crm-container a#tag-refresh-button {display:block!important;}

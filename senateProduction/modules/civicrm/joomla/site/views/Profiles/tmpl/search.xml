@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <layout title="Profile Search">
+      <message>
+      </message>
+    </layout>
+    <state>
+        <name>CiviCRM</name>
+        <creationDate>04/01/2008</creationDate>
+        <copyright>(C) CiviCRM LLC</copyright>
+        <author>CiviCRM LLC</author>
+        <authorEmail>info@civicrm.org</authorEmail>
+        <authorUrl>civicrm.org</authorUrl>
+        <version>2.2</version>
+        <description>CiviCRM Profile Search</description>
+		<name>Profile Search Layout</name>
+		<description>PROFILE SEARCH LAYOUT DESC</description>
+        <params >
+            <param name="task" type="hidden" default="civicrm/profile" label="" />
+	    <param name="gid" type="sql" default="10" label="Select a profile" query="SELECT DISTINCT civicrm_uf_group.id, civicrm_uf_group.group_type, civicrm_uf_group.title FROM civicrm_uf_join INNER JOIN civicrm_uf_group ON (civicrm_uf_join.uf_group_id = civicrm_uf_group.id) WHERE (civicrm_uf_group.is_active = 1) ORDER BY civicrm_uf_group.title ASC" key_field="id" value_field="title" />
+            <param name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly." />
+	</params>
+    </state>
+</metadata>

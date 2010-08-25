@@ -1,0 +1,84 @@
+/* $Id$ */
+
+/*
+** Put your local CSS modifications in this file
+** if you don't want to modify system provided
+** civicrm.css.
+*/
+
+#crm-container #access,
+#header-access {
+	display: none;
+}
+.main-container #edit-profile {
+	right: 0;
+}
+#crm-container #existing-dashlets-col-0,
+#crm-container #dashlets-header-col-0 {
+	width: 70%;
+}
+#crm-container #existing-dashlets-col-1,
+#crm-container #dashlets-header-col-1 {
+	margin-left:72%;
+	width:26%;
+}
+#check_291 {
+	display: none;
+}
+.tagset-hitarea {
+	display: none;
+}
+#tagLabel_291 {
+	font-size: 120%;
+}
+
+/* used for advanced search reset button; .button class was not available on popup */
+#Advanced a.resetbutton {
+	-moz-border-radius:3px 3px 3px 3px;
+	display:block;
+	float:right;
+	background:url("../i/crm-button-bg.gif") repeat-x scroll left top #70716B;
+	border:1px solid #3E3E3E;
+	color:#FFFFFF;
+	cursor:pointer;
+	font-size:12px;
+	font-weight:normal;
+	margin:0.25em 0.5em 0.25em 0.5em;
+	padding:3px 6px 2px;
+	text-decoration:none;
+	text-shadow:0 1px 0 black;
+}
+
+#crm-container #tagRow291 {
+	display: none;
+}
+#crm-container #tagListWrap {
+	height: 600px;
+	overflow: auto;
+	border: solid 1px #CCCCCC;
+}
+
+/* Hide a few things in case manage page */
+#crm-container .crm-case-caseview-form-block-timeline_id,
+#crm-container .crm-case-caseview-form-block-report_id {
+	display: none;
+}
+
+/* Hide user dashboard link */
+#crm-container .crm-contact-dashboard {
+	display: none;
+}
+
+/* Hide some tag stuff */
+#crm-container .crm-tag-form-block-used_for,
+#crm-container #newTagSet {
+	display: none;
+}
+
+/* Contact summary/edit stuff */
+#contact-summary .crm-accordion-wrapper .crm-accordion-header .crm-accordion-pointer {
+	background-image: url("../i/icons/jquery-ui-3E3E3E.png");
+}
+#District_Information_7_1 .crm-accordion-header {
+	font-size: 14px;
+}

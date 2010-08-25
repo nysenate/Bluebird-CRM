@@ -1,0 +1,567 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: User Protect Dutch translation\n"
+"POT-Creation-Date: 2009-02-14 14:44+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Jack <j.garmisch@gmail.com>\n"
+"Language-Team: Garmisch <j.garmisch@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Dutch\n"
+"X-Poedit-Country: Belgium\n"
+
+#: userprotect.module:14
+msgid "These settings override any !protected_roles for the user in question. For more information on how to configure userprotect settings, see the !help."
+msgstr "Deze instellingen overschrijven alle !protected_roles voor de gebruikers in kwestie. Voor meer informatie over hoe User Protect in te stellen, zie !help."
+
+#: userprotect.module:14;17;20;23
+msgid "help section"
+msgstr "help"
+
+#: userprotect.module:14
+msgid "role-based protections"
+msgstr "rol-gebaseerde beveiliging"
+
+#: userprotect.module:17
+msgid "These settings add protections to any user who is in the specified role. They are overridden by any !protected_users for the user in question. For more information on how to configure userprotect settings, see the !help."
+msgstr "Deze instellingen beveiligen alle gebruikers in de opgegeven rol.  Ze worden overschreven door alle !protected_users voor de gebruiker in kwestie. Voor meer informatie over hoe User Protect in te stellen, zie !help."
+
+#: userprotect.module:17
+msgid "per-user protections"
+msgstr "beveiligingen per gebruiker"
+
+#: userprotect.module:20
+msgid "These settings add bypasses to any user who has the 'administer users' permission. They override the !protection_defaults for the user in question. For more information on how to configure userprotect settings, see the !help."
+msgstr "Deze instellingen voegen een bypass toe aan elke gebruiker die het 'gebruikersbeheer' toegangsrecht heeft.  Ze overschrijven de !protected_defaults voor de gebruiker in kwestie. Voor meer informatie over hoe User Protect in te stellen, zie !help."
+
+#: userprotect.module:20
+msgid "defaults"
+msgstr "standaardwaarden"
+
+#: userprotect.module:23
+msgid "Set global default protection values here. For more information on how to configure userprotect settings, see the !help."
+msgstr "Stel de algemene standaard beveiligingswaarden hier in. Voor meer informatie over hoe User Protect in te stellen, zie !help."
+
+#: userprotect.module:27
+msgid "Administer"
+msgstr "Beheren"
+
+#: userprotect.module:28
+msgid "User management"
+msgstr "Gebruikersbeheer"
+
+#: userprotect.module:29;309
+#: userprotect.info:0
+msgid "User Protect"
+msgstr "Gebruikersbeveiliging"
+
+#: userprotect.module:30;318
+msgid "Protected users"
+msgstr "Beveiligde gebruikers"
+
+#: userprotect.module:31;326
+msgid "Protected roles"
+msgstr "Beveiligde rollen"
+
+#: userprotect.module:32;336
+msgid "Administrator bypass"
+msgstr "Beheerder-bypass"
+
+#: userprotect.module:33;346
+msgid "Protection defaults"
+msgstr "Standaardwaarden beveiliging"
+
+#: userprotect.module:34
+msgid "Permissions"
+msgstr "Toegangsrechten"
+
+#: userprotect.module:37
+msgid ""
+"<p>This module provides various editing protection for users.\n"
+"The protections can be specific to a user, or applied to all users in a role.\n"
+"The following protections are supported:</p>\n"
+"<ul>\n"
+"  <li>username</li>\n"
+"  <li>e-mail address</li>\n"
+"  <li>password</li>\n"
+"  <li>status changes</li>\n"
+"  <li>roles</li>\n"
+"  <li>deletion</li>\n"
+"  <li>all edits (any accessed via user/X/edit)</li>\n"
+"</ul>\n"
+"\n"
+"<p>When a protection is enabled for a specified user (or the protection is\n"
+"enabled because the user belongs to a role that has the protection), it\n"
+"prevents the editing operation in question that anyone might try to perform\n"
+"on the user--unless an administrator who is permitted to bypass the protection\n"
+"is editing the specified user.  The module will protect fields by disabling\n"
+"them at user/X/edit.<p>\n"
+"\n"
+"<p>User administrators my be configured to bypass specified protections, on either\n"
+"a global or per-administrator basis.</p>\n"
+"\n"
+"<p>These protections are valid both when trying to edit the user directly from their\n"
+"user/X/edit page, or using the !admin_user.</p>\n"
+"\n"
+"<p>The module also provides protection at the paths user/X/edit and user/X/delete,\n"
+"should anyone try to visit those paths directly.</p>\n"
+"\n"
+"<p><em>Note: this module is compatible with the !roleassign module.</em></p>\n"
+"\n"
+"<h4>SETTINGS:</h4>\n"
+"\n"
+"<p>At !userprotect_settings,\n"
+"you'll find the settings for the module. When the module is initially enabled,\n"
+"the default settings are such:</p>\n"
+"\n"
+"<ul>\n"
+"  <li>User administrators bypass all protections.</li>\n"
+"  <li>The root user specifically bypasses all protections.</li>\n"
+"  <li>The anonymous user is specifically protected from all edits.</li>\n"
+"  <li>The root user is specifically protected from all edits.</li>\n"
+"  <li>All role protections are disabled.</li>\n"
+"  <li>The 'change own e-mail' and 'change own password' permissions\n"
+"  are enabled for authenticated users in the userprotect section at\n"
+"  !access_control.\n"
+"</ul>\n"
+"\n"
+"<p>This effectively amounts to no protections.  It is suggested that you turn off\n"
+"as many default administrator bypass settings as possible, and set bypass settings\n"
+"for specific user administrators--this allows you to take advantage of the status,\n"
+"roles, deletion, and edit protections in a meaningful way.  Because of the per-user\n"
+"bypass/protection settings for the anonymous and root user, this will also\n"
+"begin protecting those users, without compromising the root user's access to the\n"
+"entire site.\n"
+"</p>\n"
+"\n"
+"<p><strong>Important note:</strong> In order to protect a user from a deletion by\n"
+"visiting user/X/delete directly, you <em>must</em> enable the 'delete' protection\n"
+"specifically.  The 'all account edits' protection only disables the delete button\n"
+"at user/X/edit!</p>\n"
+"\n"
+"<p>Also note that this module only provides protection against actions via the website\n"
+"interface--operations that a module takes directly are not protected! This module\n"
+"should play well with other contributed modules, but there is no guarantee that all\n"
+"protections will remain intact if you install modules outside of the drupal core\n"
+"installation.</p>\n"
+"\n"
+"<h4>ADDING PROTECTIONS FOR A SINGLE USER:</h4>\n"
+"\n"
+"<p>This is done at !protected_users.\n"
+"Any time a user is added for protection, they will initially receive the default\n"
+"protections enabled at !protection_defaults.</p>\n"
+"\n"
+"\n"
+"<h4>ADDING PROTECTIONS FOR ROLES:</h4>\n"
+"\n"
+"<p>This is done at !protected_roles.\n"
+"<em>Be cautious</em> about adding protections by role, or you can lock out users\n"
+"from things unintentionally!</p>\n"
+"\n"
+"<p>In particular, note the if you enable role protections for a specific role, and\n"
+"you have no bypasses enabled, you've effectively locked out any role editing for\n"
+"that role by anybody, unless you come back to the settings page and disable the role\n"
+"protection!</p>\n"
+"\n"
+"<h4>ADDING ADMINISTRATOR BYPASS RULES:</h4>\n"
+"\n"
+"<p>One of the more powerful features of the module is administrator bypass\n"
+"Any user that has been granted the 'administer users' permission can\n"
+"be configured to bypass any protection, either via the default administrator\n"
+"bypass settings at !protection_defaults,\n"
+"or via a per-administrator setting at !administrator_bypass.\n"
+"If a bypass is enabled for a user administrator, they will be given editing rights\n"
+"on that protection regardless if it is enabled for a single user or an entire role.</p>\n"
+"\n"
+"<p>Note that the per-administrator bypass settings override the default bypass\n"
+"settings.</p>\n"
+"\n"
+"<h4>DEFAULT PROTECTION SETTINGS:</h4>\n"
+"\n"
+"<p>Set the default protections for newly protected users at !protection_defaults.\n"
+"In addition, you can enable the auto-protect feature, which will automatically\n"
+"add the default protections to any newly created user accounts, and set default\n"
+"bypass options for all user administrators.</p>\n"
+"\n"
+"\n"
+"<h4>HOW THE MODULE DETERMINES A PROTECTION:</h4>\n"
+"\n"
+"<p>In order to properly use User Protect, it's important to understand how the\n"
+"module determines if a specified field is to be protected.  Here is the basic\n"
+"logic:</p>\n"
+"<ol>\n"
+"  <li>If the current user is a user administrator, check if they have\n"
+"  per-administrator bypass settings.  If so, then check to see if they are allowed\n"
+"  to bypass the protection.  If so, then stop the checks and allow editing\n"
+"  of the field.</li>\n"
+"  <li>If not, then if the current user is a user administrator, check if the\n"
+"  default administrator bypass is enabled for the protection in question. If\n"
+"  so, then stop the checks and allow editing of the field.\n"
+"  <li>If not, check if the user is editing their own account.  If so, determine\n"
+"  the protections for e-mail and password by examining the userprotect permissions\n"
+"  for 'change own e-mail' and 'change own password', and continue with the rest\n"
+"  of the checks below.\n"
+"  <li>If not, check if the protection is set for the individual user being edited.\n"
+"  If so, then stop the checks here, and prevent editing of the field (this effectively\n"
+"  means that individual protections override role protections).</li>\n"
+"  <li>If not, then examine all the roles for the user being edited.  If any of\n"
+"  those roles have the protection enabled, then prevent editing of the field.</li>\n"
+"  <li>If not, then allow the field to be edited.</li>\n"
+"</ol>\n"
+"</p>"
+msgstr ""
+"<p>Deze module voorziet verschillende bewerkingsbeveiligingen voor gebruikers.\n"
+"De beveiliging kan voor een bepaalde gebruiker zijn of voor alle gebruikers in een rol.\n"
+"De volgende beveiligingen worden ondersteund:</p>\n"
+"<ul>\n"
+"  <li>gebruikersnaam</li>\n"
+"  <li>e-mailadres</li>\n"
+"  <li>wachtwoord</li>\n"
+"  <li>statusveranderingen</li>\n"
+"  <li>rollen</li>\n"
+"  <li>verwijdering</li>\n"
+"  <li>alle bewerkingen (via gebruiker/X/bewerken</li>\n"
+"</ul>\n"
+"\n"
+"<p>Wanneer een beveiliging wordt toegepast op een bepaalde gebruiker of de beveiliging\n"
+"wordt toegepast omdat de gebruiker tot een beveiligde rol behoort, voorkomt het de \n"
+"bewerking in kwestie die iemand zou trachten uit te voeren op deze gebruiker, met\n"
+"uitzondering van een beheerder met bypass-recht. De module beveiligt velden door \n"
+"ze uit te schakelen op gebruiker/X/bewerken.<p>\n"
+"\n"
+"<p>Gebruikerbeheerders kunnen worden ingesteld om bepaalde beveiligingen te passeren\n"
+"(bypass), hetzij op een algemene basis of op een per beheerder basis.</p>\n"
+"\n"
+"<p>Deze beveiligingen zijn in beide gevallen geldig, wanneer de gebruiker wordt bewerkt via\n"
+"gebruiker/X/bewerken pagina of wanneer er gebruik wordt gemaakt van de !admin_user.</p>\n"
+"\n"
+"<p>De module beveiligt ook rechtstreeks de paden 'gebruiker/X/bewerken' en\n"
+"'gebruiker/X/verwijderen', wanneer iemand rechtstreeks deze paden probeert op te roepen.</p>\n"
+"\n"
+"<p><em>Opmerking: deze module is compatible met de !roleassign module.</em></p>\n"
+"\n"
+"<b><h4>Instellingen:</h4></b>\n"
+"\n"
+"<p>Op !userprotect_settings,\n"
+"vindt u de instellingen voor de module. Wanneer de module voor de eerste keer is ingeschakeld,\n"
+"zijn de standaard instellingen als volgt:</p>\n"
+"\n"
+"<ul>\n"
+"  <li>beheerders-bypass alle beveiligingen.</li>\n"
+"  <li>De root-gebruiker passeert alle beveiligingen.</li>\n"
+"  <li>De anonieme gebruikers en de root-gebruiker zijn beveiligd tegen alle bewerkingen.</li>\n"
+"  <li>Alle rolbeveiligingen zijn uitgeschakeld.</li>\n"
+"  <li>De 'verander eigen e-mail' en 'verander eigen wachtwoord' toegangsrechten\n"
+"  zijn ingeschakeld voor geverifieerde gebruikers in de User Protect sectie van !access_control.\n"
+"</ul>\n"
+"<p>Dit komt neer op geen beveiliging. Het wordt aanbevolen om zoveel mogelijk de standaard\n"
+"bypass-beheerderinstelling uit te schakelen en deze bypass in te stellen voor specifieke\n"
+"beheerders.  Dit laat u toe om op een gepaste manier gebruik te maken van de status-,\n"
+"rol-, verwijder- en bewerkbeveiligingen.  Omwille van de per-gebruiker bypass- en \n"
+"beveiligingsinstellingen voor anonieme en root-gebruikers, zal dit ook deze gebruikers \n"
+"beveiligen zonder de volledig toegang tot de website van de root-gebruiker in gevaar \n"
+"te brengen.\n"
+"</p>\n"
+"<p><strong>Belangrijke opmerking:</strong> Om een gebruiker van verwijdering te beveiligen\n"
+"door een gebruiker met rechtstreekse toegang tot 'gebruiker/X/verwijder', <em>moet</em> u \n"
+"de 'verwijderbeveiliging' inschakelen. De beveiliging 'alle accountbewerkingen' schakelt\n"
+"alleen de knop uit op gebruiker/X/bewerk!</p>\n"
+"\n"
+"<p>Op te merken valt dat deze module alleen tegen acties via website interface beschermd.\n"
+"Handelingen die rechtsreeks door een module worden uitgevoerd zij niet beschermd!\n"
+"Deze module zou geod moeten samenwerken met andere toegevoegde modules, maar er is geen\n"
+"garantie dat alle beveiligingen intact blijven als u modules buiten de Drupal kern installeert.</p>\n"
+"\n"
+"<h4><b>Eén enkele gebruiker beveiligen:</h4></b>\n"
+"<p>Dit wordt uitgevoerd op !protected_users.\n"
+"Elke keer dat een gebruiker wordt beveiligd, wordt de standaard beveiliging ingeschakeld\n"
+"op !protection_defaults.</p>\n"
+"\n"
+"<h4><b>Een rol beveiligen:</b></h4>\n"
+"\n"
+"<p>Dit wordt uitgevoerd op !protected_roles.\n"
+"<em>Wees voorzichtig</em> met een rol te beveiligen omdat u, zonder het te weten, \n"
+"gebruikers kunt uitsluiten!</p>\n"
+"\n"
+"<p>Wanneer u rolbeveiliging voor een specifieke rol heeft toegepast en geen enkele\n"
+"bypass ingeschakeld is, dan heeft u alle bewerkingen van deze rol voor iedereen geblokkeerd,\n"
+"tot u terug naar de instellingen gaat om de rolbeveiliging op te heffen!\n"
+"</p>\n"
+"<h4><b>Bypass-regels voor beheerders:</b></h4>\n"
+"\n"
+"<p>Eén van de meest krachtige faciliteiten van de module is de beheerders-bypass.\n"
+"Elke gebruiker die het 'beheer gebruikers' toegangsrecht heeft kan worden\n"
+"geconfigureerd om elke beveiliging te passeren. Dit gebeurt ofwel via de standaard\n"
+"beheerder-bypassinstelling op !protection_defaults of via een per beheerderinstelling\n"
+"op administrator_bypass.\n"
+"Indien de bypass is ingeschakeld voor een gebruikerbeheerder, heeft deze het recht de\n"
+"beveiliging te bewerken, onafgezien of het is ingeschakeld voor een enkele gebruiker\n"
+"of de volledige rol.</p>\n"
+"<p>Opmerking: de per-beheerder bypass-instellingen overschrijven de standaard bypass-\n"
+"instellingen.</p>\n"
+"\n"
+"<h4><b>Standaard beveligingsinstellingen:</b></h4>\n"
+"\n"
+"<p>Stel de standaard beveiliging voor nieuwe beveilgde gebruikers in op !protection_defaults.\n"
+"Daarbij kan u de auto-beveiliging inschakelen die automatisch de standaard \n"
+"bevelliging toekent aan nieuw aangemaakte accounts en stelt de standaard \n"
+"bypass-opties in voor alle gebruikerbeheerders.</p>\n"
+"\n"
+"<h4><b>Hoe de module de beveiliging bepaalt:</b></h4>\n"
+"\n"
+"<p>Om de User Protect-module juist te gebruiken is het belangrijk te weten hoe de \n"
+"module bepaalt of een specifiek veld moet worden beveiligd.  Hier is de basis logica:\n"
+"</p><ol>\n"
+"  <li>Indien de huidige gebruiker een gebruikerbeheerder is, controleer of er een\n"
+"  per-beheerder bypass-instelling is. Indien dit het geval is, controleer of de beveiliging\n"
+"  kan gepasseerd worden.  Indien ja, stop de controle en laat de bewerking van het veld toe.  </li>\n"
+"  <li>Indien niet, wanneer de huidige gebruiker een gebruikerbeherder is, controleer of de\n"
+"  standaard beheerders-bypass is ingeschakeld voor de respectievelijke beveiliging. Indien\n"
+"  dit het geval is, stop de controles en laat de bewerking van het veld toe.\n"
+"  <li>Indien niet, controleer of de gebruiker zijn eigen account aan het bewerken is./n  Indien dit het geval is, bepaal de beveiligingen voor e-mail en wachtwoord door de/n  User Protect toegangsrechten voor 'verander eigen e-mail' en 'verander eigen wachtwoord'/n  en ga door met de rest van de onderstaande controles.\n"
+"  <li>Indien niet, controleer of de beveiliging is gezet voor individuele gebruikerbewerkingen.\n"
+"  Iniden dit het geval is, stop alle controles hier en voorkom dat het veld wordt bewerkt\n"
+"  (dit betekent dat individuele beveiligingen overschrijven rolbeveiligingen).</li>\n"
+"  <li>Indien niet, dan onderzoek alle rollen voor de te bewerken gebruiker. Indien in één\n"
+"  van de rollen de beveiliging is ingeschakeld, voorkom dan dat het veld wordt bewerkt.</li>\n"
+"  <li>Indien niet, laat toe dat het veld wordt bewerkt.</li>\n"
+"</ol>\n"
+"</p>"
+
+#: userprotect.module:314
+msgid "Protect inidividual users and/or roles from editing operations."
+msgstr "Beschermt individuele gebruikers en/of rollen tegen bewerking."
+
+#: userprotect.module:396
+msgid "%user is currently being protected from any edits."
+msgstr "%user wordt beveiligd tegen alle bewerkingen."
+
+#: userprotect.module:424
+msgid "%user is currently being protected from deletion."
+msgstr "%user wordt beveiligd tegen verwijdering."
+
+#: userprotect.module:503
+msgid "User"
+msgstr "Gebruiker"
+
+#: userprotect.module:509
+msgid "Operations"
+msgstr "Handelingen"
+
+#: userprotect.module:515
+msgid "delete"
+msgstr "verwijderen"
+
+#: userprotect.module:569
+msgid "Add user"
+msgstr "Gebruiker toevoegen"
+
+#: userprotect.module:579
+msgid "Save"
+msgstr "Opslaan"
+
+#: userprotect.module:628
+msgid "%user does not have user administration privileges."
+msgstr "%user heeft geen gebruikersbeheer toegangsrecht."
+
+#: userprotect.module:637
+msgid "%user is already on this list."
+msgstr "%user is reeds op deze lijst."
+
+#: userprotect.module:643
+msgid "The username is invalid."
+msgstr "De gebruikersnaam is ongeldig."
+
+#: userprotect.module:660
+msgid "%user is now protected."
+msgstr "%user is nu beveiligd."
+
+#: userprotect.module:663
+msgid "%user now has bypass capabilities matching the default protections for newly protected users."
+msgstr "%user heeft nu bypass-mogelijkheid in overeenstemming met de standaard beveiliging voor nieuwe beveiligde gebruikers."
+
+#: userprotect.module:687
+msgid "Protection settings updated."
+msgstr "Beveligingsinstellingen aangepast."
+
+#: userprotect.module:690
+msgid "Bypass settings updated."
+msgstr "Bypass-instellingen aangepast."
+
+#: userprotect.module:705
+msgid "%user is no longer protected."
+msgstr "%user is niet langer beveiligd."
+
+#: userprotect.module:709
+msgid "%user is no longer enabled for bypass."
+msgstr "%user is niet meer ingeschakeld voor een bypass."
+
+#: userprotect.module:714
+msgid "Invalid selection."
+msgstr "Ongeldige selectie."
+
+#: userprotect.module:732
+msgid "Role"
+msgstr "Rol"
+
+#: userprotect.module:787
+msgid "User protection defaults"
+msgstr "Standaardwaarden gebruikersbeveiliging"
+
+#: userprotect.module:788
+msgid "The selected protections will be assigned to users when they are first added for protection."
+msgstr "De geselecteerde beveiligingen worden toegekend aan gebruikers wanneer zij voor het eerst worden beveiligd."
+
+#: userprotect.module:794
+msgid "Auto-protect new users"
+msgstr "Auto-beveiliging nieuwe gebruikers"
+
+#: userprotect.module:795
+msgid "If selected, all newly created users will automatically be protected and assigned the default protections above."
+msgstr "Indien geselecteerd, worden alle nieuw aangemaakte gebruikers automatisch beveiligd en de bovenstaande protecties toegekend."
+
+#: userprotect.module:800
+msgid "Administrator bypass defaults"
+msgstr "standaardwaarden bypass beheerder"
+
+#: userprotect.module:801
+msgid "If selected, all users with the 'administer users' permission will be allowed to bypass the protection<br \\><em>Note: this default setting is overridden by the !per_user_bypass.</em>."
+msgstr "Indien geselecteerd, worden alle gebruikers met de 'gebruikersbeheer' toegangsrecht, toegelaten om de beveiliging te bypassen. <br \\><em>Opmerking: deze standaardinstelling wordt overschreven door de !per_user_bypass.</em>."
+
+#: userprotect.module:801
+msgid "per-user administrator bypass settings"
+msgstr "per gebruiker beheerder-bypass instellingen"
+
+#: userprotect.module:829
+msgid "<h3>Protections by role</h3>"
+msgstr "<h3>Beveiligingen per rol</h3>"
+
+#: userprotect.module:831
+msgid "<div class=\"description\">Setting a protection for a role will enable that protection for all users in the role.</div>"
+msgstr "<div class=\"description\">Een rolbeveiliging instellen, schakelt de beveiliging in voor alle gebruikers met deze rol.</div>"
+
+#: userprotect.module:860
+msgid "%user is protected from status changes, and was not updated."
+msgstr "%user is beveiligd voor statusveranderingen en werd niet aangepast."
+
+#: userprotect.module:872
+msgid "%user is protected from deletion, and was not deleted."
+msgstr "%user is beveiligd tegen verwijdering en werd niet verwijderd."
+
+#: userprotect.module:886
+msgid "%user is protected from role changes, and was not updated."
+msgstr "%user is beveiligd tegen rolveranderingen en werd niet aangepast."
+
+#: userprotect.module:938
+msgid "username"
+msgstr "gebruikersnaam"
+
+#: userprotect.module:939
+msgid "e-mail"
+msgstr "e-mailadres"
+
+#: userprotect.module:940
+msgid "password"
+msgstr "wachtwoord"
+
+#: userprotect.module:941
+msgid "status"
+msgstr "status"
+
+#: userprotect.module:942
+msgid "roles"
+msgstr "rollen"
+
+#: userprotect.module:943
+msgid "deletion"
+msgstr "verwijdering"
+
+#: userprotect.module:944
+msgid "all account edits"
+msgstr "bewerk alle accounts"
+
+#: userprotect.module:970
+msgid "%user has been protected from the following editing operations: !operations"
+msgstr "%user is beveiligd voor de volgende bewerkhandelingen: !operations"
+
+#: userprotect.module:439
+msgid "change own e-mail"
+msgstr "eigen e-mailadres wijzigen"
+
+#: userprotect.module:439
+msgid "change own password"
+msgstr "eigen wachtwoord wijzigen"
+
+#: userprotect.module:439
+msgid "administer userprotect"
+msgstr "beheer gebruikersbeveiliging"
+
+#: userprotect.module:356
+msgid "Delete protected user"
+msgstr "Verwijder beveiligde gebruiker"
+
+#: userprotect.module:0
+msgid "userprotect"
+msgstr "userprotect"
+
+#: userprotect.install:26
+msgid "User Protect module installed successfully."
+msgstr "De User Protect-module is met succes geïnstalleerd."
+
+#: userprotect.install:29
+msgid "Errors occurred while inserting the default data for the User Protect module."
+msgstr "Er zijn fouten opgetreden gedurende het invoegen van de standaard gegevens voor de User Protect-module."
+
+#: userprotect.install:33
+msgid "Table installation for the User Protect module was unsuccessful. The following queries failed: !queries"
+msgstr "Tabelinstallatie van de User Protect-module is mislukt. De volgende queries mislukten: !queries"
+
+#: userprotect.install:39
+msgid "Stores information about administer protections for users."
+msgstr "Slaat informatie op over beheerbeveiliging van gebruikers."
+
+#: userprotect.install:42
+msgid "User ID."
+msgstr "Gebruiker-ID"
+
+#: userprotect.install:52
+msgid "Name protection."
+msgstr "Naambeveiliging."
+
+#: userprotect.install:59
+msgid "E-mail protection."
+msgstr "E-mailbeveiliging."
+
+#: userprotect.install:66
+msgid "Password protection."
+msgstr "Wachtwoordbeveiliging."
+
+#: userprotect.install:73
+msgid "Status protection."
+msgstr "Statusbeveiliging."
+
+#: userprotect.install:80
+msgid "Role protection."
+msgstr "Rolbeveiliging."
+
+#: userprotect.install:87
+msgid "Deletion protection."
+msgstr "Verwijderingsbeveiliging."
+
+#: userprotect.install:94
+msgid "All edits protection."
+msgstr "Bewerkingsbeveiliging."
+
+#: userprotect.install:101
+msgid "Protection type."
+msgstr "Beveiligingstype."
+
+#: userprotect.install:129
+msgid "The User Protect module was uninstalled successfully."
+msgstr "De User Protect-module is met succes verwijderd."
+
+#: userprotect.info:0
+msgid "Allows admins to protect users from being edited or deleted, on a per-user basis."
+msgstr "Laat beheerders toe om te voorkomen dat gebruikers bewerkt of verwijderd worden, dit op een per gebruiker basis."
+

@@ -1,0 +1,51 @@
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.1                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+{htxt id='map-key'}
+<p>{ts 1='<a href="http://www.google.com/apis/maps/signup.html" target="_blank">http://www.google.com/apis/maps/signup.html</a>'}<strong>For GOOGLE mapping</strong> - request an API key for your site at %1{/ts}</p>
+<p>{ts}When prompted for 'My Web Site URL' - enter the base URL for your site followed by the path '/civicrm'. Your API Key will be generated and displayed on the next page.{/ts}</p>
+
+<p>
+{ts 1='http://www.example.com/'}EXAMPLE: if your Drupal site url is %1 you would enter{/ts}
+<div class="font-italic description">
+ &nbsp; http://www.example.com/civicrm/
+</div>
+</p>
+
+<p>{ts 1='<a href="http://api.search.yahoo.com/webservices/register_application" target="_blank">http://api.search.yahoo.com/webservices/register_application</a>'}<strong>For YAHOO mapping</strong> - request an Application ID for your site at %1{/ts}</p>
+{/htxt}
+{htxt id='map-key2'}
+<p>{ts 1='<a href="http://www.google.com/apis/maps/signup.html" target="_blank">http://www.google.com/apis/maps/signup.html</a>'}<strong>For GOOGLE mapping</strong> - request an API key for your site at %1{/ts}</p>
+<p>{ts 1='/civicrm'}When prompted for 'My Web Site URL' - enter the base URL for your site followed by the path '%1'. Your API Key will be generated and displayed on the next page.{/ts}</p>
+
+<p>
+{ts 1='http://www.example.com/'}EXAMPLE: if your Drupal site url is %1 you would enter{/ts}
+<div class="font-italic description">
+ &nbsp; http://www.example.com/civicrm/
+</div>
+</p>
+
+<p>{ts 1='<a href="http://api.search.yahoo.com/webservices/register_application" target="_blank">http://api.search.yahoo.com/webservices/register_application</a>'}<strong>For YAHOO mapping</strong> - request an Application ID for your site at %1{/ts}</p>
+{/htxt}

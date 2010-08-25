@@ -1,0 +1,25 @@
+<?php
+/**
+ * $Id: cacherouter.module,v 1.1.2.6 2009/09/05 13:03:25 slantview Exp $
+ *
+ * @file cacherouter.module
+ * @author Steve Rude <steve@slantview.com>
+ */
+
+/**
+ * Implementation of hook_user
+ *
+ * When logged in you don't want to hit the page_fast_cache or else you will serve
+ * a cached page to a logged in user.
+ */
+function cacherouter_user($op, &$edit, &$account, $category = NULL) {
+  switch ($op) {
+    case 'login':
+      setcookie('DRUPAL_UID', TRUE, time() + (60 * 60 * 24 * 30), '/');
+      break;
+    case 'logout':
+      //Set in past to delete cookie
+      setcookie('DRUPAL_UID', TRUE, time() - 3600, '/');
+      break;
+  }
+}

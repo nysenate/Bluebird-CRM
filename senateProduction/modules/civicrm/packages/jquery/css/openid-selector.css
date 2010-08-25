@@ -1,0 +1,100 @@
+body,html,h1{
+    margin:0; padding: 0;
+}
+#home {
+    padding: 20px;
+    margin-top:40px;
+    margin-left :300px;
+    margin-right:300px;
+    width: 500px;
+    background: #eee;
+    border: 10px solid #C0C0C0;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+}
+#home h1 {
+    font-family: Arial; 
+    font-size: 3em; color: #222; 
+    font-weight: normal;
+}
+#home p {
+    margin: 10px 0;
+}
+#home label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+#home form div {
+    margin: 5px 0;
+    position: relative;
+}
+#crmimg { 
+    width: 520px;  
+    height:100px;
+    background-position: 97% 50%; 
+    background-repeat: no-repeat; 
+    background-image: url("../../../install/block_small.png"); 
+} 
+#OpenID { 
+    width: 325px;  
+    background-position: 97% 50%; 
+    background-repeat: no-repeat; 
+    background-image: url("images/openid/openid.ico"); 
+} 
+#openid-providers { 
+    position: absolute; 
+    left: 0; 
+    top: 60px; 
+    background: #fff; 
+    border: 1px solid #000; 
+    padding: 5px; 
+    margin: 0; 
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+} 
+#openid-providers li { 
+    display: block; 
+    padding: 3px 3px 3px 20px; 
+    background-position: center left; 
+    background-repeat: no-repeat;
+    background-color:#EEEEEE;
+    border-bottom:1px solid #E8E8E9;
+} 
+#openid-providers li#first { 
+    background: #ccc; 
+}
+
+#button {
+    background: #EEE url(images/openid/openid.ico) no-repeat 3px center;
+    padding-left: 22px;
+} 
+#openid-providers .AOL         {background-image: url("images/openid/aol.ico");} 
+#openid-providers .Blogspot    {background-image: url("images/openid/blogger.ico");} 
+#openid-providers .ClaimID     {background-image: url("images/openid/claimid.ico");} 
+#openid-providers .Flickr      {background-image: url("images/openid/flickr.ico");} 
+#openid-providers .Google      {background-image: url("images/openid/google.ico");} 
+#openid-providers .LiveJournal {background-image: url("images/openid/livejournal.ico");} 
+#openid-providers .MyOpenID    {background-image: url("images/openid/myopenid.ico");} 
+#openid-providers .Technorati  {background-image: url("images/openid/technorati.ico");} 
+#openid-providers .Verisign    {background-image: url("images/openid/verisign.ico");} 
+#openid-providers .Vidoop      {background-image: url("images/openid/vidoop.ico");}
+#openid-providers .Vox         {background-image: url("images/openid/vox.ico");}
+#openid-providers .Wordpress   {background-image: url("images/openid/wordpress.ico");} 
+#openid-providers .Yahoo       {background-image: url("images/openid/yahoo.ico");} 
+
+.error {
+    background-color:#FFFFEE;
+    border:2px dotted;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:20px;
+    padding:5px;
+    text-align:center;
+    width:90%;
+}
+#newinstall {
+    padding:5px;
+    margin-top:-24px;
+    width:351px;
+}

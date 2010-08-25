@@ -1,0 +1,349 @@
+3,7c3,25
+< /*   NOTES:
+< 
+< 1) birthdates are assumed to be in the 1900's since omis doesn't include the millenium
+< 
+< 
+---
+> /*
+>  +--------------------------------------------------------------------+
+>  | CiviCRM version 3.1                                                |
+>  +--------------------------------------------------------------------+
+>  | Copyright CiviCRM LLC (c) 2004-2009                                |
+>  +--------------------------------------------------------------------+
+>  | This file is a part of CiviCRM.                                    |
+>  |                                                                    |
+>  | CiviCRM is free software; you can copy, modify, and distribute it  |
+>  | under the terms of the GNU Affero General Public License           |
+>  | Version 3, 19 November 2007.                                       |
+>  |                                                                    |
+>  | CiviCRM is distributed in the hope that it will be useful, but     |
+>  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+>  | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+>  | See the GNU Affero General Public License for more details.        |
+>  |                                                                    |
+>  | You should have received a copy of the GNU Affero General Public   |
+>  | License along with this program; if not, contact CiviCRM LLC       |
+>  | at info[AT]civicrm[DOT]org. If you have questions about the        |
+>  | GNU Affero General Public License or the licensing of CiviCRM,     |
+>  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+>  +--------------------------------------------------------------------+
+59d76
+< 	'organization_name',
+115,127d131
+< $fieldsActivity = array('id',
+< 	'source_contact_id',
+<         'subject',
+<         'activity_date_time',
+< 	'details',
+< 	'activity_type_id');
+< 
+< $fieldsActivityTarget = array('activity_id',
+< 	'target_contact_id');
+< 
+< $fieldsActivityCustom = array('entity_id',
+<         'place_of_inquiry_43');
+< 
+151,153d154
+< 	case "update":
+< 		update($importSet, $startID, $sourceDesc);
+< 		break;
+176,186c177
+< 	global $fieldsContact,  
+< 		$fieldsAddress,  
+< 		$fieldsPhone,  
+< 		$fieldsDistrictInformation,  
+< 		$fieldsTag,  
+< 		$fieldsNote, 
+< 		$fieldsEmail, 
+< 		$fieldsRelationship,
+< 		$fieldsActivity,
+<                 $fieldsActivityTarget,
+< 		$fieldsActivityCustom;
+---
+> 	global $fieldsContact,  $fieldsAddress,  $fieldsPhone,  $fieldsDistrictInformation,  $fieldsTag,  $fieldsNote, $fieldsEmail, $fieldsRelationship;
+226,238d216
+<         cLog(0,'info',"importing cases as activities to database");
+<         $columns=implode(',',$fieldsActivity);
+<         $dao = &CRM_Core_DAO::executeQuery( "LOAD DATA LOCAL INFILE '/tmp/{$importSet}-ac.csv' REPLACE INTO TABLE civicrm_activity $opts ({$columns});", CRM_Core_DAO::$_nullArray );
+< 
+<         cLog(0,'info',"importing cases as activity targets to database");
+<         $columns=implode(',',$fieldsActivityTarget);
+<         $dao = &CRM_Core_DAO::executeQuery( "LOAD DATA LOCAL INFILE '/tmp/{$importSet}-actarget.csv' REPLACE INTO TABLE civicrm_activity_target $opts ({$columns});", CRM_Core_DAO::$_nullArray );
+< 
+<         cLog(0,'info',"importing custom activity values to database");
+<         $columns=implode(',',$fieldsActivityCustom);
+<         $dao = &CRM_Core_DAO::executeQuery( "LOAD DATA LOCAL INFILE '/tmp/{$importSet}-accust.csv' REPLACE INTO TABLE civicrm_value_activity_details_6 $opts ({$columns});", CRM_Core_DAO::$_nullArray );
+< 
+< 
+269,271d246
+<         unlink(RAYTMP.$importSet.'-ac.csv');
+<         unlink(RAYTMP.$importSet.'-actarget.csv');
+<         unlink(RAYTMP.$importSet.'-accust.csv');
+281,283d255
+<         $fOutActivity = fopen(RAYTMP.$importSet.'-ac.csv', 'w');
+<         $fOutActivityTarget = fopen(RAYTMP.$importSet.'-actarget.csv', 'w');
+<         $fOutActivityCustom = fopen(RAYTMP.$importSet.'-accust.csv', 'w');
+340,344d311
+<         $dao = &CRM_Core_DAO::executeQuery( "SELECT max(id) as maxid from civicrm_activity;", CRM_Core_DAO::$_nullArray );
+<         $dao->fetch();
+<         $activityID = $dao->maxid;
+<         cLog(0,'info',"starting activityID will be ".($activityID+1));
+< 
+363,364c330
+< 		
+< 			$aIDMap[$importID] = $contactID;
+---
+> 		$aIDMap[$importID] = $contactID;
+366,373c332,339
+< 			//remember the relationship
+< 			if (intval($ctRow[13])>0) {
+< 				$n = count($aRels);
+< 				$aRels[$n]['contactID'] = $contactID;
+< 	      	                $aRels[$n]['parentImportID'] = intval($ctRow[13]);
+< 	                        $aRels[$n]['type'] = $ctRow[16];
+< 				$aRels[$n]['parentName'] = $ctRow[1].', '.$ctRow[2];
+< 			}
+---
+> 		//remember the relationship
+> 		if (intval($ctRow[13])>0) {
+> 			$n = count($aRels);
+> 			$aRels[$n]['contactID'] = $contactID;
+>                         $aRels[$n]['parentImportID'] = intval($ctRow[13]);
+>                         $aRels[$n]['type'] = $ctRow[16];
+> 			$aRels[$n]['parentName'] = $ctRow[1].', '.$ctRow[2];
+> 		}
+377c343
+<                 $params['contact_type'] = $ctRow[14]==7 ? 'Organization' : 'Individual';
+---
+>                 $params['contact_type'] = 'Individual';
+384c350
+< 		$params['gender_id'] = ($ctRow[17]=='M') ? 2 : 1; 
+---
+> 		$params['gender_id'] = ($ctRow[17]=='M') ? 2 : 1; //!!!FIX THIS - need lookup
+386,389c352
+< 		//assume birthday was in the 1900s
+< 		//ASSUMPTION!!
+< 		$bday = $ctRow[27].$ctRow[28].$ctRow[29];
+<                 $params['birth_date'] =  formatDate($bday,'19');
+---
+>                 $params['birth_date'] =  formatDate($ctRow[29].'-'.$ctRow[27].'-'.$ctRow[28]);
+396,398c359,360
+<                 $params['organization_name'] = $ctRow[39];
+< 	
+< 		//non omis field uses a different column for title
+---
+> 		
+> 		//non omis fields
+402c364
+< 			$params['job_title'] = $ctRow[38];
+---
+> 			$params['job_title'] = 'NULL';
+573c535
+<                         $params['modified_date'] = 'NULL';
+---
+>                         $params['modified_date'] = '';
+602c564
+<                 //create activities from cases
+---
+>                 //create notes from cases
+605d566
+< /*
+617,693c578,579
+< */
+<                         //set params
+<                         $params = array();
+< 			$params['id'] = $activityID;
+<                         $params['source_contact_id'] = $session->get( 'userID' );; //who inserted
+<                         $params['subject'] = "OMIS CASE ACTIVITY ".intval($csRow[1]).": " . $csRow[2];
+<                         $params['activity_date_time'] = formatDate($csRow[5]);
+< 			$params['details'] = '';
+<                         if (strlen($csRow[18])>0) $params['details'] .= '\nNote 1: '.$csRow[18];
+<                         if (strlen($csRow[19])>0) $params['details'] .= '\nNote 2: '.$csRow[19];
+<                         if (strlen($csRow[20])>0) $params['details'] .= '\nNote 3: '.$csRow[20];
+<                         if (strlen($csRow[7])>0) $params['details'] .= '\nHome Phone: '.$csRow[7];
+<                         if (strlen($csRow[8])>0) $params['details'] .= '\nWork Phone: '.$csRow[8];
+<                         if (strlen($csRow[9])>0) $params['details'] .= '\nFax: '. $csRow[9].'\n';
+<                         if (strlen($csRow[3])>0) $params['details'] .= '\nStaff: '. $csRow[3].'\n';
+<                         if (strlen($csRow[10])>0) $params['details'] .= '\nCSNUM: '. $csRow[10].'\n';
+<                         if (strlen($csRow[11])>0) $params['details'] .= '\nCLAB1: '. $csRow[11].'\n';
+<                         if (strlen($csRow[12])>0) $params['details'] .= '\nCID1: '. $csRow[12].'\n';
+<                         if (strlen($csRow[13])>0) $params['details'] .= '\nCLAB2: '. $csRow[13].'\n';
+<                         if (strlen($csRow[14])>0) $params['details'] .= '\nCID2: '. $csRow[14].'\n';
+<                         if (strlen($csRow[14])>0) $params['details'] .= '\nIssue: '. $csRow[15].'\n';
+<                        
+< 			//activity type
+<                         switch ($csRow[16]) {
+< 
+<                                 case 'F':
+<                                         $params['activity_type_id'] = 41; //fax received
+<                                         break;
+<                                 case 'I':
+<                                         $params['activity_type_id'] = 42; //in person
+<                                         break;
+<                                  case 'L':
+<                                         $params['activity_type_id'] = 37; //letter received
+<                                         break;
+<                                  case 'M':
+<                                         $params['activity_type_id'] = 1; //meeting
+<                                         break;
+<                                  case 'O':
+<                                         $params['activity_type_id'] = 43; //other
+<                                         break;
+<                                  case 'P':
+<                                         $params['activity_type_id'] = 35; //phone received
+<                                         break;
+<                                  case 'E':
+<                                         $params['activity_type_id'] = 39; //email received
+<                                         break;
+<                                  case 'W':
+<                                         $params['activity_type_id'] = 43; //website mapped to other
+<                                         break;
+<   			}
+< 
+< 			//set contact target
+< 			$targetParams=array();
+< 			$targetParams['activity_id'] = $activityID;
+<                         $targetParams['contact_id'] = $contactID;
+< 
+< 			//following needs to be set in custom fields
+< 			$custParams=array();
+< 			$custParams['entity_id']=$activityID;
+< 			switch ($csRow[17]) {
+< 
+< 				case 'AO':
+< 					$custParams['place_of_inquiry_43'] = 'albany_office';
+< 					break;
+< 
+<                                 case 'DO':
+<                                         $custParams['place_of_inquiry_43'] = 'district_office';
+<                                         break;
+< 
+<                                 case 'OT':
+<                                         $custParams['place_of_inquiry_43'] = 'other';
+<                                         break;
+< 			}
+< 
+<                         if (!writeToFile($fOutActivity, $params)) break;
+<                         if (!writeToFile($fOutActivityTarget, $targetParams)) break;
+<                         if (!writeToFile($fOutActivityCustom, $custParams)) break;
+---
+> 
+>                         if (!writeToFile($fOutNotes, $params)) break;
+695d580
+<                         unset($custParams);
+701d585
+< 			++$activityID;
+708,709d591
+< 		$tstamp = null;
+< 
+722,725c604,611
+< 			//get the most recent date
+< 			$dt = formatDate($isRow[2]);
+< 			if ($tstamp==null || strtotime($dt)>strtotime($tstamp)) $tstamp = $dt;
+< 
+---
+> 			//also write tags to notes
+>                         //set note params
+> 			//$params=array();
+>                         $params['contact_id'] = $session->get( 'userID' );; //who inserted
+>                         $params['entity_table'] = 'civicrm_contact';
+>                         $params['subject'] = "OMIS ISSUES CODES";
+>                         $params['modified_date'] = "NULL";
+>                         $params['entity_id'] = $contactID;
+734,740d619
+< 		//some additional fields:
+<                 $params['modified_date'] = $tstamp;
+<                 $params['entity_id'] = $contactID;
+<                 $params['contact_id'] = $session->get( 'userID' );; //who inserted
+<                 $params['entity_table'] = 'civicrm_contact';
+<                 $params['subject'] = "OMIS ISSUES CODES";
+< 
+755,756d633
+< 	$aDone = $params;
+< 
+764,773d640
+< 		//remember for lookups
+< 		$aDone[] = $params;
+< 
+<                 //do a check to make sure we haven't done the relationship in revers		
+< 		$skip=false;
+< 		foreach ($aDone as $p) {
+< 			if ($p['contact_id_b']==$params['contact_id_a'] && $p['relationship_type_id']==$params['relationship_type_id']) $skip=true;
+< 		}
+< 		if ($skip) continue;
+< 
+798,870d664
+< function update($importSet, $startID, $sourceDesc) {
+< 
+<         //get Genderlist
+<         //get tag array
+<         //country id
+<         //province ids
+<         //need to set location_type_id to the one that isn't editable
+< 
+<         $session =& CRM_Core_Session::singleton();
+< 
+<         $fContacts = RAYIMPORTDIR.$importSet."/".$importSet."MST.TXT";
+<         $fCases = RAYIMPORTDIR.$importSet."/".$importSet."CAS.TXT";
+<         $fNotes = RAYIMPORTDIR.$importSet."/".$importSet."HIS.TXT";
+<         $fIssues = RAYIMPORTDIR.$importSet."/".$importSet."ISS.TXT";
+< 
+<         //get the first entry
+<         $skipped=0;
+<         while (intval($ctRow[0])<$startID) {
+<                 $ctRow = getLineAsArray($fContacts, '~');
+<                 ++$skipped;
+<                 if (!$ctRow) break;
+<         }
+<         while (intval($ntRow[0])<$startID) {
+<                 $ntRow = getLineAsArray($fNotes, '~');
+<                 if (!$ntRow) break;
+<         }
+<         while (intval($csRow[0])<$startID) {
+<                 $csRow = getLineAsArray($fCases, '~');
+<                 if (!$csRow) break;
+<         }
+<         while (intval($isRow[0])<$startID) {
+<                 $isRow = getLineAsArray($fIssues, '~');
+<                 if (!$isRow) break;
+<         }
+< 
+<         //fix the id for omis
+<         $ctRow[0] = intval($ctRow[0]);
+<         $ntRow[0] = intval($ntRow[0]);
+<         $csRow[0] = intval($csRow[0]);
+<         $isRow[0] = intval($isRow[0]);
+<         //count number of lines in the file
+<         $numContacts = countFileLines($fContacts)-$skipped;
+< 
+<         cLog(0,'info',"importing {$numContacts} lines starting with $startID, skipped $skipped");
+<         //get the max contactID from civi
+<         $dao = &CRM_Core_DAO::executeQuery( "SELECT max(id) as maxid from civicrm_contact;", CRM_Core_DAO::$_nullArray );
+<         $dao->fetch();
+<         $contactID = $dao->maxid;
+<         cLog(0,'info',"starting contactID will be ".($contactID+1));
+< 
+<         $dao = &CRM_Core_DAO::executeQuery( "SELECT max(id) as maxid from civicrm_address;", CRM_Core_DAO::$_nullArray );
+<         $dao->fetch();
+<         $addressID = $dao->maxid;
+<         cLog(0,'info',"starting addressID will be ".($addressID+1));
+< 
+<         $cCounter=0;
+< 
+<         $aRels = array();
+<         $aIDMap = array();
+< 
+<         while ($ctRow) {
+< 
+<                 ++$contactID;
+<                 ++$addressID;
+<                 ++$cCounter;
+< 
+<                 if (RAYDEBUG) markTime('getLine');
+< 
+<                 //set the contacts unique importID
+<                 $importID=intval($ctRow[0]);
+< 	}
+< }
+< 

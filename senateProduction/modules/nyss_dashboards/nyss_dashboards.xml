@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<menu>
+  <item>
+     <path>civicrm/dashlet/myCases</path>
+     <title>Case Dashlet</title>
+     <page_callback>CRM_Dashlet_Page_myCases</page_callback>
+  </item>
+  <item>
+     <path>civicrm/dashlet/twitter</path>
+     <title>Twitter</title>
+     <page_callback>CRM_Dashlet_Page_Twitter</page_callback>
+  </item>  
+  <item>
+     <path>civicrm/dashlet/allCases</path>
+     <title>All Cases Dashlet</title>
+     <page_callback>CRM_Dashlet_Page_allCases</page_callback>
+     <access_arguments>access all cases and activities</access_arguments>
+  </item>  
+</menu>

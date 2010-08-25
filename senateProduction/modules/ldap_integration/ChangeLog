@@ -1,0 +1,32 @@
+2007-08-29  kreaper  <http://rajeev.name>
+
+	* ldapauth.module: http://drupal.org/node/171440
+	the extra <strong> the problem with the fieldset and is removed.
+
+2007-08-22 kreaper <http://rajeev.name>
+
+	* ldap_integration/LDAPInterface.php: http://drupal.org/node/164049
+	Allow anonymous LDAP connect();
+
+	* ldapauth.module: http://drupal.org/node/164078
+	HTML fixes
+
+	* ldap_integration/LDAPInterface.php: http://drupal.org/node/158671
+	No longer initializing $ldap->server to "example.com"
+	
+2007-07-22 kreaper <http://rajeev.name>
+
+	* ldapauth.module: http://drupal.org/node/158671
+	contributed code that modifies code flow and also enabled ldapauth_auth() to work with other modules. 
+
+	* ldapdata.module: bug fix for http://drupal.org/node/136068
+	http://bugs.mysql.com/bug.php?id=25520 specifies that in Windows, TEXT/BLOB cannot have a default value
+
+2007-07-09 kreaper <http://rajeev.name>
+
+	* ldapgroups.module: renamed the global variable $ldap to $ldapgroups_ldap. 
+	Created a new function _ldapgroups_ldap_init() to setup the ldapgroups_ldap object.
+
+	* ldapdata.module: renamed the global variable $ldap to $ldapdata_ldap
+
+	* ldapauth.module: renamed the global variable $ldap to $ldapauth_ldap

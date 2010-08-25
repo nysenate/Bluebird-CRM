@@ -1,0 +1,498 @@
+May 24 17:21:57  [info] $Fatal Error Details = Array
+(
+    [message] => Could not find valid value for cid
+    [code] => 
+)
+
+
+May 24 17:21:57  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Utils/Request.php, fatal, 109
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Page/View.php, retrieve, 102
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Page/View/Summary.php, preProcess, 56
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Page/View/Summary.php, preProcess, 94
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 218
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 24 18:40:09  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+May 24 18:40:09  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(214) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 214
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 25 12:21:26  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+May 25 12:21:26  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(214) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 214
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 25 12:21:26  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+May 25 12:21:26  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(214) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 214
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 25 13:24:30  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+May 25 13:24:30  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(214) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 214
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 25 13:24:30  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+May 25 13:24:30  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(214) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 214
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 25 14:30:56  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+May 25 14:30:56  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(214) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 214
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 25 14:30:57  [info] $Fatal Error Details = Array
+(
+    [message] => We can't load the requested web page. This page requires cookies to be enabled in your browser settings. Please check this setting and enable cookies (if they are not enabled). Then try again. If this error persists, contact the site adminstrator for assistance.<br /><br />Error type: Could not find a valid key.
+    [code] => 
+)
+
+
+May 25 14:30:57  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, fatal, 239
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, key, 161
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Controller/Search.php, __construct, 60
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php(214) : eval()'d code, __construct, 1
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, eval, 214
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 28 15:20:16  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -19
+    [message] => DB Error: no such field
+    [mode] => 16
+    [debug_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [type] => DB_Error
+    [user_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [to_string] => [db_error: message="DB Error: no such field" code=-19 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']"]
+)
+
+
+May 28 15:20:16  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB.php, PEAR_Error, 966
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/BAO/Tag.php, executeQuery, 189
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search.php, getTags, 389
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search/Basic.php, preProcess, 179
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Form.php, preProcess, 315
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/QuickForm/Action/Refresh.php, buildForm, 65
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Controller.php, perform, 203
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Page.php, handle, 103
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, handle, 277
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 28 16:20:35  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -19
+    [message] => DB Error: no such field
+    [mode] => 16
+    [debug_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [type] => DB_Error
+    [user_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [to_string] => [db_error: message="DB Error: no such field" code=-19 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']"]
+)
+
+
+May 28 16:20:35  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB.php, PEAR_Error, 966
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/BAO/Tag.php, executeQuery, 189
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search.php, getTags, 389
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search/Custom.php, preProcess, 75
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Form.php, preProcess, 315
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/QuickForm/Action/Display.php, buildForm, 99
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Controller.php, perform, 203
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Page.php, handle, 103
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, handle, 277
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 28 16:20:35  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -19
+    [message] => DB Error: no such field
+    [mode] => 16
+    [debug_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [type] => DB_Error
+    [user_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [to_string] => [db_error: message="DB Error: no such field" code=-19 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']"]
+)
+
+
+May 28 16:20:35  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB.php, PEAR_Error, 966
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/BAO/Tag.php, executeQuery, 189
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search.php, getTags, 389
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Form.php, preProcess, 315
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/QuickForm/Action/Display.php, buildForm, 99
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Controller.php, perform, 203
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Page.php, handle, 103
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, handle, 277
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 28 16:21:04  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -19
+    [message] => DB Error: no such field
+    [mode] => 16
+    [debug_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [type] => DB_Error
+    [user_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [to_string] => [db_error: message="DB Error: no such field" code=-19 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']"]
+)
+
+
+May 28 16:21:04  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB.php, PEAR_Error, 966
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/BAO/Tag.php, executeQuery, 189
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search.php, getTags, 389
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search/Custom.php, preProcess, 75
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Form.php, preProcess, 315
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/QuickForm/Action/Display.php, buildForm, 99
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Controller.php, perform, 203
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Page.php, handle, 103
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, handle, 277
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 28 16:21:04  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -19
+    [message] => DB Error: no such field
+    [mode] => 16
+    [debug_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [type] => DB_Error
+    [user_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [to_string] => [db_error: message="DB Error: no such field" code=-19 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']"]
+)
+
+
+May 28 16:21:04  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB.php, PEAR_Error, 966
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/BAO/Tag.php, executeQuery, 189
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search.php, getTags, 389
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Form.php, preProcess, 315
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/QuickForm/Action/Display.php, buildForm, 99
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Controller.php, perform, 203
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Page.php, handle, 103
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, handle, 277
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 28 16:21:18  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -19
+    [message] => DB Error: no such field
+    [mode] => 16
+    [debug_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [type] => DB_Error
+    [user_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [to_string] => [db_error: message="DB Error: no such field" code=-19 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']"]
+)
+
+
+May 28 16:21:18  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB.php, PEAR_Error, 966
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/BAO/Tag.php, executeQuery, 189
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search.php, getTags, 389
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Form.php, preProcess, 315
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/QuickForm/Action/Display.php, buildForm, 99
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Controller.php, perform, 203
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Page.php, handle, 103
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, handle, 277
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+
+May 28 16:21:18  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -19
+    [message] => DB Error: no such field
+    [mode] => 16
+    [debug_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [type] => DB_Error
+    [user_info] => SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']
+    [to_string] => [db_error: message="DB Error: no such field" code=-19 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT id, name, parent_id 
+                  FROM civicrm_tag 
+                  WHERE  is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%civicrm_contact%' ORDER BY name [nativecode=1054 ** Unknown column 'is_tagset' in 'where clause']"]
+)
+
+
+May 28 16:21:18  [info] $backTrace = /senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB.php, PEAR_Error, 966
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/BAO/Tag.php, executeQuery, 189
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search.php, getTags, 389
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Contact/Form/Search/Custom.php, preProcess, 75
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Form.php, preProcess, 315
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/QuickForm/Action/Display.php, buildForm, 99
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Controller.php, perform, 203
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/packages/HTML/QuickForm/Page.php, handle, 103
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Controller.php, handle, 277
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateDevelopment/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyssdev/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyssdev/index.php, menu_execute_active_handler, 18
+

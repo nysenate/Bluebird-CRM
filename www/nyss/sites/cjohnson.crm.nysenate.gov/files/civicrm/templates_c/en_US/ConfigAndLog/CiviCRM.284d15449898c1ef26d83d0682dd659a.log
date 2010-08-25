@@ -1,0 +1,922 @@
+Aug 13 11:34:46  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -2
+    [message] => DB Error: syntax error
+    [mode] => 16
+    [debug_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL AND case_relationship.contact_id_b =  
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [type] => DB_Error
+    [user_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL AND case_relationship.contact_id_b =  
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [to_string] => [db_error: message="DB Error: syntax error" code=-2 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL AND case_relationship.contact_id_b =  
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]"]
+)
+
+
+Aug 13 11:34:46  [info] $backTrace = /senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB.php, PEAR_Error, 968
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Case/BAO/Case.php, executeQuery, 653
+/senatevolume/production/m1.small/senateProduction/civicrmSharedDirectories/civicrmCustom/php/CRM/Dashlet/Page/myCases.php, getCases, 62
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyss/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyss/index.php, menu_execute_active_handler, 18
+
+Aug 13 11:34:47  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -2
+    [message] => DB Error: syntax error
+    [mode] => 16
+    [debug_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL 
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [type] => DB_Error
+    [user_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL 
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [to_string] => [db_error: message="DB Error: syntax error" code=-2 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL 
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]"]
+)
+
+
+Aug 13 11:34:47  [info] $backTrace = /senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB.php, PEAR_Error, 968
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Case/BAO/Case.php, executeQuery, 653
+/senatevolume/production/m1.small/senateProduction/civicrmSharedDirectories/civicrmCustom/php/CRM/Dashlet/Page/allCases.php, getCases, 62
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyss/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyss/index.php, menu_execute_active_handler, 18
+
+Aug 13 11:34:48  [info] $Fatal Error Details = Array
+(
+    [message] => We experienced an unexpected error. Please post a detailed description and the backtrace on the Bluebird forums: http://forum.civicrm.org/
+    [code] => 
+)
+
+
+Aug 13 11:34:48  [info] $backTrace = /senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, fatal, 708
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Contact/BAO/Contact/Permission.php, getFieldValue, 58
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Dashlet/Page/Activity.php, allow, 62
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyss/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyss/index.php, menu_execute_active_handler, 18
+
+Aug 13 11:35:35  [info] $Fatal Error Details = Array
+(
+    [message] => We experienced an unexpected error. Please post a detailed description and the backtrace on the Bluebird forums: http://forum.civicrm.org/
+    [code] => 
+)
+
+
+Aug 13 11:35:35  [info] $backTrace = /senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Error.php, backtrace, 260
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, fatal, 708
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Contact/BAO/Contact/Permission.php, getFieldValue, 58
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Dashlet/Page/Activity.php, allow, 62
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyss/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyss/index.php, menu_execute_active_handler, 18
+
+Aug 13 11:35:36  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -2
+    [message] => DB Error: syntax error
+    [mode] => 16
+    [debug_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL AND case_relationship.contact_id_b =  
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [type] => DB_Error
+    [user_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL AND case_relationship.contact_id_b =  
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [to_string] => [db_error: message="DB Error: syntax error" code=-2 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL AND case_relationship.contact_id_b =  
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]"]
+)
+
+
+Aug 13 11:35:36  [info] $backTrace = /senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB.php, PEAR_Error, 968
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Case/BAO/Case.php, executeQuery, 653
+/senatevolume/production/m1.small/senateProduction/civicrmSharedDirectories/civicrmCustom/php/CRM/Dashlet/Page/myCases.php, getCases, 62
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyss/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyss/index.php, menu_execute_active_handler, 18
+
+Aug 13 11:35:37  [info] $Fatal Error Details = Array
+(
+    [callback] => Array
+        (
+            [0] => CRM_Core_Error
+            [1] => handle
+        )
+
+    [code] => -2
+    [message] => DB Error: syntax error
+    [mode] => 16
+    [debug_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL 
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [type] => DB_Error
+    [user_info] => SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL 
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]
+    [to_string] => [db_error: message="DB Error: syntax error" code=-2 mode=callback callback=CRM_Core_Error::handle prefix="" info="SELECT
+                  civicrm_case.id as case_id,
+                  civicrm_contact.id as contact_id,
+                  civicrm_contact.sort_name as sort_name,
+                  civicrm_phone.phone as phone,
+                  civicrm_contact.contact_type as contact_type,
+                  civicrm_activity.activity_type_id,
+                  cov_type.label as case_type,
+                  cov_type.name as case_type_name,
+                  cov_status.label as case_status,
+                  cov_status.label as case_status_name,
+                  civicrm_activity.status_id,
+                  civicrm_case.start_date as case_start_date,
+                  case_relation_type.label_b_a as case_role,  civicrm_activity.activity_date_time as case_scheduled_activity_date,
+                         civicrm_activity.id as case_scheduled_activity_id,
+                         aov.name as case_scheduled_activity_type_name,
+                         aov.label as case_scheduled_activity_type  FROM civicrm_case
+                  INNER JOIN civicrm_case_activity
+                        ON civicrm_case_activity.case_id = civicrm_case.id  
+            
+                  LEFT JOIN civicrm_case_contact ON civicrm_case.id = civicrm_case_contact.case_id
+                  LEFT JOIN civicrm_contact ON civicrm_case_contact.contact_id = civicrm_contact.id
+                  LEFT JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary=1)  LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1
+                                  AND civicrm_activity.status_id = 1
+                                  AND civicrm_activity.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) ) 
+                  LEFT JOIN civicrm_option_group aog  ON aog.name = 'activity_type'
+                  LEFT JOIN civicrm_option_value aov
+                        ON ( civicrm_activity.activity_type_id = aov.value
+                             AND aog.id = aov.option_group_id )         
+
+                  LEFT  JOIN  civicrm_relationship case_relationship 
+                        ON ( case_relationship.contact_id_a = civicrm_case_contact.contact_id 
+                             AND case_relationship.contact_id_b =   
+                             AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  JOIN civicrm_relationship_type case_relation_type 
+                        ON ( case_relation_type.id = case_relationship.relationship_type_id 
+                             AND case_relation_type.id = case_relationship.relationship_type_id )
+
+                  LEFT JOIN civicrm_option_group cog_type ON cog_type.name = 'case_type'
+                  LEFT JOIN civicrm_option_value cov_type
+                        ON ( civicrm_case.case_type_id = cov_type.value
+                             AND cog_type.id = cov_type.option_group_id )
+
+                  LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'case_status'
+                  LEFT JOIN civicrm_option_value cov_status 
+                       ON ( civicrm_case.status_id = cov_status.value
+                            AND cog_status.id = cov_status.option_group_id ) 
+                  LEFT JOIN civicrm_activity ca2
+                             ON ( ca2.id IN ( SELECT cca.activity_id FROM civicrm_case_activity cca 
+                                              WHERE cca.case_id = civicrm_case.id )
+                                  AND ca2.is_current_revision = 1 
+                                  AND ca2.is_deleted = 0 AND ca2.status_id = 1
+                       AND ca2.activity_date_time <= DATE_ADD( NOW(), INTERVAL 14 DAY ) 
+                       AND civicrm_activity.activity_date_time > ca2.activity_date_time ) WHERE ca2.id IS NULL 
+AND civicrm_activity.is_deleted = 0
+AND civicrm_case.is_deleted     = 0
+AND civicrm_case.status_id != 2 ORDER BY case_scheduled_activity_date ASC  [nativecode=1064 ** You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'AND case_relationship.case_id = civicrm_case.id )
+     
+                  LEFT  ' at line 36]"]
+)
+
+
+Aug 13 11:35:37  [info] $backTrace = /senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Error.php, backtrace, 187
+, handle, 
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, call_user_func, 931
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB.php, PEAR_Error, 968
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/PEAR.php, DB_Error, 564
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, raiseError, 1903
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, raiseError, 898
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/mysql.php, mysqlRaiseError, 327
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/common.php, simpleQuery, 1216
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, query, 2411
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/packages/DB/DataObject.php, _query, 1597
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 145
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/DAO.php, query, 867
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Case/BAO/Case.php, executeQuery, 653
+/senatevolume/production/m1.small/senateProduction/civicrmSharedDirectories/civicrmCustom/php/CRM/Dashlet/Page/allCases.php, getCases, 62
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/CRM/Core/Invoke.php, run, 219
+/senatevolume/production/m1.small/senateProduction/modules/civicrm/drupal/civicrm.module, invoke, 350
+, civicrm_invoke, 
+/senatevolume/production/m1.small/www/nyss/includes/menu.inc, call_user_func_array, 348
+/senatevolume/production/m1.small/www/nyss/index.php, menu_execute_active_handler, 18
+

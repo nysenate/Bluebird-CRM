@@ -1,0 +1,1189 @@
+<?php
+
+// $Id: userprotect.module,v 1.39.2.3 2009/11/04 13:36:54 thehunmonkgroup Exp $
+
+/**
+ * Implementation of hook_help().
+ *
+ * Returns various help texts.
+ */
+function userprotect_help($path, $arg) {
+	switch ($path) {
+		case 'admin/user/userprotect':
+		case 'admin/user/userprotect/protected_users':
+		  $output = t('These settings override any !protected_roles for the user in question. For more information on how to configure userprotect settings, see the !help.', array('!help' => l(t('help section'), 'admin/help/userprotect'), '!protected_roles' => l(t('role-based protections'), 'admin/user/userprotect/protected_roles')));
+			return $output;
+	  case 'admin/user/userprotect/protected_roles':
+		  $output = t('These settings add protections to any user who is in the specified role. They are overridden by any !protected_users for the user in question. For more information on how to configure userprotect settings, see the !help.', array('!help' => l(t('help section'), 'admin/help/userprotect'), '!protected_users' => l(t('per-user protections'), 'admin/user/userprotect/protected_users')));
+			return $output;
+		case 'admin/user/userprotect/administrator_bypass':
+		  $output = t('These settings add bypasses to any user who has the \'administer users\' permission. They override the !protection_defaults for the user in question. For more information on how to configure userprotect settings, see the !help.', array('!help' => l(t('help section'), 'admin/help/userprotect'), '!protection_defaults' => l(t('defaults'), 'admin/user/userprotect/protection_defaults')));
+			return $output;
+	  case 'admin/user/userprotect/protection_defaults':
+		  $output = t('Set global default protection values here. For more information on how to configure userprotect settings, see the !help.', array('!help' => l(t('help section'), 'admin/help/userprotect')));
+			return $output;
+	  case 'admin/help#userprotect':
+
+		  $admin = t('Administer');
+		  $user_mgmt = t('User management');
+		  $userprotect = t('User Protect');
+		  $protected_users = t('Protected users');
+		  $protected_roles = t('Protected roles');
+		  $administrator_bypass = t('Administrator bypass');
+		  $protection_defaults = t('Protection defaults');
+		  $access_control = t('Permissions');
+		  $pointer = ' -> ';
+
+		  $output = t('<p>This module provides various editing protection for users.
+The protections can be specific to a user, or applied to all users in a role.
+The following protections are supported:</p>
+<ul>
+  <li>username</li>
+  <li>e-mail address</li>
+  <li>password</li>
+  <li>status changes</li>
+  <li>roles</li>
+  <li>deletion</li>
+  <li>all edits (any accessed via user/X/edit)</li>
+</ul>
+
+<p>When a protection is enabled for a specified user (or the protection is
+enabled because the user belongs to a role that has the protection), it
+prevents the editing operation in question that anyone might try to perform
+on the user--unless an administrator who is permitted to bypass the protection
+is editing the specified user.  The module will protect fields by disabling
+them at user/X/edit.<p>
+
+<p>User administrators my be configured to bypass specified protections, on either
+a global or per-administrator basis.</p>
+
+<p>These protections are valid both when trying to edit the user directly from their
+user/X/edit page, or using the !admin_user.</p>
+
+<p>The module also provides protection at the paths user/X/edit and user/X/delete,
+should anyone try to visit those paths directly.</p>
+
+<p><em>Note: this module is compatible with the !roleassign module.</em></p>
+
+<h4>SETTINGS:</h4>
+
+<p>At !userprotect_settings,
+you\'ll find the settings for the module. When the module is initially enabled,
+the default settings are such:</p>
+
+<ul>
+  <li>User administrators bypass all protections.</li>
+  <li>The root user specifically bypasses all protections.</li>
+  <li>The anonymous user is specifically protected from all edits.</li>
+  <li>The root user is specifically protected from all edits.</li>
+  <li>All role protections are disabled.</li>
+  <li>The \'change own e-mail\', \'change own password\' and \'change own openid\' permissions
+  are enabled for authenticated users in the userprotect section at
+  !access_control.
+</ul>
+
+<p>This effectively amounts to no protections.  It is suggested that you turn off
+as many default administrator bypass settings as possible, and set bypass settings
+for specific user administrators--this allows you to take advantage of the status,
+roles, deletion, openid, and edit protections in a meaningful way.  Because of the per-user
+bypass/protection settings for the anonymous and root user, this will also
+begin protecting those users, without compromising the root user\'s access to the
+entire site.
+</p>
+
+<p>Important note: In order to protect a user from deletion (by visiting
+user/X/delete directly) and/or OpenID edits (by visiting user/X/openid
+directly), you must enable the \'delete\' and/or \'openid\' protection specifically.
+Enabling \'all account edits\' does not enable these protections!</p>
+
+<p>Also note that this module only provides protection against actions via the website
+interface--operations that a module takes directly are not protected! This module
+should play well with other contributed modules, but there is no guarantee that all
+protections will remain intact if you install modules outside of the drupal core
+installation.</p>
+
+<h4>ADDING PROTECTIONS FOR A SINGLE USER:</h4>
+
+<p>This is done at !protected_users.
+Any time a user is added for protection, they will initially receive the default
+protections enabled at !protection_defaults.</p>
+
+
+<h4>ADDING PROTECTIONS FOR ROLES:</h4>
+
+<p>This is done at !protected_roles.
+<em>Be cautious</em> about adding protections by role, or you can lock out users
+from things unintentionally!</p>
+
+<p>In particular, note the if you enable role protections for a specific role, and
+you have no bypasses enabled, you\'ve effectively locked out any role editing for
+that role by anybody, unless you come back to the settings page and disable the role
+protection!</p>
+
+<h4>ADDING ADMINISTRATOR BYPASS RULES:</h4>
+
+<p>One of the more powerful features of the module is administrator bypass
+Any user that has been granted the \'administer users\' permission can
+be configured to bypass any protection, either via the default administrator
+bypass settings at !protection_defaults,
+or via a per-administrator setting at !administrator_bypass.
+If a bypass is enabled for a user administrator, they will be given editing rights
+on that protection regardless if it is enabled for a single user or an entire role.</p>
+
+<p>Note that the per-administrator bypass settings override the default bypass
+settings.</p>
+
+<h4>DEFAULT PROTECTION SETTINGS:</h4>
+
+<p>Set the default protections for newly protected users at !protection_defaults.
+In addition, you can enable the auto-protect feature, which will automatically
+add the default protections to any newly created user accounts, and set default
+bypass options for all user administrators.</p>
+
+
+<h4>HOW THE MODULE DETERMINES A PROTECTION:</h4>
+
+<p>In order to properly use User Protect, it\'s important to understand how the
+module determines if a specified field is to be protected.  Here is the basic
+logic:</p>
+<ol>
+  <li>If the current user is a user administrator, check if they have
+  per-administrator bypass settings.  If so, then check to see if they are allowed
+  to bypass the protection.  If so, then stop the checks and allow editing
+  of the field.</li>
+  <li>If not, then if the current user is a user administrator, check if the
+  default administrator bypass is enabled for the protection in question. If
+  so, then stop the checks and allow editing of the field.
+  <li>If not, check if the user is editing their own account.  If so, determine
+  the protections for e-mail and password by examining the userprotect permissions
+  for \'change own e-mail\', \'change own password\' and \'change own openid\', then
+  continue with the rest of the checks below.
+  <li>If not, check if the protection is set for the individual user being edited.
+  If so, then stop the checks here, and prevent editing of the field (this effectively
+  means that individual protections override role protections).</li>
+  <li>If not, then examine all the roles for the user being edited.  If any of
+  those roles have the protection enabled, then prevent editing of the field.</li>
+  <li>If not, then allow the field to be edited.</li>
+</ol>
+</p>', array('!admin_user' => l('mass user editing operations', 'admin/user/user'), '!userprotect_settings' => l($admin . $pointer . $user_mgmt . $pointer . $userprotect, 'admin/user/userprotect/protected_users'), '!protected_users' => l($admin . $pointer . $user_mgmt . $pointer . $userprotect . $pointer . $protected_users, 'admin/user/userprotect/protected_users'), '!protected_roles' => l($admin . $pointer . $user_mgmt . $pointer . $userprotect . $pointer . $protected_roles, 'admin/user/userprotect/protected_roles'), '!administrator_bypass' => l($admin . $pointer . $user_mgmt . $pointer . $userprotect . $pointer . $administrator_bypass, 'admin/user/userprotect/administrator_bypass'), '!protection_defaults' => l($admin . $pointer . $user_mgmt . $pointer . $userprotect . $pointer . $protection_defaults, 'admin/user/userprotect/protection_defaults'), '!roleassign' => l('RoleAssign', 'http://drupal.org/project/roleassign', array('attributes' => array('target' => 'X'), 'absolute' => TRUE)), '!access_control' => l($admin . $pointer . $user_mgmt . $pointer . $access_control, 'admin/user/access')));
+			return $output;
+	}
+}
+
+/**
+ * Alters forms for user protection.
+ *
+ * @param $form_id The form ID.
+ * @param $form The form.
+ */
+function userprotect_form_alter(&$form, &$form_state, $form_id) {
+
+  switch ($form_id) {
+
+    // For each of the fields, first check if any of the user's roles are protecting
+    // it, then check if the user themselves is protected from it.  if either is TRUE,
+    // then disable the field, and mark a fixed form value so it will be properly submitted.
+    case 'user_profile_form':
+      $account = user_load(array('uid' => arg(1)));
+      $protected = array();
+      if (isset($form['account']['name']) && !userprotect_check_bypass('up_name') && userprotect_get_user_protection($account, 'up_name')) {
+        // If for some reason this field has no initial value, then don't protect it.
+        if ($account->name) {
+          $form['account']['name']['#disabled'] = TRUE;
+          $form['account']['name']['#value'] = $account->name;
+          $protected['up_name'] = TRUE;
+        }
+      }
+      if (isset($form['account']['mail']) && !userprotect_check_bypass('up_mail') && userprotect_get_user_protection($account, 'up_mail')) {
+        // If for some reason this field has no initial value, then don't protect it.
+        if ($account->mail) {
+          $form['account']['mail']['#disabled'] = TRUE;
+          $form['account']['mail']['#value'] = $account->mail;
+          $protected['up_mail'] = TRUE;
+        }
+      }
+      // Password is an exception, as it needs no value, Just unset it, as
+      // there's no need to display two empty boxes that are disabled.
+      if (isset($form['account']['pass']) && !userprotect_check_bypass('up_pass') && userprotect_get_user_protection($account, 'up_pass')) {
+        unset($form['account']['pass']);
+        $protected['up_pass'] = TRUE;
+      }
+      if (isset($form['account']['status']) && !userprotect_check_bypass('up_status') && userprotect_get_user_protection($account, 'up_status')) {
+        $form['account']['status']['#disabled'] = TRUE;
+        $form['account']['status']['#value'] = $account->status;
+        $protected['up_status'] = TRUE;
+      }
+      // Special hack for RoleAssign module compatibility.
+      if (isset($form['account']['roleassign_roles'])) {
+        $roles = 'roleassign_roles';
+      }
+      else {
+        $roles = 'roles';
+      }
+      // Roles is a special case, since it's a tree'd item that needs values.
+      // We'll handle that in a custom validation function. Also here we slip
+      // the user's account info into the form so it's available to gleen the role
+      // info from.
+      if (isset($form['account'][$roles]) && !userprotect_check_bypass('up_roles') && userprotect_get_user_protection($account, 'up_roles')) {
+        $form['account'][$roles]['#disabled'] = TRUE;
+        $validate = isset($form['account'][$roles]['#element_validate']) ? $form['account'][$roles]['#element_validate'] : NULL;
+        $form['account'][$roles]['#element_validate'] = userprotect_add_validation($validate, array('userprotect_user_edit_fields_validate'));
+        $form_state['userprotect']['account'] = $account;
+        $form_state['userprotect']['field'] = 'roles';
+        $protected['up_roles'] = TRUE;
+      }
+      // Nothing special for delete--just disable.
+      if (isset($form['delete']) && !userprotect_check_bypass('up_delete') && userprotect_get_user_protection($account, 'up_delete')) {
+        $form['delete']['#disabled'] = TRUE;
+        $protected['up_delete'] = TRUE;
+      }
+      userprotect_form_display_protections($account, $protected);
+      break;
+
+    // These are complex cases, and are best handled by manipulating the form values
+    // in a custom validate function.
+    case 'user_admin_account':
+    case 'user_multiple_delete_confirm':
+      $validate = isset($form['#validate']) ? $form['#validate'] : NULL;
+      $form['#validate'] = userprotect_add_validation($validate, array('userprotect_user_admin_account_validate'));
+      break;
+    case 'openid_user_add':
+    case 'openid_user_delete_form':
+      $account = user_load(array('uid' => arg(1)));
+      $protected = array();
+      if (!userprotect_check_bypass('up_openid') && userprotect_get_user_protection($account, 'up_openid')) {
+        switch ($form_id) {
+          case 'openid_user_add':
+            if (isset($form['openid_identifier'])) {
+              $form['openid_identifier']['#disabled'] = TRUE;
+              $form['submit']['#disabled'] = TRUE;
+            }
+            break;
+          case 'openid_user_delete_form':
+            if (isset($form['actions']['submit'])) {
+              $form['actions']['submit']['#disabled'] = TRUE;
+              $form['confirm']['#value'] = 0;
+            }
+            break;
+        }
+        $protected['up_openid'] = TRUE;
+      }
+      userprotect_form_display_protections($account, $protected);
+      break;
+  }
+}
+
+/**
+ * Adds a validation function to a validation handler.
+ *
+ * @param $element The initial validation handler.
+ * @param $validation The validation function to add.
+ * @return The validation handler with the new validation function merged in.
+ */
+function userprotect_add_validation($element, $validation) {
+
+  // If it's already an array, prepend our custom validation function.
+  if (is_array($element)) {
+    $form = $validation + $element;
+  }
+  // Otherwise create it from scratch.
+  else {
+    $form = $validation;
+  }
+
+  return $form;
+}
+
+/**
+ * Custom validation function for complex field protections.
+ */
+function userprotect_user_edit_fields_validate($form, &$form_state) {
+  $account = $form_state['userprotect']['account'];
+  $field = $form_state['userprotect']['field'];
+
+  switch ($field) {
+    case 'roles':
+      // Authenticated user isn't a valid checked item.
+      unset($account->roles[DRUPAL_AUTHENTICATED_RID]);
+      // Add values for all role checkboxes that are valid roles for this user.
+      foreach ($account->roles as $rid => $role) {
+        if (isset($form[$rid])) {
+          form_set_value($form[$rid], 1, $form_state);
+        }
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function userprotect_menu() {
+  $items = array();
+  $admin = array('administer userprotect');
+
+  // Admin page link.
+  $items['admin/user/userprotect'] = array(
+    'title' => 'User Protect',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('userprotect_protected_users'),
+    'access callback' => 'user_access',
+    'access arguments' => $admin,
+    'description' => t('Protect inidividual users and/or roles from editing operations.'),
+  );
+  // Default tab.
+  $items['admin/user/userprotect/protected_users'] = array(
+    'title' => 'Protected users',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'access callback' => 'user_access',
+    'access arguments' => $admin,
+    'weight' => 1,
+  );
+  // Protected roles tab.
+  $items['admin/user/userprotect/protected_roles'] = array(
+    'title' => 'Protected roles',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('userprotect_protected_roles'),
+    'access callback' => 'user_access',
+    'access arguments' => $admin,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+  );
+  // Administrator bypass tab.
+  $items['admin/user/userprotect/administrator_bypass'] = array(
+    'title' => 'Administrator bypass',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('userprotect_administrator_bypass'),
+    'access callback' => 'user_access',
+    'access arguments' => $admin,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+  );
+  // Default settings.
+  $items['admin/user/userprotect/protection_defaults'] = array(
+    'title' => 'Protection defaults',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('userprotect_protection_defaults'),
+    'access callback' => 'user_access',
+    'access arguments' => $admin,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 4,
+  );
+  // Remove a user from being protected.
+  $items['userprotect/delete/%user'] = array(
+    'title' => 'Delete protected user',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('userprotect_protected_users_delete_form', 2, 3),
+    'type' => MENU_CALLBACK,
+    'access callback' => 'user_access',
+    'access arguments' => $admin,
+  );
+
+  return $items;
+}
+/**
+ * Implementation of hook_menu_alter().
+ *
+ *  Since we also have to guard against menu items being called
+ *  directly from a URL, this page check is necessary.  The checks
+ *  are invoked for user/x/edit and user/x/delete, and replace user
+ *  modules's default access checks.
+ */
+function userprotect_menu_alter(&$callbacks) {
+  $callbacks['user/%user_category/edit']['access callback'] = 'userprotect_user_edit_access';
+  $callbacks['user/%user_category/edit']['access arguments'] = array(1);
+  $callbacks['user/%user/delete']['access callback'] = 'userprotect_user_delete_access';
+  $callbacks['user/%user/delete']['access arguments'] = array(1);
+}
+
+/**
+ * Access callback for user edit pages.
+ *
+ * This replaces user_edit_access from user.module.
+ *
+ * @param $account
+ *   An object representing the user to be edited.
+ */
+function userprotect_user_edit_access($account) {
+  global $user;
+  if ((($user->uid == $account->uid) || user_access('administer users')) && $account->uid > 0) {
+    // Check to see if the user's roles are protecting edits, or the user
+    // account itself is protected.
+    if (!userprotect_check_bypass('up_edit') && userprotect_get_user_protection($account, 'up_edit')) {
+      // If so, and we're at /user/X/edit, set a message.
+      if (arg(0) == 'user' && is_numeric(arg(1)) && arg(2) == 'edit') {
+        drupal_set_message(t('%user is currently being protected from any edits.', array('%user' => $account->name)), 'error');
+      }
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Access callback for user delete pages.
+ *
+ * This replaces the logic from user.module.
+ *
+ * @param $account
+ *   An object representing the user to be deleted.
+ */
+function userprotect_user_delete_access($account) {
+  if (user_access('administer users')) {
+    // Check to see if the user's roles are protecting deletion, or the user
+    // account itself is protected.
+    if (!userprotect_check_bypass('up_delete') && userprotect_get_user_protection($account, 'up_delete')) {
+      // If so, and we're at /user/X/delete, set a message.
+      if (arg(0) == 'user' && is_numeric(arg(1)) && arg(2) == 'delete') {
+        drupal_set_message(t('%user is currently being protected from deletion.', array('%user' => $account->name)), 'error');
+      }
+      return FALSE;
+    }
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function userprotect_perm() {
+  return array(
+    'change own e-mail',
+    'change own password',
+    'change own openid',
+    'administer userprotect',
+  );
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function userprotect_theme() {
+  return array(
+    'userprotect_admin_role_table' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'userprotect_protections_bypass' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function userprotect_user($op, &$edit, &$account) {
+
+  switch ($op) {
+    // A new user is being added.  If auto-protect is enabled, then add protection.
+    case 'insert':
+      if (variable_get('userprotect_autoprotect', FALSE)) {
+        userprotect_add_user($account->uid, 'user');
+        $protected = array_filter(variable_get('userprotect_protection_defaults', userprotect_user_protection_defaults()));
+        drupal_set_message(userprotect_display_protections($account, $protected));
+      }
+      break;
+    // Remove a deleted user from the protections table.
+    case 'delete':
+      db_query('DELETE FROM {userprotect} WHERE uid = %d', $account->uid);
+      break;
+  }
+}
+
+/**
+ * Builds a table of protected users, and their protections.
+ *
+ * @return A form array representing the table.
+ */
+function userprotect_protected_users() {
+  return userprotect_protections_bypass('user');
+}
+
+/**
+ * Builds a table of user admin bypass values.
+ *
+ * @return A form array representing the table.
+ */
+function userprotect_administrator_bypass() {
+  return userprotect_protections_bypass('admin');
+}
+
+/**
+ * Helper funtion.  Builds tables for protected users and admin bypass.
+ *
+ * @return A form array representing the table.
+ */
+function userprotect_protections_bypass($type) {
+
+  // Build the header.
+  $header = array(array('data' => t('User'), 'field' => 'name', 'sort' => 'asc'));
+
+  $protect_columns = userprotect_get_protection_display();
+  foreach ($protect_columns as $field => $data) {
+  	$header[] = array('data' => $data, 'field' => $field);
+  }
+  $header[] = array('data' => t('Operations'));
+
+  // Grab the protected users.
+  $protected_users = pager_query("SELECT up.*, u.name FROM {userprotect} up INNER JOIN {users} u ON up.uid = u.uid WHERE up_type = '%s'". tablesort_sql($header), 25, 0, NULL, $type);
+
+  // Set some initial values.
+  $delete = t('delete');
+  $options = array();
+
+  // These are all available protections.
+  $protections = array_keys(userprotect_user_protection_defaults());
+
+  // Pass in the header and list of protections to the form so they'll be available
+  // to the theming function.
+  $form = array();
+  $form['protection']['#tree'] = TRUE;
+  $form['#header'] = $header;
+  $form['#protections'] = $protections;
+  $form['#submit'][] = 'userprotect_protections_bypass_submit';
+  $form['#theme'] = 'userprotect_protections_bypass';
+
+  // Build the checkboxes options.
+  foreach ($protections as $protection) {
+  	$options[$protection] = '';
+  }
+
+  // For each protected user, build their table row.
+  while ($protected_user = db_fetch_object($protected_users)) {
+    $defaults = array();
+
+    $user = user_load(array('uid' => $protected_user->uid));
+
+    $form['user'][$user->uid]['uid'] = array('#type' => 'value',
+      '#value' => $user->uid
+    );
+    $form[$user->uid]['name'] = array('#value' => theme('username', $user));
+    $form[$user->uid]['operations'] = array('#value' => $user->uid ? l($delete, "userprotect/delete/$user->uid/$type") : '');
+    // Build the protections for the user row.
+    foreach ($protections as $protection) {
+    	if ($protected_user->$protection) {
+    	  $defaults[] = $protection;
+    	}
+    }
+
+    // The checkboxes for this user.
+    $form['protection'][$user->uid] = array('#type' => 'checkboxes',
+  	  '#options' => $options,
+  	  '#default_value' => $defaults,
+  	);
+  }
+
+  // An autocomplete field to add new users for protection.
+  // This needs a custom validation function to check the user
+  // to be added.
+  $form['up_add'] = array('#type' => 'textfield',
+    '#maxlength' => 60,
+    '#autocomplete_path' => 'user/autocomplete',
+    '#element_validate' => array('userprotect_up_add_validate'),
+    '#userprotect_type' => $type,
+  );
+  $form['up_add_text'] = array('#value' => t('Add user'),);
+  $form['userprotect_type'] = array('#type' => 'value',
+    '#value' => $type,
+  );
+
+  if ($pager = theme('pager', array(), 25, 0)) {
+    $form['pager'] = array('#value' => $pager);
+  }
+
+  $form['submit'] = array('#type' => 'submit',
+    '#value' => t('Save')
+  );
+  return $form;
+}
+
+/**
+ * Themes the protected users table.
+ *
+ * @param $form The form to theme.
+ * @return An HTML string representing the constructed form.
+ */
+function theme_userprotect_protections_bypass($form) {
+  $rows = array();
+  // Buikd the row for each user.
+  foreach (element_children($form['user']) as $uid) {
+  	$row = array();
+  	$row[] = drupal_render($form[$uid]['name']);
+  	// Build the protections for the user row.
+  	foreach ($form['#protections'] as $protection) {
+  		$row[] = drupal_render($form['protection'][$uid][$protection]);
+  	}
+  	$row[] = drupal_render($form[$uid]['operations']);
+  	$rows[] = $row;
+  }
+
+  // Add the last row with the add textfield.
+  $rows[] = array(
+    array('data' => drupal_render($form['up_add']), 'colspan' => strval(count($form['#header']) - 1)),
+    array('data' => drupal_render($form['up_add_text']), 'colspan' => '1')
+  );
+
+  // Theme the table.
+  $output = theme('table', $form['#header'], $rows);
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+/**
+ * Custom validation function for adding a user for protection.
+ */
+function userprotect_up_add_validate($form, &$form_state) {
+  // If a user has been submitted
+  if ($username = $form['#value']) {
+    $type = $form['#userprotect_type'];
+    // If the user is valid, and they are not already being protected...
+    if ($uid = db_result(db_query("SELECT uid FROM {users} WHERE name = '%s'", $username))) {
+      if (!db_fetch_array(db_query("SELECT uid FROM {userprotect} WHERE uid = %d AND up_type = '%s'", $uid, $type))) {
+        if ($uid != 1 && $type == 'admin' && !db_fetch_array(db_query("SELECT u.uid FROM {users} u INNER JOIN {users_roles} ur ON u.uid = ur.uid LEFT JOIN {permission} p ON ur.rid = p.rid WHERE p.perm IS NOT NULL AND p.perm LIKE '%%administer users%%' AND u.uid = %d", $uid))) {
+          form_set_error('up_add', t('%user does not have user administration privileges.', array('%user' => $username)));
+        }
+        else {
+          // Transform the username into a uid.
+          form_set_value($form, $uid, $form_state);
+        }
+      }
+      // Can't add a user twice
+      else {
+        form_set_error('up_add', t('%user is already on this list.', array('%user' => $username)));
+      }
+
+    }
+    // Can't add a user that doesn't exist.
+    else {
+      form_set_error('up_add', t('The username is invalid.'));
+    }
+  }
+}
+
+/**
+ * Processes the submitted user protection form.
+ */
+function userprotect_protections_bypass_submit($form, &$form_state) {
+
+  $type = $form_state['values']['userprotect_type'];
+
+  // A user was added, so add them to the protected users table.
+  if ($uid = $form_state['values']['up_add']) {
+    userprotect_add_user($uid, $type);
+    $username = userprotect_get_username($uid);
+    if ($type == 'user') {
+      drupal_set_message(t('%user is now protected.', array('%user' => $username)));
+    }
+    elseif ($type == 'admin') {
+      drupal_set_message(t('%user now has bypass capabilities matching the default protections for newly protected users.', array('%user' => $username)));
+    }
+  }
+  if (is_array($form_state['values']['protection'])) {
+    // Load the defaults as a reference to all protections.
+    $protections_values = userprotect_user_protection_defaults();
+    // Loop through each user.
+    foreach ($form_state['values']['protection'] as $uid => $protections) {
+      $updates = array();
+      $args = array();
+      // Loop through the submitted user's protections, setting them enabled or
+      // disabled as appropriate for the update query. Note: $protection is
+      // a module generated string, so it's safe.
+    	foreach ($protections_values as $protection => $value) {
+        $updates[] = "$protection = %d";
+        $args[] = $protections[$protection] ? 1 : 0;
+    	}
+    	$args[] = $uid;
+    	$args[] = $type;
+
+    	// Update the user's protections.
+    	db_query("UPDATE {userprotect} SET ". implode(', ', $updates) ." WHERE uid = %d AND up_type = '%s'", $args);
+    }
+    if ($type == 'user') {
+      drupal_set_message(t('Protection settings updated.'));
+    }
+    elseif ($type == 'admin') {
+      drupal_set_message(t('Bypass settings updated.'));
+    }
+  }
+}
+
+/**
+ * Menu callback. Removes a user from being protected, or removes an
+ * administrator bypass.
+ */
+function userprotect_protected_users_delete_form(&$form_state, $account, $type = 'user') {
+  if ($type == 'user') {
+    $type_display = t('protections');
+    $admin_page = 'protected_users';
+  }
+  elseif ($type == 'admin') {
+    $type_display = t('administrator bypass');
+    $admin_page = 'administrator_bypass';
+  }
+  $form_state['userprotect']['account'] = $account;
+  $form_state['userprotect']['type'] = $type;
+  $form_state['userprotect']['type_display'] = $type_display;
+  $form_state['userprotect']['admin_page'] = $admin_page;
+  return confirm_form(array(), t('Are you sure you want to delete the individual !type for %user?', array('!type' => $type_display, '%user' => $account->name)), "admin/user/userprotect/$admin_page");
+}
+
+/**
+ * Submit function for the delete confirmation form.
+ */
+function userprotect_protected_users_delete_form_submit($form, &$form_state) {
+  $account = $form_state['userprotect']['account'];
+  $type = $form_state['userprotect']['type'];
+  $type_display = $form_state['userprotect']['type_display'];
+  $admin_page = $form_state['userprotect']['admin_page'];
+  db_query("DELETE FROM {userprotect} WHERE uid = %d AND up_type = '%s'", $account->uid, $type);
+  if ($type == 'user') {
+    drupal_set_message(t('%user is no longer protected.', array('%user' => $account->name)));
+  }
+  elseif ($type == 'admin') {
+    drupal_set_message(t('%user is no longer enabled for bypass.', array('%user' => $account->name)));
+  }
+
+  $form_state['redirect'] = "admin/user/userprotect/$admin_page";
+}
+
+/**
+ * Builds a form for the role protection settings.
+ *
+ * @return An array representing the form.
+ */
+function userprotect_protected_roles() {
+
+  $form = array();
+
+  // Get the list of all protections, and the current default settings.
+  $options = userprotect_get_protection_display();
+
+  // Build the header.
+  $header = array(t('Role'));
+  foreach ($options as $field => $data) {
+  	$header[] = $data;
+  }
+
+  // Grab all roles but the anonymous role, and grab the current default settings.
+  $roles = db_query('SELECT * FROM {role} WHERE rid > %d ORDER BY name', DRUPAL_ANONYMOUS_RID);
+  $protected_roles = variable_get('userprotect_role_protections', array());
+
+  // This is a complete list of protections for reference.
+  $protections = array_keys(userprotect_user_protection_defaults());
+
+  // Pass in the header and protections so they're available for the theme function.
+  // Also, we want this as one big array to save in the variables table, so tree it.
+  $form['role_table']['#header'] = $header;
+  $form['role_table']['#theme'] = 'userprotect_admin_role_table';
+  $form['role_table']['#protections'] = $protections;
+  $form['role_table']['userprotect_role_protections']['#tree'] = TRUE;
+
+  // Build a row for each role.
+  while ($role = db_fetch_object($roles)) {
+    $form['role_table']['userprotect_role_protections'][$role->rid]['name'] = array('#value' => $role->name);
+    // Build protections for the row.
+    foreach ($protections as $protection) {
+      $form['role_table']['userprotect_role_protections'][$role->rid][$protection] = array(
+        '#type' => 'checkbox',
+      );
+      if (isset($protected_roles[$role->rid][$protection])) {
+        $form['role_table']['userprotect_role_protections'][$role->rid][$protection]['#default_value'] = $protected_roles[$role->rid][$protection];
+      }
+    }
+  }
+
+  return system_settings_form($form);
+}
+
+/**
+ * Builds a form for the userprotect default settings.
+ *
+ * @return An array representing the form.
+ */
+function userprotect_protection_defaults() {
+
+  // Get the list of all protections, and the current default settings.
+  $options = userprotect_get_protection_display();
+  $current_defaults = variable_get('userprotect_protection_defaults', userprotect_user_protection_defaults());
+
+  // Transform the defaults into proper checkboxes defaults.
+  $defaults = array_keys(array_filter($current_defaults));
+
+  // A set of checkboxes that lists the default protection settings.
+  $form['userprotect_protection_defaults'] = array('#type' => 'checkboxes',
+    '#title' => t('User protection defaults'),
+    '#description' => t('The selected protections will be assigned to users when they are first added for protection.'),
+    '#options' => $options,
+    '#default_value' => $defaults,
+  );
+  // A checkbox to enable the auto-protect functionality.
+  $form['userprotect_autoprotect'] = array('#type' => 'checkbox',
+    '#title' => t('Auto-protect new users'),
+    '#description' => t('If selected, all newly created users will automatically be protected and assigned the default protections above.'),
+    '#default_value' => variable_get('userprotect_autoprotect', FALSE),
+  );
+  // A set of checkboxes that lists the default protection settings.
+  $form['userprotect_administrator_bypass_defaults'] = array('#type' => 'checkboxes',
+    '#title' => t('Administrator bypass defaults'),
+    '#description' => t('If selected, all users with the \'administer users\' permission will be allowed to bypass the protection<br \><em>Note: this default setting is overridden by the !per_user_bypass.</em>.', array('!per_user_bypass' => l(t('per-user administrator bypass settings'), 'admin/user/userprotect/administrator_bypass'))),
+    '#options' => $options,
+    '#default_value' => variable_get('userprotect_administrator_bypass_defaults', userprotect_administrator_bypass_defaults()),
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Themes the role protections table.
+ *
+ * @param $form The form for the table.
+ * @return An HTML string representing the table.
+ */
+function theme_userprotect_admin_role_table($form) {
+  $rows = array();
+  // Build a row for each role
+  foreach (element_children($form['userprotect_role_protections']) as $rid) {
+  	$row = array();
+  	$row[] = drupal_render($form['userprotect_role_protections'][$rid]['name']);
+  	// Build the protections for each row.
+  	foreach ($form['#protections'] as $protection) {
+  		$row[] = drupal_render($form['userprotect_role_protections'][$rid][$protection]);
+  	}
+  	$rows[] = $row;
+  }
+
+  // Theme the table.
+  $output = t('<h3>Protections by role</h3>');
+  $output .= theme('table', $form['#header'], $rows);
+  $output .= t('<div class="description">Setting a protection for a role will enable that protection for all users in the role.</div>');
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+/**
+ * Custom validation function for protecting users from the user
+ * administration operations.
+ */
+function userprotect_user_admin_account_validate($form, &$form_state) {
+
+  // Get the checked users, and the operation name.
+  $uids = array_filter($form_state['values']['accounts']);
+  $operation_rid = explode('-', $form_state['values']['operation']);
+  $operation = $operation_rid[0];
+
+  // Perform the check for each submitted user.
+  foreach ($uids as $uid) {
+    $account = user_load(array('uid' => $uid));
+
+	  switch ($operation) {
+      case 'block':
+      case 'unblock':
+        // Check to see if any of the user's roles are protected from status changes,
+        // then check to see if the user is protected.
+        if (!userprotect_check_bypass('up_status') && userprotect_get_user_protection($account, 'up_status')) {
+          // If so, then unset the checked user so they will not be processed, and display a warning.
+          form_set_value($form['accounts'][$uid], 0, $form_state);
+          drupal_set_message(t('%user is protected from status changes, and was not updated.', array('%user' => $account->name)), 'error');
+          unset($uids[$uid]);
+        }
+        break;
+      case 'delete':
+        // Check to see if any of the user's roles are protected from deletion,
+        // then check to see if the user is protected.
+        if (!userprotect_check_bypass('up_delete') && userprotect_get_user_protection($account, 'up_delete')) {
+          // If so, then unset the checked user so they will not be processed, and display a warning.
+          // Note that the array element has to be completely removed here in order to prevent the
+          // user from being deleted, due to the nature of the mass deletion callback.
+          unset($form_state['values']['accounts'][$uid]);
+          drupal_set_message(t('%user is protected from deletion, and was not deleted.', array('%user' => $account->name)), 'error');
+          unset($uids[$uid]);
+        }
+        break;
+      case 'add_role':
+      case 'remove_role':
+      // RoleAssign module compatibility hack.
+      case 'roleassign_add_role':
+      case 'roleassign_remove_role':
+        // Check to see if any of the user's roles are protected from status changes,
+        // then check to see if the user is protected.
+        if (!userprotect_check_bypass('up_roles') && userprotect_get_user_protection($account, 'up_roles')) {
+          // If so, then unset the checked user so they will not be processed, and display a warning.
+          form_set_value($form['accounts'][$uid], 0, $form_state);
+          drupal_set_message(t('%user is protected from role changes, and was not updated.', array('%user' => $account->name)), 'error');
+          unset($uids[$uid]);
+        }
+        break;
+    }
+  }
+
+  // If we've unset all of the users that were checked, then don't continue with the form processing.
+  if (!count($uids)) {
+    drupal_set_message('No users selected.', 'error');
+    drupal_goto('admin/user/user');
+  }
+}
+
+/**
+ * Builds an array of the inital default protections.
+ *
+ * @return The default protections array.
+ */
+function userprotect_user_protection_defaults() {
+  return array('up_name' => 0,
+    'up_mail' => 0,
+    'up_pass' => 0,
+    'up_status' => 1,
+    'up_roles' => 0,
+    'up_openid' => 0,
+    'up_delete' => 1,
+    'up_edit' => 0,
+  );
+}
+
+/**
+ * Builds an array of the inital default bypass settings for user admins.
+ *
+ * @return The default bypass array.
+ */
+function userprotect_administrator_bypass_defaults() {
+
+  $defaults = array();
+  $protections = userprotect_user_protection_defaults();
+  foreach ($protections as $protection => $value) {
+  	$defaults[$protection] = $protection;
+  }
+
+  return $defaults;
+}
+
+/**
+ * Builds an array of all protections and their human-readable text string.
+ *
+ * @return The constructed array.
+ */
+function userprotect_get_protection_display() {
+  return array('up_name' => t('username'),
+    'up_mail' => t('e-mail'),
+    'up_pass' => t('password'),
+    'up_status' => t('status'),
+    'up_roles' => t('roles'),
+    'up_openid' => t('openid'),
+    'up_delete' => t('deletion'),
+    'up_edit' => t('all account edits'),
+  );
+}
+
+/**
+ * Conditionally displays a user message on edit forms listing current
+ * protections.
+ *
+ * @param $account The user account object.
+ * @param $protected An array of protections the current user is receiving.
+ */
+function userprotect_form_display_protections($account, $protected) {
+  // If we're initially displaying an edit form, throw a message if
+  // there are any protected fields, so the editor has a clue.
+  if (!empty($protected) && !$_POST) {
+    drupal_set_message(userprotect_display_protections($account, $protected));
+  }
+}
+
+/**
+ * Builds a displayable text string of the protections currently in effect for
+ * the specified user.
+ *
+ * @param $account The user account object.
+ * @param $protected An array of protections the current user is receiving.
+ *
+ * @return A text string representing the current protections.
+ */
+function userprotect_display_protections($account, $protected) {
+
+  // Get the protections display text.
+  $display = userprotect_get_protection_display();
+
+  $protections = array();
+  // For each protection, check if any of the user's roles are protected, or the user is
+  // protected.
+  foreach ($protected as $protection => $value) {
+  	$protections[] = $display[$protection];
+  }
+  // Display if there are protections and it's an admin user.
+  if (count($protections) && user_access('administer users')) {
+    $output = t('%user has been protected from the following editing operations: !operations', array('%user' => $account->name, '!operations' => implode(', ', $protections)));
+  }
+  else {
+    $output = '';
+  }
+
+  return $output;
+}
+
+/**
+ * Adds a user to the protections table.
+ *
+ * @param $uid The UID of the user to be added.
+ * @param $type The type of protection to add, either 'user', or 'admin'.
+ */
+function userprotect_add_user($uid, $type) {
+  // Grab the default protections to enable for this user.
+  $protections = variable_get('userprotect_protection_defaults', userprotect_user_protection_defaults());
+
+  // Set initial values and args.
+  $names = array('%s');
+  $values = array('%d');
+  $arg_names = array('uid' => 'uid');
+  $arg_values = array($uid);
+
+  // Add the protections.
+  foreach ($protections as $protection => $value) {
+    $names[] = '%s';
+  	$values[] = '%d';
+  	$arg_names[$protection] = $protection;
+  	$arg_values[] = $protections[$protection] ? 1 : 0;
+  }
+
+  // Append the type.
+  $names[] = '%s';
+  $values[] = "'%s'";
+  $arg_names['up_type'] = 'up_type';
+  $arg_values[] = $type;
+
+  // Merge the args.
+  $args = ($arg_names + $arg_values);
+
+  db_query('INSERT INTO {userprotect} ('. implode(', ', $names) .') VALUES ('. implode(', ', $values) .')', $args);
+}
+
+/**
+ * Gives the username of a protected user.
+ *
+ * @param $uid The user ID.
+ * @return The username.
+ */
+function userprotect_get_username($uid) {
+  return db_result(db_query('SELECT name FROM {users} WHERE uid = %d', $uid));
+}
+
+/**
+ * Checks to see if the current user can bypass a protection.
+ *
+ * @param $protection The protection to check for bypass.
+ * @param $uid An optional user to perform the bypass check on (default is current user).
+ *
+ * @return TRUE if the user can bypass, FALSE otherwise.
+ */
+function userprotect_check_bypass($protection, $uid = NULL) {
+  global $user;
+
+  static $bypass = array();
+  static $bypass_defaults;
+
+  // If not a user admin, no checks necessary.
+  if (!user_access('administer users')) {
+    return FALSE;
+  }
+
+  // Take the current user unless otherwise specified.
+  $uid = isset($uid) ? $uid : $user->uid;
+
+  // Set the static array for the current admin.
+  if (!isset($bypass[$uid])) {
+    $result = db_query("SELECT * FROM {userprotect} WHERE uid = %d AND up_type = 'admin'", $uid);
+    if ($admin_array = db_fetch_array($result)) {
+      $bypass[$uid] = $admin_array;
+    }
+  }
+
+  // If a per administrator bypass setting exists, return it.
+  if (isset($bypass[$uid][$protection])) {
+    return $bypass[$uid][$protection];
+  }
+  // Otherwise return the default bypass setting.
+  else {
+    if (!isset($bypass_defaults)) {
+      $bypass_defaults = variable_get('userprotect_administrator_bypass_defaults', userprotect_administrator_bypass_defaults());
+    }
+
+    return isset($bypass_defaults[$protection]) ? $bypass_defaults[$protection] : FALSE;
+  }
+
+}
+
+/**
+ * Checks to see if the specified user has the specified protection.
+ *
+ * @param $account The user object to check.
+ * @param $protection The protection to check for.
+ * @return TRUE if the user has the specified protection, FALSE otherwise.
+ */
+function userprotect_get_user_protection($account, $protection) {
+  global $user;
+
+  static $protections = array();
+  static $role_protections;
+
+  $uid = $account->uid;
+  $roles = $account->roles;
+
+  // Users editing their own accounts have the permissions for e-mail
+  // and password determined by the role-based setting in the userprotect
+  // section at admin/user/access. This is done for consistency with the
+  // way core handles the self-editing of usernames.
+  if ($uid == $user->uid && in_array($protection, array('up_name', 'up_mail', 'up_pass', 'up_openid', 'up_edit'))) {
+    switch ($protection) {
+      case 'up_name':
+        return !user_access('change own username');
+      case 'up_mail':
+        return !user_access('change own e-mail');
+      case 'up_pass':
+        return !user_access('change own password');
+      case 'up_openid':
+        return !user_access('change own openid');
+      // Always let user access their own edit page.
+      case 'up_edit':
+        return FALSE;
+    }
+  }
+
+  // If this user hasn't been added to the result array yet, then pull their information.
+  if (!isset($protections[$uid])) {
+    $result = db_query("SELECT * FROM {userprotect} WHERE uid = %d AND up_type = 'user'", $uid);
+    if ($user_array = db_fetch_array($result)) {
+      $protections[$uid] = $user_array;
+    }
+  }
+
+  // If per-user protections exist for this user, stop here and return the value of the protection.
+  if (isset($protections[$uid][$protection])) {
+    return $protections[$uid][$protection];
+  }
+
+  // Grab the role protections if they haven't already been initialized.
+  if (!isset($role_protections)) {
+    $role_protections = variable_get('userprotect_role_protections', array());
+  }
+
+  if (!empty($role_protections)) {
+    // For each role, check to see if it's enabled for that protection.
+    // Return TRUE as soon as we find a protected role.
+    foreach ($roles as $rid => $role) {
+      if ($role_protections[$rid][$protection]) {
+        return TRUE;
+      }
+    }
+  }
+
+  // No protection enabled.
+  return FALSE;
+}

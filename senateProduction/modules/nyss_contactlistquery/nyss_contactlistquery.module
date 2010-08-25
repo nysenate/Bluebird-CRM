@@ -1,0 +1,67 @@
+<?php 
+function nyss_contactlistquery_civicrm_contactListQuery( &$query, $name, $context, $id ) {
+
+//echo $query;
+
+
+	//office staff group ID to use for activity assignees and case roles
+	$groupID = '3';
+	
+	//LCD - note, the activity assignee contacts don't currently use this hook as the js call has been 
+	//modified directly to using a defined group. leaving in case we want to move here at some point
+    if ( $context == 'activity_assignee' && $groupID ) {
+
+		$query = str_replace("\n", " ", $query);
+        $splitQuery = explode(" ",$query);
+        $selectClause = $fromClause = $whereClause = $orderByClause = null ;
+        $select = $from = $where = null;
+        foreach( $splitQuery as $key => $value ) {
+            if( !strcasecmp( $value , 'SELECT')) {
+                continue;
+            }
+            if( !strcasecmp( $value , 'FROM')) {
+                $select = true;
+                continue;
+            } 
+            if( !strcasecmp( $value , 'WHERE')) { 
+                $from = true;
+                continue;
+            }
+            if( !strcasecmp( $value , 'ORDER')) { 
+                $where = true;
+            }
+            if( !$select ) {
+                $selectClause = $selectClause.' '.$value;
+            } else if( !$from ) {
+                $fromClause = $fromClause.' '.$value;
+            } else if( !$where){
+                $whereClause = $whereClause.' '.$value;
+            } else {
+                $orderByClause = $orderByClause.' '.$value;
+            }
+        }      
+
+        $fromClause .= " INNER JOIN civicrm_group_contact cgc ON cgc.contact_id = cc.id ";
+        $whereClause = " ($whereClause) AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";   
+        $query = "SELECT $selectClause FROM $fromClause WHERE $whereClause $orderByClause";
+
+    } elseif ( $context == 'caseview' && $groupID ) { //case roles
+		$query = "SELECT id, data 
+				  FROM (
+				   	SELECT cc.id as id, CONCAT_WS( ' :: ', sort_name, email ) as data, sort_name
+				   	FROM civicrm_contact cc 
+					  LEFT JOIN civicrm_email eml ON ( cc.id = eml.contact_id AND eml.is_primary = 1 )  
+					  LEFT JOIN civicrm_address sts ON ( cc.id = sts.contact_id AND sts.is_primary = 1 )
+					  INNER JOIN civicrm_group_contact cgc ON cgc.contact_id = cc.id     
+					WHERE sort_name LIKE '%$name%' 
+					  AND cc.is_deleted = 0 
+					  AND cgc.group_id IN ($groupID)
+					  AND cgc.status = 'Added'
+   					LIMIT 0, 10
+     			  ) t
+				  ORDER BY sort_name";
+	}
+	
+    return $query;
+
+}

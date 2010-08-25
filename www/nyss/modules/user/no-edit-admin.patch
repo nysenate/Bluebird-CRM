@@ -1,0 +1,20 @@
+Index: modules/user/user.module
+===================================================================
+RCS file: /cvs/drupal/drupal/modules/user/user.module,v
+retrieving revision 1.907
+diff -u -p -r1.907 user.module
+--- modules/user/user.module	7 May 2008 19:34:24 -0000	1.907
++++ modules/user/user.module	12 May 2008 12:08:57 -0000
+@@ -887,7 +887,10 @@ function user_view_access($account) {
+  * Access callback for user account editing.
+  */
+ function user_edit_access($account) {
+-  return (($GLOBALS['user']->uid == $account->uid) || user_access('administer users')) && $account->uid > 0;
++  // The user is only allowed to edit the account if it's their own, or they
++  // have the "administer users" permission. The "administer users" permission
++  // doesn't allow users to edit the super user account (user/1).
++  return (($GLOBALS['user']->uid == $account->uid) || (user_access('administer users') && $account->uid != 1)) && $account->uid > 0;
+ }
+ 
+ function user_load_self($arg) {
+

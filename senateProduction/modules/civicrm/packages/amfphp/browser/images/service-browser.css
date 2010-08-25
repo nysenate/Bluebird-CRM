@@ -1,0 +1,177 @@
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 0.8em;
+	margin: 10px 20px 30px 20px;
+	}
+h2 {
+	padding: 0px;
+	font-weight: normal;
+	font-size: 14px;
+	margin: 0px 0px 15px 0px;
+}
+
+td
+{
+	font-size: 0.8em;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+td pre
+{
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+.testMethodLink
+{
+	float:right;
+	padding: 0px 10px 0px 0px;
+	color:#fff;
+}
+
+table.methodtable { background-color:#9999cc; margin:0px 0px 10px 0px; font-size:11px}
+table.methodtable td { background-color:#FFFFFF;  }
+table.methodtable tr.header { display:table-row; font-weight: bold;}
+table.methodtable td.header { background-color:#9999cc; cursor:default; color:#ffffff; font-size:11px; font-weight: bold;}
+table.methodtable td.key { background-color:#f0f0f0; cursor:default; width: 20%; }
+
+.methodrow {
+
+}
+.propname {
+	border: #ffffff 1px solid;
+	padding: 2px 30px 2px 25px;
+	width: 20%;
+	background-color: #f0f0f0;
+}
+.propvalue {
+	border: #ffffff 1px solid;
+	padding: 2px 0px 2px 10px;
+	width: 80%;
+	background-color: #f0f0f0;
+}
+/**/
+#results {
+
+}
+.resultstable {
+	border: 0px;
+	padding: 0px;
+	margin: 0px 0px 20px 0px;
+	width: 100%;
+}
+.resultscaption {
+	padding: 2px 0px 2px 10px;
+	margin: 1px;
+	color: #ffffff;
+	/*background-color: #003366;*/
+	text-align: left;
+}
+.resultsrow {
+	border-right: #ffffff 1px solid;
+	border-bottom: #ffffff 1px solid;
+	padding: 2px 0px 2px 10px;
+	width: 80%;
+	/*background-color: #e0e0e0;*/
+}
+.resultstext {
+
+}
+
+.formtable {
+	border: 0px;
+	padding: 0px;
+	margin: 0px 0px 20px 0px;
+	width: 100%;
+}
+.formcaption {
+	font-size: 11px;
+	font-weight: bold;
+	color: #ffffff;
+	background-color: #9999cc !important;
+	text-align: left;
+}
+.formheader {
+	border: #ffffff 1px solid;
+	padding: 2px 30px 2px 25px;
+	background-color: #d0d0d0;
+	text-align: left;
+	text-decoration: underline;
+}
+
+.inputname {
+	/*font-weight: bold;*/
+	padding: 2px 0px 2px 30px;
+}
+.inputbox {
+	width: 400px;
+}
+/**/
+.argrow {
+	border: #ffffff 1px solid;
+	padding: 2px 0px 2px 10px;
+	width: 80%;
+	background-color: #f0f0f0;
+}
+.argname {
+
+}
+
+.codex {
+	border:1px inset; 
+	background-color: #EFEFEF; 
+	width:100%; 
+	height:300px;
+	overflow:scroll;
+}
+
+
+a {
+	color:#3E515E;
+	font-weight:normal;
+	text-decoration:underline;
+}
+
+a:hover {
+	color:#BEC2CD;
+}
+
+
+li {
+	line-height:20px;
+	text-align:left;
+}
+
+
+h1 {
+	font-family: "Century Gothic", "Trebuchet MS", "Arial Narrow", Arial, sans-serif;
+	font-size:24px;
+	text-transform:uppercase;
+	font-weight:normal;
+	border-bottom:1px solid #eeeeee;
+	color:#3E515E;
+}
+
+.error{
+	color:red;
+	font-weight:bold;
+}
+.feedback{
+	color:#3E515E;
+	font-weight:bold;
+}
+
+.submitbtn
+{
+	text-align:right;
+	margin:0px 10px 0px 0px;
+}
+
+#methodList
+{
+	font-size:11px;
+}
+
+#methodList p 
+{
+	font-size:11px;
+}

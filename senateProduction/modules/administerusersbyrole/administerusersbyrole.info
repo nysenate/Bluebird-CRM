@@ -1,0 +1,11 @@
+; $Id: administerusersbyrole.info,v 1.1.2.2 2009/06/29 16:06:09 smokris Exp $
+name = Administer Users by Role
+description = "Allows users with 'administer users' permission and a role (specified in 'Permissions') to edit/delete other users with a specified role.  Also provides control over user creation."
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-06-29
+version = "6.x-1.4"
+core = "6.x"
+project = "administerusersbyrole"
+datestamp = "1246292114"
+
