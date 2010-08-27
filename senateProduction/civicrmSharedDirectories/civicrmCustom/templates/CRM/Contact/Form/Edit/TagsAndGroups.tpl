@@ -36,19 +36,31 @@
 	    {foreach key=key item=item from=$tagGroup}
 		{* $type assigned from dynamic.tpl *}
 		{if !$type || $type eq $key }
-		<td width={cycle name=tdWidth values="70%","30%"}><span class="label">{if $title}{$form.$key.label}{/if}</span>
+		<td width={cycle name=tdWidth values="70%","30%"}>
+        <span class="label">{if $title}{$form.$key.label}{/if}</span>
 		    <div id="tagListWrap">
             <table id="tagGroupTable">
 			{foreach key=k item=it from=$form.$key}
 			    {if $k|is_numeric}
 				<tr class={cycle values="'odd-row','even-row'" name=$key} id="tagRow{$k}">
 				    <td>
-					<strong>{$it.html}</strong><br />
-					<!--{if $item.$k.description}
+                    {if $key eq 'tag'}
+                    	{if strstr($it.html,'&nbsp;&nbsp;&nbsp;&nbsp;')}
+                        	{$it.html|replace:'>&nbsp;&nbsp;&nbsp;&nbsp;':' class="level3">'}
+                        {elseif strstr($it.html,'&nbsp;&nbsp;')}
+                        	{$it.html|replace:'>&nbsp;&nbsp;':' class="level2">'}
+                        {else}
+                        	{$it.html}
+                        {/if}
+                    {else}
+						<strong>{$it.html}</strong><br /> {*LCD retain for groups list*}
+                    {/if}
+                    
+					{if $item.$k.description}
 					    <div class="description">
 						{$item.$k.description}
 					    </div>
-					{/if}-->
+					{/if}
 				    </td>
 				</tr>
 			    {/if}
