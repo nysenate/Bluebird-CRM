@@ -12,6 +12,7 @@
 }
 .main-container #edit-profile {
 	right: 0;
+	width: auto; /* Fixes on zoom out 2436 */
 }
 #crm-container #existing-dashlets-col-0,
 #crm-container #dashlets-header-col-0 {
@@ -57,6 +58,21 @@
 	overflow: auto;
 	border: solid 1px #CCCCCC;
 }
+#crm-container #tagListWrap td input {
+	float: left;
+}
+#crm-container #tagListWrap td label {
+	display: block;
+	float: left;
+	padding-left: 2px;
+}
+#crm-container #tagListWrap td label.level2 {
+	font-weight: bold;
+}
+#crm-container #tagListWrap td label.level3 {
+	padding-left: 15px;
+	width: 80%;
+}
 
 /* Hide a few things in case manage page */
 #crm-container .crm-case-caseview-form-block-timeline_id,
@@ -71,7 +87,9 @@
 
 /* Hide some tag stuff */
 #crm-container .crm-tag-form-block-used_for,
-#crm-container #newTagSet {
+#crm-container #newTagSet,
+.crm-contact-task-addtotag-form-block-tag #tagRow_tag291,
+.crm-contact-task-removefromtag-form-block-tag #tagRow_tag291 {
 	display: none;
 }
 
@@ -82,3 +100,6 @@
 #District_Information_7_1 .crm-accordion-header {
 	font-size: 14px;
 }
+
+
+
