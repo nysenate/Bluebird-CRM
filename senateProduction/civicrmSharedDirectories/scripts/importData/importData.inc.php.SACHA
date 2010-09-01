@@ -17,60 +17,17 @@ set_time_limit(0);
 require_once "../commonLibs/config.php";
 require_once "../commonLibs/lib.inc.php";
 
-$prog = $argv[0];
-$task = "import";
-$instance = $importSet = $importDir = "";
-$sourceDesc = "omis";
-$startID = 0;
-
-if (count($argv) <= 1) {
-  die("Usage: $prog [options] instance importSet\nwhere [options] are:\n  -t task\n  -d importDir\n  -s sourceDesc\n  -i startID\n");
-}
-
-for ($i = 1; $i < count($argv); $i++) {
-  $arg = $argv[$i];
-  if ($arg == '-d') {
-    $importDir = $argv[++$i];
-  }
-  else if ($arg == '-t') {
-    $task = strtolower($argv[++$i]);
-  }
-  else if ($arg == '-s') {
-    $sourceDesc = $argv[++$i];
-  }
-  else if ($arg == '-i') {
-    $startID = $argv[++$i];
-  }
-  else if (substr($arg, 0, 1) == '-') {
-    die("$prog: $arg: Invalid option\n");
-  }
-  else if (empty($instance)) {
-    $instance = strtolower($arg);
-  }
-  else {
-    $importSet = $arg;
-  }
-}
-
-if (empty($instance) || empty($importSet)) {
-  die("$prog: Must specify an instance and an importSet.\n");
-}
-
-$civiconfdir = RAYROOTDIR."sites/$instance".RAYROOTDOMAIN;
-if (file_exists($civiconfdir)) {
-  define('CIVICRM_CONFDIR', $civiconfdir);
-}
-else {
-  die("$prog: $civiconfdir: Directory not found\nPlease make sure instance '$instance' exists before importing data.\n");
-}
-
-if (empty($importDir)) {
-  $importDir = RAYIMPORTDIR.$importSet;
-}
-
-if (!file_exists($importDir)) {
-  die("$prog: $importDir: Directory not found\nMust specify a valid import directory.\n");
-}
+if (isset($argv[1]))
+  $task = strtolower($argv[1]);
+if (isset($argv[2]))
+  define('CIVICRM_CONFDIR',RAYROOTDIR."sites/{$argv[2]}".RAYROOTDOMAIN);
+if (isset($argv[3]))
+  $importSet=$argv[3];
+if (isset($argv[4]))
+  $sourceDesc=$argv[4];
+else
+  $sourceDesc='omis';
+$startID = (isset($argv[5])) ? $argv[5] : 0;
 
 require_once RAYCIVIPATH.'civicrm.config.php';
 require_once 'CRM/Core/Config.php';
@@ -92,13 +49,13 @@ markTime();
 
 switch ($task) {
         case "parseonly":
-		parseData($importSet, $importDir, $startID, $sourceDesc);
+		parseData($importSet, $startID, $sourceDesc);
                 break;
         case "loaddbonly":
 		loadDB($importSet);
 		break;
         case "import":
-		if (parseData($importSet, $importDir, $startID, $sourceDesc)) {
+		if (parseData($importSet, $startID, $sourceDesc)) {
 			loadDB($importSet);
 		}
                 break;
@@ -111,7 +68,7 @@ switch ($task) {
                 break;
 	//as a default, call the update which takes different params
 	default:
-		update($task, $importSet, $importDir, $sourceDesc);
+		update($task, $importSet, $sourceDesc);
 		break;
 }
 
@@ -151,17 +108,15 @@ function loadDB($importSet)
 		$colstr = implode(',', $db_info['cols']);
 		$fname = RAYTMP.$importSet.'-'.$abbrev.'.tsv';
         	cLog(0, 'info', "importing $name records from $fname into database table $table");
-
-//cLog(0,'info',"LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});");
-
         	$dao = &CRM_Core_DAO::executeQuery("LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});", CRM_Core_DAO::$_nullArray);
 	}
 } // loadDB()
 
 
 
-function parseData($importSet, $importDir, $startID, $sourceDesc)
+function parseData($importSet, $startID, $sourceDesc)
 {
+
 	global $aSuffixLookup;
 	global $aRelLookup;
 	global $omis_ct_fields;
@@ -179,11 +134,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
         $session =& CRM_Core_Session::singleton();
 
-	$infiles = get_import_files($importDir, $importSet);
-	if (!$infiles) {
-		echo "Unable to find all necessary import files.\n";
-		return null;
-	}
+	$fbase = strtoupper($importSet);
+	$fContacts = RAYIMPORTDIR.$importSet."/".$fbase."MST.TXT";
+        $fCases = RAYIMPORTDIR.$importSet."/".$fbase."CAS.TXT";
+        $fNotes = RAYIMPORTDIR.$importSet."/".$fbase."HIS.TXT";
+        $fIssues = RAYIMPORTDIR.$importSet."/".$fbase."ISSCONV.TXT";
 
 	foreach ($bluebird_db_info as $name => $db_info) {
 		$abbrev = $db_info['abbrev'];
@@ -191,12 +146,12 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		unlink($fname);
 		$fout[$name] = fopen($fname, 'w');
 	}
-
+cLog(0,'111');
 	//initialize the arrays, skipping header lines
 	$skipped = 0;
 	$done = false;
 	do {
-	  $ctRow = getLineAsAssocArray($infiles['contacts'], DELIM, $omis_ct_fields);
+	  $ctRow = getLineAsAssocArray($fContacts, DELIM, $omis_ct_fields);
 	  if ($ctRow && is_numeric($ctRow['KEY'])) {
 	    $ctRow['KEY'] = intval($ctRow['KEY']);
 	    if ($ctRow['KEY'] >= $startID) {
@@ -210,7 +165,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 	$done = false;
 	do {
-	  $ntRow = getLineAsAssocArray($infiles['notes'], DELIM, $omis_nt_fields);
+	  $ntRow = getLineAsAssocArray($fNotes, DELIM, $omis_nt_fields);
 	  if ($ntRow && is_numeric($ntRow['KEY'])) {
 	    $ntRow['KEY'] = intval($ntRow['KEY']);
 	    if ($ntRow['KEY'] >= $startID) {
@@ -221,7 +176,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 	$done = false;
 	do {
-	  $csRow = getLineAsAssocArray($infiles['cases'], DELIM, $omis_cs_fields);
+	  $csRow = getLineAsAssocArray($fCases, DELIM, $omis_cs_fields);
 	  if ($csRow && is_numeric($csRow['KEY'])) {
 	    $csRow['KEY'] = intval($csRow['KEY']);
 	    if ($csRow['KEY'] >= $startID) {
@@ -232,7 +187,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 	$done = false;
 	do {
-	  $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
+	  $isRow = getLineAsAssocArray($fIssues, DELIM, $omis_is_fields);
 	  if ($isRow && is_numeric($isRow['KEY'])) {
 	    $isRow['KEY'] = intval($isRow['KEY']);
 	    if ($isRow['KEY'] >= $startID) {
@@ -247,7 +202,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         }
 
 	//count number of lines in the file
-	$numContacts = countFileLines($infiles['contacts']) - $skipped; 
+	$numContacts = countFileLines($fContacts)-$skipped; 
 
         cLog(0,'info',"importing {$numContacts} lines starting with $startID, skipped $skipped");
 	cLog(0,'info',"starting OMIS IDs: ct=".$ctRow['KEY'].",nt=".$ntRow['KEY'].",cs=".$csRow['KEY'].",is=".$isRow['KEY']."\n");
@@ -268,7 +223,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $activityID = $dao->maxid;
         cLog(0,'info',"starting activityID will be ".($activityID+1));
 
-	$cCounter = 0;
+	$cCounter=0;
 
 	$aRels = array();
 	$aIDMap = array();
@@ -277,8 +232,6 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 	while ($ctRow) {
 		// check for an OMIS extended record
 		$omis_ext = (count($ctRow) > 45) ? true : false;
-		$ctRow['KEY'] = intval($ctRow['KEY']);
-		$ctRow['SKEY'] = intval($ctRow['SKEY']);
 
 		++$contactID;
 		++$cCounter;
@@ -286,7 +239,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		if (RAYDEBUG) markTime('getLine');
 
 		//set the contacts unique importID
-		$importID = $ctRow['KEY'];
+		$importID = intval($ctRow['KEY']);
 
 		//map civi id to external id for relationships
 		//in case relationship parent does not precede current row.
@@ -294,17 +247,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		$aIDMap[$importID] = $contactID;
 
 		//remember the relationship
-		if ($ctRow['SKEY'] > 0) {
+		if (intval($ctRow['SKEY'])>0) {
 			$n = count($aRels);
 			$aRels[$n]['contactID'] = $contactID;
-      	                $aRels[$n]['parentImportID'] = $ctRow['SKEY'];
+      	                $aRels[$n]['parentImportID'] = intval($ctRow['SKEY']);
                         $aRels[$n]['type'] = $ctRow['RCD'];
 			$aRels[$n]['household_name'] = 'The '.$ctRow['LAST'].' Family';
                         $aRels[$n]['household_sort_name'] = $ctRow['LAST'].', The Family';
-                        $aRels[$n]['street_address'] = $ctRow['ADDR_WORK_STREET1'];
-                        $aRels[$n]['supplement_address_1'] = $ctRow['ADDR_WORK_STREET2'];
-                        $aRels[$n]['city'] = $ctRow['ADDR_WORK_CITY'];
-                        $aRels[$n]['postal_code'] = $ctRow['ADDR_WORK_ZIP'];
+
 		}
 
 		//if this is an org, create an organization for this contact if necessary, then create a contact linked to the org
@@ -375,8 +325,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		$params['first_name'] = $ctRow['FIRST']; 
                 $params['middle_name'] = $ctRow['MI']; 
                 $params['last_name'] = $ctRow['LAST']; 
-                $params['sort_name'] = $ctRow['LAST'].', '.$ctRow['FIRST'] .' ' . $ctRow['MI']; 
-                $params['display_name'] = $ctRow['FIRST'].' '.$ctRow['MI'].' '.$ctRow['LAST']; 
+                $params['sort_name'] = $ctRow['LAST'].', '.$ctRow['FIRST']; 
+                $params['display_name'] = $ctRow['FIRST'].' '.$ctRow['LAST']; 
 		switch ($ctRow['SEX']) {
 			case 'M': $params['gender_id'] = 2; break;
 			case 'F': $params['gender_id'] = 1; break;
@@ -388,9 +338,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		$bday = $ctRow['BMM'].$ctRow['BDD'].$ctRow['BYY'];
                 $params['birth_date'] =  formatDate($bday,'19');
 		$params['addressee_id'] = 4;
+                //kz $params['addressee_custom'] = $aPrefixMap[intval($ctRow['TC1'])].' '.$ctRow['LAST'];
                 $params['addressee_custom'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$ctRow['MI'].' '.$ctRow['LAST'];
                 $params['addressee_display'] = $params['addressee_custom'];
                 $params['postal_greeting_id'] = 4;
+                //kz $params['postal_greeting_custom'] = 'Dear '. $params['addressee_custom'];
 		if ($ctRow['FAM1']) {
                 	$params['postal_greeting_custom'] = "Dear ".$ctRow['FAM1'];
 		}
@@ -408,6 +360,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 if (strlen(trim($ctRow['OTITLE']))>0) {
 			$params['job_title'] = $ctRow['OTITLE'];
 		}
+
+		//echo $ctRow['TC1']." ".$aPrefixMap[intval($ctRow['TC1'])]." ".$aPrefix[$aPrefixMap[intval($OMIS_TC['TC1'])]]."\n";
 
                 $params['prefix_id'] = isset($aPrefix[$ctRow['INSIDE1']]) ? $aPrefix[$ctRow['INSIDE1']] : 'NULL';
 
@@ -464,17 +418,13 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params = array();
                 $params['entityID'] = $addressID;
                 $params['congressional_district_46'] = "NULL";
-                $params['ny_senate_district_47'] = cleanData($ctRow['SD']);
-                $params['ny_assembly_district_48'] = cleanData($ctRow['AD']);
                 $params['election_district_49'] = cleanData($ctRow['ED']);
-                $params['county_50'] = cleanData($ctRow['CT']);
-		$params['county_legislative_district_51'] = "NULL";
-                $params['town_52'] = cleanData($ctRow['TN']);
-		$params['ward_53'] = cleanData($ctRow['WD']);
                 $params['school_district_54'] = cleanData($ctRow['SCD']);
-		$params['new_york_city_council_55'] = "NULL";
-		$params['neighborhood_56'] = "NULL";
-		$params['last_import_57'] = "NULL";
+                $params['ny_assembly_district_48'] = cleanData($ctRow['AD']);
+                $params['ny_senate_district_47'] = cleanData($ctRow['SD']);
+		$params['ward_53'] = cleanData($ctRow['WD']);
+                $params['town_52'] = cleanData($ctRow['TN']);
+                $params['county_53'] = cleanData($ctRow['CT']);
 
                 if (!writeToFile($fout['district'], $params))
 			break;
@@ -652,13 +602,28 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			unset($params);
 
 			//get another note
-			$ntRow = getLineAsAssocArray($infiles['notes'], DELIM, $omis_nt_fields);
+			$ntRow = getLineAsAssocArray($fNotes, DELIM, $omis_nt_fields);
 			if (!$ntRow) break;
                         $ntRow['KEY'] = intval($ntRow['KEY']);
 		}
 
 		//create activities from cases
 		while ($csRow && $csRow['KEY'] == $importID) {
+
+/************************************
+                	//set note params
+                        $params = array();
+                        $params['contact_id'] = $session->get('userID');; //who inserted
+                        $params['entity_table'] = 'civicrm_contact';
+                        $params['subject'] = "OMIS CASE NOTE: ".$csRow['CSUBJECT']." - ".$csRow['CLAB1'];
+                        $params['modified_date'] = $csRow['CLASTUPDATE'];
+                        $params['entity_id'] = $contactID;
+                        $params['note'] = "";
+			if (strlen($csRow['CWORKPH'])>0) $params['note'] .= 'workphone: '.$csRow['CWORKPH'].'\n';
+			if (strlen($csRow['CFAXPH'])>0) $params['note'] .= 'fax: '. $csRow['CFAXPH'].'\n';
+			$params['note'] .= $csRow['CNOTE1'].'\n'.$csRow['CNOTE2'].'\n'.$csRow['CNOTE3'];
+************************************/
+
                         //set params
                         $params = array();
 			$params['id'] = $activityID;
@@ -766,7 +731,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                         unset($custParams);
 
                         //get another case
-                        $csRow = getLineAsAssocArray($infiles['cases'], DELIM, $omis_cs_fields);
+                        $csRow = getLineAsAssocArray($fCases, DELIM, $omis_cs_fields);
 			if (!$csRow) break;
                         $csRow['KEY'] = intval($csRow['KEY']);
 			++$activityID;
@@ -796,7 +761,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                         $note .= "Issue Code ".$isRow['ISSUECODE'].": ".$isRow['ISSUEDESCRIPTION'].'\n';
 
                         //get another issues 
-                        $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
+                        $isRow = getLineAsAssocArray($fIssues, DELIM, $omis_is_fields);
                         if (!$isRow) break;
                         $isRow['KEY'] = intval($isRow['KEY']);
                 }
@@ -818,7 +783,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 unset($params);
 
 		//get the next contact
-                $ctRow = getLineAsAssocArray($infiles['contacts'], DELIM, $omis_ct_fields);
+                $ctRow = getLineAsAssocArray($fContacts, DELIM, $omis_ct_fields);
 	}
 
 	//write out all relationships
@@ -862,10 +827,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 writeToFile($fout['relationship'], $params);
 
                 //now create the household record
+
                 $params = array();
                 $params['id'] = ++$contactID;
                 $params['contact_type'] = 'Household';
-                $params['external_identifier'] = $sourceDesc.$aRel['parentImportID'].'-H';
+                $params['external_identifier'] = $sourceDesc.$importID.'-H';
                 $params['first_name'] = 'NULL';
                 $params['middle_name'] = 'NULL';
                 $params['last_name'] = 'NULL';
@@ -888,29 +854,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['employer_id'] = null;
                 $params['nick_name'] = 'NULL';
                 $params['household_name'] = $aRel['household_name'];
-
+print_r("\ncreating household $contactID: ".$aRel['household_name']);
                 if (!writeToFile($fout['contact'], $params)) break;
-
-		//add the address
-                $params = array (
-                        'id'                 => ++$addressID,
-                        'contact_id'         => $contactID,
-                        'location_type_id'   => 2,
-                        'is_primary'         => 0,
-                        'street_number'      => 'NULL',
-                        'street_unit'        => 'NULL',
-                        'street_name'        => 'NULL',
-                        'street_address'     => $ctRow['ADDR_WORK_STREET1'],
-                        'supplemental_address_1' => $ctRow['ADDR_WORK_STREET2'],
-                        'supplemental_address_2' => 'NULL',
-                        'city'               => $ctRow['ADDR_WORK_CITY'],
-                        'postal_code'        => $ctRow['ADDR_WORK_ZIP'],
-                        'postal_code_suffix' => 'NULL',
-                        'country_id'         => 1228,
-                        'state_province_id'  => 1031);
-
-                if (!writeToFile($fout['address'], $params))
-                        break;
 
 		//write out the household relationship as a HoH
                 $params = array();
@@ -920,7 +865,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 writeToFile($fout['relationship'], $params);
 
 		//remember the household record for this person
-                $aHousehold[$aRel['contactID']] = $contactID;
+                $aHousehold[$aRel['contactID']]=$contactID;
 	}
 
         cLog(0,'info',"done converting {$cCounter} contacts.");
@@ -930,7 +875,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 
 
-function update($task, $importSet, $importDir, $sourceDesc)
+function update($task, $importSet, $sourceDesc)
 {
         //get Genderlist
         //get tag array
@@ -940,12 +885,15 @@ function update($task, $importSet, $importDir, $sourceDesc)
 
         $session =& CRM_Core_Session::singleton();
 
-	$infiles = get_import_files($importDir, $importSet);
+        $fContacts = RAYIMPORTDIR.$importSet."/".$importSet."MST.TXT";
+        $fCases = RAYIMPORTDIR.$importSet."/".$importSet."CAS.TXT";
+        $fNotes = RAYIMPORTDIR.$importSet."/".$importSet."HIS.TXT";
+        $fIssues = RAYIMPORTDIR.$importSet."/".$importSet."ISS.TXT";
 
-        $ctRow = getLineAsArray($infiles['contacts'], DELIM);
-        $ntRow = getLineAsArray($infiles['notes'], DELIM);
-        $csRow = getLineAsArray($infiles['cases'], DELIM);
-        $isRow = getLineAsArray($infiles['issues'], DELIM);
+        $ctRow = getLineAsArray($fContacts, DELIM);
+        $ntRow = getLineAsArray($fNotes, DELIM);
+        $csRow = getLineAsArray($fCases, DELIM);
+        $isRow = getLineAsArray($fIssues, DELIM);
 
         //fix the id for omis
         $ctRow[0] = intval($ctRow[0]);
@@ -953,7 +901,7 @@ function update($task, $importSet, $importDir, $sourceDesc)
         $csRow[0] = intval($csRow[0]);
         $isRow[0] = intval($isRow[0]);
         //count number of lines in the file
-        $numContacts = countFileLines($infiles['contacts']) - $skipped;
+        $numContacts = countFileLines($fContacts)-$skipped;
 
         $cCounter=0;
 
@@ -991,7 +939,7 @@ function update($task, $importSet, $importDir, $sourceDesc)
 				break;
 		}
 	
-	        $ctRow = getLineAsArray($infiles['contacts'], DELIM);
+	        $ctRow = getLineAsArray($fContacts, DELIM);
 	}
 } // update()
 
@@ -1163,23 +1111,3 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = 1)
   );
   return $addr;
 } // create_civi_address()
-
-
-
-function get_import_files($idir, $iset)
-{
-  $ifiles = array();
-  $iset = strtoupper($iset);
-  $ifiles['contacts'] = $idir."/".$iset."MST.TXT";
-  $ifiles['cases'] = $idir."/".$iset."CAS.TXT";
-  $ifiles['notes'] = $idir."/".$iset."HIS.TXT";
-  $ifiles['issues'] = $idir."/".$iset."ISSCONV.TXT";
-
-  foreach ($ifiles as $ifile) {
-    if (!file_exists($ifile)) {
-      echo "$ifile: Import file does not exist.\n";
-      return null;
-    }
-  }
-  return $ifiles;
-} // get_import_files()
