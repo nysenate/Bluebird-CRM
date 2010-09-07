@@ -28,12 +28,15 @@ function cLog($num=0, $type='notice', $message='', $debug=false) {
 	
 }
 
-function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {
 
+
+function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"',
+                   $mysql_null = false, $blank_as_null = false)
+{
     $delimiter_esc = preg_quote($delimiter, '/');
     $enclosure_esc = preg_quote($enclosure, '/');
-
     $output = array();
+
     foreach ($fields as $field) {
         if ($mysql_null && ($field === null || ($blank_as_null && strlen($field)==0))) {
             $output[] = 'NULL';
@@ -44,8 +47,9 @@ function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysq
             $enclosure . str_replace($enclosure, $enclosure . $enclosure, $field) . $enclosure
         ) : $field;
     }
-    fwrite($fh, join($delimiter, $output) . "\n");
-}
+
+    fwrite($fh, implode($delimiter, $output) . "\n");
+} // fputcsv2()
 
 
 function getLine($inFile)
@@ -188,28 +192,29 @@ function prettyFromSeconds($sec) {
         if ($val>=1) return "$val minutes";
         
 	return "$sec seconds";
-}
+} // prettyFromSeconds()
 
-function writeToFile($fhout, $aOut, $done=1, $totalNum=2) {
 
+
+function writeToFile($fhout, $aOut, $done=1, $totalNum=2)
+{
         global $idOffset;
-        global $getLineFile;
 
         //remove the offset so the numbers match
-        $done=$done-$idOffset;
+        $done = $done - $idOffset;
 
-        foreach($aOut as $id=>$field) {
-                //$aOut[$id] = str_replace("\\","\\\\",$aOut[$id]);
-                $aOut[$id] = str_replace("'","",$aOut[$id]);
-                $aOut[$id] = str_replace("\"","",$aOut[$id]);
-        }
+	// Remove all single and double quotes from all field values.
+	//$aOut = str_replace(array("'", "\""), "", $aOut);
 
-        fputcsv2($fhout, $aOut,"\t",'',true,true);
+        fputcsv2($fhout, $aOut, "\t", '', false, false);
 
-        if ($done%1000==0) { echo "wrote $done lines.\n"; flush();ob_flush();}
+        if ($done % 1000 == 0) {
+		echo "wrote $done lines.\n";
+		flush();
+		ob_flush();
+	}
 
-        if ($done>=$totalNum) {
-
+        if ($done >= $totalNum) {
                 echo "processed total of $done lines.\n";
                 echo "closing file.\n";
                 fclose($fhout);
@@ -217,7 +222,10 @@ function writeToFile($fhout, $aOut, $done=1, $totalNum=2) {
         }
 
         return true;
-}
+} // writeToFile()
+
+
+
 //OMIS date parser
 function formatDate($str, $forceMillenium=null) {
 
