@@ -76,12 +76,13 @@
     var tokenDataUrl  = "{/literal}{$tokenUrl}{literal}";
     var tokenDataUrl_target  = "{/literal}{$tokenUrl}&context=activity_target{literal}";
     var tokenDataUrl_assignee  = "{/literal}{$tokenUrl}&context=activity_assignee{literal}";
-    var assigneeDataUrl  = "{/literal}{crmURL p='civicrm/ajax/rest?fnName=civicrm/contact/search&json=1&return[contact_id]&group=3&context=activity_assignee'}{literal}";
+    //var assigneeDataUrl  = "{/literal}{crmURL p='civicrm/ajax/rest?fnName=civicrm/contact/search&json=1&return[contact_id]&group=3&context=activity_assignee'}{literal}";
     
     var hintText = "{/literal}{ts}Type in a partial or complete name of an existing contact.{/ts}{literal}";
-    cj( "#target_contact_id"  ).tokenInput( tokenDataUrl_target, { prePopulate: target_contact, classes: tokenClass, hintText: hintText });
-    cj( "#assignee_contact_id").customTokenInput( assigneeDataUrl, { prePopulate: assignee_contact, classes: tokenClass, hintText: hintText });
-    cj('#source_contact_id').autocomplete( sourceDataUrl, { width : 180, selectFirst : false, hintText: hintText, matchContains: true, minChars: 2
+    cj( "#target_contact_id"  ).tokenInput( tokenDataUrl_target,   { prePopulate: target_contact,   classes: tokenClass, hintText: hintText });
+    cj( "#assignee_contact_id").tokenInput( tokenDataUrl_assignee, { prePopulate: assignee_contact, classes: tokenClass, hintText: hintText });
+    cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '450px' );
+    cj( '#source_contact_id' ).autocomplete( sourceDataUrl, { width : 180, selectFirst : false, hintText: hintText, matchContains: true, minChars: 2
                                 }).result( function(event, data, formatted) { cj( "#source_contact_qid" ).val( data[1] );
                                 }).bind( 'click', function( ) { cj( "#source_contact_qid" ).val(''); });
     });
