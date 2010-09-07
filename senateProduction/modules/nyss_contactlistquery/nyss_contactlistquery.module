@@ -7,8 +7,7 @@ function nyss_contactlistquery_civicrm_contactListQuery( &$query, $name, $contex
 	//office staff group ID to use for activity assignees and case roles
 	$groupID = '3';
 	
-	//LCD - note, the activity assignee contacts don't currently use this hook as the js call has been 
-	//modified directly to using a defined group. leaving in case we want to move here at some point
+	//LCD - limit activity assignees to office staff group
     if ( $context == 'activity_assignee' && $groupID ) {
 
 		$query = str_replace("\n", " ", $query);
