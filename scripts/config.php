@@ -1,109 +1,121 @@
-<?
+<?php
 
 global $SC;
 
-if (!defined(RAYDEBUG)) define(RAYDEBUG, false);
+define('DBHOST', 'crmdbprod');
+define('DBUSER', 'crmadmin');
+define('DBPASS', '');
+define('HTTPUSER', 'loadsenate');
+define('HTTPPASS', '');
+define('ROOTDIR', '/data/www/');
+define('CIVI_TABLE_PREFIX', 'civicrm_');
+define('CIVI_TEMPLATEDIR', 'civicrmInstallTemplates/');
+define('INSTALLDIR', '/data/senateProduction/');
+define('INSTALLDIR_DEV', '/data/senateDevelopment/');
+define('ROOTDOMAIN', '.crm.nysenate.gov');
+define('ROOTDOMAIN_DEV', '.crmdev.nysenate.gov');
+define('DRUPAL_ROOTDIR', 'nyss/');
+define('DRUPAL_ROOTDIR_DEV', 'nyssdev/');
+define('CIVI_DBPREFIX', 'senate_c_');
+define('CIVI_DBPREFIX_DEV', 'senate_dev_c_');
+define('DRUPAL_DBPREFIX', 'senate_d_');
+define('DRUPAL_DBPREFIX_DEV', 'senate_dev_d_');
+
+if (DBPASS == "" || HTTPPASS == "") {
+  die("Must set DBPASS and HTTPPASS in ".__FILE__."\n");
+}
+
+if (!defined('RAYDEBUG')) {
+  define('RAYDEBUG', false);
+}
+
 //load the default configs
-//afterwards use overrides if specified (see cae statement)
+//afterwards use overrides if specified (see case statement)
  
-//**********************************************************************************************
+//**************************************************************************
 // DEBUG SETTINGS
-//**********************************************************************************************
+//**************************************************************************
 
 //set debug true/false for logging
-$SC['debug']=false;
-$SC['debug']=true;
+//$SC['debug'] = false;
+$SC['debug'] = true;
 
 //don't execute runCmd statements
-$SC['noExec']=false;
-//$SC['noExec']=true;
+$SC['noExec'] = false;
+//$SC['noExec'] = true;
 
 
-//**********************************************************************************************
+//**************************************************************************
 // CONFIG SETTINGS
-//**********************************************************************************************
+//**************************************************************************
 
 //TAG file, contains master list of tags
 $SC['tagFile'] = 'tags.csv';
 
 //conmmon params. can override in config section
-$SC['dbToHost']=$SC['dbHost']='cividb01';
-$SC['dbToUser']=$SC['dbUser']='loadsenate';
-$SC['dbToPassword']=$SC['dbPassword']='char12tree*!';
-$SC['dbToCiviTablePrefix']=$SC['dbCiviTablePrefix'] = "civicrm_";
-$SC['rootDir'] = $SC['toRootDir']  = "/data/www/";
+$SC['dbToHost'] = $SC['dbHost'] = DBHOST;
+$SC['dbToUser'] = $SC['dbUser'] = DBUSER;
+$SC['dbToPassword'] = $SC['dbPassword'] = DBPASS;
+$SC['dbToCiviTablePrefix'] = $SC['dbCiviTablePrefix'] = CIVI_TABLE_PREFIX;
+$SC['rootDir'] = $SC['toRootDir'] = ROOTDIR;
 
-$SC['httpauth'] = "loadsenate";
-$SC['httppwd'] = "Agency4";
+$SC['httpauth'] = HTTPUSER;
+$SC['httppwd'] = HTTPPASS;
+
 
 switch ($config) {
-
 	case 'prodtodev':
+                $SC['dbCiviPrefix'] = CIVI_DBPREFIX;
+                $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX;
+                $SC['drupalRootDir'] = DRUPAL_ROOTDIR;
+                $SC['templateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+                $SC['rootDomain'] = ROOTDOMAIN;
 
-
-                $SC['dbCiviPrefix'] = 'senate_c_';
-                $SC['dbDrupalPrefix'] = 'senate_d_';
-                $SC['drupalRootDir'] = "nyss/";
-                $SC['templateDir'] = "/data/senateProduction/civicrmInstallTemplates/";
-                $SC['rootDomain'] = ".crm.nysenate.gov";
-
-		$SC['dbToCiviPrefix'] = 'senate_dev_c_';
-		$SC['dbToDrupalPrefix'] = 'senate_dev_d_';
-		$SC['toDrupalRootDir'] = "nyssdev/";
-		$SC['toTemplateDir'] = "/data/senateDevelopment/civicrmInstallTemplates/";
-		$SC['toRootDomain'] = ".dev.senate.rayogram.com";
+		$SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
+		$SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
+		$SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
+		$SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+		$SC['toRootDomain'] = ROOTDOMAIN_DEV;
 		break;
 
         case 'devtoprod':
-
-
-                $SC['dbCiviPrefix'] = 'senate_dev_c_';
-                $SC['dbDrupalPrefix'] = 'senate_dev_d_';
-                $SC['drupalRootDir'] = "nyssdev/";
-                $SC['templateDir'] = "/data/senateDevelopment/civicrmInstallTemplates/";
-                $SC['rootDomain'] = ".dev.senate.rayogram.com";
-
-                $SC['dbToCiviPrefix'] = 'senate_c_';
-                $SC['dbToDrupalPrefix'] = 'senate_d_';
-                $SC['toDrupalRootDir'] = "nyss/";
-                $SC['toTemplateDir'] = "/data/senateProduction/civicrmInstallTemplates/";
-                $SC['toRootDomain'] = ".crm.nysenate.gov";
+                $SC['dbCiviPrefix'] = CIVI_DBPREFIX_DEV;
+                $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
+                $SC['drupalRootDir'] = DRUPAL_ROOTDIR_DEV;
+                $SC['templateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+                $SC['rootDomain'] = ROOTDOMAIN_DEV;
+                $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
+                $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
+                $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
+                $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+                $SC['toRootDomain'] = ROOTDOMAIN;
                 break;
 
         case 'crmtocrm2':
-
-
-                $SC['dbCiviPrefix'] = 'senate_c_';
-                $SC['dbDrupalPrefix'] = 'senate_d_';
-                $SC['drupalRootDir'] = "nyss/";
-                $SC['templateDir'] = "/data/senateProduction/civicrmInstallTemplates/";
-                $SC['rootDomain'] = ".crm.nysenate.gov";
-
-                $SC['dbToCiviPrefix'] = 'senate_c_';
-                $SC['dbToDrupalPrefix'] = 'senate_d_';
-                $SC['toDrupalRootDir'] = "nyss/";
-                $SC['toTemplateDir'] = "/data/senateProduction/civicrmInstallTemplates/";
+                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
+                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
+                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
+                $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+                $SC['rootDomain'] = ROOTDOMAIN;
                 $SC['toRootDomain'] = ".crm2.nysenate.gov";
                 break;
 
         case 'prod':
-
-                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = 'senate_c_';
-                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = 'senate_d_';
-                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = "nyss/";
-                $SC['templateDir'] = $SC['toTemplateDir'] = "/data/senateProduction/civicrmInstallTemplates/";
-                $SC['rootDomain'] = $SC['toRootDomain'] = ".crm.nysenate.gov";
-                $SC['installDir'] = $SC['toInstallDir'] = "/data/senateProduction";
+                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
+                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
+                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
+                $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+                $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN;
+                $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR;
 		break;
 
         case 'dev':
-
-                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = 'senate_dev_c_';
-                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = 'senate_dev_d_';
-                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = "nyssdev/";
-                $SC['templateDir'] = $SC['toTemplateDir'] = "/data/senateDevelopment/civicrmInstallTemplates/";
-                $SC['rootDomain'] = $SC['toRootDomain'] = ".dev.senate.rayogram.com";
-                $SC['installDir'] = $SC['toInstallDir'] = "/data/senateDevelopment";
+                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
+                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
+                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
+                $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+                $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN_DEV;
+                $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR_DEV;
                 break;
 
 	default:
@@ -111,9 +123,9 @@ switch ($config) {
 		break;	
 }
 
-//**********************************************************************************************
+//**************************************************************************
 // DO NOT USUALLY EDIT BELOW THIS LINE
-//**********************************************************************************************
+//**************************************************************************
 
 //some shell variables
 $SC['mysql'] = "mysql -u{$SC['dbUser']} -p{$SC['dbPassword']} -h{$SC['dbHost']}";

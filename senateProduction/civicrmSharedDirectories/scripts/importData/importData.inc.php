@@ -11,6 +11,8 @@ define('DELIM','~');
 error_reporting(E_ERROR && E_PARSE);
 error_reporting(E_ALL && ~E_NOTICE);
 
+define("DBNULL", null);
+
 //no limit
 set_time_limit(0);
 
@@ -143,7 +145,8 @@ function loadDB($importSet)
 	//set some keychecks off for speed.
 	$dao = &CRM_Core_DAO::executeQuery("SET foreign_key_checks = 0;", CRM_Core_DAO::$_nullArray);
 
-	$opts = "FIELDS TERMINATED BY '\\t' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\n' IGNORE 1 LINES";
+	//$opts = "FIELDS TERMINATED BY '\\t' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\n' IGNORE 1 LINES";
+        $opts = "FIELDS TERMINATED BY '\\t' LINES TERMINATED BY '\\n'";
 
 	foreach ($bluebird_db_info as $name => $db_info) {
 		$abbrev = $db_info['abbrev'];
@@ -152,7 +155,7 @@ function loadDB($importSet)
 		$fname = RAYTMP.$importSet.'-'.$abbrev.'.tsv';
         	cLog(0, 'info', "importing $name records from $fname into database table $table");
 
-//cLog(0,'info',"LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});");
+cLog(0,'info',"LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});");
 
         	$dao = &CRM_Core_DAO::executeQuery("LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});", CRM_Core_DAO::$_nullArray);
 	}
@@ -288,33 +291,16 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		//set the contacts unique importID
 		$importID = $ctRow['KEY'];
 
-		//map civi id to external id for relationships
-		//in case relationship parent does not precede current row.
-		
-		$aIDMap[$importID] = $contactID;
-
-		//remember the relationship
-		if ($ctRow['SKEY'] > 0) {
-			$n = count($aRels);
-			$aRels[$n]['contactID'] = $contactID;
-      	                $aRels[$n]['parentImportID'] = $ctRow['SKEY'];
-                        $aRels[$n]['type'] = $ctRow['RCD'];
-			$aRels[$n]['household_name'] = 'The '.$ctRow['LAST'].' Family';
-                        $aRels[$n]['household_sort_name'] = $ctRow['LAST'].', The Family';
-                        $aRels[$n]['street_address'] = $ctRow['ADDR_WORK_STREET1'];
-                        $aRels[$n]['supplement_address_1'] = $ctRow['ADDR_WORK_STREET2'];
-                        $aRels[$n]['city'] = $ctRow['ADDR_WORK_CITY'];
-                        $aRels[$n]['postal_code'] = $ctRow['ADDR_WORK_ZIP'];
-		}
-
 		//if this is an org, create an organization for this contact if necessary, then create a contact linked to the org
 
 		//initialize the org relationship for contact later
 		$orgID = null;
 
 		if ($ctRow['RT'] == 7 || $ctRow['RT'] == 6) {
+
 			//generate the key, based on: name and full address
 			$orgKey = $ctRow['OCOMPANY'].$ctRow['HOUSE'].$ctRow['STREET'].$ctRow['CITY'];
+
 			//if we already have this business, use the existing one
 			//otherwise create a new one
 			if (isset($aOrgKey[$orgKey])) {
@@ -331,28 +317,28 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			        $params['contact_type'] = 'Organization';
 				//make sure contacts related to orgs have different IDs since they have to be unique.
 		                $params['external_identifier'] = $sourceDesc.$importID.'-1';
-		                $params['first_name'] = 'NULL';
-		                $params['middle_name'] = 'NULL';
-		                $params['last_name'] = 'NULL';
+		                $params['first_name'] = DBNULL;
+		                $params['middle_name'] = DBNULL;
+		                $params['last_name'] = DBNULL;
 		                $params['sort_name'] = $ctRow['OCOMPANY'];
 		                $params['display_name'] = $ctRow['OCOMPANY'];
-				$params['gender_id'] = 'NULL';
+				$params['gender_id'] = DBNULL;
 		                $params['source'] = $sourceDesc;
-		                $params['birth_date'] = 'NULL';
-		                $params['addressee_id'] = 'NULL';
-		                $params['addressee_custom'] = 'NULL';
-		                $params['addressee_display'] = 'NULL';
-		                $params['postal_greeting_id'] = 'NULL';
-		                $params['postal_greeting_custom'] = 'NULL';
-		                $params['postal_greeting_display'] = 'NULL';
+		                $params['birth_date'] = DBNULL;
+		                $params['addressee_id'] = DBNULL;
+		                $params['addressee_custom'] = DBNULL;
+		                $params['addressee_display'] = DBNULL;
+		                $params['postal_greeting_id'] = DBNULL;
+		                $params['postal_greeting_custom'] = DBNULL;
+		                $params['postal_greeting_display'] = DBNULL;
 		                $params['organization_name'] = $ctRow['OCOMPANY'];
-		                $params['job_title'] = 'NULL';
-		                $params['prefix_id'] = 'NULL';
-		                $params['suffix_id'] = 'NULL';
+		                $params['job_title'] = DBNULL;
+		                $params['prefix_id'] = DBNULL;
+		                $params['suffix_id'] = DBNULL;
 		                $params['do_not_mail'] = 0;
-                                $params['employer_id'] = null;
+                                $params['employer_id'] = DBNULL;
 				$params['nick_name'] = $ctRow['FAM1'];
-				$params['household_name'] = 'NULL';
+				$params['household_name'] = DBNULL;
 
 				//write out the contact
 		                if (!writeToFile($fout['contact'], $params))
@@ -363,9 +349,62 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 		                if (!writeToFile($fout['address'], $params))
 					break;
-	
+
+				//increase contactID for individual	
 				++$contactID;
+
+                                //write out the relationship
+		                $params = array();
+                		$params['contact_id_a'] = $contactID;
+		                $params['contact_id_b'] = $orgID;
+                		$params['relationship_type_id'] = $aRelLookup['employeeOf'];
+		                writeToFile($fout['relationship'], $params);
+				
 			}
+		}
+
+                //map civi id to external id for relationships
+                //in case relationship parent does not precede current row.
+
+                $aIDMap[$importID] = $contactID;
+
+		//now do handle relationship. safe since contactID was increased to match individual
+                if ($ctRow['SKEY'] > 0 ) {
+
+                        //if the relationship target exists, just add the info
+                        if (isset($aRels[$ctRow['SKEY']])) {
+
+                                $aRels[$ctRow['SKEY']]['relationshipCtRow'] = $ctRow;
+
+                                //make sure that the type is stored if the first entry was missing it
+                                if (!isset($aRels[$ctRow['SKEY']]['type']))
+                                        if (strlen(trim($ctRow['RCD']))>0)
+                                                $aRels[$ctRow['SKEY']]['type'] = $ctRow['RCD'];
+
+                                //preset a relationship if there is none defined
+                                if (!isset($aRels[$ctRow['SKEY']]['type']))
+                                        $aRels[$ctRow['SKEY']]['type']='W';
+
+                        //otherwise remember a rel record
+                        } else {
+
+                                $aRels[$importID]['contactID'] = $contactID;
+                                $aRels[$importID]['relationshipImportID'] = $ctRow['SKEY'];
+                                if (strlen(trim($ctRow['RCD']))>0) $aRels[$importID]['type'] = $ctRow['RCD'];
+
+                                //remember the row so we can pull out other data
+                                $aRels[$importID]['ctRow'] = $ctRow;
+                        }
+                }
+
+		//if this was just an org entry and there is not contact associated, skip the rest
+		if ($orgID!=null && empty($ctRow['FIRST']) && empty($ctRow['LAST'])) {
+
+			//get the next contact
+	                $ctRow = getLineAsAssocArray($infiles['contacts'], DELIM, $omis_ct_fields);
+			
+			//continue the loop
+			continue;
 		}
 
 		$params = array();
@@ -380,16 +419,16 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		switch ($ctRow['SEX']) {
 			case 'M': $params['gender_id'] = 2; break;
 			case 'F': $params['gender_id'] = 1; break;
-			default:  $params['gender_id'] = 'NULL'; break;
+			default:  $params['gender_id'] = DBNULL; break;
 		}
 		$params['source'] = $sourceDesc;
 		//assume birthday was in the 1900s
 		//ASSUMPTION!!
 		$bday = $ctRow['BMM'].$ctRow['BDD'].$ctRow['BYY'];
                 $params['birth_date'] =  formatDate($bday,'19');
-		$params['addressee_id'] = 4;
-                $params['addressee_custom'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$ctRow['MI'].' '.$ctRow['LAST'];
-                $params['addressee_display'] = $params['addressee_custom'];
+		$params['addressee_id'] = ($ctRow['TC1'] == 100) ? 4 : 1;
+		$params['addressee_custom'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : DBNULL;
+                $params['addressee_display'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$ctRow['MI'].' '.$ctRow['LAST'] . ' ' . $aSuffixLookup[$ctRow['SUFFIX']];
                 $params['postal_greeting_id'] = 4;
 		if ($ctRow['FAM1']) {
                 	$params['postal_greeting_custom'] = "Dear ".$ctRow['FAM1'];
@@ -404,26 +443,27 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		//make sure the email address doesn't go into company field
                 $params['organization_name'] = strpos($ctRow['OCOMPANY'],'@')>0 ? '' : $ctRow['OCOMPANY'];
 
-		$params['job_title'] = 'NULL';
+		$params['job_title'] = DBNULL;
                 if (strlen(trim($ctRow['OTITLE']))>0) {
 			$params['job_title'] = $ctRow['OTITLE'];
 		}
 
-                $params['prefix_id'] = isset($aPrefix[$ctRow['INSIDE1']]) ? $aPrefix[$ctRow['INSIDE1']] : 'NULL';
+                $params['prefix_id'] = isset($aPrefix[$ctRow['INSIDE1']]) ? $aPrefix[$ctRow['INSIDE1']] : DBNULL;
 
 		//lookup suffix and remember for note
 		$suffix = $aSuffix[$aSuffixLookup[$ctRow['SUFFIX']]['suffix']];
                 $otherSuffix = $aSuffix[$aSuffixLookup[$ctRow['SUFFIX']]['otherSuffix']];
 
-		if (!$suffix || $suffix=='null') $params['suffix_id'] = 'NULL';
+		if (!$suffix || $suffix=='null') $params['suffix_id'] = DBNULL;
 		else $params['suffix_id'] = $suffix;
 
 		$params['do_not_mail'] = ($ctRow['MS']=='U') ? 1 : 0;
 
                 //set the relationship if its got an org
-                $params['employer_id'] = ($orgID!=null) ? $orgID : 'NULL';
+                $params['employer_id'] = ($orgID!=null) ? $orgID : DBNULL;
+
                 $params['nick_name'] = $ctRow['FAM1'];
-                $params['household_name'] = 'NULL';
+                $params['household_name'] = DBNULL;
 
                 if (!writeToFile($fout['contact'], $params))
 			break;
@@ -463,18 +503,18 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
                 $params = array();
                 $params['entityID'] = $addressID;
-                $params['congressional_district_46'] = "NULL";
+                $params['congressional_district_46'] = DBNULL;
                 $params['ny_senate_district_47'] = cleanData($ctRow['SD']);
                 $params['ny_assembly_district_48'] = cleanData($ctRow['AD']);
                 $params['election_district_49'] = cleanData($ctRow['ED']);
                 $params['county_50'] = cleanData($ctRow['CT']);
-		$params['county_legislative_district_51'] = "NULL";
+		$params['county_legislative_district_51'] = DBNULL;
                 $params['town_52'] = cleanData($ctRow['TN']);
 		$params['ward_53'] = cleanData($ctRow['WD']);
                 $params['school_district_54'] = cleanData($ctRow['SCD']);
-		$params['new_york_city_council_55'] = "NULL";
-		$params['neighborhood_56'] = "NULL";
-		$params['last_import_57'] = "NULL";
+		$params['new_york_city_council_55'] = DBNULL;
+		$params['neighborhood_56'] = DBNULL;
+		$params['last_import_57'] = DBNULL;
 
                 if (!writeToFile($fout['district'], $params))
 			break;
@@ -486,15 +526,15 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			'contact_id'         => $contactID,
 			'location_type_id'   => 2,
 			'is_primary'         => 0,
-			'street_number'      => 'NULL',
-			'street_unit'        => 'NULL',
-			'street_name'        => 'NULL',
+			'street_number'      => DBNULL,
+			'street_unit'        => DBNULL,
+			'street_name'        => DBNULL,
 			'street_address'     => $ctRow['ADDR_WORK_STREET1'],
 			'supplemental_address_1' => $ctRow['ADDR_WORK_STREET2'],
-			'supplemental_address_2' => 'NULL',
+			'supplemental_address_2' => DBNULL,
 			'city'               => $ctRow['ADDR_WORK_CITY'],
 			'postal_code'        => $ctRow['ADDR_WORK_ZIP'],
-			'postal_code_suffix' => 'NULL',
+			'postal_code_suffix' => DBNULL,
 			'country_id'         => 1228,
 			'state_province_id'  => 1031);
 
@@ -503,7 +543,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		}
 
 		//home
-		if (cleanData($ctRow['PHONE'])<>'NULL') {
+		if (cleanData($ctRow['PHONE'])<>DBNULL) {
 	          $params = array('contact_id'		=> $contactID,
                                 'location_type_id'	=> 1,
                                 'is_primary'		=> 1,
@@ -611,7 +651,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['contact_id'] = $session->get('userID'); //who inserted
                 $params['entity_table'] = 'civicrm_contact';
                 $params['subject'] = 'OMIS DATA';
-                $params['modified_date'] = 'NULL';
+                $params['modified_date'] = DBNULL;
                 $params['entity_id'] = $contactID;
                 $params['note'] = $omisData;
                 if (!writeToFile($fout['note'], $params))
@@ -634,7 +674,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 	$params['contact_id'] = $session->get('userID'); //who inserted
                         $params['entity_table'] = 'civicrm_contact';
                         $params['subject'] = 'OMIS NOTE';
-                        $params['modified_date'] = 'NULL';
+                        $params['modified_date'] = DBNULL;
                         $params['entity_id'] = $contactID;
 
 			// fields 4 thru 18 (HL1 to HL15) are the text lines
@@ -823,104 +863,92 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 	//write out all relationships
 
-	$aDone = $params;
-
 	foreach ($aRels as $aRel) {
 
-//print_r($aRel);
-//echo "\n";
-		$params = array();
-		$params['contact_id_a'] = $aRel['contactID'];
-                $params['contact_id_b'] = $aIDMap[$aRel['parentImportID']];
-                $params['relationship_type_id'] = $aRelLookup[$aRel['type']];
-
-		//remember for lookups
-		$aDone[] = $params;
-
-                //do a check to make sure we haven't done the relationship in reverse
-		$skip=false;
-		foreach ($aDone as $p) {
-			if ($p['contact_id_b']==$params['contact_id_a'] && $p['relationship_type_id']==$params['relationship_type_id']) $skip=true;
-		}
-
-		//if we have the relationship, household record already created, so associate
-		if ($skip) {
-
-			//add the relationship to the household record
-                	$params1 = array();
-                	$params1['contact_id_a'] = $aRel['contactID'];
-                	$params1['contact_id_b'] = $aHousehold[$aIDMap[$aRel['parentImportID']]];
-        	        $params1['relationship_type_id'] = $aRelLookup['MoH'];
-	                writeToFile($fout['relationship'], $params1);
-
-			//skip the rest since we don't want to rewrite the base relationship
-			continue;
-		}
-
-		//if we don't have the relationship,write it out
-
-                writeToFile($fout['relationship'], $params);
-
-                //now create the household record
+                //create the household record
                 $params = array();
                 $params['id'] = ++$contactID;
                 $params['contact_type'] = 'Household';
-                $params['external_identifier'] = $sourceDesc.$aRel['parentImportID'].'-H';
-                $params['first_name'] = 'NULL';
-                $params['middle_name'] = 'NULL';
-                $params['last_name'] = 'NULL';
-                $params['sort_name'] = $aRel['household_sort_name'];
-                $params['display_name'] = $aRel['household_name'];
-                $params['gender_id'] = 'NULL';
+                $params['external_identifier'] = $sourceDesc.$aRel['relationshipImportID'].'-H';
+                $params['first_name'] = DBNULL;
+                $params['middle_name'] = DBNULL;
+                $params['last_name'] = DBNULL;
+                $params['sort_name'] = $aRel['ctRow']['LAST'].' Family';
+                $params['display_name'] = $aRel['ctRow']['LAST'].' Family';
+                $params['gender_id'] = DBNULL;
                 $params['source'] = $sourceDesc;
-                $params['birth_date'] = 'NULL';
-                $params['addressee_id'] = 'NULL';
-                $params['addressee_custom'] = 'NULL';
-                $params['addressee_display'] = 'NULL';
-                $params['postal_greeting_id'] = 'NULL';
-                $params['postal_greeting_custom'] = 'NULL';
-                $params['postal_greeting_display'] = 'NULL';
-                $params['organization_name'] = 'NULL';
-                $params['job_title'] = 'NULL';
-                $params['prefix_id'] = 'NULL';
-                $params['suffix_id'] = 'NULL';
+                $params['birth_date'] = DBNULL;
+                $params['addressee_id'] = 5;
+                $params['addressee_custom'] = DBNULL;
+                $params['addressee_display'] = 'The '.$aRel['ctRow']['LAST'].' Family';
+                $params['postal_greeting_id'] = 5;
+                $params['postal_greeting_custom'] = DBNULL;
+                $params['postal_greeting_display'] = 'Dear '.$aRel['ctRow']['LAST'].' Family';
+                $params['organization_name'] = DBNULL;
+                $params['job_title'] = DBNULL;
+                $params['prefix_id'] = DBNULL;
+                $params['suffix_id'] = DBNULL;
                 $params['do_not_mail'] = 0;
-                $params['employer_id'] = null;
-                $params['nick_name'] = 'NULL';
-                $params['household_name'] = $aRel['household_name'];
-
+                $params['employer_id'] = DBNULL;
+                $params['nick_name'] = DBNULL;
+                $params['household_name'] = $aRel['ctRow']['LAST'].' Family';
                 if (!writeToFile($fout['contact'], $params)) break;
+ 
+                //add the address
+                $params = create_civi_address(++$addressID, $contactID, $aRel['ctRow'], 1);
+                if (!writeToFile($fout['address'], $params)) break;
 
-		//add the address
-                $params = array (
-                        'id'                 => ++$addressID,
-                        'contact_id'         => $contactID,
-                        'location_type_id'   => 2,
-                        'is_primary'         => 0,
-                        'street_number'      => 'NULL',
-                        'street_unit'        => 'NULL',
-                        'street_name'        => 'NULL',
-                        'street_address'     => $ctRow['ADDR_WORK_STREET1'],
-                        'supplemental_address_1' => $ctRow['ADDR_WORK_STREET2'],
-                        'supplemental_address_2' => 'NULL',
-                        'city'               => $ctRow['ADDR_WORK_CITY'],
-                        'postal_code'        => $ctRow['ADDR_WORK_ZIP'],
-                        'postal_code_suffix' => 'NULL',
-                        'country_id'         => 1228,
-                        'state_province_id'  => 1031);
+		//create the spousal relationship
+		$params = array();
+		$params['contact_id_a'] = $aRel['contactID'];
+                $params['contact_id_b'] = $aIDMap[$aRel['relationshipImportID']];
+                $params['relationship_type_id'] = $aRelLookup[$aRel['type']];
+                writeToFile($fout['relationship'], $params);
 
-                if (!writeToFile($fout['address'], $params))
-                        break;
+		//find out who is HoH
+		if ($aRel['ctRow']['TC2']=='HoH') {
 
-		//write out the household relationship as a HoH
+			$first='HoH';
+			$second='MoH';
+
+		} elseif ($aRel['ctRow']['TC2']=='HoH') {
+
+			$first='MoH';
+			$second='HoH';
+		//default
+		} else {
+
+                        $first='HoH';
+                        $second='MoH';
+		}
+
+/*implement this later:
+		} elseif ($aRel['ctRow']['GENDER']=='M') {
+
+                        $first='HoH';
+                        $second='MoH';
+
+		} else {
+
+                        $first='MoH';
+                        $second='HoH';
+ 		}
+*/
+		//add the head of household relationship to the household record
+		//contactID here is the household
+               	$params = array();
+               	$params['contact_id_a'] = $aIDMap[$aRel['relationshipImportID']];
+               	$params['contact_id_b'] = $contactID; 
+       	        $params['relationship_type_id'] = $aRelLookup[$first];
+                writeToFile($fout['relationship'], $params);
+
+		//add the member of household relationship to the household record
+                //contactID here is the household
                 $params = array();
                 $params['contact_id_a'] = $aRel['contactID'];
                 $params['contact_id_b'] = $contactID;
-		$params['relationship_type_id'] = $aRelLookup['HoH'];
+		$params['relationship_type_id'] = $aRelLookup[$second];
                 writeToFile($fout['relationship'], $params);
-
-		//remember the household record for this person
-                $aHousehold[$aRel['contactID']] = $contactID;
 	}
 
         cLog(0,'info',"done converting {$cCounter} contacts.");
@@ -986,7 +1014,7 @@ function update($task, $importSet, $importDir, $sourceDesc)
 		switch (strtolower($task)) {
 
 			case 'updatecontactprefixid':
-				$prefix_id = isset($aPrefix[$ctRow[40]]) ? $aPrefix[$ctRow[40]] : 'NULL';
+				$prefix_id = isset($aPrefix[$ctRow[40]]) ? $aPrefix[$ctRow[40]] : DBNULL;
         			$dao = &CRM_Core_DAO::executeQuery( "update civicrm_contact set prefix_id={$prefix_id} where source='{$sourceDesc}' AND user_unique_id = {$ctRow[0]};" , CRM_Core_DAO::$_nullArray );
 				break;
 		}
@@ -1007,7 +1035,8 @@ function writeFreeformTag($f, $id, $tag)
 
 	//create the tag if necessary - can't exist anywhere so using the big Tag category
         if (!isset($aFreeformTags[$tag]) && !isset($aTags[$tag])) {
-echo "doesnt exist $tag";	
+print_r("not finding tag $tag\n");
+
         	$session =& CRM_Core_Session::singleton();
 
 		 $params = array(
@@ -1023,14 +1052,14 @@ echo "doesnt exist $tag";
 
 		//remember the new tag for reuse
 		$aFreeformTags[$tag] = $oTag->id;
-
-		//print_r($oTag);	
+//print_r("added $tag {$oTag->id}\n");
+		//print_r($oTag);
 	}
 
         $params = array();
         $params['entity_table'] = 'civicrm_contact';
         $params['entity_id'] = $id;
-        $params['tag_id'] = $aFreeformTags[$tag]['id'];
+        $params['tag_id'] = isset($aFreeformTags[$tag]) ? $aFreeformTags[$tag] : $aTags[$tag]['id'];
 
         writeToFile($f, $params);	
 } // writeFreeformTag()
@@ -1150,7 +1179,7 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = 1)
     'location_type_id'       => $loc_type_id,
     'is_primary'             => 1,
     'street_number'          => $omis_flds['HOUSE'],
-    'street_unit'            => 'NULL',
+    'street_unit'            => DBNULL,
     'street_name'            => $omis_flds['STREET'],
     'street_address'         => $omis_flds['HOUSE'].' '.$omis_flds['STREET'],
     'supplemental_address_1' => $omis_flds['MAIL'],
