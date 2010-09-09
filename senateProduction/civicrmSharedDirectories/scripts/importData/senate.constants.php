@@ -8,6 +8,7 @@ $aRelLookup['S'] = 3;
 $aRelLookup['D'] = 3;
 $aRelLookup['HoH'] = 6;
 $aRelLookup['MoH'] = 7;
+$aRelLookup['employeeOf'] = 4;
 
 
 // OMIS database fields

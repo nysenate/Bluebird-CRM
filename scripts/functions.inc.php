@@ -1,31 +1,34 @@
-<?
-function runCmd($cmd, $description=null, $debug=false, &$aOut=null) {
-
+<?php
+function runCmd($cmd, $description=null, $debug=false, &$aOut=null)
+{
 	global $SC;
 
-	$aOut=array();
-	if ($description!=null) cLog(0,'INFO',$description);
+	$aOut = array();
+	if ($description != null) cLog(0, 'INFO', $description);
 
-	if ($SC['debug'] || $debug)  cLog(0,'INFO',$cmd); 
+	if ($SC['debug'] || $debug) cLog(0, 'INFO', $cmd); 
 
-	if (!$SC['noExec']) exec($cmd,&$aOut);
+	if (!$SC['noExec']) exec($cmd, $aOut);
 
 	//results
 	if ($SC['debug'] || debug) {
 		print(implode("\n",$aOut));
 	}
-}
+} // runCmd()
 
-function cLog($num=0, $type='notice', $message='', $debug=false) {
 
+
+function cLog($num=0, $type='notice', $message='', $debug=false)
+{
         if (is_object($message)) $message = print_r($message,true);
 
         if (RAYDEBUG || $debug || $type!='debug') print($num.' ['.$type.'] '.date("Y-m-d H:i:s")." ".$message."\n");
+} // cLog()
 
-}
 
-function confirmCheck($fn) {
 
+function confirmCheck($fn)
+{
         global $SC;
 
 	if ($SC['noExec']) return true;
@@ -40,10 +43,12 @@ function confirmCheck($fn) {
                 runCmd("touch {$SC['tmp']}{$fn}");
                 return false;
         }
-}
+} // confirmCheck()
 
-function getLine($inFile) {
 
+
+function getLine($inFile)
+{
         global $rayGetLineFile;
 
         //open or reopen the file so it can continually find data
@@ -69,24 +74,31 @@ function getLine($inFile) {
         }
 
         return fgets($rayGetLineFile[$inFile]); //fgets reads one line at a time
-}
+} // getLine()
 
-function getLineAsArray($inFile, $delim=',') {
 
+
+function getLineAsArray($inFile, $delim=',')
+{
         $line = getLine($inFile);
-
         if ($line) return csv_string_to_array($line);
         else return false;
-}
+} // getLineAsArray()
 
-function csv_string_to_array($str){
-   $expr="/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/";
-    $results=preg_split($expr,trim($str));
-    return preg_replace("/^\"(.*)\"$/","$1",$results);
-}
 
-function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {
 
+function csv_string_to_array($str)
+{
+  $expr = "/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/";
+  $results = preg_split($expr, trim($str));
+  return preg_replace("/^\"(.*)\"$/","$1", $results);
+} // csv_string_to_array()
+
+
+
+function fputcsv2($fh, array $fields, $delimiter = ',', $enclosure = '"',
+                   $mysql_null = false, $blank_as_null = false)
+{
     $delimiter_esc = preg_quote($delimiter, '/');
     $enclosure_esc = preg_quote($enclosure, '/');
 
@@ -103,6 +115,6 @@ function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysq
     }
 
     fwrite($fh, join($delimiter, $output) . "\n");
-}
+} // fputcsv2()
 
 ?>
