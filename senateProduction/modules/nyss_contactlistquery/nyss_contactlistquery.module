@@ -64,3 +64,35 @@ function nyss_contactlistquery_civicrm_contactListQuery( &$query, $name, $contex
     return $query;
 
 }
+
+function nyss_contactlistquery_civicrm_buildForm( $formName, &$form ) {
+
+	//Limit case roles available to add new role dialog to only those that apply to cases
+	if ( $formName=='CRM_Case_Form_CaseView' ) {
+
+		$caserelationships = array( '13' => 'Case Manager is',
+									'8'  => 'Case Coordinator is',
+									'15' => 'Support Staff is',
+									'14' => 'Non-District Staff is'
+								  );
+		$form->add('select', 'role_type',  ts( 'Relationship Type' ), array( '' => ts( '- select type -' ) ) + $caserelationships );
+
+	}
+	
+	//Limit import file size to 1MB
+	if ( $formName =='CRM_Import_Form_DataSource' ) {
+		
+		$uploadFileSize = 1048576;
+        $uploadSize = round(($uploadFileSize / (1024*1024)), 2);
+        $form->assign('uploadSize', $uploadSize);
+		$form->add('file', 'uploadFile', ts('Import Data File'), 'size=30 maxlength=60', true);
+        
+		$form->setMaxFileSize($uploadFileSize);
+        $form->addRule('uploadFile', ts('File size should be less than %1 MBytes (%2 bytes)', array(1 => $uploadSize, 2 => $uploadFileSize)), 'maxfilesize', $uploadFileSize);
+        $form->addRule('uploadFile', ts('Input file must be in CSV format'), 'utf8File');
+        $form->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
+		$form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
+
+	}
+	
+} //close buildForm
