@@ -15,7 +15,12 @@ if (sizeof($argv) < 3) {
 try {
   $config = strToLower($argv[1]);
   $function = strToLower($argv[2]);
-  $SC['dbName'] = $argv[3];
+  if (isset($argv[3])) {
+    $SC['dbName'] = $argv[3];
+  }
+  else {
+    $SC['dbName'] = "NODB";
+  }
   if (isset($argv[4])) {
     $SC['dbToName'] = $argv[4]; 
     $tableName = $argv[4]; //this is for tablecopy function function
@@ -308,7 +313,8 @@ function resetDomainConfig()
 
 function fixPermissions()
 {
-  runCmd("fixPermissions.sh", "setting permissions");
+  global $rootDir;
+  runCmd("$rootDir/fixPermissions.sh", "setting permissions");
 } // fixPermissions()
 
 
