@@ -128,8 +128,8 @@ switch ($config) {
 $SC['mysql'] = "mysql -u{$SC['dbUser']} -p{$SC['dbPassword']} -h{$SC['dbHost']}";
 $SC['mysqlTo'] = $SC['mysql'];
 
-$SC['mysqldump'] = "mysqldump -v -u{$SC['dbUser']} -p{$SC['dbPassword']} -h{$SC['dbHost']}";
-$SC['mysqldumpTo'] = "mysqldump -v -u{$SC['dbToUser']} -p{$SC['dbToPassword']} -h{$SC['dbToHost']}";
+$SC['mysqldump'] = "mysqldump -u{$SC['dbUser']} -p{$SC['dbPassword']} -h{$SC['dbHost']}";
+$SC['mysqldumpTo'] = "mysqldump -u{$SC['dbToUser']} -p{$SC['dbToPassword']} -h{$SC['dbToHost']}";
 
 $SC['tmp'] = "/tmp/";
 $SC['copy'] = "cp";
