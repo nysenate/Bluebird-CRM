@@ -5,6 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-01
+# Revised: 2010-09-10
 #
 
 prog=`basename $0`
@@ -131,7 +132,7 @@ if [ $use_all -eq 1 ]; then
     echo "$prog: Cannot use --all if instances have been specified" >&2
     exit 1
   else
-    instances=`grep "^[^#]" $config_file | cut -d, -f1`
+    instances=`grep "^[^#]" $config_file | cut -d, -f1 | uniq`
   fi
 fi
 
