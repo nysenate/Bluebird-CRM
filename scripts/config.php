@@ -1,12 +1,10 @@
 <?php
 
-global $SC;
+require_once '../passwd.php';
 
 define('DBHOST', 'crmdbprod');
 define('DBUSER', 'crmadmin');
-define('DBPASS', '');
 define('HTTPUSER', 'loadsenate');
-define('HTTPPASS', '');
 define('ROOTDIR', '/data/www/');
 define('CIVI_TABLE_PREFIX', 'civicrm_');
 define('CIVI_TEMPLATEDIR', 'civicrmInstallTemplates/');
