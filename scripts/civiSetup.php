@@ -3,7 +3,6 @@
 $rootDir = "/data/scripts/";
 
 include_once $rootDir.'functions.inc.php';
-include_once $rootDir.'config.php';
 
 $timestart = microtime(1); // note 1
 
@@ -25,12 +24,14 @@ try {
     $SC['dbToName'] = $SC['dbName'];
     $tableName = null;
   }
-
 }
 catch (Exception $e) {
   echo "ARGUMENT ERROR";
   exit;
 }
+
+// Must wait to include config.php, since it depends on $config being set.
+include_once $rootDir.'config.php';
 
 switch ($function) {
   case "copysite":
