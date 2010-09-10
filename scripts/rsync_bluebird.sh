@@ -28,5 +28,5 @@ done
 # rsync the scripts/, senateProduction/, and www/ dirs, but exclude sync
 # for all sites/ directories that are of the form *.*.  This will skip
 # <instance>.crm.nysenate.gov, but not "all" and "default".
-rsync -rlv $dry_run_opt $delete_opt --exclude sites/*.* $HOME/Bluebird-CRM/* /data/
+rsync -rltv $dry_run_opt $delete_opt --exclude sites/*.* $HOME/Bluebird-CRM/* /data/
 
