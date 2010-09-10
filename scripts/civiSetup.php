@@ -308,19 +308,7 @@ function resetDomainConfig()
 
 function fixPermissions()
 {
-  global $SC;
-  $defuser = "www-data";
-  $defgroup = "www-data";
-
-  runCmd("chown $defuser:$defgroup -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","setting ownership");
-  runCmd("chmod ug-w -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","unsetting write permissions");
-  runCmd("chmod ug+rw -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","setting read/write permissions");
-  runCmd("chmod ugo+w -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}sites/{$SC['dbToName']}{$SC['toRootDomain']}/files/civicrm","setting write permissions on civicrm files directory");
-
-  runCmd("chown $defuser:$defgroup -R /data/senateProduction","setting ownership on senateProduction");
-  runCmd("chown $defuser:$defgroup -R /data/senateDevelopment","setting ownership on senateDevelopment");
-  runCmd("chmod ugo+w -R  /data/senateProduction","setting ownership on senateProduction");
-  runCmd("chmod ugo+w -R  /data/senateDevelopment","setting ownership on senateDevelopment");
+  runCmd("fixPermissions.sh", "setting permissions");
 } // fixPermissions()
 
 
