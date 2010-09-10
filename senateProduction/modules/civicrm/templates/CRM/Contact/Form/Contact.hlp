@@ -47,8 +47,8 @@
 {ts}Select the preferred method for Privacy.{/ts}
 {/htxt}
 
-{htxt id="id-usehousehold"}
-{ts}Check this option if you want to use a shared household address for this individual. You can either select an existing household.<br /> To create a new one just enter the name of desired household, select the same from drop down and press enter.{/ts}
+{htxt id="id-usehousehold"} {*NYSS 1711*}
+{ts}Check this option if you want to use a shared household address for this individual. You can either select an existing household or create a new one. To create a new one, enter the name of the household, select the same from drop down and click or press enter. You may then enter the household address.{/ts}
 {/htxt}
 
 {htxt id="id-greeting"}
