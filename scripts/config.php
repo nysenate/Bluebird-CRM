@@ -62,63 +62,62 @@ $SC['httppwd'] = HTTPPASS;
 
 
 switch ($config) {
-	case 'prodtodev':
-                $SC['dbCiviPrefix'] = CIVI_DBPREFIX;
-                $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX;
-                $SC['drupalRootDir'] = DRUPAL_ROOTDIR;
-                $SC['templateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
-                $SC['rootDomain'] = ROOTDOMAIN;
+  case 'prodtodev':
+    $SC['dbCiviPrefix'] = CIVI_DBPREFIX;
+    $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX;
+    $SC['drupalRootDir'] = DRUPAL_ROOTDIR;
+    $SC['templateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['rootDomain'] = ROOTDOMAIN;
+    $SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
+    $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
+    $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
+    $SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+    $SC['toRootDomain'] = ROOTDOMAIN_DEV;
+    break;
 
-		$SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
-		$SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
-		$SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
-		$SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
-		$SC['toRootDomain'] = ROOTDOMAIN_DEV;
-		break;
+  case 'devtoprod':
+    $SC['dbCiviPrefix'] = CIVI_DBPREFIX_DEV;
+    $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
+    $SC['drupalRootDir'] = DRUPAL_ROOTDIR_DEV;
+    $SC['templateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+    $SC['rootDomain'] = ROOTDOMAIN_DEV;
+    $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
+    $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
+    $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
+    $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['toRootDomain'] = ROOTDOMAIN;
+    break;
 
-        case 'devtoprod':
-                $SC['dbCiviPrefix'] = CIVI_DBPREFIX_DEV;
-                $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
-                $SC['drupalRootDir'] = DRUPAL_ROOTDIR_DEV;
-                $SC['templateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
-                $SC['rootDomain'] = ROOTDOMAIN_DEV;
-                $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
-                $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
-                $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
-                $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
-                $SC['toRootDomain'] = ROOTDOMAIN;
-                break;
+  case 'crmtocrm2':
+    $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
+    $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
+    $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
+    $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['rootDomain'] = ROOTDOMAIN;
+    $SC['toRootDomain'] = ".crm2.nysenate.gov";
+    break;
 
-        case 'crmtocrm2':
-                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
-                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
-                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
-                $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
-                $SC['rootDomain'] = ROOTDOMAIN;
-                $SC['toRootDomain'] = ".crm2.nysenate.gov";
-                break;
+  case 'prod':
+    $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
+    $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
+    $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
+    $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN;
+    $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR;
+    break;
 
-        case 'prod':
-                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
-                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
-                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
-                $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
-                $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN;
-                $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR;
-		break;
+  case 'dev':
+    $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
+    $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
+    $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
+    $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+    $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN_DEV;
+    $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR_DEV;
+    break;
 
-        case 'dev':
-                $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
-                $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
-                $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
-                $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
-                $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN_DEV;
-                $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR_DEV;
-                break;
-
-	default:
-		die("\n\nrequires a valid configuration\n\n");
-		break;	
+  default:
+    die("\n\nrequires a valid configuration\n\n");
+    break;	
 }
 
 //**************************************************************************
