@@ -40,9 +40,9 @@ switch ($function) {
 		copyDatabases();
 		updateDatabasePaths();
 		copyCiviTemplateFiles();
+		clearCache();
 		hitSite();
 		fixPermissions();
-		clearCache();
 		break;
 
         case "deletesite":
@@ -282,7 +282,7 @@ function hitSite() {
 
 	global $SC;
 
-	$cmd = "wget -O /dev/null http://{$SC['httpauth']}:{$SC['httppwd']}@{$SC['dbToName']}.crm.nysenate.gov";
+	$cmd = "wget -O /dev/null http://{$SC['httpauth']}:{$SC['httppwd']}@{$SC['dbToName']}{$SC['toRootDomain']}";
         runCmd($cmd);
 }
 
@@ -319,20 +319,25 @@ function resetDomainConfig() {
 	runCmd("{$SC['mysqlTo']} {$SC['dbToCiviPrefix']}{$SC['dbToName']} -e\"update civicrm_domain set config_backend=null\"");
 
 }
-function fixPermissions() {
 
+
+function fixPermissions()
+{
         global $SC;
+	$defuser = "www-data";
+	$defgroup = "www-data";
 
-                runCmd("chown www-data:webone -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","setting ownership");
-                runCmd("chmod ug-w -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","unsetting write permissions");
-                runCmd("chmod ug+rw -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","setting read/write permissions");
-                runCmd("chmod ugo+w -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}sites/{$SC['dbToName']}{$SC['toRootDomain']}/files/civicrm","setting write permissions on civicrm files directory");
+        runCmd("chown $defuser:$defgroup -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","setting ownership");
+        runCmd("chmod ug-w -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","unsetting write permissions");
+        runCmd("chmod ug+rw -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}","setting read/write permissions");
+        runCmd("chmod ugo+w -R {$SC['toRootDir']}{$SC['toDrupalRootDir']}sites/{$SC['dbToName']}{$SC['toRootDomain']}/files/civicrm","setting write permissions on civicrm files directory");
 
-                runCmd("chown www-data:webone -R /data/senateProduction","setting ownership on senateProduction");
-                runCmd("chown www-data:webone -R /data/senateDevelopment","setting ownership on senateDevelopment");
-                runCmd("chmod ugo+w -R  /data/senateProduction","setting ownership on senateProduction");
-                runCmd("chmod ugo+w -R  /data/senateDevelopment","setting ownership on senateDevelopment");
+        runCmd("chown $defuser:$defgroup -R /data/senateProduction","setting ownership on senateProduction");
+        runCmd("chown $defuser:$defgroup -R /data/senateDevelopment","setting ownership on senateDevelopment");
+        runCmd("chmod ugo+w -R  /data/senateProduction","setting ownership on senateProduction");
+        runCmd("chmod ugo+w -R  /data/senateDevelopment","setting ownership on senateDevelopment");
 }
+
 
 function copymissingoptions() {
 
