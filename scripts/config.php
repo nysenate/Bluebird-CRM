@@ -1,10 +1,13 @@
 <?php
 
-require_once '../passwd.php';
+$incfile = realpath(dirname(__FILE__)."/..")."/credentials.php";
+@include_once $incfile;
 
-define('DBHOST', 'crmdbprod');
-define('DBUSER', 'crmadmin');
-define('HTTPUSER', 'loadsenate');
+if (!defined('DBHOST') || !defined('DBUSER') || !defined('DBPASS')
+    || !defined('HTTPUSER') || !defined('HTTPPASS')) {
+  die("Must set DBHOST, DBUSER, DBPASS, HTTPUSER, and HTTPPASS in $incfile\n");
+}
+
 define('ROOTDIR', '/data/www/');
 define('CIVI_TABLE_PREFIX', 'civicrm_');
 define('CIVI_TEMPLATEDIR', 'civicrmInstallTemplates/');
@@ -19,9 +22,6 @@ define('CIVI_DBPREFIX_DEV', 'senate_dev_c_');
 define('DRUPAL_DBPREFIX', 'senate_d_');
 define('DRUPAL_DBPREFIX_DEV', 'senate_dev_d_');
 
-if (!defined('DBPASS') || !defined('HTTPPASS')) {
-  die("Must set DBPASS and HTTPPASS in ".__FILE__."\n");
-}
 
 if (!defined('RAYDEBUG')) {
   define('RAYDEBUG', false);
