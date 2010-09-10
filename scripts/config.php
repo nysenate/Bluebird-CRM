@@ -19,7 +19,7 @@ define('CIVI_DBPREFIX_DEV', 'senate_dev_c_');
 define('DRUPAL_DBPREFIX', 'senate_d_');
 define('DRUPAL_DBPREFIX_DEV', 'senate_dev_d_');
 
-if (DBPASS == "" || HTTPPASS == "") {
+if (!defined('DBPASS') || !defined('HTTPPASS')) {
   die("Must set DBPASS and HTTPPASS in ".__FILE__."\n");
 }
 
