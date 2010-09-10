@@ -1,5 +1,5 @@
 <?php 
-function nyss_contactlistquery_civicrm_contactListQuery( &$query, $name, $context, $id ) {
+function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
 
 //echo $query;
 
@@ -65,7 +65,7 @@ function nyss_contactlistquery_civicrm_contactListQuery( &$query, $name, $contex
 
 }
 
-function nyss_contactlistquery_civicrm_buildForm( $formName, &$form ) {
+function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
 	//Limit case roles available to add new role dialog to only those that apply to cases
 	if ( $formName=='CRM_Case_Form_CaseView' ) {
@@ -96,3 +96,10 @@ function nyss_contactlistquery_civicrm_buildForm( $formName, &$form ) {
 	}
 	
 } //close buildForm
+
+function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
+	
+	unset($tasks[19]); //remove pdf letter creation task, #2284
+	//unset($tasks[24]); //remove delete permanently task, #2373
+	
+}
