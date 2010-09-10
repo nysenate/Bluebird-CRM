@@ -25,5 +25,8 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-rsync -av $dry_run_opt $delete_opt $HOME/Bluebird-CRM/* /data/
+# rsync the scripts/, senateProduction/, and www/ dirs, but exclude sync
+# for all sites/ directories that are of the form *.*.  This will skip
+# <instance>.crm.nysenate.gov, but not "all" and "default".
+rsync -rltOv $dry_run_opt $delete_opt --exclude sites/*.* $HOME/Bluebird-CRM/* /data/
 
