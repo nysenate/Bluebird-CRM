@@ -15,7 +15,7 @@ define('INSTALLDIR', '/data/senateProduction/');
 define('INSTALLDIR_DEV', '/data/senateDevelopment/');
 define('ROOTDOMAIN', '.crm.nysenate.gov');
 define('ROOTDOMAIN_DEV', '.crmdev.nysenate.gov');
-define('DRUPAL_ROOTDIR', 'nyss/');
+define('DRUPAL_ROOTDIR', '');
 define('DRUPAL_ROOTDIR_DEV', 'nyssdev/');
 define('CIVI_DBPREFIX', 'senate_c_');
 define('CIVI_DBPREFIX_DEV', 'senate_dev_c_');
