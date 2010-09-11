@@ -43,7 +43,7 @@ switch ($function) {
     if (!confirmCheck('copysite')) exit;
     copyDatabases();
     updateDatabasePaths();
-    copyCiviTemplateFiles();
+    #copyCiviTemplateFiles();
     clearCache();
     hitSite();
     fixPermissions();
@@ -516,9 +516,6 @@ function showConfigBackend()
 
   mysql_connect($SC['dbToHost'], $SC['dbToUser'],$SC['dbToPassword']) or die(mysql_error());
   mysql_select_db($SC['dbToCiviPrefix'].$SC['dbToName']) or die(mysql_error());
-
-  cLog(0,"INFO","replacing {$SC['drupalRootDir']}sites/{$SC['dbName']}{$SC['rootDomain']} with {$SC['toDrupalRootDir']}sites/{$SC['dbToName']}{$SC['toRootDomain']}");
-
   $result = mysql_query("SELECT id, config_backend FROM civicrm_domain;") or die(mysql_error());
 
   //get the only row
