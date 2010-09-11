@@ -19,12 +19,12 @@ dbpass=`$readConfig --group global:db --key pass`
 
 echo "Clearing Drupal database caches"
 sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_update; truncate cache_menu; truncate cache_block; truncate cache_filter; truncate sessions;"
-$execSql senate_d_$instance "$sql"
+$execSql senate_d_$instance -c "$sql"
 
 echo "Clearing CiviCRM database caches"
 sql="truncate civicrm_cache; truncate civicrm_menu; truncate civicrm_uf_match";
 set -x
-$execSql senate_c_$instance "$sql"
+$execSql senate_c_$instance -c "$sql"
 
 echo "Clearing CiviCRM filesystem caches"
 rm -rf /data/files/$instance.crm.nysenate.gov/civicrm/templates_c/*
