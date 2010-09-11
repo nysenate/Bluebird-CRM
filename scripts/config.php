@@ -1,13 +1,25 @@
 <?php
 
-$incfile = realpath(dirname(__FILE__)."/..")."/credentials.php";
-@include_once $incfile;
+define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.ini');
 
-if (!defined('DBHOST') || !defined('DBUSER') || !defined('DBPASS')
-    || !defined('HTTPUSER') || !defined('HTTPPASS')) {
-  die("Must set DBHOST, DBUSER, DBPASS, HTTPUSER, and HTTPPASS in $incfile\n");
+$bbini = parse_ini_file(BLUEBIRD_CONFIG_FILE, true);
+
+$dbhost = $bbini['global:db']['host'];
+$dbuser = $bbini['global:db']['user'];
+$dbpass = $bbini['global:db']['host'];
+$httpuser = $bbini['global:httpauth']['user'];
+$httppass = $bbini['global:httpauth']['pass'];
+
+if (empty($dbhost) || empty($dbuser) || empty($dbpass)
+    || empty($httpuser) || empty($httppass)) {
+  die("Must set global:db and global:httpauth parameters in ".BLUEBIRD_CONFIG_FILE."\n");
 }
 
+define('DBHOST', $dbhost);
+define('DBUSER', $dbuser);
+define('DBPASS', $dbpass);
+define('HTTPUSER', $httpuser);
+define('HTTPPASS', $httppass);
 define('ROOTDIR', '/data/www/');
 define('CIVI_TABLE_PREFIX', 'civicrm_');
 define('CIVI_TEMPLATEDIR', 'civicrmInstallTemplates/');
@@ -50,7 +62,7 @@ $SC['noExec'] = false;
 //TAG file, contains master list of tags
 $SC['tagFile'] = 'tags.csv';
 
-//conmmon params. can override in config section
+//common params. can override in config section
 $SC['dbToHost'] = $SC['dbHost'] = DBHOST;
 $SC['dbToUser'] = $SC['dbUser'] = DBUSER;
 $SC['dbToPassword'] = $SC['dbPassword'] = DBPASS;
