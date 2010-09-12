@@ -1,6 +1,7 @@
 <?php
 
-define('DELIM','~');
+define('DELIM', '~');
+define("DBNULL", null);
 
 /*
 ** NOTES:
@@ -10,8 +11,6 @@ define('DELIM','~');
 
 error_reporting(E_ERROR && E_PARSE);
 error_reporting(E_ALL && ~E_NOTICE);
-
-define("DBNULL", null);
 
 //no limit
 set_time_limit(0);
@@ -56,14 +55,6 @@ for ($i = 1; $i < count($argv); $i++) {
 
 if (empty($instance) || empty($importSet)) {
   die("$prog: Must specify an instance and an importSet.\n");
-}
-
-$civiconfdir = RAYROOTDIR."sites/$instance".RAYROOTDOMAIN;
-if (file_exists($civiconfdir)) {
-  define('CIVICRM_CONFDIR', $civiconfdir);
-}
-else {
-  die("$prog: $civiconfdir: Directory not found\nPlease make sure instance '$instance' exists before importing data.\n");
 }
 
 if (empty($importDir)) {
