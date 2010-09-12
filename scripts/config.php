@@ -6,7 +6,7 @@ $bbini = parse_ini_file(BLUEBIRD_CONFIG_FILE, true);
 
 $dbhost = $bbini['global:db']['host'];
 $dbuser = $bbini['global:db']['user'];
-$dbpass = $bbini['global:db']['host'];
+$dbpass = $bbini['global:db']['pass'];
 $httpuser = $bbini['global:httpauth']['user'];
 $httppass = $bbini['global:httpauth']['pass'];
 
