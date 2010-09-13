@@ -25,9 +25,9 @@ $drupalroot = realpath($curdir."/../../");
 
 $bbini = parse_ini_file(BLUEBIRD_CONFIG_FILE, true);
 
-$dbhost = $bbini['global:db']['host'];
-$dbuser = $bbini['global:db']['user'];
-$dbpass = $bbini['global:db']['pass'];
+$dbhost = $bbini['globals']['db.host'];
+$dbuser = $bbini['globals']['db.user'];
+$dbpass = $bbini['globals']['db.pass'];
 $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/senate_d_$shortname";
 $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/senate_c_$shortname";
 
