@@ -25,7 +25,7 @@ $sourceDesc = "omis";
 $startID = 0;
 
 if (count($argv) <= 1) {
-  die("Usage: $prog [options] instance importSet\nwhere [options] are:\n  -t task\n  -d importDir\n  -s sourceDesc\n  -i startID\n");
+  die("Usage: $prog [options] instanceURL importSet\nwhere [options] are:\n  -t task\n  -d importDir\n  -s sourceDesc\n  -i startID\n");
 }
 
 for ($i = 1; $i < count($argv); $i++) {
@@ -57,12 +57,22 @@ if (empty($instance) || empty($importSet)) {
   die("$prog: Must specify an instance and an importSet.\n");
 }
 
+if (strpos($instance, '.') === false) {
+  $instance = $instance.".crm.nysenate.gov";
+  echo "Warning: InstanceURL expanded to $instance\n";
+}
+
 if (empty($importDir)) {
   $importDir = RAYIMPORTDIR.$importSet;
 }
 
 if (!file_exists($importDir)) {
   die("$prog: $importDir: Directory not found\nMust specify a valid import directory.\n");
+}
+
+define('CIVICRM_CONFDIR', RAYROOTDIR.'sites/default');
+if (putenv("SERVER_NAME=$instance") == false) {
+  die("Unable to set SERVER_NAME in environment.\n");
 }
 
 require_once RAYCIVIPATH.'civicrm.config.php';
