@@ -4,11 +4,11 @@ define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.ini');
 
 $bbini = parse_ini_file(BLUEBIRD_CONFIG_FILE, true);
 
-$dbhost = $bbini['global:db']['host'];
-$dbuser = $bbini['global:db']['user'];
-$dbpass = $bbini['global:db']['pass'];
-$httpuser = $bbini['global:httpauth']['user'];
-$httppass = $bbini['global:httpauth']['pass'];
+$dbhost = $bbini['globals']['db.host'];
+$dbuser = $bbini['globals']['db.user'];
+$dbpass = $bbini['globals']['db.pass'];
+$httpuser = $bbini['globals']['http.user'];
+$httppass = $bbini['globals']['http.pass'];
 
 if (empty($dbhost) || empty($dbuser) || empty($dbpass)
     || empty($httpuser) || empty($httppass)) {
