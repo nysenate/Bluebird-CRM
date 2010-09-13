@@ -14,22 +14,26 @@ fi
 
 sqlfile=
 sqlcmd=
+dump_db=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    -f) shift; sqlfile="$1" ;;
-    -c) shift; sqlcmd="$1" ;;
+    -f|--sqlfile) shift; sqlfile="$1" ;;
+    -c|--cmd) shift; sqlcmd="$1" ;;
+    -d|--dump) dump_db=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
     *) dbname="$1" ;;
   esac
   shift
 done
 
-dbhost=`$readConfig --group global:db --key host`
-dbuser=`$readConfig --group global:db --key user`
-dbpass=`$readConfig --group global:db --key pass`
+dbhost=`$readConfig --group globals --key db.host`
+dbuser=`$readConfig --group globals --key db.user`
+dbpass=`$readConfig --group globals --key db.pass`
 
-if [ "$sqlfile" ]; then
+if [ $dump_db -eq 1 ]; then
+  mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname
+elif [ "$sqlfile" ]; then
   set -x
   cat $sqlfile | mysql -h $dbhost -u $dbuser -p$dbpass $dbname
 else
