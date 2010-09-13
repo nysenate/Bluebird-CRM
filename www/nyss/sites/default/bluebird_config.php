@@ -8,7 +8,17 @@
 #
 
 define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.ini');
-$servername = $_SERVER['SERVER_NAME'];
+
+if (isset($_SERVER['SERVER_NAME'])) {
+  $servername = $_SERVER['SERVER_NAME'];
+}
+else if (getenv('SERVER_NAME') !== false) {
+  $servername = getenv('SERVER_NAME');
+}
+else {
+  die("Unable to determine server name.\n");
+}
+
 $shortname = substr($servername, 0, strpos($servername, '.'));
 $curdir = dirname(__FILE__);
 $drupalroot = realpath($curdir."/../../");
