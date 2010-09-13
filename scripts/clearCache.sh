@@ -13,9 +13,6 @@ if [ $# -ne 1 ]; then
 fi
 
 instance="$1"
-dbhost=`$readConfig --group global:db --key host`
-dbuser=`$readConfig --group global:db --key user`
-dbpass=`$readConfig --group global:db --key pass`
 
 echo "Clearing Drupal database caches"
 sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_update; truncate cache_menu; truncate cache_block; truncate cache_filter; truncate sessions;"
