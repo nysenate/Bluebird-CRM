@@ -5,13 +5,15 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-01
-# Revised: 2010-09-10
+# Revised: 2010-09-13
 #
 
 prog=`basename $0`
+script_dir=`dirname $0`
+script_dir=`cd $script_dir; echo $PWD`
+readConfig=$script_dir/readConfig.sh
 default_config_env=prod
-default_config_file=bluebird_all_instances.cfg
-script_dir=/data/scripts
+default_config_file=/etc/bluebird.ini
 import_dir=/data/importData
 iscript_dir=/data/senateProduction/civicrmSharedDirectories/scripts/importData
 tempdir=/tmp/bluebird_imports
@@ -37,13 +39,7 @@ create_instance() {
 import_data() {
   instance="$1"
   import="$2"
-  extended="$3"
-  if [ "$extended" = "Y" ]; then
-    srcdesc="ext"
-  else
-    srcdesc="omis"
-  fi
-
+  srcdesc="$3"
   importzip="$import_dir/$import.zip"
   if [ ! -r "$importzip" ]; then
     echo "$prog: $importzip: Unable to locate import zip file" >&2
@@ -132,44 +128,46 @@ if [ $use_all -eq 1 ]; then
     echo "$prog: Cannot use --all if instances have been specified" >&2
     exit 1
   else
-    instances=`grep "^[^#]" $config_file | cut -d, -f1 | uniq`
+    instances=`$readConfig -f "$config_file" --groups "instance:" | sed "s;^instance:;;"`
   fi
 fi
 
 mkdir -p "$tempdir"
 
 for instance in $instances; do
-  ilines=`grep "^$instance," $config_file`
-  if [ ! "$ilines" ]; then
+  igroup="instance:$instance"
+  instance_config=`$readConfig -f "$config_file" --group $igroup`
+  if [ ! "$instance_config" ]; then
     echo "$prog: Warning: CRM instance [$instance] not found in config file" >&2
     continue
   fi
 
-  for iline in $ilines; do
-    instance_name=`echo $iline | cut -d, -f1`
-    import_name=`echo $iline | cut -d, -f2`
-    is_extended=`echo $iline | cut -d, -f3`
-    # Not using is_majority and ldap_group yet...
-    is_majority=`echo $iline | cut -d, -f4`
-    ldap_group=`echo $iline | cut -d, -f5`
+  instance_name=`$readConfig -f "$config_file" --group $igroup --key name`
+  datasets=`$readConfig -f "$config_file" --group $igroup --key datasets`
+  # Not using is_majority and ldap_group yet...
+  is_majority=`$readConfig -f "$config_file" --group $igroup --key majority`
+  ldap_group=`$readConfig -f "$config_file" --group $igroup --key ldap.group`
+  imap_user=`$readConfig -f "$config_file" --group $igroup --key imap.user`
+  imap_pass=`$readConfig -f "$config_file" --group $igroup --key imap.pass`
 
-    if [ $no_init -eq 1 ]; then
-      echo "==> Skipping initialization of instance [$instance_name]"
-    else
-      if [ "$is_extended" = "N" ]; then
-        echo "==> About to create CRM instance [$instance_name]"
-        create_instance $instance_name $config_env
-      else
-        echo "==> About to load extended data into instance [$instance_name]"
-      fi
-    fi
+  if [ $no_init -eq 1 ]; then
+    echo "==> Skipping initialization of instance [$instance_name]"
+  else
+    echo "==> About to create CRM instance [$instance_name]"
+    create_instance $instance_name $config_env
+  fi
 
-    if [ $no_import -eq 1 ]; then
-      echo "==> Skipping data importation for instance [$instance_name]"
-    else
-      echo "==> About to import data into CRM instance [$instance_name]"
-      import_data $instance_name $import_name $is_extended
-    fi
+  if [ $no_import -eq 1 ]; then
+    echo "==> Skipping data importation for instance [$instance_name]"
+  else
+    echo "==> About to import data into CRM instance [$instance_name]"
+    datasets=`echo $datasets | tr , " "`
+    sourcedesc=omis
+    for ds in $datasets; do
+      import_data $instance_name $ds $sourcedesc
+      sourcedesc=ext
+    done
+  fi
 
     if [ $no_fixperms -eq 1 ]; then
       echo "==> Skipping permission fixups for instance [$instance_name]"
@@ -177,7 +175,6 @@ for instance in $instances; do
       echo "==> About to fix permissions for CRM instance [$instance_name]"
       fix_permissions $instance_name $config_env
     fi
-  done
 done
 
 if [ $keep_tempdir -eq 0 ]; then
