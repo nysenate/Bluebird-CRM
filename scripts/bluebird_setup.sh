@@ -20,7 +20,7 @@ tempdir=/tmp/bluebird_imports
 
 
 usage() {
-  echo "Usage: $prog [--all] [--no-init] [--no-import] [--no-fixperms] [-e config_env] [-f config_file] [--keep] instance_name [instance_name ...]" >&2
+  echo "Usage: $prog [--all] [--set instanceSet] [--no-init] [--no-import] [--no-fixperms] [-e config_env] [-f config_file] [--keep] instance_name [instance_name ...]" >&2
 }
 
 create_instance() {
@@ -80,13 +80,13 @@ fix_permissions() {
   config_env="$2"
   (
     set -x
-    cd $script_dir
-    php civiSetup.php $config_env fixpermissions $instance
+    $script_dir/fixPermissions.sh
   )
 }
 
 
 use_all=0
+instance_set=
 config_env=$default_config_env
 config_file=$default_config_file
 stage=$default_stage
@@ -99,6 +99,7 @@ instances=
 while [ $# -gt 0 ]; do
   case "$1" in
     --all) use_all=1 ;;
+    --set|-s) shift; instance_set="$1" ;;
     --config-env|-e) shift; config_env="$1" ;;
     --config-file|-f) shift; config_file="$1" ;;
     --no-import) no_import=1 ;;
@@ -118,19 +119,29 @@ if [ ! "$config_file" ]; then
 elif [ ! -r "$config_file" ]; then
   echo "$prog: $config_file: File not found" >&2
   exit 1
-elif [ ! "$instances" -a $use_all -eq 0 ]; then
-  echo "$prog: No instances were specified" >&2
-  exit 1
 fi
 
 if [ $use_all -eq 1 ]; then
-  if [ "$instances" ]; then
+  if [ "$instances" -o "$instance_set" ]; then
     echo "$prog: Cannot use --all if instances have been specified" >&2
     exit 1
   else
     instances=`$readConfig -f "$config_file" --groups "instance:" | sed "s;^instance:;;"`
   fi
+elif [ "$instance_set" ]; then
+  ival=`$readConfig -f "$config_file" --group "instance_sets" --key "$instance_set"`
+  if [ ! "$ival" ]; then
+    echo "$prog: Instance set $instance_set not found" >&2
+    exit 1
+  fi
+  instances="$instances $ival"
 fi
+
+if [ ! "$instances" ]; then
+  echo "$prog: No instances were specified" >&2
+  exit 1
+fi
+
 
 mkdir -p "$tempdir"
 
