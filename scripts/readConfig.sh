@@ -9,20 +9,35 @@
 #
 
 prog=`basename $0`
-cfgfile="/etc/bluebird.ini"
+default_cfgfile="/etc/bluebird.ini"
+cfgfile=$default_cfgfile
 group_name=
+group_pattern=
 key_name=
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --config-file|-f) shift; cfgfile="$1" ;;
     --group) shift; group_name="$1" ;;
+    --all-groups) group_pattern="[^]]" ;;
+    --groups) shift; group_pattern="$1" ;;
     --key) shift; key_name="$1" ;;
     *) echo "Usage: $prog [--group] [--key]" >&2; exit 1 ;;
   esac
   shift
 done
 
-if [ "$group_name" -a "$key_name" ]; then
+if [ ! "$cfgfile" ]; then
+  echo "$prog: Config file must be set" >&2
+  exit 1
+elif [ ! -r "$cfgfile" ]; then
+  echo "$prog: $cfgfile: File not found" >&2
+  exit 1
+fi
+
+if [ "$group_pattern" ]; then
+  sed -n -e "s;^\[\([^]]*$group_pattern[^]]*\)\]$;\1;p" $cfgfile
+elif [ "$group_name" -a "$key_name" ]; then
   sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | grep "^$key_name[ =]" | sed -e "s;^[^=]*=[ ]*;;"
 elif [ "$group_name" ]; then
   sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | egrep -v "(^[[;]|^$)"
