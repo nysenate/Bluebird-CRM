@@ -5,7 +5,7 @@
 # Organization: New York State Senate
 # Version: 1.1
 # Created: 2010-05-11
-# Revised: 2010-06-15
+# Revised: 2010-08-10
 #
 
 # Read the first two columns of a CSV file into a hash table.
@@ -38,10 +38,10 @@ function read_csv_hashtable(fname, htable,  rc, csv, fnum, key, val)
 
 function print_file_headers(district)
 {
-  MSTFILE="sd" district "/SD" district "MST.TXT";
-  ISSFILE="sd" district "/SD" district "ISS.TXT";
-  CASFILE="sd" district "/SD" district "CAS.TXT";
-  HISFILE="sd" district "/SD" district "HIS.TXT";
+  MSTFILE="sd" district "/SD" district "EXTMST.TXT";
+  ISSFILE="sd" district "/SD" district "EXTISSCONV.TXT";
+  CASFILE="sd" district "/SD" district "EXTCAS.TXT";
+  HISFILE="sd" district "/SD" district "EXTHIS.TXT";
 
   print "KEY", "LAST", "FIRST", "MI", "SUFFIX", "HOUSE", "STREET", "MAIL",
         "CITY", "STATE", "ZIP5", "ZIP4", "SKF", "SKEY", "RT", "MS", "RCD",
@@ -49,16 +49,16 @@ function print_file_headers(district)
         "BMM", "BDD", "BYY", "PHONE", "CHG", "DEO", "REQ", "OVERFLOW", "LGD",
         "FAM1", "FAM2", "OTITLE", "OCOMPANY", "INSIDE1", "SALUTE1",
         "INSIDE2", "SALUTE2", "LONGSTATE",
-        "TITLE", "ADDR_WORK_STREET1", "ADDR_WORK_STREET2", "ADDR_WORK_CITY",
+        "ADDR_WORK_STREET1", "ADDR_WORK_STREET2", "ADDR_WORK_CITY",
         "ADDR_WORK_STATE", "ADDR_WORK_ZIP", "PHONE_WORK", "PHONE_WORK_EXT",
         "PHONE_MOBILE", "FAX_HOME", "FAX_WORK", "EMAIL", "CONTACT_TYPE",
-        "SPOUSE", "CHILDREN", "LOVES_LIZ", "GROUPS", "WEBSITE", "SENIORS" >MSTFILE;
+        "SPOUSE", "CHILDREN", "LOVES_LIZ", "GROUPS", "WEBSITE", "SENIORS",
+        "NON_DISTRICT" >MSTFILE;
 
   print "KEY", "CASENUM", "CSUBJECT", "CSTAFF", "COPENTIME", "COPENDATE",
         "CCLOSEDATE", "CHOMEPH", "CWORKPH", "CFAXPH", "CSNUM",
         "CLAB1", "CID1", "CLAB2", "CID2", "CISSUE", "CFORM", "CPLACE",
-        "CNOTE1", "CNOTE2", "CNOTE3", "CLASTUPDATE",
-        "LEGISLATION", "ACTION", "RESOURCE", "RESOLUTION" >CASFILE;
+        "CNOTE1", "CNOTE2", "CNOTE3", "CLASTUPDATE", "LEGISLATION" >CASFILE;
 
   print "KEY", "ISSUECODE", "UPDATED", "ISSUEDESCRIPTION", "CATEGORY", "IS_TAG" >ISSFILE;
 
@@ -172,4 +172,3 @@ function convert_phone_number(pstr)
     return pstr;
   }
 } # convert_phone_number()
-
