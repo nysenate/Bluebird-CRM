@@ -174,6 +174,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 	global $omis_is_fields;
 	global $omis_ext_fields;
 	global $bluebird_db_info;
+	global $aStates;
 
 	//civi prefixes
 	$aPrefix = getOptions('individual_prefix');
@@ -541,7 +542,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			'postal_code'        => $ctRow['ADDR_WORK_ZIP'],
 			'postal_code_suffix' => DBNULL,
 			'country_id'         => 1228,
-			'state_province_id'  => 1031);
+			'state_province_id'  => $aStates[$ctRow['ADDR_WORK_STATE']]);
 
                    if (!writeToFile($fout['address'], $params))
                                         exit("i/o fail: address");
@@ -1152,7 +1153,19 @@ function getFreeFormTags()
         }
 } // getFreeFormTags()
 
+function getStates() {
 
+        global $aStates;
+
+        $session =& CRM_Core_Session::singleton();
+
+        $dao = &CRM_Core_DAO::executeQuery( "SELECT abbreviation, id from civicrm_state_province where country_id=1228;", CRM_Core_DAO::$_nullArray );
+
+        while ($dao->fetch()) {
+
+                $aStates[$dao->abbreviation] = $dao->id;
+        }
+}
 
 function importIssueCodes($importSet)
 {
@@ -1187,6 +1200,8 @@ function getOptions($strGroup)
 
 function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = 1)
 {
+  global $aStates;
+
   $addr = array(
     'id'                     => $addrID,
     'contact_id'             => $ctID,
@@ -1202,7 +1217,7 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = 1)
     'postal_code'            => $omis_flds['ZIP5'],
     'postal_code_suffix'     => $omis_flds['ZIP4'],
     'country_id'             => 1228,
-    'state_province_id'      => 1031
+    'state_province_id'      => $aStates[$omis_flds['STATE']]
   );
   return $addr;
 } // create_civi_address()
