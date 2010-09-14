@@ -80,8 +80,9 @@
 	display: none;
 }
 
-/* Hide user dashboard link */
-#crm-container .crm-contact-dashboard {
+/* Hide user dashboard and user record links */
+#crm-container .crm-contact-dashboard,
+#crm-container .crm-contact-user-record {
 	display: none;
 }
 

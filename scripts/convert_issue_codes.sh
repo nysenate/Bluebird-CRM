@@ -7,6 +7,7 @@
 # Version: 1.1
 # Created: 2010-03-30
 # Revised: 2010-06-15
+# Revised: 2010-07-30 - add option to keep intermediate files
 #
 # Note: This script assumes that the first line of each OMIS export file
 #       contains the column headers.  It trims the first line automatically.
@@ -21,20 +22,34 @@ isscode_tags=issue_code_tags.txt
 isscode_table=issue_code_tab.tsv
 isscode_table_sorted=issue_code_tab.tsv.sorted
 
+keep_tempfiles=0
+
 
 usage() {
-  echo "Usage: $prog SDxxISS.TXT" >&2
+  echo "Usage: $prog [-k] SDxxISS.TXT" >&2
+  echo "  -k = keep intermediate processing files, otherwise delete them" >&2
 }
 
-if [ $# -ne 1 ]; then
+if [ $# -lt 1 -o $# -gt 2 ]; then
   usage
   exit 1
 fi
 
-infile="$1"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -k) keep_tempfiles=1 ;;
+    -*) echo "$prog: $1: Unknown option" >&2; usage; exit 1 ;;
+    *) infile="$1" ;;
+  esac
+  shift
+done
 
-if [ ! -r "$infile" ]; then
-  echo "$prog: $infile: File not found" >&2
+if [ ! "$infile" ]; then
+  echo "$prog: Issue code export file must be specified." >&2
+  usage
+  exit 1
+elif [ ! -r "$infile" ]; then
+  echo "$prog: $infile: File not found." >&2
   usage
   exit 1
 fi
@@ -106,6 +121,10 @@ sort -t"$fsep" -k4,4 $isscode_table > $isscode_table_sorted
 echo "Joining sorted issue code table to tag table..." >&2
 echo "KEY${fsep}ISSUECODE${fsep}UPDATED${fsep}ISSUEDESCRIPTION${fsep}CATEGORY${fsep}IS_TAG"
 join -t"$fsep" -1 4 -2 1 -o "1.1 1.2 1.3 1.4 1.5 2.2" $isscode_table_sorted $isscode_tags | sort -t"$fsep" -k1
+rc=$?
+
+if [ $keep_tempfiles -ne 1 ]; then
+  rm -f $issdesc_file $isscode_tags $isscode_table $isscode_table_sorted
+fi
 
 exit $?
-
