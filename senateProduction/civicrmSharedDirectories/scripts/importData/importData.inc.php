@@ -434,7 +434,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['birth_date'] =  formatDate($bday,'19');
 		$params['addressee_id'] = ($ctRow['TC1'] == 100) ? 4 : 1;
 		$params['addressee_custom'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : DBNULL;
-                $params['addressee_display'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST'] . ' ' . $aSuffixLookup[$ctRow['SUFFIX']]['suffix'];
+
+		$suffixWord =  $aSuffixLookup[$ctRow['SUFFIX']]['suffix'];
+		if ($suffixWord==null) $suffixWord='';
+
+                $params['addressee_display'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST'] . ' ' . $suffixWord;
                 $params['postal_greeting_id'] = 4;
 		if ($ctRow['FAM1']) {
                 	$params['postal_greeting_custom'] = "Dear ".$ctRow['FAM1'];
