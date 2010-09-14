@@ -23,10 +23,10 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="form-item">
+<div class="crm-block crm-form-block crm-printproductionexport-form-block">
 <fieldset>
 <legend>
-{ts}Label Contact(s){/ts}
+{ts}Print Production Export{/ts}
 </legend>
 <dl>
 <dt>{$form.label_id.label}</dt><dd>{$form.label_id.html}</dd>

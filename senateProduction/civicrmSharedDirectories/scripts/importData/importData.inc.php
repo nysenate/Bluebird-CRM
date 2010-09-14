@@ -342,13 +342,13 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 				//write out the contact
 		                if (!writeToFile($fout['contact'], $params))
-					break;
+					exit("i/o fail: contact");
 	
 		                //work address
 				$params = create_civi_address(++$addressID, $contactID, $ctRow, 2);
 
 		                if (!writeToFile($fout['address'], $params))
-					break;
+                                        exit("i/o fail: address");
 
 				//increase contactID for individual	
 				++$contactID;
@@ -358,8 +358,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 		$params['contact_id_a'] = $contactID;
 		                $params['contact_id_b'] = $orgID;
                 		$params['relationship_type_id'] = $aRelLookup['employeeOf'];
-		                writeToFile($fout['relationship'], $params);
-				
+		                if (!writeToFile($fout['relationship'], $params))
+                                        exit("i/o fail: relationship");				
 			}
 		}
 
@@ -412,10 +412,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['contact_type'] = 'Individual';
 		$params['external_identifier'] = $sourceDesc.$importID;
 		$params['first_name'] = $ctRow['FIRST']; 
-                $params['middle_name'] = $ctRow['MI']; 
+
+		$mi = trim($ctRow['MI']);
+		$mi = (strlen($mi)>0 && substr($mi,-1) != '.') ? $mi.='.' : $mi;
+
+                $params['middle_name'] = $mi; 
                 $params['last_name'] = $ctRow['LAST']; 
-                $params['sort_name'] = $ctRow['LAST'].', '.$ctRow['FIRST'] .' ' . $ctRow['MI']; 
-                $params['display_name'] = $ctRow['FIRST'].' '.$ctRow['MI'].' '.$ctRow['LAST']; 
+                $params['sort_name'] = $ctRow['LAST'].', '.$ctRow['FIRST'] .' ' . $mi; 
+                $params['display_name'] = $ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST']; 
 		switch ($ctRow['SEX']) {
 			case 'M': $params['gender_id'] = 2; break;
 			case 'F': $params['gender_id'] = 1; break;
@@ -428,7 +432,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['birth_date'] =  formatDate($bday,'19');
 		$params['addressee_id'] = ($ctRow['TC1'] == 100) ? 4 : 1;
 		$params['addressee_custom'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : DBNULL;
-                $params['addressee_display'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$ctRow['MI'].' '.$ctRow['LAST'] . ' ' . $aSuffixLookup[$ctRow['SUFFIX']];
+                $params['addressee_display'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST'] . ' ' . $aSuffixLookup[$ctRow['SUFFIX']]['suffix'];
                 $params['postal_greeting_id'] = 4;
 		if ($ctRow['FAM1']) {
                 	$params['postal_greeting_custom'] = "Dear ".$ctRow['FAM1'];
@@ -466,7 +470,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['household_name'] = DBNULL;
 
                 if (!writeToFile($fout['contact'], $params))
-			break;
+                      exit("i/o fail: contact");
 
 		if ($omis_ext) {
 			//concatenate custom fields into a note
@@ -492,14 +496,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 	$params['note'] = $nonOmis;
 
                 	if (!writeToFile($fout['note'], $params))
-				break;
-		}
+                             exit("i/o fail: note");
+}
 
 		//home address
 		$params = create_civi_address(++$addressID, $contactID, $ctRow, 1);
 
                 if (!writeToFile($fout['address'], $params))
-			break;
+                                        exit("i/o fail: address");
 
                 $params = array();
                 $params['entityID'] = $addressID;
@@ -514,10 +518,10 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['school_district_54'] = cleanData($ctRow['SCD']);
 		$params['new_york_city_council_55'] = DBNULL;
 		$params['neighborhood_56'] = DBNULL;
-		$params['last_import_57'] = DBNULL;
+		$params['last_import_57'] = date("Y-m-d H:i:s T");
 
                 if (!writeToFile($fout['district'], $params))
-			break;
+                       exit("i/o fail: district");
 
 		//non omis work address
                 if ($omis_ext) {
@@ -539,7 +543,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			'state_province_id'  => 1031);
 
                    if (!writeToFile($fout['address'], $params))
-			break;
+                                        exit("i/o fail: address");
 		}
 
 		//home
@@ -552,7 +556,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                                );
 
                   if (!writeToFile($fout['phone'], $params))
-			break;
+                                        exit("i/o fail: phone");
 		}
 
 		//work phone
@@ -570,7 +574,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
        	                );
 			
                 	if (!writeToFile($fout['phone'], $params))
-				break;
+                                        exit("i/o fail: phone");
 		}
 
                 //mobile phone
@@ -584,7 +588,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                         );
 
                         if (!writeToFile($fout['phone'], $params))
-				break;
+                                        exit("i/o fail: phone");
                 }
 
                 //fax home
@@ -598,7 +602,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                         );
 
                         if (!writeToFile($fout['phone'], $params))
-				break;
+                                        exit("i/o fail: phone");
                 }
 
                 //fax work 
@@ -625,7 +629,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                         );
 
                         if (!writeToFile($fout['email'], $params))
-				break;
+                                        exit("i/o fail: email");
                 }
 
 		//email from non-omis data
@@ -638,7 +642,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                         );
 
                         if (!writeToFile($fout['email'], $params))
-				break;
+                                        exit("i/o fail: email");
 		}
 
 		//create a single note of all the omis data
@@ -655,7 +659,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                 $params['entity_id'] = $contactID;
                 $params['note'] = $omisData;
                 if (!writeToFile($fout['note'], $params))
-			break;
+                                        exit("i/o fail: note");
                 unset($params);
 
 		if (intval($cCounter/1000) == $cCounter/1000.0) {
@@ -668,6 +672,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		}
 
 		//create notes 
+                while ($ntRow && $ntRow['KEY']<$importID) $ntRow = getLineAsAssocArray($infiles['notes'], DELIM, $omis_nt_fields);
 		while ($ntRow && $ntRow['KEY'] == $importID) {
 			//set note params
 			$params = array();
@@ -688,7 +693,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			$params['note'] = $notetext;
 
 	                if (!writeToFile($fout['note'], $params))
-				break;
+                                        exit("i/o fail: note");
 			unset($params);
 
 			//get another note
@@ -698,6 +703,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		}
 
 		//create activities from cases
+                while ($csRow && $csRow['KEY']<$importID) $csRow = getLineAsAssocArray($infiles['cases'], DELIM, $omis_cs_fields);
 		while ($csRow && $csRow['KEY'] == $importID) {
                         //set params
                         $params = array();
@@ -797,11 +803,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			}
 
                         if (!writeToFile($fout['activity'], $params))
-				break;
+                                        exit("i/o fail: activity");
                         if (!writeToFile($fout['activitytarget'], $targParams))
-				break;
+                                        exit("i/o fail: activitytarget");
                         if (!writeToFile($fout['activitycustom'], $custParams))
-				break;
+                                        exit("i/o fail: activitycustom");
                         unset($params);
                         unset($custParams);
 
@@ -818,7 +824,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 		$tstamp = null;
 		$note='';
 
+		while ($isRow && $isRow['KEY']<$importID) $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
 		while ($isRow && $isRow['KEY'] == $importID) {
+
 			$bIssue = true;
 
 			//pass these params to the tag writer since it has to recursively select the tags
@@ -1052,16 +1060,20 @@ print_r("not finding tag $tag\n");
 
 		//remember the new tag for reuse
 		$aFreeformTags[$tag] = $oTag->id;
-//print_r("added $tag {$oTag->id}\n");
+
+		//print_r("added $tag {$oTag->id}\n");
 		//print_r($oTag);
 	}
 
         $params = array();
         $params['entity_table'] = 'civicrm_contact';
         $params['entity_id'] = $id;
-        $params['tag_id'] = isset($aFreeformTags[$tag]) ? $aFreeformTags[$tag] : $aTags[$tag]['id'];
 
-        writeToFile($f, $params);	
+	if (isset($aFreeformTags[$tag])) {
+
+	        $params['tag_id'] = $aFreeformTags[$tag]['id'];
+	        writeToFile($f, $params);
+	}
 } // writeFreeformTag()
 
 
@@ -1073,7 +1085,8 @@ function writeRecursiveTags($f, $id, $tag)
 
 	//get master tag list, loads into global var
 	if (!isset($aTags)) getTags();
-
+//print_r($aTags);
+//print_r($aTagsByID);
 	//check the tag exists
 	if (!isset($aTags[$tag])) {
 //		cLog(0,'ERROR', "TAG NOT FOUND: ".$params['tag']);
@@ -1093,7 +1106,7 @@ function writeRecursiveTags($f, $id, $tag)
 	//call this function again until we've gone up the chain.
 	if ($aTags[$tag]['parent_id']>0) {
 	
-		writeRecursiveTags($f,$id,$aTagsByID[$aTags[$tag]['parent_id']]);
+		writeRecursiveTags($f,$id,$aTagsByID[$aTags[$tag]['parent_id']]['name']);
 	}
 } // writeRecursiveTags()
 
