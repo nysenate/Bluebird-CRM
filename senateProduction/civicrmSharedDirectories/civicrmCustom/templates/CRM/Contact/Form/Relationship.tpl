@@ -187,7 +187,7 @@
                                     <th>{ts}Name{/ts}</th>
                                 {if $isEmployeeOf}<th id="nosort" class="current_employer">{ts}Current Employer?{/ts}</th> 
                                 {elseif $isEmployerOf}<th id="nosort" class="current_employer">{ts}Current Employee?{/ts}</th>{/if}
-                                    <!--<th>{ts}Street Address{/ts}</th>-->
+                                    <th>{ts}Street Address{/ts}</th>
                                     <th>{ts}City{/ts}</th>
                                     <th>{ts}State{/ts}</th>
                                     <th>{ts}Email{/ts}</th>
@@ -203,7 +203,7 @@
                                     <td>{$row.type} {$row.name}</td>
                                     {if $isEmployeeOf}<td>{$form.employee_of[$row.id].html}</td>
                                     {elseif $isEmployerOf}<td>{$form.employer_of[$row.id].html}</td>{/if}
-                                    <!--<td>{$row.street_address}</td>-->
+                                    <td>{$row.street_address}</td>
                                     <td>{$row.city}</td>
                                     <td>{$row.state}</td>
                                     <td>{$row.email}</td>
