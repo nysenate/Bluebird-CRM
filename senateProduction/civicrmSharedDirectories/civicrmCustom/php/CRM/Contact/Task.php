@@ -64,8 +64,8 @@ class CRM_Contact_Task {
         PRINT_FOR_CONTACTS    =    19,
         EMAIL_UNHOLD          =    22,
         RESTORE               =    23,
-        DELETE_PERMANENTLY    =    24;
-
+        DELETE_PERMANENTLY    =    24,
+	EXPORT_PRINTPROD      =   100;
 
     /**
      * the task array
@@ -139,6 +139,9 @@ class CRM_Contact_Task {
                                                   'result' => true ),
                                   22    => array( 'title'  => ts('Unhold Emails'),
                                                   'class'  => 'CRM_Contact_Form_Task_Unhold',
+                                                  'result' => true ),
+                                  100    => array( 'title'  => ts('Export For Print Production'),
+                                                  'class'  => 'CRM_Contact_Form_Task_ExportPrintProduction',
                                                   'result' => true ),
                                   self::RESTORE => array(
                                       'title'  => ts('Restore Contacts'),
