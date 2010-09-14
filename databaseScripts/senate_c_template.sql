@@ -1,8 +1,8 @@
--- MySQL dump 10.11
+-- MySQL dump 10.13  Distrib 5.1.41, for debian-linux-gnu (x86_64)
 --
--- Host: cividb01    Database: senate_c_template
+-- Host: crmdbprod    Database: senate_c_template
 -- ------------------------------------------------------
--- Server version	5.0.75-0ubuntu10.3-log
+-- Server version	5.1.41-3ubuntu12.6
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -20,24 +20,24 @@
 --
 
 DROP TABLE IF EXISTS `civicrm_acl`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_acl` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique table ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'ACL Name.',
-  `deny` tinyint(4) NOT NULL default '0' COMMENT 'Is this ACL entry Allow  (0) or Deny (1) ?',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Table of the object possessing this ACL entry (Contact, Group, or ACL Group)',
-  `entity_id` int(10) unsigned default NULL COMMENT 'ID of the object possessing this ACL',
-  `operation` enum('All','View','Edit','Create','Delete','Grant','Revoke','Search') collate utf8_unicode_ci NOT NULL COMMENT 'What operation does this ACL entry control?',
-  `object_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'The table of the object controlled by this ACL entry',
-  `object_id` int(10) unsigned default NULL COMMENT 'The ID of the object controlled by this ACL entry',
-  `acl_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'If this is a grant/revoke entry, what table are we granting?',
-  `acl_id` int(10) unsigned default NULL COMMENT 'ID of the ACL or ACL group being granted/revoked',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'ACL Name.',
+  `deny` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Is this ACL entry Allow  (0) or Deny (1) ?',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Table of the object possessing this ACL entry (Contact, Group, or ACL Group)',
+  `entity_id` int(10) unsigned DEFAULT NULL COMMENT 'ID of the object possessing this ACL',
+  `operation` enum('All','View','Edit','Create','Delete','Grant','Revoke','Search') COLLATE utf8_unicode_ci NOT NULL COMMENT 'What operation does this ACL entry control?',
+  `object_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The table of the object controlled by this ACL entry',
+  `object_id` int(10) unsigned DEFAULT NULL COMMENT 'The ID of the object controlled by this ACL entry',
+  `acl_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'If this is a grant/revoke entry, what table are we granting?',
+  `acl_id` int(10) unsigned DEFAULT NULL COMMENT 'ID of the ACL or ACL group being granted/revoked',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  PRIMARY KEY (`id`),
   KEY `index_acl_id` (`acl_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_acl`
@@ -53,20 +53,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_acl_cache`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_acl_cache` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique table ID',
-  `contact_id` int(10) unsigned default NULL COMMENT 'Foreign Key to Contact',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'Foreign Key to Contact',
   `acl_id` int(10) unsigned NOT NULL COMMENT 'Foreign Key to ACL',
-  `modified_date` date default NULL COMMENT 'When was this cache entry last modified',
-  PRIMARY KEY  (`id`),
+  `modified_date` date DEFAULT NULL COMMENT 'When was this cache entry last modified',
+  PRIMARY KEY (`id`),
   KEY `index_acl_id` (`acl_id`),
   KEY `FK_civicrm_acl_cache_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_acl_cache_acl_id` FOREIGN KEY (`acl_id`) REFERENCES `civicrm_acl` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_acl_cache_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_acl_cache`
@@ -82,20 +82,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_acl_contact_cache`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_acl_contact_cache` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary key',
-  `user_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_contact (could be null for anon user)',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `user_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact (could be null for anon user)',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_contact',
-  `operation` enum('All','View','Edit','Create','Delete','Grant','Revoke') collate utf8_unicode_ci NOT NULL COMMENT 'What operation does this user have permission on?',
-  PRIMARY KEY  (`id`),
+  `operation` enum('All','View','Edit','Create','Delete','Grant','Revoke') COLLATE utf8_unicode_ci NOT NULL COMMENT 'What operation does this user have permission on?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_user_contact_operation` (`user_id`,`contact_id`,`operation`),
   KEY `FK_civicrm_acl_contact_cache_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_acl_contact_cache_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_acl_contact_cache_user_id` FOREIGN KEY (`user_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_acl_contact_cache`
@@ -111,19 +111,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_acl_entity_role`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_acl_entity_role` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique table ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
   `acl_role_id` int(10) unsigned NOT NULL COMMENT 'Foreign Key to ACL Role (which is an option value pair and hence an implicit FK)',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Table of the object joined to the ACL Role (Contact or Group)',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Table of the object joined to the ACL Role (Contact or Group)',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'ID of the group/contact object being joined',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  PRIMARY KEY  (`id`),
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  PRIMARY KEY (`id`),
   KEY `index_role` (`acl_role_id`),
   KEY `index_entity` (`entity_table`,`entity_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_acl_entity_role`
@@ -139,31 +139,31 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_activity`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_activity` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique  Other Activity ID',
-  `source_contact_id` int(10) unsigned default NULL COMMENT 'Contact ID of the person scheduling or logging this Activity. Usually the authenticated user.',
-  `source_record_id` int(10) unsigned default NULL COMMENT 'Artificial FK to original transaction (e.g. contribution) IF it is not an Activity. Table can be figured out through activity_type_id, and further through component registry.',
-  `activity_type_id` int(10) unsigned NOT NULL default '1' COMMENT 'FK to civicrm_option_value.id, that has to be valid, registered activity type.',
-  `subject` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'The subject/purpose/short description of the activity.',
-  `activity_date_time` datetime default NULL COMMENT 'Date and time this activity is scheduled to occur. Formerly named scheduled_date_time.',
-  `duration` int(10) unsigned default NULL COMMENT 'Planned or actual duration of activity expressed in minutes. Conglomerate of former duration_hours and duration_minutes.',
-  `location` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Location of the activity (optional, open text).',
-  `phone_id` int(10) unsigned default NULL COMMENT 'Phone ID of the number called (optional - used if an existing phone number is selected).',
-  `phone_number` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Phone number in case the number does not exist in the civicrm_phone table.',
-  `details` text collate utf8_unicode_ci COMMENT 'Details about the activity (agenda, notes, etc).',
-  `status_id` int(10) unsigned default NULL COMMENT 'ID of the status this activity is currently in. Foreign key to civicrm_option_value.',
-  `priority_id` int(10) unsigned default NULL COMMENT 'ID of the priority given to this activity. Foreign key to civicrm_option_value.',
-  `parent_id` int(10) unsigned default NULL COMMENT 'Parent meeting ID (if this is a follow-up item). This is not currently implemented',
-  `is_test` tinyint(4) default '0',
-  `medium_id` int(10) unsigned default NULL COMMENT 'Activity Medium, Implicit FK to civicrm_option_value where option_group = encounter_medium.',
-  `is_auto` tinyint(4) default '0',
-  `relationship_id` int(10) unsigned default NULL COMMENT 'FK to Relationship ID',
-  `is_current_revision` tinyint(4) default '1',
-  `original_id` int(10) unsigned default NULL COMMENT 'Activity ID of the first activity record in versioning chain.',
-  `is_deleted` tinyint(4) default '0',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique  Other Activity ID',
+  `source_contact_id` int(10) unsigned DEFAULT NULL COMMENT 'Contact ID of the person scheduling or logging this Activity. Usually the authenticated user.',
+  `source_record_id` int(10) unsigned DEFAULT NULL COMMENT 'Artificial FK to original transaction (e.g. contribution) IF it is not an Activity. Table can be figured out through activity_type_id, and further through component registry.',
+  `activity_type_id` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'FK to civicrm_option_value.id, that has to be valid, registered activity type.',
+  `subject` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The subject/purpose/short description of the activity.',
+  `activity_date_time` datetime DEFAULT NULL COMMENT 'Date and time this activity is scheduled to occur. Formerly named scheduled_date_time.',
+  `duration` int(10) unsigned DEFAULT NULL COMMENT 'Planned or actual duration of activity expressed in minutes. Conglomerate of former duration_hours and duration_minutes.',
+  `location` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Location of the activity (optional, open text).',
+  `phone_id` int(10) unsigned DEFAULT NULL COMMENT 'Phone ID of the number called (optional - used if an existing phone number is selected).',
+  `phone_number` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Phone number in case the number does not exist in the civicrm_phone table.',
+  `details` text COLLATE utf8_unicode_ci COMMENT 'Details about the activity (agenda, notes, etc).',
+  `status_id` int(10) unsigned DEFAULT NULL COMMENT 'ID of the status this activity is currently in. Foreign key to civicrm_option_value.',
+  `priority_id` int(10) unsigned DEFAULT NULL COMMENT 'ID of the priority given to this activity. Foreign key to civicrm_option_value.',
+  `parent_id` int(10) unsigned DEFAULT NULL COMMENT 'Parent meeting ID (if this is a follow-up item). This is not currently implemented',
+  `is_test` tinyint(4) DEFAULT '0',
+  `medium_id` int(10) unsigned DEFAULT NULL COMMENT 'Activity Medium, Implicit FK to civicrm_option_value where option_group = encounter_medium.',
+  `is_auto` tinyint(4) DEFAULT '0',
+  `relationship_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Relationship ID',
+  `is_current_revision` tinyint(4) DEFAULT '1',
+  `original_id` int(10) unsigned DEFAULT NULL COMMENT 'Activity ID of the first activity record in versioning chain.',
+  `is_deleted` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_activity_source_contact_id` (`source_contact_id`),
   KEY `FK_civicrm_activity_phone_id` (`phone_id`),
   KEY `FK_civicrm_activity_parent_id` (`parent_id`),
@@ -175,7 +175,7 @@ CREATE TABLE `civicrm_activity` (
   CONSTRAINT `FK_civicrm_activity_relationship_id` FOREIGN KEY (`relationship_id`) REFERENCES `civicrm_relationship` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_activity_source_contact_id` FOREIGN KEY (`source_contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_activity`
@@ -183,7 +183,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_activity` WRITE;
 /*!40000 ALTER TABLE `civicrm_activity` DISABLE KEYS */;
-INSERT INTO `civicrm_activity` VALUES (1,1,NULL,1,NULL,'2010-08-25 13:20:00',NULL,NULL,NULL,NULL,NULL,1,2,NULL,0,NULL,0,NULL,1,NULL,0);
 /*!40000 ALTER TABLE `civicrm_activity` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -192,19 +191,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_activity_assignment`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_activity_assignment` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Activity assignment id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Activity assignment id',
   `activity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the activity for this assignment.',
   `assignee_contact_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the contact for this assignment.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_activity_assignee_contact_id` (`assignee_contact_id`,`activity_id`),
   KEY `FK_civicrm_activity_assignment_activity_id` (`activity_id`),
   CONSTRAINT `FK_civicrm_activity_assignment_activity_id` FOREIGN KEY (`activity_id`) REFERENCES `civicrm_activity` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_activity_assignment_assignee_contact_id` FOREIGN KEY (`assignee_contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_activity_assignment`
@@ -220,19 +219,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_activity_target`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_activity_target` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Activity target id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Activity target id',
   `activity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the activity for this target.',
   `target_contact_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the contact for this target.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_activity_target_contact_id` (`target_contact_id`,`activity_id`),
   KEY `FK_civicrm_activity_target_activity_id` (`activity_id`),
   CONSTRAINT `FK_civicrm_activity_target_activity_id` FOREIGN KEY (`activity_id`) REFERENCES `civicrm_activity` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_activity_target_target_contact_id` FOREIGN KEY (`target_contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_activity_target`
@@ -240,7 +239,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_activity_target` WRITE;
 /*!40000 ALTER TABLE `civicrm_activity_target` DISABLE KEYS */;
-INSERT INTO `civicrm_activity_target` VALUES (1,1,1);
 /*!40000 ALTER TABLE `civicrm_activity_target` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -249,37 +247,37 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_address`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_address` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Address ID',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `location_type_id` int(10) unsigned default NULL COMMENT 'Which Location does this address belong to.',
-  `is_primary` tinyint(4) default '0' COMMENT 'Is this the primary address.',
-  `is_billing` tinyint(4) default '0' COMMENT 'Is this the billing address.',
-  `street_address` varchar(96) collate utf8_unicode_ci default NULL COMMENT 'Concatenation of all routable street address components (prefix, street number, street name, suffix, unit number OR P.O. Box). Apps should be able to determine physical location with this data (for mapping, mail delivery, etc.).',
-  `street_number` int(11) default NULL COMMENT 'Numeric portion of address number on the street, e.g. For 112A Main St, the street_number = 112.',
-  `street_number_suffix` varchar(8) collate utf8_unicode_ci default NULL COMMENT 'Non-numeric portion of address number on the street, e.g. For 112A Main St, the street_number_suffix = A',
-  `street_number_predirectional` varchar(8) collate utf8_unicode_ci default NULL COMMENT 'Directional prefix, e.g. SE Main St, SE is the prefix.',
-  `street_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Actual street name, excluding St, Dr, Rd, Ave, e.g. For 112 Main St, the street_name = Main.',
-  `street_type` varchar(8) collate utf8_unicode_ci default NULL COMMENT 'St, Rd, Dr, etc.',
-  `street_number_postdirectional` varchar(8) collate utf8_unicode_ci default NULL COMMENT 'Directional prefix, e.g. Main St S, S is the suffix.',
-  `street_unit` varchar(16) collate utf8_unicode_ci default NULL COMMENT 'Secondary unit designator, e.g. Apt 3 or Unit # 14, or Bldg 1200',
-  `supplemental_address_1` varchar(96) collate utf8_unicode_ci default NULL COMMENT 'Supplemental Address Information, Line 1',
-  `supplemental_address_2` varchar(96) collate utf8_unicode_ci default NULL COMMENT 'Supplemental Address Information, Line 2',
-  `supplemental_address_3` varchar(96) collate utf8_unicode_ci default NULL COMMENT 'Supplemental Address Information, Line 3',
-  `city` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'City, Town or Village Name.',
-  `county_id` int(10) unsigned default NULL COMMENT 'Which County does this address belong to.',
-  `state_province_id` int(10) unsigned default NULL COMMENT 'Which State_Province does this address belong to.',
-  `postal_code_suffix` varchar(12) collate utf8_unicode_ci default NULL COMMENT 'Store the suffix, like the +4 part in the USPS system.',
-  `postal_code` varchar(12) collate utf8_unicode_ci default NULL COMMENT 'Store both US (zip5) AND international postal codes. App is responsible for country/region appropriate validation.',
-  `usps_adc` varchar(32) collate utf8_unicode_ci default NULL COMMENT 'USPS Bulk mailing code.',
-  `country_id` int(10) unsigned default NULL COMMENT 'Which Country does this address belong to.',
-  `geo_code_1` double default NULL COMMENT 'Latitude',
-  `geo_code_2` double default NULL COMMENT 'Longitude',
-  `timezone` varchar(8) collate utf8_unicode_ci default NULL COMMENT 'Timezone expressed as a UTC offset - e.g. United States CST would be written as "UTC-6".',
-  `name` varchar(255) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Address ID',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `location_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Location does this address belong to.',
+  `is_primary` tinyint(4) DEFAULT '0' COMMENT 'Is this the primary address.',
+  `is_billing` tinyint(4) DEFAULT '0' COMMENT 'Is this the billing address.',
+  `street_address` varchar(96) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Concatenation of all routable street address components (prefix, street number, street name, suffix, unit number OR P.O. Box). Apps should be able to determine physical location with this data (for mapping, mail delivery, etc.).',
+  `street_number` int(11) DEFAULT NULL COMMENT 'Numeric portion of address number on the street, e.g. For 112A Main St, the street_number = 112.',
+  `street_number_suffix` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Non-numeric portion of address number on the street, e.g. For 112A Main St, the street_number_suffix = A',
+  `street_number_predirectional` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Directional prefix, e.g. SE Main St, SE is the prefix.',
+  `street_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Actual street name, excluding St, Dr, Rd, Ave, e.g. For 112 Main St, the street_name = Main.',
+  `street_type` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'St, Rd, Dr, etc.',
+  `street_number_postdirectional` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Directional prefix, e.g. Main St S, S is the suffix.',
+  `street_unit` varchar(16) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Secondary unit designator, e.g. Apt 3 or Unit # 14, or Bldg 1200',
+  `supplemental_address_1` varchar(96) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Supplemental Address Information, Line 1',
+  `supplemental_address_2` varchar(96) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Supplemental Address Information, Line 2',
+  `supplemental_address_3` varchar(96) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Supplemental Address Information, Line 3',
+  `city` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'City, Town or Village Name.',
+  `county_id` int(10) unsigned DEFAULT NULL COMMENT 'Which County does this address belong to.',
+  `state_province_id` int(10) unsigned DEFAULT NULL COMMENT 'Which State_Province does this address belong to.',
+  `postal_code_suffix` varchar(12) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Store the suffix, like the +4 part in the USPS system.',
+  `postal_code` varchar(12) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Store both US (zip5) AND international postal codes. App is responsible for country/region appropriate validation.',
+  `usps_adc` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'USPS Bulk mailing code.',
+  `country_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Country does this address belong to.',
+  `geo_code_1` double DEFAULT NULL COMMENT 'Latitude',
+  `geo_code_2` double DEFAULT NULL COMMENT 'Longitude',
+  `timezone` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Timezone expressed as a UTC offset - e.g. United States CST would be written as "UTC-6".',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   KEY `index_location_type` (`location_type_id`),
   KEY `index_is_primary` (`is_primary`),
   KEY `index_is_billing` (`is_billing`),
@@ -299,7 +297,7 @@ CREATE TABLE `civicrm_address` (
   CONSTRAINT `FK_civicrm_address_county_id` FOREIGN KEY (`county_id`) REFERENCES `civicrm_county` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_address_state_province_id` FOREIGN KEY (`state_province_id`) REFERENCES `civicrm_state_province` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_address`
@@ -307,7 +305,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_address` WRITE;
 /*!40000 ALTER TABLE `civicrm_address` DISABLE KEYS */;
-INSERT INTO `civicrm_address` VALUES (1,NULL,1,1,1,'15S El Camino Way E',14,'S',NULL,'El Camino','Way',NULL,NULL,NULL,NULL,NULL,'Collinsville',NULL,1006,NULL,'6022',NULL,1228,41.8328,-72.9253,NULL,NULL),(2,NULL,1,0,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1031,NULL,NULL,NULL,1228,NULL,NULL,NULL,NULL),(3,4,1,1,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1031,NULL,NULL,NULL,1228,40.7142691,-74.0059729,NULL,NULL);
 /*!40000 ALTER TABLE `civicrm_address` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -316,14 +313,14 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_address_format`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_address_format` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Address Format Id',
-  `format` text collate utf8_unicode_ci COMMENT 'The format of an address',
-  PRIMARY KEY  (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Address Format Id',
+  `format` text COLLATE utf8_unicode_ci COMMENT 'The format of an address',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_address_format`
@@ -339,22 +336,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_cache`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_cache` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `group_name` varchar(32) collate utf8_unicode_ci NOT NULL COMMENT 'group name for cache element, useful in cleaning cache elements',
-  `path` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Unique path name for cache element',
-  `data` longtext collate utf8_unicode_ci COMMENT 'data associated with this path',
-  `component_id` int(10) unsigned default NULL COMMENT 'Component that this menu item belongs to',
-  `created_date` datetime default NULL COMMENT 'When was the cache item created',
-  `expired_date` datetime default NULL COMMENT 'When should the cache item expire',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(32) COLLATE utf8_unicode_ci NOT NULL COMMENT 'group name for cache element, useful in cleaning cache elements',
+  `path` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unique path name for cache element',
+  `data` longtext COLLATE utf8_unicode_ci COMMENT 'data associated with this path',
+  `component_id` int(10) unsigned DEFAULT NULL COMMENT 'Component that this menu item belongs to',
+  `created_date` datetime DEFAULT NULL COMMENT 'When was the cache item created',
+  `expired_date` datetime DEFAULT NULL COMMENT 'When should the cache item expire',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_group_path` (`group_name`,`path`),
   KEY `FK_civicrm_cache_component_id` (`component_id`),
   CONSTRAINT `FK_civicrm_cache_component_id` FOREIGN KEY (`component_id`) REFERENCES `civicrm_component` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+) ENGINE=InnoDB AUTO_INCREMENT=286 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_cache`
@@ -370,20 +367,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_case`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_case` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Case ID',
-  `case_type_id` varchar(128) collate utf8_unicode_ci NOT NULL COMMENT 'Id of first case category.',
-  `subject` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Short name of the case.',
-  `start_date` date default NULL COMMENT 'Date on which given case starts.',
-  `end_date` date default NULL COMMENT 'Date on which given case ends.',
-  `details` text collate utf8_unicode_ci COMMENT 'Details about the meeting (agenda, notes, etc).',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Case ID',
+  `case_type_id` varchar(128) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Id of first case category.',
+  `subject` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Short name of the case.',
+  `start_date` date DEFAULT NULL COMMENT 'Date on which given case starts.',
+  `end_date` date DEFAULT NULL COMMENT 'Date on which given case ends.',
+  `details` text COLLATE utf8_unicode_ci COMMENT 'Details about the meeting (agenda, notes, etc).',
   `status_id` int(10) unsigned NOT NULL COMMENT 'Id of case status.',
-  `is_deleted` tinyint(4) default '0',
-  PRIMARY KEY  (`id`)
+  `is_deleted` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_case`
@@ -399,19 +396,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_case_activity`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_case_activity` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique case-activity association id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique case-activity association id',
   `case_id` int(10) unsigned NOT NULL COMMENT 'Case ID of case-activity association.',
   `activity_id` int(10) unsigned NOT NULL COMMENT 'Activity ID of case-activity association.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `UI_case_activity_id` (`case_id`,`activity_id`),
   KEY `FK_civicrm_case_activity_activity_id` (`activity_id`),
   CONSTRAINT `FK_civicrm_case_activity_activity_id` FOREIGN KEY (`activity_id`) REFERENCES `civicrm_activity` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_case_activity_case_id` FOREIGN KEY (`case_id`) REFERENCES `civicrm_case` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_case_activity`
@@ -427,19 +424,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_case_contact`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_case_contact` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique case-contact association id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique case-contact association id',
   `case_id` int(10) unsigned NOT NULL COMMENT 'Case ID of case-contact association.',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'Contact ID of contact record given case belongs to.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `UI_case_contact_id` (`case_id`,`contact_id`),
   KEY `FK_civicrm_case_contact_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_case_contact_case_id` FOREIGN KEY (`case_id`) REFERENCES `civicrm_case` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_case_contact_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_case_contact`
@@ -455,15 +452,15 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_component`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_component` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Component ID',
-  `name` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Name of the component.',
-  `namespace` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Path to components main directory in a form of a class\nnamespace.',
-  PRIMARY KEY  (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Component ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of the component.',
+  `namespace` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Path to components main directory in a form of a class\nnamespace.',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_component`
@@ -480,59 +477,59 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contact`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contact` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Contact ID',
-  `contact_type` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Type of Contact.',
-  `contact_sub_type` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'May be used to over-ride contact view and edit templates.',
-  `do_not_email` tinyint(4) default '0',
-  `do_not_phone` tinyint(4) default '0',
-  `do_not_mail` tinyint(4) default '0',
-  `do_not_sms` tinyint(4) default '0',
-  `do_not_trade` tinyint(4) default '0',
-  `is_opt_out` tinyint(4) NOT NULL default '0' COMMENT 'Has the contact opted out from receiving all bulk email from the organization or site domain?',
-  `legal_identifier` varchar(32) collate utf8_unicode_ci default NULL COMMENT 'May be used for SSN, EIN/TIN, Household ID (census) or other applicable unique legal/government ID.',
-  `external_identifier` varchar(32) collate utf8_unicode_ci default NULL COMMENT 'Unique trusted external ID (generally from a legacy app/datasource). Particularly useful for deduping operations.',
-  `sort_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Name used for sorting different contact types',
-  `display_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Formatted name representing preferred format for display/print/other output.',
-  `nick_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Nick Name.',
-  `legal_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Legal Name.',
-  `image_URL` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'optional URL for preferred image (photo, logo, etc.) to display for this contact.',
-  `preferred_communication_method` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'What is the preferred mode of communication.',
-  `preferred_language` varchar(5) collate utf8_unicode_ci default NULL COMMENT 'Which language is preferred for communication. FK to languages in civicrm_option_value.',
-  `preferred_mail_format` enum('Text','HTML','Both') collate utf8_unicode_ci default 'Both' COMMENT 'What is the preferred mode of sending an email.',
-  `hash` varchar(32) collate utf8_unicode_ci default NULL COMMENT 'Key for validating requests related to this contact.',
-  `api_key` varchar(32) collate utf8_unicode_ci default NULL COMMENT 'API Key for validating requests related to this contact.',
-  `source` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'where contact come from, e.g. import, donate module insert...',
-  `first_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'First Name.',
-  `middle_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Middle Name.',
-  `last_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Last Name.',
-  `prefix_id` int(10) unsigned default NULL COMMENT 'Prefix or Title for name (Ms, Mr...). FK to prefix ID',
-  `suffix_id` int(10) unsigned default NULL COMMENT 'Suffix for name (Jr, Sr...). FK to suffix ID',
-  `email_greeting_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_option_value.id, that has to be valid registered Email Greeting.',
-  `email_greeting_custom` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Custom Email Greeting.',
-  `email_greeting_display` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Cache Email Greeting.',
-  `postal_greeting_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_option_value.id, that has to be valid registered Postal Greeting.',
-  `postal_greeting_custom` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Custom Postal greeting.',
-  `postal_greeting_display` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Cache Postal greeting.',
-  `addressee_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_option_value.id, that has to be valid registered Addressee.',
-  `addressee_custom` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Custom Addressee.',
-  `addressee_display` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Cache Addressee.',
-  `job_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Job Title',
-  `gender_id` int(10) unsigned default NULL COMMENT 'FK to gender ID',
-  `birth_date` date default NULL COMMENT 'Date of birth',
-  `is_deceased` tinyint(4) default '0',
-  `deceased_date` date default NULL COMMENT 'Date of deceased',
-  `mail_to_household_id` int(10) unsigned default NULL COMMENT 'OPTIONAL FK to civicrm_contact_household record. If NOT NULL, direct mail communications to household rather than individual location.',
-  `household_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Household Name.',
-  `primary_contact_id` int(10) unsigned default NULL COMMENT 'Optional FK to Primary Contact for this household.',
-  `organization_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Organization Name.',
-  `sic_code` varchar(8) collate utf8_unicode_ci default NULL COMMENT 'Standard Industry Classification Code.',
-  `user_unique_id` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'the OpenID (or OpenID-style http://username.domain/) unique identifier for this contact mainly used for logging in to CiviCRM',
-  `employer_id` int(10) unsigned default NULL COMMENT 'OPTIONAL FK to civicrm_contact record.',
-  `is_deleted` tinyint(4) NOT NULL default '0',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Contact ID',
+  `contact_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Type of Contact.',
+  `contact_sub_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'May be used to over-ride contact view and edit templates.',
+  `do_not_email` tinyint(4) DEFAULT '0',
+  `do_not_phone` tinyint(4) DEFAULT '0',
+  `do_not_mail` tinyint(4) DEFAULT '0',
+  `do_not_sms` tinyint(4) DEFAULT '0',
+  `do_not_trade` tinyint(4) DEFAULT '0',
+  `is_opt_out` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Has the contact opted out from receiving all bulk email from the organization or site domain?',
+  `legal_identifier` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'May be used for SSN, EIN/TIN, Household ID (census) or other applicable unique legal/government ID.',
+  `external_identifier` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unique trusted external ID (generally from a legacy app/datasource). Particularly useful for deduping operations.',
+  `sort_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name used for sorting different contact types',
+  `display_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Formatted name representing preferred format for display/print/other output.',
+  `nick_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Nick Name.',
+  `legal_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Legal Name.',
+  `image_URL` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'optional URL for preferred image (photo, logo, etc.) to display for this contact.',
+  `preferred_communication_method` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'What is the preferred mode of communication.',
+  `preferred_language` varchar(5) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Which language is preferred for communication. FK to languages in civicrm_option_value.',
+  `preferred_mail_format` enum('Text','HTML','Both') COLLATE utf8_unicode_ci DEFAULT 'Both' COMMENT 'What is the preferred mode of sending an email.',
+  `hash` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Key for validating requests related to this contact.',
+  `api_key` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'API Key for validating requests related to this contact.',
+  `source` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'where contact come from, e.g. import, donate module insert...',
+  `first_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'First Name.',
+  `middle_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Middle Name.',
+  `last_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Last Name.',
+  `prefix_id` int(10) unsigned DEFAULT NULL COMMENT 'Prefix or Title for name (Ms, Mr...). FK to prefix ID',
+  `suffix_id` int(10) unsigned DEFAULT NULL COMMENT 'Suffix for name (Jr, Sr...). FK to suffix ID',
+  `email_greeting_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_option_value.id, that has to be valid registered Email Greeting.',
+  `email_greeting_custom` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Custom Email Greeting.',
+  `email_greeting_display` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Cache Email Greeting.',
+  `postal_greeting_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_option_value.id, that has to be valid registered Postal Greeting.',
+  `postal_greeting_custom` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Custom Postal greeting.',
+  `postal_greeting_display` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Cache Postal greeting.',
+  `addressee_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_option_value.id, that has to be valid registered Addressee.',
+  `addressee_custom` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Custom Addressee.',
+  `addressee_display` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Cache Addressee.',
+  `job_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Job Title',
+  `gender_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to gender ID',
+  `birth_date` date DEFAULT NULL COMMENT 'Date of birth',
+  `is_deceased` tinyint(4) DEFAULT '0',
+  `deceased_date` date DEFAULT NULL COMMENT 'Date of deceased',
+  `mail_to_household_id` int(10) unsigned DEFAULT NULL COMMENT 'OPTIONAL FK to civicrm_contact_household record. If NOT NULL, direct mail communications to household rather than individual location.',
+  `household_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Household Name.',
+  `primary_contact_id` int(10) unsigned DEFAULT NULL COMMENT 'Optional FK to Primary Contact for this household.',
+  `organization_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Organization Name.',
+  `sic_code` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Standard Industry Classification Code.',
+  `user_unique_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'the OpenID (or OpenID-style http://username.domain/) unique identifier for this contact mainly used for logging in to CiviCRM',
+  `employer_id` int(10) unsigned DEFAULT NULL COMMENT 'OPTIONAL FK to civicrm_contact record.',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_external_identifier` (`external_identifier`),
   KEY `index_contact_type` (`contact_type`),
   KEY `index_contact_sub_type` (`contact_sub_type`),
@@ -562,7 +559,7 @@ CREATE TABLE `civicrm_contact` (
   CONSTRAINT `FK_civicrm_contact_mail_to_household_id` FOREIGN KEY (`mail_to_household_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_contact_primary_contact_id` FOREIGN KEY (`primary_contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contact`
@@ -570,7 +567,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_contact` WRITE;
 /*!40000 ALTER TABLE `civicrm_contact` DISABLE KEYS */;
-INSERT INTO `civicrm_contact` VALUES (1,'Individual',NULL,0,0,0,0,0,0,NULL,NULL,'Administrator, Bluebird','Bluebird Administrator',NULL,NULL,NULL,'',NULL,'Both','887e18b0aa07486d5b7e78223b739de3',NULL,NULL,'Bluebird',NULL,'Administrator',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(4,'Individual',NULL,0,0,0,0,0,0,NULL,NULL,'test, test','test test',NULL,NULL,NULL,'',NULL,'Both','379783819c26714ddc5d8cca8133611a',NULL,NULL,'test',NULL,'test',NULL,NULL,3,NULL,'Dear  test',3,NULL,'Dear  test',1,NULL,'  test  test ',NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(5,'Individual',NULL,0,0,0,0,0,0,NULL,NULL,'officeadmin+kyle@rayogram.com','officeadmin+kyle@rayogram.com',NULL,NULL,NULL,NULL,NULL,'Both','13424fabbf4f2dcd488bc2c6ee6afe04',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(6,'Individual',NULL,0,0,0,0,0,0,NULL,NULL,'officemanager+kyle@rayogram.com','officemanager+kyle@rayogram.com',NULL,NULL,NULL,NULL,NULL,'Both','b0c8855f95a4b55cc5423ebd54caece0',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(7,'Individual',NULL,0,0,0,0,0,0,NULL,NULL,'officeadministrator+kyle@rayogram.com','officeadministrator+kyle@rayogram.com',NULL,NULL,NULL,NULL,NULL,'Both','b833a43e9d840fa1ec1ff918cdb9b64a',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0),(8,'Individual',NULL,0,0,0,0,0,0,NULL,NULL,'oa@lcdservices.biz','oa@lcdservices.biz',NULL,NULL,NULL,NULL,NULL,'Both','f9a5364875c60295049e91da96e8f8c9',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0);
+INSERT INTO `civicrm_contact` VALUES (1,'Individual',NULL,0,0,0,0,0,0,NULL,NULL,'Administrator, Bluebird','Bluebird Administrator',NULL,NULL,NULL,'',NULL,'Both','887e18b0aa07486d5b7e78223b739de3',NULL,NULL,'Bluebird',NULL,'Administrator',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0);
 /*!40000 ALTER TABLE `civicrm_contact` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -579,23 +576,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contact_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contact_type` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Contact Type ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Internal name of Contact Type (or Subtype).',
-  `label` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'localized Name of Contact Type.',
-  `description` text collate utf8_unicode_ci COMMENT 'localized Optional verbose description of the type.',
-  `image_URL` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'URL of image if any.',
-  `parent_id` int(10) unsigned default NULL COMMENT 'Optional FK to parent contact type.',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this entry active?',
-  `is_reserved` tinyint(4) default NULL COMMENT 'Is this contact type a predefined system type',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Contact Type ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Internal name of Contact Type (or Subtype).',
+  `label` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'localized Name of Contact Type.',
+  `description` text COLLATE utf8_unicode_ci COMMENT 'localized Optional verbose description of the type.',
+  `image_URL` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'URL of image if any.',
+  `parent_id` int(10) unsigned DEFAULT NULL COMMENT 'Optional FK to parent contact type.',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this entry active?',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'Is this contact type a predefined system type',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `contact_type` (`name`),
   KEY `FK_civicrm_contact_type_parent_id` (`parent_id`),
   CONSTRAINT `FK_civicrm_contact_type_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `civicrm_contact_type` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contact_type`
@@ -612,37 +609,37 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contribution`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contribution` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Contribution ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Contribution ID',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to Contact ID',
-  `contribution_type_id` int(10) unsigned default NULL COMMENT 'FK to Contribution Type',
-  `contribution_page_id` int(10) unsigned default NULL COMMENT 'The Contribution Page which triggered this contribution',
-  `payment_instrument_id` int(10) unsigned default NULL COMMENT 'FK to Payment Instrument',
-  `receive_date` datetime default NULL COMMENT 'when was gift received',
-  `non_deductible_amount` decimal(20,2) default '0.00' COMMENT 'Portion of total amount which is NOT tax deductible. Equal to total_amount for non-deductible contribution types.',
+  `contribution_type_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contribution Type',
+  `contribution_page_id` int(10) unsigned DEFAULT NULL COMMENT 'The Contribution Page which triggered this contribution',
+  `payment_instrument_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Payment Instrument',
+  `receive_date` datetime DEFAULT NULL COMMENT 'when was gift received',
+  `non_deductible_amount` decimal(20,2) DEFAULT '0.00' COMMENT 'Portion of total amount which is NOT tax deductible. Equal to total_amount for non-deductible contribution types.',
   `total_amount` decimal(20,2) NOT NULL COMMENT 'Total amount of this contribution. Use market value for non-monetary gifts.',
-  `fee_amount` decimal(20,2) default NULL COMMENT 'actual processor fee if known - may be 0.',
-  `net_amount` decimal(20,2) default NULL COMMENT 'actual funds transfer amount. total less fees. if processor does not report actual fee during transaction, this is set to total_amount.',
-  `trxn_id` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'unique transaction id. may be processor id, bank id + trans id, or account number + check number... depending on payment_method',
-  `invoice_id` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'unique invoice id, system generated or passed in',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `cancel_date` datetime default NULL COMMENT 'when was gift cancelled',
-  `cancel_reason` text collate utf8_unicode_ci,
-  `receipt_date` datetime default NULL COMMENT 'when (if) receipt was sent. populated automatically for online donations w/ automatic receipting',
-  `thankyou_date` datetime default NULL COMMENT 'when (if) was donor thanked',
-  `source` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Origin of this Contribution.',
-  `amount_level` text collate utf8_unicode_ci,
-  `contribution_recur_id` int(10) unsigned default NULL COMMENT 'Conditional foreign key to civicrm_contribution_recur id. Each contribution made in connection with a recurring contribution carries a foreign key to the recurring contribution record. This assumes we can track these processor initiated events.',
-  `honor_contact_id` int(10) unsigned default NULL COMMENT 'FK to contact ID',
-  `is_test` tinyint(4) default '0',
-  `is_pay_later` tinyint(4) default '0',
-  `contribution_status_id` int(10) unsigned default '1',
-  `honor_type_id` int(10) unsigned default NULL COMMENT 'Implicit FK to civicrm_option_value.',
-  `address_id` int(10) unsigned default NULL COMMENT 'Conditional foreign key to civicrm_address.id. We insert an address record for each contribution when we have associated billing name and address data.',
-  `check_number` varchar(255) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `fee_amount` decimal(20,2) DEFAULT NULL COMMENT 'actual processor fee if known - may be 0.',
+  `net_amount` decimal(20,2) DEFAULT NULL COMMENT 'actual funds transfer amount. total less fees. if processor does not report actual fee during transaction, this is set to total_amount.',
+  `trxn_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'unique transaction id. may be processor id, bank id + trans id, or account number + check number... depending on payment_method',
+  `invoice_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'unique invoice id, system generated or passed in',
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `cancel_date` datetime DEFAULT NULL COMMENT 'when was gift cancelled',
+  `cancel_reason` text COLLATE utf8_unicode_ci,
+  `receipt_date` datetime DEFAULT NULL COMMENT 'when (if) receipt was sent. populated automatically for online donations w/ automatic receipting',
+  `thankyou_date` datetime DEFAULT NULL COMMENT 'when (if) was donor thanked',
+  `source` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Origin of this Contribution.',
+  `amount_level` text COLLATE utf8_unicode_ci,
+  `contribution_recur_id` int(10) unsigned DEFAULT NULL COMMENT 'Conditional foreign key to civicrm_contribution_recur id. Each contribution made in connection with a recurring contribution carries a foreign key to the recurring contribution record. This assumes we can track these processor initiated events.',
+  `honor_contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to contact ID',
+  `is_test` tinyint(4) DEFAULT '0',
+  `is_pay_later` tinyint(4) DEFAULT '0',
+  `contribution_status_id` int(10) unsigned DEFAULT '1',
+  `honor_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Implicit FK to civicrm_option_value.',
+  `address_id` int(10) unsigned DEFAULT NULL COMMENT 'Conditional foreign key to civicrm_address.id. We insert an address record for each contribution when we have associated billing name and address data.',
+  `check_number` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_contrib_trxn_id` (`trxn_id`),
   UNIQUE KEY `UI_contrib_invoice_id` (`invoice_id`),
   KEY `UI_contrib_payment_instrument_id` (`payment_instrument_id`),
@@ -662,7 +659,7 @@ CREATE TABLE `civicrm_contribution` (
   CONSTRAINT `FK_civicrm_contribution_contribution_type_id` FOREIGN KEY (`contribution_type_id`) REFERENCES `civicrm_contribution_type` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_contribution_honor_contact_id` FOREIGN KEY (`honor_contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contribution`
@@ -678,49 +675,49 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contribution_page`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contribution_page` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Contribution Id',
-  `title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Contribution Page title. For top of page display',
-  `intro_text` text collate utf8_unicode_ci COMMENT 'Text and html allowed. Displayed below title.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Contribution Id',
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Contribution Page title. For top of page display',
+  `intro_text` text COLLATE utf8_unicode_ci COMMENT 'Text and html allowed. Displayed below title.',
   `contribution_type_id` int(10) unsigned NOT NULL COMMENT 'default Contribution type assigned to contributions submitted via this page, e.g. Contribution, Campaign Contribution',
-  `payment_processor_id` int(10) unsigned default NULL COMMENT 'Payment Processor for this contribution Page ',
-  `is_credit_card_only` tinyint(4) default '0' COMMENT 'if true - processing logic must reject transaction at confirmation stage if pay method != credit card',
-  `is_monetary` tinyint(4) default '1' COMMENT 'if true - allows real-time monetary transactions otherwise non-monetary transactions',
-  `is_recur` tinyint(4) default '0' COMMENT 'if true - allows recurring contributions, valid only for PayPal_Standard',
-  `recur_frequency_unit` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Supported recurring frequency units.',
-  `is_recur_interval` tinyint(4) default '0' COMMENT 'if true - supports recurring intervals',
-  `is_pay_later` tinyint(4) default '0' COMMENT 'if true - allows the user to send payment directly to the org later',
-  `pay_later_text` text collate utf8_unicode_ci COMMENT 'The text displayed to the user in the main form',
-  `pay_later_receipt` text collate utf8_unicode_ci COMMENT 'The receipt sent to the user instead of the normal receipt text',
-  `is_allow_other_amount` tinyint(4) default '0' COMMENT 'if true, page will include an input text field where user can enter their own amount',
-  `default_amount_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_option_value.',
-  `min_amount` decimal(20,2) default NULL COMMENT 'if other amounts allowed, user can configure minimum allowed.',
-  `max_amount` decimal(20,2) default NULL COMMENT 'if other amounts allowed, user can configure maximum allowed.',
-  `goal_amount` decimal(20,2) default NULL COMMENT 'The target goal for this page, allows people to build a goal meter',
-  `thankyou_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Title for Thank-you page (header title tag, and display at the top of the page).',
-  `thankyou_text` text collate utf8_unicode_ci COMMENT 'text and html allowed. displayed above result on success page',
-  `thankyou_footer` text collate utf8_unicode_ci COMMENT 'Text and html allowed. displayed at the bottom of the success page. Common usage is to include link(s) to other pages such as tell-a-friend, etc.',
-  `is_for_organization` tinyint(4) default '0' COMMENT 'if true, signup is done on behalf of an organization',
-  `for_organization` text collate utf8_unicode_ci COMMENT 'This text field is shown when is_for_organization is checked. For example - I am contributing on behalf on an organization.',
-  `is_email_receipt` tinyint(4) default '1' COMMENT 'if true, receipt is automatically emailed to contact on success',
-  `receipt_from_name` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'FROM email name used for receipts generated by contributions to this contribution page.',
-  `receipt_from_email` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'FROM email address used for receipts generated by contributions to this contribution page.',
-  `cc_receipt` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'comma-separated list of email addresses to cc each time a receipt is sent',
-  `bcc_receipt` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'comma-separated list of email addresses to bcc each time a receipt is sent',
-  `receipt_text` text collate utf8_unicode_ci COMMENT 'text to include above standard receipt info on receipt email. emails are text-only, so do not allow html for now',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  `footer_text` text collate utf8_unicode_ci COMMENT 'Text and html allowed. Displayed at the bottom of the first page of the contribution wizard.',
-  `amount_block_is_active` tinyint(4) default '1' COMMENT 'Is this property active?',
-  `honor_block_is_active` tinyint(4) default NULL COMMENT 'Should this contribution have the honor  block enabled?',
-  `honor_block_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Title for honor block.',
-  `honor_block_text` text collate utf8_unicode_ci COMMENT 'text for honor block.',
-  `start_date` datetime default NULL COMMENT 'Date and time that this page starts.',
-  `end_date` datetime default NULL COMMENT 'Date and time that this page ends. May be NULL if no defined end date/time',
-  `created_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_contact, who created this contribution page',
-  `created_date` datetime default NULL COMMENT 'Date and time that contribution page was created.',
-  PRIMARY KEY  (`id`),
+  `payment_processor_id` int(10) unsigned DEFAULT NULL COMMENT 'Payment Processor for this contribution Page ',
+  `is_credit_card_only` tinyint(4) DEFAULT '0' COMMENT 'if true - processing logic must reject transaction at confirmation stage if pay method != credit card',
+  `is_monetary` tinyint(4) DEFAULT '1' COMMENT 'if true - allows real-time monetary transactions otherwise non-monetary transactions',
+  `is_recur` tinyint(4) DEFAULT '0' COMMENT 'if true - allows recurring contributions, valid only for PayPal_Standard',
+  `recur_frequency_unit` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Supported recurring frequency units.',
+  `is_recur_interval` tinyint(4) DEFAULT '0' COMMENT 'if true - supports recurring intervals',
+  `is_pay_later` tinyint(4) DEFAULT '0' COMMENT 'if true - allows the user to send payment directly to the org later',
+  `pay_later_text` text COLLATE utf8_unicode_ci COMMENT 'The text displayed to the user in the main form',
+  `pay_later_receipt` text COLLATE utf8_unicode_ci COMMENT 'The receipt sent to the user instead of the normal receipt text',
+  `is_allow_other_amount` tinyint(4) DEFAULT '0' COMMENT 'if true, page will include an input text field where user can enter their own amount',
+  `default_amount_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_option_value.',
+  `min_amount` decimal(20,2) DEFAULT NULL COMMENT 'if other amounts allowed, user can configure minimum allowed.',
+  `max_amount` decimal(20,2) DEFAULT NULL COMMENT 'if other amounts allowed, user can configure maximum allowed.',
+  `goal_amount` decimal(20,2) DEFAULT NULL COMMENT 'The target goal for this page, allows people to build a goal meter',
+  `thankyou_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Title for Thank-you page (header title tag, and display at the top of the page).',
+  `thankyou_text` text COLLATE utf8_unicode_ci COMMENT 'text and html allowed. displayed above result on success page',
+  `thankyou_footer` text COLLATE utf8_unicode_ci COMMENT 'Text and html allowed. displayed at the bottom of the success page. Common usage is to include link(s) to other pages such as tell-a-friend, etc.',
+  `is_for_organization` tinyint(4) DEFAULT '0' COMMENT 'if true, signup is done on behalf of an organization',
+  `for_organization` text COLLATE utf8_unicode_ci COMMENT 'This text field is shown when is_for_organization is checked. For example - I am contributing on behalf on an organization.',
+  `is_email_receipt` tinyint(4) DEFAULT '1' COMMENT 'if true, receipt is automatically emailed to contact on success',
+  `receipt_from_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'FROM email name used for receipts generated by contributions to this contribution page.',
+  `receipt_from_email` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'FROM email address used for receipts generated by contributions to this contribution page.',
+  `cc_receipt` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'comma-separated list of email addresses to cc each time a receipt is sent',
+  `bcc_receipt` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'comma-separated list of email addresses to bcc each time a receipt is sent',
+  `receipt_text` text COLLATE utf8_unicode_ci COMMENT 'text to include above standard receipt info on receipt email. emails are text-only, so do not allow html for now',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  `footer_text` text COLLATE utf8_unicode_ci COMMENT 'Text and html allowed. Displayed at the bottom of the first page of the contribution wizard.',
+  `amount_block_is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this property active?',
+  `honor_block_is_active` tinyint(4) DEFAULT NULL COMMENT 'Should this contribution have the honor  block enabled?',
+  `honor_block_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Title for honor block.',
+  `honor_block_text` text COLLATE utf8_unicode_ci COMMENT 'text for honor block.',
+  `start_date` datetime DEFAULT NULL COMMENT 'Date and time that this page starts.',
+  `end_date` datetime DEFAULT NULL COMMENT 'Date and time that this page ends. May be NULL if no defined end date/time',
+  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this contribution page',
+  `created_date` datetime DEFAULT NULL COMMENT 'Date and time that contribution page was created.',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_contribution_page_contribution_type_id` (`contribution_type_id`),
   KEY `FK_civicrm_contribution_page_payment_processor_id` (`payment_processor_id`),
   KEY `FK_civicrm_contribution_page_created_id` (`created_id`),
@@ -728,7 +725,7 @@ CREATE TABLE `civicrm_contribution_page` (
   CONSTRAINT `FK_civicrm_contribution_page_created_id` FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_contribution_page_payment_processor_id` FOREIGN KEY (`payment_processor_id`) REFERENCES `civicrm_payment_processor` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contribution_page`
@@ -744,23 +741,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contribution_product`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contribution_product` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `product_id` int(10) unsigned NOT NULL,
   `contribution_id` int(10) unsigned NOT NULL,
-  `product_option` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Option value selected if applicable - e.g. color, size etc.',
-  `quantity` int(11) default NULL,
-  `fulfilled_date` date default NULL COMMENT 'Optional. Can be used to record the date this product was fulfilled or shipped.',
-  `start_date` date default NULL COMMENT 'Actual start date for a time-delimited premium (subscription, service or membership)',
-  `end_date` date default NULL COMMENT 'Actual end date for a time-delimited premium (subscription, service or membership)',
-  `comment` text collate utf8_unicode_ci,
-  PRIMARY KEY  (`id`),
+  `product_option` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Option value selected if applicable - e.g. color, size etc.',
+  `quantity` int(11) DEFAULT NULL,
+  `fulfilled_date` date DEFAULT NULL COMMENT 'Optional. Can be used to record the date this product was fulfilled or shipped.',
+  `start_date` date DEFAULT NULL COMMENT 'Actual start date for a time-delimited premium (subscription, service or membership)',
+  `end_date` date DEFAULT NULL COMMENT 'Actual end date for a time-delimited premium (subscription, service or membership)',
+  `comment` text COLLATE utf8_unicode_ci,
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_contribution_product_contribution_id` (`contribution_id`),
   CONSTRAINT `FK_civicrm_contribution_product_contribution_id` FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contribution_product`
@@ -776,39 +773,39 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contribution_recur`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contribution_recur` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Contribution Recur ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Contribution Recur ID',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to civicrm_contact.id .',
   `amount` decimal(20,2) NOT NULL COMMENT 'Amount to be contributed or charged each recurrence.',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `frequency_unit` enum('day','week','month','year') collate utf8_unicode_ci default 'month' COMMENT 'Time units for recurrence of payment.',
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `frequency_unit` enum('day','week','month','year') COLLATE utf8_unicode_ci DEFAULT 'month' COMMENT 'Time units for recurrence of payment.',
   `frequency_interval` int(10) unsigned NOT NULL COMMENT 'Number of time units for recurrence of payment.',
-  `installments` int(10) unsigned default NULL COMMENT 'Total number of payments to be made. Set this to 0 if this is an open-ended commitment i.e. no set end date.',
+  `installments` int(10) unsigned DEFAULT NULL COMMENT 'Total number of payments to be made. Set this to 0 if this is an open-ended commitment i.e. no set end date.',
   `start_date` datetime NOT NULL COMMENT 'The date the first scheduled recurring contribution occurs.',
   `create_date` datetime NOT NULL COMMENT 'When this recurring contribution record was created.',
-  `modified_date` datetime default NULL COMMENT 'Last updated date for this record. mostly the last time a payment was received',
-  `cancel_date` datetime default NULL COMMENT 'Date this recurring contribution was cancelled by contributor- if we can get access to it',
-  `end_date` datetime default NULL COMMENT 'Date this recurring contribution finished successfully',
-  `processor_id` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Possibly needed to store a unique identifier for this recurring payment order - if this is available from the processor??',
-  `trxn_id` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'unique transaction id. may be processor id, bank id + trans id, or account number + check number... depending on payment_method',
-  `invoice_id` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'unique invoice id, system generated or passed in',
-  `contribution_status_id` int(10) unsigned default '1',
-  `is_test` tinyint(4) default '0',
-  `cycle_day` int(10) unsigned NOT NULL default '1' COMMENT 'Day in the period when the payment should be charged e.g. 1st of month, 15th etc.',
-  `next_sched_contribution` datetime default NULL COMMENT 'At Groundspring this was used by the cron job which triggered payments. If we''re not doing that but we know about payments, it might still be useful to store for display to org andor contributors.',
-  `failure_count` int(10) unsigned default '0' COMMENT 'Number of failed charge attempts since last success. Business rule could be set to deactivate on more than x failures.',
-  `failure_retry_date` datetime default NULL COMMENT 'At Groundspring we set a business rule to retry failed payments every 7 days - and stored the next scheduled attempt date there.',
-  `auto_renew` tinyint(4) NOT NULL default '0' COMMENT 'Some systems allow contributor to set a number of installments - but then auto-renew the subscription or commitment if they do not cancel.',
-  PRIMARY KEY  (`id`),
+  `modified_date` datetime DEFAULT NULL COMMENT 'Last updated date for this record. mostly the last time a payment was received',
+  `cancel_date` datetime DEFAULT NULL COMMENT 'Date this recurring contribution was cancelled by contributor- if we can get access to it',
+  `end_date` datetime DEFAULT NULL COMMENT 'Date this recurring contribution finished successfully',
+  `processor_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Possibly needed to store a unique identifier for this recurring payment order - if this is available from the processor??',
+  `trxn_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'unique transaction id. may be processor id, bank id + trans id, or account number + check number... depending on payment_method',
+  `invoice_id` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'unique invoice id, system generated or passed in',
+  `contribution_status_id` int(10) unsigned DEFAULT '1',
+  `is_test` tinyint(4) DEFAULT '0',
+  `cycle_day` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'Day in the period when the payment should be charged e.g. 1st of month, 15th etc.',
+  `next_sched_contribution` datetime DEFAULT NULL COMMENT 'At Groundspring this was used by the cron job which triggered payments. If we''re not doing that but we know about payments, it might still be useful to store for display to org andor contributors.',
+  `failure_count` int(10) unsigned DEFAULT '0' COMMENT 'Number of failed charge attempts since last success. Business rule could be set to deactivate on more than x failures.',
+  `failure_retry_date` datetime DEFAULT NULL COMMENT 'At Groundspring we set a business rule to retry failed payments every 7 days - and stored the next scheduled attempt date there.',
+  `auto_renew` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Some systems allow contributor to set a number of installments - but then auto-renew the subscription or commitment if they do not cancel.',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_contrib_trxn_id` (`trxn_id`),
   UNIQUE KEY `UI_contrib_invoice_id` (`invoice_id`),
   KEY `index_contribution_status` (`contribution_status_id`),
   KEY `FK_civicrm_contribution_recur_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_contribution_recur_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contribution_recur`
@@ -824,19 +821,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contribution_soft`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contribution_soft` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Soft Contribution ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Soft Contribution ID',
   `contribution_id` int(10) unsigned NOT NULL COMMENT 'FK to contribution table.',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to Contact ID',
   `amount` decimal(20,2) NOT NULL COMMENT 'Amount of this soft contribution.',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `pcp_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_pcp.id',
-  `pcp_display_in_roll` tinyint(4) default '0',
-  `pcp_roll_nickname` varchar(255) collate utf8_unicode_ci default NULL,
-  `pcp_personal_note` varchar(255) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `pcp_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_pcp.id',
+  `pcp_display_in_roll` tinyint(4) DEFAULT '0',
+  `pcp_roll_nickname` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `pcp_personal_note` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   KEY `index_id` (`pcp_id`),
   KEY `FK_civicrm_contribution_soft_contribution_id` (`contribution_id`),
   KEY `FK_civicrm_contribution_soft_contact_id` (`contact_id`),
@@ -844,7 +841,7 @@ CREATE TABLE `civicrm_contribution_soft` (
   CONSTRAINT `FK_civicrm_contribution_soft_contribution_id` FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_contribution_soft_pcp_id` FOREIGN KEY (`pcp_id`) REFERENCES `civicrm_pcp` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contribution_soft`
@@ -860,20 +857,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contribution_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contribution_type` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Contribution Type ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Contribution Type Name.',
-  `accounting_code` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Optional value for mapping contributions to accounting system codes for each type/category of contribution.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Contribution Type Description.',
-  `is_deductible` tinyint(4) default '1' COMMENT 'Is this contribution type tax-deductible? If true, contributions of this type may be fully OR partially deductible - non-deductible amount is stored in the Contribution record.',
-  `is_reserved` tinyint(4) default NULL COMMENT 'Is this a predefined system object?',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Contribution Type ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Contribution Type Name.',
+  `accounting_code` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional value for mapping contributions to accounting system codes for each type/category of contribution.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Contribution Type Description.',
+  `is_deductible` tinyint(4) DEFAULT '1' COMMENT 'Is this contribution type tax-deductible? If true, contributions of this type may be fully OR partially deductible - non-deductible amount is stored in the Contribution record.',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'Is this a predefined system object?',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contribution_type`
@@ -890,31 +887,31 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_contribution_widget`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_contribution_widget` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Contribution Id',
-  `contribution_page_id` int(10) unsigned default NULL COMMENT 'The Contribution Page which triggered this contribution',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  `title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Widget title.',
-  `url_logo` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'URL to Widget logo',
-  `button_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Button title.',
-  `about` text collate utf8_unicode_ci COMMENT 'About description.',
-  `url_homepage` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'URL to Homepage.',
-  `color_title` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_button` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_bar` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_main_text` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_main` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_main_bg` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_bg` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_about_link` varchar(10) collate utf8_unicode_ci default NULL,
-  `color_homepage_link` varchar(10) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Contribution Id',
+  `contribution_page_id` int(10) unsigned DEFAULT NULL COMMENT 'The Contribution Page which triggered this contribution',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Widget title.',
+  `url_logo` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'URL to Widget logo',
+  `button_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Button title.',
+  `about` text COLLATE utf8_unicode_ci COMMENT 'About description.',
+  `url_homepage` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'URL to Homepage.',
+  `color_title` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_button` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_bar` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_main_text` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_main` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_main_bg` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_bg` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_about_link` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color_homepage_link` varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_contribution_widget_contribution_page_id` (`contribution_page_id`),
   CONSTRAINT `FK_civicrm_contribution_widget_contribution_page_id` FOREIGN KEY (`contribution_page_id`) REFERENCES `civicrm_contribution_page` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_contribution_widget`
@@ -930,26 +927,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_country`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_country` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Country Id',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Country Name',
-  `iso_code` char(2) collate utf8_unicode_ci default NULL COMMENT 'ISO Code',
-  `country_code` varchar(4) collate utf8_unicode_ci default NULL COMMENT 'National prefix to be used when dialing TO this country.',
-  `address_format_id` int(10) unsigned default NULL COMMENT 'Foreign key to civicrm_address_format.id.',
-  `idd_prefix` varchar(4) collate utf8_unicode_ci default NULL COMMENT 'International direct dialing prefix from within the country TO another country',
-  `ndd_prefix` varchar(4) collate utf8_unicode_ci default NULL COMMENT 'Access prefix to call within a country to a different area',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Country Id',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Country Name',
+  `iso_code` char(2) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'ISO Code',
+  `country_code` varchar(4) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'National prefix to be used when dialing TO this country.',
+  `address_format_id` int(10) unsigned DEFAULT NULL COMMENT 'Foreign key to civicrm_address_format.id.',
+  `idd_prefix` varchar(4) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'International direct dialing prefix from within the country TO another country',
+  `ndd_prefix` varchar(4) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Access prefix to call within a country to a different area',
   `region_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to civicrm_worldregion.id.',
-  `is_province_abbreviated` tinyint(4) default '0' COMMENT 'Should state/province be displayed as abbreviation for contacts from this country?',
-  PRIMARY KEY  (`id`),
+  `is_province_abbreviated` tinyint(4) DEFAULT '0' COMMENT 'Should state/province be displayed as abbreviation for contacts from this country?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name_iso_code` (`name`,`iso_code`),
   KEY `FK_civicrm_country_address_format_id` (`address_format_id`),
   KEY `FK_civicrm_country_region_id` (`region_id`),
   CONSTRAINT `FK_civicrm_country_address_format_id` FOREIGN KEY (`address_format_id`) REFERENCES `civicrm_address_format` (`id`),
   CONSTRAINT `FK_civicrm_country_region_id` FOREIGN KEY (`region_id`) REFERENCES `civicrm_worldregion` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1247 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_country`
@@ -966,19 +963,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_county`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_county` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'County ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of County',
-  `abbreviation` varchar(4) collate utf8_unicode_ci default NULL COMMENT '2-4 Character Abbreviation of County',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'County ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of County',
+  `abbreviation` varchar(4) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '2-4 Character Abbreviation of County',
   `state_province_id` int(10) unsigned NOT NULL COMMENT 'ID of State / Province that County belongs',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name_state_id` (`name`,`state_province_id`),
   KEY `FK_civicrm_county_state_province_id` (`state_province_id`),
   CONSTRAINT `FK_civicrm_county_state_province_id` FOREIGN KEY (`state_province_id`) REFERENCES `civicrm_state_province` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_county`
@@ -995,17 +992,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_currency`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_currency` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Currency Id',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Currency Name',
-  `symbol` varchar(8) collate utf8_unicode_ci default NULL COMMENT 'Currency Symbol',
-  `numeric_code` varchar(3) collate utf8_unicode_ci default NULL COMMENT 'Numeric currency code',
-  `full_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Full currency name',
-  PRIMARY KEY  (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Currency Id',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Currency Name',
+  `symbol` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Currency Symbol',
+  `numeric_code` varchar(3) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Numeric currency code',
+  `full_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Full currency name',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=186 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_currency`
@@ -1022,42 +1019,42 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_custom_field`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_custom_field` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Custom Field ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Custom Field ID',
   `custom_group_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_custom_group.',
-  `label` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Text for form field label (also friendly name for administering this custom property).',
-  `data_type` enum('String','Int','Float','Money','Memo','Date','Boolean','StateProvince','Country','File','Link','ContactReference') collate utf8_unicode_ci NOT NULL COMMENT 'Controls location of data storage in extended_data table.',
-  `html_type` enum('Text','TextArea','Select','Multi-Select','AdvMulti-Select','Radio','CheckBox','Select Date','Select State/Province','Select Country','Multi-Select Country','Multi-Select State/Province','File','Link','RichTextEditor','Autocomplete-Select') collate utf8_unicode_ci NOT NULL COMMENT 'HTML types plus several built-in extended types.',
-  `default_value` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Use form_options.is_default for field_types which use options.',
-  `is_required` tinyint(4) default NULL COMMENT 'Is a value required for this property.',
-  `is_searchable` tinyint(4) default NULL COMMENT 'Is this property searchable.',
-  `is_search_range` tinyint(4) default '0' COMMENT 'Is this property range searchable.',
-  `weight` int(11) NOT NULL default '1' COMMENT 'Controls field display order within an extended property group.',
-  `help_pre` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display before this field.',
-  `help_post` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display after this field.',
-  `mask` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Optional format instructions for specific field types, like date types.',
-  `attributes` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Store collection of type-appropriate attributes, e.g. textarea  needs rows/cols attributes',
-  `javascript` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional scripting attributes for field.',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  `is_view` tinyint(4) default NULL COMMENT 'Is this property set by PHP Code? A code field is viewable but not editable',
-  `options_per_line` int(10) unsigned default NULL COMMENT 'number of options per line for checkbox and radio',
-  `text_length` int(10) unsigned default NULL COMMENT 'field length if alphanumeric',
-  `start_date_years` int(10) unsigned default NULL COMMENT 'Date may be up to start_date_years years prior to tcurrent date  ',
-  `end_date_years` int(10) unsigned default NULL COMMENT 'Date may be up to end_date_years years after to tcurrent date ',
-  `date_format` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'date format for custom date',
-  `time_format` int(10) unsigned default NULL COMMENT 'time format for custom date',
-  `note_columns` int(10) unsigned default NULL COMMENT ' Number of columns in Note Field ',
-  `note_rows` int(10) unsigned default NULL COMMENT ' Number of rows in Note Field ',
-  `column_name` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Name of the column that holds the values for this field.',
-  `option_group_id` int(10) unsigned default NULL COMMENT 'For elements with options, the option group id that is used',
-  PRIMARY KEY  (`id`),
+  `label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Text for form field label (also friendly name for administering this custom property).',
+  `data_type` enum('String','Int','Float','Money','Memo','Date','Boolean','StateProvince','Country','File','Link','ContactReference') COLLATE utf8_unicode_ci NOT NULL COMMENT 'Controls location of data storage in extended_data table.',
+  `html_type` enum('Text','TextArea','Select','Multi-Select','AdvMulti-Select','Radio','CheckBox','Select Date','Select State/Province','Select Country','Multi-Select Country','Multi-Select State/Province','File','Link','RichTextEditor','Autocomplete-Select') COLLATE utf8_unicode_ci NOT NULL COMMENT 'HTML types plus several built-in extended types.',
+  `default_value` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Use form_options.is_default for field_types which use options.',
+  `is_required` tinyint(4) DEFAULT NULL COMMENT 'Is a value required for this property.',
+  `is_searchable` tinyint(4) DEFAULT NULL COMMENT 'Is this property searchable.',
+  `is_search_range` tinyint(4) DEFAULT '0' COMMENT 'Is this property range searchable.',
+  `weight` int(11) NOT NULL DEFAULT '1' COMMENT 'Controls field display order within an extended property group.',
+  `help_pre` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display before this field.',
+  `help_post` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display after this field.',
+  `mask` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional format instructions for specific field types, like date types.',
+  `attributes` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Store collection of type-appropriate attributes, e.g. textarea  needs rows/cols attributes',
+  `javascript` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional scripting attributes for field.',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  `is_view` tinyint(4) DEFAULT NULL COMMENT 'Is this property set by PHP Code? A code field is viewable but not editable',
+  `options_per_line` int(10) unsigned DEFAULT NULL COMMENT 'number of options per line for checkbox and radio',
+  `text_length` int(10) unsigned DEFAULT NULL COMMENT 'field length if alphanumeric',
+  `start_date_years` int(10) unsigned DEFAULT NULL COMMENT 'Date may be up to start_date_years years prior to tcurrent date  ',
+  `end_date_years` int(10) unsigned DEFAULT NULL COMMENT 'Date may be up to end_date_years years after to tcurrent date ',
+  `date_format` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'date format for custom date',
+  `time_format` int(10) unsigned DEFAULT NULL COMMENT 'time format for custom date',
+  `note_columns` int(10) unsigned DEFAULT NULL COMMENT ' Number of columns in Note Field ',
+  `note_rows` int(10) unsigned DEFAULT NULL COMMENT ' Number of rows in Note Field ',
+  `column_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of the column that holds the values for this field.',
+  `option_group_id` int(10) unsigned DEFAULT NULL COMMENT 'For elements with options, the option group id that is used',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_label_custom_group_id` (`label`,`custom_group_id`),
   KEY `FK_civicrm_custom_field_custom_group_id` (`custom_group_id`),
   CONSTRAINT `FK_civicrm_custom_field_custom_group_id` FOREIGN KEY (`custom_group_id`) REFERENCES `civicrm_custom_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_custom_field`
@@ -1074,35 +1071,35 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_custom_group`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_custom_group` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Custom Group ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Variable name/programmatic handle for this group.',
-  `title` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Friendly Name.',
-  `extends` enum('Contact','Individual','Household','Organization','Location','Address','Contribution','Activity','Relationship','Group','Membership','Participant','Event','Grant','Pledge','Case') collate utf8_unicode_ci default 'Contact' COMMENT 'Type of object this group extends (can add other options later e.g. contact_address, etc.).',
-  `extends_entity_column_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_option_value.id (for option group custom_data_type.)',
-  `extends_entity_column_value` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'linking custom group for dynamic object',
-  `style` enum('Tab','Inline') collate utf8_unicode_ci default NULL COMMENT 'Visual relationship between this form and its parent.',
-  `collapse_display` int(10) unsigned default '0' COMMENT 'Will this group be in collapsed or expanded mode on initial display ?',
-  `help_pre` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display before fields in form.',
-  `help_post` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display after fields in form.',
-  `weight` int(11) NOT NULL default '1' COMMENT 'Controls display order when multiple extended property groups are setup for the same class.',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  `table_name` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Name of the table that holds the values for this group.',
-  `is_multiple` tinyint(4) default NULL COMMENT 'Does this group hold multiple values?',
-  `min_multiple` int(10) unsigned default NULL COMMENT 'minimum number of multiple records (typically 0?)',
-  `max_multiple` int(10) unsigned default NULL COMMENT 'maximum number of multiple records, if 0 - no max',
-  `collapse_adv_display` int(10) unsigned default '0' COMMENT 'Will this group be in collapsed or expanded mode on advanced search display ?',
-  `created_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_contact, who created this custom group',
-  `created_date` datetime default NULL COMMENT 'Date and time this custom group was created.',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Custom Group ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Variable name/programmatic handle for this group.',
+  `title` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Friendly Name.',
+  `extends` enum('Contact','Individual','Household','Organization','Location','Address','Contribution','Activity','Relationship','Group','Membership','Participant','Event','Grant','Pledge','Case') COLLATE utf8_unicode_ci DEFAULT 'Contact' COMMENT 'Type of object this group extends (can add other options later e.g. contact_address, etc.).',
+  `extends_entity_column_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_option_value.id (for option group custom_data_type.)',
+  `extends_entity_column_value` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'linking custom group for dynamic object',
+  `style` enum('Tab','Inline') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Visual relationship between this form and its parent.',
+  `collapse_display` int(10) unsigned DEFAULT '0' COMMENT 'Will this group be in collapsed or expanded mode on initial display ?',
+  `help_pre` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display before fields in form.',
+  `help_post` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display after fields in form.',
+  `weight` int(11) NOT NULL DEFAULT '1' COMMENT 'Controls display order when multiple extended property groups are setup for the same class.',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  `table_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of the table that holds the values for this group.',
+  `is_multiple` tinyint(4) DEFAULT NULL COMMENT 'Does this group hold multiple values?',
+  `min_multiple` int(10) unsigned DEFAULT NULL COMMENT 'minimum number of multiple records (typically 0?)',
+  `max_multiple` int(10) unsigned DEFAULT NULL COMMENT 'maximum number of multiple records, if 0 - no max',
+  `collapse_adv_display` int(10) unsigned DEFAULT '0' COMMENT 'Will this group be in collapsed or expanded mode on advanced search display ?',
+  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this custom group',
+  `created_date` datetime DEFAULT NULL COMMENT 'Date and time this custom group was created.',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_title_extends` (`title`,`extends`),
   UNIQUE KEY `UI_name_extends` (`name`,`extends`),
   KEY `FK_civicrm_custom_group_created_id` (`created_id`),
   CONSTRAINT `FK_civicrm_custom_group_created_id` FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_custom_group`
@@ -1119,28 +1116,28 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_dashboard`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_dashboard` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Domain for dashboard',
-  `label` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'dashlet title',
-  `url` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'url in case of external dashlet',
-  `content` text collate utf8_unicode_ci COMMENT 'dashlet content',
-  `permission` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Permission for the dashlet',
-  `permission_operator` varchar(3) collate utf8_unicode_ci default NULL COMMENT 'Permission Operator',
-  `column_no` tinyint(4) default '0' COMMENT 'column no for this dashlet',
-  `is_minimized` tinyint(4) default '0' COMMENT 'Is Minimized?',
-  `is_fullscreen` tinyint(4) default '1' COMMENT 'Is Fullscreen?',
-  `is_active` tinyint(4) default '0' COMMENT 'Is this dashlet active?',
-  `is_reserved` tinyint(4) default '0' COMMENT 'Is this dashlet reserved?',
-  `weight` int(11) default '0' COMMENT 'Ordering of the dashlets.',
-  `created_date` datetime default NULL COMMENT 'When was content populated',
-  PRIMARY KEY  (`id`),
+  `label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'dashlet title',
+  `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'url in case of external dashlet',
+  `content` text COLLATE utf8_unicode_ci COMMENT 'dashlet content',
+  `permission` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Permission for the dashlet',
+  `permission_operator` varchar(3) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Permission Operator',
+  `column_no` tinyint(4) DEFAULT '0' COMMENT 'column no for this dashlet',
+  `is_minimized` tinyint(4) DEFAULT '0' COMMENT 'Is Minimized?',
+  `is_fullscreen` tinyint(4) DEFAULT '1' COMMENT 'Is Fullscreen?',
+  `is_active` tinyint(4) DEFAULT '0' COMMENT 'Is this dashlet active?',
+  `is_reserved` tinyint(4) DEFAULT '0' COMMENT 'Is this dashlet reserved?',
+  `weight` int(11) DEFAULT '0' COMMENT 'Ordering of the dashlets.',
+  `created_date` datetime DEFAULT NULL COMMENT 'When was content populated',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_dashboard_domain_id` (`domain_id`),
   CONSTRAINT `FK_civicrm_dashboard_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_dashboard`
@@ -1148,7 +1145,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_dashboard` WRITE;
 /*!40000 ALTER TABLE `civicrm_dashboard` DISABLE KEYS */;
-INSERT INTO `civicrm_dashboard` VALUES (1,1,'Activities','civicrm/dashlet/activity&reset=1&snippet=4','\n            \n<div>\n    <span id=\'fileOnCaseStatusMsg\' style=\"display:none;\"></span>\n  <form title=\"activity_pager\" action=\"/nyssdev/civicrm/dashlet/activity\" method=\"post\">\n          \n        \n\n  <table class=\"selector\"><tr class=\"columnheader\"><th scope=\"col\"><a href=\"/nyssdev/civicrm/dashlet/activity?q=civicrm/dashlet/activity&amp;force=1&amp;crmSID=2_u\" class=\"sorting\">Type</a></th><th scope=\"col\"><a href=\"/nyssdev/civicrm/dashlet/activity?q=civicrm/dashlet/activity&amp;force=1&amp;crmSID=3_u\" class=\"sorting\">Subject</a></th><th scope=\"col\"><a href=\"/nyssdev/civicrm/dashlet/activity?q=civicrm/dashlet/activity&amp;force=1&amp;crmSID=4_u\" class=\"sorting\">Added By</a></th><th scope=\"col\">With</th><th scope=\"col\">Assigned</th><th scope=\"col\"><a href=\"/nyssdev/civicrm/dashlet/activity?q=civicrm/dashlet/activity&amp;force=1&amp;crmSID=5_u\" class=\"sorting\">Date</a></th><th scope=\"col\"><a href=\"/nyssdev/civicrm/dashlet/activity?q=civicrm/dashlet/activity&amp;force=1&amp;crmSID=6_u\" class=\"sorting\">Status</a></th><th scope=\"col\"></th></tr><tr class=\"odd-row status-overdue crm-activity crm-activity_status- crm-activity-type_1\" id=\"crm-activity_1\"><td class=\"crm-activity-type crm-activity-type_1\">Meeting</td><td class=\"crm-activity-subject\"></td><td class=\"crm-activity-source_contact_name\"><a href=\"/nyssdev/civicrm/contact/view?reset=1&amp;cid=1\" title=\"View contact\">Administrator, Bluebird</a></td><td class=\"crm-activity-target_contact_name\"><a href=\"/nyssdev/civicrm/contact/view?reset=1&amp;cid=1\" title=\"View contact\">Administrator, Bluebird</a></td><td class=\"crm-activity-assignee_contact_name\"><a href=\"/nyssdev/civicrm/contact/view?reset=1&amp;cid=\" title=\"View contact\"></a></td><td class=\"crm-activity-date_time\">August 25th, 2010  1:20 PM</td><td class=\"crm-activity-status crm-activity-status_1\">Scheduled</td><td><span><a href=\"http://template.crmdev.nysenate.gov/nyssdev/civicrm/contact/view/activity?atype=1&amp;action=view&amp;reset=1&amp;id=1&amp;cid=1&amp;context=home\" class=\"action-item action-item-first\" title=\"View Activity\"  >View</a><a href=\"http://template.crmdev.nysenate.gov/nyssdev/civicrm/contact/view/activity?atype=1&amp;action=update&amp;reset=1&amp;id=1&amp;cid=1&amp;context=home\" class=\"action-item\" title=\"Update Activity\"  >Edit</a><a href=\"http://template.crmdev.nysenate.gov/nyssdev/civicrm/contact/view/activity?atype=1&amp;action=delete&amp;reset=1&amp;id=1&amp;cid=1&amp;context=home\" class=\"action-item\" title=\"Delete Activity\"  >Delete</a></span></td></tr></table>\n\n          \n        \n  </form>\n  \n  <div id=\"fileOnCaseDialog\"></div>\n\n \n\n<script type=\"text/javascript\">\nfunction fileOnCase( action, activityID, currentCaseId ) { \n    if ( action == \"move\" ) {\n        dialogTitle = \"Move to Case\";\n    } else if ( action == \"copy\" ) {\n      	dialogTitle = \"Copy to Case\";\n    } else if ( action == \"file\" ) {\n      	dialogTitle = \"File On Case\";   \n    }\n    \n    var dataUrl = \"/nyssdev/civicrm/case/addToCase?reset=1&snippet=4\";\n    dataUrl = dataUrl + \'&activityId=\' + activityID + \'&caseId=\' + currentCaseId + \'&cid=\' + \"\";\n\n    cj.ajax({\n              url     : dataUrl,\n	      success : function ( content ) { 		\n    	             cj(\"#fileOnCaseDialog\").show( ).html( content ).dialog({\n		             title       : dialogTitle,\n		             modal       : true,\n			         bgiframe    : true,\n	    	         width       : 600,\n		             height      : 270,\n		             overlay     : { opacity: 0.5, background: \"black\" },\n		             beforeclose : function( event, ui ) {\n                                     cj(this).dialog(\"destroy\");\n                                   },\n  		             open        : function() {  },\n\n	      buttons : { \n			\"Ok\": function() { \n				var subject         = cj(\"#case_activity_subject\").val( );\n				var targetContactId = cj(\"#target_contact_id\").val( );\n				\n			    if ( !cj(\"#unclosed_cases\").val( )  ) {\n			       alert(\'Please select a case from the list.\');\n				   return false;\n				}\n						\n				cj(this).dialog(\"close\"); \n				cj(this).dialog(\"destroy\");\n									\n				var postUrl = \"/nyssdev/civicrm/ajax/activity/convert\";\n			        cj.post( postUrl, { activityID: activityID, caseID: selectedCaseId, contactID: contactId, newSubject: subject, targetContactIds: targetContactId, mode: action, key: \"c83b8ea0a3218f093b6fb619adf0fdff\" },\n					 function( values ) {\n					      if ( values.error_msg ) {\n                             alert( \"Unable to file on case.\\n\\n\" + values.error_msg );\n						     return false;\n                          } else {\n					          var destUrl = \"/nyssdev/civicrm/contact/view/case?reset=1&action=view&id=\"; \n						      var context = \'\';\n						      											     	 	                     \n						      var caseUrl = destUrl + selectedCaseId + \'&cid=\' + contactId + context;\n						      var redirectToCase = false;\n						      var reloadWindow = false;\n						      if ( action == \'move\' ) redirectToCase = true;\n						      if ( action == \'file\' ) {\n						      	 var curPath = document.location.href;\n						       	 if ( curPath.indexOf( \'civicrm/contact/view\' ) != -1 ) { \n							     //hide current activity row.\n 							     cj( \"#crm-activity_\" + activityID ).hide( );\n							     var visibleRowCount = 0;\n							     cj(\'[id^=\"\'+ \'crm-activity\' +\'\"]::visible\').each(function() {\n  							        visibleRowCount++;\n							     } );\n							     if ( visibleRowCount < 1 ) {\n							     	reloadWindow = true;\n							     }  \n							 } \n							 if ( curPath.indexOf( \'civicrm/contact/view/activity\' ) != -1 ) {\n							    redirectToCase = true; \n							 }\n						      }  \n						     \n						      if ( redirectToCase ) {\n						          window.location.href = caseUrl + selectedCaseId + \'&cid=\' + contactId + context;\n						      } else if ( reloadWindow ) { \n						      	  window.location.reload( ); \n						      } else {\n						          var activitySubject = cj(\"#case_activity_subject\").val( );\n						          var statusMsg = \'<a id=\"closeFileOnCaseStatusMsg\" href=\"#\"><div class=\"icon close-icon\"></div></a> \"\' + activitySubject + \'\" has been filed to selected case: \' + cj(\"#unclosed_cases\").val( ) + \'. Click <a href=\"\' + caseUrl + \'\">here</a> to view that case.\';\n						          cj(\'#fileOnCaseStatusMsg\').addClass(\'msgok\').html( statusMsg ).show( );\n                                  cj(\"#closeFileOnCaseStatusMsg\").click(function(){ cj(\'#fileOnCaseStatusMsg\').fadeOut(\"slow\");return false;}).focus( );\n                             }\n   					      }\n                    }\n    		      );\n			},\n\n			\"Cancel\": function() { \n				cj(this).dialog(\"close\"); \n				cj(this).dialog(\"destroy\"); \n			} \n		} \n\n	   });\n       }\n  });\n}\n</script>\n</div>\n    ','access CiviCRM',NULL,0,0,1,1,1,1,'2010-09-06 23:04:10'),(2,1,'My Cases','civicrm/dashlet/myCases&reset=1&snippet=4','\n                <div class=\"messages status\">\n          There are no open cases with activities scheduled in the next two weeks. Use <a href=\"/nyssdev/civicrm/case/search?reset=1\">Find Case</a> to expand your search.    </div>\n    ','access my cases and activities',NULL,0,0,1,1,1,1,'2010-09-06 23:04:09'),(3,1,'All Cases','civicrm/dashlet/allCases&reset=1&snippet=4','\n                <div class=\"messages status\">\n          There are no Cases. Use <a href=\"/nyssdev/civicrm/case/search?reset=1\">Find Case</a> to expand your search.    </div>\n    ','access all cases and activities',NULL,0,0,1,1,1,1,'2010-09-06 23:04:09'),(4,1,'Twitter','civicrm/dashlet/twitter&reset=1&snippet=4','\n            \n<div id=\"tweets\">\n	\n</div>\n\n<script>\n	function crm_relative_time(time_value) {\n      var parsed_date = Date.parse(time_value);\n      var relative_to = (arguments.length > 1) ? arguments[1] : new Date();\n      var delta = parseInt((relative_to.getTime() - parsed_date) / 1000);\n      var pluralize = function (singular, n) {\n        return \'\' + n + \' \' + singular + (n == 1 ? \'\' : \'s\');\n      };\n      if(delta < 60) {\n      return \'less than a minute ago\';\n      } else if(delta < (60*60)) {\n      return \'about \' + pluralize(\"minute\", parseInt(delta / 60)) + \' ago\';\n      } else if(delta < (24*60*60)) {\n      return \'about \' + pluralize(\"hour\", parseInt(delta / 3600)) + \' ago\';\n      } else {\n      return \'about \' + pluralize(\"day\", parseInt(delta / 86400)) + \' ago\';\n      }\n    };\n	\n	function crm_add_twitter_links(tweet){\n\n        var user_links = /[\\@]+([A-Za-z0-9-_]+)/gi;\n        var hash_links = / [\\#]+([A-Za-z0-9-_]+)/gi;\n        var url_links = /((ftp|http|https):\\/\\/(\\w+:{0,1}\\w*@)?(\\S+)(:[0-9]+)?(\\/|\\/([\\w#!:.?+=&%@!\\-\\/]))?)/gi;\n\n		linked_tweet = tweet.replace(url_links,\"<a href=\\\"$1\\\">$1</a>\");\n		linked_tweet = linked_tweet.replace(user_links,\"<a href=\\\"http://twitter.com/$1\\\">@$1</a>\");\n		linked_tweet = linked_tweet.replace(hash_links,\"<a href=\\\"http://search.twitter.com/search?q=$1\\\">#$1</a>\");\n        \n        return linked_tweet;\n	};\n	\n	$(document).ready(function() {\n	$.getJSON(\"http://twitter.com/statuses/user_timeline.json?count=6&screen_name=NYSenate&callback=?\",\n	function(data){\n	$.each(data, function(i,item){\n		$(\"#tweets\").append(\'<div class=\"tweet\">\'+ crm_add_twitter_links(item.text) +\'</div>\');\n		\n		datesplit = item.created_at.split(\'+\');\n		date = datesplit[0];\n		\n		$(\"#tweets\").append(\'<div class=\"created-date\">\'+ crm_relative_time(item.created_at) +\'</div>\');\n	});\n\n	});\n	});\n	\n</script>\n    ','access CiviCRM',NULL,0,0,1,1,1,1,'2010-09-06 23:04:08'),(5,1,'All Activities, Last 7 Days','civicrm/report/instance/23&reset=1&section=2&snippet=4','\n            \n\n\n  <div><input name=\"_qf_default\" type=\"hidden\" value=\"Activity:submit\" />\n</div>\n\n\n\n        <div class=\"crm-block crm-content-block crm-report-layoutTable-form-block\">\n                        	</div>\n    \n    ','access all cases and activities',NULL,0,0,1,1,0,0,'2010-09-06 23:04:09'),(6,1,'Emails Received, Last 7 Days','civicrm/report/instance/24&reset=1&section=2&snippet=4','\n            \n\n\n  <div><input name=\"_qf_default\" type=\"hidden\" value=\"Activity:submit\" />\n</div>\n\n\n\n        <div class=\"crm-block crm-content-block crm-report-layoutTable-form-block\">\n                        	</div>\n    \n    ','access all cases and activities',NULL,0,0,1,1,0,0,'2010-09-06 23:04:09');
+INSERT INTO `civicrm_dashboard` VALUES (1,1,'Activities','civicrm/dashlet/activity&reset=1&snippet=4','\n            \n<div>\n  \n  <div class=\"messages status\">\n          There are no Activites to display.      </div>\n\n</div>\n    ','access CiviCRM',NULL,0,0,1,1,1,1,'2010-09-10 16:32:38'),(2,1,'My Cases','civicrm/dashlet/myCases&reset=1&snippet=4','\n                <div class=\"messages status\">\n          There are no open cases with activities scheduled in the next two weeks. Use <a href=\"/nyss/civicrm/case/search?reset=1\">Find Case</a> to expand your search.    </div>\n    ','access my cases and activities',NULL,0,0,1,1,1,1,'2010-09-10 16:32:38'),(3,1,'All Cases','civicrm/dashlet/allCases&reset=1&snippet=4','\n                <div class=\"messages status\">\n          There are no Cases. Use <a href=\"/nyss/civicrm/case/search?reset=1\">Find Case</a> to expand your search.    </div>\n    ','access all cases and activities',NULL,0,0,1,1,1,1,'2010-09-10 16:32:38'),(4,1,'Twitter','civicrm/dashlet/twitter&reset=1&snippet=4','\n            \n<div id=\"tweets\">\n	\n</div>\n\n<script>\n	function crm_relative_time(time_value) {\n      var parsed_date = Date.parse(time_value);\n      var relative_to = (arguments.length > 1) ? arguments[1] : new Date();\n      var delta = parseInt((relative_to.getTime() - parsed_date) / 1000);\n      var pluralize = function (singular, n) {\n        return \'\' + n + \' \' + singular + (n == 1 ? \'\' : \'s\');\n      };\n      if(delta < 60) {\n      return \'less than a minute ago\';\n      } else if(delta < (60*60)) {\n      return \'about \' + pluralize(\"minute\", parseInt(delta / 60)) + \' ago\';\n      } else if(delta < (24*60*60)) {\n      return \'about \' + pluralize(\"hour\", parseInt(delta / 3600)) + \' ago\';\n      } else {\n      return \'about \' + pluralize(\"day\", parseInt(delta / 86400)) + \' ago\';\n      }\n    };\n	\n	function crm_add_twitter_links(tweet){\n\n        var user_links = /[\\@]+([A-Za-z0-9-_]+)/gi;\n        var hash_links = / [\\#]+([A-Za-z0-9-_]+)/gi;\n        var url_links = /((ftp|http|https):\\/\\/(\\w+:{0,1}\\w*@)?(\\S+)(:[0-9]+)?(\\/|\\/([\\w#!:.?+=&%@!\\-\\/]))?)/gi;\n\n		linked_tweet = tweet.replace(url_links,\"<a href=\\\"$1\\\">$1</a>\");\n		linked_tweet = linked_tweet.replace(user_links,\"<a href=\\\"http://twitter.com/$1\\\">@$1</a>\");\n		linked_tweet = linked_tweet.replace(hash_links,\"<a href=\\\"http://search.twitter.com/search?q=$1\\\">#$1</a>\");\n        \n        return linked_tweet;\n	};\n	\n	$(document).ready(function() {\n	$.getJSON(\"http://twitter.com/statuses/user_timeline.json?count=6&screen_name=NYSenate&callback=?\",\n	function(data){\n	$.each(data, function(i,item){\n		$(\"#tweets\").append(\'<div class=\"tweet\">\'+ crm_add_twitter_links(item.text) +\'</div>\');\n		\n		datesplit = item.created_at.split(\'+\');\n		date = datesplit[0];\n		\n		$(\"#tweets\").append(\'<div class=\"created-date\">\'+ crm_relative_time(item.created_at) +\'</div>\');\n	});\n\n	});\n	});\n	\n</script>\n    ','access CiviCRM',NULL,0,0,1,1,1,1,'2010-09-10 16:32:38'),(5,1,'All Activities, Last 7 Days','civicrm/report/instance/23&reset=1&section=2&snippet=4','\n            \n\n\n  <div><input name=\"_qf_default\" type=\"hidden\" value=\"Activity:submit\" />\n</div>\n\n\n\n        <div class=\"crm-block crm-content-block crm-report-layoutTable-form-block\">\n                        	</div>\n    \n    ','access all cases and activities',NULL,0,0,1,1,0,0,'2010-09-10 16:32:38'),(6,1,'Emails Received, Last 7 Days','civicrm/report/instance/24&reset=1&section=2&snippet=4','\n            \n\n\n  <div><input name=\"_qf_default\" type=\"hidden\" value=\"Activity:submit\" />\n</div>\n\n\n\n        <div class=\"crm-block crm-content-block crm-report-layoutTable-form-block\">\n                        	</div>\n    \n    ','access all cases and activities',NULL,0,0,1,1,0,0,'2010-09-10 16:32:38');
 /*!40000 ALTER TABLE `civicrm_dashboard` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1157,24 +1154,24 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_dashboard_contact`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_dashboard_contact` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `dashboard_id` int(10) unsigned NOT NULL COMMENT 'Dashboard ID',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'Contact ID',
-  `column_no` tinyint(4) default '0' COMMENT 'column no for this widget',
-  `is_minimized` tinyint(4) default '0' COMMENT 'Is Minimized?',
-  `is_fullscreen` tinyint(4) default '1' COMMENT 'Is Fullscreen?',
-  `is_active` tinyint(4) default '0' COMMENT 'Is this widget active?',
-  `weight` int(11) default '0' COMMENT 'Ordering of the widgets.',
-  PRIMARY KEY  (`id`),
+  `column_no` tinyint(4) DEFAULT '0' COMMENT 'column no for this widget',
+  `is_minimized` tinyint(4) DEFAULT '0' COMMENT 'Is Minimized?',
+  `is_fullscreen` tinyint(4) DEFAULT '1' COMMENT 'Is Fullscreen?',
+  `is_active` tinyint(4) DEFAULT '0' COMMENT 'Is this widget active?',
+  `weight` int(11) DEFAULT '0' COMMENT 'Ordering of the widgets.',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_dashboard_contact_dashboard_id` (`dashboard_id`),
   KEY `FK_civicrm_dashboard_contact_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_dashboard_contact_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_dashboard_contact_dashboard_id` FOREIGN KEY (`dashboard_id`) REFERENCES `civicrm_dashboard` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_dashboard_contact`
@@ -1182,7 +1179,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_dashboard_contact` WRITE;
 /*!40000 ALTER TABLE `civicrm_dashboard_contact` DISABLE KEYS */;
-INSERT INTO `civicrm_dashboard_contact` VALUES (1,1,1,0,0,1,1,2),(2,3,1,0,0,1,1,4),(3,2,1,0,0,1,1,3),(4,4,1,1,0,1,1,1),(5,5,1,0,0,1,1,5),(6,6,1,0,0,1,1,1),(7,1,5,0,0,1,0,0),(8,2,5,0,0,1,0,0),(9,3,5,0,0,1,0,0),(10,4,5,0,0,1,0,0),(11,6,5,0,0,1,0,0),(14,1,6,0,0,1,0,0),(15,2,6,0,0,1,0,0),(16,3,6,0,0,1,0,0),(17,4,6,0,0,1,0,0),(18,6,6,0,0,1,0,0);
+INSERT INTO `civicrm_dashboard_contact` VALUES (1,1,1,0,0,1,1,2),(2,3,1,0,0,1,1,4),(3,2,1,0,0,1,1,3),(4,4,1,1,0,1,1,1),(5,5,1,0,0,1,1,5),(6,6,1,0,0,1,1,1);
 /*!40000 ALTER TABLE `civicrm_dashboard_contact` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1191,20 +1188,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_dedupe_rule`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_dedupe_rule` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique dedupe rule id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique dedupe rule id',
   `dedupe_rule_group_id` int(10) unsigned NOT NULL COMMENT 'The id of the rule group this rule belongs to',
-  `rule_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'The name of the table this rule is about',
-  `rule_field` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'The name of the field of the table referenced in rule_table',
-  `rule_length` int(10) unsigned default NULL COMMENT 'The lenght of the matching substring',
+  `rule_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The name of the table this rule is about',
+  `rule_field` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The name of the field of the table referenced in rule_table',
+  `rule_length` int(10) unsigned DEFAULT NULL COMMENT 'The lenght of the matching substring',
   `rule_weight` int(11) NOT NULL COMMENT 'The weight of the rule',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_dedupe_rule_dedupe_rule_group_id` (`dedupe_rule_group_id`),
   CONSTRAINT `FK_civicrm_dedupe_rule_dedupe_rule_group_id` FOREIGN KEY (`dedupe_rule_group_id`) REFERENCES `civicrm_dedupe_rule_group` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_dedupe_rule`
@@ -1221,18 +1218,18 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_dedupe_rule_group`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_dedupe_rule_group` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique dedupe rule group id',
-  `contact_type` enum('Individual','Organization','Household') collate utf8_unicode_ci default NULL COMMENT 'The type of contacts this group applies to',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique dedupe rule group id',
+  `contact_type` enum('Individual','Organization','Household') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The type of contacts this group applies to',
   `threshold` int(11) NOT NULL COMMENT 'The weight threshold the sum of the rule weights has to cross to consider two contacts the same',
-  `level` enum('Strict','Fuzzy') collate utf8_unicode_ci default NULL COMMENT 'Whether the rule should be used for cases where strict maching of the given contact type is required or a fuzzy one',
-  `is_default` tinyint(4) default NULL COMMENT 'Is this a default rule (one rule for every contact type + level combination should be default)',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of the rule group',
-  PRIMARY KEY  (`id`)
+  `level` enum('Strict','Fuzzy') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Whether the rule should be used for cases where strict maching of the given contact type is required or a fuzzy one',
+  `is_default` tinyint(4) DEFAULT NULL COMMENT 'Is this a default rule (one rule for every contact type + level combination should be default)',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of the rule group',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_dedupe_rule_group`
@@ -1249,22 +1246,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_discount`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_discount` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary key',
-  `entity_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'physical tablename for entity being joined to discount, e.g. civicrm_event',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'physical tablename for entity being joined to discount, e.g. civicrm_event',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'FK to entity table specified in entity_table column.',
   `option_group_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_option_group',
-  `start_date` date default NULL COMMENT 'Date when discount starts.',
-  `end_date` date default NULL COMMENT 'Date when discount ends.',
-  PRIMARY KEY  (`id`),
+  `start_date` date DEFAULT NULL COMMENT 'Date when discount starts.',
+  `end_date` date DEFAULT NULL COMMENT 'Date when discount ends.',
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `index_entity_option_id` (`entity_table`,`entity_id`,`option_group_id`),
   KEY `FK_civicrm_discount_option_group_id` (`option_group_id`),
   CONSTRAINT `FK_civicrm_discount_option_group_id` FOREIGN KEY (`option_group_id`) REFERENCES `civicrm_option_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_discount`
@@ -1280,21 +1277,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_domain`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_domain` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Domain ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of Domain / Organization',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Description of Domain.',
-  `config_backend` text collate utf8_unicode_ci COMMENT 'Backend configuration.',
-  `version` varchar(32) collate utf8_unicode_ci default NULL COMMENT 'The civicrm version this instance is running',
-  `loc_block_id` int(10) unsigned default NULL COMMENT 'FK to Location Block ID. This is specifically not an FK to avoid circular constraints',
-  `locales` text collate utf8_unicode_ci COMMENT 'list of locales supported by the current db state (NULL for single-lang install)',
-  `locale_custom_strings` text collate utf8_unicode_ci COMMENT 'Locale specific string overrides',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Domain ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of Domain / Organization',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Description of Domain.',
+  `config_backend` text COLLATE utf8_unicode_ci COMMENT 'Backend configuration.',
+  `version` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The civicrm version this instance is running',
+  `loc_block_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Location Block ID. This is specifically not an FK to avoid circular constraints',
+  `locales` text COLLATE utf8_unicode_ci COMMENT 'list of locales supported by the current db state (NULL for single-lang install)',
+  `locale_custom_strings` text COLLATE utf8_unicode_ci COMMENT 'Locale specific string overrides',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_domain`
@@ -1311,22 +1308,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_email`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_email` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Email ID',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `location_type_id` int(10) unsigned default NULL COMMENT 'Which Location does this email belong to.',
-  `email` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Email address',
-  `is_primary` tinyint(4) default '0' COMMENT 'Is this the primary?',
-  `is_billing` tinyint(4) default '0' COMMENT 'Is this the billing?',
-  `on_hold` tinyint(4) NOT NULL default '0' COMMENT 'Is this address on bounce hold?',
-  `is_bulkmail` tinyint(4) NOT NULL default '0' COMMENT 'Is this address for bulk mail ?',
-  `hold_date` datetime default NULL COMMENT 'When the address went on bounce hold',
-  `reset_date` datetime default NULL COMMENT 'When the address bounce status was last reset',
-  `signature_text` text collate utf8_unicode_ci COMMENT 'Text formatted signature for the email.',
-  `signature_html` text collate utf8_unicode_ci COMMENT 'HTML formatted signature for the email.',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Email ID',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `location_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Location does this email belong to.',
+  `email` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Email address',
+  `is_primary` tinyint(4) DEFAULT '0' COMMENT 'Is this the primary?',
+  `is_billing` tinyint(4) DEFAULT '0' COMMENT 'Is this the billing?',
+  `on_hold` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Is this address on bounce hold?',
+  `is_bulkmail` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Is this address for bulk mail ?',
+  `hold_date` datetime DEFAULT NULL COMMENT 'When the address went on bounce hold',
+  `reset_date` datetime DEFAULT NULL COMMENT 'When the address bounce status was last reset',
+  `signature_text` text COLLATE utf8_unicode_ci COMMENT 'Text formatted signature for the email.',
+  `signature_html` text COLLATE utf8_unicode_ci COMMENT 'HTML formatted signature for the email.',
+  PRIMARY KEY (`id`),
   KEY `index_location_type` (`location_type_id`),
   KEY `UI_email` (`email`),
   KEY `index_is_primary` (`is_primary`),
@@ -1334,7 +1331,7 @@ CREATE TABLE `civicrm_email` (
   KEY `FK_civicrm_email_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_email_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_email`
@@ -1342,7 +1339,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_email` WRITE;
 /*!40000 ALTER TABLE `civicrm_email` DISABLE KEYS */;
-INSERT INTO `civicrm_email` VALUES (1,NULL,1,'\"Domain Email\" <domainemail@example.org>',0,0,0,0,NULL,NULL,NULL,NULL),(2,1,1,'bluebird.admin@nysenate.gov',1,0,0,0,NULL,NULL,NULL,NULL),(3,5,1,'officeadmin+kyle@rayogram.com',1,0,0,0,NULL,NULL,NULL,NULL),(4,6,1,'officemanager+kyle@rayogram.com',1,0,0,0,NULL,NULL,NULL,NULL),(5,7,1,'officeadministrator+kyle@rayogram.com',1,0,0,0,NULL,NULL,NULL,NULL),(6,8,1,'oa@lcdservices.biz',1,0,0,0,NULL,NULL,NULL,NULL);
+INSERT INTO `civicrm_email` VALUES (1,NULL,1,'\"Domain Email\" <domainemail@example.org>',0,0,0,0,NULL,NULL,NULL,NULL),(2,1,1,'bluebird.admin@nysenate.gov',1,0,0,0,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `civicrm_email` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1351,20 +1348,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_entity_file`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_entity_file` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary key',
-  `entity_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'physical tablename for entity being joined to file, e.g. civicrm_contact',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'physical tablename for entity being joined to file, e.g. civicrm_contact',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'FK to entity table specified in entity_table column.',
   `file_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_file',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `index_entity_file_id` (`entity_table`,`entity_id`,`file_id`),
   KEY `FK_civicrm_entity_file_file_id` (`file_id`),
   CONSTRAINT `FK_civicrm_entity_file_file_id` FOREIGN KEY (`file_id`) REFERENCES `civicrm_file` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_entity_file`
@@ -1380,20 +1377,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_entity_financial_trxn`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_entity_financial_trxn` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'ID',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `entity_id` int(10) unsigned NOT NULL,
-  `financial_trxn_id` int(10) unsigned default NULL,
+  `financial_trxn_id` int(10) unsigned DEFAULT NULL,
   `amount` decimal(20,2) NOT NULL COMMENT 'allocated amount of transaction to this entity',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  PRIMARY KEY  (`id`),
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_entity_financial_trxn_financial_trxn_id` (`financial_trxn_id`),
   CONSTRAINT `FK_civicrm_entity_financial_trxn_financial_trxn_id` FOREIGN KEY (`financial_trxn_id`) REFERENCES `civicrm_financial_trxn` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_entity_financial_trxn`
@@ -1409,19 +1406,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_entity_tag`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_entity_tag` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary key',
-  `entity_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'physical tablename for entity being joined to file, e.g. civicrm_contact',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'physical tablename for entity being joined to file, e.g. civicrm_contact',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'FK to entity table specified in entity_table column.',
   `tag_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_tag',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `FK_civicrm_entity_tag_tag_id` (`tag_id`),
   CONSTRAINT `FK_civicrm_entity_tag_tag_id` FOREIGN KEY (`tag_id`) REFERENCES `civicrm_tag` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_entity_tag`
@@ -1429,7 +1426,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_entity_tag` WRITE;
 /*!40000 ALTER TABLE `civicrm_entity_tag` DISABLE KEYS */;
-INSERT INTO `civicrm_entity_tag` VALUES (3,'civicrm_contact',1,10),(4,'civicrm_contact',1,70),(5,'civicrm_contact',1,18),(6,'civicrm_contact',1,214),(7,'civicrm_contact',1,28),(8,'civicrm_contact',1,6),(9,'civicrm_contact',1,170),(10,'civicrm_contact',1,21);
 /*!40000 ALTER TABLE `civicrm_entity_tag` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1438,64 +1434,64 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_event`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_event` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Event',
-  `title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Event Title (e.g. Fall Fundraiser Dinner)',
-  `summary` text collate utf8_unicode_ci COMMENT 'Brief summary of event. Text and html allowed. Displayed on Event Registration form and can be used on other CMS pages which need an event summary.',
-  `description` text collate utf8_unicode_ci COMMENT 'Full description of event. Text and html allowed. Displayed on built-in Event Information screens.',
-  `event_type_id` int(10) unsigned default '0' COMMENT 'Event Type ID.Implicit FK to civicrm_option_value where option_group = event_type.',
-  `participant_listing_id` int(10) unsigned default '0' COMMENT 'Should we expose the participant list? Implicit FK to civicrm_option_value where option_group = participant_listing.',
-  `is_public` tinyint(4) default '1' COMMENT 'Public events will be included in the iCal feeds. Access to private event information may be limited using ACLs.',
-  `start_date` datetime default NULL COMMENT 'Date and time that event starts.',
-  `end_date` datetime default NULL COMMENT 'Date and time that event ends. May be NULL if no defined end date/time',
-  `is_online_registration` tinyint(4) default '0' COMMENT 'If true, include registration link on Event Info page.',
-  `registration_link_text` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Text for link to Event Registration form which is displayed on Event Information screen when is_online_registration is true.',
-  `registration_start_date` datetime default NULL COMMENT 'Date and time that online registration starts.',
-  `registration_end_date` datetime default NULL COMMENT 'Date and time that online registration ends.',
-  `max_participants` int(10) unsigned default NULL COMMENT 'Maximum number of registered participants to allow. After max is reached, a custom Event Full message is displayed. If NULL, allow unlimited number of participants.',
-  `event_full_text` text collate utf8_unicode_ci COMMENT 'Message to display on Event Information page and INSTEAD OF Event Registration form if maximum participants are signed up. Can include email address/info about getting on a waiting list, etc. Text and html allowed.',
-  `is_monetary` tinyint(4) default '0' COMMENT 'Is this a PAID event? If true, one or more fee amounts must be set and a Payment Processor must be configured for Online Event Registration.',
-  `contribution_type_id` int(10) unsigned default '0' COMMENT 'Contribution type assigned to paid event registrations for this event. Required if is_monetary is true.',
-  `payment_processor_id` int(10) unsigned default NULL COMMENT 'Payment Processor for this Event (if is_monetary is true)',
-  `is_map` tinyint(4) default '0' COMMENT 'Include a map block on the Event Information page when geocode info is available and a mapping provider has been specified?',
-  `is_active` tinyint(4) default '0' COMMENT 'Is this Event enabled or disabled/cancelled?',
-  `fee_label` varchar(255) collate utf8_unicode_ci default NULL,
-  `is_show_location` tinyint(4) default '1' COMMENT 'If true, show event location.',
-  `loc_block_id` int(10) unsigned default NULL COMMENT 'FK to Location Block ID',
-  `default_role_id` int(10) unsigned default '1' COMMENT 'Participant role ID. Implicit FK to civicrm_option_value where option_group = participant_role.',
-  `intro_text` text collate utf8_unicode_ci COMMENT 'Introductory message for Event Registration page. Text and html allowed. Displayed at the top of Event Registration form.',
-  `footer_text` text collate utf8_unicode_ci COMMENT 'Footer message for Event Registration page. Text and html allowed. Displayed at the bottom of Event Registration form.',
-  `confirm_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Title for Confirmation page.',
-  `confirm_text` text collate utf8_unicode_ci COMMENT 'Introductory message for Event Registration page. Text and html allowed. Displayed at the top of Event Registration form.',
-  `confirm_footer_text` text collate utf8_unicode_ci COMMENT 'Footer message for Event Registration page. Text and html allowed. Displayed at the bottom of Event Registration form.',
-  `is_email_confirm` tinyint(4) default '0' COMMENT 'If true, confirmation is automatically emailed to contact on successful registration.',
-  `confirm_email_text` text collate utf8_unicode_ci COMMENT 'text to include above standard event info on confirmation email. emails are text-only, so do not allow html for now',
-  `confirm_from_name` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'FROM email name used for confirmation emails.',
-  `confirm_from_email` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'FROM email address used for confirmation emails.',
-  `cc_confirm` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'comma-separated list of email addresses to cc each time a confirmation is sent',
-  `bcc_confirm` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'comma-separated list of email addresses to bcc each time a confirmation is sent',
-  `default_fee_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_option_value.',
-  `default_discount_fee_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_option_value.',
-  `thankyou_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Title for ThankYou page.',
-  `thankyou_text` text collate utf8_unicode_ci COMMENT 'ThankYou Text.',
-  `thankyou_footer_text` text collate utf8_unicode_ci COMMENT 'Footer message.',
-  `is_pay_later` tinyint(4) default '0' COMMENT 'if true - allows the user to send payment directly to the org later',
-  `pay_later_text` text collate utf8_unicode_ci COMMENT 'The text displayed to the user in the main form',
-  `pay_later_receipt` text collate utf8_unicode_ci COMMENT 'The receipt sent to the user instead of the normal receipt text',
-  `is_multiple_registrations` tinyint(4) default '0' COMMENT 'if true - allows the user to register multiple participants for event',
-  `allow_same_participant_emails` tinyint(4) default '0' COMMENT 'if true - allows the user to register multiple registrations from same email address.',
-  `has_waitlist` tinyint(4) default NULL COMMENT 'Whether the event has waitlist support.',
-  `requires_approval` tinyint(4) default NULL COMMENT 'Whether participants require approval before they can finish registering.',
-  `expiration_time` int(10) unsigned default NULL COMMENT 'Expire pending but unconfirmed registrations after this many hours.',
-  `waitlist_text` text collate utf8_unicode_ci COMMENT 'Text to display when the event is full, but participants can signup for a waitlist.',
-  `approval_req_text` text collate utf8_unicode_ci COMMENT 'Text to display when the approval is required to complete registration for an event.',
-  `is_template` tinyint(4) default '0' COMMENT 'whether the event has template',
-  `template_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Event Template Title',
-  `created_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_contact, who created this event',
-  `created_date` datetime default NULL COMMENT 'Date and time that event was created.',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Event',
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Event Title (e.g. Fall Fundraiser Dinner)',
+  `summary` text COLLATE utf8_unicode_ci COMMENT 'Brief summary of event. Text and html allowed. Displayed on Event Registration form and can be used on other CMS pages which need an event summary.',
+  `description` text COLLATE utf8_unicode_ci COMMENT 'Full description of event. Text and html allowed. Displayed on built-in Event Information screens.',
+  `event_type_id` int(10) unsigned DEFAULT '0' COMMENT 'Event Type ID.Implicit FK to civicrm_option_value where option_group = event_type.',
+  `participant_listing_id` int(10) unsigned DEFAULT '0' COMMENT 'Should we expose the participant list? Implicit FK to civicrm_option_value where option_group = participant_listing.',
+  `is_public` tinyint(4) DEFAULT '1' COMMENT 'Public events will be included in the iCal feeds. Access to private event information may be limited using ACLs.',
+  `start_date` datetime DEFAULT NULL COMMENT 'Date and time that event starts.',
+  `end_date` datetime DEFAULT NULL COMMENT 'Date and time that event ends. May be NULL if no defined end date/time',
+  `is_online_registration` tinyint(4) DEFAULT '0' COMMENT 'If true, include registration link on Event Info page.',
+  `registration_link_text` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Text for link to Event Registration form which is displayed on Event Information screen when is_online_registration is true.',
+  `registration_start_date` datetime DEFAULT NULL COMMENT 'Date and time that online registration starts.',
+  `registration_end_date` datetime DEFAULT NULL COMMENT 'Date and time that online registration ends.',
+  `max_participants` int(10) unsigned DEFAULT NULL COMMENT 'Maximum number of registered participants to allow. After max is reached, a custom Event Full message is displayed. If NULL, allow unlimited number of participants.',
+  `event_full_text` text COLLATE utf8_unicode_ci COMMENT 'Message to display on Event Information page and INSTEAD OF Event Registration form if maximum participants are signed up. Can include email address/info about getting on a waiting list, etc. Text and html allowed.',
+  `is_monetary` tinyint(4) DEFAULT '0' COMMENT 'Is this a PAID event? If true, one or more fee amounts must be set and a Payment Processor must be configured for Online Event Registration.',
+  `contribution_type_id` int(10) unsigned DEFAULT '0' COMMENT 'Contribution type assigned to paid event registrations for this event. Required if is_monetary is true.',
+  `payment_processor_id` int(10) unsigned DEFAULT NULL COMMENT 'Payment Processor for this Event (if is_monetary is true)',
+  `is_map` tinyint(4) DEFAULT '0' COMMENT 'Include a map block on the Event Information page when geocode info is available and a mapping provider has been specified?',
+  `is_active` tinyint(4) DEFAULT '0' COMMENT 'Is this Event enabled or disabled/cancelled?',
+  `fee_label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `is_show_location` tinyint(4) DEFAULT '1' COMMENT 'If true, show event location.',
+  `loc_block_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Location Block ID',
+  `default_role_id` int(10) unsigned DEFAULT '1' COMMENT 'Participant role ID. Implicit FK to civicrm_option_value where option_group = participant_role.',
+  `intro_text` text COLLATE utf8_unicode_ci COMMENT 'Introductory message for Event Registration page. Text and html allowed. Displayed at the top of Event Registration form.',
+  `footer_text` text COLLATE utf8_unicode_ci COMMENT 'Footer message for Event Registration page. Text and html allowed. Displayed at the bottom of Event Registration form.',
+  `confirm_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Title for Confirmation page.',
+  `confirm_text` text COLLATE utf8_unicode_ci COMMENT 'Introductory message for Event Registration page. Text and html allowed. Displayed at the top of Event Registration form.',
+  `confirm_footer_text` text COLLATE utf8_unicode_ci COMMENT 'Footer message for Event Registration page. Text and html allowed. Displayed at the bottom of Event Registration form.',
+  `is_email_confirm` tinyint(4) DEFAULT '0' COMMENT 'If true, confirmation is automatically emailed to contact on successful registration.',
+  `confirm_email_text` text COLLATE utf8_unicode_ci COMMENT 'text to include above standard event info on confirmation email. emails are text-only, so do not allow html for now',
+  `confirm_from_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'FROM email name used for confirmation emails.',
+  `confirm_from_email` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'FROM email address used for confirmation emails.',
+  `cc_confirm` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'comma-separated list of email addresses to cc each time a confirmation is sent',
+  `bcc_confirm` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'comma-separated list of email addresses to bcc each time a confirmation is sent',
+  `default_fee_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_option_value.',
+  `default_discount_fee_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_option_value.',
+  `thankyou_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Title for ThankYou page.',
+  `thankyou_text` text COLLATE utf8_unicode_ci COMMENT 'ThankYou Text.',
+  `thankyou_footer_text` text COLLATE utf8_unicode_ci COMMENT 'Footer message.',
+  `is_pay_later` tinyint(4) DEFAULT '0' COMMENT 'if true - allows the user to send payment directly to the org later',
+  `pay_later_text` text COLLATE utf8_unicode_ci COMMENT 'The text displayed to the user in the main form',
+  `pay_later_receipt` text COLLATE utf8_unicode_ci COMMENT 'The receipt sent to the user instead of the normal receipt text',
+  `is_multiple_registrations` tinyint(4) DEFAULT '0' COMMENT 'if true - allows the user to register multiple participants for event',
+  `allow_same_participant_emails` tinyint(4) DEFAULT '0' COMMENT 'if true - allows the user to register multiple registrations from same email address.',
+  `has_waitlist` tinyint(4) DEFAULT NULL COMMENT 'Whether the event has waitlist support.',
+  `requires_approval` tinyint(4) DEFAULT NULL COMMENT 'Whether participants require approval before they can finish registering.',
+  `expiration_time` int(10) unsigned DEFAULT NULL COMMENT 'Expire pending but unconfirmed registrations after this many hours.',
+  `waitlist_text` text COLLATE utf8_unicode_ci COMMENT 'Text to display when the event is full, but participants can signup for a waitlist.',
+  `approval_req_text` text COLLATE utf8_unicode_ci COMMENT 'Text to display when the approval is required to complete registration for an event.',
+  `is_template` tinyint(4) DEFAULT '0' COMMENT 'whether the event has template',
+  `template_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Event Template Title',
+  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this event',
+  `created_date` datetime DEFAULT NULL COMMENT 'Date and time that event was created.',
+  PRIMARY KEY (`id`),
   KEY `index_event_type_id` (`event_type_id`),
   KEY `index_participant_listing_id` (`participant_listing_id`),
   KEY `FK_civicrm_event_payment_processor_id` (`payment_processor_id`),
@@ -1505,7 +1501,7 @@ CREATE TABLE `civicrm_event` (
   CONSTRAINT `FK_civicrm_event_loc_block_id` FOREIGN KEY (`loc_block_id`) REFERENCES `civicrm_loc_block` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_event_payment_processor_id` FOREIGN KEY (`payment_processor_id`) REFERENCES `civicrm_payment_processor` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_event`
@@ -1521,19 +1517,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_file`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_file` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique ID',
-  `file_type_id` int(10) unsigned default NULL COMMENT 'Type of file (e.g. Transcript, Income Tax Return, etc). FK to civicrm_option_value.',
-  `mime_type` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'mime type of the document',
-  `uri` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'uri of the file on disk',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+  `file_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Type of file (e.g. Transcript, Income Tax Return, etc). FK to civicrm_option_value.',
+  `mime_type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'mime type of the document',
+  `uri` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'uri of the file on disk',
   `document` mediumblob COMMENT 'contents of the document',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Additional descriptive text regarding this attachment (optional).',
-  `upload_date` datetime default NULL COMMENT 'Date and time that this attachment was uploaded or written to server.',
-  PRIMARY KEY  (`id`)
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Additional descriptive text regarding this attachment (optional).',
+  `upload_date` datetime DEFAULT NULL COMMENT 'Date and time that this attachment was uploaded or written to server.',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_file`
@@ -1549,18 +1545,18 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_financial_account`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_financial_account` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_contact',
-  `name` varchar(255) collate utf8_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `account_type_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_financial_account_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_financial_account_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_financial_account`
@@ -1576,29 +1572,29 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_financial_trxn`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_financial_trxn` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Gift ID',
-  `from_account_id` int(10) unsigned default NULL COMMENT 'FK to financial_account table.',
-  `to_account_id` int(10) unsigned default NULL COMMENT 'FK to financial_account table.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Gift ID',
+  `from_account_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to financial_account table.',
+  `to_account_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to financial_account table.',
   `trxn_date` datetime NOT NULL,
-  `trxn_type` enum('Debit','Credit') collate utf8_unicode_ci NOT NULL,
+  `trxn_type` enum('Debit','Credit') COLLATE utf8_unicode_ci NOT NULL,
   `total_amount` decimal(20,2) NOT NULL COMMENT 'amount of transaction',
-  `fee_amount` decimal(20,2) default NULL COMMENT 'actual processor fee if known - may be 0.',
-  `net_amount` decimal(20,2) default NULL COMMENT 'actual funds transfer amount. total less fees. if processor does not report actual fee during transaction, this is set to total_amount.',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `payment_processor` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'derived from Processor setting in civicrm.settings.php.',
-  `trxn_id` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'unique processor transaction id, bank id + trans id,... depending on payment_method',
-  `trxn_result_code` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'processor result code',
-  PRIMARY KEY  (`id`),
+  `fee_amount` decimal(20,2) DEFAULT NULL COMMENT 'actual processor fee if known - may be 0.',
+  `net_amount` decimal(20,2) DEFAULT NULL COMMENT 'actual funds transfer amount. total less fees. if processor does not report actual fee during transaction, this is set to total_amount.',
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `payment_processor` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'derived from Processor setting in civicrm.settings.php.',
+  `trxn_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'unique processor transaction id, bank id + trans id,... depending on payment_method',
+  `trxn_result_code` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'processor result code',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_ft_trxn_id` (`trxn_id`),
   KEY `FK_civicrm_financial_trxn_from_account_id` (`from_account_id`),
   KEY `FK_civicrm_financial_trxn_to_account_id` (`to_account_id`),
   CONSTRAINT `FK_civicrm_financial_trxn_from_account_id` FOREIGN KEY (`from_account_id`) REFERENCES `civicrm_financial_account` (`id`),
   CONSTRAINT `FK_civicrm_financial_trxn_to_account_id` FOREIGN KEY (`to_account_id`) REFERENCES `civicrm_financial_account` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_financial_trxn`
@@ -1614,30 +1610,30 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_grant`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_grant` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Grant id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Grant id',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'Contact ID of contact record given grant belongs to.',
-  `application_received_date` date default NULL COMMENT 'Date on which grant application was received by donor.',
-  `decision_date` date default NULL COMMENT 'Date on which grant decision was made.',
-  `money_transfer_date` date default NULL COMMENT 'Date on which grant money transfer was made.',
-  `grant_due_date` date default NULL COMMENT 'Date on which grant report is due.',
-  `grant_report_received` tinyint(4) default NULL COMMENT 'Yes/No field stating whether grant report was received by donor.',
+  `application_received_date` date DEFAULT NULL COMMENT 'Date on which grant application was received by donor.',
+  `decision_date` date DEFAULT NULL COMMENT 'Date on which grant decision was made.',
+  `money_transfer_date` date DEFAULT NULL COMMENT 'Date on which grant money transfer was made.',
+  `grant_due_date` date DEFAULT NULL COMMENT 'Date on which grant report is due.',
+  `grant_report_received` tinyint(4) DEFAULT NULL COMMENT 'Yes/No field stating whether grant report was received by donor.',
   `grant_type_id` int(10) unsigned NOT NULL COMMENT 'Type of grant. Implicit FK to civicrm_option_value in grant_type option_group.',
   `amount_total` decimal(20,2) NOT NULL COMMENT 'Requested grant amount, in default currency.',
-  `amount_requested` decimal(20,2) default NULL COMMENT 'Requested grant amount, in original currency (optional).',
-  `amount_granted` decimal(20,2) default NULL COMMENT 'Granted amount, in default currency.',
-  `currency` varchar(8) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `rationale` text collate utf8_unicode_ci COMMENT 'Grant rationale.',
+  `amount_requested` decimal(20,2) DEFAULT NULL COMMENT 'Requested grant amount, in original currency (optional).',
+  `amount_granted` decimal(20,2) DEFAULT NULL COMMENT 'Granted amount, in default currency.',
+  `currency` varchar(8) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `rationale` text COLLATE utf8_unicode_ci COMMENT 'Grant rationale.',
   `status_id` int(10) unsigned NOT NULL COMMENT 'Id of Grant status.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `index_grant_type_id` (`grant_type_id`),
   KEY `index_status_id` (`status_id`),
   KEY `FK_civicrm_grant_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_grant_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_grant`
@@ -1653,33 +1649,33 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_group`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_group` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Group ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Internal name of Group.',
-  `title` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of Group.',
-  `description` text collate utf8_unicode_ci COMMENT 'Optional verbose description of the group.',
-  `source` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Module or process which created this group.',
-  `saved_search_id` int(10) unsigned default NULL COMMENT 'FK to saved search table.',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this entry active?',
-  `visibility` enum('User and User Admin Only','Public Pages') collate utf8_unicode_ci default 'User and User Admin Only' COMMENT 'In what context(s) is this field visible.',
-  `where_clause` text collate utf8_unicode_ci COMMENT 'the sql where clause if a saved search acl',
-  `select_tables` text collate utf8_unicode_ci COMMENT 'the tables to be included in a select data',
-  `where_tables` text collate utf8_unicode_ci COMMENT 'the tables to be included in the count statement',
-  `group_type` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'FK to group type',
-  `cache_date` datetime default NULL COMMENT 'Date when we created the cache for a smart group',
-  `parents` text collate utf8_unicode_ci COMMENT 'IDs of the parent(s)',
-  `children` text collate utf8_unicode_ci COMMENT 'IDs of the child(ren)',
-  `is_hidden` tinyint(4) default '0' COMMENT 'Is this group hidden?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Group ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Internal name of Group.',
+  `title` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of Group.',
+  `description` text COLLATE utf8_unicode_ci COMMENT 'Optional verbose description of the group.',
+  `source` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Module or process which created this group.',
+  `saved_search_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to saved search table.',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this entry active?',
+  `visibility` enum('User and User Admin Only','Public Pages') COLLATE utf8_unicode_ci DEFAULT 'User and User Admin Only' COMMENT 'In what context(s) is this field visible.',
+  `where_clause` text COLLATE utf8_unicode_ci COMMENT 'the sql where clause if a saved search acl',
+  `select_tables` text COLLATE utf8_unicode_ci COMMENT 'the tables to be included in a select data',
+  `where_tables` text COLLATE utf8_unicode_ci COMMENT 'the tables to be included in the count statement',
+  `group_type` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'FK to group type',
+  `cache_date` datetime DEFAULT NULL COMMENT 'Date when we created the cache for a smart group',
+  `parents` text COLLATE utf8_unicode_ci COMMENT 'IDs of the parent(s)',
+  `children` text COLLATE utf8_unicode_ci COMMENT 'IDs of the child(ren)',
+  `is_hidden` tinyint(4) DEFAULT '0' COMMENT 'Is this group hidden?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_title` (`title`),
   UNIQUE KEY `UI_name` (`name`),
   KEY `index_group_type` (`group_type`),
   KEY `FK_civicrm_group_saved_search_id` (`saved_search_id`),
   CONSTRAINT `FK_civicrm_group_saved_search_id` FOREIGN KEY (`saved_search_id`) REFERENCES `civicrm_saved_search` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_group`
@@ -1696,16 +1692,16 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_group_contact`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_group_contact` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `group_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_group',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_contact',
-  `status` enum('Added','Removed','Pending') collate utf8_unicode_ci default NULL COMMENT 'status of contact relative to membership in group',
-  `location_id` int(10) unsigned default NULL COMMENT 'Optional location to associate with this membership',
-  `email_id` int(10) unsigned default NULL COMMENT 'Optional email to associate with this membership',
-  PRIMARY KEY  (`id`),
+  `status` enum('Added','Removed','Pending') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'status of contact relative to membership in group',
+  `location_id` int(10) unsigned DEFAULT NULL COMMENT 'Optional location to associate with this membership',
+  `email_id` int(10) unsigned DEFAULT NULL COMMENT 'Optional email to associate with this membership',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_contact_group` (`contact_id`,`group_id`),
   KEY `FK_civicrm_group_contact_group_id` (`group_id`),
   KEY `FK_civicrm_group_contact_location_id` (`location_id`),
@@ -1715,7 +1711,7 @@ CREATE TABLE `civicrm_group_contact` (
   CONSTRAINT `FK_civicrm_group_contact_group_id` FOREIGN KEY (`group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_group_contact_location_id` FOREIGN KEY (`location_id`) REFERENCES `civicrm_loc_block` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_group_contact`
@@ -1731,19 +1727,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_group_contact_cache`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_group_contact_cache` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `group_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_group',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_contact',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_contact_group` (`contact_id`,`group_id`),
   KEY `FK_civicrm_group_contact_cache_group_id` (`group_id`),
   CONSTRAINT `FK_civicrm_group_contact_cache_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_group_contact_cache_group_id` FOREIGN KEY (`group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_group_contact_cache`
@@ -1759,19 +1755,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_group_nesting`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_group_nesting` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Relationship ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Relationship ID',
   `child_group_id` int(10) unsigned NOT NULL COMMENT 'ID of the child group',
   `parent_group_id` int(10) unsigned NOT NULL COMMENT 'ID of the parent group',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_group_nesting_child_group_id` (`child_group_id`),
   KEY `FK_civicrm_group_nesting_parent_group_id` (`parent_group_id`),
   CONSTRAINT `FK_civicrm_group_nesting_child_group_id` FOREIGN KEY (`child_group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_group_nesting_parent_group_id` FOREIGN KEY (`parent_group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_group_nesting`
@@ -1787,19 +1783,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_group_organization`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_group_organization` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Relationship ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Relationship ID',
   `group_id` int(10) unsigned NOT NULL COMMENT 'ID of the group',
   `organization_id` int(10) unsigned NOT NULL COMMENT 'ID of the Organization Contact',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_group_organization` (`group_id`,`organization_id`),
   KEY `FK_civicrm_group_organization_organization_id` (`organization_id`),
   CONSTRAINT `FK_civicrm_group_organization_group_id` FOREIGN KEY (`group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_group_organization_organization_id` FOREIGN KEY (`organization_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_group_organization`
@@ -1815,17 +1811,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_im`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_im` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique IM ID',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `location_type_id` int(10) unsigned default NULL COMMENT 'Which Location does this email belong to.',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'IM screen name',
-  `provider_id` int(10) unsigned default NULL COMMENT 'Which IM Provider does this screen name belong to.',
-  `is_primary` tinyint(4) default '0' COMMENT 'Is this the primary IM for this contact and location.',
-  `is_billing` tinyint(4) default '0' COMMENT 'Is this the billing?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique IM ID',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `location_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Location does this email belong to.',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'IM screen name',
+  `provider_id` int(10) unsigned DEFAULT NULL COMMENT 'Which IM Provider does this screen name belong to.',
+  `is_primary` tinyint(4) DEFAULT '0' COMMENT 'Is this the primary IM for this contact and location.',
+  `is_billing` tinyint(4) DEFAULT '0' COMMENT 'Is this the billing?',
+  PRIMARY KEY (`id`),
   KEY `index_location_type` (`location_type_id`),
   KEY `UI_provider_id` (`provider_id`),
   KEY `index_is_primary` (`is_primary`),
@@ -1833,7 +1829,7 @@ CREATE TABLE `civicrm_im` (
   KEY `FK_civicrm_im_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_im_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_im`
@@ -1849,25 +1845,25 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_line_item`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_line_item` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Line Item',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'table which has the transaction',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Line Item',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'table which has the transaction',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'entry in table',
   `price_field_id` int(10) unsigned NOT NULL COMMENT 'FK to price_field',
   `option_group_id` int(10) unsigned NOT NULL COMMENT 'FK to option group',
-  `label` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'descriptive label for item - from custom_option.label',
+  `label` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'descriptive label for item - from custom_option.label',
   `qty` int(10) unsigned NOT NULL COMMENT 'How many items ordered',
   `unit_price` decimal(20,2) NOT NULL COMMENT 'price of each item',
   `line_total` decimal(20,2) NOT NULL COMMENT 'qty * unit_price',
-  `participant_count` int(10) unsigned default NULL COMMENT 'Participant count for field',
-  PRIMARY KEY  (`id`),
+  `participant_count` int(10) unsigned DEFAULT NULL COMMENT 'Participant count for field',
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `FK_civicrm_line_item_price_field_id` (`price_field_id`),
   CONSTRAINT `FK_civicrm_line_item_price_field_id` FOREIGN KEY (`price_field_id`) REFERENCES `civicrm_price_field` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_line_item`
@@ -1883,19 +1879,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_loc_block`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_loc_block` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique ID',
-  `address_id` int(10) unsigned default NULL,
-  `email_id` int(10) unsigned default NULL,
-  `phone_id` int(10) unsigned default NULL,
-  `im_id` int(10) unsigned default NULL,
-  `address_2_id` int(10) unsigned default NULL,
-  `email_2_id` int(10) unsigned default NULL,
-  `phone_2_id` int(10) unsigned default NULL,
-  `im_2_id` int(10) unsigned default NULL,
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique ID',
+  `address_id` int(10) unsigned DEFAULT NULL,
+  `email_id` int(10) unsigned DEFAULT NULL,
+  `phone_id` int(10) unsigned DEFAULT NULL,
+  `im_id` int(10) unsigned DEFAULT NULL,
+  `address_2_id` int(10) unsigned DEFAULT NULL,
+  `email_2_id` int(10) unsigned DEFAULT NULL,
+  `phone_2_id` int(10) unsigned DEFAULT NULL,
+  `im_2_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_loc_block_address_id` (`address_id`),
   KEY `FK_civicrm_loc_block_email_id` (`email_id`),
   KEY `FK_civicrm_loc_block_phone_id` (`phone_id`),
@@ -1913,7 +1909,7 @@ CREATE TABLE `civicrm_loc_block` (
   CONSTRAINT `FK_civicrm_loc_block_phone_2_id` FOREIGN KEY (`phone_2_id`) REFERENCES `civicrm_phone` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_loc_block_phone_id` FOREIGN KEY (`phone_id`) REFERENCES `civicrm_phone` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_loc_block`
@@ -1921,7 +1917,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_loc_block` WRITE;
 /*!40000 ALTER TABLE `civicrm_loc_block` DISABLE KEYS */;
-INSERT INTO `civicrm_loc_block` VALUES (1,1,NULL,1,NULL,NULL,NULL,NULL,NULL),(2,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `civicrm_loc_block` VALUES (1,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL),(2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `civicrm_loc_block` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1930,20 +1926,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_location_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_location_type` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Location Type ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Location Type Name.',
-  `vcard_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'vCard Location Type Name.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Location Type Description.',
-  `is_reserved` tinyint(4) default NULL COMMENT 'Is this location type a predefined system location?',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  `is_default` tinyint(4) default NULL COMMENT 'Is this location type the default?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Location Type ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Location Type Name.',
+  `vcard_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'vCard Location Type Name.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Location Type Description.',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'Is this location type a predefined system location?',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  `is_default` tinyint(4) DEFAULT NULL COMMENT 'Is this location type the default?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_location_type`
@@ -1960,21 +1956,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_log`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_log` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Log ID',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Log ID',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the referenced item.',
-  `data` text collate utf8_unicode_ci COMMENT 'Updates does to this object if any.',
-  `modified_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID of person under whose credentials this data modification was made.',
-  `modified_date` datetime default NULL COMMENT 'When was the referenced entity created or modified or deleted.',
-  PRIMARY KEY  (`id`),
+  `data` text COLLATE utf8_unicode_ci COMMENT 'Updates does to this object if any.',
+  `modified_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID of person under whose credentials this data modification was made.',
+  `modified_date` datetime DEFAULT NULL COMMENT 'When was the referenced entity created or modified or deleted.',
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `FK_civicrm_log_modified_id` (`modified_id`),
   CONSTRAINT `FK_civicrm_log_modified_id` FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_log`
@@ -1982,7 +1978,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_log` WRITE;
 /*!40000 ALTER TABLE `civicrm_log` DISABLE KEYS */;
-INSERT INTO `civicrm_log` VALUES (1,'civicrm_contact',1,'civicrm_contact,1',1,'2010-05-17 01:12:28'),(2,'civicrm_activity',1,'Activity created for source=1, assignee=',1,'2010-05-17 03:55:53'),(3,'civicrm_activity',2,'Activity created for source=1, assignee=',1,'2010-05-17 04:29:22'),(4,'civicrm_activity',3,'Activity created for source=1, assignee=',1,'2010-05-17 04:35:52'),(5,'civicrm_activity',4,'Activity created for source=1, assignee=',1,'2010-05-17 04:40:40'),(6,'civicrm_activity',5,'Activity created for source=1, assignee=',1,'2010-05-17 04:41:30'),(7,'civicrm_activity',6,'Activity created for source=1, assignee=',1,'2010-05-17 04:47:07'),(8,'civicrm_activity',7,'Activity created for source=1, assignee=',1,'2010-05-17 05:10:38'),(9,'civicrm_activity',8,'Activity created for source=1, assignee=',1,'2010-05-17 05:11:41'),(10,'civicrm_activity',9,'Activity created for source=1, assignee=',1,'2010-05-17 05:37:18'),(12,'civicrm_activity',10,'Activity created for source=1, target=2, assignee=',1,'2010-05-17 07:50:33'),(13,'civicrm_activity',11,'Activity created for source=1',1,'2010-05-17 15:56:28'),(14,'civicrm_activity',12,'Activity created for source=1, assignee=',1,'2010-05-25 16:04:08'),(16,'civicrm_activity',13,'Activity created for source=1, target=3, assignee=',1,'2010-05-25 16:37:49'),(17,'civicrm_domain',1,'upgrade:3.2.alpha3->3.2.alpha4.upgrade',NULL,'2010-05-26 17:41:31'),(18,'civicrm_domain',1,'upgrade:3.2.alpha4.upgrade->3.2.alpha4',NULL,'2010-05-26 17:41:32'),(19,'civicrm_domain',1,'upgrade:3.2.alpha4->3.2.alpha4',NULL,'2010-05-26 17:41:32'),(20,'civicrm_contact',1,'civicrm_email,2',1,'2010-05-27 17:49:30'),(21,'civicrm_contact',1,'civicrm_contact,1',1,'2010-05-28 06:57:04'),(22,'civicrm_domain',1,'upgrade:3.2.alpha4->3.2.beta1.upgrade',NULL,'2010-06-24 09:52:05'),(23,'civicrm_domain',1,'upgrade:3.2.beta1.upgrade->3.2.beta1',NULL,'2010-06-24 09:52:06'),(24,'civicrm_domain',1,'upgrade:3.2.beta1->3.2.beta2',NULL,'2010-06-24 09:52:06'),(25,'civicrm_contact',4,'civicrm_contact,4',1,'2010-07-01 15:42:07'),(26,'civicrm_contact',4,'civicrm_contact,4',1,'2010-07-01 15:46:47'),(27,'civicrm_domain',1,'upgrade:3.2.beta2->3.2.beta3.upgrade',NULL,'2010-07-08 16:02:19'),(28,'civicrm_domain',1,'upgrade:3.2.beta3.upgrade->3.2.beta3',NULL,'2010-07-08 16:02:19'),(29,'civicrm_domain',1,'upgrade:3.2.beta3->3.2.beta3',NULL,'2010-07-08 16:02:19'),(30,'civicrm_contact',5,'civicrm_contact,5',1,'2010-08-12 11:41:11'),(31,'civicrm_contact',6,'civicrm_contact,6',1,'2010-08-12 11:45:35'),(32,'civicrm_contact',7,'civicrm_contact,7',1,'2010-08-19 14:26:30'),(33,'civicrm_contact',8,'civicrm_contact,8',1,'2010-08-20 08:39:38'),(34,'civicrm_activity',1,'Activity created for source=1, target=1, assignee=',1,'2010-08-25 13:20:17');
 /*!40000 ALTER TABLE `civicrm_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1991,26 +1986,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mail_settings`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mail_settings` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'primary key',
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this match entry for',
-  `name` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'name of this group of settings',
-  `is_default` tinyint(4) default NULL COMMENT 'whether this is the default set of settings for this domain',
-  `domain` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'email address domain (the part after @)',
-  `localpart` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'optional local part (like civimail+ for addresses like civimail+s.1.2@example.com)',
-  `return_path` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'contents of the Return-Path header',
-  `protocol` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'name of the protocol to use for polling (like IMAP, POP3 or Maildir)',
-  `server` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'server to use when polling',
-  `port` int(10) unsigned default NULL COMMENT 'port to use when polling',
-  `username` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'username to use when polling',
-  `password` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'password to use when polling',
-  `is_ssl` tinyint(4) default NULL COMMENT 'whether to use SSL or not',
-  `source` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'folder to poll from when using IMAP, path to poll from when using Maildir, etc.',
-  PRIMARY KEY  (`id`)
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'name of this group of settings',
+  `is_default` tinyint(4) DEFAULT NULL COMMENT 'whether this is the default set of settings for this domain',
+  `domain` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'email address domain (the part after @)',
+  `localpart` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'optional local part (like civimail+ for addresses like civimail+s.1.2@example.com)',
+  `return_path` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'contents of the Return-Path header',
+  `protocol` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'name of the protocol to use for polling (like IMAP, POP3 or Maildir)',
+  `server` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'server to use when polling',
+  `port` int(10) unsigned DEFAULT NULL COMMENT 'port to use when polling',
+  `username` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'username to use when polling',
+  `password` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'password to use when polling',
+  `is_ssl` tinyint(4) DEFAULT NULL COMMENT 'whether to use SSL or not',
+  `source` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'folder to poll from when using IMAP, path to poll from when using Maildir, etc.',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mail_settings`
@@ -2027,35 +2022,35 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `header_id` int(10) unsigned default NULL COMMENT 'FK to the header component.',
-  `footer_id` int(10) unsigned default NULL COMMENT 'FK to the footer component.',
-  `reply_id` int(10) unsigned default NULL COMMENT 'FK to the auto-responder component.',
-  `unsubscribe_id` int(10) unsigned default NULL COMMENT 'FK to the unsubscribe component.',
-  `resubscribe_id` int(10) unsigned default NULL,
-  `optout_id` int(10) unsigned default NULL COMMENT 'FK to the opt-out component.',
-  `name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Mailing Name.',
-  `from_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'From Header of mailing',
-  `from_email` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'From Email of mailing',
-  `replyto_email` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Reply-To Email of mailing',
-  `subject` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Subject of mailing',
-  `body_text` longtext collate utf8_unicode_ci COMMENT 'Body of the mailing in text format.',
-  `body_html` longtext collate utf8_unicode_ci COMMENT 'Body of the mailing in html format.',
-  `url_tracking` tinyint(4) default NULL COMMENT 'Should we track URL click-throughs for this mailing?',
-  `forward_replies` tinyint(4) default NULL COMMENT 'Should we forward replies back to the author?',
-  `auto_responder` tinyint(4) default NULL COMMENT 'Should we enable the auto-responder?',
-  `open_tracking` tinyint(4) default NULL COMMENT 'Should we track when recipients open/read this mailing?',
-  `is_completed` tinyint(4) default NULL COMMENT 'Has at least one job associated with this mailing finished?',
-  `msg_template_id` int(10) unsigned default NULL COMMENT 'FK to the message template.',
-  `override_verp` tinyint(4) default '0' COMMENT 'Should we overrite VERP address in Reply-To',
-  `created_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID who first created this mailing',
-  `created_date` datetime default NULL COMMENT 'Date and time this mailing was created.',
-  `scheduled_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID who scheduled this mailing',
-  `is_archived` tinyint(4) default '0' COMMENT 'Is this mailing archived?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `header_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to the header component.',
+  `footer_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to the footer component.',
+  `reply_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to the auto-responder component.',
+  `unsubscribe_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to the unsubscribe component.',
+  `resubscribe_id` int(10) unsigned DEFAULT NULL,
+  `optout_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to the opt-out component.',
+  `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Mailing Name.',
+  `from_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'From Header of mailing',
+  `from_email` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'From Email of mailing',
+  `replyto_email` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Reply-To Email of mailing',
+  `subject` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Subject of mailing',
+  `body_text` longtext COLLATE utf8_unicode_ci COMMENT 'Body of the mailing in text format.',
+  `body_html` longtext COLLATE utf8_unicode_ci COMMENT 'Body of the mailing in html format.',
+  `url_tracking` tinyint(4) DEFAULT NULL COMMENT 'Should we track URL click-throughs for this mailing?',
+  `forward_replies` tinyint(4) DEFAULT NULL COMMENT 'Should we forward replies back to the author?',
+  `auto_responder` tinyint(4) DEFAULT NULL COMMENT 'Should we enable the auto-responder?',
+  `open_tracking` tinyint(4) DEFAULT NULL COMMENT 'Should we track when recipients open/read this mailing?',
+  `is_completed` tinyint(4) DEFAULT NULL COMMENT 'Has at least one job associated with this mailing finished?',
+  `msg_template_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to the message template.',
+  `override_verp` tinyint(4) DEFAULT '0' COMMENT 'Should we overrite VERP address in Reply-To',
+  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID who first created this mailing',
+  `created_date` datetime DEFAULT NULL COMMENT 'Date and time this mailing was created.',
+  `scheduled_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID who scheduled this mailing',
+  `is_archived` tinyint(4) DEFAULT '0' COMMENT 'Is this mailing archived?',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_header_id` (`header_id`),
   KEY `FK_civicrm_mailing_footer_id` (`footer_id`),
   KEY `FK_civicrm_mailing_reply_id` (`reply_id`),
@@ -2073,7 +2068,7 @@ CREATE TABLE `civicrm_mailing` (
   CONSTRAINT `FK_civicrm_mailing_scheduled_id` FOREIGN KEY (`scheduled_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_mailing_unsubscribe_id` FOREIGN KEY (`unsubscribe_id`) REFERENCES `civicrm_mailing_component` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing`
@@ -2089,17 +2084,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_bounce_pattern`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_bounce_pattern` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `bounce_type_id` int(10) unsigned NOT NULL COMMENT 'Type of bounce',
-  `pattern` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'A regexp to match a message to a bounce type',
-  PRIMARY KEY  (`id`),
+  `pattern` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'A regexp to match a message to a bounce type',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_bounce_pattern_bounce_type_id` (`bounce_type_id`),
   CONSTRAINT `FK_civicrm_mailing_bounce_pattern_bounce_type_id` FOREIGN KEY (`bounce_type_id`) REFERENCES `civicrm_mailing_bounce_type` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_bounce_pattern`
@@ -2116,16 +2111,16 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_bounce_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_bounce_type` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `name` enum('AOL','Away','DNS','Host','Inactive','Invalid','Loop','Quota','Relay','Spam','Syntax','Unknown') collate utf8_unicode_ci NOT NULL COMMENT 'Type of bounce',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'A description of this bounce type',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` enum('AOL','Away','DNS','Host','Inactive','Invalid','Loop','Quota','Relay','Spam','Syntax','Unknown') COLLATE utf8_unicode_ci NOT NULL COMMENT 'Type of bounce',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'A description of this bounce type',
   `hold_threshold` int(10) unsigned NOT NULL COMMENT 'Number of bounces of this type required before the email address is put on bounce hold',
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_bounce_type`
@@ -2142,20 +2137,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_component`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_component` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'The name of this component',
-  `component_type` enum('Header','Footer','Subscribe','Welcome','Unsubscribe','OptOut','Reply','Resubscribe') collate utf8_unicode_ci default NULL COMMENT 'Type of Component.',
-  `subject` varchar(255) collate utf8_unicode_ci default NULL,
-  `body_html` text collate utf8_unicode_ci COMMENT 'Body of the component in html format.',
-  `body_text` text collate utf8_unicode_ci COMMENT 'Body of the component in text format.',
-  `is_default` tinyint(4) default '0' COMMENT 'Is this the default component for this component_type?',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this property active?',
-  PRIMARY KEY  (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The name of this component',
+  `component_type` enum('Header','Footer','Subscribe','Welcome','Unsubscribe','OptOut','Reply','Resubscribe') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Type of Component.',
+  `subject` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `body_html` text COLLATE utf8_unicode_ci COMMENT 'Body of the component in html format.',
+  `body_text` text COLLATE utf8_unicode_ci COMMENT 'Body of the component in text format.',
+  `is_default` tinyint(4) DEFAULT '0' COMMENT 'Is this the default component for this component_type?',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this property active?',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_component`
@@ -2172,19 +2167,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_bounce`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_bounce` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_queue_id` int(10) unsigned NOT NULL COMMENT 'FK to EventQueue',
-  `bounce_type_id` int(10) unsigned default NULL COMMENT 'What type of bounce was it?',
-  `bounce_reason` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'The reason the email bounced.',
+  `bounce_type_id` int(10) unsigned DEFAULT NULL COMMENT 'What type of bounce was it?',
+  `bounce_reason` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The reason the email bounced.',
   `time_stamp` datetime NOT NULL COMMENT 'When this bounce event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_bounce_event_queue_id` (`event_queue_id`),
   CONSTRAINT `FK_civicrm_mailing_event_bounce_event_queue_id` FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_bounce`
@@ -2200,17 +2195,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_confirm`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_confirm` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_subscribe_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_mailing_event_subscribe',
   `time_stamp` datetime NOT NULL COMMENT 'When this confirmation event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_confirm_event_subscribe_id` (`event_subscribe_id`),
   CONSTRAINT `FK_civicrm_mailing_event_confirm_event_subscribe_id` FOREIGN KEY (`event_subscribe_id`) REFERENCES `civicrm_mailing_event_subscribe` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_confirm`
@@ -2226,17 +2221,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_delivered`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_delivered` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_queue_id` int(10) unsigned NOT NULL COMMENT 'FK to EventQueue',
   `time_stamp` datetime NOT NULL COMMENT 'When this delivery event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_delivered_event_queue_id` (`event_queue_id`),
   CONSTRAINT `FK_civicrm_mailing_event_delivered_event_queue_id` FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_delivered`
@@ -2252,20 +2247,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_forward`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_forward` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_queue_id` int(10) unsigned NOT NULL COMMENT 'FK to EventQueue',
-  `dest_queue_id` int(10) unsigned default NULL COMMENT 'FK to EventQueue for destination',
+  `dest_queue_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to EventQueue for destination',
   `time_stamp` datetime NOT NULL COMMENT 'When this forward event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_forward_event_queue_id` (`event_queue_id`),
   KEY `FK_civicrm_mailing_event_forward_dest_queue_id` (`dest_queue_id`),
   CONSTRAINT `FK_civicrm_mailing_event_forward_dest_queue_id` FOREIGN KEY (`dest_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_mailing_event_forward_event_queue_id` FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_forward`
@@ -2281,17 +2276,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_opened`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_opened` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_queue_id` int(10) unsigned NOT NULL COMMENT 'FK to EventQueue',
   `time_stamp` datetime NOT NULL COMMENT 'When this open event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_opened_event_queue_id` (`event_queue_id`),
   CONSTRAINT `FK_civicrm_mailing_event_opened_event_queue_id` FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_opened`
@@ -2307,15 +2302,15 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_queue`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_queue` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `job_id` int(10) unsigned NOT NULL COMMENT 'FK to Job',
   `email_id` int(10) unsigned NOT NULL COMMENT 'FK to Email',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to Contact',
-  `hash` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Security hash',
-  PRIMARY KEY  (`id`),
+  `hash` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Security hash',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_queue_job_id` (`job_id`),
   KEY `FK_civicrm_mailing_event_queue_email_id` (`email_id`),
   KEY `FK_civicrm_mailing_event_queue_contact_id` (`contact_id`),
@@ -2323,7 +2318,7 @@ CREATE TABLE `civicrm_mailing_event_queue` (
   CONSTRAINT `FK_civicrm_mailing_event_queue_email_id` FOREIGN KEY (`email_id`) REFERENCES `civicrm_email` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_mailing_event_queue_job_id` FOREIGN KEY (`job_id`) REFERENCES `civicrm_mailing_job` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_queue`
@@ -2339,17 +2334,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_reply`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_reply` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_queue_id` int(10) unsigned NOT NULL COMMENT 'FK to EventQueue',
   `time_stamp` datetime NOT NULL COMMENT 'When this reply event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_reply_event_queue_id` (`event_queue_id`),
   CONSTRAINT `FK_civicrm_mailing_event_reply_event_queue_id` FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_reply`
@@ -2365,21 +2360,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_subscribe`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_subscribe` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `group_id` int(10) unsigned NOT NULL COMMENT 'FK to Group',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to Contact',
-  `hash` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Security hash',
+  `hash` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Security hash',
   `time_stamp` datetime NOT NULL COMMENT 'When this subscription event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_subscribe_group_id` (`group_id`),
   KEY `FK_civicrm_mailing_event_subscribe_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_mailing_event_subscribe_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_mailing_event_subscribe_group_id` FOREIGN KEY (`group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_subscribe`
@@ -2395,20 +2390,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_trackable_url_open`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_trackable_url_open` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_queue_id` int(10) unsigned NOT NULL COMMENT 'FK to EventQueue',
   `trackable_url_id` int(10) unsigned NOT NULL COMMENT 'FK to TrackableURL',
   `time_stamp` datetime NOT NULL COMMENT 'When this trackable URL open occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_trackable_url_open_event_queue_id` (`event_queue_id`),
   KEY `FK_civicrm_mailing_event_trackable_url_open_trackable_url_id` (`trackable_url_id`),
   CONSTRAINT `FK_civicrm_mailing_event_trackable_url_open_event_queue_id` FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_mailing_event_trackable_url_open_trackable_url_id` FOREIGN KEY (`trackable_url_id`) REFERENCES `civicrm_mailing_trackable_url` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_trackable_url_open`
@@ -2424,18 +2419,18 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_event_unsubscribe`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_event_unsubscribe` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `event_queue_id` int(10) unsigned NOT NULL COMMENT 'FK to EventQueue',
   `org_unsubscribe` tinyint(4) NOT NULL COMMENT 'Unsubscribe at org- or group-level',
   `time_stamp` datetime NOT NULL COMMENT 'When this delivery event occurred.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_event_unsubscribe_event_queue_id` (`event_queue_id`),
   CONSTRAINT `FK_civicrm_mailing_event_unsubscribe_event_queue_id` FOREIGN KEY (`event_queue_id`) REFERENCES `civicrm_mailing_event_queue` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_event_unsubscribe`
@@ -2451,21 +2446,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_group`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_group` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `mailing_id` int(10) unsigned NOT NULL COMMENT 'The ID of a previous mailing to include/exclude recipients.',
-  `group_type` enum('Include','Exclude','Base') collate utf8_unicode_ci default NULL COMMENT 'Are the members of the group included or excluded?.',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
+  `group_type` enum('Include','Exclude','Base') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Are the members of the group included or excluded?.',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the referenced item.',
-  `search_id` int(11) default NULL COMMENT 'The filtering search. custom search id or -1 for civicrm api search',
-  `search_args` text collate utf8_unicode_ci COMMENT 'The arguments to be sent to the search function',
-  PRIMARY KEY  (`id`),
+  `search_id` int(11) DEFAULT NULL COMMENT 'The filtering search. custom search id or -1 for civicrm api search',
+  `search_args` text COLLATE utf8_unicode_ci COMMENT 'The arguments to be sent to the search function',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_group_mailing_id` (`mailing_id`),
   CONSTRAINT `FK_civicrm_mailing_group_mailing_id` FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_group`
@@ -2481,21 +2476,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_job`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_job` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `mailing_id` int(10) unsigned NOT NULL COMMENT 'The ID of the mailing this Job will send.',
-  `scheduled_date` datetime default NULL COMMENT 'date on which this job was scheduled.',
-  `start_date` datetime default NULL COMMENT 'date on which this job was started.',
-  `end_date` datetime default NULL COMMENT 'date on which this job ended.',
-  `status` enum('Scheduled','Running','Complete','Paused','Canceled') collate utf8_unicode_ci default NULL COMMENT 'The state of this job',
-  `is_test` tinyint(4) default '0' COMMENT 'Is this job for a test mail?',
-  PRIMARY KEY  (`id`),
+  `scheduled_date` datetime DEFAULT NULL COMMENT 'date on which this job was scheduled.',
+  `start_date` datetime DEFAULT NULL COMMENT 'date on which this job was started.',
+  `end_date` datetime DEFAULT NULL COMMENT 'date on which this job ended.',
+  `status` enum('Scheduled','Running','Complete','Paused','Canceled') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The state of this job',
+  `is_test` tinyint(4) DEFAULT '0' COMMENT 'Is this job for a test mail?',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_job_mailing_id` (`mailing_id`),
   CONSTRAINT `FK_civicrm_mailing_job_mailing_id` FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_job`
@@ -2511,21 +2506,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_spool`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_spool` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `job_id` int(10) unsigned NOT NULL COMMENT 'The ID of the Job .',
-  `recipient_email` text collate utf8_unicode_ci COMMENT 'The email of the receipients this mail is to be sent.',
-  `headers` text collate utf8_unicode_ci COMMENT 'The header information of this mailing .',
-  `body` text collate utf8_unicode_ci COMMENT 'The body of this mailing.',
-  `added_at` datetime default NULL COMMENT 'date on which this job was added.',
-  `removed_at` datetime default NULL COMMENT 'date on which this job was removed.',
-  PRIMARY KEY  (`id`),
+  `recipient_email` text COLLATE utf8_unicode_ci COMMENT 'The email of the receipients this mail is to be sent.',
+  `headers` text COLLATE utf8_unicode_ci COMMENT 'The header information of this mailing .',
+  `body` text COLLATE utf8_unicode_ci COMMENT 'The body of this mailing.',
+  `added_at` datetime DEFAULT NULL COMMENT 'date on which this job was added.',
+  `removed_at` datetime DEFAULT NULL COMMENT 'date on which this job was removed.',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_spool_job_id` (`job_id`),
   CONSTRAINT `FK_civicrm_mailing_spool_job_id` FOREIGN KEY (`job_id`) REFERENCES `civicrm_mailing_job` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_spool`
@@ -2541,17 +2536,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mailing_trackable_url`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mailing_trackable_url` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `url` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'The URL to be tracked.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `url` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The URL to be tracked.',
   `mailing_id` int(10) unsigned NOT NULL COMMENT 'FK to the mailing',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mailing_trackable_url_mailing_id` (`mailing_id`),
   CONSTRAINT `FK_civicrm_mailing_trackable_url_mailing_id` FOREIGN KEY (`mailing_id`) REFERENCES `civicrm_mailing` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mailing_trackable_url`
@@ -2567,17 +2562,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mapping`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mapping` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Mapping ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of Mapping',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Description of Mapping.',
-  `mapping_type_id` int(10) unsigned default NULL COMMENT 'Mapping Type',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Mapping ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of Mapping',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Description of Mapping.',
+  `mapping_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Mapping Type',
+  PRIMARY KEY (`id`),
   KEY `UI_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mapping`
@@ -2594,23 +2589,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_mapping_field`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_mapping_field` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Mapping Field ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Mapping Field ID',
   `mapping_id` int(10) unsigned NOT NULL COMMENT 'Mapping to which this field belongs',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Mapping field key',
-  `contact_type` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Contact Type in mapping',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Mapping field key',
+  `contact_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Contact Type in mapping',
   `column_number` int(10) unsigned NOT NULL COMMENT 'Column number for mapping set',
-  `location_type_id` int(10) unsigned default NULL COMMENT 'Location type of this mapping, if required',
-  `phone_type_id` int(10) unsigned default NULL COMMENT 'Which type of phone does this number belongs.',
-  `im_provider_id` int(10) unsigned default NULL COMMENT 'Which type of IM Provider does this name belong.',
-  `relationship_type_id` int(10) unsigned default NULL COMMENT 'Relationship type, if required',
-  `relationship_direction` varchar(6) collate utf8_unicode_ci default NULL,
-  `grouping` int(10) unsigned default '1' COMMENT 'Used to group mapping_field records into related sets (e.g. for criteria sets in search builder mappings).',
-  `operator` enum('=','!=','>','<','>=','<=','IN','NOT IN','LIKE','NOT LIKE','IS NULL','IS NOT NULL') collate utf8_unicode_ci default NULL COMMENT 'SQL WHERE operator for search-builder mapping fields (search criteria).',
-  `value` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'SQL WHERE value for search-builder mapping fields.',
-  PRIMARY KEY  (`id`),
+  `location_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Location type of this mapping, if required',
+  `phone_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which type of phone does this number belongs.',
+  `im_provider_id` int(10) unsigned DEFAULT NULL COMMENT 'Which type of IM Provider does this name belong.',
+  `relationship_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Relationship type, if required',
+  `relationship_direction` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `grouping` int(10) unsigned DEFAULT '1' COMMENT 'Used to group mapping_field records into related sets (e.g. for criteria sets in search builder mappings).',
+  `operator` enum('=','!=','>','<','>=','<=','IN','NOT IN','LIKE','NOT LIKE','IS NULL','IS NOT NULL') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'SQL WHERE operator for search-builder mapping fields (search criteria).',
+  `value` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'SQL WHERE value for search-builder mapping fields.',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_mapping_field_mapping_id` (`mapping_id`),
   KEY `FK_civicrm_mapping_field_location_type_id` (`location_type_id`),
   KEY `FK_civicrm_mapping_field_relationship_type_id` (`relationship_type_id`),
@@ -2618,7 +2613,7 @@ CREATE TABLE `civicrm_mapping_field` (
   CONSTRAINT `FK_civicrm_mapping_field_mapping_id` FOREIGN KEY (`mapping_id`) REFERENCES `civicrm_mapping` (`id`),
   CONSTRAINT `FK_civicrm_mapping_field_relationship_type_id` FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_mapping_field`
@@ -2635,23 +2630,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_membership`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_membership` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Membership Id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Membership Id',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to Contact ID',
   `membership_type_id` int(10) unsigned NOT NULL COMMENT 'FK to Membership Type',
-  `join_date` date default NULL COMMENT 'Beginning of initial membership period (member since...).',
-  `start_date` date default NULL COMMENT 'Beginning of current uninterrupted membership period.',
-  `end_date` date default NULL COMMENT 'Current membership period expire date.',
-  `source` varchar(128) collate utf8_unicode_ci default NULL,
+  `join_date` date DEFAULT NULL COMMENT 'Beginning of initial membership period (member since...).',
+  `start_date` date DEFAULT NULL COMMENT 'Beginning of current uninterrupted membership period.',
+  `end_date` date DEFAULT NULL COMMENT 'Current membership period expire date.',
+  `source` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL,
   `status_id` int(10) unsigned NOT NULL COMMENT 'FK to Membership Status',
-  `is_override` tinyint(4) default NULL COMMENT 'Admin users may set a manual status which overrides the calculated status. When this flag is true, automated status update scripts should NOT modify status for the record.',
-  `reminder_date` date default NULL COMMENT 'When should a reminder be sent.',
-  `owner_membership_id` int(10) unsigned default NULL COMMENT 'Optional FK to Parent Membership.',
-  `is_test` tinyint(4) default '0',
-  `is_pay_later` tinyint(4) default '0',
-  PRIMARY KEY  (`id`),
+  `is_override` tinyint(4) DEFAULT NULL COMMENT 'Admin users may set a manual status which overrides the calculated status. When this flag is true, automated status update scripts should NOT modify status for the record.',
+  `reminder_date` date DEFAULT NULL COMMENT 'When should a reminder be sent.',
+  `owner_membership_id` int(10) unsigned DEFAULT NULL COMMENT 'Optional FK to Parent Membership.',
+  `is_test` tinyint(4) DEFAULT '0',
+  `is_pay_later` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`id`),
   KEY `index_owner_membership_id` (`owner_membership_id`),
   KEY `FK_civicrm_membership_contact_id` (`contact_id`),
   KEY `FK_civicrm_membership_membership_type_id` (`membership_type_id`),
@@ -2661,7 +2656,7 @@ CREATE TABLE `civicrm_membership` (
   CONSTRAINT `FK_civicrm_membership_owner_membership_id` FOREIGN KEY (`owner_membership_id`) REFERENCES `civicrm_membership` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_membership_status_id` FOREIGN KEY (`status_id`) REFERENCES `civicrm_membership_status` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_membership`
@@ -2677,29 +2672,29 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_membership_block`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_membership_block` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Membership Id',
-  `entity_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name for Membership Status',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Membership Id',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name for Membership Status',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_contribution_page.id',
-  `membership_types` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Membership types to be exposed by this block',
-  `membership_type_default` int(10) unsigned default NULL COMMENT 'Optional foreign key to membership_type',
-  `display_min_fee` tinyint(4) default '1' COMMENT 'Display minimum membership fee',
-  `is_separate_payment` tinyint(4) default '1' COMMENT 'Should membership transactions be processed separately',
-  `new_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Title to display at top of block',
-  `new_text` text collate utf8_unicode_ci COMMENT 'Text to display below title',
-  `renewal_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Title for renewal',
-  `renewal_text` text collate utf8_unicode_ci COMMENT 'Text to display for member renewal',
-  `is_required` tinyint(4) default '0' COMMENT 'Is membership sign up optional',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this membership_block enabled',
-  PRIMARY KEY  (`id`),
+  `membership_types` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Membership types to be exposed by this block',
+  `membership_type_default` int(10) unsigned DEFAULT NULL COMMENT 'Optional foreign key to membership_type',
+  `display_min_fee` tinyint(4) DEFAULT '1' COMMENT 'Display minimum membership fee',
+  `is_separate_payment` tinyint(4) DEFAULT '1' COMMENT 'Should membership transactions be processed separately',
+  `new_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Title to display at top of block',
+  `new_text` text COLLATE utf8_unicode_ci COMMENT 'Text to display below title',
+  `renewal_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Title for renewal',
+  `renewal_text` text COLLATE utf8_unicode_ci COMMENT 'Text to display for member renewal',
+  `is_required` tinyint(4) DEFAULT '0' COMMENT 'Is membership sign up optional',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this membership_block enabled',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_membership_block_entity_id` (`entity_id`),
   KEY `FK_civicrm_membership_block_membership_type_default` (`membership_type_default`),
   CONSTRAINT `FK_civicrm_membership_block_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_contribution_page` (`id`),
   CONSTRAINT `FK_civicrm_membership_block_membership_type_default` FOREIGN KEY (`membership_type_default`) REFERENCES `civicrm_membership_type` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_membership_block`
@@ -2715,18 +2710,18 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_membership_log`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_membership_log` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `membership_id` int(10) unsigned NOT NULL COMMENT 'FK to Membership table',
   `status_id` int(10) unsigned NOT NULL COMMENT 'New status assigned to membership by this action. FK to Membership Status',
-  `start_date` date default NULL COMMENT 'New membership period start date',
-  `end_date` date default NULL COMMENT 'New membership period expiration date.',
-  `modified_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID of person under whose credentials this data modification was made.',
-  `modified_date` date default NULL COMMENT 'Date this membership modification action was logged.',
-  `renewal_reminder_date` date default NULL COMMENT 'The day we sent a renewal reminder',
-  PRIMARY KEY  (`id`),
+  `start_date` date DEFAULT NULL COMMENT 'New membership period start date',
+  `end_date` date DEFAULT NULL COMMENT 'New membership period expiration date.',
+  `modified_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID of person under whose credentials this data modification was made.',
+  `modified_date` date DEFAULT NULL COMMENT 'Date this membership modification action was logged.',
+  `renewal_reminder_date` date DEFAULT NULL COMMENT 'The day we sent a renewal reminder',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_membership_log_membership_id` (`membership_id`),
   KEY `FK_civicrm_membership_log_status_id` (`status_id`),
   KEY `FK_civicrm_membership_log_modified_id` (`modified_id`),
@@ -2734,7 +2729,7 @@ CREATE TABLE `civicrm_membership_log` (
   CONSTRAINT `FK_civicrm_membership_log_modified_id` FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_membership_log_status_id` FOREIGN KEY (`status_id`) REFERENCES `civicrm_membership_status` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_membership_log`
@@ -2750,19 +2745,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_membership_payment`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_membership_payment` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `membership_id` int(10) unsigned NOT NULL COMMENT 'FK to Membership table',
-  `contribution_id` int(10) unsigned default NULL COMMENT 'FK to contribution table.',
-  PRIMARY KEY  (`id`),
+  `contribution_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to contribution table.',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_contribution_membership` (`contribution_id`,`membership_id`),
   KEY `FK_civicrm_membership_payment_membership_id` (`membership_id`),
   CONSTRAINT `FK_civicrm_membership_payment_contribution_id` FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_membership_payment_membership_id` FOREIGN KEY (`membership_id`) REFERENCES `civicrm_membership` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_membership_payment`
@@ -2778,26 +2773,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_membership_status`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_membership_status` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Membership Id',
-  `name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Name for Membership Status',
-  `start_event` enum('start_date','end_date','join_date') collate utf8_unicode_ci default NULL COMMENT 'Event when this status starts.',
-  `start_event_adjust_unit` enum('day','month','year') collate utf8_unicode_ci default NULL COMMENT 'Unit used for adjusting from start_event.',
-  `start_event_adjust_interval` int(11) default NULL COMMENT 'Status range begins this many units from start_event.',
-  `end_event` enum('start_date','end_date','join_date') collate utf8_unicode_ci default NULL COMMENT 'Event after which this status ends.',
-  `end_event_adjust_unit` enum('day','month','year') collate utf8_unicode_ci default NULL COMMENT 'Unit used for adjusting from the ending event.',
-  `end_event_adjust_interval` int(11) default NULL COMMENT 'Status range ends this many units from end_event.',
-  `is_current_member` tinyint(4) default NULL COMMENT 'Does this status aggregate to current members (e.g. New, Renewed, Grace might all be TRUE... while Unrenewed, Lapsed, Inactive would be FALSE).',
-  `is_admin` tinyint(4) default NULL COMMENT 'Is this status for admin/manual assignment only.',
-  `weight` int(11) default NULL,
-  `is_default` tinyint(4) default NULL COMMENT 'Assign this status to a membership record if no other status match is found.',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this membership_status enabled.',
-  `is_reserved` tinyint(4) default '0' COMMENT 'Is this membership_status reserved.',
-  PRIMARY KEY  (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Membership Id',
+  `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name for Membership Status',
+  `start_event` enum('start_date','end_date','join_date') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Event when this status starts.',
+  `start_event_adjust_unit` enum('day','month','year') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unit used for adjusting from start_event.',
+  `start_event_adjust_interval` int(11) DEFAULT NULL COMMENT 'Status range begins this many units from start_event.',
+  `end_event` enum('start_date','end_date','join_date') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Event after which this status ends.',
+  `end_event_adjust_unit` enum('day','month','year') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unit used for adjusting from the ending event.',
+  `end_event_adjust_interval` int(11) DEFAULT NULL COMMENT 'Status range ends this many units from end_event.',
+  `is_current_member` tinyint(4) DEFAULT NULL COMMENT 'Does this status aggregate to current members (e.g. New, Renewed, Grace might all be TRUE... while Unrenewed, Lapsed, Inactive would be FALSE).',
+  `is_admin` tinyint(4) DEFAULT NULL COMMENT 'Is this status for admin/manual assignment only.',
+  `weight` int(11) DEFAULT NULL,
+  `is_default` tinyint(4) DEFAULT NULL COMMENT 'Assign this status to a membership record if no other status match is found.',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this membership_status enabled.',
+  `is_reserved` tinyint(4) DEFAULT '0' COMMENT 'Is this membership_status reserved.',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_membership_status`
@@ -2814,31 +2809,31 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_membership_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_membership_type` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Membership Id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Membership Id',
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this match entry for',
-  `name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Name of Membership Type',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Description of Membership Type',
+  `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of Membership Type',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Description of Membership Type',
   `member_of_contact_id` int(10) unsigned NOT NULL COMMENT 'Owner organization for this membership type. FK to Contact ID',
   `contribution_type_id` int(10) unsigned NOT NULL COMMENT 'If membership is paid by a contribution - what contribution type should be used. FK to Contribution Type ID',
-  `minimum_fee` decimal(20,2) default '0.00' COMMENT 'Minimum fee for this membership (0 for free/complimentary memberships).',
-  `duration_unit` enum('day','month','year','lifetime') collate utf8_unicode_ci default NULL COMMENT 'Unit in which membership period is expressed.',
-  `duration_interval` int(11) default NULL COMMENT 'Number of duration units in membership period (e.g. 1 year, 12 months).',
-  `period_type` enum('rolling','fixed') collate utf8_unicode_ci default NULL COMMENT 'Rolling membership period starts on signup date. Fixed membership periods start on fixed_period_start_day.',
-  `fixed_period_start_day` int(11) default NULL COMMENT 'For fixed period memberships, month and day (mmdd) on which subscription/membership will start. Period start is back-dated unless after rollover day.',
-  `fixed_period_rollover_day` int(11) default NULL COMMENT 'For fixed period memberships, signups after this day (mmdd) rollover to next period.',
-  `relationship_type_id` int(10) unsigned default NULL COMMENT 'FK to Relationship Type ID',
-  `relationship_direction` varchar(6) collate utf8_unicode_ci default NULL,
-  `visibility` varchar(64) collate utf8_unicode_ci default NULL,
-  `weight` int(11) default NULL,
-  `renewal_msg_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_msg_template.id',
-  `renewal_reminder_day` int(11) default NULL COMMENT 'Number of days prior to expiration to send renewal reminder',
-  `receipt_text_signup` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Receipt Text for membership signup',
-  `receipt_text_renewal` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Receipt Text for membership renewal',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this membership_type enabled',
-  PRIMARY KEY  (`id`),
+  `minimum_fee` decimal(20,2) DEFAULT '0.00' COMMENT 'Minimum fee for this membership (0 for free/complimentary memberships).',
+  `duration_unit` enum('day','month','year','lifetime') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Unit in which membership period is expressed.',
+  `duration_interval` int(11) DEFAULT NULL COMMENT 'Number of duration units in membership period (e.g. 1 year, 12 months).',
+  `period_type` enum('rolling','fixed') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Rolling membership period starts on signup date. Fixed membership periods start on fixed_period_start_day.',
+  `fixed_period_start_day` int(11) DEFAULT NULL COMMENT 'For fixed period memberships, month and day (mmdd) on which subscription/membership will start. Period start is back-dated unless after rollover day.',
+  `fixed_period_rollover_day` int(11) DEFAULT NULL COMMENT 'For fixed period memberships, signups after this day (mmdd) rollover to next period.',
+  `relationship_type_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Relationship Type ID',
+  `relationship_direction` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `visibility` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `weight` int(11) DEFAULT NULL,
+  `renewal_msg_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_msg_template.id',
+  `renewal_reminder_day` int(11) DEFAULT NULL COMMENT 'Number of days prior to expiration to send renewal reminder',
+  `receipt_text_signup` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Receipt Text for membership signup',
+  `receipt_text_renewal` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Receipt Text for membership renewal',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this membership_type enabled',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_membership_type_domain_id` (`domain_id`),
   KEY `FK_civicrm_membership_type_member_of_contact_id` (`member_of_contact_id`),
   KEY `FK_civicrm_membership_type_contribution_type_id` (`contribution_type_id`),
@@ -2850,7 +2845,7 @@ CREATE TABLE `civicrm_membership_type` (
   CONSTRAINT `FK_civicrm_membership_type_relationship_type_id` FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type` (`id`),
   CONSTRAINT `FK_civicrm_membership_type_renewal_msg_id` FOREIGN KEY (`renewal_msg_id`) REFERENCES `civicrm_msg_template` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_membership_type`
@@ -2866,38 +2861,38 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_menu`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_menu` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this menu item for',
-  `path` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Path Name',
-  `path_arguments` text collate utf8_unicode_ci COMMENT 'Arguments to pass to the url',
-  `title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Menu Title',
-  `access_callback` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Function to call to check access permissions',
-  `access_arguments` text collate utf8_unicode_ci COMMENT 'Arguments to pass to access callback',
-  `page_callback` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'function to call for this url',
-  `page_arguments` text collate utf8_unicode_ci COMMENT 'Arguments to pass to page callback',
-  `breadcrumb` text collate utf8_unicode_ci COMMENT 'Breadcrumb for the path.',
-  `return_url` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Url where a page should redirected to, if next url not known.',
-  `return_url_args` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Arguments to pass to return_url',
-  `component_id` int(10) unsigned default NULL COMMENT 'Component that this menu item belongs to',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this menu item active?',
-  `is_public` tinyint(4) default NULL COMMENT 'Is this menu accessible to the public?',
-  `is_exposed` tinyint(4) default NULL COMMENT 'Is this menu exposed to the navigation system?',
-  `is_ssl` tinyint(4) default NULL COMMENT 'Should this menu be exposed via SSL if enabled?',
-  `weight` int(11) NOT NULL default '1' COMMENT 'Ordering of the menu items in various blocks.',
-  `type` int(11) NOT NULL default '1' COMMENT 'Drupal menu type.',
-  `page_type` int(11) NOT NULL default '1' COMMENT 'CiviCRM menu type.',
-  `skipBreadcrumb` tinyint(4) default NULL COMMENT 'skip this url being exposed to breadcrumb',
-  PRIMARY KEY  (`id`),
+  `path` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Path Name',
+  `path_arguments` text COLLATE utf8_unicode_ci COMMENT 'Arguments to pass to the url',
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Menu Title',
+  `access_callback` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Function to call to check access permissions',
+  `access_arguments` text COLLATE utf8_unicode_ci COMMENT 'Arguments to pass to access callback',
+  `page_callback` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'function to call for this url',
+  `page_arguments` text COLLATE utf8_unicode_ci COMMENT 'Arguments to pass to page callback',
+  `breadcrumb` text COLLATE utf8_unicode_ci COMMENT 'Breadcrumb for the path.',
+  `return_url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Url where a page should redirected to, if next url not known.',
+  `return_url_args` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Arguments to pass to return_url',
+  `component_id` int(10) unsigned DEFAULT NULL COMMENT 'Component that this menu item belongs to',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this menu item active?',
+  `is_public` tinyint(4) DEFAULT NULL COMMENT 'Is this menu accessible to the public?',
+  `is_exposed` tinyint(4) DEFAULT NULL COMMENT 'Is this menu exposed to the navigation system?',
+  `is_ssl` tinyint(4) DEFAULT NULL COMMENT 'Should this menu be exposed via SSL if enabled?',
+  `weight` int(11) NOT NULL DEFAULT '1' COMMENT 'Ordering of the menu items in various blocks.',
+  `type` int(11) NOT NULL DEFAULT '1' COMMENT 'Drupal menu type.',
+  `page_type` int(11) NOT NULL DEFAULT '1' COMMENT 'CiviCRM menu type.',
+  `skipBreadcrumb` tinyint(4) DEFAULT NULL COMMENT 'skip this url being exposed to breadcrumb',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_path_domain_id` (`path`,`domain_id`),
   KEY `FK_civicrm_menu_domain_id` (`domain_id`),
   KEY `FK_civicrm_menu_component_id` (`component_id`),
   CONSTRAINT `FK_civicrm_menu_component_id` FOREIGN KEY (`component_id`) REFERENCES `civicrm_component` (`id`),
   CONSTRAINT `FK_civicrm_menu_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+) ENGINE=InnoDB AUTO_INCREMENT=299 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_menu`
@@ -2905,6 +2900,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_menu` WRITE;
 /*!40000 ALTER TABLE `civicrm_menu` DISABLE KEYS */;
+INSERT INTO `civicrm_menu` VALUES (1,1,'civicrm/ajax/jqState',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:27:\"CRM_Core_Page_AJAX_Location\";i:1;s:7:\"jqState\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,1,1,0,NULL),(2,1,'civicrm/admin/custom/group',NULL,'Custom Data','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Custom_Page_Group\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,10,1,0,NULL),(3,1,'civicrm/admin/custom/group/field',NULL,'Custom Data Fields','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Custom_Page_Field\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:11:\"Custom Data\";s:3:\"url\";s:40:\"/nyss/civicrm/admin/custom/group?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,11,1,0,0),(4,1,'civicrm/admin/custom/group/field/option',NULL,'Custom Field - Options','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Custom_Page_Option\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:11:\"Custom Data\";s:3:\"url\";s:40:\"/nyss/civicrm/admin/custom/group?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(5,1,'civicrm/admin/custom/group/field/move',NULL,'Custom Field - Move','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Custom_Form_MoveField\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:11:\"Custom Data\";s:3:\"url\";s:40:\"/nyss/civicrm/admin/custom/group?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(6,1,'civicrm/admin/uf/group',NULL,'CiviCRM Profile','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:17:\"CRM_UF_Page_Group\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,20,1,0,NULL),(7,1,'civicrm/admin/uf/group/field',NULL,'CiviCRM Profile Fields','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:17:\"CRM_UF_Page_Field\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"CiviCRM Profile\";s:3:\"url\";s:36:\"/nyss/civicrm/admin/uf/group?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,21,1,0,NULL),(8,1,'civicrm/admin/uf/group/setting',NULL,'AdditionalInfo Form','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_UF_Form_AdvanceSetting\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"CiviCRM Profile\";s:3:\"url\";s:36:\"/nyss/civicrm/admin/uf/group?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,0,1,0,NULL),(9,1,'civicrm/admin/menu',NULL,'Navigation Menu','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Admin_Page_Navigation\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,25,1,0,NULL),(10,1,'civicrm/admin/options/custom_search','group=custom_search','Manage Custom Searches','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,30,1,0,NULL),(11,1,'civicrm/admin/configtask',NULL,'Configuration Checklist','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Admin_Page_ConfigTaskList\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}','civicrm/admin/configtask',NULL,NULL,NULL,NULL,NULL,1,180,1,0,NULL),(12,1,'civicrm/admin/setting',NULL,'Global Settings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Setting\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,200,1,0,NULL),(13,1,'civicrm/admin/setting/component',NULL,'Components','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:32:\"CRM_Admin_Form_Setting_Component\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(14,1,'civicrm/admin/setting/preferences/display',NULL,'System Preferences','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:34:\"CRM_Admin_Form_Preferences_Display\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(15,1,'civicrm/admin/setting/preferences/address',NULL,'Address Preferences','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:34:\"CRM_Admin_Form_Preferences_Address\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(16,1,'civicrm/admin/setting/preferences/date',NULL,'View Date Prefences','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Admin_Page_PreferencesDate\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(17,1,'civicrm/admin/setting/path',NULL,'File System Paths','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Admin_Form_Setting_Path\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(18,1,'civicrm/admin/setting/url',NULL,'Site URLs','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Admin_Form_Setting_Url\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(19,1,'civicrm/admin/setting/smtp',NULL,'Smtp Server','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Admin_Form_Setting_Smtp\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(20,1,'civicrm/admin/setting/uf',NULL,'User Framework Settings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Admin_Form_Setting_UF\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(21,1,'civicrm/admin/setting/mapping',NULL,'Mapping and Geocoding','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Admin_Form_Setting_Mapping\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(22,1,'civicrm/admin/setting/localization',NULL,'Localization','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:35:\"CRM_Admin_Form_Setting_Localization\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(23,1,'civicrm/admin/setting/date',NULL,'Date Formatting','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Admin_Form_Setting_Date\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(24,1,'civicrm/admin/setting/search',NULL,'Search','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Admin_Form_Setting_Search\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(25,1,'civicrm/admin/setting/misc',NULL,'Miscellaneous','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:36:\"CRM_Admin_Form_Setting_Miscellaneous\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(26,1,'civicrm/admin/setting/debug',NULL,'Debugging','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:32:\"CRM_Admin_Form_Setting_Debugging\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(27,1,'civicrm/admin/mapping',NULL,'Import/Export Mappings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Mapping\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,250,1,0,NULL),(28,1,'civicrm/admin/messageTemplates',NULL,'Message Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:31:\"CRM_Admin_Page_MessageTemplates\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,260,1,0,NULL),(29,1,'civicrm/admin/domain','action=update','Domain Information','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:23:\"CRM_Contact_Form_Domain\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,270,1,0,NULL),(30,1,'civicrm/admin/options/from_email_address','group=from_email_address','From Email Addresses','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,275,1,0,NULL),(31,1,'civicrm/admin/setting/updateConfigBackend',NULL,'Update Directory Path and URL','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:42:\"CRM_Admin_Form_Setting_UpdateConfigBackend\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,280,1,0,NULL),(32,1,'civicrm/admin/weight',NULL,'This should never be seen','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:16:\"CRM_Utils_Weight\";i:1;s:8:\"fixOrder\";}',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(33,1,'civicrm/admin/options/activity_type','group=activity_type','Activity Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,310,1,0,NULL),(34,1,'civicrm/admin/options/gender','group=gender','Gender Options','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,320,1,0,NULL),(35,1,'civicrm/admin/options/phone_type','group=phone_type','Phone Type','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,325,1,0,NULL),(36,1,'civicrm/admin/options/individual_prefix','group=individual_prefix','Individual Prefixes (Ms, Mr...)','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,330,1,0,NULL),(37,1,'civicrm/admin/options/individual_suffix','group=individual_suffix','Individual Suffixes (Jr, Sr...)','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,340,1,0,NULL),(38,1,'civicrm/admin/options/instant_messenger_service','group=instant_messenger_service','Instant Messenger Services','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,350,1,0,NULL),(39,1,'civicrm/admin/options/mobile_provider','group=mobile_provider','Mobile Phone Providers','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,365,1,0,NULL),(40,1,'civicrm/admin/options/preferred_communication_method','group=preferred_communication_method','Preferred Communication Methods','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,370,1,0,NULL),(41,1,'civicrm/admin/options/language','group=languages','Preferred Languages','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,375,1,0,NULL),(42,1,'civicrm/admin/options/wordreplacements',NULL,'Word Replacements','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:31:\"CRM_Admin_Form_WordReplacements\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,378,1,0,NULL),(43,1,'civicrm/admin/locationType',NULL,'Location Types (Home, Work...)','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Admin_Page_LocationType\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,360,1,0,NULL),(44,1,'civicrm/admin/reltype',NULL,'Relationship Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:31:\"CRM_Admin_Page_RelationshipType\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,375,1,0,NULL),(45,1,'civicrm/admin/tag',NULL,'Manage Tags (Categories)','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:18:\"CRM_Admin_Page_Tag\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,380,1,0,NULL),(46,1,'civicrm/admin/tag/add','action=add','New Tag','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:18:\"CRM_Admin_Page_Tag\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:24:\"Manage Tags (Categories)\";s:3:\"url\";s:31:\"/nyss/civicrm/admin/tag?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(47,1,'civicrm/admin/options/grant_type','group=grant_type','Grant Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,385,1,0,NULL),(48,1,'civicrm/admin/paymentProcessor',NULL,'Payment Processor','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:31:\"CRM_Admin_Page_PaymentProcessor\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,390,1,0,NULL),(49,1,'civicrm/admin/paymentProcessorType',NULL,'Payment Processor Type','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:35:\"CRM_Admin_Page_PaymentProcessorType\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,390,1,0,NULL),(50,1,'civicrm/admin/options/safe_file_extension','group=safe_file_extension','Safe File Extension Options','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,395,1,0,NULL),(51,1,'civicrm/admin/options/participant_listing','group=participant_listing','Participant Listing Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,398,1,0,NULL),(52,1,'civicrm/admin/options/event_badge','group=event_badge','Event Name Badge Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,399,1,0,NULL),(53,1,'civicrm/admin/deduperules',NULL,'Find and Merge Duplicate Contacts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Admin_Page_DedupeRules\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,105,1,0,NULL),(54,1,'civicrm/admin/options/email_greeting','group=email_greeting','Email Greetings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,405,1,0,NULL),(55,1,'civicrm/admin/options/postal_greeting','group=postal_greeting','Postal Greetings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,410,1,0,NULL),(56,1,'civicrm/admin/options/addressee','group=addressee','Addressee','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,415,1,0,NULL),(57,1,'civicrm/admin/options/subtype',NULL,'Contact Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Admin_Page_ContactType\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(58,1,'civicrm/admin/dedupefind',NULL,'Find and Merge Duplicate Contacts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Admin_Page_DedupeFind\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(59,1,'civicrm/admin/access',NULL,'Access Control','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Admin_Page_Access\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,110,1,0,NULL),(60,1,'civicrm/admin/synchUser',NULL,'Synchronize Users to Contacts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_CMSUser\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,140,1,0,NULL),(61,1,'civicrm/admin',NULL,'Administer CiviCRM','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Admin_Page_Admin\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,9000,1,1,NULL),(62,1,'civicrm/admin/options',NULL,'Option Groups','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Admin_Page_OptionGroup\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(63,1,'civicrm/admin/optionGroup',NULL,'Option Groups','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Admin_Page_OptionGroup\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(64,1,'civicrm/admin/optionValue',NULL,'Option Values','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Admin_Page_OptionValue\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(65,1,'civicrm/ajax/menu',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:18:\"administer CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Admin_Page_AJAX\";i:1;s:17:\"getNavigationList\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(66,1,'civicrm/ajax/menutree',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:18:\"administer CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Admin_Page_AJAX\";i:1;s:8:\"menuTree\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(67,1,'civicrm/ajax/statusmsg',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Admin_Page_AJAX\";i:1;s:12:\"getStatusMsg\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(68,1,'civicrm/admin/price',NULL,'Price Sets','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:18:\"CRM_Price_Page_Set\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,380,1,0,NULL),(69,1,'civicrm/admin/price/add','action=add','New Price Set','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:18:\"administer CiviCRM\";}i:1;s:3:\"and\";}','s:18:\"CRM_Price_Page_Set\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:10:\"Price Sets\";s:3:\"url\";s:33:\"/nyss/civicrm/admin/price?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(70,1,'civicrm/admin/price/field',NULL,'Price Fields','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:20:\"CRM_Price_Page_Field\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:10:\"Price Sets\";s:3:\"url\";s:33:\"/nyss/civicrm/admin/price?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,0),(71,1,'civicrm/admin/price/field/option',NULL,'Price Field Options','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:21:\"CRM_Price_Page_Option\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:10:\"Price Sets\";s:3:\"url\";s:33:\"/nyss/civicrm/admin/price?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(72,1,'civicrm/ajax/taglist',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Admin_Page_AJAX\";i:1;s:10:\"getTagList\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(73,1,'civicrm/ajax/processTags',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Admin_Page_AJAX\";i:1;s:11:\"processTags\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(74,1,'civicrm',NULL,'CiviCRM','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:0:{}',NULL,NULL,NULL,NULL,NULL,NULL,0,0,1,0,NULL),(75,1,'civicrm/dashboard',NULL,'CiviCRM Home','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,0,1,1,NULL),(76,1,'civicrm/dashlet',NULL,'CiviCRM Dashlets','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:24:\"CRM_Contact_Page_Dashlet\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,1,NULL),(77,1,'civicrm/contact/search',NULL,'Find Contacts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Controller_Search\";','s:8:\"mode=256\";','a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,10,1,1,NULL),(78,1,'civicrm/contact/image',NULL,'Process Uploaded Images','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access uploaded files\";}i:1;s:3:\"and\";}','a:2:{i:0;s:23:\"CRM_Contact_BAO_Contact\";i:1;s:12:\"processImage\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(79,1,'civicrm/contact/search/basic',NULL,'Find Contacts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Controller_Search\";','s:8:\"mode=256\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Find Contacts\";s:3:\"url\";s:36:\"/nyss/civicrm/contact/search?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(80,1,'civicrm/contact/search/advanced',NULL,'Advanced Search','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Controller_Search\";','s:8:\"mode=512\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Find Contacts\";s:3:\"url\";s:36:\"/nyss/civicrm/contact/search?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,12,1,1,NULL),(81,1,'civicrm/contact/search/builder',NULL,'Search Builder','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Controller_Search\";','s:9:\"mode=8192\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Find Contacts\";s:3:\"url\";s:36:\"/nyss/civicrm/contact/search?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,14,1,1,NULL),(82,1,'civicrm/contact/search/custom',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Controller_Search\";','s:10:\"mode=16384\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Find Contacts\";s:3:\"url\";s:36:\"/nyss/civicrm/contact/search?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(83,1,'civicrm/contact/search/custom/list',NULL,'Custom Searches','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Page_CustomSearch\";','s:10:\"mode=16384\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Find Contacts\";s:3:\"url\";s:36:\"/nyss/civicrm/contact/search?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,16,1,1,NULL),(84,1,'civicrm/contact/search/simple',NULL,'Simple Search','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Contact_Form_Search_Simple\";','s:8:\"mode=256\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Find Contacts\";s:3:\"url\";s:36:\"/nyss/civicrm/contact/search?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(85,1,'civicrm/contact/add',NULL,'New Contact','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:24:\"CRM_Contact_Form_Contact\";','s:13:\"addSequence=1\";','a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(86,1,'civicrm/contact/add/individual','ct=Individual','New Individual','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:12:\"add contacts\";}i:1;s:3:\"and\";}','s:24:\"CRM_Contact_Form_Contact\";','s:13:\"addSequence=1\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:11:\"New Contact\";s:3:\"url\";s:33:\"/nyss/civicrm/contact/add?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(87,1,'civicrm/contact/add/household','ct=Household','New Household','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:12:\"add contacts\";}i:1;s:3:\"and\";}','s:24:\"CRM_Contact_Form_Contact\";','s:13:\"addSequence=1\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:11:\"New Contact\";s:3:\"url\";s:33:\"/nyss/civicrm/contact/add?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(88,1,'civicrm/contact/add/organization','ct=Organization','New Organization','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:12:\"add contacts\";}i:1;s:3:\"and\";}','s:24:\"CRM_Contact_Form_Contact\";','s:13:\"addSequence=1\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:11:\"New Contact\";s:3:\"url\";s:33:\"/nyss/civicrm/contact/add?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(89,1,'civicrm/contact/relatedcontact',NULL,'Edit Related Contact','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:24:\"access Contact Dashboard\";}i:1;s:3:\"and\";}','s:31:\"CRM_Contact_Form_RelatedContact\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(90,1,'civicrm/contact/merge',NULL,'Merge Contact','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Contact_Form_Merge\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(91,1,'civicrm/contact/email',NULL,'Email a Contact','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Contact_Form_Task_Email\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(92,1,'civicrm/contact/map',NULL,'Map Location(s)','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Contact_Form_Task_Map\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,1,1,0,NULL),(93,1,'civicrm/contact/map/event',NULL,'Map Event Location','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:31:\"CRM_Contact_Form_Task_Map_Event\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Map Location(s)\";s:3:\"url\";s:33:\"/nyss/civicrm/contact/map?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,1,1,0,NULL),(94,1,'civicrm/contact/view','cid=%%cid%%','Contact Summary','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Page_View_Summary\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(95,1,'civicrm/contact/view/delete',NULL,'Delete Contact','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:28:\"CRM_Contact_Form_Task_Delete\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(96,1,'civicrm/contact/view/activity','show=1,cid=%%cid%%','Activities','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Activity_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(97,1,'civicrm/activity/add','action=add','Activities','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Activity_Page_Tab\";','s:14:\"attachUpload=1\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:12:\"New Activity\";s:3:\"url\";s:68:\"/nyss/civicrm/activity?reset=1&amp;action=add&amp;context=standalone\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(98,1,'civicrm/contact/view/rel','cid=%%cid%%','Relationships','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:34:\"CRM_Contact_Page_View_Relationship\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(99,1,'civicrm/contact/view/group','cid=%%cid%%','Groups','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:34:\"CRM_Contact_Page_View_GroupContact\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(100,1,'civicrm/contact/view/sunlight',NULL,'Sunlight','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Contact_Page_View_Sunlight\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(101,1,'civicrm/contact/view/note','cid=%%cid%%','Notes','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_View_Note\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(102,1,'civicrm/contact/view/tag','cid=%%cid%%','Tags','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Contact_Page_View_Tag\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(103,1,'civicrm/contact/view/cd',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:32:\"CRM_Contact_Page_View_CustomData\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(104,1,'civicrm/contact/view/cd/edit',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Contact_Form_CustomData\";','s:13:\"addSequence=1\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(105,1,'civicrm/contact/view/vcard',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Contact_Page_View_Vcard\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(106,1,'civicrm/contact/view/print',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:27:\"CRM_Contact_Page_View_Print\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(107,1,'civicrm/contact/view/log',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Contact_Page_View_Log\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(108,1,'civicrm/user',NULL,'Contact Dashboard','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:24:\"access Contact Dashboard\";}i:1;s:3:\"and\";}','s:35:\"CRM_Contact_Page_View_UserDashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,0,1,0,NULL),(109,1,'civicrm/dashlet/activity',NULL,'Activity Dashlet','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Dashlet_Page_Activity\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:16:\"CiviCRM Dashlets\";s:3:\"url\";s:29:\"/nyss/civicrm/dashlet?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(110,1,'civicrm/ajax/state',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:27:\"CRM_Core_Page_AJAX_Location\";i:1;s:5:\"state\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(111,1,'civicrm/ajax/country',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:27:\"CRM_Core_Page_AJAX_Location\";i:1;s:7:\"country\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(112,1,'civicrm/ajax/search',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:6:\"search\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(113,1,'civicrm/ajax/relation',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:12:\"relationship\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(114,1,'civicrm/ajax/groupTree',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:9:\"groupTree\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(115,1,'civicrm/ajax/contact',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:7:\"contact\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(116,1,'civicrm/ajax/custom',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:11:\"customField\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(117,1,'civicrm/ajax/customvalue',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:17:\"deleteCustomValue\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(118,1,'civicrm/ajax/ed',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:13:\"enableDisable\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(119,1,'civicrm/ajax/cmsuser',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:13:\"checkUserName\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(120,1,'civicrm/ajax/checkemail',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:15:\"getContactEmail\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(121,1,'civicrm/ajax/auto',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:12:\"autocomplete\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(122,1,'civicrm/ajax/subtype',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:13:\"buildSubTypes\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(123,1,'civicrm/ajax/dashboard',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:9:\"dashboard\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(124,1,'civicrm/ajax/signature',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:12:\"getSignature\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(125,1,'civicrm/ajax/relationshipcontacts',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:20:\"relationshipContacts\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(126,1,'civicrm/dashlet/myCases',NULL,'Case Dashlet','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:24:\"CRM_Dashlet_Page_myCases\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:16:\"CiviCRM Dashlets\";s:3:\"url\";s:29:\"/nyss/civicrm/dashlet?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(127,1,'civicrm/dashlet/allCases',NULL,'All Cases Dashlet','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:31:\"access all cases and activities\";}i:1;s:3:\"and\";}','s:25:\"CRM_Dashlet_Page_allCases\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:16:\"CiviCRM Dashlets\";s:3:\"url\";s:29:\"/nyss/civicrm/dashlet?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(128,1,'civicrm/upgrade',NULL,'Upgrade CiviCRM','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:24:\"CRM_Upgrade_Page_Upgrade\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(129,1,'civicrm/export',NULL,'Download Errors','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Export_BAO_Export\";i:1;s:6:\"invoke\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(130,1,'civicrm/export/contact',NULL,'Export Contacts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Export_BAO_Export\";i:1;s:6:\"invoke\";}',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Download Errors\";s:3:\"url\";s:28:\"/nyss/civicrm/export?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,0,1,0,NULL),(131,1,'civicrm/admin/options/acl_role','group=acl_role','ACL Roles','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(132,1,'civicrm/acl',NULL,'Manage ACLs','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:16:\"CRM_ACL_Page_ACL\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(133,1,'civicrm/acl/entityrole',NULL,'Assign Users to ACL Roles','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:23:\"CRM_ACL_Page_EntityRole\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:11:\"Manage ACLs\";s:3:\"url\";s:25:\"/nyss/civicrm/acl?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(134,1,'civicrm/acl/basic',NULL,'ACL','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_ACL_Page_ACLBasic\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:11:\"Manage ACLs\";s:3:\"url\";s:25:\"/nyss/civicrm/acl?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(135,1,'civicrm/standalone/register',NULL,'Registration Page','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:28:\"CRM_Standalone_Form_Register\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,1,1,0,NULL),(136,1,'civicrm/file',NULL,'Browse Uploaded files','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access uploaded files\";}i:1;s:3:\"and\";}','s:18:\"CRM_Core_Page_File\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(137,1,'civicrm/friend',NULL,'Tell a Friend','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:15:\"CRM_Friend_Form\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,1,1,0,NULL),(138,1,'civicrm/logout',NULL,'Log out','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:16:\"CRM_Utils_System\";i:1;s:6:\"logout\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,9999,1,1,NULL),(139,1,'civicrm/i18n',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"translate CiviCRM\";}i:1;s:3:\"and\";}','s:18:\"CRM_Core_I18n_Form\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(140,1,'civicrm/ajax/rest',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:14:\"CRM_Utils_REST\";i:1;s:4:\"ajax\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(141,1,'civicrm/ajax/chart',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:38:\"CRM_Contribute_Form_ContributionCharts\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(142,1,'civicrm/contribute/ajax/tableview',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contribute_Page_DashBoard\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,1,1,0,NULL),(143,1,'civicrm/profile',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:15:\"CRM_Core_Invoke\";i:1;s:7:\"profile\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,0,1,0,NULL),(144,1,'civicrm/profile/create',NULL,'CiviCRM Profile Create','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:15:\"CRM_Core_Invoke\";i:1;s:7:\"profile\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,0,1,0,NULL),(145,1,'civicrm/profile/view',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Profile_Page_View\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,1,NULL,0,1,1,0,NULL),(146,1,'civicrm/import',NULL,'Import','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:15:\"import contacts\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Import_Controller\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,400,1,1,NULL),(147,1,'civicrm/import/contact',NULL,'Import Contacts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:15:\"import contacts\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:21:\"CRM_Import_Controller\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:6:\"Import\";s:3:\"url\";s:28:\"/nyss/civicrm/import?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,410,1,1,NULL),(148,1,'civicrm/import/activity',NULL,'Import Activities','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:15:\"import contacts\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Activity_Import_Controller\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:6:\"Import\";s:3:\"url\";s:28:\"/nyss/civicrm/import?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,420,1,1,NULL),(149,1,'civicrm/ajax/status',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:15:\"import contacts\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:20:\"CRM_Import_Page_AJAX\";i:1;s:6:\"status\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(150,1,'civicrm/group',NULL,'Manage Groups','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Group_Page_Group\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,30,1,1,NULL),(151,1,'civicrm/group/search',NULL,'Group Members','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contact_Controller_Search\";','s:8:\"mode=256\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Manage Groups\";s:3:\"url\";s:27:\"/nyss/civicrm/group?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(152,1,'civicrm/group/add',NULL,'New Group','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:11:\"edit groups\";}i:1;s:3:\"and\";}','s:20:\"CRM_Group_Controller\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:13:\"Manage Groups\";s:3:\"url\";s:27:\"/nyss/civicrm/group?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(153,1,'civicrm/activity','action=add&context=standalone','New Activity','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Activity_Form_Activity\";','s:14:\"attachUpload=1\";','a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(154,1,'civicrm/activity/view',NULL,'View Activity','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Activity_Form_ActivityView\";','s:14:\"attachUpload=1\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:12:\"New Activity\";s:3:\"url\";s:68:\"/nyss/civicrm/activity?reset=1&amp;action=add&amp;context=standalone\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(155,1,'civicrm/ajax/activity',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:22:\"CRM_Activity_Page_AJAX\";i:1;s:15:\"getCaseActivity\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(156,1,'civicrm/ajax/activity/convert',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:22:\"CRM_Activity_Page_AJAX\";i:1;s:21:\"convertToCaseActivity\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,3,NULL),(157,1,'civicrm/activity/search',NULL,'Find Activities','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Activity_Controller_Search\";','s:14:\"attachUpload=1\";','a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:12:\"New Activity\";s:3:\"url\";s:68:\"/nyss/civicrm/activity?reset=1&amp;action=add&amp;context=standalone\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(158,1,'civicrm/custom/add',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Custom_Form_CustomData\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(159,1,'civicrm/event',NULL,'CiviEvent Dashboard','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:24:\"CRM_Event_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,0,800,1,1,NULL),(160,1,'civicrm/participant/add','action=add','Register New Participant','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:18:\"CRM_Event_Page_Tab\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(161,1,'civicrm/event/info',NULL,'Event Information','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:24:\"CRM_Event_Page_EventInfo\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,1,NULL,0,1,1,0,NULL),(162,1,'civicrm/event/register',NULL,'Event Registration','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:33:\"CRM_Event_Controller_Registration\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,1,NULL,1,1,1,0,NULL),(163,1,'civicrm/event/confirm',NULL,'Confirm Event Registration','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:46:\"CRM_Event_Form_Registration_ParticipantConfirm\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,1,NULL,1,1,1,0,NULL),(164,1,'civicrm/event/ical',NULL,'Current and Upcoming Events','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"view event info\";}i:1;s:3:\"and\";}','s:24:\"CRM_Event_Page_ICalendar\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,1,NULL,0,0,1,0,NULL),(165,1,'civicrm/event/participant',NULL,'Event Participants List','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:23:\"view event participants\";}i:1;s:3:\"and\";}','s:33:\"CRM_Event_Page_ParticipantListing\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,1,NULL,0,0,1,0,NULL),(166,1,'civicrm/admin/event',NULL,'Manage Events','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:26:\"CRM_Event_Page_ManageEvent\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,370,1,0,NULL),(167,1,'civicrm/admin/eventTemplate',NULL,'Event Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:28:\"CRM_Admin_Page_EventTemplate\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,375,1,0,NULL),(168,1,'civicrm/admin/options/event_type','group=event_type','Event Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,385,1,0,NULL),(169,1,'civicrm/admin/participant_status',NULL,'Participant Status','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:32:\"CRM_Admin_Page_ParticipantStatus\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,390,1,0,NULL),(170,1,'civicrm/admin/options/participant_role','group=participant_role','Participant Role','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,395,1,0,NULL),(171,1,'civicrm/event/search',NULL,'Find Participants','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:27:\"CRM_Event_Controller_Search\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,0,810,1,1,NULL),(172,1,'civicrm/event/manage',NULL,'Manage Events','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:26:\"CRM_Event_Page_ManageEvent\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,1,820,1,1,NULL),(173,1,'civicrm/event/badge',NULL,'Print Event Name Badge','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:25:\"CRM_Event_Form_Task_Badge\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,0,1,1,0,NULL),(174,1,'civicrm/event/manage/eventInfo',NULL,'Event Info and Settings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:36:\"CRM_Event_Form_ManageEvent_EventInfo\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Manage Events\";s:3:\"url\";s:34:\"/nyss/civicrm/event/manage?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,1,910,1,0,NULL),(175,1,'civicrm/event/manage/location',NULL,'Event Location','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:35:\"CRM_Event_Form_ManageEvent_Location\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Manage Events\";s:3:\"url\";s:34:\"/nyss/civicrm/event/manage?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,1,930,1,0,NULL),(176,1,'civicrm/event/manage/fee',NULL,'Event Fees','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:30:\"CRM_Event_Form_ManageEvent_Fee\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Manage Events\";s:3:\"url\";s:34:\"/nyss/civicrm/event/manage?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,1,920,1,0,NULL),(177,1,'civicrm/event/manage/registration',NULL,'Event Online Registration','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:39:\"CRM_Event_Form_ManageEvent_Registration\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Manage Events\";s:3:\"url\";s:34:\"/nyss/civicrm/event/manage?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,1,930,1,0,NULL),(178,1,'civicrm/event/manage/friend',NULL,'Tell a Friend','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:21:\"CRM_Friend_Form_Event\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Manage Events\";s:3:\"url\";s:34:\"/nyss/civicrm/event/manage?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,1,940,1,0,NULL),(179,1,'civicrm/event/add','action=add','New Event','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:36:\"CRM_Event_Form_ManageEvent_EventInfo\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,0,830,1,0,NULL),(180,1,'civicrm/event/import',NULL,'Import Participants','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:16:\"access CiviEvent\";i:1;s:23:\"edit event participants\";}i:1;s:3:\"and\";}','s:27:\"CRM_Event_Import_Controller\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,0,840,1,1,NULL),(181,1,'civicrm/event/price',NULL,'Manage Price Sets','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','s:18:\"CRM_Price_Page_Set\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviEvent Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/event?reset=1\";}}',NULL,NULL,1,NULL,NULL,NULL,0,850,1,1,NULL),(182,1,'civicrm/contact/view/participant',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:18:\"CRM_Event_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,4,1,0,NULL),(183,1,'civicrm/ajax/event',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Event_Page_AJAX\";i:1;s:5:\"event\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(184,1,'civicrm/ajax/eventType',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Event_Page_AJAX\";i:1;s:9:\"eventType\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(185,1,'civicrm/ajax/eventFee',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Event_Page_AJAX\";i:1;s:8:\"eventFee\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(186,1,'civicrm/ajax/locBlock',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','a:2:{i:0;s:27:\"CRM_Core_Page_AJAX_Location\";i:1;s:11:\"getLocBlock\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(187,1,'civicrm/ajax/eventlist',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:16:\"access CiviEvent\";}i:1;s:3:\"and\";}','a:2:{i:0;s:19:\"CRM_Event_Page_AJAX\";i:1;s:9:\"eventList\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(188,1,'civicrm/contribute',NULL,'CiviContribute Dashboard','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contribute_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,500,1,1,NULL),(189,1,'civicrm/contribute/add','action=add','New Contribution','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:23:\"CRM_Contribute_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,1,1,1,NULL),(190,1,'civicrm/contribute/chart',NULL,'Contribution Summary - Chart View','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:38:\"CRM_Contribute_Form_ContributionCharts\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,1,1,0,NULL),(191,1,'civicrm/contribute/transact',NULL,'CiviContribute','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:25:\"make online contributions\";}i:1;s:3:\"and\";}','s:38:\"CRM_Contribute_Controller_Contribution\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,1,NULL,1,0,1,0,NULL),(192,1,'civicrm/admin/contribute',NULL,'Manage Contribution Pages','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:36:\"CRM_Contribute_Page_ContributionPage\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,360,1,0,NULL),(193,1,'civicrm/admin/contribute/add','action=add','New Contribution Page','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:36:\"CRM_Contribute_Page_ContributionPage\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:25:\"Manage Contribution Pages\";s:3:\"url\";s:38:\"/nyss/civicrm/admin/contribute?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(194,1,'civicrm/admin/pcp',NULL,'Personal Campaign Pages','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:23:\"CRM_Contribute_Page_PCP\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,362,1,0,NULL),(195,1,'civicrm/admin/contribute/managePremiums',NULL,'Manage Premiums','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:34:\"CRM_Contribute_Page_ManagePremiums\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:25:\"Manage Contribution Pages\";s:3:\"url\";s:38:\"/nyss/civicrm/admin/contribute?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,365,1,0,NULL),(196,1,'civicrm/admin/contribute/contributionType',NULL,'Contribution Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:36:\"CRM_Contribute_Page_ContributionType\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:25:\"Manage Contribution Pages\";s:3:\"url\";s:38:\"/nyss/civicrm/admin/contribute?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,370,1,0,NULL),(197,1,'civicrm/admin/options/payment_instrument','group=payment_instrument','Payment Instruments','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,380,1,0,NULL),(198,1,'civicrm/admin/options/accept_creditcard','group=accept_creditcard','Accepted Credit Cards','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,395,1,0,NULL),(199,1,'civicrm/contact/view/contribution',NULL,'Contributions','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:23:\"CRM_Contribute_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(200,1,'civicrm/contact/view/contribution/additionalinfo',NULL,'Additional Info','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:34:\"CRM_Contribute_Form_AdditionalInfo\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}i:2;a:2:{s:5:\"title\";s:13:\"Contributions\";s:3:\"url\";s:47:\"/nyss/civicrm/contact/view/contribution?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(201,1,'civicrm/contribute/search',NULL,'Find Contributions','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:32:\"CRM_Contribute_Controller_Search\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,510,1,1,NULL),(202,1,'civicrm/contribute/import',NULL,'Import Contributions','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:21:\"access CiviContribute\";i:1;s:18:\"edit contributions\";}i:1;s:3:\"and\";}','s:32:\"CRM_Contribute_Import_Controller\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,520,1,1,NULL),(203,1,'civicrm/contribute/manage',NULL,'Manage Contribution Pages','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:36:\"CRM_Contribute_Page_ContributionPage\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,530,1,1,NULL),(204,1,'civicrm/contribute/pcp/manage',NULL,'Personal Campaign Pages','s:1:\"1\";','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:23:\"CRM_Contribute_Page_PCP\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,540,1,1,NULL),(205,1,'civicrm/contribute/additionalinfo',NULL,'AdditionalInfo Form','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:34:\"CRM_Contribute_Form_AdditionalInfo\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,0,1,0,NULL),(206,1,'civicrm/contribute/campaign',NULL,'Setup a Personal Campaign Page - Account Information','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:25:\"make online contributions\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contribute_Controller_PCP\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,1,NULL,0,0,1,0,NULL),(207,1,'civicrm/contribute/pcp/info',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:27:\"CRM_Contribute_Page_PCPInfo\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,1,NULL,0,1,1,0,NULL),(208,1,'civicrm/contribute/pcp',NULL,NULL,'s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:27:\"CRM_Contribute_Form_PCP_PCP\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,1,NULL,0,1,1,0,NULL),(209,1,'civicrm/ajax/permlocation',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:25:\"make online contributions\";}i:1;s:3:\"and\";}','a:2:{i:0;s:27:\"CRM_Core_Page_AJAX_Location\";i:1;s:23:\"getPermissionedLocation\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(210,1,'civicrm/ajax/employer',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:25:\"make online contributions\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Contact_Page_AJAX\";i:1;s:23:\"getPermissionedEmployer\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(211,1,'civicrm/member',NULL,'CiviMember Dashboard','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviMember\";}i:1;s:3:\"and\";}','s:25:\"CRM_Member_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,3,NULL,NULL,NULL,0,700,1,1,NULL),(212,1,'civicrm/member/add','action=add','New Member','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviMember\";}i:1;s:3:\"and\";}','s:19:\"CRM_Member_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:20:\"CiviMember Dashboard\";s:3:\"url\";s:28:\"/nyss/civicrm/member?reset=1\";}}',NULL,NULL,3,NULL,NULL,NULL,0,1,1,0,NULL),(213,1,'civicrm/admin/member/membershipType',NULL,'Membership Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:30:\"CRM_Member_Page_MembershipType\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,370,1,0,NULL),(214,1,'civicrm/admin/member/membershipStatus',NULL,'Membership Status Rules','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:32:\"CRM_Member_Page_MembershipStatus\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,380,1,0,NULL),(215,1,'civicrm/contact/view/membership','force=1,cid=%%cid%%','Memberships','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:19:\"CRM_Member_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,2,1,0,NULL),(216,1,'civicrm/membership/view',NULL,'Memberships','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviMember\";}i:1;s:3:\"and\";}','s:30:\"CRM_Member_Form_MembershipView\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,390,1,0,NULL),(217,1,'civicrm/member/search',NULL,'Find Members','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviMember\";}i:1;s:3:\"and\";}','s:28:\"CRM_Member_Controller_Search\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:20:\"CiviMember Dashboard\";s:3:\"url\";s:28:\"/nyss/civicrm/member?reset=1\";}}',NULL,NULL,3,NULL,NULL,NULL,0,710,1,1,NULL),(218,1,'civicrm/member/import',NULL,'Import Memberships','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:17:\"access CiviMember\";i:1;s:16:\"edit memberships\";}i:1;s:3:\"and\";}','s:28:\"CRM_Member_Import_Controller\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:20:\"CiviMember Dashboard\";s:3:\"url\";s:28:\"/nyss/civicrm/member?reset=1\";}}',NULL,NULL,3,NULL,NULL,NULL,0,720,1,1,NULL),(219,1,'civicrm/ajax/memType',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:17:\"access CiviMember\";}i:1;s:3:\"and\";}','a:2:{i:0;s:20:\"CRM_Member_Page_AJAX\";i:1;s:21:\"getMemberTypeDefaults\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(220,1,'civicrm/mailing',NULL,'CiviMail','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Browse\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,600,1,1,NULL),(221,1,'civicrm/admin/mail',NULL,'Mailer Settings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:27:\"CRM_Admin_Form_Setting_Mail\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,400,1,0,NULL),(222,1,'civicrm/admin/component',NULL,'Headers, Footers, and Automated Messages','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:26:\"CRM_Mailing_Page_Component\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,410,1,0,NULL),(223,1,'civicrm/admin/options/from_email','group=from_email_address','From Email Addresses','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,415,1,0,NULL),(224,1,'civicrm/admin/mailSettings',NULL,'Mail Accounts','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:27:\"CRM_Admin_Page_MailSettings\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,420,1,0,NULL),(225,1,'civicrm/mailing/send',NULL,'New Mailing','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:27:\"CRM_Mailing_Controller_Send\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,610,1,1,NULL),(226,1,'civicrm/mailing/browse/scheduled','scheduled=true','Scheduled and Sent Mailings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Browse\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,620,1,1,NULL),(227,1,'civicrm/mailing/browse/unscheduled','scheduled=false','Draft and Unscheduled Mailings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Browse\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,620,1,1,NULL),(228,1,'civicrm/mailing/browse/archived',NULL,'Archived Mailings','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Browse\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,625,1,1,NULL),(229,1,'civicrm/mailing/component',NULL,'Headers, Footers, and Automated Messages','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:18:\"administer CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Mailing_Page_Component\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,630,1,1,NULL),(230,1,'civicrm/mailing/unsubscribe',NULL,'Unsubscribe','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:43:\"access CiviMail subscribe/unsubscribe pages\";}i:1;s:3:\"and\";}','s:28:\"CRM_Mailing_Page_Unsubscribe\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,1,NULL,0,640,1,0,NULL),(231,1,'civicrm/mailing/resubscribe',NULL,'Resubscribe','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:43:\"access CiviMail subscribe/unsubscribe pages\";}i:1;s:3:\"and\";}','s:28:\"CRM_Mailing_Page_Resubscribe\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,1,NULL,0,645,1,0,NULL),(232,1,'civicrm/mailing/optout',NULL,'Optout','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:43:\"access CiviMail subscribe/unsubscribe pages\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Optout\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,1,NULL,0,650,1,0,NULL),(233,1,'civicrm/mailing/confirm',NULL,'Confirm','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:43:\"access CiviMail subscribe/unsubscribe pages\";}i:1;s:3:\"and\";}','s:24:\"CRM_Mailing_Page_Confirm\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,1,NULL,0,660,1,0,NULL),(234,1,'civicrm/mailing/subscribe',NULL,'Subscribe','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:43:\"access CiviMail subscribe/unsubscribe pages\";}i:1;s:3:\"and\";}','s:26:\"CRM_Mailing_Form_Subscribe\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,1,NULL,0,660,1,0,NULL),(235,1,'civicrm/mailing/preview',NULL,'Preview Mailing','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:24:\"CRM_Mailing_Page_Preview\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,670,1,0,NULL),(236,1,'civicrm/mailing/report','mid=%%mid%%','Mailing Report','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Report\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,680,1,0,NULL),(237,1,'civicrm/mailing/forward',NULL,'Forward Mailing','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:43:\"access CiviMail subscribe/unsubscribe pages\";}i:1;s:3:\"and\";}','s:31:\"CRM_Mailing_Form_ForwardMailing\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,1,NULL,0,685,1,0,NULL),(238,1,'civicrm/mailing/queue',NULL,'Sending Mail','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Browse\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,690,1,0,NULL),(239,1,'civicrm/mailing/report/event',NULL,'Mailing Event','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:22:\"CRM_Mailing_Page_Event\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}i:2;a:2:{s:5:\"title\";s:14:\"Mailing Report\";s:3:\"url\";s:52:\"/nyss/civicrm/mailing/report?reset=1&amp;mid=%%mid%%\";}}',NULL,NULL,4,NULL,NULL,NULL,0,695,1,0,NULL),(240,1,'civicrm/ajax/template',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_Mailing_Page_AJAX\";i:1;s:8:\"template\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(241,1,'civicrm/grant',NULL,'CiviGrant Dashboard','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviGrant\";}i:1;s:3:\"and\";}','s:24:\"CRM_Grant_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,5,NULL,NULL,NULL,0,1000,1,1,NULL),(242,1,'civicrm/grant/info',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviGrant\";}i:1;s:3:\"and\";}','s:24:\"CRM_Grant_Page_DashBoard\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviGrant Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/grant?reset=1\";}}',NULL,NULL,5,NULL,NULL,NULL,0,0,1,0,NULL),(243,1,'civicrm/grant/search',NULL,'Find Grants','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviGrant\";}i:1;s:3:\"and\";}','s:27:\"CRM_Grant_Controller_Search\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviGrant Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/grant?reset=1\";}}',NULL,NULL,5,NULL,NULL,NULL,0,1010,1,1,NULL),(244,1,'civicrm/grant/add','action=add','New Grant','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviGrant\";}i:1;s:3:\"and\";}','s:18:\"CRM_Grant_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:19:\"CiviGrant Dashboard\";s:3:\"url\";s:27:\"/nyss/civicrm/grant?reset=1\";}}',NULL,NULL,5,NULL,NULL,NULL,0,1,1,1,NULL),(245,1,'civicrm/contact/view/grant',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:16:\"access CiviGrant\";}i:1;s:3:\"and\";}','s:18:\"CRM_Grant_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(246,1,'civicrm/pledge',NULL,'CiviPledge Dashboard','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviPledge\";}i:1;s:3:\"and\";}','s:25:\"CRM_Pledge_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,6,NULL,NULL,NULL,0,550,1,1,NULL),(247,1,'civicrm/pledge/search',NULL,'Find Pledges','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviPledge\";}i:1;s:3:\"and\";}','s:28:\"CRM_Pledge_Controller_Search\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:20:\"CiviPledge Dashboard\";s:3:\"url\";s:28:\"/nyss/civicrm/pledge?reset=1\";}}',NULL,NULL,6,NULL,NULL,NULL,0,560,1,1,NULL),(248,1,'civicrm/contact/view/pledge','force=1,cid=%%cid%%','Pledges','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviPledge\";}i:1;s:3:\"and\";}','s:19:\"CRM_Pledge_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,570,1,0,NULL),(249,1,'civicrm/pledge/add','action=add','New Pledge','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviPledge\";}i:1;s:3:\"and\";}','s:19:\"CRM_Pledge_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:20:\"CiviPledge Dashboard\";s:3:\"url\";s:28:\"/nyss/civicrm/pledge?reset=1\";}}',NULL,NULL,6,NULL,NULL,NULL,0,1,1,1,NULL),(250,1,'civicrm/pledge/payment',NULL,'Pledge Payments','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviPledge\";}i:1;s:3:\"and\";}','s:23:\"CRM_Pledge_Page_Payment\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:20:\"CiviPledge Dashboard\";s:3:\"url\";s:28:\"/nyss/civicrm/pledge?reset=1\";}}',NULL,NULL,6,NULL,NULL,NULL,0,580,1,0,NULL),(251,1,'civicrm/ajax/pledgeName',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:14:\"access CiviCRM\";i:1;s:17:\"access CiviPledge\";}i:1;s:3:\"and\";}','a:2:{i:0;s:20:\"CRM_Pledge_Page_AJAX\";i:1;s:10:\"pledgeName\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(252,1,'civicrm/case',NULL,'CiviCase Dashboard','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:23:\"CRM_Case_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,900,1,1,NULL),(253,1,'civicrm/case/add',NULL,'Open Case','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:17:\"CRM_Case_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,1,NULL),(254,1,'civicrm/case/search',NULL,'Find Cases','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Case_Controller_Search\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,910,1,1,NULL),(255,1,'civicrm/case/activity',NULL,'Case Activity','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Case_Form_Activity\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(256,1,'civicrm/case/report',NULL,'Case Report','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:31:\"access all cases and activities\";}i:1;s:3:\"and\";}','s:20:\"CRM_Case_Form_Report\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(257,1,'civicrm/contact/view/case',NULL,'Case','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:17:\"CRM_Case_Page_Tab\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(258,1,'civicrm/case/activity/view',NULL,'Activity View','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Case_Form_ActivityView\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Case Activity\";s:3:\"url\";s:35:\"/nyss/civicrm/case/activity?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(259,1,'civicrm/contact/view/case/editClient',NULL,'Assign to Another Client','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:24:\"CRM_Case_Form_EditClient\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:15:\"Contact Summary\";s:3:\"url\";s:50:\"/nyss/civicrm/contact/view?reset=1&amp;cid=%%cid%%\";}i:2;a:2:{s:5:\"title\";s:4:\"Case\";s:3:\"url\";s:39:\"/nyss/civicrm/contact/view/case?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(260,1,'civicrm/case/addToCase',NULL,'Build Activity To Case','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:28:\"CRM_Case_Form_ActivityToCase\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(261,1,'civicrm/case/details',NULL,'Case Details','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:25:\"CRM_Case_Page_CaseDetails\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(262,1,'civicrm/ajax/caseSubject',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:21:\"CRM_HRDCase_Page_AJAX\";i:1;s:11:\"caseSubject\";}',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(263,1,'civicrm/admin/options/case_type','group=case_type','Case Types','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:19:\"administer CiviCase\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,390,1,0,NULL),(264,1,'civicrm/admin/options/redaction_rule','group=redaction_rule','Redaction Rules','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:19:\"administer CiviCase\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,400,1,0,NULL),(265,1,'civicrm/admin/options/case_status','group=case_status','Case Statuses','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:19:\"administer CiviCase\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Options\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:13:\"Option Groups\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/options?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,400,1,0,NULL),(266,1,'civicrm/case/report/print',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:31:\"access all cases and activities\";}i:1;s:3:\"and\";}','a:2:{i:0;s:28:\"CRM_Case_XMLProcessor_Report\";i:1;s:15:\"printCaseReport\";}',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}i:2;a:2:{s:5:\"title\";s:11:\"Case Report\";s:3:\"url\";s:33:\"/nyss/civicrm/case/report?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(267,1,'civicrm/case/ajax/unclosed',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:18:\"CRM_Case_Page_AJAX\";i:1;s:13:\"unclosedCases\";}',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(268,1,'civicrm/case/ajax/relcases',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:18:\"CRM_Case_Page_AJAX\";i:1;s:15:\"getRelatedCases\";}',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(269,1,'civicrm/case/ajax/processtags',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','a:2:{i:0;s:18:\"CRM_Case_Page_AJAX\";i:1;s:15:\"processCaseTags\";}',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,3,NULL),(270,1,'civicrm/report',NULL,'CiviReport','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviReport\";}i:1;s:3:\"and\";}','s:22:\"CRM_Report_Page_Report\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,8,NULL,NULL,NULL,0,1200,1,1,NULL),(271,1,'civicrm/report/list',NULL,'CiviCRM Reports','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:17:\"access CiviReport\";}i:1;s:3:\"and\";}','s:28:\"CRM_Report_Page_InstanceList\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:10:\"CiviReport\";s:3:\"url\";s:28:\"/nyss/civicrm/report?reset=1\";}}',NULL,NULL,8,NULL,NULL,NULL,0,1,1,0,NULL),(272,1,'civicrm/report/template/list',NULL,'Create Reports from Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:18:\"administer Reports\";}i:1;s:3:\"and\";}','s:28:\"CRM_Report_Page_TemplateList\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:10:\"CiviReport\";s:3:\"url\";s:28:\"/nyss/civicrm/report?reset=1\";}}',NULL,NULL,8,NULL,NULL,NULL,0,1220,1,1,NULL),(273,1,'civicrm/report/options/report_template',NULL,'Manage Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:18:\"administer Reports\";}i:1;s:3:\"and\";}','s:23:\"CRM_Report_Page_Options\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:10:\"CiviReport\";s:3:\"url\";s:28:\"/nyss/civicrm/report?reset=1\";}}',NULL,NULL,8,NULL,NULL,NULL,0,1241,1,1,NULL),(274,1,'civicrm/admin/report/register',NULL,'Register Report','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:18:\"administer Reports\";}i:1;s:3:\"and\";}','s:24:\"CRM_Report_Form_Register\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(275,1,'civicrm/report/instance',NULL,'Report','s:1:\"1\";','a:2:{i:0;a:1:{i:0;s:17:\"access CiviReport\";}i:1;s:3:\"and\";}','s:24:\"CRM_Report_Page_Instance\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:10:\"CiviReport\";s:3:\"url\";s:28:\"/nyss/civicrm/report?reset=1\";}}',NULL,NULL,8,NULL,NULL,NULL,0,1,1,0,NULL),(276,1,'civicrm/admin/report/template/list',NULL,'Create Reports from Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviReport\";}i:1;s:3:\"and\";}','s:28:\"CRM_Report_Page_TemplateList\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(277,1,'civicrm/admin/report/options/report_template',NULL,'Manage Templates','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviReport\";}i:1;s:3:\"and\";}','s:23:\"CRM_Report_Page_Options\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(278,1,'civicrm/admin/report/list',NULL,'Reports Listing','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:28:\"CRM_Report_Page_InstanceList\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(279,1,'civicrm/dashlet/twitter',NULL,'Twitter','a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:24:\"CRM_Dashlet_Page_Twitter\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:16:\"CiviCRM Dashlets\";s:3:\"url\";s:29:\"/nyss/civicrm/dashlet?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(280,1,'civicrm/ajax',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(281,1,'civicrm/admin/custom',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Admin_Page_Admin\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(282,1,'civicrm/admin/uf',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Admin_Page_Admin\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(283,1,'civicrm/admin/setting/preferences',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:22:\"CRM_Admin_Page_Setting\";',NULL,'a:3:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}i:2;a:2:{s:5:\"title\";s:15:\"Global Settings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";}}','civicrm/admin/setting',NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(284,1,'civicrm/contact',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(285,1,'civicrm/standalone',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(286,1,'civicrm/contribute/ajax',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:21:\"access CiviContribute\";}i:1;s:3:\"and\";}','s:29:\"CRM_Contribute_Page_DashBoard\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:24:\"CiviContribute Dashboard\";s:3:\"url\";s:32:\"/nyss/civicrm/contribute?reset=1\";}}',NULL,NULL,2,NULL,NULL,NULL,0,1,1,0,NULL),(287,1,'civicrm/custom',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(288,1,'civicrm/participant',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(289,1,'civicrm/admin/member',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Admin_Page_Admin\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(290,1,'civicrm/membership',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:26:\"CRM_Contact_Page_DashBoard\";',NULL,'a:1:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,0,1,1,0,NULL),(291,1,'civicrm/mailing/browse',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:15:\"access CiviMail\";}i:1;s:3:\"and\";}','s:23:\"CRM_Mailing_Page_Browse\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:8:\"CiviMail\";s:3:\"url\";s:29:\"/nyss/civicrm/mailing?reset=1\";}}',NULL,NULL,4,NULL,NULL,NULL,0,1,1,0,NULL),(292,1,'civicrm/case/ajax',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:23:\"CRM_Case_Page_DashBoard\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"CiviCase Dashboard\";s:3:\"url\";s:26:\"/nyss/civicrm/case?reset=1\";}}',NULL,NULL,7,NULL,NULL,NULL,0,1,1,0,NULL),(293,1,'civicrm/report/template',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviReport\";}i:1;s:3:\"and\";}','s:22:\"CRM_Report_Page_Report\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:10:\"CiviReport\";s:3:\"url\";s:28:\"/nyss/civicrm/report?reset=1\";}}',NULL,NULL,8,NULL,NULL,NULL,0,1,1,0,NULL),(294,1,'civicrm/report/options',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:1:{i:0;s:17:\"access CiviReport\";}i:1;s:3:\"and\";}','s:22:\"CRM_Report_Page_Report\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:10:\"CiviReport\";s:3:\"url\";s:28:\"/nyss/civicrm/report?reset=1\";}}',NULL,NULL,8,NULL,NULL,NULL,0,1,1,0,NULL),(295,1,'civicrm/admin/report',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Admin_Page_Admin\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(296,1,'civicrm/admin/report/template',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Admin_Page_Admin\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(297,1,'civicrm/admin/report/options',NULL,NULL,'a:2:{i:0;s:19:\"CRM_Core_Permission\";i:1;s:9:\"checkMenu\";}','a:2:{i:0;a:2:{i:0;s:18:\"administer CiviCRM\";i:1;s:14:\"access CiviCRM\";}i:1;s:3:\"and\";}','s:20:\"CRM_Admin_Page_Admin\";',NULL,'a:2:{i:0;a:2:{s:5:\"title\";s:7:\"CiviCRM\";s:3:\"url\";s:21:\"/nyss/civicrm?reset=1\";}i:1;a:2:{s:5:\"title\";s:18:\"Administer CiviCRM\";s:3:\"url\";s:27:\"/nyss/civicrm/admin?reset=1\";}}',NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,0,NULL),(298,1,'admin',NULL,NULL,NULL,NULL,NULL,NULL,'a:10:{s:9:\"Customize\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:5:{s:20:\"{weight}.Custom Data\";a:6:{s:5:\"title\";s:11:\"Custom Data\";s:4:\"desc\";s:109:\"Configure custom fields to collect and store custom data which is not included in the standard CiviCRM forms.\";s:2:\"id\";s:10:\"CustomData\";s:3:\"url\";s:40:\"/nyss/civicrm/admin/custom/group?reset=1\";s:4:\"icon\";s:26:\"admin/small/custm_data.png\";s:5:\"extra\";N;}s:24:\"{weight}.CiviCRM Profile\";a:6:{s:5:\"title\";s:15:\"CiviCRM Profile\";s:4:\"desc\";s:151:\"Profiles allow you to aggregate groups of fields and include them in your site as input forms, contact display pages, and search and listings features.\";s:2:\"id\";s:14:\"CiviCRMProfile\";s:3:\"url\";s:36:\"/nyss/civicrm/admin/uf/group?reset=1\";s:4:\"icon\";s:23:\"admin/small/Profile.png\";s:5:\"extra\";N;}s:24:\"{weight}.Navigation Menu\";a:6:{s:5:\"title\";s:15:\"Navigation Menu\";s:4:\"desc\";s:79:\"Add or remove menu items, and modify the order of items on the navigation menu.\";s:2:\"id\";s:14:\"NavigationMenu\";s:3:\"url\";s:32:\"/nyss/civicrm/admin/menu?reset=1\";s:4:\"icon\";s:24:\"admin/small/template.png\";s:5:\"extra\";N;}s:31:\"{weight}.Manage Custom Searches\";a:6:{s:5:\"title\";s:22:\"Manage Custom Searches\";s:4:\"desc\";s:225:\"Developers and accidental techies with a bit of PHP and SQL knowledge can create new search forms to handle specific search and reporting needs which aren\'t covered by the built-in Advanced Search and Search Builder features.\";s:2:\"id\";s:20:\"ManageCustomSearches\";s:3:\"url\";s:73:\"/nyss/civicrm/admin/options/custom_search?group=custom_search&amp;reset=1\";s:4:\"icon\";s:24:\"admin/small/template.png\";s:5:\"extra\";N;}s:19:\"{weight}.Price Sets\";a:6:{s:5:\"title\";s:10:\"Price Sets\";s:4:\"desc\";s:205:\"Price sets allow you to offer multiple options with associated fees (e.g. pre-conference workshops, additional meals, etc.). Configure Price Sets for events which need more than a single set of fee levels.\";s:2:\"id\";s:9:\"PriceSets\";s:3:\"url\";s:33:\"/nyss/civicrm/admin/price?reset=1\";s:4:\"icon\";s:26:\"admin/small/price_sets.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:3;}s:9:\"Configure\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:7:{s:32:\"{weight}.Configuration Checklist\";a:6:{s:5:\"title\";s:23:\"Configuration Checklist\";s:4:\"desc\";s:55:\"List of configuration tasks with links to each setting.\";s:2:\"id\";s:22:\"ConfigurationChecklist\";s:3:\"url\";s:38:\"/nyss/civicrm/admin/configtask?reset=1\";s:4:\"icon\";s:9:\"check.gif\";s:5:\"extra\";N;}s:24:\"{weight}.Global Settings\";a:6:{s:5:\"title\";s:15:\"Global Settings\";s:4:\"desc\";s:236:\"Configure Global Settings for your site, including: Enabled Components, Site Preferences for screens and forms, Directory Paths and Resource URLs, Address formats, Localization, Payment Processor, Outbound Email, Mapping, and Debugging.\";s:2:\"id\";s:14:\"GlobalSettings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/setting?reset=1\";s:4:\"icon\";s:18:\"admin/small/36.png\";s:5:\"extra\";N;}s:31:\"{weight}.Import/Export Mappings\";a:6:{s:5:\"title\";s:22:\"Import/Export Mappings\";s:4:\"desc\";s:141:\"Import and Export mappings allow you to easily run the same job multiple times. This option allows you to rename or delete existing mappings.\";s:2:\"id\";s:21:\"Import_ExportMappings\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/mapping?reset=1\";s:4:\"icon\";s:33:\"admin/small/import_export_map.png\";s:5:\"extra\";N;}s:26:\"{weight}.Message Templates\";a:6:{s:5:\"title\";s:17:\"Message Templates\";s:4:\"desc\";s:130:\"Message templates allow you to save and re-use messages with layouts which you can use when sending email to one or more contacts.\";s:2:\"id\";s:16:\"MessageTemplates\";s:3:\"url\";s:44:\"/nyss/civicrm/admin/messageTemplates?reset=1\";s:4:\"icon\";s:24:\"admin/small/template.png\";s:5:\"extra\";N;}s:27:\"{weight}.Domain Information\";a:6:{s:5:\"title\";s:18:\"Domain Information\";s:4:\"desc\";s:150:\"Configure primary contact name, email, return-path and address information. This information is used by CiviMail to identify the sending organization.\";s:2:\"id\";s:17:\"DomainInformation\";s:3:\"url\";s:52:\"/nyss/civicrm/admin/domain?action=update&amp;reset=1\";s:4:\"icon\";s:22:\"admin/small/domain.png\";s:5:\"extra\";N;}s:29:\"{weight}.From Email Addresses\";a:6:{s:5:\"title\";s:20:\"From Email Addresses\";s:4:\"desc\";s:74:\"List of Email Addresses which can be used when sending emails to contacts.\";s:2:\"id\";s:18:\"FromEmailAddresses\";s:3:\"url\";s:83:\"/nyss/civicrm/admin/options/from_email_address?group=from_email_address&amp;reset=1\";s:4:\"icon\";s:21:\"admin/small/title.png\";s:5:\"extra\";N;}s:38:\"{weight}.Update Directory Path and URL\";a:6:{s:5:\"title\";s:29:\"Update Directory Path and URL\";s:4:\"desc\";s:157:\"Reset the Base Directory Path and Base URL settings - generally when a CiviCRM site is moved to another location in the file system and/or to another domain.\";s:2:\"id\";s:25:\"UpdateDirectoryPathandURL\";s:3:\"url\";s:55:\"/nyss/civicrm/admin/setting/updateConfigBackend?reset=1\";s:4:\"icon\";s:26:\"admin/small/updatepath.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:4;}s:12:\"Option Lists\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:21:{s:23:\"{weight}.Activity Types\";a:6:{s:5:\"title\";s:14:\"Activity Types\";s:4:\"desc\";s:155:\"CiviCRM has several built-in activity types (meetings, phone calls, emails sent). Track other types of interactions by creating custom activity types here.\";s:2:\"id\";s:13:\"ActivityTypes\";s:3:\"url\";s:73:\"/nyss/civicrm/admin/options/activity_type?group=activity_type&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/05.png\";s:5:\"extra\";N;}s:23:\"{weight}.Gender Options\";a:6:{s:5:\"title\";s:14:\"Gender Options\";s:4:\"desc\";s:85:\"Options for assigning gender to individual contacts (e.g. Male, Female, Transgender).\";s:2:\"id\";s:13:\"GenderOptions\";s:3:\"url\";s:59:\"/nyss/civicrm/admin/options/gender?group=gender&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/01.png\";s:5:\"extra\";N;}s:19:\"{weight}.Phone Type\";a:6:{s:5:\"title\";s:10:\"Phone Type\";s:4:\"desc\";s:80:\"Options for assigning phone type to contacts (e.g Phone,\n    Mobile, Fax, Pager)\";s:2:\"id\";s:9:\"PhoneType\";s:3:\"url\";s:67:\"/nyss/civicrm/admin/options/phone_type?group=phone_type&amp;reset=1\";s:4:\"icon\";s:7:\"tel.gif\";s:5:\"extra\";N;}s:40:\"{weight}.Individual Prefixes (Ms, Mr...)\";a:6:{s:5:\"title\";s:31:\"Individual Prefixes (Ms, Mr...)\";s:4:\"desc\";s:66:\"Options for individual contact prefixes (e.g. Ms., Mr., Dr. etc.).\";s:2:\"id\";s:27:\"IndividualPrefixes_Ms_Mr...\";s:3:\"url\";s:81:\"/nyss/civicrm/admin/options/individual_prefix?group=individual_prefix&amp;reset=1\";s:4:\"icon\";s:21:\"admin/small/title.png\";s:5:\"extra\";N;}s:40:\"{weight}.Individual Suffixes (Jr, Sr...)\";a:6:{s:5:\"title\";s:31:\"Individual Suffixes (Jr, Sr...)\";s:4:\"desc\";s:61:\"Options for individual contact suffixes (e.g. Jr., Sr. etc.).\";s:2:\"id\";s:27:\"IndividualSuffixes_Jr_Sr...\";s:3:\"url\";s:81:\"/nyss/civicrm/admin/options/individual_suffix?group=individual_suffix&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/10.png\";s:5:\"extra\";N;}s:35:\"{weight}.Instant Messenger Services\";a:6:{s:5:\"title\";s:26:\"Instant Messenger Services\";s:4:\"desc\";s:79:\"List of IM services which can be used when recording screen-names for contacts.\";s:2:\"id\";s:24:\"InstantMessengerServices\";s:3:\"url\";s:97:\"/nyss/civicrm/admin/options/instant_messenger_service?group=instant_messenger_service&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/07.png\";s:5:\"extra\";N;}s:31:\"{weight}.Mobile Phone Providers\";a:6:{s:5:\"title\";s:22:\"Mobile Phone Providers\";s:4:\"desc\";s:90:\"List of mobile phone providers which can be assigned when recording contact phone numbers.\";s:2:\"id\";s:20:\"MobilePhoneProviders\";s:3:\"url\";s:77:\"/nyss/civicrm/admin/options/mobile_provider?group=mobile_provider&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/08.png\";s:5:\"extra\";N;}s:40:\"{weight}.Preferred Communication Methods\";a:6:{s:5:\"title\";s:31:\"Preferred Communication Methods\";s:4:\"desc\";s:117:\"One or more preferred methods of communication can be assigned to each contact. Customize the available options here.\";s:2:\"id\";s:29:\"PreferredCommunicationMethods\";s:3:\"url\";s:107:\"/nyss/civicrm/admin/options/preferred_communication_method?group=preferred_communication_method&amp;reset=1\";s:4:\"icon\";s:29:\"admin/small/communication.png\";s:5:\"extra\";N;}s:28:\"{weight}.Preferred Languages\";a:6:{s:5:\"title\";s:19:\"Preferred Languages\";s:4:\"desc\";s:30:\"Options for contact languages.\";s:2:\"id\";s:18:\"PreferredLanguages\";s:3:\"url\";s:64:\"/nyss/civicrm/admin/options/language?group=languages&amp;reset=1\";s:4:\"icon\";N;s:5:\"extra\";N;}s:26:\"{weight}.Word Replacements\";a:6:{s:5:\"title\";s:17:\"Word Replacements\";s:4:\"desc\";s:18:\"Word Replacements.\";s:2:\"id\";s:16:\"WordReplacements\";s:3:\"url\";s:52:\"/nyss/civicrm/admin/options/wordreplacements?reset=1\";s:4:\"icon\";N;s:5:\"extra\";N;}s:39:\"{weight}.Location Types (Home, Work...)\";a:6:{s:5:\"title\";s:30:\"Location Types (Home, Work...)\";s:4:\"desc\";s:94:\"Options for categorizing contact addresses and phone numbers (e.g. Home, Work, Billing, etc.).\";s:2:\"id\";s:26:\"LocationTypes_Home_Work...\";s:3:\"url\";s:40:\"/nyss/civicrm/admin/locationType?reset=1\";s:4:\"icon\";s:18:\"admin/small/13.png\";s:5:\"extra\";N;}s:27:\"{weight}.Relationship Types\";a:6:{s:5:\"title\";s:18:\"Relationship Types\";s:4:\"desc\";s:148:\"Contacts can be linked to each other through Relationships (e.g. Spouse, Employer, etc.). Define the types of relationships you want to record here.\";s:2:\"id\";s:17:\"RelationshipTypes\";s:3:\"url\";s:35:\"/nyss/civicrm/admin/reltype?reset=1\";s:4:\"icon\";s:25:\"admin/small/rela_type.png\";s:5:\"extra\";N;}s:33:\"{weight}.Manage Tags (Categories)\";a:6:{s:5:\"title\";s:24:\"Manage Tags (Categories)\";s:4:\"desc\";s:158:\"Tags are useful for segmenting the contacts in your database into categories (e.g. Staff Member, Donor, Volunteer, etc.). Create and edit available tags here.\";s:2:\"id\";s:21:\"ManageTags_Categories\";s:3:\"url\";s:31:\"/nyss/civicrm/admin/tag?reset=1\";s:4:\"icon\";s:18:\"admin/small/11.png\";s:5:\"extra\";N;}s:20:\"{weight}.Grant Types\";a:6:{s:5:\"title\";s:11:\"Grant Types\";s:4:\"desc\";s:135:\"List of types which can be assigned to Grants. (Enable CiviGrant from Global Settings - Enable Components if you want to track grants.)\";s:2:\"id\";s:10:\"GrantTypes\";s:3:\"url\";s:67:\"/nyss/civicrm/admin/options/grant_type?group=grant_type&amp;reset=1\";s:4:\"icon\";s:26:\"admin/small/grant_type.png\";s:5:\"extra\";N;}s:36:\"{weight}.Safe File Extension Options\";a:6:{s:5:\"title\";s:27:\"Safe File Extension Options\";s:4:\"desc\";s:44:\"File Extensions that can be considered safe.\";s:2:\"id\";s:24:\"SafeFileExtensionOptions\";s:3:\"url\";s:85:\"/nyss/civicrm/admin/options/safe_file_extension?group=safe_file_extension&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/01.png\";s:5:\"extra\";N;}s:38:\"{weight}.Participant Listing Templates\";a:6:{s:5:\"title\";s:29:\"Participant Listing Templates\";s:4:\"desc\";s:48:\"Template to control participant listing display.\";s:2:\"id\";s:27:\"ParticipantListingTemplates\";s:3:\"url\";s:85:\"/nyss/civicrm/admin/options/participant_listing?group=participant_listing&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/01.png\";s:5:\"extra\";N;}s:35:\"{weight}.Event Name Badge Templates\";a:6:{s:5:\"title\";s:26:\"Event Name Badge Templates\";s:4:\"desc\";s:44:\"Template to control event name badge format.\";s:2:\"id\";s:23:\"EventNameBadgeTemplates\";s:3:\"url\";s:69:\"/nyss/civicrm/admin/options/event_badge?group=event_badge&amp;reset=1\";s:4:\"icon\";N;s:5:\"extra\";N;}s:24:\"{weight}.Email Greetings\";a:6:{s:5:\"title\";s:15:\"Email Greetings\";s:4:\"desc\";s:75:\"Options for assigning email greetings to individual and household contacts.\";s:2:\"id\";s:14:\"EmailGreetings\";s:3:\"url\";s:75:\"/nyss/civicrm/admin/options/email_greeting?group=email_greeting&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/01.png\";s:5:\"extra\";N;}s:25:\"{weight}.Postal Greetings\";a:6:{s:5:\"title\";s:16:\"Postal Greetings\";s:4:\"desc\";s:76:\"Options for assigning postal greetings to individual and household contacts.\";s:2:\"id\";s:15:\"PostalGreetings\";s:3:\"url\";s:77:\"/nyss/civicrm/admin/options/postal_greeting?group=postal_greeting&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/01.png\";s:5:\"extra\";N;}s:18:\"{weight}.Addressee\";a:6:{s:5:\"title\";s:9:\"Addressee\";s:4:\"desc\";s:83:\"Options for assigning addressee to individual, household and organization contacts.\";s:2:\"id\";s:9:\"Addressee\";s:3:\"url\";s:65:\"/nyss/civicrm/admin/options/addressee?group=addressee&amp;reset=1\";s:4:\"icon\";s:18:\"admin/small/01.png\";s:5:\"extra\";N;}s:22:\"{weight}.Contact Types\";a:6:{s:5:\"title\";s:13:\"Contact Types\";s:4:\"desc\";N;s:2:\"id\";s:12:\"ContactTypes\";s:3:\"url\";s:43:\"/nyss/civicrm/admin/options/subtype?reset=1\";s:4:\"icon\";s:18:\"admin/small/09.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:11;}s:6:\"Manage\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:3:{s:42:\"{weight}.Find and Merge Duplicate Contacts\";a:6:{s:5:\"title\";s:33:\"Find and Merge Duplicate Contacts\";s:4:\"desc\";s:158:\"Manage the rules used to identify potentially duplicate contact records. Scan for duplicates using a selected rule and merge duplicate contact data as needed.\";s:2:\"id\";s:29:\"FindandMergeDuplicateContacts\";s:3:\"url\";s:39:\"/nyss/civicrm/admin/deduperules?reset=1\";s:4:\"icon\";s:34:\"admin/small/duplicate_matching.png\";s:5:\"extra\";N;}s:23:\"{weight}.Access Control\";a:6:{s:5:\"title\";s:14:\"Access Control\";s:4:\"desc\";s:73:\"Grant or deny access to actions (view, edit...), features and components.\";s:2:\"id\";s:13:\"AccessControl\";s:3:\"url\";s:34:\"/nyss/civicrm/admin/access?reset=1\";s:4:\"icon\";s:18:\"admin/small/03.png\";s:5:\"extra\";N;}s:38:\"{weight}.Synchronize Users to Contacts\";a:6:{s:5:\"title\";s:29:\"Synchronize Users to Contacts\";s:4:\"desc\";s:71:\"Automatically create a CiviCRM contact record for each CMS user record.\";s:2:\"id\";s:26:\"SynchronizeUserstoContacts\";s:3:\"url\";s:37:\"/nyss/civicrm/admin/synchUser?reset=1\";s:4:\"icon\";s:26:\"admin/small/Synch_user.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:2;}s:9:\"CiviEvent\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:5:{s:22:\"{weight}.Manage Events\";a:6:{s:5:\"title\";s:13:\"Manage Events\";s:4:\"desc\";s:136:\"Create and edit event configuration including times, locations, online registration forms, and fees. Links for iCal and RSS syndication.\";s:2:\"id\";s:12:\"ManageEvents\";s:3:\"url\";s:33:\"/nyss/civicrm/admin/event?reset=1\";s:4:\"icon\";s:28:\"admin/small/event_manage.png\";s:5:\"extra\";N;}s:24:\"{weight}.Event Templates\";a:6:{s:5:\"title\";s:15:\"Event Templates\";s:4:\"desc\";s:115:\"Administrators can create Event Templates - which are basically master event records pre-filled with default values\";s:2:\"id\";s:14:\"EventTemplates\";s:3:\"url\";s:41:\"/nyss/civicrm/admin/eventTemplate?reset=1\";s:4:\"icon\";s:24:\"admin/small/template.png\";s:5:\"extra\";N;}s:20:\"{weight}.Event Types\";a:6:{s:5:\"title\";s:11:\"Event Types\";s:4:\"desc\";s:143:\"Use Event Types to categorize your events. Event feeds can be filtered by Event Type and participant searches can use Event Type as a criteria.\";s:2:\"id\";s:10:\"EventTypes\";s:3:\"url\";s:67:\"/nyss/civicrm/admin/options/event_type?group=event_type&amp;reset=1\";s:4:\"icon\";s:26:\"admin/small/event_type.png\";s:5:\"extra\";N;}s:27:\"{weight}.Participant Status\";a:6:{s:5:\"title\";s:18:\"Participant Status\";s:4:\"desc\";s:154:\"Define statuses for event participants here (e.g. Registered, Attended, Cancelled...). You can then assign statuses and search for participants by status.\";s:2:\"id\";s:17:\"ParticipantStatus\";s:3:\"url\";s:46:\"/nyss/civicrm/admin/participant_status?reset=1\";s:4:\"icon\";s:28:\"admin/small/parti_status.png\";s:5:\"extra\";N;}s:25:\"{weight}.Participant Role\";a:6:{s:5:\"title\";s:16:\"Participant Role\";s:4:\"desc\";s:138:\"Define participant roles for events here (e.g. Attendee, Host, Speaker...). You can then assign roles and search for participants by role.\";s:2:\"id\";s:15:\"ParticipantRole\";s:3:\"url\";s:79:\"/nyss/civicrm/admin/options/participant_role?group=participant_role&amp;reset=1\";s:4:\"icon\";s:26:\"admin/small/parti_role.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:3;}s:14:\"CiviContribute\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:6:{s:34:\"{weight}.Manage Contribution Pages\";a:6:{s:5:\"title\";s:25:\"Manage Contribution Pages\";s:4:\"desc\";s:242:\"CiviContribute allows you to create and maintain any number of Online Contribution Pages. You can create different pages for different programs or campaigns - and customize text, amounts, types of information collected from contributors, etc.\";s:2:\"id\";s:23:\"ManageContributionPages\";s:3:\"url\";s:38:\"/nyss/civicrm/admin/contribute?reset=1\";s:4:\"icon\";s:41:\"admin/small/online_contribution_pages.png\";s:5:\"extra\";N;}s:32:\"{weight}.Personal Campaign Pages\";a:6:{s:5:\"title\";s:23:\"Personal Campaign Pages\";s:4:\"desc\";s:49:\"View and manage existing personal campaign pages.\";s:2:\"id\";s:21:\"PersonalCampaignPages\";s:3:\"url\";s:31:\"/nyss/civicrm/admin/pcp?reset=1\";s:4:\"icon\";s:34:\"admin/small/contribution_types.png\";s:5:\"extra\";N;}s:24:\"{weight}.Manage Premiums\";a:6:{s:5:\"title\";s:15:\"Manage Premiums\";s:4:\"desc\";s:175:\"CiviContribute allows you to configure any number of Premiums which can be offered to contributors as incentives / thank-you gifts. Define the premiums you want to offer here.\";s:2:\"id\";s:14:\"ManagePremiums\";s:3:\"url\";s:53:\"/nyss/civicrm/admin/contribute/managePremiums?reset=1\";s:4:\"icon\";s:24:\"admin/small/Premiums.png\";s:5:\"extra\";N;}s:27:\"{weight}.Contribution Types\";a:6:{s:5:\"title\";s:18:\"Contribution Types\";s:4:\"desc\";s:131:\"Contribution types are used to categorize contributions for reporting and accounting purposes. These are also referred to as Funds.\";s:2:\"id\";s:17:\"ContributionTypes\";s:3:\"url\";s:55:\"/nyss/civicrm/admin/contribute/contributionType?reset=1\";s:4:\"icon\";s:34:\"admin/small/contribution_types.png\";s:5:\"extra\";N;}s:28:\"{weight}.Payment Instruments\";a:6:{s:5:\"title\";s:19:\"Payment Instruments\";s:4:\"desc\";s:224:\"You may choose to record the payment instrument used for each contribution. Common payment methods are installed by default (e.g. Check, Cash, Credit Card...). If your site requires additional payment methods, add them here.\";s:2:\"id\";s:18:\"PaymentInstruments\";s:3:\"url\";s:83:\"/nyss/civicrm/admin/options/payment_instrument?group=payment_instrument&amp;reset=1\";s:4:\"icon\";s:35:\"admin/small/payment_instruments.png\";s:5:\"extra\";N;}s:30:\"{weight}.Accepted Credit Cards\";a:6:{s:5:\"title\";s:21:\"Accepted Credit Cards\";s:4:\"desc\";s:94:\"Credit card options that will be offered to contributors using your Online Contribution pages.\";s:2:\"id\";s:19:\"AcceptedCreditCards\";s:3:\"url\";s:81:\"/nyss/civicrm/admin/options/accept_creditcard?group=accept_creditcard&amp;reset=1\";s:4:\"icon\";s:36:\"admin/small/accepted_creditcards.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:3;}s:10:\"CiviMember\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:2:{s:25:\"{weight}.Membership Types\";a:6:{s:5:\"title\";s:16:\"Membership Types\";s:4:\"desc\";s:174:\"Define the types of memberships you want to offer. For each type, you can specify a \'name\' (Gold Member, Honor Society Member...), a description, duration, and a minimum fee.\";s:2:\"id\";s:15:\"MembershipTypes\";s:3:\"url\";s:49:\"/nyss/civicrm/admin/member/membershipType?reset=1\";s:4:\"icon\";s:31:\"admin/small/membership_type.png\";s:5:\"extra\";N;}s:32:\"{weight}.Membership Status Rules\";a:6:{s:5:\"title\";s:23:\"Membership Status Rules\";s:4:\"desc\";s:187:\"Status \'rules\' define the current status for a membership based on that membership\'s start and end dates. You can adjust the default status options and rules as needed to meet your needs.\";s:2:\"id\";s:21:\"MembershipStatusRules\";s:3:\"url\";s:51:\"/nyss/civicrm/admin/member/membershipStatus?reset=1\";s:4:\"icon\";s:33:\"admin/small/membership_status.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:1;}s:8:\"CiviMail\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:4:{s:24:\"{weight}.Mailer Settings\";a:6:{s:5:\"title\";s:15:\"Mailer Settings\";s:4:\"desc\";s:61:\"Configure spool period, throttling and other mailer settings.\";s:2:\"id\";s:14:\"MailerSettings\";s:3:\"url\";s:32:\"/nyss/civicrm/admin/mail?reset=1\";s:4:\"icon\";s:18:\"admin/small/07.png\";s:5:\"extra\";N;}s:49:\"{weight}.Headers, Footers, and Automated Messages\";a:6:{s:5:\"title\";s:40:\"Headers, Footers, and Automated Messages\";s:4:\"desc\";s:143:\"Configure the header and footer used for mailings. Customize the content of automated Subscribe, Unsubscribe, Resubscribe and Opt-out messages.\";s:2:\"id\";s:36:\"Headers_Footers_andAutomatedMessages\";s:3:\"url\";s:37:\"/nyss/civicrm/admin/component?reset=1\";s:4:\"icon\";s:23:\"admin/small/Profile.png\";s:5:\"extra\";N;}s:29:\"{weight}.From Email Addresses\";a:6:{s:5:\"title\";s:20:\"From Email Addresses\";s:4:\"desc\";s:74:\"List of Email Addresses which can be used when sending emails to contacts.\";s:2:\"id\";s:18:\"FromEmailAddresses\";s:3:\"url\";s:75:\"/nyss/civicrm/admin/options/from_email?group=from_email_address&amp;reset=1\";s:4:\"icon\";s:21:\"admin/small/title.png\";s:5:\"extra\";N;}s:22:\"{weight}.Mail Accounts\";a:6:{s:5:\"title\";s:13:\"Mail Accounts\";s:4:\"desc\";s:32:\"Configure email account setting.\";s:2:\"id\";s:12:\"MailAccounts\";s:3:\"url\";s:40:\"/nyss/civicrm/admin/mailSettings?reset=1\";s:4:\"icon\";s:18:\"admin/small/07.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:2;}s:8:\"CiviCase\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:3:{s:19:\"{weight}.Case Types\";a:6:{s:5:\"title\";s:10:\"Case Types\";s:4:\"desc\";s:136:\"List of types which can be assigned to Cases. (Enable the Cases tab from Global Settings - Site Preferences if you want to track cases.)\";s:2:\"id\";s:9:\"CaseTypes\";s:3:\"url\";s:65:\"/nyss/civicrm/admin/options/case_type?group=case_type&amp;reset=1\";s:4:\"icon\";s:25:\"admin/small/case_type.png\";s:5:\"extra\";N;}s:24:\"{weight}.Redaction Rules\";a:6:{s:5:\"title\";s:15:\"Redaction Rules\";s:4:\"desc\";s:223:\"List of rules which can be applied to user input strings so that the redacted output can be recognized as repeated instances of the same string or can be identified as a \"semantic type of the data element\" within case data.\";s:2:\"id\";s:14:\"RedactionRules\";s:3:\"url\";s:75:\"/nyss/civicrm/admin/options/redaction_rule?group=redaction_rule&amp;reset=1\";s:4:\"icon\";s:30:\"admin/small/redaction_type.png\";s:5:\"extra\";N;}s:22:\"{weight}.Case Statuses\";a:6:{s:5:\"title\";s:13:\"Case Statuses\";s:4:\"desc\";s:48:\"List of statuses that can be assigned to a case.\";s:2:\"id\";s:12:\"CaseStatuses\";s:3:\"url\";s:69:\"/nyss/civicrm/admin/options/case_status?group=case_status&amp;reset=1\";s:4:\"icon\";s:25:\"admin/small/case_type.png\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:2;}s:10:\"CiviReport\";a:3:{s:12:\"component_id\";N;s:6:\"fields\";a:3:{s:38:\"{weight}.Create Reports from Templates\";a:6:{s:5:\"title\";s:29:\"Create Reports from Templates\";s:4:\"desc\";s:49:\"Component wise listing of all available templates\";s:2:\"id\";s:26:\"CreateReportsfromTemplates\";s:3:\"url\";s:48:\"/nyss/civicrm/admin/report/template/list?reset=1\";s:4:\"icon\";s:31:\"admin/small/report_template.gif\";s:5:\"extra\";N;}s:25:\"{weight}.Manage Templates\";a:6:{s:5:\"title\";s:16:\"Manage Templates\";s:4:\"desc\";s:45:\"Browse, Edit and Delete the Report templates.\";s:2:\"id\";s:15:\"ManageTemplates\";s:3:\"url\";s:58:\"/nyss/civicrm/admin/report/options/report_template?reset=1\";s:4:\"icon\";s:24:\"admin/small/template.png\";s:5:\"extra\";N;}s:24:\"{weight}.Reports Listing\";a:6:{s:5:\"title\";s:15:\"Reports Listing\";s:4:\"desc\";s:60:\"Browse existing report, change report criteria and settings.\";s:2:\"id\";s:14:\"ReportsListing\";s:3:\"url\";s:39:\"/nyss/civicrm/admin/report/list?reset=1\";s:4:\"icon\";s:27:\"admin/small/report_list.gif\";s:5:\"extra\";N;}}s:9:\"perColumn\";d:2;}}',NULL,NULL,NULL,NULL,NULL,NULL,NULL,1,1,1,NULL);
 /*!40000 ALTER TABLE `civicrm_menu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2913,21 +2909,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_msg_template`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_msg_template` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Message Template ID',
-  `msg_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Descriptive title of message',
-  `msg_subject` text collate utf8_unicode_ci COMMENT 'Subject for email message.',
-  `msg_text` text collate utf8_unicode_ci COMMENT 'Text formatted message',
-  `msg_html` text collate utf8_unicode_ci COMMENT 'HTML formatted message',
-  `is_active` tinyint(4) default '1',
-  `workflow_id` int(10) unsigned default NULL COMMENT 'a pseudo-FK to civicrm_option_value',
-  `is_default` tinyint(4) default '1' COMMENT 'is this the default message template for the workflow referenced by workflow_id?',
-  `is_reserved` tinyint(4) default NULL COMMENT 'is this the reserved message template which we ship for the workflow referenced by workflow_id?',
-  PRIMARY KEY  (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Message Template ID',
+  `msg_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Descriptive title of message',
+  `msg_subject` text COLLATE utf8_unicode_ci COMMENT 'Subject for email message.',
+  `msg_text` text COLLATE utf8_unicode_ci COMMENT 'Text formatted message',
+  `msg_html` text COLLATE utf8_unicode_ci COMMENT 'HTML formatted message',
+  `is_active` tinyint(4) DEFAULT '1',
+  `workflow_id` int(10) unsigned DEFAULT NULL COMMENT 'a pseudo-FK to civicrm_option_value',
+  `is_default` tinyint(4) DEFAULT '1' COMMENT 'is this the default message template for the workflow referenced by workflow_id?',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'is this the reserved message template which we ship for the workflow referenced by workflow_id?',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_msg_template`
@@ -2944,27 +2940,27 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_navigation`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_navigation` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this navigation item for',
-  `label` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Navigation Title',
-  `name` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Internal Name',
-  `url` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'url in case of custom navigation link',
-  `permission` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Permission for menu item',
-  `permission_operator` varchar(3) collate utf8_unicode_ci default NULL COMMENT 'Permission Operator',
-  `parent_id` int(10) unsigned default NULL COMMENT 'Parent navigation item, used for grouping',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this navigation item active?',
-  `has_separator` tinyint(4) default NULL COMMENT 'If separator needs to be added after this menu item',
-  `weight` int(11) default NULL COMMENT 'Ordering of the navigation items in various blocks.',
-  PRIMARY KEY  (`id`),
+  `label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Navigation Title',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Internal Name',
+  `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'url in case of custom navigation link',
+  `permission` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Permission for menu item',
+  `permission_operator` varchar(3) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Permission Operator',
+  `parent_id` int(10) unsigned DEFAULT NULL COMMENT 'Parent navigation item, used for grouping',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this navigation item active?',
+  `has_separator` tinyint(4) DEFAULT NULL COMMENT 'If separator needs to be added after this menu item',
+  `weight` int(11) DEFAULT NULL COMMENT 'Ordering of the navigation items in various blocks.',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_navigation_domain_id` (`domain_id`),
   KEY `FK_civicrm_navigation_parent_id` (`parent_id`),
   CONSTRAINT `FK_civicrm_navigation_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`),
   CONSTRAINT `FK_civicrm_navigation_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `civicrm_navigation` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=207 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_navigation`
@@ -2981,22 +2977,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_note`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_note` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Note ID',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Note ID',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the referenced item.',
-  `note` text collate utf8_unicode_ci COMMENT 'Note and/or Comment.',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID creator',
-  `modified_date` date default NULL COMMENT 'When was this note last modified/edited',
-  `subject` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'subject of note description',
-  PRIMARY KEY  (`id`),
+  `note` text COLLATE utf8_unicode_ci COMMENT 'Note and/or Comment.',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID creator',
+  `modified_date` date DEFAULT NULL COMMENT 'When was this note last modified/edited',
+  `subject` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'subject of note description',
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `FK_civicrm_note_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_note_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_note`
@@ -3012,22 +3008,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_openid`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_openid` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique OpenID ID',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `location_type_id` int(10) unsigned default NULL COMMENT 'Which Location does this email belong to.',
-  `openid` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'the OpenID (or OpenID-style http://username.domain/) unique identifier for this contact mainly used for logging in to CiviCRM',
-  `allowed_to_login` tinyint(4) NOT NULL default '0' COMMENT 'Whether or not this user is allowed to login',
-  `is_primary` tinyint(4) default '0' COMMENT 'Is this the primary email for this contact and location.',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique OpenID ID',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `location_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Location does this email belong to.',
+  `openid` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'the OpenID (or OpenID-style http://username.domain/) unique identifier for this contact mainly used for logging in to CiviCRM',
+  `allowed_to_login` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not this user is allowed to login',
+  `is_primary` tinyint(4) DEFAULT '0' COMMENT 'Is this the primary email for this contact and location.',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_openid` (`openid`),
   KEY `index_location_type` (`location_type_id`),
   KEY `FK_civicrm_openid_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_openid_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_openid`
@@ -3043,20 +3039,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_openid_associations`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_openid_associations` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `server_url` blob,
-  `handle` varchar(255) collate utf8_unicode_ci default NULL,
+  `handle` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `secret` blob,
-  `issued` int(11) default NULL,
-  `lifetime` int(11) default NULL,
-  `assoc_type` varchar(64) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `issued` int(11) DEFAULT NULL,
+  `lifetime` int(11) DEFAULT NULL,
+  `assoc_type` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `server_url_handle_index` (`server_url`(166),`handle`(166))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_openid_associations`
@@ -3072,17 +3068,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_openid_nonces`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_openid_nonces` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `server_url` blob,
-  `timestamp` int(11) default NULL,
-  `salt` char(40) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `timestamp` int(11) DEFAULT NULL,
+  `salt` char(40) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `nonce_index` (`server_url`(255),`timestamp`,`salt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_openid_nonces`
@@ -3098,19 +3094,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_option_group`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_option_group` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Option Group ID',
-  `name` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Option group name. Used as selection key by class properties which lookup options in civicrm_option_value.',
-  `label` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Option label.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Option group description.',
-  `is_reserved` tinyint(4) default NULL COMMENT 'Is this a predefined system option group (i.e. it can not be deleted)?',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this option group active?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Option Group ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Option group name. Used as selection key by class properties which lookup options in civicrm_option_value.',
+  `label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Option label.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Option group description.',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'Is this a predefined system option group (i.e. it can not be deleted)?',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this option group active?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_option_group`
@@ -3127,26 +3123,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_option_value`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_option_value` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Option ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Option ID',
   `option_group_id` int(10) unsigned NOT NULL COMMENT 'Group which this option belongs to.',
-  `label` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Option string as displayed to users - e.g. the label in an HTML OPTION tag.',
-  `value` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'The actual value stored (as a foreign key) in the data record. Functions which need lookup option_value.title should use civicrm_option_value.option_group_id plus civicrm_option_value.value as the key.',
-  `name` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Stores a fixed (non-translated) name for this option value. Lookup functions should use the name as the key for the option value row.',
-  `grouping` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Use to sort and/or set display properties for sub-set(s) of options within an option group. EXAMPLE: Use for college_interest field, to differentiate partners from non-partners.',
-  `filter` int(10) unsigned default NULL COMMENT 'Bitwise logic can be used to create subsets of options within an option_group for different uses.',
-  `is_default` tinyint(4) default '0' COMMENT 'Is this the default option for the group?',
+  `label` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Option string as displayed to users - e.g. the label in an HTML OPTION tag.',
+  `value` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The actual value stored (as a foreign key) in the data record. Functions which need lookup option_value.title should use civicrm_option_value.option_group_id plus civicrm_option_value.value as the key.',
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Stores a fixed (non-translated) name for this option value. Lookup functions should use the name as the key for the option value row.',
+  `grouping` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Use to sort and/or set display properties for sub-set(s) of options within an option group. EXAMPLE: Use for college_interest field, to differentiate partners from non-partners.',
+  `filter` int(10) unsigned DEFAULT NULL COMMENT 'Bitwise logic can be used to create subsets of options within an option_group for different uses.',
+  `is_default` tinyint(4) DEFAULT '0' COMMENT 'Is this the default option for the group?',
   `weight` int(10) unsigned NOT NULL COMMENT 'Controls display sort order.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional description.',
-  `is_optgroup` tinyint(4) default '0' COMMENT 'Is this row simply a display header? Expected usage is to render these as OPTGROUP tags within a SELECT field list of options?',
-  `is_reserved` tinyint(4) default '0' COMMENT 'Is this a predefined system object?',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this option active?',
-  `component_id` int(10) unsigned default NULL COMMENT 'Component that this option value belongs/caters to.',
-  `domain_id` int(10) unsigned default NULL COMMENT 'Which Domain is this option value for',
-  `visibility_id` int(10) unsigned default NULL,
-  PRIMARY KEY  (`id`),
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional description.',
+  `is_optgroup` tinyint(4) DEFAULT '0' COMMENT 'Is this row simply a display header? Expected usage is to render these as OPTGROUP tags within a SELECT field list of options?',
+  `is_reserved` tinyint(4) DEFAULT '0' COMMENT 'Is this a predefined system object?',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this option active?',
+  `component_id` int(10) unsigned DEFAULT NULL COMMENT 'Component that this option value belongs/caters to.',
+  `domain_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Domain is this option value for',
+  `visibility_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
   KEY `index_option_group_id_value` (`value`,`option_group_id`),
   KEY `index_option_group_id_name` (`option_group_id`,`name`),
   KEY `FK_civicrm_option_value_component_id` (`component_id`),
@@ -3155,7 +3151,7 @@ CREATE TABLE `civicrm_option_value` (
   CONSTRAINT `FK_civicrm_option_value_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`),
   CONSTRAINT `FK_civicrm_option_value_option_group_id` FOREIGN KEY (`option_group_id`) REFERENCES `civicrm_option_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1056 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_option_value`
@@ -3163,7 +3159,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_option_value` WRITE;
 /*!40000 ALTER TABLE `civicrm_option_value` DISABLE KEYS */;
-INSERT INTO `civicrm_option_value` VALUES (6,2,'Meeting','1','Meeting',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(7,2,'Phone Call Made','2','Phone Call',NULL,0,0,2,'<br />',0,1,1,NULL,NULL,NULL),(8,2,'Send an Email','3','Email',NULL,1,0,3,'<p>\r\n	Send an email from the system.</p>',0,1,1,NULL,NULL,NULL),(9,2,'Text Message (SMS)','4','SMS',NULL,1,NULL,4,'Text message (SMS) sent.',0,1,1,NULL,NULL,NULL),(10,2,'Event Registration','5','Event Registration',NULL,1,NULL,5,'Online or offline event registration.',0,1,1,1,NULL,NULL),(11,2,'Contribution','6','Contribution',NULL,1,NULL,6,'Online or offline contribution.',0,1,1,2,NULL,NULL),(12,2,'Membership Signup','7','Membership Signup',NULL,1,NULL,7,'Online or offline membership signup.',0,1,1,3,NULL,NULL),(13,2,'Membership Renewal','8','Membership Renewal',NULL,1,NULL,8,'Online or offline membership renewal.',0,1,1,3,NULL,NULL),(14,2,'Tell a Friend','9','Tell a Friend',NULL,1,NULL,9,'Send information about a contribution campaign or event to a friend.',0,1,1,NULL,NULL,NULL),(15,2,'Pledge Acknowledgment','10','Pledge Acknowledgment',NULL,1,NULL,10,'Send Pledge Acknowledgment.',0,1,1,6,NULL,NULL),(16,2,'Pledge Reminder','11','Pledge Reminder',NULL,1,NULL,11,'Send Pledge Reminder.',0,1,1,6,NULL,NULL),(17,2,'Inbound Email','12','Inbound Email',NULL,1,NULL,12,'Inbound Email.',0,1,1,NULL,NULL,NULL),(18,2,'Open Case','13','Open Case',NULL,0,0,13,'',0,0,1,7,NULL,NULL),(19,2,'Follow up','14','Follow up',NULL,0,0,14,'',0,0,1,7,NULL,NULL),(20,2,'Change Case Type','15','Change Case Type',NULL,0,0,15,'',0,0,1,7,NULL,NULL),(21,2,'Change Case Status','16','Change Case Status',NULL,0,0,16,'',0,0,1,7,NULL,NULL),(22,2,'Membership Renewal Reminder','17','Membership Renewal Reminder',NULL,1,NULL,17,'offline membership renewal reminder.',0,1,1,3,NULL,NULL),(23,2,'Change Case Start Date','18','Change Case Start Date',NULL,0,0,18,'',0,0,1,7,NULL,NULL),(24,2,'Bulk Email','19','Bulk Email',NULL,1,NULL,19,'Bulk Email Sent.',0,1,1,NULL,NULL,NULL),(25,2,'Assign Case Role','20','Assign Case Role',NULL,0,0,20,'',0,0,1,7,NULL,NULL),(26,2,'Remove Case Role','21','Remove Case Role',NULL,0,0,21,'',0,0,1,7,NULL,NULL),(27,2,'Print PDF Letter','22','Print PDF Letter',NULL,1,NULL,22,'Print PDF Letter.',0,1,1,NULL,NULL,NULL),(28,2,'Merge Case','23','Merge Case',NULL,0,NULL,23,'',0,1,1,7,NULL,NULL),(29,2,'Reassigned Case','24','Reassigned Case',NULL,0,NULL,24,'',0,1,1,7,NULL,NULL),(30,2,'Link Cases','25','Link Cases',NULL,0,NULL,25,'',0,1,1,7,NULL,NULL),(31,2,'Change Case Tags','26','Change Case Tags',NULL,0,0,26,'',0,1,1,7,NULL,NULL),(32,3,'Female','1','Female',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(33,3,'Male','2','Male',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(34,3,'Transgender','3','Transgender',NULL,0,NULL,3,NULL,0,0,0,NULL,NULL,NULL),(35,4,'Yahoo','1','Yahoo',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(36,4,'MSN','2','Msn',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(37,4,'AIM','3','Aim',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(38,4,'GTalk','4','Gtalk',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(39,4,'Jabber','5','Jabber',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(40,4,'Skype','6','Skype',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(41,5,'Sprint','1','Sprint',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(42,5,'Verizon','2','Verizon',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(43,5,'Cingular','3','Cingular',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(44,6,'Mrs.','1','Mrs.',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(45,6,'Ms.','2','Ms.',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(46,6,'Mr.','3','Mr.',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(47,6,'Dr.','4','Dr.',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(48,7,'Jr.','1','Jr.',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(49,7,'Sr.','2','Sr.',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(50,7,'II','3','II',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(51,7,'III','4','III',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(52,7,'IV','5','IV',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(53,7,'V','6','V',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(56,8,'Administrator','1','Admin',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(57,8,'Authenticated','2','Auth',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(58,9,'Visa','1','Visa',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(59,9,'MasterCard','2','MasterCard',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(60,9,'Amex','3','Amex',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(61,9,'Discover','4','Discover',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(62,10,'Credit Card','1','Credit Card',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(63,10,'Debit Card','2','Debit Card',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(64,10,'Cash','3','Cash',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(65,10,'Check','4','Check',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(66,10,'EFT','5','EFT',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(67,11,'Completed','1','Completed',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(68,11,'Pending','2','Pending',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(69,11,'Cancelled','3','Cancelled',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(70,11,'Failed','4','Failed',NULL,0,NULL,4,NULL,0,1,1,NULL,NULL,NULL),(71,11,'In Progress','5','In Progress',NULL,0,NULL,5,NULL,0,1,1,NULL,NULL,NULL),(72,11,'Overdue','6','Overdue',NULL,0,NULL,6,NULL,0,1,1,NULL,NULL,NULL),(73,12,'Waiting Review','1','Waiting Review',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(74,12,'Approved','2','Approved',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(75,12,'Not Approved','3','Not Approved',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(76,13,'Attendee','1','Attendee',NULL,1,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(77,13,'Volunteer','2','Volunteer',NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(78,13,'Host','3','Host',NULL,1,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(79,13,'Speaker','4','Speaker',NULL,1,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(80,14,'Conference','1','Conference',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(81,14,'Exhibition','2','Exhibition',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(82,14,'Fundraiser','3','Fundraiser',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(83,14,'Meeting','4','Meeting',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(84,14,'Performance','5','Performance',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(85,14,'Workshop','6','Workshop',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(86,15,'Activities','1','activity',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(87,15,'Relationships','2','rel',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(88,15,'Groups','3','group',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(89,15,'Notes','4','note',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(90,15,'Tags','5','tag',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(91,15,'Change Log','6','log',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(92,15,'Contributions','7','CiviContribute',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(93,15,'Memberships','8','CiviMember',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(94,15,'Events','9','CiviEvent',NULL,0,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(95,15,'Cases','10','CiviCase',NULL,0,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(96,15,'Grants','11','CiviGrant',NULL,0,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(97,15,'Pledges','13','CiviPledge',NULL,0,NULL,13,NULL,0,0,1,NULL,NULL,NULL),(98,16,'Custom Data','1','CustomData',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(99,16,'Address','2','Address',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(100,16,'Communication Preferences','3','CommunicationPreferences',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(101,16,'Notes','4','Notes',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(102,16,'Demographics','5','Demographics',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(103,16,'Tags and Groups','6','TagsAndGroups',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(104,16,'Email','7','Email',NULL,1,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(105,16,'Phone','8','Phone',NULL,1,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(106,16,'Instant Messenger','9','IM',NULL,1,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(107,16,'Open ID','10','OpenID',NULL,1,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(108,16,'Website','11','Website',NULL,1,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(109,17,'Address Fields','1','location',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(110,17,'Custom Fields','2','custom',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(111,17,'Activities','3','activity',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(112,17,'Relationships','4','relationship',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(113,17,'Notes','5','notes',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(114,17,'Change Log','6','changeLog',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(115,17,'Contributions','7','CiviContribute',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(116,17,'Memberships','8','CiviMember',NULL,0,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(117,17,'Events','9','CiviEvent',NULL,0,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(118,17,'Cases','10','CiviCase',NULL,0,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(119,17,'Grants','12','CiviGrant',NULL,0,NULL,14,NULL,0,0,1,NULL,NULL,NULL),(120,17,'Demographics','13','demographics',NULL,0,NULL,15,NULL,0,0,1,NULL,NULL,NULL),(121,17,'Pledges','15','CiviPledge',NULL,0,NULL,17,NULL,0,0,1,NULL,NULL,NULL),(122,17,'Contact Type','16','contactType',NULL,0,NULL,18,NULL,0,0,1,NULL,NULL,NULL),(123,17,'Groups','17','groups',NULL,0,NULL,19,NULL,0,0,1,NULL,NULL,NULL),(124,17,'Tags','18','tags',NULL,0,NULL,20,NULL,0,0,1,NULL,NULL,NULL),(125,18,'Groups','1','Groups',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(126,18,'Contributions','2','CiviContribute',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(127,18,'Memberships','3','CiviMember',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(128,18,'Events','4','CiviEvent',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(129,18,'My Contacts / Organizations','5','Permissioned Orgs',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(130,18,'Pledges','7','CiviPledge',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(131,18,'Personal Campaign Pages','8','PCP',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(132,44,'Email Address','2','email',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(133,44,'Phone','3','phone',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(134,44,'Street Address','4','street_address',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(135,44,'City','5','city',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(136,44,'State/Province','6','state_province',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(137,44,'Country','7','country',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(138,19,'Street Address','1','street_address',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(139,19,'Addt\'l Address 1','2','supplemental_address_1',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(140,19,'Addt\'l Address 2','3','supplemental_address_2',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(141,19,'City','4','city',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(142,19,'Zip / Postal Code','5','postal_code',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(143,19,'Postal Code Suffix','6','postal_code_suffix',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(144,19,'County','7','county',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(145,19,'State / Province','8','state_province',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(146,19,'Country','9','country',NULL,0,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(147,19,'Latitude','10','geo_code_1',NULL,0,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(148,19,'Longitude','11','geo_code_2',NULL,0,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(149,19,'Address Name','12','address_name',NULL,0,NULL,12,NULL,0,0,1,NULL,NULL,NULL),(150,19,'Street Address Parsing','13','street_address_parsing',NULL,0,NULL,13,NULL,0,0,1,NULL,NULL,NULL),(151,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(152,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(153,21,'Pending','1','Pending',NULL,0,1,1,NULL,0,0,1,NULL,NULL,NULL),(154,21,'Granted','2','Granted',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(155,21,'Rejected','3','Rejected',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(156,23,'In Honor of','1','In Honor of',NULL,0,1,1,NULL,0,1,1,NULL,NULL,NULL),(157,23,'In Memory of','2','In Memory of',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(158,24,'CRM_Contact_Form_Search_Custom_Sample','1','CRM_Contact_Form_Search_Custom_Sample',NULL,0,NULL,1,'Household Name and State',0,0,1,NULL,NULL,NULL),(159,24,'CRM_Contact_Form_Search_Custom_ContributionAggregate','2','CRM_Contact_Form_Search_Custom_ContributionAggregate',NULL,0,NULL,2,'Contribution Aggregate',0,0,1,NULL,NULL,NULL),(160,24,'CRM_Contact_Form_Search_Custom_Basic','3','CRM_Contact_Form_Search_Custom_Basic',NULL,0,NULL,3,'Basic Search',0,0,1,NULL,NULL,NULL),(161,24,'CRM_Contact_Form_Search_Custom_Group','4','CRM_Contact_Form_Search_Custom_Group',NULL,0,NULL,4,'Include / Exclude Contacts in a Group / Tag',0,0,1,NULL,NULL,NULL),(162,24,'CRM_Contact_Form_Search_Custom_PostalMailing','5','CRM_Contact_Form_Search_Custom_PostalMailing',NULL,0,NULL,5,'Postal Mailing',0,0,1,NULL,NULL,NULL),(163,24,'CRM_Contact_Form_Search_Custom_Proximity','6','CRM_Contact_Form_Search_Custom_Proximity',NULL,0,NULL,6,'Proximity Search',0,0,1,NULL,NULL,NULL),(164,24,'CRM_Contact_Form_Search_Custom_EventAggregate','7','CRM_Contact_Form_Search_Custom_EventAggregate',NULL,0,NULL,7,'Event Aggregate',0,0,1,NULL,NULL,NULL),(165,24,'CRM_Contact_Form_Search_Custom_ActivitySearch','8','CRM_Contact_Form_Search_Custom_ActivitySearch',NULL,0,NULL,8,'Activity Search',0,0,1,NULL,NULL,NULL),(166,24,'CRM_Contact_Form_Search_Custom_PriceSet','9','CRM_Contact_Form_Search_Custom_PriceSet',NULL,0,NULL,9,'Price Set Details for Event Participants',0,0,1,NULL,NULL,NULL),(167,24,'CRM_Contact_Form_Search_Custom_ZipCodeRange','10','CRM_Contact_Form_Search_Custom_ZipCodeRange',NULL,0,NULL,10,'Zip Code Range',0,0,1,NULL,NULL,NULL),(168,24,'CRM_Contact_Form_Search_Custom_DateAdded','11','CRM_Contact_Form_Search_Custom_DateAdded',NULL,0,NULL,11,'Date Added to CiviCRM',0,0,1,NULL,NULL,NULL),(169,24,'CRM_Contact_Form_Search_Custom_MultipleValues','12','CRM_Contact_Form_Search_Custom_MultipleValues',NULL,0,NULL,12,'Custom Group Multiple Values Listing',0,0,1,NULL,NULL,NULL),(170,24,'CRM_Contact_Form_Search_Custom_ContribSYBNT','13','CRM_Contact_Form_Search_Custom_ContribSYBNT',NULL,0,NULL,13,'Contributions made in Year X and not Year Y',0,0,1,NULL,NULL,NULL),(171,24,'CRM_Contact_Form_Search_Custom_TagContributions','14','CRM_Contact_Form_Search_Custom_TagContributions',NULL,0,NULL,14,'Find Contribution Amounts by Tag',0,0,1,NULL,NULL,NULL),(172,24,'CRM_Contact_Form_Search_Custom_FullText','15','CRM_Contact_Form_Search_Custom_FullText',NULL,0,NULL,15,'Full-text Search',0,0,1,NULL,NULL,NULL),(173,40,'Constituent Report (Summary)','contact/summary','CRM_Report_Form_Contact_Summary',NULL,0,NULL,1,'Provides a list of address and telephone information for constituent records in your system.',0,0,1,NULL,NULL,NULL),(174,40,'Constituent Report (Detail)','contact/detail','CRM_Report_Form_Contact_Detail',NULL,0,0,2,'Provides contact-related information on activities.',0,0,1,NULL,NULL,NULL),(175,40,'Activity Report','activity','CRM_Report_Form_Activity',NULL,0,NULL,3,'Provides a list of constituent activity including activity statistics for one/all contacts during a given date range(required)',0,0,1,NULL,NULL,NULL),(176,40,'Walk / Phone List Report','walklist','CRM_Report_Form_Walklist',NULL,0,NULL,4,'Provides a detailed report for your walk/phonelist for targetted contacts',0,0,0,NULL,NULL,NULL),(177,40,'Current Employer Report','contact/currentEmployer','CRM_Report_Form_Contact_CurrentEmployer',NULL,0,NULL,5,'Provides detail list of employer employee relationships along with employment details Ex Join Date',0,0,0,NULL,NULL,NULL),(178,40,'Donor Report (Summary)','contribute/summary','CRM_Report_Form_Contribute_Summary',NULL,0,NULL,6,'Shows contribution statistics by month / week / year .. country / state .. type.',0,0,0,2,NULL,NULL),(179,40,'Donor Report (Detail)','contribute/detail','CRM_Report_Form_Contribute_Detail',NULL,0,NULL,7,'Lists detailed contribution(s) for one / all contacts. Contribution summary report points to this report for specific details.',0,0,0,2,NULL,NULL),(180,40,'Donation Summary Report (Repeat)','contribute/repeat','CRM_Report_Form_Contribute_Repeat',NULL,0,NULL,8,'Given two date ranges, shows contacts (and their contributions) who contributed in both the date ranges with percentage increase / decrease.',0,0,0,2,NULL,NULL),(181,40,'Donation Summary Report (Organization)','contribute/organizationSummary','CRM_Report_Form_Contribute_OrganizationSummary',NULL,0,NULL,9,'Displays a detailed contribution report for Organization relationships with contributors, as to if contribution done was  from an employee of some organization or from that Organization itself.',0,0,0,2,NULL,NULL),(182,40,'Donation Summary Report (Household)','contribute/householdSummary','CRM_Report_Form_Contribute_HouseholdSummary',NULL,0,NULL,10,'Provides a detailed report for Contributions made by contributors(Or Household itself) who are having a relationship with household (For ex a Contributor is Head of Household for some household or is a member of.)',0,0,0,2,NULL,NULL),(183,40,'Top Donors Report','contribute/topDonor','CRM_Report_Form_Contribute_TopDonor',NULL,0,NULL,11,'Provides a list of the top donors during a time period you define. You can include as many donors as you want (for example, top 100 of your donors).',0,0,0,2,NULL,NULL),(184,40,'SYBUNT Report','contribute/sybunt','CRM_Report_Form_Contribute_Sybunt',NULL,0,NULL,12,'Some year(s) but not this year. Provides a list of constituents who donated at some time in the history of your organization but did not donate during the time period you specify.',0,0,0,2,NULL,NULL),(185,40,'LYBUNT Report','contribute/lybunt','CRM_Report_Form_Contribute_Lybunt',NULL,0,NULL,13,'Last year but not this year. Provides a list of constituents who donated last year but did not donate during the time period you specify as the current year.',0,0,0,2,NULL,NULL),(186,40,'Soft Credit Report','contribute/softcredit','CRM_Report_Form_Contribute_SoftCredit',NULL,0,NULL,14,'Soft Credit details.',0,0,0,2,NULL,NULL),(187,40,'Membership Report (Summary)','member/summary','CRM_Report_Form_Member_Summary',NULL,0,NULL,15,'Provides a summary of memberships by type and join date.',0,0,0,3,NULL,NULL),(188,40,'Membership Report (Detail)','member/detail','CRM_Report_Form_Member_Detail',NULL,0,NULL,16,'Provides a list of members along with their membership status and membership details (Join Date, Start Date, End Date).',0,0,0,3,NULL,NULL),(189,40,'Membership Report (Lapsed)','member/lapse','CRM_Report_Form_Member_Lapse',NULL,0,NULL,17,'Provides a list of memberships that lapsed or will lapse before the date you specify.',0,0,0,3,NULL,NULL),(190,40,'Event Participant Report (List)','event/participantListing','CRM_Report_Form_Event_ParticipantListing',NULL,0,NULL,18,'Provides lists of participants for an event.',0,0,0,1,NULL,NULL),(191,40,'Event Income Report (Summary)','event/summary','CRM_Report_Form_Event_Summary',NULL,0,NULL,19,'Provides an overview of event income. You can include key information such as event ID, registration, attendance, and income generated to help you determine the success of an event.',0,0,0,1,NULL,NULL),(192,40,'Event Income Report (Detail)','event/income','CRM_Report_Form_Event_Income',NULL,0,NULL,20,'Helps you to analyze the income generated by an event. The report can include details by participant type, status and payment method.',0,0,0,1,NULL,NULL),(193,40,'Pledge Report','pledge/summary','CRM_Report_Form_Pledge_Summary',NULL,0,NULL,21,'Pledge Report',0,0,0,6,NULL,NULL),(194,40,'Pledged But not Paid Report','pledge/pbnp','CRM_Report_Form_Pledge_Pbnp',NULL,0,NULL,22,'Pledged but not Paid Report',0,0,0,6,NULL,NULL),(195,40,'Relationship Report','contact/relationship','CRM_Report_Form_Contact_Relationship',NULL,0,NULL,23,'Relationship Report',0,0,1,NULL,NULL,NULL),(196,40,'Case Summary Report','case/summary','CRM_Report_Form_Case_Summary',NULL,0,NULL,24,'Provides a summary of cases and their duration by date range, status, staff member and / or case role.',0,0,1,7,NULL,NULL),(197,40,'Case Time Spent Report','case/timespent','CRM_Report_Form_Case_TimeSpent',NULL,0,NULL,25,'Aggregates time spent on case and / or or non-case activities by activity type and contact.',0,0,1,7,NULL,NULL),(198,40,'Contact Demographics Report','case/demographics','CRM_Report_Form_Case_Demographics',NULL,0,NULL,26,'Demographic breakdown for case clients (and or non-case contacts) in your database. Includes custom contact fields.',0,0,1,7,NULL,NULL),(199,40,'Database Log Report','contact/log','CRM_Report_Form_Contact_Log',NULL,0,NULL,27,'Log of contact and activity records created or updated in a given date range.',0,0,1,NULL,NULL,NULL),(200,40,'Activity Report (Summary)','activitySummary','CRM_Report_Form_ActivitySummary',NULL,0,NULL,28,'Shows activity statistics by type / date',0,0,1,NULL,NULL,NULL),(201,25,'Scheduled','1','Scheduled',NULL,0,1,1,NULL,0,1,1,NULL,NULL,NULL),(202,25,'Completed','2','Completed',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(203,25,'Cancelled','3','Cancelled',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(204,25,'Left Message','4','Left Message',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(205,25,'Unreachable','5','Unreachable',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(206,25,'Not Required','6','Not Required',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(207,27,'Ongoing','1','Open','Opened',0,1,1,NULL,0,1,1,NULL,NULL,NULL),(208,27,'Resolved','2','Closed','Closed',0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(209,27,'Urgent','3','Urgent','Opened',0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(210,28,'Name Only','1','Name Only',NULL,0,0,1,'CRM_Event_Page_ParticipantListing_Name',0,1,1,NULL,NULL,NULL),(211,28,'Name and Email','2','Name and Email',NULL,0,0,2,'CRM_Event_Page_ParticipantListing_NameAndEmail',0,1,1,NULL,NULL,NULL),(212,28,'Name, Status and Register Date','3','Name, Status and Register Date',NULL,0,0,3,'CRM_Event_Page_ParticipantListing_NameStatusAndDate',0,1,1,NULL,NULL,NULL),(213,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(214,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(215,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(216,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(217,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(218,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(219,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(220,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(221,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(222,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(223,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(224,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(225,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(226,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(227,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(228,31,'Search Builder','1','Search Builder',NULL,0,0,1,NULL,0,1,1,NULL,NULL,NULL),(229,31,'Import Contact','2','Import Contact',NULL,0,0,2,NULL,0,1,1,NULL,NULL,NULL),(230,31,'Import Activity','3','Import Activity',NULL,0,0,3,NULL,0,1,1,NULL,NULL,NULL),(231,31,'Import Contribution','4','Import Contribution',NULL,0,0,4,NULL,0,1,1,NULL,NULL,NULL),(232,31,'Import Membership','5','Import Membership',NULL,0,0,5,NULL,0,1,1,NULL,NULL,NULL),(233,31,'Import Participant','6','Import Participant',NULL,0,0,6,NULL,0,1,1,NULL,NULL,NULL),(234,31,'Export Contact','7','Export Contact',NULL,0,0,7,NULL,0,1,1,NULL,NULL,NULL),(235,31,'Export Contribution','8','Export Contribution',NULL,0,0,8,NULL,0,1,1,NULL,NULL,NULL),(236,31,'Export Membership','9','Export Membership',NULL,0,0,9,NULL,0,1,1,NULL,NULL,NULL),(237,31,'Export Participant','10','Export Participant',NULL,0,0,10,NULL,0,1,1,NULL,NULL,NULL),(238,31,'Export Pledge','11','Export Pledge',NULL,0,0,11,NULL,0,1,1,NULL,NULL,NULL),(239,31,'Export Case','12','Export Case',NULL,0,0,12,NULL,0,1,1,NULL,NULL,NULL),(240,31,'Export Grant','13','Export Grant',NULL,0,0,13,NULL,0,1,1,NULL,NULL,NULL),(241,31,'Export Activity','14','Export Activity',NULL,0,0,14,NULL,0,1,1,NULL,NULL,NULL),(242,33,'daily','day','day',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(243,33,'weekly','week','week',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(244,33,'monthly','month','month',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(245,33,'yearly','year','year',NULL,0,NULL,4,NULL,0,1,1,NULL,NULL,NULL),(246,34,'Phone','1','Phone',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(247,34,'Mobile','2','Mobile',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(248,34,'Fax','3','Fax',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(249,34,'Pager','4','Pager',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(250,34,'Voicemail','5','Voicemail',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(251,35,'Participant Role','1','ParticipantRole',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(252,35,'Participant Event Name','2','ParticipantEventName',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(253,35,'Participant Event Type','3','ParticipantEventType',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(254,36,'Public','1','public',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(255,36,'Admin','2','admin',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(256,37,'IMAP','1','IMAP',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(257,37,'Maildir','2','Maildir',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(258,37,'POP3','3','POP3',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(259,37,'Localdir','4','Localdir',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(260,38,'Urgent','1','Urgent',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(261,38,'Normal','2','Normal',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(262,38,'Low','3','Low',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(263,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(264,39,'/(19|20)(\\d{2})-(\\d{1,2})-(\\d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(265,41,'Dear {contact.first_name}','1','Dear {contact.first_name}',NULL,1,0,4,NULL,0,0,1,NULL,NULL,NULL),(266,41,'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}','2','Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}',NULL,1,0,3,NULL,0,0,1,NULL,NULL,NULL),(267,41,'Dear {contact.individual_prefix} {contact.last_name}','3','Dear {contact.individual_prefix} {contact.last_name}',NULL,1,1,1,'<br />',0,0,1,NULL,NULL,NULL),(268,41,'Customized','4','Customized',NULL,0,0,2,NULL,0,1,1,NULL,NULL,NULL),(269,41,'Dear {contact.household_name}','5','Dear {contact.househols_name}',NULL,2,1,5,NULL,0,0,1,NULL,NULL,NULL),(270,42,'Dear {contact.first_name}','1','Dear {contact.first_name}',NULL,1,0,3,NULL,0,0,1,NULL,NULL,NULL),(271,42,'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}','2','Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}',NULL,1,0,4,NULL,0,0,1,NULL,NULL,NULL),(272,42,'Dear {contact.individual_prefix} {contact.last_name}','3','Dear {contact.individual_prefix} {contact.last_name}',NULL,1,1,1,'',0,0,1,NULL,NULL,NULL),(273,42,'Customized','4','Customized',NULL,0,0,2,NULL,0,1,1,NULL,NULL,NULL),(274,42,'Dear {contact.household_name}','5','Dear {contact.househols_name}',NULL,2,1,5,NULL,0,0,1,NULL,NULL,NULL),(275,43,'{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}','1','}{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}',NULL,1,1,1,NULL,0,0,1,NULL,NULL,NULL),(276,43,'{contact.household_name}','2','{contact.household_name}',NULL,2,0,2,NULL,0,0,1,NULL,NULL,NULL),(277,43,'{contact.organization_name}','3','{contact.organization_name}',NULL,3,1,3,NULL,0,0,1,NULL,NULL,NULL),(278,43,'Customized','4','Customized',NULL,0,0,4,NULL,0,1,1,NULL,NULL,NULL),(279,45,'Asset','1','Asset',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(280,45,'Liability','2','Liability',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(281,45,'Income','3','Income',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(282,45,'Expense','4','Expense',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(283,46,'Home','1','Home',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(284,46,'Work','2','Work',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(285,46,'Facebook','3','Facebook',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(286,46,'Twitter','4','Twitter',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(287,46,'MySpace','5','MySpace',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(288,47,'Contacts','civicrm_contact','Contacts',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(289,47,'Activities','civicrm_activity','Activities',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(290,47,'Cases','civicrm_case','Cases',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(291,48,'USD ($)','USD','USD',NULL,0,1,1,NULL,0,0,1,NULL,NULL,NULL),(292,30,'\"Senate District 99\"<sd99crm@senate.state.ny.us>','1','\"FIXME\"<info@FIXME.ORG>',NULL,0,1,1,NULL,0,0,1,NULL,1,NULL),(293,22,'Emergency','1','Emergency',NULL,0,1,1,NULL,0,0,1,NULL,1,NULL),(294,22,'Family Support','2','Family Support',NULL,0,NULL,2,NULL,0,0,1,NULL,1,NULL),(295,22,'General Protection','3','General Protection',NULL,0,NULL,3,NULL,0,0,1,NULL,1,NULL),(296,22,'Impunity','4','Impunity',NULL,0,NULL,4,NULL,0,0,1,NULL,1,NULL),(297,49,'Abkhaz','ab','',NULL,NULL,0,1,NULL,0,0,0,NULL,NULL,NULL),(298,49,'Afar','aa','',NULL,NULL,0,2,NULL,0,0,0,NULL,NULL,NULL),(299,49,'Afrikaans','af','',NULL,NULL,0,3,NULL,0,0,0,NULL,NULL,NULL),(300,49,'Akan','ak','',NULL,NULL,0,4,NULL,0,0,0,NULL,NULL,NULL),(301,49,'Albanian','sq','',NULL,NULL,0,5,NULL,0,0,0,NULL,NULL,NULL),(302,49,'Amharic','am','',NULL,NULL,0,6,NULL,0,0,0,NULL,NULL,NULL),(303,49,'Arabic','ar','',NULL,NULL,0,7,NULL,0,0,0,NULL,NULL,NULL),(304,49,'Aragonese','an','',NULL,NULL,0,8,NULL,0,0,0,NULL,NULL,NULL),(305,49,'Armenian','hy','',NULL,NULL,0,9,NULL,0,0,0,NULL,NULL,NULL),(306,49,'Assamese','as','',NULL,NULL,0,10,NULL,0,0,0,NULL,NULL,NULL),(307,49,'Avaric','av','',NULL,NULL,0,11,NULL,0,0,0,NULL,NULL,NULL),(308,49,'Avestan','ae','',NULL,NULL,0,12,NULL,0,0,0,NULL,NULL,NULL),(309,49,'Aymara','ay','',NULL,NULL,0,13,NULL,0,0,0,NULL,NULL,NULL),(310,49,'Azerbaijani','az','',NULL,NULL,0,14,NULL,0,0,0,NULL,NULL,NULL),(311,49,'Bambara','bm','',NULL,NULL,0,15,NULL,0,0,0,NULL,NULL,NULL),(312,49,'Bashkir','ba','',NULL,NULL,0,16,NULL,0,0,0,NULL,NULL,NULL),(313,49,'Basque','eu','',NULL,NULL,0,17,NULL,0,0,0,NULL,NULL,NULL),(314,49,'Belarusian','be','',NULL,NULL,0,18,NULL,0,0,0,NULL,NULL,NULL),(315,49,'Bengali','bn','',NULL,NULL,0,19,NULL,0,0,0,NULL,NULL,NULL),(316,49,'Bihari','bh','',NULL,NULL,0,20,NULL,0,0,0,NULL,NULL,NULL),(317,49,'Bislama','bi','',NULL,NULL,0,21,NULL,0,0,0,NULL,NULL,NULL),(318,49,'Bosnian','bs','',NULL,NULL,0,22,NULL,0,0,0,NULL,NULL,NULL),(319,49,'Breton','br','',NULL,NULL,0,23,NULL,0,0,0,NULL,NULL,NULL),(320,49,'Bulgarian','bg','',NULL,NULL,0,24,NULL,0,0,0,NULL,NULL,NULL),(321,49,'Burmese','my','',NULL,NULL,0,25,NULL,0,0,0,NULL,NULL,NULL),(322,49,'Catalan; Valencian','ca','',NULL,NULL,0,26,NULL,0,0,0,NULL,NULL,NULL),(323,49,'Chamorro','ch','',NULL,NULL,0,27,NULL,0,0,0,NULL,NULL,NULL),(324,49,'Chechen','ce','',NULL,NULL,0,28,NULL,0,0,0,NULL,NULL,NULL),(325,49,'Chichewa; Chewa; Nyanja','ny','',NULL,NULL,0,29,NULL,0,0,0,NULL,NULL,NULL),(326,49,'Chinese','zh','',NULL,NULL,0,30,NULL,0,0,1,NULL,NULL,NULL),(327,49,'Chuvash','cv','',NULL,NULL,0,31,NULL,0,0,0,NULL,NULL,NULL),(328,49,'Cornish','kw','',NULL,NULL,0,32,NULL,0,0,0,NULL,NULL,NULL),(329,49,'Corsican','co','',NULL,NULL,0,33,NULL,0,0,0,NULL,NULL,NULL),(330,49,'Cree','cr','',NULL,NULL,0,34,NULL,0,0,0,NULL,NULL,NULL),(331,49,'Croatian','hr','',NULL,NULL,0,35,NULL,0,0,0,NULL,NULL,NULL),(332,49,'Czech','cs','',NULL,NULL,0,36,NULL,0,0,1,NULL,NULL,NULL),(333,49,'Danish','da','',NULL,NULL,0,37,NULL,0,0,0,NULL,NULL,NULL),(334,49,'Divehi; Dhivehi; Maldivian;','dv','',NULL,NULL,0,38,NULL,0,0,0,NULL,NULL,NULL),(335,49,'Dutch','nl','',NULL,NULL,0,39,NULL,0,0,1,NULL,NULL,NULL),(336,49,'Dzongkha','dz','',NULL,NULL,0,40,NULL,0,0,0,NULL,NULL,NULL),(337,49,'English','en','',NULL,NULL,1,41,NULL,0,0,1,NULL,NULL,NULL),(338,49,'Esperanto','eo','',NULL,NULL,0,42,NULL,0,0,0,NULL,NULL,NULL),(339,49,'Estonian','et','',NULL,NULL,0,43,NULL,0,0,0,NULL,NULL,NULL),(340,49,'Ewe','ee','',NULL,NULL,0,44,NULL,0,0,0,NULL,NULL,NULL),(341,49,'Faroese','fo','',NULL,NULL,0,45,NULL,0,0,0,NULL,NULL,NULL),(342,49,'Fijian','fj','',NULL,NULL,0,46,NULL,0,0,0,NULL,NULL,NULL),(343,49,'Finnish','fi','',NULL,NULL,0,47,NULL,0,0,0,NULL,NULL,NULL),(344,49,'French','fr','',NULL,NULL,0,48,NULL,0,0,1,NULL,NULL,NULL),(345,49,'Fula; Fulah; Pulaar; Pular','ff','',NULL,NULL,0,49,NULL,0,0,0,NULL,NULL,NULL),(346,49,'Galician','gl','',NULL,NULL,0,50,NULL,0,0,0,NULL,NULL,NULL),(347,49,'Georgian','ka','',NULL,NULL,0,51,NULL,0,0,0,NULL,NULL,NULL),(348,49,'German','de','',NULL,NULL,0,52,NULL,0,0,1,NULL,NULL,NULL),(349,49,'Greek, Modern','el','',NULL,NULL,0,53,NULL,0,0,0,NULL,NULL,NULL),(350,49,'GuaranÃ­','gn','',NULL,NULL,0,54,NULL,0,0,0,NULL,NULL,NULL),(351,49,'Gujarati','gu','',NULL,NULL,0,55,NULL,0,0,0,NULL,NULL,NULL),(352,49,'Haitian; Haitian Creole','ht','',NULL,NULL,0,56,NULL,0,0,0,NULL,NULL,NULL),(353,49,'Hausa','ha','',NULL,NULL,0,57,NULL,0,0,0,NULL,NULL,NULL),(354,49,'Hebrew (modern)','he','',NULL,NULL,0,58,NULL,0,0,0,NULL,NULL,NULL),(355,49,'Herero','hz','',NULL,NULL,0,59,NULL,0,0,0,NULL,NULL,NULL),(356,49,'Hindi','hi','',NULL,NULL,0,60,NULL,0,0,0,NULL,NULL,NULL),(357,49,'Hiri Motu','ho','',NULL,NULL,0,61,NULL,0,0,0,NULL,NULL,NULL),(358,49,'Hungarian','hu','',NULL,NULL,0,62,NULL,0,0,1,NULL,NULL,NULL),(359,49,'Interlingua','ia','',NULL,NULL,0,63,NULL,0,0,0,NULL,NULL,NULL),(360,49,'Indonesian','id','',NULL,NULL,0,64,NULL,0,0,0,NULL,NULL,NULL),(361,49,'Interlingue','ie','',NULL,NULL,0,65,NULL,0,0,0,NULL,NULL,NULL),(362,49,'Irish','ga','',NULL,NULL,0,66,NULL,0,0,0,NULL,NULL,NULL),(363,49,'Igbo','ig','',NULL,NULL,0,67,NULL,0,0,0,NULL,NULL,NULL),(364,49,'Inupiaq','ik','',NULL,NULL,0,68,NULL,0,0,0,NULL,NULL,NULL),(365,49,'Ido','io','',NULL,NULL,0,69,NULL,0,0,0,NULL,NULL,NULL),(366,49,'Icelandic','is','',NULL,NULL,0,70,NULL,0,0,0,NULL,NULL,NULL),(367,49,'Italian','it','',NULL,NULL,0,71,NULL,0,0,1,NULL,NULL,NULL),(368,49,'Inuktitut','iu','',NULL,NULL,0,72,NULL,0,0,0,NULL,NULL,NULL),(369,49,'Japanese','ja','',NULL,NULL,0,73,NULL,0,0,0,NULL,NULL,NULL),(370,49,'Javanese','jv','',NULL,NULL,0,74,NULL,0,0,0,NULL,NULL,NULL),(371,49,'Kalaallisut, Greenlandic','kl','',NULL,NULL,0,75,NULL,0,0,0,NULL,NULL,NULL),(372,49,'Kannada','kn','',NULL,NULL,0,76,NULL,0,0,0,NULL,NULL,NULL),(373,49,'Kanuri','kr','',NULL,NULL,0,77,NULL,0,0,0,NULL,NULL,NULL),(374,49,'Kashmiri','ks','',NULL,NULL,0,78,NULL,0,0,0,NULL,NULL,NULL),(375,49,'Kazakh','kk','',NULL,NULL,0,79,NULL,0,0,0,NULL,NULL,NULL),(376,49,'Khmer','km','',NULL,NULL,0,80,NULL,0,0,0,NULL,NULL,NULL),(377,49,'Kikuyu, Gikuyu','ki','',NULL,NULL,0,81,NULL,0,0,0,NULL,NULL,NULL),(378,49,'Kinyarwanda','rw','',NULL,NULL,0,82,NULL,0,0,0,NULL,NULL,NULL),(379,49,'Kirghiz, Kyrgyz','ky','',NULL,NULL,0,83,NULL,0,0,0,NULL,NULL,NULL),(380,49,'Komi','kv','',NULL,NULL,0,84,NULL,0,0,0,NULL,NULL,NULL),(381,49,'Kongo','kg','',NULL,NULL,0,85,NULL,0,0,0,NULL,NULL,NULL),(382,49,'Korean','ko','',NULL,NULL,0,86,NULL,0,0,0,NULL,NULL,NULL),(383,49,'Kurdish','ku','',NULL,NULL,0,87,NULL,0,0,0,NULL,NULL,NULL),(384,49,'Kwanyama, Kuanyama','kj','',NULL,NULL,0,88,NULL,0,0,0,NULL,NULL,NULL),(385,49,'Latin','la','',NULL,NULL,0,89,NULL,0,0,0,NULL,NULL,NULL),(386,49,'Luxembourgish, Letzeburgesch','lb','',NULL,NULL,0,90,NULL,0,0,0,NULL,NULL,NULL),(387,49,'Luganda','lg','',NULL,NULL,0,91,NULL,0,0,0,NULL,NULL,NULL),(388,49,'Limburgish, Limburgan, Limburger','li','',NULL,NULL,0,92,NULL,0,0,0,NULL,NULL,NULL),(389,49,'Lingala','ln','',NULL,NULL,0,93,NULL,0,0,0,NULL,NULL,NULL),(390,49,'Lao','lo','',NULL,NULL,0,94,NULL,0,0,0,NULL,NULL,NULL),(391,49,'Lithuanian','lt','',NULL,NULL,0,95,NULL,0,0,0,NULL,NULL,NULL),(392,49,'Luba-Katanga','lu','',NULL,NULL,0,96,NULL,0,0,0,NULL,NULL,NULL),(393,49,'Latvian','lv','',NULL,NULL,0,97,NULL,0,0,0,NULL,NULL,NULL),(394,49,'Manx','gv','',NULL,NULL,0,98,NULL,0,0,0,NULL,NULL,NULL),(395,49,'Macedonian','mk','',NULL,NULL,0,99,NULL,0,0,0,NULL,NULL,NULL),(396,49,'Malagasy','mg','',NULL,NULL,0,100,NULL,0,0,0,NULL,NULL,NULL),(397,49,'Malay','ms','',NULL,NULL,0,101,NULL,0,0,0,NULL,NULL,NULL),(398,49,'Malayalam','ml','',NULL,NULL,0,102,NULL,0,0,0,NULL,NULL,NULL),(399,49,'Maltese','mt','',NULL,NULL,0,103,NULL,0,0,0,NULL,NULL,NULL),(400,49,'MÄori','mi','',NULL,NULL,0,104,NULL,0,0,0,NULL,NULL,NULL),(401,49,'Marathi','mr','',NULL,NULL,0,105,NULL,0,0,0,NULL,NULL,NULL),(402,49,'Marshallese','mh','',NULL,NULL,0,106,NULL,0,0,0,NULL,NULL,NULL),(403,49,'Mongolian','mn','',NULL,NULL,0,107,NULL,0,0,0,NULL,NULL,NULL),(404,49,'Nauru','na','',NULL,NULL,0,108,NULL,0,0,0,NULL,NULL,NULL),(405,49,'Navajo, Navaho','nv','',NULL,NULL,0,109,NULL,0,0,0,NULL,NULL,NULL),(406,49,'Norwegian BokmÃ¥l','nb','',NULL,NULL,0,110,NULL,0,0,0,NULL,NULL,NULL),(407,49,'North Ndebele','nd','',NULL,NULL,0,111,NULL,0,0,0,NULL,NULL,NULL),(408,49,'Nepali','ne','',NULL,NULL,0,112,NULL,0,0,0,NULL,NULL,NULL),(409,49,'Ndonga','ng','',NULL,NULL,0,113,NULL,0,0,0,NULL,NULL,NULL),(410,49,'Norwegian Nynorsk','nn','',NULL,NULL,0,114,NULL,0,0,0,NULL,NULL,NULL),(411,49,'Norwegian','no','',NULL,NULL,0,115,NULL,0,0,0,NULL,NULL,NULL),(412,49,'Nuosu','ii','',NULL,NULL,0,116,NULL,0,0,0,NULL,NULL,NULL),(413,49,'South Ndebele','nr','',NULL,NULL,0,117,NULL,0,0,0,NULL,NULL,NULL),(414,49,'Occitan (after 1500)','oc','',NULL,NULL,0,118,NULL,0,0,0,NULL,NULL,NULL),(415,49,'Ojibwa','oj','',NULL,NULL,0,119,NULL,0,0,0,NULL,NULL,NULL),(416,49,'Old Church Slavonic, Church Slavic, Church Slavonic, Old Bulgarian, Old Slavonic','cu','',NULL,NULL,0,120,NULL,0,0,0,NULL,NULL,NULL),(417,49,'Oromo','om','',NULL,NULL,0,121,NULL,0,0,0,NULL,NULL,NULL),(418,49,'Oriya','or','',NULL,NULL,0,122,NULL,0,0,0,NULL,NULL,NULL),(419,49,'Ossetian, Ossetic','os','',NULL,NULL,0,123,NULL,0,0,0,NULL,NULL,NULL),(420,49,'Panjabi, Punjabi','pa','',NULL,NULL,0,124,NULL,0,0,0,NULL,NULL,NULL),(421,49,'PÄli','pi','',NULL,NULL,0,125,NULL,0,0,0,NULL,NULL,NULL),(422,49,'Persian','fa','',NULL,NULL,0,126,NULL,0,0,0,NULL,NULL,NULL),(423,49,'Polish','pl','',NULL,NULL,0,127,NULL,0,0,1,NULL,NULL,NULL),(424,49,'Pashto, Pushto','ps','',NULL,NULL,0,128,NULL,0,0,0,NULL,NULL,NULL),(425,49,'Portuguese','pt','',NULL,NULL,0,129,NULL,0,0,1,NULL,NULL,NULL),(426,49,'Quechua','qu','',NULL,NULL,0,130,NULL,0,0,0,NULL,NULL,NULL),(427,49,'Romansh','rm','',NULL,NULL,0,131,NULL,0,0,0,NULL,NULL,NULL),(428,49,'Kirundi','rn','',NULL,NULL,0,132,NULL,0,0,0,NULL,NULL,NULL),(429,49,'Romanian, Moldavian, Moldovan','ro','',NULL,NULL,0,133,NULL,0,0,0,NULL,NULL,NULL),(430,49,'Russian','ru','',NULL,NULL,0,134,NULL,0,0,1,NULL,NULL,NULL),(431,49,'Sanskrit','sa','',NULL,NULL,0,135,NULL,0,0,0,NULL,NULL,NULL),(432,49,'Sardinian','sc','',NULL,NULL,0,136,NULL,0,0,0,NULL,NULL,NULL),(433,49,'Sindhi','sd','',NULL,NULL,0,137,NULL,0,0,0,NULL,NULL,NULL),(434,49,'Northern Sami','se','',NULL,NULL,0,138,NULL,0,0,0,NULL,NULL,NULL),(435,49,'Samoan','sm','',NULL,NULL,0,139,NULL,0,0,0,NULL,NULL,NULL),(436,49,'Sango','sg','',NULL,NULL,0,140,NULL,0,0,0,NULL,NULL,NULL),(437,49,'Serbian','sr','',NULL,NULL,0,141,NULL,0,0,0,NULL,NULL,NULL),(438,49,'Scottish Gaelic; Gaelic','gd','',NULL,NULL,0,142,NULL,0,0,0,NULL,NULL,NULL),(439,49,'Shona','sn','',NULL,NULL,0,143,NULL,0,0,0,NULL,NULL,NULL),(440,49,'Sinhala, Sinhalese','si','',NULL,NULL,0,144,NULL,0,0,0,NULL,NULL,NULL),(441,49,'Slovak','sk','',NULL,NULL,0,145,NULL,0,0,0,NULL,NULL,NULL),(442,49,'Slovene','sl','',NULL,NULL,0,146,NULL,0,0,0,NULL,NULL,NULL),(443,49,'Somali','so','',NULL,NULL,0,147,NULL,0,0,0,NULL,NULL,NULL),(444,49,'Southern Sotho','st','',NULL,NULL,0,148,NULL,0,0,0,NULL,NULL,NULL),(445,49,'Spanish; Castilian','es','',NULL,NULL,0,149,NULL,0,0,1,NULL,NULL,NULL),(446,49,'Sundanese','su','',NULL,NULL,0,150,NULL,0,0,0,NULL,NULL,NULL),(447,49,'Swahili','sw','',NULL,NULL,0,151,NULL,0,0,0,NULL,NULL,NULL),(448,49,'Swati','ss','',NULL,NULL,0,152,NULL,0,0,0,NULL,NULL,NULL),(449,49,'Swedish','sv','',NULL,NULL,0,153,NULL,0,0,1,NULL,NULL,NULL),(450,49,'Tamil','ta','',NULL,NULL,0,154,NULL,0,0,0,NULL,NULL,NULL),(451,49,'Telugu','te','',NULL,NULL,0,155,NULL,0,0,0,NULL,NULL,NULL),(452,49,'Tajik','tg','',NULL,NULL,0,156,NULL,0,0,0,NULL,NULL,NULL),(453,49,'Thai','th','',NULL,NULL,0,157,NULL,0,0,0,NULL,NULL,NULL),(454,49,'Tigrinya','ti','',NULL,NULL,0,158,NULL,0,0,0,NULL,NULL,NULL),(455,49,'Tibetan Standard, Tibetan, Central','bo','',NULL,NULL,0,159,NULL,0,0,0,NULL,NULL,NULL),(456,49,'Turkmen','tk','',NULL,NULL,0,160,NULL,0,0,0,NULL,NULL,NULL),(457,49,'Tagalog','tl','',NULL,NULL,0,161,NULL,0,0,0,NULL,NULL,NULL),(458,49,'Tswana','tn','',NULL,NULL,0,162,NULL,0,0,0,NULL,NULL,NULL),(459,49,'Tonga (Tonga Islands)','to','',NULL,NULL,0,163,NULL,0,0,0,NULL,NULL,NULL),(460,49,'Turkish','tr','',NULL,NULL,0,164,NULL,0,0,0,NULL,NULL,NULL),(461,49,'Tsonga','ts','',NULL,NULL,0,165,NULL,0,0,0,NULL,NULL,NULL),(462,49,'Tatar','tt','',NULL,NULL,0,166,NULL,0,0,0,NULL,NULL,NULL),(463,49,'Twi','tw','',NULL,NULL,0,167,NULL,0,0,0,NULL,NULL,NULL),(464,49,'Tahitian','ty','',NULL,NULL,0,168,NULL,0,0,0,NULL,NULL,NULL),(465,49,'Uighur, Uyghur','ug','',NULL,NULL,0,169,NULL,0,0,0,NULL,NULL,NULL),(466,49,'Ukrainian','uk','',NULL,NULL,0,170,NULL,0,0,0,NULL,NULL,NULL),(467,49,'Urdu','ur','',NULL,NULL,0,171,NULL,0,0,0,NULL,NULL,NULL),(468,49,'Uzbek','uz','',NULL,NULL,0,172,NULL,0,0,0,NULL,NULL,NULL),(469,49,'Venda','ve','',NULL,NULL,0,173,NULL,0,0,0,NULL,NULL,NULL),(470,49,'Vietnamese','vi','',NULL,NULL,0,174,NULL,0,0,0,NULL,NULL,NULL),(471,49,'VolapÃ¼k','vo','',NULL,NULL,0,175,NULL,0,0,0,NULL,NULL,NULL),(472,49,'Walloon','wa','',NULL,NULL,0,176,NULL,0,0,0,NULL,NULL,NULL),(473,49,'Welsh','cy','',NULL,NULL,0,177,NULL,0,0,0,NULL,NULL,NULL),(474,49,'Wolof','wo','',NULL,NULL,0,178,NULL,0,0,0,NULL,NULL,NULL),(475,49,'Western Frisian','fy','',NULL,NULL,0,179,NULL,0,0,0,NULL,NULL,NULL),(476,49,'Xhosa','xh','',NULL,NULL,0,180,NULL,0,0,0,NULL,NULL,NULL),(477,49,'Yiddish','yi','',NULL,NULL,0,181,NULL,0,0,0,NULL,NULL,NULL),(478,49,'Yoruba','yo','',NULL,NULL,0,182,NULL,0,0,0,NULL,NULL,NULL),(479,49,'Zhuang, Chuang','za','',NULL,NULL,0,183,NULL,0,0,0,NULL,NULL,NULL),(480,49,'Zulu','zu','',NULL,NULL,0,184,NULL,0,0,0,NULL,NULL,NULL),(481,50,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,NULL,NULL),(482,50,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,NULL,NULL),(483,50,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,NULL,NULL),(484,50,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,NULL,NULL),(485,50,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,NULL,NULL),(486,51,'Cases - Send Copy of an Activity','1','case_activity',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(487,52,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(488,52,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(489,52,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(490,52,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(491,52,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(492,52,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(493,52,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(494,53,'Events - Registration Confirmation and Receipt (off-line)','1','event_offline_receipt',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(495,53,'Events - Registration Confirmation and Receipt (on-line)','2','event_online_receipt',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(496,53,'Events - Registration Cancellation Notice','3','participant_cancelled',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(497,53,'Events - Registration Confirmation Invite','4','participant_confirm',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(498,53,'Events - Pending Registration Expiration Notice','5','participant_expired',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(499,54,'Tell-a-Friend Email','1','friend',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(500,55,'Memberships - Signup and Renewal Receipts (off-line)','1','membership_offline_receipt',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(501,55,'Memberships - Receipt (on-line)','2','membership_online_receipt',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(502,56,'Test-drive - Receipt Header','1','test_preview',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(503,57,'Pledges - Acknowledgement','1','pledge_acknowledge',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(504,57,'Pledges - Payment Reminder','2','pledge_reminder',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(505,58,'Profiles - Admin Notification','1','uf_notify',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(507,1,'Email','2',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(508,1,'Postal Mail','3',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(509,1,'SMS','4',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(510,1,'Fax','5',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(511,1,'Phone','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(512,2,'Accept Invitation','51','Accept Invitation',NULL,0,0,38,NULL,0,0,1,7,NULL,NULL),(513,2,'Assembly Support','47','Assembly Support',NULL,0,0,35,NULL,0,0,1,7,NULL,NULL),(514,2,'Close Case','17','Close Case',NULL,0,0,28,NULL,0,0,1,7,NULL,NULL),(515,2,'Constituent Event Participation','54','Constituent Event Participation',NULL,0,0,14,NULL,0,0,1,NULL,NULL,NULL),(516,2,'Coordination with Event Organizer','53','Coordination with Event Organizer',NULL,0,0,40,'<br />',0,0,1,7,NULL,NULL),(517,2,'Email Received','39','Email Received',NULL,0,0,7,'<p>\r\n	Record receipt of an email from an external source.</p>',0,0,1,NULL,NULL,NULL),(518,2,'Email Sent','38','Email Sent',NULL,0,0,6,'<p>\r\n	Record emails sent from external email software.</p>',0,0,1,NULL,NULL,NULL),(519,2,'Executive Support','48','Executive Support',NULL,0,0,36,NULL,0,0,1,7,NULL,NULL),(520,2,'Fax Received','41','Fax Received',NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(521,2,'Fax Sent','40','Fax Sent',NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(522,2,'In Person','42','In Person',NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(523,2,'Letter Received','37','Letter Received',NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(524,2,'Letter Sent','36','Letter Sent',NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(525,2,'Local Government Contact','45','Local Government Contact',NULL,0,0,33,NULL,0,0,1,7,NULL,NULL),(526,2,'Other','43','Other',NULL,0,0,16,NULL,0,0,1,NULL,NULL,NULL),(527,2,'Phone Call Received','35','Phone Call Received',NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(528,2,'Receive Event Invitation','50','Receive Event Invitation',NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(529,2,'Record SSN','55','Record SSN',NULL,0,0,41,'<br />',0,0,1,7,NULL,NULL),(530,2,'Reject Invitation','52','Reject Invitation',NULL,0,0,39,NULL,0,0,1,7,NULL,NULL),(531,2,'Senate Support','46','Senate Support',NULL,0,0,34,NULL,0,0,1,7,NULL,NULL),(532,2,'State Agency Support','44','State Agency Support',NULL,0,0,32,NULL,0,0,1,7,NULL,NULL),(533,2,'Supervisor Review','49','Supervisor Review',NULL,0,0,37,NULL,0,0,1,7,NULL,NULL),(534,3,'Other','4','Other',NULL,0,0,4,'<br />',0,0,1,NULL,NULL,NULL),(535,4,'ICQ','7','ICQ',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(536,4,'IRC','8','IRC',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(537,4,'Sametime','9','Sametime',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(538,6,'Fr.','6','Fr.',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(539,6,'Hon.','7','Hon.',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(540,6,'Rev.','5','Rev.',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(541,8,'Analytics User','8','Analytics User',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(542,8,'Conference Services','11','Conference Services',NULL,0,0,10,NULL,0,0,1,NULL,0,NULL),(543,8,'Data Entry','4','Data Entry',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(544,8,'Office Administrator','7','Office Administrator',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(545,8,'Office Manager','6','Office Manager',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(546,8,'Print Production','9','Print Production',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(547,8,'SOS','10','SOS',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(548,8,'Staff','5','Staff',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(549,8,'Volunteer','3','Volunteer',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(550,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(551,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(552,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(553,25,'Draft','7','Draft',NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(554,26,'Event Invitation','8','Event Invitation',NULL,0,0,4,'<p>\r\n	Invitation to attend or participate in a constituent event. Use activities unless the request is for more involved participation.</p>',0,0,1,NULL,0,NULL),(555,26,'General Complaint','4','General Complaint',NULL,0,0,1,'<p>\r\n	General complaint about government, government service, or private organizations.</p>',0,0,1,NULL,0,NULL),(556,26,'Government Service Problem - Local','9','Government Service Problem - Local',NULL,0,0,5,'<p>\r\n	Problem with a local government entity.</p>',0,0,1,NULL,0,NULL),(557,26,'Government Service Problem - State','10','Government Service Problem - State',NULL,0,0,6,'<p>\r\n	Problem with a state government entity.</p>',0,0,1,NULL,0,NULL),(558,26,'Request for Assistance','7','Request for Assistance',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(559,26,'Request for Information','3','Request for Information',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(560,27,'Assigned','5','Assigned',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(561,27,'Not Started','4','Not Started',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(562,27,'Unassigned','6','Unassigned',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(563,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(564,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(565,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(566,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(567,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(568,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(569,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(570,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(571,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(572,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(573,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(574,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(575,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(576,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(577,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(578,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(579,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(580,34,'Google Voice','6','Google Voice',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(581,34,'Secondary Mobile','9','Secondary Mobile',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(582,34,'Secondary Phone','8','Secondary Phone',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(583,34,'Skype','7','Skype',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(584,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(585,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(586,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(587,46,'Image','3','Image',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(592,51,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(593,51,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(594,51,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(595,51,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(596,51,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(597,51,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(598,52,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(599,52,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(600,52,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(601,53,'Asset','1','Asset',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(602,53,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,0,NULL),(603,53,'Expense','4','Expense',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(604,53,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,0,NULL),(605,53,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(606,53,'Income','3','Income',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(607,53,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,0,NULL),(608,53,'Liability','2','Liability',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(609,53,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,0,NULL),(610,54,'Cases - Send Copy of an Activity','1','case_activity',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(611,54,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(612,54,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(613,54,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(614,54,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(615,54,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(616,54,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(617,55,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(618,55,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(619,55,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(620,55,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(621,55,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(622,55,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(623,55,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(624,55,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(625,55,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(626,55,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(627,56,'Asset','1','Asset',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(628,56,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,0,NULL),(629,56,'Events - Registration Confirmation and Receipt (off-line)','1','event_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(630,56,'Events - Registration Confirmation and Receipt (on-line)','2','event_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(631,56,'Expense','4','Expense',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(632,56,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,0,NULL),(633,56,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(634,56,'Income','3','Income',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(635,56,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,0,NULL),(636,56,'Liability','2','Liability',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(637,56,'Events - Registration Cancellation Notice','3','participant_cancelled',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(638,56,'Events - Registration Confirmation Invite','4','participant_confirm',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(639,56,'Events - Pending Registration Expiration Notice','5','participant_expired',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(640,56,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,0,NULL),(641,57,'Cases - Send Copy of an Activity','1','case_activity',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(642,57,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(643,57,'Tell-a-Friend Email','1','friend',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(644,57,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(645,57,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(646,57,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(647,57,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(648,57,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(649,58,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(650,58,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(651,58,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(652,58,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(653,58,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(654,58,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(655,58,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(656,58,'Memberships - Signup and Renewal Receipts (off-line)','1','membership_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(657,58,'Memberships - Receipt (on-line)','2','membership_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(658,58,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(659,58,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(660,58,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(661,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(662,59,'Asset','1','Asset',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(663,59,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,0,NULL),(664,59,'Events - Registration Confirmation and Receipt (off-line)','1','event_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(665,59,'Events - Registration Confirmation and Receipt (on-line)','2','event_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(666,59,'Expense','4','Expense',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(667,59,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,0,NULL),(668,59,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(669,59,'Income','3','Income',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(670,59,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,0,NULL),(671,59,'Liability','2','Liability',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(672,59,'Events - Registration Cancellation Notice','3','participant_cancelled',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(673,59,'Events - Registration Confirmation Invite','4','participant_confirm',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(674,59,'Events - Pending Registration Expiration Notice','5','participant_expired',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(675,59,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,0,NULL),(676,59,'Test-drive - Receipt Header','1','test_preview',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(677,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(678,60,'Cases - Send Copy of an Activity','1','case_activity',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(679,60,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(680,60,'Tell-a-Friend Email','1','friend',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(681,60,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(682,60,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(683,60,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(684,60,'Pledges - Acknowledgement','1','pledge_acknowledge',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(685,60,'Pledges - Payment Reminder','2','pledge_reminder',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(686,60,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(687,60,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(688,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(689,61,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(690,61,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(691,61,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(692,61,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(693,61,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(694,61,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(695,61,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(696,61,'Memberships - Signup and Renewal Receipts (off-line)','1','membership_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(697,61,'Memberships - Receipt (on-line)','2','membership_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(698,61,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(699,61,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(700,61,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(701,61,'Profiles - Admin Notification','1','uf_notify',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(703,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(704,63,'Asian Indian','asian_indian','Asian_Indian',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(705,63,'Black, African American','black_african_american','Black_African_American',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(706,63,'Chinese','chinese','Chinese',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(707,63,'Cuban','cuban','Cuban',NULL,0,0,17,NULL,0,0,1,NULL,0,NULL),(708,63,'Dominican','dominican','Dominican',NULL,0,0,18,NULL,0,0,1,NULL,0,NULL),(709,63,'Filipino','filipino','Filipino',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(710,63,'Guamanian or Chamorro','guamanian_chamorro','Guamanian_or_Chamorro',NULL,0,0,12,NULL,0,0,1,NULL,0,NULL),(711,63,'Japanese','japanese','Japanese',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(712,63,'Korean','korean','Korean',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(713,63,'Native Hawaiian','native_hawaiian','Native_Hawaiian',NULL,0,0,11,NULL,0,0,1,NULL,0,NULL),(714,63,'Other Asian','other_asian','Other_Asian',NULL,0,0,10,NULL,0,0,1,NULL,0,NULL),(715,63,'Other Hispanic/Latino/Spanish','other_hispanic_latino_spanish','Other_Hispanic_Latino_Spanish',NULL,0,0,19,NULL,0,0,1,NULL,0,NULL),(716,63,'Other Pacific Islander','other_pacific_islander','Other_Pacific_Islander',NULL,0,0,14,NULL,0,0,1,NULL,0,NULL),(717,63,'Puerto Rican','puerto_rican','Puerto_Rican',NULL,0,0,16,NULL,0,0,1,NULL,0,NULL),(718,63,'Samoan','samoan','Samoan',NULL,0,0,13,NULL,0,0,1,NULL,0,NULL),(719,63,'Vietnamese','vietnamese','Vietnamese',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(720,63,'White','white','White',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(740,66,'Business','business','Business',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(741,66,'Church','church','Church',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(742,66,'Community Group','community_group','Community_Group',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(743,66,'Government','government','Government',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(744,66,'Homeowners Association','homeowners_association','Homeowners_Association',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(745,66,'Hospital','hospital','Hospital',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(746,66,'Interest Group','interest_group','Interest_Group',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(747,66,'Not-for-Profit','not_for_profit','Not_for_Profit',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(748,66,'Senior Center','senior_center','Senior_Center',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(749,67,'Agency Staff','agency_staff','Agency_Staff',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(750,67,'Committee Staff','committee_staff','Committee_Staff',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(751,67,'Communications Staff','communications_staff','Communications_Staff',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(752,67,'District Staff','district_staff','District_Staff',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(753,67,'Elected Official','elected_official','Elected_Official',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(754,67,'Former Elected Official','former_elected_official','Former_Elected_Official',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(755,67,'Non-district Individuals','non_district_individuals','Non_district_Individuals',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(756,67,'Press & Media Contacts','press_media_contacts','Press__Media_Contacts',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(757,67,'Support Staff','support_staff','Support_Staff',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(766,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(767,69,'Budget Position','Budget Position','Budget_Position',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(768,69,'Event Invitation','Event Invitation','Event_Invitation',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(769,69,'Legislative Position','Legislative Position','Legislative_Position',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(770,69,'Petition Signed','Petition Signed','Petition_Signed',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(771,69,'Referral','Referral','Referral',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(772,69,'Request Agency Support','Request Agency Support','Request_Agency_Support',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(773,69,'Request Information','Request Information','Request_Information',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(774,69,'Request Meeting','Request Meeting','Request_Meeting',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(781,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(782,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(783,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(785,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(786,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(787,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(788,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(789,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(790,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(791,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(792,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(793,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(794,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(795,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(796,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(797,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(798,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(799,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(800,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(801,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(802,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(803,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(804,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(805,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(806,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(807,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(809,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(810,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(817,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(818,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(819,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(821,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(822,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(823,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(824,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(825,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(826,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(827,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(828,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(829,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(830,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(831,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(832,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(833,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(834,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(835,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(836,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(837,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(838,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(839,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(840,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(841,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(842,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(843,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(845,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(846,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(853,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(854,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(855,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(857,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(858,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(859,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(860,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(861,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(862,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(863,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(864,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(865,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(866,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(867,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(868,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(869,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(870,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(871,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(872,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(873,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(874,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(875,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(876,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(877,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(878,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(879,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(881,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(882,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(889,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(890,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(891,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(893,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(894,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(895,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(896,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(897,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(898,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(899,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(900,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(901,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(902,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(903,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(904,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(905,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(906,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(907,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(908,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(909,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(910,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(911,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(912,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(913,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(914,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(915,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(917,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(918,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(919,64,'BOE','boe','BOE',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(920,64,'DMV','dmv','DMV',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(921,64,'SED','sed','SED',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(922,64,'Other 3rd Party List','other_3rd_party_list','Other_3rd_Party_List',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(923,64,'Questionnaire','questionnaire','Questionnaire',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(924,64,'Email','email','Email',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(925,64,'Albany Office Visit','albany_office_visit','Albany_Office_Visit',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(926,64,'District Office Visit','district_office_visit','District_Office_Visit',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(927,64,'Phone Call','phone_call','Phone_Call',NULL,NULL,0,9,NULL,0,0,1,NULL,NULL,NULL),(928,64,'Lobbyist','lobbyist','Lobbyist',NULL,NULL,0,10,NULL,0,0,1,NULL,NULL,NULL),(929,64,'Petition','petition','Petition',NULL,NULL,0,11,NULL,0,0,1,NULL,NULL,NULL),(930,64,'Website Comment','website_comment','Website_Comment',NULL,NULL,0,12,NULL,0,0,1,NULL,NULL,NULL),(931,64,'Testimony','testimony','Testimony',NULL,NULL,0,13,NULL,0,0,1,NULL,NULL,NULL),(932,64,'Event Attendance','event_attendance','Event_Attendance',NULL,NULL,0,14,NULL,0,0,1,NULL,NULL,NULL),(933,64,'Blast Email','blast_email','Blast_Email',NULL,NULL,0,15,NULL,0,0,1,NULL,NULL,NULL),(934,64,'Other','other','Other',NULL,NULL,0,16,NULL,0,0,1,NULL,NULL,NULL),(935,68,'Legislative Position','legislative_position','Legislative_Position',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(936,68,'Budget Position','budget_position','Budget_Position',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(937,68,'Request Agency Support','request_agency_support','Request_Agency_Support',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(938,68,'Request Information','request_information','Request_Information',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(939,68,'Referral','referral','Referral',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(940,68,'Event Invitation','event_invitation','Event_Invitation',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(941,68,'Legislative Reception Invitation','legislative_reception_invitation',NULL,NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(942,68,'Request Meeting','request_meeting','Request_Meeting',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(943,68,'Petition Signed','petition_signed','Petition_Signed',NULL,NULL,0,9,NULL,0,0,1,NULL,NULL,NULL),(944,70,'Registered','registered','Registered',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(945,70,'Former Registered','former_registered','Former_Registered',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(946,70,'Unregistered','unregistered','Unregistered',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(947,71,'Albany Office','albany_office','Albany_Office',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(948,71,'District Office','district_office','District_Office',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(949,71,'Public Hearing','public_hearing','Public_Hearing',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(950,71,'Meeting','meeting','Meeting',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(951,71,'Mobile District Office','mobile_district_office','Mobile_District_Office',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(952,71,'Public Event','public_event','Public_Event',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(953,71,'Town Hall Meeting','town_hall_meeting','Town_Hall_Meeting',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(954,71,'Other','other','Other',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(955,68,'Other','other','Other',NULL,NULL,0,10,NULL,0,0,1,NULL,NULL,NULL),(956,42,'The Family of {contact.household_name}','6','The Family of {contact.household_name}',NULL,2,0,6,'',0,0,1,NULL,NULL,NULL),(957,72,'Name Only','1','CRM_Event_Badge_Simple',NULL,NULL,0,1,'Simple Event Name Badge',0,0,1,NULL,NULL,NULL),(958,72,'Name Tent','2','CRM_Event_Badge_NameTent',NULL,NULL,0,1,'Name Tent',0,0,1,NULL,NULL,NULL),(959,7,'Esq.','9','Esq.',NULL,0,0,8,'<br />',0,0,1,NULL,NULL,NULL),(960,6,'Mr. and Mrs.','8','Mr. and Mrs.',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(961,6,'Dr. and Mrs.','9','Dr. and Mrs.',NULL,NULL,0,9,NULL,0,0,1,NULL,NULL,NULL),(962,6,'The Honorable','10','The Honorable',NULL,NULL,0,10,NULL,0,0,1,NULL,NULL,NULL),(963,6,'The Honorable and Mrs.','11','The Honorable and Mrs.',NULL,NULL,0,11,NULL,0,0,1,NULL,NULL,NULL),(964,6,'Miss','12','Miss',NULL,NULL,0,12,NULL,0,0,1,NULL,NULL,NULL),(965,6,'Reverend','13','Reverend',NULL,NULL,0,13,NULL,0,0,1,NULL,NULL,NULL),(966,6,'Reverend and Mrs.','14','Reverend and Mrs.',NULL,NULL,0,14,NULL,0,0,1,NULL,NULL,NULL),(967,6,'The Honorable','15','The Honorable',NULL,NULL,0,15,NULL,0,0,1,NULL,NULL,NULL),(968,6,'The Honorable and Mrs.','16','The Honorable and Mrs.',NULL,NULL,0,16,NULL,0,0,1,NULL,NULL,NULL),(969,6,'General','17','General',NULL,NULL,0,17,NULL,0,0,1,NULL,NULL,NULL),(970,6,'Colonel','18','Colonel',NULL,NULL,0,18,NULL,0,0,1,NULL,NULL,NULL),(971,6,'Captain','19','Captain',NULL,NULL,0,19,NULL,0,0,1,NULL,NULL,NULL),(972,6,'Sister','20','Sister',NULL,NULL,0,20,NULL,0,0,1,NULL,NULL,NULL),(973,6,'The Reverend','21','The Reverend',NULL,NULL,0,21,NULL,0,0,1,NULL,NULL,NULL),(974,6,'First Lieutenant','22','First Lieutenant',NULL,NULL,0,22,NULL,0,0,1,NULL,NULL,NULL),(975,6,'Rear Admiral','23','Rear Admiral',NULL,NULL,0,23,NULL,0,0,1,NULL,NULL,NULL),(976,6,'Major','24','Major',NULL,NULL,0,24,NULL,0,0,1,NULL,NULL,NULL),(977,6,'Cadet','25','Cadet',NULL,NULL,0,25,NULL,0,0,1,NULL,NULL,NULL),(978,6,'Major General','26','Major General',NULL,NULL,0,26,NULL,0,0,1,NULL,NULL,NULL),(979,6,'Professor','27','Professor',NULL,NULL,0,27,NULL,0,0,1,NULL,NULL,NULL),(980,6,'Congressman','28','Congressman',NULL,NULL,0,28,NULL,0,0,1,NULL,NULL,NULL),(981,6,'Congressman and Mrs.','29','Congressman and Mrs.',NULL,NULL,0,29,NULL,0,0,1,NULL,NULL,NULL),(982,6,'LTC and Mrs.','30','LTC and Mrs.',NULL,NULL,0,30,NULL,0,0,1,NULL,NULL,NULL),(983,6,'Colonel and Mrs.','31','Colonel and Mrs.',NULL,NULL,0,31,NULL,0,0,1,NULL,NULL,NULL),(984,6,'Lieutenant Colonel','32','Lieutenant Colonel',NULL,NULL,0,32,NULL,0,0,1,NULL,NULL,NULL),(985,6,'Cantor','33','Cantor',NULL,NULL,0,33,NULL,0,0,1,NULL,NULL,NULL),(986,6,'Cantor and Mrs.','34','Cantor and Mrs.',NULL,NULL,0,34,NULL,0,0,1,NULL,NULL,NULL),(987,6,'Honorable and Mrs.','35','Honorable and Mrs.',NULL,NULL,0,35,NULL,0,0,1,NULL,NULL,NULL),(988,6,'Chancellor','36','Chancellor',NULL,NULL,0,36,NULL,0,0,1,NULL,NULL,NULL),(989,6,'Chancellor and Mrs.','37','Chancellor and Mrs.',NULL,NULL,0,37,NULL,0,0,1,NULL,NULL,NULL),(990,6,'Messrs.','38','Messrs.',NULL,NULL,0,38,NULL,0,0,1,NULL,NULL,NULL),(991,6,'Lieutenant','39','Lieutenant',NULL,NULL,0,39,NULL,0,0,1,NULL,NULL,NULL),(992,6,'Lieutenant Commander','40','Lieutenant Commander',NULL,NULL,0,40,NULL,0,0,1,NULL,NULL,NULL),(993,6,'Captain and Mrs.','41','Captain and Mrs.',NULL,NULL,0,41,NULL,0,0,1,NULL,NULL,NULL),(994,6,'Chief Warrant Officer','42','Chief Warrant Officer',NULL,NULL,0,42,NULL,0,0,1,NULL,NULL,NULL),(995,6,'Ensign','43','Ensign',NULL,NULL,0,43,NULL,0,0,1,NULL,NULL,NULL),(996,6,'Lieutenant Junior Grade','44','Lieutenant Junior Grade',NULL,NULL,0,44,NULL,0,0,1,NULL,NULL,NULL),(997,6,'Commander','45','Commander',NULL,NULL,0,45,NULL,0,0,1,NULL,NULL,NULL),(998,6,'Warrant Officer','46','Warrant Officer',NULL,NULL,0,46,NULL,0,0,1,NULL,NULL,NULL),(999,6,'Second Lieutenant','47','Second Lieutenant',NULL,NULL,0,47,NULL,0,0,1,NULL,NULL,NULL),(1000,6,'Rabbi','48','Rabbi',NULL,NULL,0,48,NULL,0,0,1,NULL,NULL,NULL),(1001,6,'Rear Admiral and Mrs.','49','Rear Admiral and Mrs.',NULL,NULL,0,49,NULL,0,0,1,NULL,NULL,NULL),(1002,6,'Monsignor','50','Monsignor',NULL,NULL,0,50,NULL,0,0,1,NULL,NULL,NULL),(1003,6,'Vice Admiral','51','Vice Admiral',NULL,NULL,0,51,NULL,0,0,1,NULL,NULL,NULL),(1004,6,'Admiral','52','Admiral',NULL,NULL,0,52,NULL,0,0,1,NULL,NULL,NULL),(1005,6,'Lieutenant General','53','Lieutenant General',NULL,NULL,0,53,NULL,0,0,1,NULL,NULL,NULL),(1006,6,'Brigadier General','54','Brigadier General',NULL,NULL,0,54,NULL,0,0,1,NULL,NULL,NULL),(1007,6,'Brother','55','Brother',NULL,NULL,0,55,NULL,0,0,1,NULL,NULL,NULL),(1008,6,'Rabbi and Mrs.','56','Rabbi and Mrs.',NULL,NULL,0,56,NULL,0,0,1,NULL,NULL,NULL),(1009,6,'Most Reverend','57','Most Reverend',NULL,NULL,0,57,NULL,0,0,1,NULL,NULL,NULL),(1010,6,'Dean','58','Dean',NULL,NULL,0,58,NULL,0,0,1,NULL,NULL,NULL),(1011,6,'The Reverend Dr.','59','The Reverend Dr.',NULL,NULL,0,59,NULL,0,0,1,NULL,NULL,NULL),(1012,6,'Pastor','60','Pastor',NULL,NULL,0,60,NULL,0,0,1,NULL,NULL,NULL),(1013,6,'Pastor and Mrs.','61','Pastor and Mrs.',NULL,NULL,0,61,NULL,0,0,1,NULL,NULL,NULL),(1014,6,'Major and Mrs.','62','Major and Mrs.',NULL,NULL,0,62,NULL,0,0,1,NULL,NULL,NULL),(1015,6,'Bishop','63','Bishop',NULL,NULL,0,63,NULL,0,0,1,NULL,NULL,NULL),(1016,6,'Sergeant','64','Sergeant',NULL,NULL,0,64,NULL,0,0,1,NULL,NULL,NULL),(1017,6,'Mr. and Dr.','65','Mr. and Dr.',NULL,NULL,0,65,NULL,0,0,1,NULL,NULL,NULL),(1018,6,'Reverend Mother','66','Reverend Mother',NULL,NULL,0,66,NULL,0,0,1,NULL,NULL,NULL),(1019,6,'The Honorable and Mr.','67','The Honorable and Mr.',NULL,NULL,0,67,NULL,0,0,1,NULL,NULL,NULL),(1020,6,'The Chief Justice','68','The Chief Justice',NULL,NULL,0,68,NULL,0,0,1,NULL,NULL,NULL),(1021,6,'Mr. Justice','69','Mr. Justice',NULL,NULL,0,69,NULL,0,0,1,NULL,NULL,NULL),(1022,6,'Dr. and Dr.','70','Dr. and Dr.',NULL,NULL,0,70,NULL,0,0,1,NULL,NULL,NULL),(1023,6,'Reverend Monsignor','71','Reverend Monsignor',NULL,NULL,0,71,NULL,0,0,1,NULL,NULL,NULL),(1024,6,'Adjutant','72','Adjutant',NULL,NULL,0,72,NULL,0,0,1,NULL,NULL,NULL),(1025,6,'Administrative Major','73','Administrative Major',NULL,NULL,0,73,NULL,0,0,1,NULL,NULL,NULL),(1026,6,'Ambassador and Mrs.','74','Ambassador and Mrs.',NULL,NULL,0,74,NULL,0,0,1,NULL,NULL,NULL),(1027,6,'Professor and Mrs.','75','Professor and Mrs.',NULL,NULL,0,75,NULL,0,0,1,NULL,NULL,NULL),(1028,24,'CRM_Contact_Form_Search_Custom_BirthdayByMonth','16','CRM_Contact_Form_Search_Custom_BirthdayByMonth',NULL,0,0,16,'Birthday by Month Search',0,0,1,NULL,NULL,NULL),(1029,64,'Letter','letter','Letter',NULL,NULL,0,17,NULL,0,0,1,NULL,NULL,NULL),(1030,64,'Fax','fax','Fax',NULL,NULL,0,18,NULL,0,0,1,NULL,NULL,NULL),(1031,72,'With Logo','3','CRM_Event_Badge_Logo',NULL,NULL,0,1,'You can set your own background image',0,0,1,NULL,NULL,NULL),(1032,16,'Website','12','Website',NULL,1,NULL,12,NULL,0,0,1,NULL,NULL,NULL),(1033,7,'I','10','I',NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(1034,7,'M.D.','11','M.D.',NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(1035,7,'Ph.D.','12','Ph.D.',NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(1036,7,'CAC','13','CAC',NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(1037,7,'D.D.S.','14','D.D.S.',NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(1038,7,'R.N.','15','R.N.',NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(1039,7,'D.C.','16','D.C.',NULL,0,0,14,NULL,0,0,1,NULL,NULL,NULL),(1040,7,'CPA','17','CPA',NULL,0,0,15,NULL,0,0,1,NULL,NULL,NULL),(1041,7,'P.E.','18','P.E.',NULL,0,0,16,NULL,0,0,1,NULL,NULL,NULL),(1042,7,'D.V.M.','19','D.V.M.',NULL,0,0,17,NULL,0,0,1,NULL,NULL,NULL),(1043,41,'Dear {contact.nick_name}','6','Dear {contact.nick_name}',NULL,1,0,6,NULL,0,0,1,NULL,NULL,NULL),(1044,42,'Dear {contact.nick_name}','7','Dear {contact.nick_name}',NULL,1,0,7,NULL,0,0,1,NULL,NULL,NULL),(1045,43,'The {contact.household_name}','5','The {contact.household_name}',NULL,2,1,5,NULL,0,0,1,NULL,NULL,NULL),(1046,73,'Board of Election','1','Board_of_Election',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(1047,73,'Added Registered Voter','2','Added_Registered_Voter',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(1048,73,'Added Non-Registered Voter','3','Added_Non_Registered_Voter',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(1049,73,'Out-of-District','4','Out_of_District',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(1050,73,'Incomplete','5','Incomplete',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(1051,73,'Business (Home)','6','Business__Home_',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(1052,73,'Business','7','Business',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(1053,73,'Soft Delete','0','Soft_Delete',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(1054,42,'Dear Friends','8','Dear Friend',NULL,2,0,8,NULL,0,0,1,NULL,NULL,NULL),(1055,42,'Dear {contact.nick_name}','9','Dear {contact.nick_name}',NULL,2,0,9,NULL,0,0,1,NULL,NULL,NULL);
+INSERT INTO `civicrm_option_value` VALUES (6,2,'Meeting','1','Meeting',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(7,2,'Phone Call Made','2','Phone Call',NULL,0,0,2,'<br />',0,1,1,NULL,NULL,NULL),(8,2,'Send an Email','3','Email',NULL,1,0,3,'<p>\r\n	Send an email from the system.</p>',0,1,1,NULL,NULL,NULL),(9,2,'Text Message (SMS)','4','SMS',NULL,1,NULL,4,'Text message (SMS) sent.',0,1,1,NULL,NULL,NULL),(10,2,'Event Registration','5','Event Registration',NULL,1,NULL,5,'Online or offline event registration.',0,1,1,1,NULL,NULL),(11,2,'Contribution','6','Contribution',NULL,1,NULL,6,'Online or offline contribution.',0,1,1,2,NULL,NULL),(12,2,'Membership Signup','7','Membership Signup',NULL,1,NULL,7,'Online or offline membership signup.',0,1,1,3,NULL,NULL),(13,2,'Membership Renewal','8','Membership Renewal',NULL,1,NULL,8,'Online or offline membership renewal.',0,1,1,3,NULL,NULL),(14,2,'Tell a Friend','9','Tell a Friend',NULL,1,NULL,9,'Send information about a contribution campaign or event to a friend.',0,1,1,NULL,NULL,NULL),(15,2,'Pledge Acknowledgment','10','Pledge Acknowledgment',NULL,1,NULL,10,'Send Pledge Acknowledgment.',0,1,1,6,NULL,NULL),(16,2,'Pledge Reminder','11','Pledge Reminder',NULL,1,NULL,11,'Send Pledge Reminder.',0,1,1,6,NULL,NULL),(17,2,'Inbound Email','12','Inbound Email',NULL,1,NULL,12,'Inbound Email.',0,1,1,NULL,NULL,NULL),(18,2,'Open Case','13','Open Case',NULL,0,0,13,'',0,0,1,7,NULL,NULL),(19,2,'Follow up','14','Follow up',NULL,0,0,14,'',0,0,1,7,NULL,NULL),(20,2,'Change Case Type','15','Change Case Type',NULL,0,0,15,'',0,0,1,7,NULL,NULL),(21,2,'Change Case Status','16','Change Case Status',NULL,0,0,16,'',0,0,1,7,NULL,NULL),(22,2,'Membership Renewal Reminder','17','Membership Renewal Reminder',NULL,1,NULL,17,'offline membership renewal reminder.',0,1,1,3,NULL,NULL),(23,2,'Change Case Start Date','18','Change Case Start Date',NULL,0,0,18,'',0,0,1,7,NULL,NULL),(24,2,'Bulk Email','19','Bulk Email',NULL,1,NULL,19,'Bulk Email Sent.',0,1,1,NULL,NULL,NULL),(25,2,'Assign Case Role','20','Assign Case Role',NULL,0,0,20,'',0,0,1,7,NULL,NULL),(26,2,'Remove Case Role','21','Remove Case Role',NULL,0,0,21,'',0,0,1,7,NULL,NULL),(27,2,'Print PDF Letter','22','Print PDF Letter',NULL,1,NULL,22,'Print PDF Letter.',0,1,1,NULL,NULL,NULL),(28,2,'Merge Case','23','Merge Case',NULL,0,NULL,23,'',0,1,1,7,NULL,NULL),(29,2,'Reassigned Case','24','Reassigned Case',NULL,0,NULL,24,'',0,1,1,7,NULL,NULL),(30,2,'Link Cases','25','Link Cases',NULL,0,NULL,25,'',0,1,1,7,NULL,NULL),(31,2,'Change Case Tags','26','Change Case Tags',NULL,0,0,26,'',0,1,1,7,NULL,NULL),(32,3,'Female','1','Female',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(33,3,'Male','2','Male',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(34,3,'Transgender','3','Transgender',NULL,0,NULL,3,NULL,0,0,0,NULL,NULL,NULL),(35,4,'Yahoo','1','Yahoo',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(36,4,'MSN','2','Msn',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(37,4,'AIM','3','Aim',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(38,4,'GTalk','4','Gtalk',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(39,4,'Jabber','5','Jabber',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(40,4,'Skype','6','Skype',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(41,5,'Sprint','1','Sprint',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(42,5,'Verizon','2','Verizon',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(43,5,'Cingular','3','Cingular',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(44,6,'Mrs.','1','Mrs.',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(45,6,'Ms.','2','Ms.',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(46,6,'Mr.','3','Mr.',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(47,6,'Dr.','4','Dr.',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(48,7,'Jr.','1','Jr.',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(49,7,'Sr.','2','Sr.',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(50,7,'II','3','II',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(51,7,'III','4','III',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(52,7,'IV','5','IV',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(53,7,'V','6','V',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(56,8,'Administrator','1','Admin',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(57,8,'Authenticated','2','Auth',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(58,9,'Visa','1','Visa',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(59,9,'MasterCard','2','MasterCard',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(60,9,'Amex','3','Amex',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(61,9,'Discover','4','Discover',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(62,10,'Credit Card','1','Credit Card',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(63,10,'Debit Card','2','Debit Card',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(64,10,'Cash','3','Cash',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(65,10,'Check','4','Check',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(66,10,'EFT','5','EFT',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(67,11,'Completed','1','Completed',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(68,11,'Pending','2','Pending',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(69,11,'Cancelled','3','Cancelled',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(70,11,'Failed','4','Failed',NULL,0,NULL,4,NULL,0,1,1,NULL,NULL,NULL),(71,11,'In Progress','5','In Progress',NULL,0,NULL,5,NULL,0,1,1,NULL,NULL,NULL),(72,11,'Overdue','6','Overdue',NULL,0,NULL,6,NULL,0,1,1,NULL,NULL,NULL),(73,12,'Waiting Review','1','Waiting Review',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(74,12,'Approved','2','Approved',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(75,12,'Not Approved','3','Not Approved',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(76,13,'Attendee','1','Attendee',NULL,1,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(77,13,'Volunteer','2','Volunteer',NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(78,13,'Host','3','Host',NULL,1,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(79,13,'Speaker','4','Speaker',NULL,1,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(80,14,'Conference','1','Conference',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(81,14,'Exhibition','2','Exhibition',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(82,14,'Fundraiser','3','Fundraiser',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(83,14,'Meeting','4','Meeting',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(84,14,'Performance','5','Performance',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(85,14,'Workshop','6','Workshop',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(86,15,'Activities','1','activity',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(87,15,'Relationships','2','rel',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(88,15,'Groups','3','group',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(89,15,'Notes','4','note',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(90,15,'Tags','5','tag',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(91,15,'Change Log','6','log',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(92,15,'Contributions','7','CiviContribute',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(93,15,'Memberships','8','CiviMember',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(94,15,'Events','9','CiviEvent',NULL,0,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(95,15,'Cases','10','CiviCase',NULL,0,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(96,15,'Grants','11','CiviGrant',NULL,0,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(97,15,'Pledges','13','CiviPledge',NULL,0,NULL,13,NULL,0,0,1,NULL,NULL,NULL),(98,16,'Custom Data','1','CustomData',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(99,16,'Address','2','Address',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(100,16,'Communication Preferences','3','CommunicationPreferences',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(101,16,'Notes','4','Notes',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(102,16,'Demographics','5','Demographics',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(103,16,'Tags and Groups','6','TagsAndGroups',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(104,16,'Email','7','Email',NULL,1,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(105,16,'Phone','8','Phone',NULL,1,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(106,16,'Instant Messenger','9','IM',NULL,1,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(107,16,'Open ID','10','OpenID',NULL,1,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(108,16,'Website','11','Website',NULL,1,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(109,17,'Address Fields','1','location',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(110,17,'Custom Fields','2','custom',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(111,17,'Activities','3','activity',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(112,17,'Relationships','4','relationship',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(113,17,'Notes','5','notes',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(114,17,'Change Log','6','changeLog',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(115,17,'Contributions','7','CiviContribute',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(116,17,'Memberships','8','CiviMember',NULL,0,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(117,17,'Events','9','CiviEvent',NULL,0,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(118,17,'Cases','10','CiviCase',NULL,0,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(119,17,'Grants','12','CiviGrant',NULL,0,NULL,14,NULL,0,0,1,NULL,NULL,NULL),(120,17,'Demographics','13','demographics',NULL,0,NULL,15,NULL,0,0,1,NULL,NULL,NULL),(121,17,'Pledges','15','CiviPledge',NULL,0,NULL,17,NULL,0,0,1,NULL,NULL,NULL),(122,17,'Contact Type','16','contactType',NULL,0,NULL,18,NULL,0,0,1,NULL,NULL,NULL),(123,17,'Groups','17','groups',NULL,0,NULL,19,NULL,0,0,1,NULL,NULL,NULL),(124,17,'Tags','18','tags',NULL,0,NULL,20,NULL,0,0,1,NULL,NULL,NULL),(125,18,'Groups','1','Groups',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(126,18,'Contributions','2','CiviContribute',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(127,18,'Memberships','3','CiviMember',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(128,18,'Events','4','CiviEvent',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(129,18,'My Contacts / Organizations','5','Permissioned Orgs',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(130,18,'Pledges','7','CiviPledge',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(131,18,'Personal Campaign Pages','8','PCP',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(132,44,'Email Address','2','email',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(133,44,'Phone','3','phone',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(134,44,'Street Address','4','street_address',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(135,44,'City','5','city',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(136,44,'State/Province','6','state_province',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(137,44,'Country','7','country',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(138,19,'Street Address','1','street_address',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(139,19,'Addt\'l Address 1','2','supplemental_address_1',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(140,19,'Addt\'l Address 2','3','supplemental_address_2',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(141,19,'City','4','city',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(142,19,'Zip / Postal Code','5','postal_code',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(143,19,'Postal Code Suffix','6','postal_code_suffix',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(144,19,'County','7','county',NULL,0,NULL,7,NULL,0,0,1,NULL,NULL,NULL),(145,19,'State / Province','8','state_province',NULL,0,NULL,8,NULL,0,0,1,NULL,NULL,NULL),(146,19,'Country','9','country',NULL,0,NULL,9,NULL,0,0,1,NULL,NULL,NULL),(147,19,'Latitude','10','geo_code_1',NULL,0,NULL,10,NULL,0,0,1,NULL,NULL,NULL),(148,19,'Longitude','11','geo_code_2',NULL,0,NULL,11,NULL,0,0,1,NULL,NULL,NULL),(149,19,'Address Name','12','address_name',NULL,0,NULL,12,NULL,0,0,1,NULL,NULL,NULL),(150,19,'Street Address Parsing','13','street_address_parsing',NULL,0,NULL,13,NULL,0,0,1,NULL,NULL,NULL),(151,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(152,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(153,21,'Pending','1','Pending',NULL,0,1,1,NULL,0,0,1,NULL,NULL,NULL),(154,21,'Granted','2','Granted',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(155,21,'Rejected','3','Rejected',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(156,23,'In Honor of','1','In Honor of',NULL,0,1,1,NULL,0,1,1,NULL,NULL,NULL),(157,23,'In Memory of','2','In Memory of',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(158,24,'CRM_Contact_Form_Search_Custom_Sample','1','CRM_Contact_Form_Search_Custom_Sample',NULL,0,NULL,1,'Household Name and State',0,0,1,NULL,NULL,NULL),(159,24,'CRM_Contact_Form_Search_Custom_ContributionAggregate','2','CRM_Contact_Form_Search_Custom_ContributionAggregate',NULL,0,NULL,2,'Contribution Aggregate',0,0,1,NULL,NULL,NULL),(160,24,'CRM_Contact_Form_Search_Custom_Basic','3','CRM_Contact_Form_Search_Custom_Basic',NULL,0,NULL,3,'Basic Search',0,0,1,NULL,NULL,NULL),(161,24,'CRM_Contact_Form_Search_Custom_Group','4','CRM_Contact_Form_Search_Custom_Group',NULL,0,NULL,4,'Include / Exclude Contacts in a Group / Tag',0,0,1,NULL,NULL,NULL),(162,24,'CRM_Contact_Form_Search_Custom_PostalMailing','5','CRM_Contact_Form_Search_Custom_PostalMailing',NULL,0,NULL,5,'Postal Mailing',0,0,1,NULL,NULL,NULL),(163,24,'CRM_Contact_Form_Search_Custom_Proximity','6','CRM_Contact_Form_Search_Custom_Proximity',NULL,0,NULL,6,'Proximity Search',0,0,1,NULL,NULL,NULL),(164,24,'CRM_Contact_Form_Search_Custom_EventAggregate','7','CRM_Contact_Form_Search_Custom_EventAggregate',NULL,0,NULL,7,'Event Aggregate',0,0,1,NULL,NULL,NULL),(165,24,'CRM_Contact_Form_Search_Custom_ActivitySearch','8','CRM_Contact_Form_Search_Custom_ActivitySearch',NULL,0,NULL,8,'Activity Search',0,0,1,NULL,NULL,NULL),(166,24,'CRM_Contact_Form_Search_Custom_PriceSet','9','CRM_Contact_Form_Search_Custom_PriceSet',NULL,0,NULL,9,'Price Set Details for Event Participants',0,0,1,NULL,NULL,NULL),(167,24,'CRM_Contact_Form_Search_Custom_ZipCodeRange','10','CRM_Contact_Form_Search_Custom_ZipCodeRange',NULL,0,NULL,10,'Zip Code Range',0,0,1,NULL,NULL,NULL),(168,24,'CRM_Contact_Form_Search_Custom_DateAdded','11','CRM_Contact_Form_Search_Custom_DateAdded',NULL,0,NULL,11,'Date Added to CiviCRM',0,0,1,NULL,NULL,NULL),(169,24,'CRM_Contact_Form_Search_Custom_MultipleValues','12','CRM_Contact_Form_Search_Custom_MultipleValues',NULL,0,NULL,12,'Custom Group Multiple Values Listing',0,0,1,NULL,NULL,NULL),(170,24,'CRM_Contact_Form_Search_Custom_ContribSYBNT','13','CRM_Contact_Form_Search_Custom_ContribSYBNT',NULL,0,NULL,13,'Contributions made in Year X and not Year Y',0,0,1,NULL,NULL,NULL),(171,24,'CRM_Contact_Form_Search_Custom_TagContributions','14','CRM_Contact_Form_Search_Custom_TagContributions',NULL,0,NULL,14,'Find Contribution Amounts by Tag',0,0,1,NULL,NULL,NULL),(172,24,'CRM_Contact_Form_Search_Custom_FullText','15','CRM_Contact_Form_Search_Custom_FullText',NULL,0,NULL,15,'Full-text Search',0,0,1,NULL,NULL,NULL),(173,40,'Constituent Report (Summary)','contact/summary','CRM_Report_Form_Contact_Summary',NULL,0,NULL,1,'Provides a list of address and telephone information for constituent records in your system.',0,0,1,NULL,NULL,NULL),(174,40,'Constituent Report (Detail)','contact/detail','CRM_Report_Form_Contact_Detail',NULL,0,0,2,'Provides contact-related information on activities.',0,0,1,NULL,NULL,NULL),(175,40,'Activity Report','activity','CRM_Report_Form_Activity',NULL,0,NULL,3,'Provides a list of constituent activity including activity statistics for one/all contacts during a given date range(required)',0,0,1,NULL,NULL,NULL),(176,40,'Walk / Phone List Report','walklist','CRM_Report_Form_Walklist',NULL,0,NULL,4,'Provides a detailed report for your walk/phonelist for targetted contacts',0,0,0,NULL,NULL,NULL),(177,40,'Current Employer Report','contact/currentEmployer','CRM_Report_Form_Contact_CurrentEmployer',NULL,0,NULL,5,'Provides detail list of employer employee relationships along with employment details Ex Join Date',0,0,0,NULL,NULL,NULL),(178,40,'Donor Report (Summary)','contribute/summary','CRM_Report_Form_Contribute_Summary',NULL,0,NULL,6,'Shows contribution statistics by month / week / year .. country / state .. type.',0,0,0,2,NULL,NULL),(179,40,'Donor Report (Detail)','contribute/detail','CRM_Report_Form_Contribute_Detail',NULL,0,NULL,7,'Lists detailed contribution(s) for one / all contacts. Contribution summary report points to this report for specific details.',0,0,0,2,NULL,NULL),(180,40,'Donation Summary Report (Repeat)','contribute/repeat','CRM_Report_Form_Contribute_Repeat',NULL,0,NULL,8,'Given two date ranges, shows contacts (and their contributions) who contributed in both the date ranges with percentage increase / decrease.',0,0,0,2,NULL,NULL),(181,40,'Donation Summary Report (Organization)','contribute/organizationSummary','CRM_Report_Form_Contribute_OrganizationSummary',NULL,0,NULL,9,'Displays a detailed contribution report for Organization relationships with contributors, as to if contribution done was  from an employee of some organization or from that Organization itself.',0,0,0,2,NULL,NULL),(182,40,'Donation Summary Report (Household)','contribute/householdSummary','CRM_Report_Form_Contribute_HouseholdSummary',NULL,0,NULL,10,'Provides a detailed report for Contributions made by contributors(Or Household itself) who are having a relationship with household (For ex a Contributor is Head of Household for some household or is a member of.)',0,0,0,2,NULL,NULL),(183,40,'Top Donors Report','contribute/topDonor','CRM_Report_Form_Contribute_TopDonor',NULL,0,NULL,11,'Provides a list of the top donors during a time period you define. You can include as many donors as you want (for example, top 100 of your donors).',0,0,0,2,NULL,NULL),(184,40,'SYBUNT Report','contribute/sybunt','CRM_Report_Form_Contribute_Sybunt',NULL,0,NULL,12,'Some year(s) but not this year. Provides a list of constituents who donated at some time in the history of your organization but did not donate during the time period you specify.',0,0,0,2,NULL,NULL),(185,40,'LYBUNT Report','contribute/lybunt','CRM_Report_Form_Contribute_Lybunt',NULL,0,NULL,13,'Last year but not this year. Provides a list of constituents who donated last year but did not donate during the time period you specify as the current year.',0,0,0,2,NULL,NULL),(186,40,'Soft Credit Report','contribute/softcredit','CRM_Report_Form_Contribute_SoftCredit',NULL,0,NULL,14,'Soft Credit details.',0,0,0,2,NULL,NULL),(187,40,'Membership Report (Summary)','member/summary','CRM_Report_Form_Member_Summary',NULL,0,NULL,15,'Provides a summary of memberships by type and join date.',0,0,0,3,NULL,NULL),(188,40,'Membership Report (Detail)','member/detail','CRM_Report_Form_Member_Detail',NULL,0,NULL,16,'Provides a list of members along with their membership status and membership details (Join Date, Start Date, End Date).',0,0,0,3,NULL,NULL),(189,40,'Membership Report (Lapsed)','member/lapse','CRM_Report_Form_Member_Lapse',NULL,0,NULL,17,'Provides a list of memberships that lapsed or will lapse before the date you specify.',0,0,0,3,NULL,NULL),(190,40,'Event Participant Report (List)','event/participantListing','CRM_Report_Form_Event_ParticipantListing',NULL,0,NULL,18,'Provides lists of participants for an event.',0,0,0,1,NULL,NULL),(191,40,'Event Income Report (Summary)','event/summary','CRM_Report_Form_Event_Summary',NULL,0,NULL,19,'Provides an overview of event income. You can include key information such as event ID, registration, attendance, and income generated to help you determine the success of an event.',0,0,0,1,NULL,NULL),(192,40,'Event Income Report (Detail)','event/income','CRM_Report_Form_Event_Income',NULL,0,NULL,20,'Helps you to analyze the income generated by an event. The report can include details by participant type, status and payment method.',0,0,0,1,NULL,NULL),(193,40,'Pledge Report','pledge/summary','CRM_Report_Form_Pledge_Summary',NULL,0,NULL,21,'Pledge Report',0,0,0,6,NULL,NULL),(194,40,'Pledged But not Paid Report','pledge/pbnp','CRM_Report_Form_Pledge_Pbnp',NULL,0,NULL,22,'Pledged but not Paid Report',0,0,0,6,NULL,NULL),(195,40,'Relationship Report','contact/relationship','CRM_Report_Form_Contact_Relationship',NULL,0,NULL,23,'Relationship Report',0,0,1,NULL,NULL,NULL),(196,40,'Case Summary Report','case/summary','CRM_Report_Form_Case_Summary',NULL,0,NULL,24,'Provides a summary of cases and their duration by date range, status, staff member and / or case role.',0,0,1,7,NULL,NULL),(197,40,'Case Time Spent Report','case/timespent','CRM_Report_Form_Case_TimeSpent',NULL,0,NULL,25,'Aggregates time spent on case and / or or non-case activities by activity type and contact.',0,0,1,7,NULL,NULL),(198,40,'Contact Demographics Report','case/demographics','CRM_Report_Form_Case_Demographics',NULL,0,NULL,26,'Demographic breakdown for case clients (and or non-case contacts) in your database. Includes custom contact fields.',0,0,1,7,NULL,NULL),(199,40,'Database Log Report','contact/log','CRM_Report_Form_Contact_Log',NULL,0,NULL,27,'Log of contact and activity records created or updated in a given date range.',0,0,1,NULL,NULL,NULL),(200,40,'Activity Report (Summary)','activitySummary','CRM_Report_Form_ActivitySummary',NULL,0,NULL,28,'Shows activity statistics by type / date',0,0,1,NULL,NULL,NULL),(201,25,'Scheduled','1','Scheduled',NULL,0,1,1,NULL,0,1,1,NULL,NULL,NULL),(202,25,'Completed','2','Completed',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(203,25,'Cancelled','3','Cancelled',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(204,25,'Left Message','4','Left Message',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(205,25,'Unreachable','5','Unreachable',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(206,25,'Not Required','6','Not Required',NULL,0,NULL,6,NULL,0,0,1,NULL,NULL,NULL),(207,27,'Ongoing','1','Open','Opened',0,1,1,NULL,0,1,1,NULL,NULL,NULL),(208,27,'Resolved','2','Closed','Closed',0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(209,27,'Urgent','3','Urgent','Opened',0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(210,28,'Name Only','1','Name Only',NULL,0,0,1,'CRM_Event_Page_ParticipantListing_Name',0,1,1,NULL,NULL,NULL),(211,28,'Name and Email','2','Name and Email',NULL,0,0,2,'CRM_Event_Page_ParticipantListing_NameAndEmail',0,1,1,NULL,NULL,NULL),(212,28,'Name, Status and Register Date','3','Name, Status and Register Date',NULL,0,0,3,'CRM_Event_Page_ParticipantListing_NameStatusAndDate',0,1,1,NULL,NULL,NULL),(213,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(214,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(215,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(216,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(217,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(218,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(219,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(220,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(221,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(222,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(223,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(224,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(225,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(226,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(227,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(228,31,'Search Builder','1','Search Builder',NULL,0,0,1,NULL,0,1,1,NULL,NULL,NULL),(229,31,'Import Contact','2','Import Contact',NULL,0,0,2,NULL,0,1,1,NULL,NULL,NULL),(230,31,'Import Activity','3','Import Activity',NULL,0,0,3,NULL,0,1,1,NULL,NULL,NULL),(231,31,'Import Contribution','4','Import Contribution',NULL,0,0,4,NULL,0,1,1,NULL,NULL,NULL),(232,31,'Import Membership','5','Import Membership',NULL,0,0,5,NULL,0,1,1,NULL,NULL,NULL),(233,31,'Import Participant','6','Import Participant',NULL,0,0,6,NULL,0,1,1,NULL,NULL,NULL),(234,31,'Export Contact','7','Export Contact',NULL,0,0,7,NULL,0,1,1,NULL,NULL,NULL),(235,31,'Export Contribution','8','Export Contribution',NULL,0,0,8,NULL,0,1,1,NULL,NULL,NULL),(236,31,'Export Membership','9','Export Membership',NULL,0,0,9,NULL,0,1,1,NULL,NULL,NULL),(237,31,'Export Participant','10','Export Participant',NULL,0,0,10,NULL,0,1,1,NULL,NULL,NULL),(238,31,'Export Pledge','11','Export Pledge',NULL,0,0,11,NULL,0,1,1,NULL,NULL,NULL),(239,31,'Export Case','12','Export Case',NULL,0,0,12,NULL,0,1,1,NULL,NULL,NULL),(240,31,'Export Grant','13','Export Grant',NULL,0,0,13,NULL,0,1,1,NULL,NULL,NULL),(241,31,'Export Activity','14','Export Activity',NULL,0,0,14,NULL,0,1,1,NULL,NULL,NULL),(242,33,'daily','day','day',NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(243,33,'weekly','week','week',NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(244,33,'monthly','month','month',NULL,0,NULL,3,NULL,0,1,1,NULL,NULL,NULL),(245,33,'yearly','year','year',NULL,0,NULL,4,NULL,0,1,1,NULL,NULL,NULL),(246,34,'Phone','1','Phone',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(247,34,'Mobile','2','Mobile',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(248,34,'Fax','3','Fax',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(249,34,'Pager','4','Pager',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(250,34,'Voicemail','5','Voicemail',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(251,35,'Participant Role','1','ParticipantRole',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(252,35,'Participant Event Name','2','ParticipantEventName',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(253,35,'Participant Event Type','3','ParticipantEventType',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(254,36,'Public','1','public',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(255,36,'Admin','2','admin',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(256,37,'IMAP','1','IMAP',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(257,37,'Maildir','2','Maildir',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(258,37,'POP3','3','POP3',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(259,37,'Localdir','4','Localdir',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(260,38,'Urgent','1','Urgent',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(261,38,'Normal','2','Normal',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(262,38,'Low','3','Low',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(263,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(264,39,'/(19|20)(\\d{2})-(\\d{1,2})-(\\d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(265,41,'Dear {contact.first_name}','1','Dear {contact.first_name}',NULL,1,0,4,NULL,0,0,1,NULL,NULL,NULL),(266,41,'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}','2','Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}',NULL,1,0,3,NULL,0,0,1,NULL,NULL,NULL),(267,41,'Dear {contact.individual_prefix} {contact.last_name}','3','Dear {contact.individual_prefix} {contact.last_name}',NULL,1,1,1,'<br />',0,0,1,NULL,NULL,NULL),(268,41,'Customized','4','Customized',NULL,0,0,2,NULL,0,1,1,NULL,NULL,NULL),(269,41,'Dear {contact.household_name}','5','Dear {contact.househols_name}',NULL,2,1,5,NULL,0,0,1,NULL,NULL,NULL),(270,42,'Dear {contact.first_name}','1','Dear {contact.first_name}',NULL,1,0,3,NULL,0,0,1,NULL,NULL,NULL),(271,42,'Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}','2','Dear {contact.individual_prefix} {contact.first_name} {contact.last_name}',NULL,1,0,4,NULL,0,0,1,NULL,NULL,NULL),(272,42,'Dear {contact.individual_prefix} {contact.last_name}','3','Dear {contact.individual_prefix} {contact.last_name}',NULL,1,1,1,'',0,0,1,NULL,NULL,NULL),(273,42,'Customized','4','Customized',NULL,0,0,2,NULL,0,1,1,NULL,NULL,NULL),(274,42,'Dear {contact.household_name}','5','Dear {contact.househols_name}',NULL,2,1,5,NULL,0,0,1,NULL,NULL,NULL),(275,43,'{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}','1','}{contact.individual_prefix}{ } {contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}',NULL,1,1,1,NULL,0,0,1,NULL,NULL,NULL),(276,43,'{contact.household_name}','2','{contact.household_name}',NULL,2,0,2,NULL,0,0,1,NULL,NULL,NULL),(277,43,'{contact.organization_name}','3','{contact.organization_name}',NULL,3,1,3,NULL,0,0,1,NULL,NULL,NULL),(278,43,'Customized','4','Customized',NULL,0,0,4,NULL,0,1,1,NULL,NULL,NULL),(279,45,'Asset','1','Asset',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(280,45,'Liability','2','Liability',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(281,45,'Income','3','Income',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(282,45,'Expense','4','Expense',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(283,46,'Home','1','Home',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(284,46,'Work','2','Work',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(285,46,'Facebook','3','Facebook',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(286,46,'Twitter','4','Twitter',NULL,0,NULL,4,NULL,0,0,1,NULL,NULL,NULL),(287,46,'MySpace','5','MySpace',NULL,0,NULL,5,NULL,0,0,1,NULL,NULL,NULL),(288,47,'Contacts','civicrm_contact','Contacts',NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(289,47,'Activities','civicrm_activity','Activities',NULL,0,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(290,47,'Cases','civicrm_case','Cases',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(291,48,'USD ($)','USD','USD',NULL,0,1,1,NULL,0,0,1,NULL,NULL,NULL),(292,30,'\"Bluebird Mail Sender\" <bluebird.admin@nysenate.gov>','1','\"FIXME\"<info@FIXME.ORG>',NULL,0,1,1,NULL,0,0,1,NULL,1,NULL),(293,22,'Emergency','1','Emergency',NULL,0,1,1,NULL,0,0,1,NULL,1,NULL),(294,22,'Family Support','2','Family Support',NULL,0,NULL,2,NULL,0,0,1,NULL,1,NULL),(295,22,'General Protection','3','General Protection',NULL,0,NULL,3,NULL,0,0,1,NULL,1,NULL),(296,22,'Impunity','4','Impunity',NULL,0,NULL,4,NULL,0,0,1,NULL,1,NULL),(297,49,'Abkhaz','ab','',NULL,NULL,0,1,NULL,0,0,0,NULL,NULL,NULL),(298,49,'Afar','aa','',NULL,NULL,0,2,NULL,0,0,0,NULL,NULL,NULL),(299,49,'Afrikaans','af','',NULL,NULL,0,3,NULL,0,0,0,NULL,NULL,NULL),(300,49,'Akan','ak','',NULL,NULL,0,4,NULL,0,0,0,NULL,NULL,NULL),(301,49,'Albanian','sq','',NULL,NULL,0,5,NULL,0,0,0,NULL,NULL,NULL),(302,49,'Amharic','am','',NULL,NULL,0,6,NULL,0,0,0,NULL,NULL,NULL),(303,49,'Arabic','ar','',NULL,NULL,0,7,NULL,0,0,0,NULL,NULL,NULL),(304,49,'Aragonese','an','',NULL,NULL,0,8,NULL,0,0,0,NULL,NULL,NULL),(305,49,'Armenian','hy','',NULL,NULL,0,9,NULL,0,0,0,NULL,NULL,NULL),(306,49,'Assamese','as','',NULL,NULL,0,10,NULL,0,0,0,NULL,NULL,NULL),(307,49,'Avaric','av','',NULL,NULL,0,11,NULL,0,0,0,NULL,NULL,NULL),(308,49,'Avestan','ae','',NULL,NULL,0,12,NULL,0,0,0,NULL,NULL,NULL),(309,49,'Aymara','ay','',NULL,NULL,0,13,NULL,0,0,0,NULL,NULL,NULL),(310,49,'Azerbaijani','az','',NULL,NULL,0,14,NULL,0,0,0,NULL,NULL,NULL),(311,49,'Bambara','bm','',NULL,NULL,0,15,NULL,0,0,0,NULL,NULL,NULL),(312,49,'Bashkir','ba','',NULL,NULL,0,16,NULL,0,0,0,NULL,NULL,NULL),(313,49,'Basque','eu','',NULL,NULL,0,17,NULL,0,0,0,NULL,NULL,NULL),(314,49,'Belarusian','be','',NULL,NULL,0,18,NULL,0,0,0,NULL,NULL,NULL),(315,49,'Bengali','bn','',NULL,NULL,0,19,NULL,0,0,0,NULL,NULL,NULL),(316,49,'Bihari','bh','',NULL,NULL,0,20,NULL,0,0,0,NULL,NULL,NULL),(317,49,'Bislama','bi','',NULL,NULL,0,21,NULL,0,0,0,NULL,NULL,NULL),(318,49,'Bosnian','bs','',NULL,NULL,0,22,NULL,0,0,0,NULL,NULL,NULL),(319,49,'Breton','br','',NULL,NULL,0,23,NULL,0,0,0,NULL,NULL,NULL),(320,49,'Bulgarian','bg','',NULL,NULL,0,24,NULL,0,0,0,NULL,NULL,NULL),(321,49,'Burmese','my','',NULL,NULL,0,25,NULL,0,0,0,NULL,NULL,NULL),(322,49,'Catalan; Valencian','ca','',NULL,NULL,0,26,NULL,0,0,0,NULL,NULL,NULL),(323,49,'Chamorro','ch','',NULL,NULL,0,27,NULL,0,0,0,NULL,NULL,NULL),(324,49,'Chechen','ce','',NULL,NULL,0,28,NULL,0,0,0,NULL,NULL,NULL),(325,49,'Chichewa; Chewa; Nyanja','ny','',NULL,NULL,0,29,NULL,0,0,0,NULL,NULL,NULL),(326,49,'Chinese','zh','',NULL,NULL,0,30,NULL,0,0,1,NULL,NULL,NULL),(327,49,'Chuvash','cv','',NULL,NULL,0,31,NULL,0,0,0,NULL,NULL,NULL),(328,49,'Cornish','kw','',NULL,NULL,0,32,NULL,0,0,0,NULL,NULL,NULL),(329,49,'Corsican','co','',NULL,NULL,0,33,NULL,0,0,0,NULL,NULL,NULL),(330,49,'Cree','cr','',NULL,NULL,0,34,NULL,0,0,0,NULL,NULL,NULL),(331,49,'Croatian','hr','',NULL,NULL,0,35,NULL,0,0,0,NULL,NULL,NULL),(332,49,'Czech','cs','',NULL,NULL,0,36,NULL,0,0,1,NULL,NULL,NULL),(333,49,'Danish','da','',NULL,NULL,0,37,NULL,0,0,0,NULL,NULL,NULL),(334,49,'Divehi; Dhivehi; Maldivian;','dv','',NULL,NULL,0,38,NULL,0,0,0,NULL,NULL,NULL),(335,49,'Dutch','nl','',NULL,NULL,0,39,NULL,0,0,1,NULL,NULL,NULL),(336,49,'Dzongkha','dz','',NULL,NULL,0,40,NULL,0,0,0,NULL,NULL,NULL),(337,49,'English','en','',NULL,NULL,1,41,NULL,0,0,1,NULL,NULL,NULL),(338,49,'Esperanto','eo','',NULL,NULL,0,42,NULL,0,0,0,NULL,NULL,NULL),(339,49,'Estonian','et','',NULL,NULL,0,43,NULL,0,0,0,NULL,NULL,NULL),(340,49,'Ewe','ee','',NULL,NULL,0,44,NULL,0,0,0,NULL,NULL,NULL),(341,49,'Faroese','fo','',NULL,NULL,0,45,NULL,0,0,0,NULL,NULL,NULL),(342,49,'Fijian','fj','',NULL,NULL,0,46,NULL,0,0,0,NULL,NULL,NULL),(343,49,'Finnish','fi','',NULL,NULL,0,47,NULL,0,0,0,NULL,NULL,NULL),(344,49,'French','fr','',NULL,NULL,0,48,NULL,0,0,1,NULL,NULL,NULL),(345,49,'Fula; Fulah; Pulaar; Pular','ff','',NULL,NULL,0,49,NULL,0,0,0,NULL,NULL,NULL),(346,49,'Galician','gl','',NULL,NULL,0,50,NULL,0,0,0,NULL,NULL,NULL),(347,49,'Georgian','ka','',NULL,NULL,0,51,NULL,0,0,0,NULL,NULL,NULL),(348,49,'German','de','',NULL,NULL,0,52,NULL,0,0,1,NULL,NULL,NULL),(349,49,'Greek, Modern','el','',NULL,NULL,0,53,NULL,0,0,0,NULL,NULL,NULL),(350,49,'GuaranÃ­','gn','',NULL,NULL,0,54,NULL,0,0,0,NULL,NULL,NULL),(351,49,'Gujarati','gu','',NULL,NULL,0,55,NULL,0,0,0,NULL,NULL,NULL),(352,49,'Haitian; Haitian Creole','ht','',NULL,NULL,0,56,NULL,0,0,0,NULL,NULL,NULL),(353,49,'Hausa','ha','',NULL,NULL,0,57,NULL,0,0,0,NULL,NULL,NULL),(354,49,'Hebrew (modern)','he','',NULL,NULL,0,58,NULL,0,0,0,NULL,NULL,NULL),(355,49,'Herero','hz','',NULL,NULL,0,59,NULL,0,0,0,NULL,NULL,NULL),(356,49,'Hindi','hi','',NULL,NULL,0,60,NULL,0,0,0,NULL,NULL,NULL),(357,49,'Hiri Motu','ho','',NULL,NULL,0,61,NULL,0,0,0,NULL,NULL,NULL),(358,49,'Hungarian','hu','',NULL,NULL,0,62,NULL,0,0,1,NULL,NULL,NULL),(359,49,'Interlingua','ia','',NULL,NULL,0,63,NULL,0,0,0,NULL,NULL,NULL),(360,49,'Indonesian','id','',NULL,NULL,0,64,NULL,0,0,0,NULL,NULL,NULL),(361,49,'Interlingue','ie','',NULL,NULL,0,65,NULL,0,0,0,NULL,NULL,NULL),(362,49,'Irish','ga','',NULL,NULL,0,66,NULL,0,0,0,NULL,NULL,NULL),(363,49,'Igbo','ig','',NULL,NULL,0,67,NULL,0,0,0,NULL,NULL,NULL),(364,49,'Inupiaq','ik','',NULL,NULL,0,68,NULL,0,0,0,NULL,NULL,NULL),(365,49,'Ido','io','',NULL,NULL,0,69,NULL,0,0,0,NULL,NULL,NULL),(366,49,'Icelandic','is','',NULL,NULL,0,70,NULL,0,0,0,NULL,NULL,NULL),(367,49,'Italian','it','',NULL,NULL,0,71,NULL,0,0,1,NULL,NULL,NULL),(368,49,'Inuktitut','iu','',NULL,NULL,0,72,NULL,0,0,0,NULL,NULL,NULL),(369,49,'Japanese','ja','',NULL,NULL,0,73,NULL,0,0,0,NULL,NULL,NULL),(370,49,'Javanese','jv','',NULL,NULL,0,74,NULL,0,0,0,NULL,NULL,NULL),(371,49,'Kalaallisut, Greenlandic','kl','',NULL,NULL,0,75,NULL,0,0,0,NULL,NULL,NULL),(372,49,'Kannada','kn','',NULL,NULL,0,76,NULL,0,0,0,NULL,NULL,NULL),(373,49,'Kanuri','kr','',NULL,NULL,0,77,NULL,0,0,0,NULL,NULL,NULL),(374,49,'Kashmiri','ks','',NULL,NULL,0,78,NULL,0,0,0,NULL,NULL,NULL),(375,49,'Kazakh','kk','',NULL,NULL,0,79,NULL,0,0,0,NULL,NULL,NULL),(376,49,'Khmer','km','',NULL,NULL,0,80,NULL,0,0,0,NULL,NULL,NULL),(377,49,'Kikuyu, Gikuyu','ki','',NULL,NULL,0,81,NULL,0,0,0,NULL,NULL,NULL),(378,49,'Kinyarwanda','rw','',NULL,NULL,0,82,NULL,0,0,0,NULL,NULL,NULL),(379,49,'Kirghiz, Kyrgyz','ky','',NULL,NULL,0,83,NULL,0,0,0,NULL,NULL,NULL),(380,49,'Komi','kv','',NULL,NULL,0,84,NULL,0,0,0,NULL,NULL,NULL),(381,49,'Kongo','kg','',NULL,NULL,0,85,NULL,0,0,0,NULL,NULL,NULL),(382,49,'Korean','ko','',NULL,NULL,0,86,NULL,0,0,0,NULL,NULL,NULL),(383,49,'Kurdish','ku','',NULL,NULL,0,87,NULL,0,0,0,NULL,NULL,NULL),(384,49,'Kwanyama, Kuanyama','kj','',NULL,NULL,0,88,NULL,0,0,0,NULL,NULL,NULL),(385,49,'Latin','la','',NULL,NULL,0,89,NULL,0,0,0,NULL,NULL,NULL),(386,49,'Luxembourgish, Letzeburgesch','lb','',NULL,NULL,0,90,NULL,0,0,0,NULL,NULL,NULL),(387,49,'Luganda','lg','',NULL,NULL,0,91,NULL,0,0,0,NULL,NULL,NULL),(388,49,'Limburgish, Limburgan, Limburger','li','',NULL,NULL,0,92,NULL,0,0,0,NULL,NULL,NULL),(389,49,'Lingala','ln','',NULL,NULL,0,93,NULL,0,0,0,NULL,NULL,NULL),(390,49,'Lao','lo','',NULL,NULL,0,94,NULL,0,0,0,NULL,NULL,NULL),(391,49,'Lithuanian','lt','',NULL,NULL,0,95,NULL,0,0,0,NULL,NULL,NULL),(392,49,'Luba-Katanga','lu','',NULL,NULL,0,96,NULL,0,0,0,NULL,NULL,NULL),(393,49,'Latvian','lv','',NULL,NULL,0,97,NULL,0,0,0,NULL,NULL,NULL),(394,49,'Manx','gv','',NULL,NULL,0,98,NULL,0,0,0,NULL,NULL,NULL),(395,49,'Macedonian','mk','',NULL,NULL,0,99,NULL,0,0,0,NULL,NULL,NULL),(396,49,'Malagasy','mg','',NULL,NULL,0,100,NULL,0,0,0,NULL,NULL,NULL),(397,49,'Malay','ms','',NULL,NULL,0,101,NULL,0,0,0,NULL,NULL,NULL),(398,49,'Malayalam','ml','',NULL,NULL,0,102,NULL,0,0,0,NULL,NULL,NULL),(399,49,'Maltese','mt','',NULL,NULL,0,103,NULL,0,0,0,NULL,NULL,NULL),(400,49,'MÄori','mi','',NULL,NULL,0,104,NULL,0,0,0,NULL,NULL,NULL),(401,49,'Marathi','mr','',NULL,NULL,0,105,NULL,0,0,0,NULL,NULL,NULL),(402,49,'Marshallese','mh','',NULL,NULL,0,106,NULL,0,0,0,NULL,NULL,NULL),(403,49,'Mongolian','mn','',NULL,NULL,0,107,NULL,0,0,0,NULL,NULL,NULL),(404,49,'Nauru','na','',NULL,NULL,0,108,NULL,0,0,0,NULL,NULL,NULL),(405,49,'Navajo, Navaho','nv','',NULL,NULL,0,109,NULL,0,0,0,NULL,NULL,NULL),(406,49,'Norwegian BokmÃ¥l','nb','',NULL,NULL,0,110,NULL,0,0,0,NULL,NULL,NULL),(407,49,'North Ndebele','nd','',NULL,NULL,0,111,NULL,0,0,0,NULL,NULL,NULL),(408,49,'Nepali','ne','',NULL,NULL,0,112,NULL,0,0,0,NULL,NULL,NULL),(409,49,'Ndonga','ng','',NULL,NULL,0,113,NULL,0,0,0,NULL,NULL,NULL),(410,49,'Norwegian Nynorsk','nn','',NULL,NULL,0,114,NULL,0,0,0,NULL,NULL,NULL),(411,49,'Norwegian','no','',NULL,NULL,0,115,NULL,0,0,0,NULL,NULL,NULL),(412,49,'Nuosu','ii','',NULL,NULL,0,116,NULL,0,0,0,NULL,NULL,NULL),(413,49,'South Ndebele','nr','',NULL,NULL,0,117,NULL,0,0,0,NULL,NULL,NULL),(414,49,'Occitan (after 1500)','oc','',NULL,NULL,0,118,NULL,0,0,0,NULL,NULL,NULL),(415,49,'Ojibwa','oj','',NULL,NULL,0,119,NULL,0,0,0,NULL,NULL,NULL),(416,49,'Old Church Slavonic, Church Slavic, Church Slavonic, Old Bulgarian, Old Slavonic','cu','',NULL,NULL,0,120,NULL,0,0,0,NULL,NULL,NULL),(417,49,'Oromo','om','',NULL,NULL,0,121,NULL,0,0,0,NULL,NULL,NULL),(418,49,'Oriya','or','',NULL,NULL,0,122,NULL,0,0,0,NULL,NULL,NULL),(419,49,'Ossetian, Ossetic','os','',NULL,NULL,0,123,NULL,0,0,0,NULL,NULL,NULL),(420,49,'Panjabi, Punjabi','pa','',NULL,NULL,0,124,NULL,0,0,0,NULL,NULL,NULL),(421,49,'PÄli','pi','',NULL,NULL,0,125,NULL,0,0,0,NULL,NULL,NULL),(422,49,'Persian','fa','',NULL,NULL,0,126,NULL,0,0,0,NULL,NULL,NULL),(423,49,'Polish','pl','',NULL,NULL,0,127,NULL,0,0,1,NULL,NULL,NULL),(424,49,'Pashto, Pushto','ps','',NULL,NULL,0,128,NULL,0,0,0,NULL,NULL,NULL),(425,49,'Portuguese','pt','',NULL,NULL,0,129,NULL,0,0,1,NULL,NULL,NULL),(426,49,'Quechua','qu','',NULL,NULL,0,130,NULL,0,0,0,NULL,NULL,NULL),(427,49,'Romansh','rm','',NULL,NULL,0,131,NULL,0,0,0,NULL,NULL,NULL),(428,49,'Kirundi','rn','',NULL,NULL,0,132,NULL,0,0,0,NULL,NULL,NULL),(429,49,'Romanian, Moldavian, Moldovan','ro','',NULL,NULL,0,133,NULL,0,0,0,NULL,NULL,NULL),(430,49,'Russian','ru','',NULL,NULL,0,134,NULL,0,0,1,NULL,NULL,NULL),(431,49,'Sanskrit','sa','',NULL,NULL,0,135,NULL,0,0,0,NULL,NULL,NULL),(432,49,'Sardinian','sc','',NULL,NULL,0,136,NULL,0,0,0,NULL,NULL,NULL),(433,49,'Sindhi','sd','',NULL,NULL,0,137,NULL,0,0,0,NULL,NULL,NULL),(434,49,'Northern Sami','se','',NULL,NULL,0,138,NULL,0,0,0,NULL,NULL,NULL),(435,49,'Samoan','sm','',NULL,NULL,0,139,NULL,0,0,0,NULL,NULL,NULL),(436,49,'Sango','sg','',NULL,NULL,0,140,NULL,0,0,0,NULL,NULL,NULL),(437,49,'Serbian','sr','',NULL,NULL,0,141,NULL,0,0,0,NULL,NULL,NULL),(438,49,'Scottish Gaelic; Gaelic','gd','',NULL,NULL,0,142,NULL,0,0,0,NULL,NULL,NULL),(439,49,'Shona','sn','',NULL,NULL,0,143,NULL,0,0,0,NULL,NULL,NULL),(440,49,'Sinhala, Sinhalese','si','',NULL,NULL,0,144,NULL,0,0,0,NULL,NULL,NULL),(441,49,'Slovak','sk','',NULL,NULL,0,145,NULL,0,0,0,NULL,NULL,NULL),(442,49,'Slovene','sl','',NULL,NULL,0,146,NULL,0,0,0,NULL,NULL,NULL),(443,49,'Somali','so','',NULL,NULL,0,147,NULL,0,0,0,NULL,NULL,NULL),(444,49,'Southern Sotho','st','',NULL,NULL,0,148,NULL,0,0,0,NULL,NULL,NULL),(445,49,'Spanish; Castilian','es','',NULL,NULL,0,149,NULL,0,0,1,NULL,NULL,NULL),(446,49,'Sundanese','su','',NULL,NULL,0,150,NULL,0,0,0,NULL,NULL,NULL),(447,49,'Swahili','sw','',NULL,NULL,0,151,NULL,0,0,0,NULL,NULL,NULL),(448,49,'Swati','ss','',NULL,NULL,0,152,NULL,0,0,0,NULL,NULL,NULL),(449,49,'Swedish','sv','',NULL,NULL,0,153,NULL,0,0,1,NULL,NULL,NULL),(450,49,'Tamil','ta','',NULL,NULL,0,154,NULL,0,0,0,NULL,NULL,NULL),(451,49,'Telugu','te','',NULL,NULL,0,155,NULL,0,0,0,NULL,NULL,NULL),(452,49,'Tajik','tg','',NULL,NULL,0,156,NULL,0,0,0,NULL,NULL,NULL),(453,49,'Thai','th','',NULL,NULL,0,157,NULL,0,0,0,NULL,NULL,NULL),(454,49,'Tigrinya','ti','',NULL,NULL,0,158,NULL,0,0,0,NULL,NULL,NULL),(455,49,'Tibetan Standard, Tibetan, Central','bo','',NULL,NULL,0,159,NULL,0,0,0,NULL,NULL,NULL),(456,49,'Turkmen','tk','',NULL,NULL,0,160,NULL,0,0,0,NULL,NULL,NULL),(457,49,'Tagalog','tl','',NULL,NULL,0,161,NULL,0,0,0,NULL,NULL,NULL),(458,49,'Tswana','tn','',NULL,NULL,0,162,NULL,0,0,0,NULL,NULL,NULL),(459,49,'Tonga (Tonga Islands)','to','',NULL,NULL,0,163,NULL,0,0,0,NULL,NULL,NULL),(460,49,'Turkish','tr','',NULL,NULL,0,164,NULL,0,0,0,NULL,NULL,NULL),(461,49,'Tsonga','ts','',NULL,NULL,0,165,NULL,0,0,0,NULL,NULL,NULL),(462,49,'Tatar','tt','',NULL,NULL,0,166,NULL,0,0,0,NULL,NULL,NULL),(463,49,'Twi','tw','',NULL,NULL,0,167,NULL,0,0,0,NULL,NULL,NULL),(464,49,'Tahitian','ty','',NULL,NULL,0,168,NULL,0,0,0,NULL,NULL,NULL),(465,49,'Uighur, Uyghur','ug','',NULL,NULL,0,169,NULL,0,0,0,NULL,NULL,NULL),(466,49,'Ukrainian','uk','',NULL,NULL,0,170,NULL,0,0,0,NULL,NULL,NULL),(467,49,'Urdu','ur','',NULL,NULL,0,171,NULL,0,0,0,NULL,NULL,NULL),(468,49,'Uzbek','uz','',NULL,NULL,0,172,NULL,0,0,0,NULL,NULL,NULL),(469,49,'Venda','ve','',NULL,NULL,0,173,NULL,0,0,0,NULL,NULL,NULL),(470,49,'Vietnamese','vi','',NULL,NULL,0,174,NULL,0,0,0,NULL,NULL,NULL),(471,49,'VolapÃ¼k','vo','',NULL,NULL,0,175,NULL,0,0,0,NULL,NULL,NULL),(472,49,'Walloon','wa','',NULL,NULL,0,176,NULL,0,0,0,NULL,NULL,NULL),(473,49,'Welsh','cy','',NULL,NULL,0,177,NULL,0,0,0,NULL,NULL,NULL),(474,49,'Wolof','wo','',NULL,NULL,0,178,NULL,0,0,0,NULL,NULL,NULL),(475,49,'Western Frisian','fy','',NULL,NULL,0,179,NULL,0,0,0,NULL,NULL,NULL),(476,49,'Xhosa','xh','',NULL,NULL,0,180,NULL,0,0,0,NULL,NULL,NULL),(477,49,'Yiddish','yi','',NULL,NULL,0,181,NULL,0,0,0,NULL,NULL,NULL),(478,49,'Yoruba','yo','',NULL,NULL,0,182,NULL,0,0,0,NULL,NULL,NULL),(479,49,'Zhuang, Chuang','za','',NULL,NULL,0,183,NULL,0,0,0,NULL,NULL,NULL),(480,49,'Zulu','zu','',NULL,NULL,0,184,NULL,0,0,0,NULL,NULL,NULL),(481,50,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,NULL,NULL),(482,50,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,NULL,NULL),(483,50,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,NULL,NULL),(484,50,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,NULL,NULL),(485,50,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,NULL,NULL),(486,51,'Cases - Send Copy of an Activity','1','case_activity',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(487,52,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(488,52,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(489,52,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(490,52,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(491,52,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(492,52,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(493,52,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(494,53,'Events - Registration Confirmation and Receipt (off-line)','1','event_offline_receipt',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(495,53,'Events - Registration Confirmation and Receipt (on-line)','2','event_online_receipt',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(496,53,'Events - Registration Cancellation Notice','3','participant_cancelled',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(497,53,'Events - Registration Confirmation Invite','4','participant_confirm',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(498,53,'Events - Pending Registration Expiration Notice','5','participant_expired',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(499,54,'Tell-a-Friend Email','1','friend',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(500,55,'Memberships - Signup and Renewal Receipts (off-line)','1','membership_offline_receipt',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(501,55,'Memberships - Receipt (on-line)','2','membership_online_receipt',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(502,56,'Test-drive - Receipt Header','1','test_preview',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(503,57,'Pledges - Acknowledgement','1','pledge_acknowledge',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(504,57,'Pledges - Payment Reminder','2','pledge_reminder',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(505,58,'Profiles - Admin Notification','1','uf_notify',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(507,1,'Email','2',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(508,1,'Postal Mail','3',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(509,1,'SMS','4',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(510,1,'Fax','5',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(511,1,'Phone','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(512,2,'Accept Invitation','51','Accept Invitation',NULL,0,0,38,NULL,0,0,1,7,NULL,NULL),(513,2,'Assembly Support','47','Assembly Support',NULL,0,0,35,NULL,0,0,1,7,NULL,NULL),(514,2,'Close Case','17','Close Case',NULL,0,0,28,NULL,0,0,1,7,NULL,NULL),(515,2,'Constituent Event Participation','54','Constituent Event Participation',NULL,0,0,14,NULL,0,0,1,NULL,NULL,NULL),(516,2,'Coordination with Event Organizer','53','Coordination with Event Organizer',NULL,0,0,40,'<br />',0,0,1,7,NULL,NULL),(517,2,'Email Received','39','Email Received',NULL,0,0,7,'<p>\r\n	Record receipt of an email from an external source.</p>',0,0,1,NULL,NULL,NULL),(518,2,'Email Sent','38','Email Sent',NULL,0,0,6,'<p>\r\n	Record emails sent from external email software.</p>',0,0,1,NULL,NULL,NULL),(519,2,'Executive Support','48','Executive Support',NULL,0,0,36,NULL,0,0,1,7,NULL,NULL),(520,2,'Fax Received','41','Fax Received',NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(521,2,'Fax Sent','40','Fax Sent',NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(522,2,'In Person','42','In Person',NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(523,2,'Letter Received','37','Letter Received',NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(524,2,'Letter Sent','36','Letter Sent',NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(525,2,'Local Government Contact','45','Local Government Contact',NULL,0,0,33,NULL,0,0,1,7,NULL,NULL),(526,2,'Other','43','Other',NULL,0,0,16,NULL,0,0,1,NULL,NULL,NULL),(527,2,'Phone Call Received','35','Phone Call Received',NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(528,2,'Receive Event Invitation','50','Receive Event Invitation',NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(529,2,'Record SSN','55','Record SSN',NULL,0,0,41,'<br />',0,0,1,7,NULL,NULL),(530,2,'Reject Invitation','52','Reject Invitation',NULL,0,0,39,NULL,0,0,1,7,NULL,NULL),(531,2,'Senate Support','46','Senate Support',NULL,0,0,34,NULL,0,0,1,7,NULL,NULL),(532,2,'State Agency Support','44','State Agency Support',NULL,0,0,32,NULL,0,0,1,7,NULL,NULL),(533,2,'Supervisor Review','49','Supervisor Review',NULL,0,0,37,NULL,0,0,1,7,NULL,NULL),(534,3,'Other','4','Other',NULL,0,0,4,'<br />',0,0,1,NULL,NULL,NULL),(535,4,'ICQ','7','ICQ',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(536,4,'IRC','8','IRC',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(537,4,'Sametime','9','Sametime',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(538,6,'Fr.','6','Fr.',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(539,6,'Hon.','7','Hon.',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(540,6,'Rev.','5','Rev.',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(541,8,'Analytics User','8','Analytics User',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(542,8,'Conference Services','11','Conference Services',NULL,0,0,10,NULL,0,0,1,NULL,0,NULL),(543,8,'Data Entry','4','Data Entry',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(544,8,'Office Administrator','7','Office Administrator',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(545,8,'Office Manager','6','Office Manager',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(546,8,'Print Production','9','Print Production',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(547,8,'SOS','10','SOS',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(548,8,'Staff','5','Staff',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(549,8,'Volunteer','3','Volunteer',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(550,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(551,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(552,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(553,25,'Draft','7','Draft',NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(554,26,'Event Invitation','8','Event Invitation',NULL,0,0,4,'<p>\r\n	Invitation to attend or participate in a constituent event. Use activities unless the request is for more involved participation.</p>',0,0,1,NULL,0,NULL),(555,26,'General Complaint','4','General Complaint',NULL,0,0,1,'<p>\r\n	General complaint about government, government service, or private organizations.</p>',0,0,1,NULL,0,NULL),(556,26,'Government Service Problem - Local','9','Government Service Problem - Local',NULL,0,0,5,'<p>\r\n	Problem with a local government entity.</p>',0,0,1,NULL,0,NULL),(557,26,'Government Service Problem - State','10','Government Service Problem - State',NULL,0,0,6,'<p>\r\n	Problem with a state government entity.</p>',0,0,1,NULL,0,NULL),(558,26,'Request for Assistance','7','Request for Assistance',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(559,26,'Request for Information','3','Request for Information',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(560,27,'Assigned','5','Assigned',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(561,27,'Not Started','4','Not Started',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(562,27,'Unassigned','6','Unassigned',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(563,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(564,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(565,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(566,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(567,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(568,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(569,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(570,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(571,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(572,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(573,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(574,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(575,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(576,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(577,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(578,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(579,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(580,34,'Google Voice','6','Google Voice',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(581,34,'Secondary Mobile','9','Secondary Mobile',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(582,34,'Secondary Phone','8','Secondary Phone',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(583,34,'Skype','7','Skype',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(584,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(585,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(586,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(587,46,'Image','3','Image',NULL,0,NULL,3,NULL,0,0,1,NULL,NULL,NULL),(592,51,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(593,51,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(594,51,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(595,51,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(596,51,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(597,51,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(598,52,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(599,52,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(600,52,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(601,53,'Asset','1','Asset',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(602,53,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,0,NULL),(603,53,'Expense','4','Expense',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(604,53,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,0,NULL),(605,53,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(606,53,'Income','3','Income',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(607,53,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,0,NULL),(608,53,'Liability','2','Liability',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(609,53,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,0,NULL),(610,54,'Cases - Send Copy of an Activity','1','case_activity',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(611,54,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(612,54,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(613,54,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(614,54,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(615,54,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(616,54,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(617,55,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(618,55,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(619,55,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(620,55,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(621,55,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(622,55,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(623,55,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(624,55,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(625,55,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(626,55,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(627,56,'Asset','1','Asset',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(628,56,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,0,NULL),(629,56,'Events - Registration Confirmation and Receipt (off-line)','1','event_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(630,56,'Events - Registration Confirmation and Receipt (on-line)','2','event_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(631,56,'Expense','4','Expense',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(632,56,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,0,NULL),(633,56,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(634,56,'Income','3','Income',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(635,56,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,0,NULL),(636,56,'Liability','2','Liability',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(637,56,'Events - Registration Cancellation Notice','3','participant_cancelled',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(638,56,'Events - Registration Confirmation Invite','4','participant_confirm',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(639,56,'Events - Pending Registration Expiration Notice','5','participant_expired',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(640,56,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,0,NULL),(641,57,'Cases - Send Copy of an Activity','1','case_activity',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(642,57,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(643,57,'Tell-a-Friend Email','1','friend',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(644,57,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(645,57,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(646,57,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(647,57,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(648,57,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(649,58,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(650,58,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(651,58,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(652,58,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(653,58,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(654,58,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(655,58,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(656,58,'Memberships - Signup and Renewal Receipts (off-line)','1','membership_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(657,58,'Memberships - Receipt (on-line)','2','membership_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(658,58,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(659,58,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(660,58,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(661,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(662,59,'Asset','1','Asset',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(663,59,'Email','3','email',NULL,0,0,3,NULL,0,1,1,NULL,0,NULL),(664,59,'Events - Registration Confirmation and Receipt (off-line)','1','event_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(665,59,'Events - Registration Confirmation and Receipt (on-line)','2','event_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(666,59,'Expense','4','Expense',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(667,59,'Fax','4','fax',NULL,0,0,4,NULL,0,1,1,NULL,0,NULL),(668,59,'In Person','1','in_person',NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(669,59,'Income','3','Income',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(670,59,'Letter Mail','5','letter_mail',NULL,0,0,5,NULL,0,1,1,NULL,0,NULL),(671,59,'Liability','2','Liability',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(672,59,'Events - Registration Cancellation Notice','3','participant_cancelled',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(673,59,'Events - Registration Confirmation Invite','4','participant_confirm',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(674,59,'Events - Pending Registration Expiration Notice','5','participant_expired',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(675,59,'Phone','2','phone',NULL,0,1,2,NULL,0,1,1,NULL,0,NULL),(676,59,'Test-drive - Receipt Header','1','test_preview',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(677,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(678,60,'Cases - Send Copy of an Activity','1','case_activity',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(679,60,'Facebook','4','Facebook',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(680,60,'Tell-a-Friend Email','1','friend',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(681,60,'Home','1','Home',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(682,60,'Image','3','Image',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(683,60,'MySpace','6','MySpace',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(684,60,'Pledges - Acknowledgement','1','pledge_acknowledge',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(685,60,'Pledges - Payment Reminder','2','pledge_reminder',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(686,60,'Twitter','5','Twitter',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(687,60,'Work','2','Work',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(688,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(689,61,'Activities','civicrm_activity','Activities',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(690,61,'Cases','civicrm_case','Cases',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(691,61,'Contacts','civicrm_contact','Contacts',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(692,61,'Contributions - Duplicate Organization Alert','1','contribution_dupalert',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(693,61,'Contributions - Receipt (off-line)','2','contribution_offline_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(694,61,'Contributions - Receipt (on-line)','3','contribution_online_receipt',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(695,61,'Contributions - Recurring Start and End Notification','4','contribution_recurring_notify',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(696,61,'Memberships - Signup and Renewal Receipts (off-line)','1','membership_offline_receipt',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(697,61,'Memberships - Receipt (on-line)','2','membership_online_receipt',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(698,61,'Personal Campaign Pages - Admin Notification','5','pcp_notify',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(699,61,'Personal Campaign Pages - Supporter Status Change Notification','6','pcp_status_change',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(700,61,'Personal Campaign Pages - Supporter Welcome','7','pcp_supporter_notify',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(701,61,'Profiles - Admin Notification','1','uf_notify',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(703,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(704,63,'Asian Indian','asian_indian','Asian_Indian',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(705,63,'Black, African American','black_african_american','Black_African_American',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(706,63,'Chinese','chinese','Chinese',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(707,63,'Cuban','cuban','Cuban',NULL,0,0,17,NULL,0,0,1,NULL,0,NULL),(708,63,'Dominican','dominican','Dominican',NULL,0,0,18,NULL,0,0,1,NULL,0,NULL),(709,63,'Filipino','filipino','Filipino',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(710,63,'Guamanian or Chamorro','guamanian_chamorro','Guamanian_or_Chamorro',NULL,0,0,12,NULL,0,0,1,NULL,0,NULL),(711,63,'Japanese','japanese','Japanese',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(712,63,'Korean','korean','Korean',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(713,63,'Native Hawaiian','native_hawaiian','Native_Hawaiian',NULL,0,0,11,NULL,0,0,1,NULL,0,NULL),(714,63,'Other Asian','other_asian','Other_Asian',NULL,0,0,10,NULL,0,0,1,NULL,0,NULL),(715,63,'Other Hispanic/Latino/Spanish','other_hispanic_latino_spanish','Other_Hispanic_Latino_Spanish',NULL,0,0,19,NULL,0,0,1,NULL,0,NULL),(716,63,'Other Pacific Islander','other_pacific_islander','Other_Pacific_Islander',NULL,0,0,14,NULL,0,0,1,NULL,0,NULL),(717,63,'Puerto Rican','puerto_rican','Puerto_Rican',NULL,0,0,16,NULL,0,0,1,NULL,0,NULL),(718,63,'Samoan','samoan','Samoan',NULL,0,0,13,NULL,0,0,1,NULL,0,NULL),(719,63,'Vietnamese','vietnamese','Vietnamese',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(720,63,'White','white','White',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(740,66,'Business','business','Business',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(741,66,'Church','church','Church',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(742,66,'Community Group','community_group','Community_Group',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(743,66,'Government','government','Government',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(744,66,'Homeowners Association','homeowners_association','Homeowners_Association',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(745,66,'Hospital','hospital','Hospital',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(746,66,'Interest Group','interest_group','Interest_Group',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(747,66,'Not-for-Profit','not_for_profit','Not_for_Profit',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(748,66,'Senior Center','senior_center','Senior_Center',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(749,67,'Agency Staff','agency_staff','Agency_Staff',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(750,67,'Committee Staff','committee_staff','Committee_Staff',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(751,67,'Communications Staff','communications_staff','Communications_Staff',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(752,67,'District Staff','district_staff','District_Staff',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(753,67,'Elected Official','elected_official','Elected_Official',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(754,67,'Former Elected Official','former_elected_official','Former_Elected_Official',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(755,67,'Non-district Individuals','non_district_individuals','Non_district_Individuals',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(756,67,'Press & Media Contacts','press_media_contacts','Press__Media_Contacts',NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(757,67,'Support Staff','support_staff','Support_Staff',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(766,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(767,69,'Budget Position','Budget Position','Budget_Position',NULL,0,0,2,NULL,0,0,1,NULL,0,NULL),(768,69,'Event Invitation','Event Invitation','Event_Invitation',NULL,0,0,6,NULL,0,0,1,NULL,0,NULL),(769,69,'Legislative Position','Legislative Position','Legislative_Position',NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(770,69,'Petition Signed','Petition Signed','Petition_Signed',NULL,0,0,9,NULL,0,0,1,NULL,0,NULL),(771,69,'Referral','Referral','Referral',NULL,0,0,5,NULL,0,0,1,NULL,0,NULL),(772,69,'Request Agency Support','Request Agency Support','Request_Agency_Support',NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(773,69,'Request Information','Request Information','Request_Information',NULL,0,0,4,NULL,0,0,1,NULL,0,NULL),(774,69,'Request Meeting','Request Meeting','Request_Meeting',NULL,0,0,8,NULL,0,0,1,NULL,0,NULL),(781,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(782,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(783,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(785,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(786,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(787,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(788,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(789,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(790,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(791,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(792,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(793,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(794,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(795,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(796,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(797,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(798,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(799,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(800,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(801,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(802,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(803,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(804,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(805,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(806,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(807,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(809,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(810,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(817,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(818,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(819,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(821,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(822,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(823,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(824,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(825,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(826,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(827,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(828,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(829,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(830,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(831,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(832,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(833,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(834,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(835,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(836,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(837,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(838,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(839,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(840,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(841,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(842,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(843,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(845,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(846,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(853,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(854,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(855,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(857,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(858,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(859,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(860,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(861,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(862,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(863,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(864,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(865,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(866,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(867,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(868,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(869,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(870,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(871,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(872,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(873,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(874,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(875,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(876,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(877,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(878,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(879,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(881,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(882,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(889,20,'Access Control','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(890,20,'Mailing List','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(891,20,'Access Control','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(893,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,NULL,NULL),(894,29,'jpeg','2',NULL,NULL,0,0,2,NULL,0,0,1,NULL,NULL,NULL),(895,29,'png','3',NULL,NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(896,29,'gif','4',NULL,NULL,0,0,4,NULL,0,0,1,NULL,NULL,NULL),(897,29,'txt','5',NULL,NULL,0,0,5,NULL,0,0,1,NULL,NULL,NULL),(898,29,'pdf','6',NULL,NULL,0,0,6,NULL,0,0,1,NULL,NULL,NULL),(899,29,'doc','7',NULL,NULL,0,0,7,NULL,0,0,1,NULL,NULL,NULL),(900,29,'xls','8',NULL,NULL,0,0,8,NULL,0,0,1,NULL,NULL,NULL),(901,29,'rtf','9',NULL,NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(902,29,'csv','10',NULL,NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(903,29,'ppt','11',NULL,NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(904,29,'docx','12',NULL,NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(905,29,'xlsx','13',NULL,NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(906,29,'jpg','1',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(907,32,'TinyMCE','1',NULL,NULL,0,NULL,1,NULL,0,1,1,NULL,NULL,NULL),(908,32,'CKEditor','2',NULL,NULL,0,NULL,2,NULL,0,1,1,NULL,NULL,NULL),(909,32,'TinyMCE','1',NULL,NULL,0,0,1,NULL,0,1,1,NULL,0,NULL),(910,39,'Vancouver','city_',NULL,NULL,0,NULL,1,NULL,0,0,1,NULL,NULL,NULL),(911,39,'/(19|20)(d{2})-(d{1,2})-(d{1,2})/','date_',NULL,NULL,1,NULL,2,NULL,0,0,1,NULL,NULL,NULL),(912,39,'Vancouver','city_',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(913,59,'Friend','1.00',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(914,60,'Single','50',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(915,61,'Bass','25',NULL,NULL,0,0,1,NULL,0,0,1,NULL,0,NULL),(917,63,'American Indian or Alaska Native','american_indian_alaska_native',NULL,NULL,0,0,3,NULL,0,0,1,NULL,0,NULL),(918,69,'Legislative Reception Invitation','Legislative Reception Invitation',NULL,NULL,0,0,7,NULL,0,0,1,NULL,0,NULL),(919,64,'BOE','boe','BOE',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(920,64,'DMV','dmv','DMV',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(921,64,'SED','sed','SED',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(922,64,'Other 3rd Party List','other_3rd_party_list','Other_3rd_Party_List',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(923,64,'Questionnaire','questionnaire','Questionnaire',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(924,64,'Email','email','Email',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(925,64,'Albany Office Visit','albany_office_visit','Albany_Office_Visit',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(926,64,'District Office Visit','district_office_visit','District_Office_Visit',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(927,64,'Phone Call','phone_call','Phone_Call',NULL,NULL,0,9,NULL,0,0,1,NULL,NULL,NULL),(928,64,'Lobbyist','lobbyist','Lobbyist',NULL,NULL,0,10,NULL,0,0,1,NULL,NULL,NULL),(929,64,'Petition','petition','Petition',NULL,NULL,0,11,NULL,0,0,1,NULL,NULL,NULL),(930,64,'Website Comment','website_comment','Website_Comment',NULL,NULL,0,12,NULL,0,0,1,NULL,NULL,NULL),(931,64,'Testimony','testimony','Testimony',NULL,NULL,0,13,NULL,0,0,1,NULL,NULL,NULL),(932,64,'Event Attendance','event_attendance','Event_Attendance',NULL,NULL,0,14,NULL,0,0,1,NULL,NULL,NULL),(933,64,'Blast Email','blast_email','Blast_Email',NULL,NULL,0,15,NULL,0,0,1,NULL,NULL,NULL),(934,64,'Other','other','Other',NULL,NULL,0,16,NULL,0,0,1,NULL,NULL,NULL),(935,68,'Legislative Position','legislative_position','Legislative_Position',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(936,68,'Budget Position','budget_position','Budget_Position',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(937,68,'Request Agency Support','request_agency_support','Request_Agency_Support',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(938,68,'Request Information','request_information','Request_Information',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(939,68,'Referral','referral','Referral',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(940,68,'Event Invitation','event_invitation','Event_Invitation',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(941,68,'Legislative Reception Invitation','legislative_reception_invitation',NULL,NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(942,68,'Request Meeting','request_meeting','Request_Meeting',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(943,68,'Petition Signed','petition_signed','Petition_Signed',NULL,NULL,0,9,NULL,0,0,1,NULL,NULL,NULL),(944,70,'Registered','registered','Registered',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(945,70,'Former Registered','former_registered','Former_Registered',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(946,70,'Unregistered','unregistered','Unregistered',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(947,71,'Albany Office','albany_office','Albany_Office',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(948,71,'District Office','district_office','District_Office',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(949,71,'Public Hearing','public_hearing','Public_Hearing',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(950,71,'Meeting','meeting','Meeting',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(951,71,'Mobile District Office','mobile_district_office','Mobile_District_Office',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(952,71,'Public Event','public_event','Public_Event',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(953,71,'Town Hall Meeting','town_hall_meeting','Town_Hall_Meeting',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(954,71,'Other','other','Other',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(955,68,'Other','other','Other',NULL,NULL,0,10,NULL,0,0,1,NULL,NULL,NULL),(956,42,'The Family of {contact.household_name}','6','The Family of {contact.household_name}',NULL,2,0,6,'',0,0,1,NULL,NULL,NULL),(957,72,'Name Only','1','CRM_Event_Badge_Simple',NULL,NULL,0,1,'Simple Event Name Badge',0,0,1,NULL,NULL,NULL),(958,72,'Name Tent','2','CRM_Event_Badge_NameTent',NULL,NULL,0,1,'Name Tent',0,0,1,NULL,NULL,NULL),(959,7,'Esq.','9','Esq.',NULL,0,0,8,'<br />',0,0,1,NULL,NULL,NULL),(960,6,'Mr. and Mrs.','8','Mr. and Mrs.',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(961,6,'Dr. and Mrs.','9','Dr. and Mrs.',NULL,NULL,0,9,NULL,0,0,1,NULL,NULL,NULL),(962,6,'The Honorable','10','The Honorable',NULL,NULL,0,10,NULL,0,0,1,NULL,NULL,NULL),(963,6,'The Honorable and Mrs.','11','The Honorable and Mrs.',NULL,NULL,0,11,NULL,0,0,1,NULL,NULL,NULL),(964,6,'Miss','12','Miss',NULL,NULL,0,12,NULL,0,0,1,NULL,NULL,NULL),(965,6,'Reverend','13','Reverend',NULL,NULL,0,13,NULL,0,0,1,NULL,NULL,NULL),(966,6,'Reverend and Mrs.','14','Reverend and Mrs.',NULL,NULL,0,14,NULL,0,0,1,NULL,NULL,NULL),(967,6,'The Honorable','15','The Honorable',NULL,NULL,0,15,NULL,0,0,1,NULL,NULL,NULL),(968,6,'The Honorable and Mrs.','16','The Honorable and Mrs.',NULL,NULL,0,16,NULL,0,0,1,NULL,NULL,NULL),(969,6,'General','17','General',NULL,NULL,0,17,NULL,0,0,1,NULL,NULL,NULL),(970,6,'Colonel','18','Colonel',NULL,NULL,0,18,NULL,0,0,1,NULL,NULL,NULL),(971,6,'Captain','19','Captain',NULL,NULL,0,19,NULL,0,0,1,NULL,NULL,NULL),(972,6,'Sister','20','Sister',NULL,NULL,0,20,NULL,0,0,1,NULL,NULL,NULL),(973,6,'The Reverend','21','The Reverend',NULL,NULL,0,21,NULL,0,0,1,NULL,NULL,NULL),(974,6,'First Lieutenant','22','First Lieutenant',NULL,NULL,0,22,NULL,0,0,1,NULL,NULL,NULL),(975,6,'Rear Admiral','23','Rear Admiral',NULL,NULL,0,23,NULL,0,0,1,NULL,NULL,NULL),(976,6,'Major','24','Major',NULL,NULL,0,24,NULL,0,0,1,NULL,NULL,NULL),(977,6,'Cadet','25','Cadet',NULL,NULL,0,25,NULL,0,0,1,NULL,NULL,NULL),(978,6,'Major General','26','Major General',NULL,NULL,0,26,NULL,0,0,1,NULL,NULL,NULL),(979,6,'Professor','27','Professor',NULL,NULL,0,27,NULL,0,0,1,NULL,NULL,NULL),(980,6,'Congressman','28','Congressman',NULL,NULL,0,28,NULL,0,0,1,NULL,NULL,NULL),(981,6,'Congressman and Mrs.','29','Congressman and Mrs.',NULL,NULL,0,29,NULL,0,0,1,NULL,NULL,NULL),(982,6,'LTC and Mrs.','30','LTC and Mrs.',NULL,NULL,0,30,NULL,0,0,1,NULL,NULL,NULL),(983,6,'Colonel and Mrs.','31','Colonel and Mrs.',NULL,NULL,0,31,NULL,0,0,1,NULL,NULL,NULL),(984,6,'Lieutenant Colonel','32','Lieutenant Colonel',NULL,NULL,0,32,NULL,0,0,1,NULL,NULL,NULL),(985,6,'Cantor','33','Cantor',NULL,NULL,0,33,NULL,0,0,1,NULL,NULL,NULL),(986,6,'Cantor and Mrs.','34','Cantor and Mrs.',NULL,NULL,0,34,NULL,0,0,1,NULL,NULL,NULL),(987,6,'Honorable and Mrs.','35','Honorable and Mrs.',NULL,NULL,0,35,NULL,0,0,1,NULL,NULL,NULL),(988,6,'Chancellor','36','Chancellor',NULL,NULL,0,36,NULL,0,0,1,NULL,NULL,NULL),(989,6,'Chancellor and Mrs.','37','Chancellor and Mrs.',NULL,NULL,0,37,NULL,0,0,1,NULL,NULL,NULL),(990,6,'Messrs.','38','Messrs.',NULL,NULL,0,38,NULL,0,0,1,NULL,NULL,NULL),(991,6,'Lieutenant','39','Lieutenant',NULL,NULL,0,39,NULL,0,0,1,NULL,NULL,NULL),(992,6,'Lieutenant Commander','40','Lieutenant Commander',NULL,NULL,0,40,NULL,0,0,1,NULL,NULL,NULL),(993,6,'Captain and Mrs.','41','Captain and Mrs.',NULL,NULL,0,41,NULL,0,0,1,NULL,NULL,NULL),(994,6,'Chief Warrant Officer','42','Chief Warrant Officer',NULL,NULL,0,42,NULL,0,0,1,NULL,NULL,NULL),(995,6,'Ensign','43','Ensign',NULL,NULL,0,43,NULL,0,0,1,NULL,NULL,NULL),(996,6,'Lieutenant Junior Grade','44','Lieutenant Junior Grade',NULL,NULL,0,44,NULL,0,0,1,NULL,NULL,NULL),(997,6,'Commander','45','Commander',NULL,NULL,0,45,NULL,0,0,1,NULL,NULL,NULL),(998,6,'Warrant Officer','46','Warrant Officer',NULL,NULL,0,46,NULL,0,0,1,NULL,NULL,NULL),(999,6,'Second Lieutenant','47','Second Lieutenant',NULL,NULL,0,47,NULL,0,0,1,NULL,NULL,NULL),(1000,6,'Rabbi','48','Rabbi',NULL,NULL,0,48,NULL,0,0,1,NULL,NULL,NULL),(1001,6,'Rear Admiral and Mrs.','49','Rear Admiral and Mrs.',NULL,NULL,0,49,NULL,0,0,1,NULL,NULL,NULL),(1002,6,'Monsignor','50','Monsignor',NULL,NULL,0,50,NULL,0,0,1,NULL,NULL,NULL),(1003,6,'Vice Admiral','51','Vice Admiral',NULL,NULL,0,51,NULL,0,0,1,NULL,NULL,NULL),(1004,6,'Admiral','52','Admiral',NULL,NULL,0,52,NULL,0,0,1,NULL,NULL,NULL),(1005,6,'Lieutenant General','53','Lieutenant General',NULL,NULL,0,53,NULL,0,0,1,NULL,NULL,NULL),(1006,6,'Brigadier General','54','Brigadier General',NULL,NULL,0,54,NULL,0,0,1,NULL,NULL,NULL),(1007,6,'Brother','55','Brother',NULL,NULL,0,55,NULL,0,0,1,NULL,NULL,NULL),(1008,6,'Rabbi and Mrs.','56','Rabbi and Mrs.',NULL,NULL,0,56,NULL,0,0,1,NULL,NULL,NULL),(1009,6,'Most Reverend','57','Most Reverend',NULL,NULL,0,57,NULL,0,0,1,NULL,NULL,NULL),(1010,6,'Dean','58','Dean',NULL,NULL,0,58,NULL,0,0,1,NULL,NULL,NULL),(1011,6,'The Reverend Dr.','59','The Reverend Dr.',NULL,NULL,0,59,NULL,0,0,1,NULL,NULL,NULL),(1012,6,'Pastor','60','Pastor',NULL,NULL,0,60,NULL,0,0,1,NULL,NULL,NULL),(1013,6,'Pastor and Mrs.','61','Pastor and Mrs.',NULL,NULL,0,61,NULL,0,0,1,NULL,NULL,NULL),(1014,6,'Major and Mrs.','62','Major and Mrs.',NULL,NULL,0,62,NULL,0,0,1,NULL,NULL,NULL),(1015,6,'Bishop','63','Bishop',NULL,NULL,0,63,NULL,0,0,1,NULL,NULL,NULL),(1016,6,'Sergeant','64','Sergeant',NULL,NULL,0,64,NULL,0,0,1,NULL,NULL,NULL),(1017,6,'Mr. and Dr.','65','Mr. and Dr.',NULL,NULL,0,65,NULL,0,0,1,NULL,NULL,NULL),(1018,6,'Reverend Mother','66','Reverend Mother',NULL,NULL,0,66,NULL,0,0,1,NULL,NULL,NULL),(1019,6,'The Honorable and Mr.','67','The Honorable and Mr.',NULL,NULL,0,67,NULL,0,0,1,NULL,NULL,NULL),(1020,6,'The Chief Justice','68','The Chief Justice',NULL,NULL,0,68,NULL,0,0,1,NULL,NULL,NULL),(1021,6,'Mr. Justice','69','Mr. Justice',NULL,NULL,0,69,NULL,0,0,1,NULL,NULL,NULL),(1022,6,'Dr. and Dr.','70','Dr. and Dr.',NULL,NULL,0,70,NULL,0,0,1,NULL,NULL,NULL),(1023,6,'Reverend Monsignor','71','Reverend Monsignor',NULL,NULL,0,71,NULL,0,0,1,NULL,NULL,NULL),(1024,6,'Adjutant','72','Adjutant',NULL,NULL,0,72,NULL,0,0,1,NULL,NULL,NULL),(1025,6,'Administrative Major','73','Administrative Major',NULL,NULL,0,73,NULL,0,0,1,NULL,NULL,NULL),(1026,6,'Ambassador and Mrs.','74','Ambassador and Mrs.',NULL,NULL,0,74,NULL,0,0,1,NULL,NULL,NULL),(1027,6,'Professor and Mrs.','75','Professor and Mrs.',NULL,NULL,0,75,NULL,0,0,1,NULL,NULL,NULL),(1028,24,'CRM_Contact_Form_Search_Custom_BirthdayByMonth','16','CRM_Contact_Form_Search_Custom_BirthdayByMonth',NULL,0,0,16,'Birthday by Month Search',0,0,1,NULL,NULL,NULL),(1029,64,'Letter','letter','Letter',NULL,NULL,0,17,NULL,0,0,1,NULL,NULL,NULL),(1030,64,'Fax','fax','Fax',NULL,NULL,0,18,NULL,0,0,1,NULL,NULL,NULL),(1031,72,'With Logo','3','CRM_Event_Badge_Logo',NULL,NULL,0,1,'You can set your own background image',0,0,1,NULL,NULL,NULL),(1032,16,'Website','12','Website',NULL,1,NULL,12,NULL,0,0,1,NULL,NULL,NULL),(1033,7,'I','10','I',NULL,0,0,3,NULL,0,0,1,NULL,NULL,NULL),(1034,7,'M.D.','11','M.D.',NULL,0,0,9,NULL,0,0,1,NULL,NULL,NULL),(1035,7,'Ph.D.','12','Ph.D.',NULL,0,0,10,NULL,0,0,1,NULL,NULL,NULL),(1036,7,'CAC','13','CAC',NULL,0,0,11,NULL,0,0,1,NULL,NULL,NULL),(1037,7,'D.D.S.','14','D.D.S.',NULL,0,0,12,NULL,0,0,1,NULL,NULL,NULL),(1038,7,'R.N.','15','R.N.',NULL,0,0,13,NULL,0,0,1,NULL,NULL,NULL),(1039,7,'D.C.','16','D.C.',NULL,0,0,14,NULL,0,0,1,NULL,NULL,NULL),(1040,7,'CPA','17','CPA',NULL,0,0,15,NULL,0,0,1,NULL,NULL,NULL),(1041,7,'P.E.','18','P.E.',NULL,0,0,16,NULL,0,0,1,NULL,NULL,NULL),(1042,7,'D.V.M.','19','D.V.M.',NULL,0,0,17,NULL,0,0,1,NULL,NULL,NULL),(1043,41,'Dear {contact.nick_name}','6','Dear {contact.nick_name}',NULL,1,0,6,NULL,0,0,1,NULL,NULL,NULL),(1044,42,'Dear {contact.nick_name}','7','Dear {contact.nick_name}',NULL,1,0,7,NULL,0,0,1,NULL,NULL,NULL),(1045,43,'The {contact.household_name}','5','The {contact.household_name}',NULL,2,1,5,NULL,0,0,1,NULL,NULL,NULL),(1046,73,'Board of Election','1','Board_of_Election',NULL,NULL,0,1,NULL,0,0,1,NULL,NULL,NULL),(1047,73,'Added Registered Voter','2','Added_Registered_Voter',NULL,NULL,0,2,NULL,0,0,1,NULL,NULL,NULL),(1048,73,'Added Non-Registered Voter','3','Added_Non_Registered_Voter',NULL,NULL,0,3,NULL,0,0,1,NULL,NULL,NULL),(1049,73,'Out-of-District','4','Out_of_District',NULL,NULL,0,4,NULL,0,0,1,NULL,NULL,NULL),(1050,73,'Incomplete','5','Incomplete',NULL,NULL,0,5,NULL,0,0,1,NULL,NULL,NULL),(1051,73,'Business (Home)','6','Business__Home_',NULL,NULL,0,6,NULL,0,0,1,NULL,NULL,NULL),(1052,73,'Business','7','Business',NULL,NULL,0,7,NULL,0,0,1,NULL,NULL,NULL),(1053,73,'Soft Delete','0','Soft_Delete',NULL,NULL,0,8,NULL,0,0,1,NULL,NULL,NULL),(1054,42,'Dear Friends','8','Dear Friend',NULL,2,0,8,NULL,0,0,1,NULL,NULL,NULL),(1055,42,'Dear {contact.nick_name}','9','Dear {contact.nick_name}',NULL,2,0,9,NULL,0,0,1,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `civicrm_option_value` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3172,24 +3168,24 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_participant`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_participant` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Participant Id',
-  `contact_id` int(10) unsigned default '0' COMMENT 'FK to Contact ID',
-  `event_id` int(10) unsigned default '0' COMMENT 'FK to Event ID',
-  `status_id` int(10) unsigned NOT NULL default '1' COMMENT 'Participant status ID. FK to civicrm_participant_status_type. Default of 1 should map to status = Registered.',
-  `role_id` int(10) unsigned default NULL COMMENT 'Participant role ID. Implicit FK to civicrm_option_value where option_group = participant_role.',
-  `register_date` datetime default NULL COMMENT 'When did contact register for event?',
-  `source` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Source of this event registration.',
-  `fee_level` text collate utf8_unicode_ci COMMENT 'Populate with the label (text) associated with a fee level for paid events with multiple levels. Note that we store the label value and not the key',
-  `is_test` tinyint(4) default '0',
-  `is_pay_later` tinyint(4) default '0',
-  `fee_amount` decimal(20,2) default NULL COMMENT 'actual processor fee if known - may be 0.',
-  `registered_by_id` int(10) unsigned default NULL COMMENT 'FK to Participant ID',
-  `discount_id` int(10) unsigned default NULL COMMENT 'FK to Discount ID',
-  `fee_currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value derived from config setting.',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Participant Id',
+  `contact_id` int(10) unsigned DEFAULT '0' COMMENT 'FK to Contact ID',
+  `event_id` int(10) unsigned DEFAULT '0' COMMENT 'FK to Event ID',
+  `status_id` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'Participant status ID. FK to civicrm_participant_status_type. Default of 1 should map to status = Registered.',
+  `role_id` int(10) unsigned DEFAULT NULL COMMENT 'Participant role ID. Implicit FK to civicrm_option_value where option_group = participant_role.',
+  `register_date` datetime DEFAULT NULL COMMENT 'When did contact register for event?',
+  `source` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Source of this event registration.',
+  `fee_level` text COLLATE utf8_unicode_ci COMMENT 'Populate with the label (text) associated with a fee level for paid events with multiple levels. Note that we store the label value and not the key',
+  `is_test` tinyint(4) DEFAULT '0',
+  `is_pay_later` tinyint(4) DEFAULT '0',
+  `fee_amount` decimal(20,2) DEFAULT NULL COMMENT 'actual processor fee if known - may be 0.',
+  `registered_by_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Participant ID',
+  `discount_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Discount ID',
+  `fee_currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value derived from config setting.',
+  PRIMARY KEY (`id`),
   KEY `index_status_id` (`status_id`),
   KEY `index_role_id` (`role_id`),
   KEY `FK_civicrm_participant_contact_id` (`contact_id`),
@@ -3202,7 +3198,7 @@ CREATE TABLE `civicrm_participant` (
   CONSTRAINT `FK_civicrm_participant_registered_by_id` FOREIGN KEY (`registered_by_id`) REFERENCES `civicrm_participant` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_participant_status_id` FOREIGN KEY (`status_id`) REFERENCES `civicrm_participant_status_type` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_participant`
@@ -3218,19 +3214,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_participant_payment`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_participant_payment` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Participant Payment Id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Participant Payment Id',
   `participant_id` int(10) unsigned NOT NULL COMMENT 'Participant Id (FK)',
   `contribution_id` int(10) unsigned NOT NULL COMMENT 'FK to contribution table.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_contribution_participant` (`contribution_id`,`participant_id`),
   KEY `FK_civicrm_participant_payment_participant_id` (`participant_id`),
   CONSTRAINT `FK_civicrm_participant_payment_contribution_id` FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_participant_payment_participant_id` FOREIGN KEY (`participant_id`) REFERENCES `civicrm_participant` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_participant_payment`
@@ -3246,21 +3242,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_participant_status_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_participant_status_type` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'unique participant status type id',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'non-localized name of the status type',
-  `label` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'localized label for display of this status type',
-  `class` enum('Positive','Pending','Waiting','Negative') collate utf8_unicode_ci default NULL COMMENT 'the general group of status type this one belongs to',
-  `is_reserved` tinyint(4) default NULL COMMENT 'whether this is a status type required by the system',
-  `is_active` tinyint(4) default '1' COMMENT 'whether this status type is active',
-  `is_counted` tinyint(4) default NULL COMMENT 'whether this status type is counted against event size limit',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'unique participant status type id',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'non-localized name of the status type',
+  `label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'localized label for display of this status type',
+  `class` enum('Positive','Pending','Waiting','Negative') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'the general group of status type this one belongs to',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'whether this is a status type required by the system',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'whether this status type is active',
+  `is_counted` tinyint(4) DEFAULT NULL COMMENT 'whether this status type is counted against event size limit',
   `weight` int(10) unsigned NOT NULL COMMENT 'controls sort order',
-  `visibility_id` int(10) unsigned default NULL COMMENT 'whether the status type is visible to the public, an implicit foreign key to option_value.value related to the `visibility` option_group',
-  PRIMARY KEY  (`id`)
+  `visibility_id` int(10) unsigned DEFAULT NULL COMMENT 'whether the status type is visible to the public, an implicit foreign key to option_value.value related to the `visibility` option_group',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_participant_status_type`
@@ -3277,35 +3273,35 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_payment_processor`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_payment_processor` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Payment Processor ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Payment Processor ID',
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this match entry for',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Payment Processor Name.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Payment Processor Description.',
-  `payment_processor_type` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Payment Processor Type.',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this processor active?',
-  `is_default` tinyint(4) default NULL COMMENT 'Is this processor the default?',
-  `is_test` tinyint(4) default NULL COMMENT 'Is this processor for a test site?',
-  `user_name` varchar(255) collate utf8_unicode_ci default NULL,
-  `password` varchar(255) collate utf8_unicode_ci default NULL,
-  `signature` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_site` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_api` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_recur` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_button` varchar(255) collate utf8_unicode_ci default NULL,
-  `subject` varchar(255) collate utf8_unicode_ci default NULL,
-  `class_name` varchar(255) collate utf8_unicode_ci default NULL,
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Payment Processor Name.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Payment Processor Description.',
+  `payment_processor_type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Payment Processor Type.',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this processor active?',
+  `is_default` tinyint(4) DEFAULT NULL COMMENT 'Is this processor the default?',
+  `is_test` tinyint(4) DEFAULT NULL COMMENT 'Is this processor for a test site?',
+  `user_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `signature` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_site` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_api` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_recur` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_button` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `subject` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `class_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `billing_mode` int(10) unsigned NOT NULL COMMENT 'Billing Mode',
-  `is_recur` tinyint(4) default NULL COMMENT 'Can process recurring contributions',
-  `payment_type` int(10) unsigned default '1' COMMENT 'Payment Type: Credit or Debit',
-  PRIMARY KEY  (`id`),
+  `is_recur` tinyint(4) DEFAULT NULL COMMENT 'Can process recurring contributions',
+  `payment_type` int(10) unsigned DEFAULT '1' COMMENT 'Payment Type: Credit or Debit',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name_test_domain_id` (`name`,`is_test`,`domain_id`),
   KEY `FK_civicrm_payment_processor_domain_id` (`domain_id`),
   CONSTRAINT `FK_civicrm_payment_processor_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_payment_processor`
@@ -3321,35 +3317,35 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_payment_processor_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_payment_processor_type` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Payment Processor Type ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Payment Processor Name.',
-  `title` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Payment Processor Name.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Payment Processor Description.',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this processor active?',
-  `is_default` tinyint(4) default NULL COMMENT 'Is this processor the default?',
-  `user_name_label` varchar(255) collate utf8_unicode_ci default NULL,
-  `password_label` varchar(255) collate utf8_unicode_ci default NULL,
-  `signature_label` varchar(255) collate utf8_unicode_ci default NULL,
-  `subject_label` varchar(255) collate utf8_unicode_ci default NULL,
-  `class_name` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_site_default` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_api_default` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_recur_default` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_button_default` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_site_test_default` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_api_test_default` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_recur_test_default` varchar(255) collate utf8_unicode_ci default NULL,
-  `url_button_test_default` varchar(255) collate utf8_unicode_ci default NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Payment Processor Type ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Payment Processor Name.',
+  `title` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Payment Processor Name.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Payment Processor Description.',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this processor active?',
+  `is_default` tinyint(4) DEFAULT NULL COMMENT 'Is this processor the default?',
+  `user_name_label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `password_label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `signature_label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `subject_label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `class_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_site_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_api_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_recur_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_button_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_site_test_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_api_test_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_recur_test_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `url_button_test_default` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `billing_mode` int(10) unsigned NOT NULL COMMENT 'Billing Mode',
-  `is_recur` tinyint(4) default NULL COMMENT 'Can process recurring contributions',
-  `payment_type` int(10) unsigned default '1' COMMENT 'Payment Type: Credit or Debit',
-  PRIMARY KEY  (`id`),
+  `is_recur` tinyint(4) DEFAULT NULL COMMENT 'Can process recurring contributions',
+  `payment_type` int(10) unsigned DEFAULT '1' COMMENT 'Payment Type: Credit or Debit',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_payment_processor_type`
@@ -3366,30 +3362,30 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_pcp`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_pcp` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Personal Campaign Page ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Personal Campaign Page ID',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'FK to Contact ID',
   `status_id` int(10) unsigned NOT NULL,
-  `title` varchar(255) collate utf8_unicode_ci default NULL,
-  `intro_text` text collate utf8_unicode_ci,
-  `page_text` text collate utf8_unicode_ci,
-  `donate_link_text` varchar(255) collate utf8_unicode_ci default NULL,
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `intro_text` text COLLATE utf8_unicode_ci,
+  `page_text` text COLLATE utf8_unicode_ci,
+  `donate_link_text` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `contribution_page_id` int(10) unsigned NOT NULL COMMENT 'The Contribution Page which triggered this pcp',
-  `is_thermometer` int(10) unsigned default '0',
-  `is_honor_roll` int(10) unsigned default '0',
-  `goal_amount` decimal(20,2) default NULL COMMENT 'Goal amount of this Personal Campaign Page.',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `referer` varchar(255) collate utf8_unicode_ci default NULL,
-  `is_active` tinyint(4) default '0' COMMENT 'Is Personal Campaign Page enabled/active?',
-  PRIMARY KEY  (`id`),
+  `is_thermometer` int(10) unsigned DEFAULT '0',
+  `is_honor_roll` int(10) unsigned DEFAULT '0',
+  `goal_amount` decimal(20,2) DEFAULT NULL COMMENT 'Goal amount of this Personal Campaign Page.',
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `referer` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `is_active` tinyint(4) DEFAULT '0' COMMENT 'Is Personal Campaign Page enabled/active?',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_pcp_contact_id` (`contact_id`),
   KEY `FK_civicrm_pcp_contribution_page_id` (`contribution_page_id`),
   CONSTRAINT `FK_civicrm_pcp_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_pcp_contribution_page_id` FOREIGN KEY (`contribution_page_id`) REFERENCES `civicrm_contribution_page` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_pcp`
@@ -3405,26 +3401,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_pcp_block`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_pcp_block` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'PCP block Id',
-  `entity_table` varchar(64) collate utf8_unicode_ci default NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'PCP block Id',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
   `entity_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_contribution_page.id',
-  `supporter_profile_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_uf_group.id. Does Personal Campaign Page require manual activation by administrator? (is inactive by default after setup)?',
-  `is_approval_needed` tinyint(4) default NULL COMMENT 'Does Personal Campaign Page require manual activation by administrator? (is inactive by default after setup)?',
-  `is_tellfriend_enabled` tinyint(4) default NULL COMMENT 'Does Personal Campaign Page allow using tell a friend?',
-  `tellfriend_limit` int(10) unsigned default NULL COMMENT 'Maximum recipient fields allowed in tell a friend',
-  `link_text` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Link text for PCP.',
-  `is_active` tinyint(4) default '1' COMMENT 'Is Personal Campaign Page Block enabled/active?',
-  `notify_email` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'If set, notification is automatically emailed to this email-address on create/update Personal Campaign Page',
-  PRIMARY KEY  (`id`),
+  `supporter_profile_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_uf_group.id. Does Personal Campaign Page require manual activation by administrator? (is inactive by default after setup)?',
+  `is_approval_needed` tinyint(4) DEFAULT NULL COMMENT 'Does Personal Campaign Page require manual activation by administrator? (is inactive by default after setup)?',
+  `is_tellfriend_enabled` tinyint(4) DEFAULT NULL COMMENT 'Does Personal Campaign Page allow using tell a friend?',
+  `tellfriend_limit` int(10) unsigned DEFAULT NULL COMMENT 'Maximum recipient fields allowed in tell a friend',
+  `link_text` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Link text for PCP.',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is Personal Campaign Page Block enabled/active?',
+  `notify_email` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'If set, notification is automatically emailed to this email-address on create/update Personal Campaign Page',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_pcp_block_entity_id` (`entity_id`),
   KEY `FK_civicrm_pcp_block_supporter_profile_id` (`supporter_profile_id`),
   CONSTRAINT `FK_civicrm_pcp_block_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_contribution_page` (`id`),
   CONSTRAINT `FK_civicrm_pcp_block_supporter_profile_id` FOREIGN KEY (`supporter_profile_id`) REFERENCES `civicrm_uf_group` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_pcp_block`
@@ -3440,18 +3436,18 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_phone`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_phone` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Phone ID',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `location_type_id` int(10) unsigned default NULL COMMENT 'Which Location does this phone belong to.',
-  `is_primary` tinyint(4) default '0' COMMENT 'Is this the primary phone for this contact and location.',
-  `is_billing` tinyint(4) default '0' COMMENT 'Is this the billing?',
-  `mobile_provider_id` int(10) unsigned default NULL COMMENT 'Which Mobile Provider does this phone belong to.',
-  `phone` varchar(32) collate utf8_unicode_ci default NULL COMMENT 'Complete phone number.',
-  `phone_type_id` int(10) unsigned default NULL COMMENT 'Which type of phone does this number belongs.',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Phone ID',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `location_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Location does this phone belong to.',
+  `is_primary` tinyint(4) DEFAULT '0' COMMENT 'Is this the primary phone for this contact and location.',
+  `is_billing` tinyint(4) DEFAULT '0' COMMENT 'Is this the billing?',
+  `mobile_provider_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Mobile Provider does this phone belong to.',
+  `phone` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Complete phone number.',
+  `phone_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which type of phone does this number belongs.',
+  PRIMARY KEY (`id`),
   KEY `index_location_type` (`location_type_id`),
   KEY `index_is_primary` (`is_primary`),
   KEY `index_is_billing` (`is_billing`),
@@ -3459,7 +3455,7 @@ CREATE TABLE `civicrm_phone` (
   KEY `FK_civicrm_phone_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_phone_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_phone`
@@ -3467,7 +3463,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_phone` WRITE;
 /*!40000 ALTER TABLE `civicrm_phone` DISABLE KEYS */;
-INSERT INTO `civicrm_phone` VALUES (1,NULL,1,0,0,NULL,'204 222-1001',1);
+INSERT INTO `civicrm_phone` VALUES (1,NULL,1,0,0,NULL,'518-455-2011',1);
 /*!40000 ALTER TABLE `civicrm_phone` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3476,33 +3472,33 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_pledge`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_pledge` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Pledge ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Pledge ID',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to civicrm_contact.id .',
-  `contribution_type_id` int(10) unsigned default NULL COMMENT 'FK to Contribution Type. This is propagated to contribution record when pledge payments are made.',
-  `contribution_page_id` int(10) unsigned default NULL COMMENT 'The Contribution Page which triggered this contribution',
+  `contribution_type_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contribution Type. This is propagated to contribution record when pledge payments are made.',
+  `contribution_page_id` int(10) unsigned DEFAULT NULL COMMENT 'The Contribution Page which triggered this contribution',
   `amount` decimal(20,2) NOT NULL COMMENT 'Total pledged amount.',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `frequency_unit` enum('day','week','month','year') collate utf8_unicode_ci default 'month' COMMENT 'Time units for recurrence of pledge payments.',
-  `frequency_interval` int(10) unsigned NOT NULL default '1' COMMENT 'Number of time units for recurrence of pledge payments.',
-  `frequency_day` int(10) unsigned NOT NULL default '3' COMMENT 'Day in the period when the pledge payment is due e.g. 1st of month, 15th etc. Use this to set the scheduled dates for pledge payments.',
-  `installments` int(10) unsigned default '1' COMMENT 'Total number of payments to be made.',
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `frequency_unit` enum('day','week','month','year') COLLATE utf8_unicode_ci DEFAULT 'month' COMMENT 'Time units for recurrence of pledge payments.',
+  `frequency_interval` int(10) unsigned NOT NULL DEFAULT '1' COMMENT 'Number of time units for recurrence of pledge payments.',
+  `frequency_day` int(10) unsigned NOT NULL DEFAULT '3' COMMENT 'Day in the period when the pledge payment is due e.g. 1st of month, 15th etc. Use this to set the scheduled dates for pledge payments.',
+  `installments` int(10) unsigned DEFAULT '1' COMMENT 'Total number of payments to be made.',
   `start_date` datetime NOT NULL COMMENT 'The date the first scheduled pledge occurs.',
   `create_date` datetime NOT NULL COMMENT 'When this pledge record was created.',
-  `acknowledge_date` datetime default NULL COMMENT 'When a pledge acknowledgement message was sent to the contributor.',
-  `modified_date` datetime default NULL COMMENT 'Last updated date for this pledge record.',
-  `cancel_date` datetime default NULL COMMENT 'Date this pledge was cancelled by contributor.',
-  `end_date` datetime default NULL COMMENT 'Date this pledge finished successfully (total pledge payments equal to or greater than pledged amount).',
-  `honor_contact_id` int(10) unsigned default NULL COMMENT 'FK to contact ID. Used when pledge is made in honor of another contact. This is propagated to contribution records when pledge payments are made.',
-  `honor_type_id` int(10) unsigned default NULL COMMENT 'Implicit FK to civicrm_option_value.',
-  `max_reminders` int(10) unsigned default '1' COMMENT 'The maximum number of payment reminders to send for any given payment.',
-  `initial_reminder_day` int(10) unsigned default '5' COMMENT 'Send initial reminder this many days prior to the payment due date.',
-  `additional_reminder_day` int(10) unsigned default '5' COMMENT 'Send additional reminder this many days after last one sent, up to maximum number of reminders.',
-  `status_id` int(10) unsigned default NULL COMMENT 'Implicit foreign key to civicrm_option_values in the contribution_status option group.',
-  `is_test` tinyint(4) default '0',
-  PRIMARY KEY  (`id`),
+  `acknowledge_date` datetime DEFAULT NULL COMMENT 'When a pledge acknowledgement message was sent to the contributor.',
+  `modified_date` datetime DEFAULT NULL COMMENT 'Last updated date for this pledge record.',
+  `cancel_date` datetime DEFAULT NULL COMMENT 'Date this pledge was cancelled by contributor.',
+  `end_date` datetime DEFAULT NULL COMMENT 'Date this pledge finished successfully (total pledge payments equal to or greater than pledged amount).',
+  `honor_contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to contact ID. Used when pledge is made in honor of another contact. This is propagated to contribution records when pledge payments are made.',
+  `honor_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Implicit FK to civicrm_option_value.',
+  `max_reminders` int(10) unsigned DEFAULT '1' COMMENT 'The maximum number of payment reminders to send for any given payment.',
+  `initial_reminder_day` int(10) unsigned DEFAULT '5' COMMENT 'Send initial reminder this many days prior to the payment due date.',
+  `additional_reminder_day` int(10) unsigned DEFAULT '5' COMMENT 'Send additional reminder this many days after last one sent, up to maximum number of reminders.',
+  `status_id` int(10) unsigned DEFAULT NULL COMMENT 'Implicit foreign key to civicrm_option_values in the contribution_status option group.',
+  `is_test` tinyint(4) DEFAULT '0',
+  PRIMARY KEY (`id`),
   KEY `index_status` (`status_id`),
   KEY `FK_civicrm_pledge_contact_id` (`contact_id`),
   KEY `FK_civicrm_pledge_contribution_type_id` (`contribution_type_id`),
@@ -3513,7 +3509,7 @@ CREATE TABLE `civicrm_pledge` (
   CONSTRAINT `FK_civicrm_pledge_contribution_type_id` FOREIGN KEY (`contribution_type_id`) REFERENCES `civicrm_contribution_type` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_pledge_honor_contact_id` FOREIGN KEY (`honor_contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_pledge`
@@ -3529,21 +3525,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_pledge_block`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_pledge_block` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Pledge ID',
-  `entity_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'physical tablename for entity being joined to pledge, e.g. civicrm_contact',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Pledge ID',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'physical tablename for entity being joined to pledge, e.g. civicrm_contact',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'FK to entity table specified in entity_table column.',
-  `pledge_frequency_unit` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Delimited list of supported frequency units',
-  `is_pledge_interval` tinyint(4) default '0' COMMENT 'Is frequency interval exposed on the contribution form.',
-  `max_reminders` int(10) unsigned default '1' COMMENT 'The maximum number of payment reminders to send for any given payment.',
-  `initial_reminder_day` int(10) unsigned default '5' COMMENT 'Send initial reminder this many days prior to the payment due date.',
-  `additional_reminder_day` int(10) unsigned default '5' COMMENT 'Send additional reminder this many days after last one sent, up to maximum number of reminders.',
-  PRIMARY KEY  (`id`),
+  `pledge_frequency_unit` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Delimited list of supported frequency units',
+  `is_pledge_interval` tinyint(4) DEFAULT '0' COMMENT 'Is frequency interval exposed on the contribution form.',
+  `max_reminders` int(10) unsigned DEFAULT '1' COMMENT 'The maximum number of payment reminders to send for any given payment.',
+  `initial_reminder_day` int(10) unsigned DEFAULT '5' COMMENT 'Send initial reminder this many days prior to the payment due date.',
+  `additional_reminder_day` int(10) unsigned DEFAULT '5' COMMENT 'Send additional reminder this many days after last one sent, up to maximum number of reminders.',
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_pledge_block`
@@ -3559,26 +3555,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_pledge_payment`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_pledge_payment` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `pledge_id` int(10) unsigned NOT NULL COMMENT 'FK to Pledge table',
-  `contribution_id` int(10) unsigned default NULL COMMENT 'FK to contribution table.',
+  `contribution_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to contribution table.',
   `scheduled_amount` decimal(20,2) NOT NULL COMMENT 'Pledged amount for this payment (the actual contribution amount might be different).',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
   `scheduled_date` datetime NOT NULL COMMENT 'The date the pledge payment is supposed to happen.',
-  `reminder_date` datetime default NULL COMMENT 'The date that the most recent payment reminder was sent.',
-  `reminder_count` int(10) unsigned default '0' COMMENT 'The number of payment reminders sent.',
-  `status_id` int(10) unsigned default NULL,
-  PRIMARY KEY  (`id`),
+  `reminder_date` datetime DEFAULT NULL COMMENT 'The date that the most recent payment reminder was sent.',
+  `reminder_count` int(10) unsigned DEFAULT '0' COMMENT 'The number of payment reminders sent.',
+  `status_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
   KEY `index_contribution_pledge` (`contribution_id`,`pledge_id`),
   KEY `index_status` (`status_id`),
   KEY `FK_civicrm_pledge_payment_pledge_id` (`pledge_id`),
   CONSTRAINT `FK_civicrm_pledge_payment_contribution_id` FOREIGN KEY (`contribution_id`) REFERENCES `civicrm_contribution` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_pledge_payment_pledge_id` FOREIGN KEY (`pledge_id`) REFERENCES `civicrm_pledge` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_pledge_payment`
@@ -3594,30 +3590,30 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_preferences`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_preferences` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this menu item for',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `is_domain` tinyint(4) default NULL COMMENT 'Is this the record for the domain setting?',
-  `contact_view_options` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'What tabs are displayed in the contact summary',
-  `contact_edit_options` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'What tabs are displayed in the contact edit',
-  `advanced_search_options` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'What tabs are displayed in the advanced search screen',
-  `user_dashboard_options` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'What tabs are displayed in the contact edit',
-  `address_options` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'What fields are displayed from the address table',
-  `address_format` text collate utf8_unicode_ci COMMENT 'Format to display the address',
-  `mailing_format` text collate utf8_unicode_ci COMMENT 'Format to display a mailing label',
-  `display_name_format` text collate utf8_unicode_ci COMMENT 'Format to display contact display name',
-  `sort_name_format` text collate utf8_unicode_ci COMMENT 'Format to display contact sort name',
-  `address_standardization_provider` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'object name of provider for address standarization',
-  `address_standardization_userid` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'user id for provider login',
-  `address_standardization_url` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'url of address standardization service',
-  `editor_id` int(10) unsigned default NULL COMMENT 'ID of the editor',
-  `mailing_backend` text collate utf8_unicode_ci COMMENT 'Smtp Backend configuration.',
-  `navigation` text collate utf8_unicode_ci COMMENT 'Store navigation for the Contact',
-  `contact_autocomplete_options` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'What Autocomplete has to return',
-  PRIMARY KEY  (`id`),
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `is_domain` tinyint(4) DEFAULT NULL COMMENT 'Is this the record for the domain setting?',
+  `contact_view_options` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'What tabs are displayed in the contact summary',
+  `contact_edit_options` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'What tabs are displayed in the contact edit',
+  `advanced_search_options` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'What tabs are displayed in the advanced search screen',
+  `user_dashboard_options` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'What tabs are displayed in the contact edit',
+  `address_options` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'What fields are displayed from the address table',
+  `address_format` text COLLATE utf8_unicode_ci COMMENT 'Format to display the address',
+  `mailing_format` text COLLATE utf8_unicode_ci COMMENT 'Format to display a mailing label',
+  `display_name_format` text COLLATE utf8_unicode_ci COMMENT 'Format to display contact display name',
+  `sort_name_format` text COLLATE utf8_unicode_ci COMMENT 'Format to display contact sort name',
+  `address_standardization_provider` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'object name of provider for address standarization',
+  `address_standardization_userid` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'user id for provider login',
+  `address_standardization_url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'url of address standardization service',
+  `editor_id` int(10) unsigned DEFAULT NULL COMMENT 'ID of the editor',
+  `mailing_backend` text COLLATE utf8_unicode_ci COMMENT 'Smtp Backend configuration.',
+  `navigation` text COLLATE utf8_unicode_ci COMMENT 'Store navigation for the Contact',
+  `contact_autocomplete_options` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'What Autocomplete has to return',
+  PRIMARY KEY (`id`),
   KEY `index_contact_view_options` (`contact_view_options`),
   KEY `index_contact_edit_options` (`contact_edit_options`),
   KEY `index_advanced_search_options` (`advanced_search_options`),
@@ -3628,7 +3624,7 @@ CREATE TABLE `civicrm_preferences` (
   CONSTRAINT `FK_civicrm_preferences_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_preferences_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_preferences`
@@ -3636,7 +3632,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_preferences` WRITE;
 /*!40000 ALTER TABLE `civicrm_preferences` DISABLE KEYS */;
-INSERT INTO `civicrm_preferences` VALUES (1,1,NULL,1,'12345610','12345678912','1234561013161718','15','1234568913','{contact.address_name}\n{contact.supplemental_address_2}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.addressee}\n{contact.supplemental_address_2}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.individual_prefix}{ }{contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}','{contact.last_name}{, }{contact.first_name}{ }{contact.middle_name}','USPS','173NEWYO0373','http://production.shippingapis.com/shippingapi.dll',2,'a:9:{s:5:\"qfKey\";s:36:\"79627fb3ee6f940f74bd13d70266d73a_363\";s:15:\"outBound_option\";s:1:\"3\";s:13:\"sendmail_path\";s:0:\"\";s:13:\"sendmail_args\";s:0:\"\";s:10:\"smtpServer\";s:0:\"\";s:8:\"smtpPort\";s:0:\"\";s:8:\"smtpAuth\";s:0:\"\";s:12:\"smtpUsername\";s:10:\"senateroot\";s:12:\"smtpPassword\";s:16:\"OXlBUFNzOHZlTQ==\";}',NULL,'12'),(2,1,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,1,5,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,1,6,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `civicrm_preferences` VALUES (1,1,NULL,1,'12345610','12345678912','1234561013161718','15','1234568913','{contact.address_name}\n{contact.supplemental_address_2}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.addressee}\n{contact.supplemental_address_2}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.individual_prefix}{ }{contact.first_name}{ }{contact.middle_name}{ }{contact.last_name}{ }{contact.individual_suffix}','{contact.last_name}{, }{contact.first_name}{ }{contact.middle_name}','USPS','173NEWYO0373','http://production.shippingapis.com/shippingapi.dll',2,'a:9:{s:5:\"qfKey\";s:37:\"16dfdec585b39646e22dc1530215c49b_3757\";s:15:\"outBound_option\";s:1:\"0\";s:13:\"sendmail_path\";s:0:\"\";s:13:\"sendmail_args\";s:0:\"\";s:10:\"smtpServer\";s:20:\"senmail.nysenate.gov\";s:8:\"smtpPort\";s:2:\"25\";s:8:\"smtpAuth\";s:1:\"0\";s:12:\"smtpUsername\";s:0:\"\";s:12:\"smtpPassword\";s:0:\"\";}',NULL,'12'),(2,1,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'<!-- en_US --><li class=\"menumain crm-link-home\"><a href=\"/nyss/civicrm/dashboard?reset=1\" title=\"Bluebird Home\">Home</a></li><li class=\"menumain crm-Custom_Search\">Custom Search<ul><li class=\"crm-Find_Cases\"><a href=\"/nyss/civicrm/case/search&amp;reset=1\">Find Cases</a></li><li class=\"crm-Find_Activities\"><a href=\"/nyss/civicrm/activity/search&amp;reset=1\">Find Activities</a></li><li class=\"menu-separator\"></li><li class=\"crm-Full-text_Search\"><a href=\"/nyss/civicrm/contact/search/custom&amp;csid=15&amp;reset=1\">Find Anything Search</a></li><li class=\"crm-Search_Builder\"><a href=\"/nyss/civicrm/contact/search/builder&amp;reset=1\">Search Builder</a></li><li class=\"menu-separator\"></li><li class=\"crm-Proximity_Search\"><a href=\"/nyss/civicrm/contact/search/custom&amp;reset=1&amp;csid=6\">Proximity Search</a></li><li class=\"crm-Birthday_by_Month_Search\"><a href=\"/nyss/civicrm/contact/search/custom?reset=1&amp;csid=16\">Birthday by Month Search</a></li></ul></li><li class=\"menumain crm-Reports\">Reports<ul><li class=\"crm-Reports_Listing\"><a href=\"/nyss/civicrm/report/list&amp;reset=1\">Reports Listing</a></li><li class=\"menu-separator\"></li><li class=\"crm-Create_Reports_from_Templates\"><a href=\"/nyss/civicrm/admin/report/template/list&amp;reset=1\">Create Reports from Templates</a></li><li class=\"menu-separator\"></li><li class=\"crm-Constituent_Report__Summary_\"><a href=\"/nyss/civicrm/report/instance/1&amp;reset=1\">Constituent Report (Summary)</a></li><li class=\"crm-Constituent_Report__Detail_\"><a href=\"/nyss/civicrm/report/instance/2&amp;reset=1\">Constituent Report (Detail)</a></li><li class=\"crm-Activity_Report_\"><a href=\"/nyss/civicrm/report/instance/16&amp;reset=1\">Activity Report </a></li><li class=\"crm-Relationship_Report\"><a href=\"/nyss/civicrm/report/instance/17&amp;reset=1\">Relationship Report</a></li><li class=\"crm-All_Activities,_Last_7_Days\"><a href=\"/nyss/civicrm/report/instance/23&amp;reset=1\">All Activities, Last 7 Days</a></li><li class=\"crm-Emails_Received,_Last_7_Days\"><a href=\"/nyss/civicrm/report/instance/24&amp;reset=1\">Emails Received, Last 7 Days</a></li></ul></li><li class=\"menumain crm-Manage\">Manage<ul><li class=\"crm-Import_Contacts\"><a href=\"/nyss/civicrm/import/contact&amp;reset=1\">Import Contacts</a></li><li class=\"crm-Import_Activities\"><a href=\"/nyss/civicrm/import/activity&amp;reset=1\">Import Activities</a></li><li class=\"menu-separator\"></li><li class=\"crm-New_Group\"><a href=\"/nyss/civicrm/group/add&amp;reset=1\">New Group</a></li><li class=\"crm-New_Tag\"><a href=\"/nyss/civicrm/admin/tag&amp;reset=1&amp;action=add\">New Tag</a></li><li class=\"menu-separator\"></li><li class=\"crm-Manage_Groups\"><a href=\"/nyss/civicrm/group&amp;reset=1\">Manage Groups</a></li><li class=\"crm-Manage_Tags\"><a href=\"/nyss/civicrm/admin/tag&amp;reset=1\">Manage Tags</a></li><li class=\"crm-Manage_Users\"><a href=\"/nyss/admin/user/user\">Manage Users</a></li><li class=\"crm-Merge_Duplicate_Contacts\"><a href=\"/nyss/civicrm/admin/deduperules&amp;reset=1\">Merge Duplicate Contacts</a></li><li class=\"crm-Case_Dashboard\"><a href=\"/nyss/civicrm/case?reset=1\">Case Dashboard</a></li></ul></li><li class=\"menumain crm-Administer\">Administer<ul><li class=\"crm-Administration_Console\"><a href=\"/nyss/civicrm/admin&amp;reset=1\">Administration Console</a></li><li class=\"crm-Customize\">Customize<ul><li class=\"crm-Custom_Data\"><a href=\"/nyss/civicrm/admin/custom/group&amp;reset=1\">Custom Data</a></li><li class=\"crm-CiviCRM_Profile\"><a href=\"/nyss/civicrm/admin/uf/group&amp;reset=1\">Bluebird Profile</a></li><li class=\"crm-Navigation_Menu\"><a href=\"/nyss/civicrm/admin/menu&amp;reset=1\">Navigation Menu</a></li><li class=\"crm-Manage_Custom_Searches\"><a href=\"/nyss/civicrm/admin/options/custom_search&amp;reset=1&amp;group=custom_search\">Manage Custom Searches</a></li></ul></li><li class=\"crm-Configure\">Configure<ul><li class=\"crm-Configuration_Checklist\"><a href=\"/nyss/civicrm/admin/configtask&amp;reset=1\">Configuration Checklist</a></li><li class=\"crm-Global_Settings\"><a href=\"/nyss/civicrm/admin/setting&amp;reset=1\">Global Settings</a><ul><li class=\"crm-Enable_CiviCRM_Components\"><a href=\"/nyss/civicrm/admin/setting/component&amp;reset=1\">Enable Bluebird Components</a></li><li class=\"crm-Site_Preferences__screen_and_form_configuration_\"><a href=\"/nyss/civicrm/admin/setting/preferences/display&amp;reset=1\">Site Preferences (screen and form configuration)</a></li><li class=\"crm-Directories\"><a href=\"/nyss/civicrm/admin/setting/path&amp;reset=1\">Directories</a></li><li class=\"crm-Resource_URLs\"><a href=\"/nyss/civicrm/admin/setting/url&amp;reset=1\">Resource URLs</a></li><li class=\"crm-Outbound_Email__SMTP_Sendmail_\"><a href=\"/nyss/civicrm/admin/setting/smtp&amp;reset=1\">Outbound Email (SMTP/Sendmail)</a></li><li class=\"crm-Mapping_and_Geocoding\"><a href=\"/nyss/civicrm/admin/setting/mapping&amp;reset=1\">Mapping and Geocoding</a></li><li class=\"crm-Localization\"><a href=\"/nyss/civicrm/admin/setting/localization&amp;reset=1\">Localization</a></li><li class=\"crm-Address_Settings\"><a href=\"/nyss/civicrm/admin/setting/preferences/address&amp;reset=1\">Address Settings</a></li><li class=\"crm-Search_Settings\"><a href=\"/nyss/civicrm/admin/setting/search&amp;reset=1\">Search Settings</a></li><li class=\"crm-Date_Formats\"><a href=\"/nyss/civicrm/admin/setting/date&amp;reset=1\">Date Formats</a></li><li class=\"crm-CMS_Integration\"><a href=\"/nyss/civicrm/admin/setting/uf&amp;reset=1\">CMS Integration</a></li><li class=\"crm-Miscellaneous__version_check,_reCAPTCHA____\"><a href=\"/nyss/civicrm/admin/setting/misc&amp;reset=1\">Miscellaneous (version check, reCAPTCHA...)</a></li><li class=\"crm-Safe_File_Extensions\"><a href=\"/nyss/civicrm/admin/options/safe_file_extension&amp;group=safe_file_extension&amp;reset=1\">Safe File Extensions</a></li><li class=\"crm-Debugging\"><a href=\"/nyss/civicrm/admin/setting/debug&amp;reset=1\">Debugging</a></li></ul></li><li class=\"crm-Import_Export_Mappings\"><a href=\"/nyss/civicrm/admin/mapping&amp;reset=1\">Import/Export Mappings</a></li><li class=\"crm-Message_Templates\"><a href=\"/nyss/civicrm/admin/messageTemplates&amp;reset=1\">Message Templates</a></li><li class=\"crm-Domain_Information\"><a href=\"/nyss/civicrm/admin/domain&amp;action=update&amp;reset=1\">Domain Information</a></li><li class=\"crm-FROM_Email_Addresses\"><a href=\"/nyss/civicrm/admin/options/from_email_address&amp;group=from_email_address&amp;reset=1\">FROM Email Addresses</a></li><li class=\"crm-Update_Directory_Path_and_URL\"><a href=\"/nyss/civicrm/admin/setting/updateConfigBackend&amp;reset=1\">Update Directory Path and URL</a></li></ul></li><li class=\"crm-Manage\">Manage<ul><li class=\"crm-Find_and_Merge_Duplicate_Contacts\"><a href=\"/nyss/civicrm/admin/deduperules&amp;reset=1\">Find and Merge Duplicate Contacts</a></li><li class=\"crm-Access_Control\"><a href=\"/nyss/civicrm/admin/access&amp;reset=1\">Access Control</a></li><li class=\"crm-Synchronize_Users_to_Contacts\"><a href=\"/nyss/civicrm/admin/synchUser&amp;reset=1\">Synchronize Users to Contacts</a></li></ul></li><li class=\"crm-Option_Lists\">Option Lists<ul><li class=\"crm-Activity_Types\"><a href=\"/nyss/civicrm/admin/options/activity_type&amp;reset=1&amp;group=activity_type\">Activity Types</a></li><li class=\"crm-Relationship_Types\"><a href=\"/nyss/civicrm/admin/reltype&amp;reset=1\">Relationship Types</a></li><li class=\"crm-Tags__Categories_\"><a href=\"/nyss/civicrm/admin/tag&amp;reset=1\">Tags (Categories)</a></li><li class=\"menu-separator\"></li><li class=\"crm-Gender_Options\"><a href=\"/nyss/civicrm/admin/options/gender&amp;reset=1&amp;group=gender\">Gender Options</a></li><li class=\"crm-Individual_Prefixes__Ms,_Mr____\"><a href=\"/nyss/civicrm/admin/options/individual_prefix&amp;group=individual_prefix&amp;reset=1\">Individual Prefixes (Ms, Mr...)</a></li><li class=\"crm-Individual_Suffixes__Jr,_Sr____\"><a href=\"/nyss/civicrm/admin/options/individual_suffix&amp;group=individual_suffix&amp;reset=1\">Individual Suffixes (Jr, Sr...)</a></li><li class=\"menu-separator\"></li><li class=\"crm-Addressee_Formats\"><a href=\"/nyss/civicrm/admin/options/addressee&amp;group=addressee&amp;reset=1\">Addressee Formats</a></li><li class=\"crm-Email_Greetings\"><a href=\"/nyss/civicrm/admin/options/email_greeting&amp;group=email_greeting&amp;reset=1\">Email Greetings</a></li><li class=\"crm-Postal_Greetings\"><a href=\"/nyss/civicrm/admin/options/postal_greeting&amp;group=postal_greeting&amp;reset=1\">Postal Greetings</a></li><li class=\"menu-separator\"></li><li class=\"crm-Instant_Messenger_Services\"><a href=\"/nyss/civicrm/admin/options/instant_messenger_service&amp;group=instant_messenger_service&amp;reset=1\">Instant Messenger Services</a></li><li class=\"crm-Location_Types__Home,_Work____\"><a href=\"/nyss/civicrm/admin/locationType&amp;reset=1\">Location Types (Home, Work...)</a></li><li class=\"crm-Mobile_Phone_Providers\"><a href=\"/nyss/civicrm/admin/options/mobile_provider&amp;group=mobile_provider&amp;reset=1\">Mobile Phone Providers</a></li><li class=\"crm-Phone_Types\"><a href=\"/nyss/civicrm/admin/options/phone_type&amp;group=phone_type&amp;reset=1\">Phone Types</a></li><li class=\"crm-Preferred_Communication_Methods\"><a href=\"/nyss/civicrm/admin/options/preferred_communication_method&amp;group=preferred_communication_method&amp;reset=1\">Preferred Communication Methods</a></li><li class=\"crm-Contact_Types\"><a href=\"/nyss/civicrm/admin/options/subtype&amp;reset=1\">Contact Types</a></li></ul></li><li class=\"crm-CiviCase\">CiviCase<ul><li class=\"crm-Case_Types\"><a href=\"/nyss/civicrm/admin/options/case_type&amp;group=case_type&amp;reset=1\">Case Types</a></li><li class=\"crm-Redaction_Rules\"><a href=\"/nyss/civicrm/admin/options/redaction_rule&amp;group=redaction_rule&amp;reset=1\">Redaction Rules</a></li><li class=\"crm-Case_Statuses\"><a href=\"/nyss/civicrm/admin/options/case_status&amp;group=case_status&amp;reset=1\">Case Statuses</a></li></ul></li><li class=\"crm-CiviReport\">CiviReport<ul><li class=\"crm-Reports_Listing\"><a href=\"/nyss/civicrm/report/list&amp;reset=1\">Reports Listing</a></li><li class=\"crm-Create_Reports_from_Templates\"><a href=\"/nyss/civicrm/admin/report/template/list&amp;reset=1\">Create Reports from Templates</a></li><li class=\"crm-Manage_Templates\"><a href=\"/nyss/civicrm/admin/report/options/report_template&amp;reset=1\">Manage Templates</a></li><li class=\"crm-Register_Report\"><a href=\"/nyss/civicrm/admin/report/register&amp;reset=1\">Register Report</a></li></ul></li></ul></li><li id=\"menu-logout\" class=\"menumain\"><a href=\"/nyss/civicrm/logout?reset=1\">Logout</a></li>',NULL);
 /*!40000 ALTER TABLE `civicrm_preferences` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3645,20 +3641,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_preferences_date`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_preferences_date` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `name` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'The meta name for this date (fixed in code)',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Description of this date type.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The meta name for this date (fixed in code)',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Description of this date type.',
   `start` int(11) NOT NULL COMMENT 'The start offset relative to current year',
   `end` int(11) NOT NULL COMMENT 'The end offset relative to current year, can be negative',
-  `date_format` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'The date type',
-  `time_format` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'time format',
-  PRIMARY KEY  (`id`),
+  `date_format` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The date type',
+  `time_format` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'time format',
+  PRIMARY KEY (`id`),
   KEY `index_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_preferences_date`
@@ -3675,21 +3671,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_premiums`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_premiums` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Joins these premium settings to another object. Always civicrm_contribution_page for now.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Joins these premium settings to another object. Always civicrm_contribution_page for now.',
   `entity_id` int(10) unsigned NOT NULL,
-  `premiums_active` tinyint(4) NOT NULL default '0' COMMENT 'Is the Premiums feature enabled for this page?',
-  `premiums_intro_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Title for Premiums section.',
-  `premiums_intro_text` text collate utf8_unicode_ci COMMENT 'Displayed in <div> at top of Premiums section of page. Text and HTML allowed.',
-  `premiums_contact_email` varchar(100) collate utf8_unicode_ci default NULL COMMENT 'This email address is included in receipts if it is populated and a premium has been selected.',
-  `premiums_contact_phone` varchar(50) collate utf8_unicode_ci default NULL COMMENT 'This phone number is included in receipts if it is populated and a premium has been selected.',
+  `premiums_active` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Is the Premiums feature enabled for this page?',
+  `premiums_intro_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Title for Premiums section.',
+  `premiums_intro_text` text COLLATE utf8_unicode_ci COMMENT 'Displayed in <div> at top of Premiums section of page. Text and HTML allowed.',
+  `premiums_contact_email` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'This email address is included in receipts if it is populated and a premium has been selected.',
+  `premiums_contact_phone` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'This phone number is included in receipts if it is populated and a premium has been selected.',
   `premiums_display_min_contribution` tinyint(4) NOT NULL COMMENT 'Boolean. Should we automatically display minimum contribution amount text after the premium descriptions.',
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_premiums`
@@ -3705,20 +3701,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_premiums_product`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_premiums_product` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Contribution ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Contribution ID',
   `premiums_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to premiums settings record.',
   `product_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to each product object.',
   `weight` int(10) unsigned NOT NULL,
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_premiums_product_premiums_id` (`premiums_id`),
   KEY `FK_civicrm_premiums_product_product_id` (`product_id`),
   CONSTRAINT `FK_civicrm_premiums_product_premiums_id` FOREIGN KEY (`premiums_id`) REFERENCES `civicrm_premiums` (`id`),
   CONSTRAINT `FK_civicrm_premiums_product_product_id` FOREIGN KEY (`product_id`) REFERENCES `civicrm_product` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_premiums_product`
@@ -3734,33 +3730,33 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_price_field`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_price_field` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Price Field',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Price Field',
   `price_set_id` int(10) unsigned NOT NULL COMMENT 'FK to civicrm_price_set',
-  `name` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Variable name/programmatic handle for this field.',
-  `label` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Text for form field label (also friendly name for administering this field).',
-  `html_type` enum('Text','Select','Radio','CheckBox') collate utf8_unicode_ci NOT NULL,
-  `is_enter_qty` tinyint(4) default '0' COMMENT 'Enter a quantity for this field?',
-  `help_pre` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display before this field.',
-  `help_post` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display after this field.',
-  `weight` int(11) default '1' COMMENT 'Order in which the fields should appear',
-  `is_display_amounts` tinyint(4) default '1' COMMENT 'Should the price be displayed next to the label for each option?',
-  `options_per_line` int(10) unsigned default '1' COMMENT 'number of options per line for checkbox and radio',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this price field active',
-  `is_required` tinyint(4) default '1' COMMENT 'Is this price field required (value must be > 1)',
-  `active_on` datetime default NULL COMMENT 'If non-zero, do not show this field before the date specified',
-  `expire_on` datetime default NULL COMMENT 'If non-zero, do not show this field after the date specified',
-  `javascript` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional scripting attributes for field',
-  `visibility_id` int(10) unsigned default '1' COMMENT 'Implicit FK to civicrm_option_group with name = ''visibility''',
-  `count` int(10) unsigned default NULL COMMENT 'Number of Participants Per field',
-  PRIMARY KEY  (`id`),
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Variable name/programmatic handle for this field.',
+  `label` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Text for form field label (also friendly name for administering this field).',
+  `html_type` enum('Text','Select','Radio','CheckBox') COLLATE utf8_unicode_ci NOT NULL,
+  `is_enter_qty` tinyint(4) DEFAULT '0' COMMENT 'Enter a quantity for this field?',
+  `help_pre` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display before this field.',
+  `help_post` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display after this field.',
+  `weight` int(11) DEFAULT '1' COMMENT 'Order in which the fields should appear',
+  `is_display_amounts` tinyint(4) DEFAULT '1' COMMENT 'Should the price be displayed next to the label for each option?',
+  `options_per_line` int(10) unsigned DEFAULT '1' COMMENT 'number of options per line for checkbox and radio',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this price field active',
+  `is_required` tinyint(4) DEFAULT '1' COMMENT 'Is this price field required (value must be > 1)',
+  `active_on` datetime DEFAULT NULL COMMENT 'If non-zero, do not show this field before the date specified',
+  `expire_on` datetime DEFAULT NULL COMMENT 'If non-zero, do not show this field after the date specified',
+  `javascript` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional scripting attributes for field',
+  `visibility_id` int(10) unsigned DEFAULT '1' COMMENT 'Implicit FK to civicrm_option_group with name = ''visibility''',
+  `count` int(10) unsigned DEFAULT NULL COMMENT 'Number of Participants Per field',
+  PRIMARY KEY (`id`),
   KEY `index_name` (`name`),
   KEY `FK_civicrm_price_field_price_set_id` (`price_set_id`),
   CONSTRAINT `FK_civicrm_price_field_price_set_id` FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_price_field`
@@ -3776,25 +3772,25 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_price_set`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_price_set` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Price Set',
-  `domain_id` int(10) unsigned default NULL COMMENT 'Which Domain is this price-set for',
-  `name` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Variable name/programmatic handle for this set of price fields.',
-  `title` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Displayed title for the Price Set.',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this price set active',
-  `help_pre` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display before fields in form.',
-  `help_post` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display after fields in form.',
-  `javascript` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Optional Javascript script function(s) included on the form with this price_set. Can be used for conditional',
-  `extends` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'What components are using this price set?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Price Set',
+  `domain_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Domain is this price-set for',
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Variable name/programmatic handle for this set of price fields.',
+  `title` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Displayed title for the Price Set.',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this price set active',
+  `help_pre` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display before fields in form.',
+  `help_post` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display after fields in form.',
+  `javascript` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional Javascript script function(s) included on the form with this price_set. Can be used for conditional',
+  `extends` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'What components are using this price set?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name` (`name`),
   UNIQUE KEY `UI_title` (`title`),
   KEY `FK_civicrm_price_set_domain_id` (`domain_id`),
   CONSTRAINT `FK_civicrm_price_set_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_price_set`
@@ -3810,19 +3806,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_price_set_entity`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_price_set_entity` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Price Set Entity',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Table which uses this price set',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Price Set Entity',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Table which uses this price set',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Item in table',
   `price_set_id` int(10) unsigned NOT NULL COMMENT 'price set being used',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_entity` (`entity_table`,`entity_id`),
   KEY `FK_civicrm_price_set_entity_price_set_id` (`price_set_id`),
   CONSTRAINT `FK_civicrm_price_set_entity_price_set_id` FOREIGN KEY (`price_set_id`) REFERENCES `civicrm_price_set` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_price_set_entity`
@@ -3838,30 +3834,30 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_product`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_product` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `name` varchar(255) collate utf8_unicode_ci NOT NULL COMMENT 'Required product/premium name',
-  `description` text collate utf8_unicode_ci COMMENT 'Optional description of the product/premium.',
-  `sku` varchar(50) collate utf8_unicode_ci default NULL COMMENT 'Optional product sku or code.',
-  `options` text collate utf8_unicode_ci COMMENT 'Store comma-delimited list of color, size, etc. options for the product.',
-  `image` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Full or relative URL to uploaded image - fullsize.',
-  `thumbnail` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Full or relative URL to image thumbnail.',
-  `price` decimal(20,2) default NULL COMMENT 'Sell price or market value for premiums. For tax-deductible contributions, this will be stored as non_deductible_amount in the contribution record.',
-  `currency` varchar(3) collate utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
-  `min_contribution` decimal(20,2) default NULL COMMENT 'Minimum contribution required to be eligible to select this premium.',
-  `cost` decimal(20,2) default NULL COMMENT 'Actual cost of this product. Useful to determine net return from sale or using this as an incentive.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Required product/premium name',
+  `description` text COLLATE utf8_unicode_ci COMMENT 'Optional description of the product/premium.',
+  `sku` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional product sku or code.',
+  `options` text COLLATE utf8_unicode_ci COMMENT 'Store comma-delimited list of color, size, etc. options for the product.',
+  `image` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Full or relative URL to uploaded image - fullsize.',
+  `thumbnail` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Full or relative URL to image thumbnail.',
+  `price` decimal(20,2) DEFAULT NULL COMMENT 'Sell price or market value for premiums. For tax-deductible contributions, this will be stored as non_deductible_amount in the contribution record.',
+  `currency` varchar(3) COLLATE utf8_unicode_ci NOT NULL COMMENT '3 character string, value from config setting or input via user.',
+  `min_contribution` decimal(20,2) DEFAULT NULL COMMENT 'Minimum contribution required to be eligible to select this premium.',
+  `cost` decimal(20,2) DEFAULT NULL COMMENT 'Actual cost of this product. Useful to determine net return from sale or using this as an incentive.',
   `is_active` tinyint(4) NOT NULL COMMENT 'Disabling premium removes it from the premiums_premium join table below.',
-  `period_type` enum('rolling','fixed') collate utf8_unicode_ci default 'rolling' COMMENT 'Rolling means we set start/end based on current day, fixed means we set start/end for current year or month\n(e.g. 1 year + fixed -> we would set start/end for 1/1/06 thru 12/31/06 for any premium chosen in 2006) ',
-  `fixed_period_start_day` int(11) default '101' COMMENT 'Month and day (MMDD) that fixed period type subscription or membership starts.',
-  `duration_unit` enum('day','month','week','year') collate utf8_unicode_ci default 'year',
-  `duration_interval` int(11) default NULL COMMENT 'Number of units for total duration of subscription, service, membership (e.g. 12 Months).',
-  `frequency_unit` enum('day','month','week','year') collate utf8_unicode_ci default 'month' COMMENT 'Frequency unit and interval allow option to store actual delivery frequency for a subscription or service.',
-  `frequency_interval` int(11) default NULL COMMENT 'Number of units for delivery frequency of subscription, service, membership (e.g. every 3 Months).',
-  PRIMARY KEY  (`id`)
+  `period_type` enum('rolling','fixed') COLLATE utf8_unicode_ci DEFAULT 'rolling' COMMENT 'Rolling means we set start/end based on current day, fixed means we set start/end for current year or month\n(e.g. 1 year + fixed -> we would set start/end for 1/1/06 thru 12/31/06 for any premium chosen in 2006) ',
+  `fixed_period_start_day` int(11) DEFAULT '101' COMMENT 'Month and day (MMDD) that fixed period type subscription or membership starts.',
+  `duration_unit` enum('day','month','week','year') COLLATE utf8_unicode_ci DEFAULT 'year',
+  `duration_interval` int(11) DEFAULT NULL COMMENT 'Number of units for total duration of subscription, service, membership (e.g. 12 Months).',
+  `frequency_unit` enum('day','month','week','year') COLLATE utf8_unicode_ci DEFAULT 'month' COMMENT 'Frequency unit and interval allow option to store actual delivery frequency for a subscription or service.',
+  `frequency_interval` int(11) DEFAULT NULL COMMENT 'Number of units for delivery frequency of subscription, service, membership (e.g. every 3 Months).',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_product`
@@ -3877,23 +3873,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_project`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_project` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Project ID',
-  `title` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Project name.',
-  `description` text collate utf8_unicode_ci COMMENT 'Optional verbose description of the project. May be used for display - HTML allowed.',
-  `logo` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Full or relative URL to optional uploaded logo image for project.',
-  `owner_entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Name of table where project owner being referenced is stored (e.g. civicrm_contact or civicrm_group).',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Project ID',
+  `title` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Project name.',
+  `description` text COLLATE utf8_unicode_ci COMMENT 'Optional verbose description of the project. May be used for display - HTML allowed.',
+  `logo` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Full or relative URL to optional uploaded logo image for project.',
+  `owner_entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of table where project owner being referenced is stored (e.g. civicrm_contact or civicrm_group).',
   `owner_entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to project owner (contact, group, etc.).',
-  `start_date` datetime default NULL COMMENT 'Project start date.',
-  `end_date` datetime default NULL COMMENT 'Project end date.',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this record active? For Projects: can tasks be created for it, does it appear on project listings, etc.',
-  `status_id` int(10) unsigned default NULL COMMENT 'Configurable status value (e.g. Planned, Active, Closed...). FK to civicrm_option_value.',
-  PRIMARY KEY  (`id`),
+  `start_date` datetime DEFAULT NULL COMMENT 'Project start date.',
+  `end_date` datetime DEFAULT NULL COMMENT 'Project end date.',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this record active? For Projects: can tasks be created for it, does it appear on project listings, etc.',
+  `status_id` int(10) unsigned DEFAULT NULL COMMENT 'Configurable status value (e.g. Planned, Active, Closed...). FK to civicrm_option_value.',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_project_owner` (`id`,`owner_entity_table`,`owner_entity_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_project`
@@ -3909,21 +3905,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_relationship`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_relationship` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Relationship ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Relationship ID',
   `contact_id_a` int(10) unsigned NOT NULL COMMENT 'id of the first contact',
   `contact_id_b` int(10) unsigned NOT NULL COMMENT 'id of the second contact',
   `relationship_type_id` int(10) unsigned NOT NULL COMMENT 'id of the relationship',
-  `start_date` date default NULL COMMENT 'date when the relationship started',
-  `end_date` date default NULL COMMENT 'date when the relationship ended',
-  `is_active` tinyint(4) default '1' COMMENT 'is the relationship active ?',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional verbose description for the relationship.',
-  `is_permission_a_b` tinyint(4) default '0' COMMENT 'is contact a has permission to view / edit contact and\n  related data for contact b ?',
-  `is_permission_b_a` tinyint(4) default '0' COMMENT 'is contact b has permission to view / edit contact and\n  related data for contact a ?',
-  `case_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_case',
-  PRIMARY KEY  (`id`),
+  `start_date` date DEFAULT NULL COMMENT 'date when the relationship started',
+  `end_date` date DEFAULT NULL COMMENT 'date when the relationship ended',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'is the relationship active ?',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional verbose description for the relationship.',
+  `is_permission_a_b` tinyint(4) DEFAULT '0' COMMENT 'is contact a has permission to view / edit contact and\n  related data for contact b ?',
+  `is_permission_b_a` tinyint(4) DEFAULT '0' COMMENT 'is contact b has permission to view / edit contact and\n  related data for contact a ?',
+  `case_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_case',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_relationship_contact_id_a` (`contact_id_a`),
   KEY `FK_civicrm_relationship_contact_id_b` (`contact_id_b`),
   KEY `FK_civicrm_relationship_relationship_type_id` (`relationship_type_id`),
@@ -3933,7 +3929,7 @@ CREATE TABLE `civicrm_relationship` (
   CONSTRAINT `FK_civicrm_relationship_contact_id_b` FOREIGN KEY (`contact_id_b`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_relationship_relationship_type_id` FOREIGN KEY (`relationship_type_id`) REFERENCES `civicrm_relationship_type` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_relationship`
@@ -3949,26 +3945,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_relationship_type`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_relationship_type` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Primary key',
-  `name_a_b` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'name for relationship of contact_a to contact_b.',
-  `label_a_b` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'label for relationship of contact_a to contact_b.',
-  `name_b_a` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Optional name for relationship of contact_b to contact_a.',
-  `label_b_a` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Optional label for relationship of contact_b to contact_a.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional verbose description of the relationship type.',
-  `contact_type_a` enum('Individual','Organization','Household') collate utf8_unicode_ci default NULL COMMENT 'If defined, contact_a in a relationship of this type must be a specific contact_type.',
-  `contact_type_b` enum('Individual','Organization','Household') collate utf8_unicode_ci default NULL COMMENT 'If defined, contact_b in a relationship of this type must be a specific contact_type.',
-  `contact_sub_type_a` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'If defined, contact_sub_type_a in a relationship of this type must be a specific contact_sub_type.',
-  `contact_sub_type_b` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'If defined, contact_sub_type_b in a relationship of this type must be a specific contact_sub_type.',
-  `is_reserved` tinyint(4) default NULL COMMENT 'Is this relationship type a predefined system type (can not be changed or de-activated)?',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this relationship type currently active (i.e. can be used when creating or editing relationships)?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
+  `name_a_b` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'name for relationship of contact_a to contact_b.',
+  `label_a_b` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'label for relationship of contact_a to contact_b.',
+  `name_b_a` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional name for relationship of contact_b to contact_a.',
+  `label_b_a` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional label for relationship of contact_b to contact_a.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional verbose description of the relationship type.',
+  `contact_type_a` enum('Individual','Organization','Household') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'If defined, contact_a in a relationship of this type must be a specific contact_type.',
+  `contact_type_b` enum('Individual','Organization','Household') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'If defined, contact_b in a relationship of this type must be a specific contact_type.',
+  `contact_sub_type_a` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'If defined, contact_sub_type_a in a relationship of this type must be a specific contact_sub_type.',
+  `contact_sub_type_b` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'If defined, contact_sub_type_b in a relationship of this type must be a specific contact_sub_type.',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'Is this relationship type a predefined system type (can not be changed or de-activated)?',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this relationship type currently active (i.e. can be used when creating or editing relationships)?',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name_a_b` (`name_a_b`),
   UNIQUE KEY `UI_name_b_a` (`name_b_a`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_relationship_type`
@@ -3985,30 +3981,30 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_report_instance`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_report_instance` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Report Instance ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Report Instance ID',
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this instance for',
-  `title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Report Instance Title.',
-  `report_id` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'FK to civicrm_option_value for the report template',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Report Instance description.',
-  `permission` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'permission required to be able to run this instance',
-  `form_values` text collate utf8_unicode_ci COMMENT 'Submitted form values for this report',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this entry active?',
-  `email_subject` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Subject of email',
-  `email_to` text collate utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
-  `email_cc` text collate utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
-  `header` text collate utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
-  `footer` text collate utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
-  `navigation_id` int(10) unsigned default NULL COMMENT 'FK to navigation ID',
-  PRIMARY KEY  (`id`),
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Report Instance Title.',
+  `report_id` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'FK to civicrm_option_value for the report template',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Report Instance description.',
+  `permission` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'permission required to be able to run this instance',
+  `form_values` text COLLATE utf8_unicode_ci COMMENT 'Submitted form values for this report',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this entry active?',
+  `email_subject` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Subject of email',
+  `email_to` text COLLATE utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
+  `email_cc` text COLLATE utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
+  `header` text COLLATE utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
+  `footer` text COLLATE utf8_unicode_ci COMMENT 'comma-separated list of email addresses to send the report to',
+  `navigation_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to navigation ID',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_report_instance_domain_id` (`domain_id`),
   KEY `FK_civicrm_report_instance_navigation_id` (`navigation_id`),
   CONSTRAINT `FK_civicrm_report_instance_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`),
   CONSTRAINT `FK_civicrm_report_instance_navigation_id` FOREIGN KEY (`navigation_id`) REFERENCES `civicrm_navigation` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_report_instance`
@@ -4025,21 +4021,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_saved_search`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_saved_search` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Saved search ID',
-  `form_values` text collate utf8_unicode_ci COMMENT 'Submitted form values for this search',
-  `mapping_id` int(10) unsigned default NULL COMMENT 'Foreign key to civicrm_mapping used for saved search-builder searches.',
-  `search_custom_id` int(10) unsigned default NULL COMMENT 'Foreign key to civicrm_option value table used for saved custom searches.',
-  `where_clause` text collate utf8_unicode_ci COMMENT 'the sql where clause if a saved search acl',
-  `select_tables` text collate utf8_unicode_ci COMMENT 'the tables to be included in a select data',
-  `where_tables` text collate utf8_unicode_ci COMMENT 'the tables to be included in the count statement',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Saved search ID',
+  `form_values` text COLLATE utf8_unicode_ci COMMENT 'Submitted form values for this search',
+  `mapping_id` int(10) unsigned DEFAULT NULL COMMENT 'Foreign key to civicrm_mapping used for saved search-builder searches.',
+  `search_custom_id` int(10) unsigned DEFAULT NULL COMMENT 'Foreign key to civicrm_option value table used for saved custom searches.',
+  `where_clause` text COLLATE utf8_unicode_ci COMMENT 'the sql where clause if a saved search acl',
+  `select_tables` text COLLATE utf8_unicode_ci COMMENT 'the tables to be included in a select data',
+  `where_tables` text COLLATE utf8_unicode_ci COMMENT 'the tables to be included in the count statement',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_saved_search_mapping_id` (`mapping_id`),
   CONSTRAINT `FK_civicrm_saved_search_mapping_id` FOREIGN KEY (`mapping_id`) REFERENCES `civicrm_mapping` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_saved_search`
@@ -4056,19 +4052,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_state_province`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_state_province` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'State / Province ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of State / Province',
-  `abbreviation` varchar(4) collate utf8_unicode_ci default NULL COMMENT '2-4 Character Abbreviation of State / Province',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'State / Province ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of State / Province',
+  `abbreviation` varchar(4) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '2-4 Character Abbreviation of State / Province',
   `country_id` int(10) unsigned NOT NULL COMMENT 'ID of Country that State / Province belong',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name_country_id` (`name`,`country_id`),
   KEY `FK_civicrm_state_province_country_id` (`country_id`),
   CONSTRAINT `FK_civicrm_state_province_country_id` FOREIGN KEY (`country_id`) REFERENCES `civicrm_country` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10055 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_state_province`
@@ -4085,23 +4081,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_subscription_history`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_subscription_history` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Internal Id',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Internal Id',
   `contact_id` int(10) unsigned NOT NULL COMMENT 'Contact Id',
-  `group_id` int(10) unsigned default NULL COMMENT 'Group Id',
+  `group_id` int(10) unsigned DEFAULT NULL COMMENT 'Group Id',
   `date` datetime NOT NULL COMMENT 'Date of the (un)subscription',
-  `method` enum('Admin','Email','Web','API') collate utf8_unicode_ci default NULL COMMENT 'How the (un)subscription was triggered',
-  `status` enum('Added','Removed','Pending') collate utf8_unicode_ci default NULL COMMENT 'The state of the contact within the group',
-  `tracking` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'IP address or other tracking info',
-  PRIMARY KEY  (`id`),
+  `method` enum('Admin','Email','Web','API') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'How the (un)subscription was triggered',
+  `status` enum('Added','Removed','Pending') COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The state of the contact within the group',
+  `tracking` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'IP address or other tracking info',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_subscription_history_contact_id` (`contact_id`),
   KEY `FK_civicrm_subscription_history_group_id` (`group_id`),
   CONSTRAINT `FK_civicrm_subscription_history_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_subscription_history_group_id` FOREIGN KEY (`group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_subscription_history`
@@ -4117,23 +4113,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_tag`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_tag` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Tag ID',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of Tag.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional verbose description of the tag.',
-  `parent_id` int(10) unsigned default NULL COMMENT 'Optional parent id for this tag.',
-  `is_selectable` tinyint(4) default '1' COMMENT 'Is this tag selectable / displayed',
-  `is_reserved` tinyint(4) default '0',
-  `is_tagset` tinyint(4) default '0',
-  `used_for` varchar(64) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Tag ID',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of Tag.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional verbose description of the tag.',
+  `parent_id` int(10) unsigned DEFAULT NULL COMMENT 'Optional parent id for this tag.',
+  `is_selectable` tinyint(4) DEFAULT '1' COMMENT 'Is this tag selectable / displayed',
+  `is_reserved` tinyint(4) DEFAULT '0',
+  `is_tagset` tinyint(4) DEFAULT '0',
+  `used_for` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_name` (`name`),
   KEY `FK_civicrm_tag_parent_id` (`parent_id`),
   CONSTRAINT `FK_civicrm_tag_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `civicrm_tag` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9958 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_tag`
@@ -4150,26 +4146,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_task`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_task` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Task ID',
-  `title` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Task name.',
-  `description` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional verbose description of the Task. May be used for display - HTML allowed.',
-  `task_type_id` int(10) unsigned default NULL COMMENT 'Configurable task type values (e.g. App Submit, App Review...). FK to civicrm_option_value.',
-  `owner_entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Name of table where Task owner being referenced is stored (e.g. civicrm_contact or civicrm_group).',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Task ID',
+  `title` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Task name.',
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional verbose description of the Task. May be used for display - HTML allowed.',
+  `task_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Configurable task type values (e.g. App Submit, App Review...). FK to civicrm_option_value.',
+  `owner_entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of table where Task owner being referenced is stored (e.g. civicrm_contact or civicrm_group).',
   `owner_entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to Task owner (contact, group, etc.).',
-  `parent_entity_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of table where optional Task parent is stored (e.g. civicrm_project, or civicrm_task for sub-tasks).',
-  `parent_entity_id` int(10) unsigned default NULL COMMENT 'Optional foreign key to Task Parent (project, another task, etc.).',
-  `due_date` datetime default NULL COMMENT 'Task due date.',
-  `priority_id` int(10) unsigned default NULL COMMENT 'Configurable priority value (e.g. Critical, High, Medium...). FK to civicrm_option_value.',
-  `task_class` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Optional key to a process class related to this task (e.g. CRM_Quest_PreApp).',
-  `is_active` tinyint(4) default NULL COMMENT 'Is this record active? For tasks: can it be assigned, does it appear on open task listings, etc.',
-  PRIMARY KEY  (`id`),
+  `parent_entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of table where optional Task parent is stored (e.g. civicrm_project, or civicrm_task for sub-tasks).',
+  `parent_entity_id` int(10) unsigned DEFAULT NULL COMMENT 'Optional foreign key to Task Parent (project, another task, etc.).',
+  `due_date` datetime DEFAULT NULL COMMENT 'Task due date.',
+  `priority_id` int(10) unsigned DEFAULT NULL COMMENT 'Configurable priority value (e.g. Critical, High, Medium...). FK to civicrm_option_value.',
+  `task_class` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Optional key to a process class related to this task (e.g. CRM_Quest_PreApp).',
+  `is_active` tinyint(4) DEFAULT NULL COMMENT 'Is this record active? For tasks: can it be assigned, does it appear on open task listings, etc.',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_task_owner` (`id`,`owner_entity_table`,`owner_entity_id`),
   UNIQUE KEY `UI_task_parent` (`id`,`parent_entity_table`,`parent_entity_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_task`
@@ -4185,25 +4181,25 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_task_status`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_task_status` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Task ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Task ID',
   `task_id` int(10) unsigned NOT NULL COMMENT 'Status is for which task.',
-  `responsible_entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Entity responsible for this task_status instance (table where entity is stored e.g. civicrm_contact or civicrm_group).',
+  `responsible_entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Entity responsible for this task_status instance (table where entity is stored e.g. civicrm_contact or civicrm_group).',
   `responsible_entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to responsible entity (contact, group, etc.).',
-  `target_entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Optional target entity for this task_status instance, i.e. review this membership application-prospect member contact record is target (table where entity is stored e.g. civicrm_contact or civicrm_group).',
+  `target_entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Optional target entity for this task_status instance, i.e. review this membership application-prospect member contact record is target (table where entity is stored e.g. civicrm_contact or civicrm_group).',
   `target_entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to target entity (contact, group, etc.).',
-  `status_detail` text collate utf8_unicode_ci COMMENT 'Encoded array of status details used for programmatic progress reporting and tracking.',
-  `status_id` int(10) unsigned default NULL COMMENT 'Configurable status value (e.g. Not Started, In Progress, Completed, Deferred...). FK to civicrm_option_value.',
-  `create_date` datetime default NULL COMMENT 'Date this record was created (date work on task started).',
-  `modified_date` datetime default NULL COMMENT 'Date-time of last update to this task_status record.',
-  PRIMARY KEY  (`id`),
+  `status_detail` text COLLATE utf8_unicode_ci COMMENT 'Encoded array of status details used for programmatic progress reporting and tracking.',
+  `status_id` int(10) unsigned DEFAULT NULL COMMENT 'Configurable status value (e.g. Not Started, In Progress, Completed, Deferred...). FK to civicrm_option_value.',
+  `create_date` datetime DEFAULT NULL COMMENT 'Date this record was created (date work on task started).',
+  `modified_date` datetime DEFAULT NULL COMMENT 'Date-time of last update to this task_status record.',
+  PRIMARY KEY (`id`),
   KEY `index_task_status_responsible` (`task_id`,`responsible_entity_table`,`responsible_entity_id`),
   KEY `index_task_status_target` (`task_id`,`target_entity_table`,`target_entity_id`),
   CONSTRAINT `FK_civicrm_task_status_task_id` FOREIGN KEY (`task_id`) REFERENCES `civicrm_task` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_task_status`
@@ -4219,22 +4215,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_tell_friend`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_tell_friend` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Friend ID',
-  `entity_table` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Friend ID',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Name of table where item being referenced is stored.',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Foreign key to the referenced item.',
-  `title` varchar(255) collate utf8_unicode_ci default NULL,
-  `intro` text collate utf8_unicode_ci COMMENT 'Introductory message to contributor or participant displayed on the Tell a Friend form.',
-  `suggested_message` text collate utf8_unicode_ci COMMENT 'Suggested message to friends, provided as default on the Tell A Friend form.',
-  `general_link` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'URL for general info about the organization - included in the email sent to friends.',
-  `thankyou_title` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Text for Tell a Friend thank you page header and HTML title.',
-  `thankyou_text` text collate utf8_unicode_ci COMMENT 'Thank you message displayed on success page.',
-  `is_active` tinyint(4) default NULL,
-  PRIMARY KEY  (`id`)
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `intro` text COLLATE utf8_unicode_ci COMMENT 'Introductory message to contributor or participant displayed on the Tell a Friend form.',
+  `suggested_message` text COLLATE utf8_unicode_ci COMMENT 'Suggested message to friends, provided as default on the Tell A Friend form.',
+  `general_link` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'URL for general info about the organization - included in the email sent to friends.',
+  `thankyou_title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Text for Tell a Friend thank you page header and HTML title.',
+  `thankyou_text` text COLLATE utf8_unicode_ci COMMENT 'Thank you message displayed on success page.',
+  `is_active` tinyint(4) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_tell_friend`
@@ -4250,20 +4246,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_timezone`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_timezone` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Timezone Id',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Timezone full name',
-  `abbreviation` char(3) collate utf8_unicode_ci default NULL COMMENT 'ISO Code for timezone abbreviation',
-  `gmt` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'GMT name of the timezone',
-  `offset` int(11) default NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Timezone Id',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Timezone full name',
+  `abbreviation` char(3) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'ISO Code for timezone abbreviation',
+  `gmt` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'GMT name of the timezone',
+  `offset` int(11) DEFAULT NULL,
   `country_id` int(10) unsigned NOT NULL COMMENT 'Country Id',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_timezone_country_id` (`country_id`),
   CONSTRAINT `FK_civicrm_timezone_country_id` FOREIGN KEY (`country_id`) REFERENCES `civicrm_country` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_timezone`
@@ -4279,33 +4275,33 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_uf_field`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_uf_field` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique table ID',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
   `uf_group_id` int(10) unsigned NOT NULL COMMENT 'Which form does this field belong to.',
-  `field_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name for CiviCRM field which is being exposed for sharing.',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this field currently shareable? If false, hide the field for all sharing contexts.',
-  `is_view` tinyint(4) default '0' COMMENT 'the field is view only and not editable in user forms.',
-  `is_required` tinyint(4) default '0' COMMENT 'Is this field required when included in a user or registration form?',
-  `weight` int(11) NOT NULL default '1' COMMENT 'Controls field display order when user framework fields are displayed in registration and account editing forms.',
-  `help_post` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display after this field.',
-  `help_pre` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display before this field.',
-  `visibility` enum('User and User Admin Only','Public Pages','Public Pages and Listings') collate utf8_unicode_ci default 'User and User Admin Only' COMMENT 'In what context(s) is this field visible.',
-  `in_selector` tinyint(4) default '0' COMMENT 'Is this field included as a column in the selector table?',
-  `is_searchable` tinyint(4) default '0' COMMENT 'Is this field included search form of profile?',
-  `location_type_id` int(10) unsigned default NULL COMMENT 'Location type of this mapping, if required',
-  `phone_type_id` int(10) unsigned default NULL COMMENT 'Phone Type Id, if required',
-  `label` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'To save label for fields.',
-  `field_type` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'This field saves field type (ie individual,household.. field etc).',
-  `is_reserved` tinyint(4) default NULL COMMENT 'Is this field reserved for use by some other CiviCRM functionality?',
-  PRIMARY KEY  (`id`),
+  `field_name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name for CiviCRM field which is being exposed for sharing.',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this field currently shareable? If false, hide the field for all sharing contexts.',
+  `is_view` tinyint(4) DEFAULT '0' COMMENT 'the field is view only and not editable in user forms.',
+  `is_required` tinyint(4) DEFAULT '0' COMMENT 'Is this field required when included in a user or registration form?',
+  `weight` int(11) NOT NULL DEFAULT '1' COMMENT 'Controls field display order when user framework fields are displayed in registration and account editing forms.',
+  `help_post` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display after this field.',
+  `help_pre` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display before this field.',
+  `visibility` enum('User and User Admin Only','Public Pages','Public Pages and Listings') COLLATE utf8_unicode_ci DEFAULT 'User and User Admin Only' COMMENT 'In what context(s) is this field visible.',
+  `in_selector` tinyint(4) DEFAULT '0' COMMENT 'Is this field included as a column in the selector table?',
+  `is_searchable` tinyint(4) DEFAULT '0' COMMENT 'Is this field included search form of profile?',
+  `location_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Location type of this mapping, if required',
+  `phone_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Phone Type Id, if required',
+  `label` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'To save label for fields.',
+  `field_type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'This field saves field type (ie individual,household.. field etc).',
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'Is this field reserved for use by some other CiviCRM functionality?',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_uf_field_uf_group_id` (`uf_group_id`),
   KEY `FK_civicrm_uf_field_location_type_id` (`location_type_id`),
   CONSTRAINT `FK_civicrm_uf_field_location_type_id` FOREIGN KEY (`location_type_id`) REFERENCES `civicrm_location_type` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_uf_field_uf_group_id` FOREIGN KEY (`uf_group_id`) REFERENCES `civicrm_uf_group` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_uf_field`
@@ -4322,32 +4318,32 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_uf_group`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_uf_group` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique table ID',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this form currently active? If false, hide all related fields for all sharing contexts.',
-  `group_type` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'This column will store a comma separated list of the type(s) of profile fields.',
-  `title` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Form title.',
-  `help_pre` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display before fields in form.',
-  `help_post` text collate utf8_unicode_ci COMMENT 'Description and/or help text to display after fields in form.',
-  `limit_listings_group_id` int(10) unsigned default NULL COMMENT 'Group id, foriegn key from civicrm_group',
-  `post_URL` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Redirect to URL.',
-  `add_to_group_id` int(10) unsigned default NULL COMMENT 'foreign key to civicrm_group_id',
-  `add_captcha` tinyint(4) default '0' COMMENT 'Should a CAPTCHA widget be included this Profile form.',
-  `is_map` tinyint(4) default '0' COMMENT 'Do we want to map results from this profile.',
-  `is_edit_link` tinyint(4) default '0' COMMENT 'Should edit link display in profile selector',
-  `is_uf_link` tinyint(4) default '0' COMMENT 'Should we display a link to the website profile in profile selector',
-  `is_update_dupe` tinyint(4) default '0' COMMENT 'Should we update the contact record if we find a duplicate',
-  `cancel_URL` varchar(255) collate utf8_unicode_ci default NULL COMMENT 'Redirect to URL when Cancle button clik .',
-  `is_cms_user` tinyint(4) default '0' COMMENT 'Should we create a cms user for this profile ',
-  `notify` text collate utf8_unicode_ci,
-  `is_reserved` tinyint(4) default NULL COMMENT 'Is this group reserved for use by some other CiviCRM functionality?',
-  `name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of the UF group for directly addressing it in the codebase',
-  `created_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_contact, who created this UF group',
-  `created_date` datetime default NULL COMMENT 'Date and time this UF group was created.',
-  `is_proximity_search` tinyint(4) default '0' COMMENT 'Should we include proximity search feature in this profile search form?',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this form currently active? If false, hide all related fields for all sharing contexts.',
+  `group_type` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'This column will store a comma separated list of the type(s) of profile fields.',
+  `title` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Form title.',
+  `help_pre` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display before fields in form.',
+  `help_post` text COLLATE utf8_unicode_ci COMMENT 'Description and/or help text to display after fields in form.',
+  `limit_listings_group_id` int(10) unsigned DEFAULT NULL COMMENT 'Group id, foriegn key from civicrm_group',
+  `post_URL` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Redirect to URL.',
+  `add_to_group_id` int(10) unsigned DEFAULT NULL COMMENT 'foreign key to civicrm_group_id',
+  `add_captcha` tinyint(4) DEFAULT '0' COMMENT 'Should a CAPTCHA widget be included this Profile form.',
+  `is_map` tinyint(4) DEFAULT '0' COMMENT 'Do we want to map results from this profile.',
+  `is_edit_link` tinyint(4) DEFAULT '0' COMMENT 'Should edit link display in profile selector',
+  `is_uf_link` tinyint(4) DEFAULT '0' COMMENT 'Should we display a link to the website profile in profile selector',
+  `is_update_dupe` tinyint(4) DEFAULT '0' COMMENT 'Should we update the contact record if we find a duplicate',
+  `cancel_URL` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Redirect to URL when Cancle button clik .',
+  `is_cms_user` tinyint(4) DEFAULT '0' COMMENT 'Should we create a cms user for this profile ',
+  `notify` text COLLATE utf8_unicode_ci,
+  `is_reserved` tinyint(4) DEFAULT NULL COMMENT 'Is this group reserved for use by some other CiviCRM functionality?',
+  `name` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of the UF group for directly addressing it in the codebase',
+  `created_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to civicrm_contact, who created this UF group',
+  `created_date` datetime DEFAULT NULL COMMENT 'Date and time this UF group was created.',
+  `is_proximity_search` tinyint(4) DEFAULT '0' COMMENT 'Should we include proximity search feature in this profile search form?',
+  PRIMARY KEY (`id`),
   KEY `FK_civicrm_uf_group_limit_listings_group_id` (`limit_listings_group_id`),
   KEY `FK_civicrm_uf_group_add_to_group_id` (`add_to_group_id`),
   KEY `FK_civicrm_uf_group_created_id` (`created_id`),
@@ -4355,7 +4351,7 @@ CREATE TABLE `civicrm_uf_group` (
   CONSTRAINT `FK_civicrm_uf_group_created_id` FOREIGN KEY (`created_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_uf_group_limit_listings_group_id` FOREIGN KEY (`limit_listings_group_id`) REFERENCES `civicrm_group` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_uf_group`
@@ -4372,22 +4368,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_uf_join`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_uf_join` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique table ID',
-  `is_active` tinyint(4) default '1' COMMENT 'Is this join currently active?',
-  `module` varchar(64) collate utf8_unicode_ci NOT NULL COMMENT 'Module which owns this uf_join instance, e.g. User Registration, CiviDonate, etc.',
-  `entity_table` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Name of table where item being referenced is stored. Modules which only need a single collection of uf_join instances may choose not to populate entity_table and entity_id.',
-  `entity_id` int(10) unsigned default NULL COMMENT 'Foreign key to the referenced item.',
-  `weight` int(11) NOT NULL default '1' COMMENT 'Controls display order when multiple user framework groups are setup for concurrent display.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique table ID',
+  `is_active` tinyint(4) DEFAULT '1' COMMENT 'Is this join currently active?',
+  `module` varchar(64) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Module which owns this uf_join instance, e.g. User Registration, CiviDonate, etc.',
+  `entity_table` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Name of table where item being referenced is stored. Modules which only need a single collection of uf_join instances may choose not to populate entity_table and entity_id.',
+  `entity_id` int(10) unsigned DEFAULT NULL COMMENT 'Foreign key to the referenced item.',
+  `weight` int(11) NOT NULL DEFAULT '1' COMMENT 'Controls display order when multiple user framework groups are setup for concurrent display.',
   `uf_group_id` int(10) unsigned NOT NULL COMMENT 'Which form does this field belong to.',
-  PRIMARY KEY  (`id`),
+  PRIMARY KEY (`id`),
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `FK_civicrm_uf_join_uf_group_id` (`uf_group_id`),
   CONSTRAINT `FK_civicrm_uf_join_uf_group_id` FOREIGN KEY (`uf_group_id`) REFERENCES `civicrm_uf_group` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_uf_join`
@@ -4404,23 +4400,23 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_uf_match`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_uf_match` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'System generated ID.',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'System generated ID.',
   `domain_id` int(10) unsigned NOT NULL COMMENT 'Which Domain is this match entry for',
   `uf_id` int(10) unsigned NOT NULL COMMENT 'UF ID',
-  `uf_name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'UF Name',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `language` varchar(5) collate utf8_unicode_ci default NULL COMMENT 'UI language preferred by the given user/contact',
-  PRIMARY KEY  (`id`),
+  `uf_name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'UF Name',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `language` varchar(5) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'UI language preferred by the given user/contact',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `UI_uf_name_domain_id` (`uf_name`,`domain_id`),
   UNIQUE KEY `UI_contact_domain_id` (`contact_id`,`domain_id`),
   KEY `FK_civicrm_uf_match_domain_id` (`domain_id`),
   CONSTRAINT `FK_civicrm_uf_match_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_civicrm_uf_match_domain_id` FOREIGN KEY (`domain_id`) REFERENCES `civicrm_domain` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_uf_match`
@@ -4428,6 +4424,7 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_uf_match` WRITE;
 /*!40000 ALTER TABLE `civicrm_uf_match` DISABLE KEYS */;
+INSERT INTO `civicrm_uf_match` VALUES (1,1,1,'bluebird.admin@nysenate.gov',1,NULL);
 /*!40000 ALTER TABLE `civicrm_uf_match` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4436,20 +4433,20 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_value_activity_details_6`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_value_activity_details_6` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Default MySQL primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Default MySQL primary key',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Table that this extends',
-  `place_of_inquiry_43` varchar(255) collate utf8_unicode_ci default NULL,
-  `activity_category_44` varchar(255) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `place_of_inquiry_43` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `activity_category_44` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique_entity_id` (`entity_id`),
   KEY `INDEX_place_of_inquiry_43` (`place_of_inquiry_43`),
   KEY `INDEX_activity_category_44` (`activity_category_44`),
   CONSTRAINT `FK_civicrm_value_activity_details_6_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_activity` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_value_activity_details_6`
@@ -4457,7 +4454,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_value_activity_details_6` WRITE;
 /*!40000 ALTER TABLE `civicrm_value_activity_details_6` DISABLE KEYS */;
-INSERT INTO `civicrm_value_activity_details_6` VALUES (1,90091002,'',''),(2,90091004,'',''),(3,90091006,'',''),(4,90091008,'',''),(5,90091010,'',''),(6,90091012,'',''),(7,90091014,'',''),(8,544,'',''),(9,545,'',''),(10,547,'',''),(11,549,'',''),(12,550,'',''),(13,551,'',''),(14,553,'','Budget Position'),(15,554,'','Budget Position'),(16,556,'','Budget Position'),(17,557,'',''),(18,559,'',''),(19,561,'',''),(20,562,'','Request Information'),(21,563,'',''),(22,565,'','Request Agency Support'),(23,566,'','Request Information'),(24,569,'',''),(25,571,'','Request Meeting'),(26,573,'','Event Invitation'),(28,576,'','Request Meeting'),(29,577,'','Legislative Position'),(30,578,'','Request Meeting'),(31,580,'','Request Meeting'),(32,582,'','Referral'),(33,585,'','Request Information'),(34,587,'',''),(35,588,'','Budget Position'),(36,592,'',''),(37,594,'',''),(38,33,'',''),(39,596,'',''),(40,597,'',''),(41,598,'','Event Invitation'),(42,599,'',''),(43,600,'','Request Agency Support'),(44,1,'','');
 /*!40000 ALTER TABLE `civicrm_value_activity_details_6` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4466,17 +4462,17 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_value_attachments_5`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_value_attachments_5` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Default MySQL primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Default MySQL primary key',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Table that this extends',
-  `attachment_36` int(10) unsigned default NULL,
-  `attachment_2_37` int(10) unsigned default NULL,
-  `attachment_3_38` int(10) unsigned default NULL,
-  `attachment_4_39` int(10) unsigned default NULL,
-  `attachment_5_40` int(10) unsigned default NULL,
-  PRIMARY KEY  (`id`),
+  `attachment_36` int(10) unsigned DEFAULT NULL,
+  `attachment_2_37` int(10) unsigned DEFAULT NULL,
+  `attachment_3_38` int(10) unsigned DEFAULT NULL,
+  `attachment_4_39` int(10) unsigned DEFAULT NULL,
+  `attachment_5_40` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique_entity_id` (`entity_id`),
   KEY `FK_civicrm_value_attachments_5_attachment_36` (`attachment_36`),
   KEY `FK_civicrm_value_attachments_5_attachment_2_37` (`attachment_2_37`),
@@ -4490,7 +4486,7 @@ CREATE TABLE `civicrm_value_attachments_5` (
   CONSTRAINT `FK_civicrm_value_attachments_5_attachment_5_40` FOREIGN KEY (`attachment_5_40`) REFERENCES `civicrm_file` (`id`) ON DELETE SET NULL,
   CONSTRAINT `FK_civicrm_value_attachments_5_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_value_attachments_5`
@@ -4498,7 +4494,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_value_attachments_5` WRITE;
 /*!40000 ALTER TABLE `civicrm_value_attachments_5` DISABLE KEYS */;
-INSERT INTO `civicrm_value_attachments_5` VALUES (1,136,2,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `civicrm_value_attachments_5` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4507,26 +4502,26 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_value_constituent_information_1`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_value_constituent_information_1` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `entity_id` int(10) unsigned NOT NULL,
-  `professional_accreditations_16` varchar(255) collate utf8_unicode_ci default NULL,
-  `interest_in_volunteering__17` tinyint(4) default NULL,
-  `active_constituent__18` tinyint(4) default NULL,
-  `friend_of_the_senator__19` tinyint(4) default NULL,
-  `skills_areas_of_interest_20` text collate utf8_unicode_ci,
-  `honors_and_awards_21` varchar(255) collate utf8_unicode_ci default NULL,
-  `voter_registration_status_23` varchar(255) collate utf8_unicode_ci default NULL,
-  `boe_date_of_registration_24` datetime default NULL,
-  `other_asian_33` varchar(255) collate utf8_unicode_ci default NULL,
-  `other_pacific_islander_34` varchar(255) collate utf8_unicode_ci default NULL,
-  `other_hispanic_latino_spanish_35` varchar(255) collate utf8_unicode_ci default NULL,
-  `individual_category_42` varchar(255) collate utf8_unicode_ci default NULL,
-  `other_gender_45` varchar(255) collate utf8_unicode_ci default NULL,
-  `ethnicity1_58` varchar(255) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `professional_accreditations_16` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `interest_in_volunteering__17` tinyint(4) DEFAULT NULL,
+  `active_constituent__18` tinyint(4) DEFAULT NULL,
+  `friend_of_the_senator__19` tinyint(4) DEFAULT NULL,
+  `skills_areas_of_interest_20` text COLLATE utf8_unicode_ci,
+  `honors_and_awards_21` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `voter_registration_status_23` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `boe_date_of_registration_24` datetime DEFAULT NULL,
+  `other_asian_33` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `other_pacific_islander_34` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `other_hispanic_latino_spanish_35` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `individual_category_42` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `other_gender_45` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ethnicity1_58` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique_entity_id` (`entity_id`),
   KEY `INDEX_professional_accreditations_16` (`professional_accreditations_16`),
   KEY `INDEX_interest_in_volunteering__17` (`interest_in_volunteering__17`),
@@ -4541,7 +4536,7 @@ CREATE TABLE `civicrm_value_constituent_information_1` (
   KEY `INDEX_other_gender_45` (`other_gender_45`),
   CONSTRAINT `FK_civicrm_value_constituent_information_1_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_value_constituent_information_1`
@@ -4549,7 +4544,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_value_constituent_information_1` WRITE;
 /*!40000 ALTER TABLE `civicrm_value_constituent_information_1` DISABLE KEYS */;
-INSERT INTO `civicrm_value_constituent_information_1` VALUES (1,104,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,105,'',0,1,NULL,'','','',NULL,'','','','','',NULL),(3,106,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,107,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(5,103,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(6,51001,'',NULL,NULL,NULL,'','','',NULL,'','','','',NULL,NULL),(7,19,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(8,34,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(9,50,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(10,70,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(11,117,'',0,1,1,'','','unregistered',NULL,'','','','non_district_individuals','',NULL),(12,120,'',NULL,NULL,NULL,'','','registered',NULL,'','','','','',NULL),(13,124,'',0,1,0,'','','',NULL,'','','','','',NULL),(14,114,'',0,1,0,'','','',NULL,'','','','','',NULL),(15,127,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(16,111,'',NULL,1,NULL,'','','registered',NULL,'','','','support_staff','',NULL),(17,116,'',NULL,NULL,NULL,'','','registered',NULL,'','','','','',NULL),(18,129,'',0,1,0,'','','registered',NULL,'','','','','',NULL),(19,137,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(20,138,'',0,1,0,'skill1 skill2,skill3, skill4','','unregistered','2018-04-25 00:00:00','','','','press_media_contacts','what?',NULL),(21,139,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(22,140,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(23,144,'',0,1,0,'','','',NULL,'','','','','',NULL),(24,143,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(25,115,'',0,1,1,'Office Support','','registered',NULL,'','','','support_staff','',NULL),(26,136,'',NULL,NULL,NULL,'','','registered',NULL,'','','','','female',NULL),(27,145,'',0,1,1,'','','registered',NULL,'','','','','',NULL),(28,146,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(29,147,'',0,1,0,'Interested in Environmental Conservation','','registered',NULL,'','','','','',NULL),(30,150,'',1,1,0,'Administrative, telemarket skills, customer service oriented','','',NULL,'','','','','',NULL),(31,4,'',NULL,NULL,NULL,'','','',NULL,'','','','','','whiteasian_indian'),(32,6,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(33,7,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL),(35,8,'pro accred',1,0,NULL,'','','',NULL,'','','','','',NULL),(37,1,'',NULL,NULL,NULL,'','','',NULL,'','','','','',NULL);
 /*!40000 ALTER TABLE `civicrm_value_constituent_information_1` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4558,22 +4552,22 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_value_contact_source_4`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_value_contact_source_4` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Default MySQL primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Default MySQL primary key',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Table that this extends',
-  `contact_source_31` varchar(255) collate utf8_unicode_ci default NULL,
-  `other_contact_source_32` varchar(255) collate utf8_unicode_ci default NULL,
-  `record_type_59` varchar(255) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `contact_source_31` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `other_contact_source_32` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `record_type_59` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique_entity_id` (`entity_id`),
   KEY `INDEX_contact_source_31` (`contact_source_31`),
   KEY `INDEX_other_contact_source_32` (`other_contact_source_32`),
   KEY `INDEX_record_type_59` (`record_type_59`),
   CONSTRAINT `FK_civicrm_value_contact_source_4_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_value_contact_source_4`
@@ -4581,7 +4575,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_value_contact_source_4` WRITE;
 /*!40000 ALTER TABLE `civicrm_value_contact_source_4` DISABLE KEYS */;
-INSERT INTO `civicrm_value_contact_source_4` VALUES (1,51001,'','',NULL),(2,92,'','',NULL),(3,103,'','',NULL),(4,105,'phone_call','',NULL),(5,19,'','',NULL),(6,107,'','',NULL),(7,34,'','',NULL),(8,50,'','',NULL),(9,70,'','',NULL),(10,117,'phone_call','',NULL),(11,5,'','',NULL),(12,120,'boe','',NULL),(13,124,'boe','',NULL),(14,126,'','',NULL),(15,114,'email','',NULL),(16,127,'','',NULL),(17,111,'','',NULL),(18,116,'','',NULL),(19,129,'','',NULL),(20,137,'','',NULL),(21,138,'','',NULL),(22,139,'','',NULL),(23,140,'','',NULL),(24,144,'','',NULL),(25,143,'','',NULL),(26,115,'albany_office_visit','',NULL),(27,136,'boe','',NULL),(28,145,'','',NULL),(29,146,'','',NULL),(30,147,'boe','',NULL),(31,150,'phone_call','',NULL),(32,152,'email','',NULL),(33,4,'','',NULL),(34,6,'',NULL,NULL),(35,7,'',NULL,NULL),(37,8,'',NULL,NULL),(39,1,'',NULL,NULL);
 /*!40000 ALTER TABLE `civicrm_value_contact_source_4` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4590,24 +4583,24 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_value_district_information_7`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_value_district_information_7` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Default MySQL primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Default MySQL primary key',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Table that this extends',
-  `congressional_district_46` varchar(255) collate utf8_unicode_ci default NULL,
-  `ny_senate_district_47` varchar(255) collate utf8_unicode_ci default NULL,
-  `ny_assembly_district_48` varchar(255) collate utf8_unicode_ci default NULL,
-  `election_district_49` varchar(255) collate utf8_unicode_ci default NULL,
-  `county_50` varchar(255) collate utf8_unicode_ci default NULL,
-  `county_legislative_district_51` varchar(255) collate utf8_unicode_ci default NULL,
-  `town_52` varchar(255) collate utf8_unicode_ci default NULL,
-  `ward_53` varchar(255) collate utf8_unicode_ci default NULL,
-  `school_district_54` varchar(255) collate utf8_unicode_ci default NULL,
-  `new_york_city_council_55` varchar(255) collate utf8_unicode_ci default NULL,
-  `neighborhood_56` varchar(255) collate utf8_unicode_ci default NULL,
-  `last_import_57` datetime default NULL,
-  PRIMARY KEY  (`id`),
+  `congressional_district_46` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ny_senate_district_47` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ny_assembly_district_48` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `election_district_49` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `county_50` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `county_legislative_district_51` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `town_52` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `ward_53` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `school_district_54` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `new_york_city_council_55` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `neighborhood_56` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `last_import_57` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique_entity_id` (`entity_id`),
   KEY `INDEX_congressional_district_46` (`congressional_district_46`),
   KEY `INDEX_ny_senate_district_47` (`ny_senate_district_47`),
@@ -4622,7 +4615,7 @@ CREATE TABLE `civicrm_value_district_information_7` (
   KEY `INDEX_neighborhood_56` (`neighborhood_56`),
   CONSTRAINT `FK_civicrm_value_district_information_7_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_address` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_value_district_information_7`
@@ -4630,7 +4623,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_value_district_information_7` WRITE;
 /*!40000 ALTER TABLE `civicrm_value_district_information_7` DISABLE KEYS */;
-INSERT INTO `civicrm_value_district_information_7` VALUES (2,46,'','','','','','','','','','',NULL,NULL),(4,79,'','','','','','','','','','',NULL,NULL),(5,62,'','','','','','','','','','',NULL,NULL),(6,92,'','','','','','','','','','',NULL,NULL),(7,25,'','','','','','','','','','',NULL,NULL),(8,93,'','41','','','Col','','Gnpt','','Huds','',NULL,NULL),(9,94,'','','','','','','','','','',NULL,NULL),(10,95,'','','','','','','','','','',NULL,NULL),(11,96,'','','','','','','','','','',NULL,NULL),(13,98,'','','','','Col','','Gnpt','','Hud','',NULL,NULL),(14,99,'','','','','','','','','','',NULL,NULL),(15,100,'','','','','','','','','','',NULL,NULL),(16,101,'','','','','','','','','','',NULL,NULL),(17,103,'','','','','','','','','','',NULL,NULL),(18,104,'','','','','Columbia','','','','','',NULL,NULL),(19,105,'','','','','','','','','','',NULL,NULL),(20,106,'','','','','','','','','','',NULL,NULL),(21,107,'32','15','','','','','','','','',NULL,NULL),(22,108,'','','','','Albany','','','','Albany','',NULL,NULL),(23,109,'','','','','Albany','','','','','',NULL,NULL),(24,3,'','','','','','','','','','','',NULL),(25,2,'','','','','','','','','','','',NULL);
 /*!40000 ALTER TABLE `civicrm_value_district_information_7` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4639,15 +4631,15 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_value_organization_constituent_informa_3`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_value_organization_constituent_informa_3` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Default MySQL primary key',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Default MySQL primary key',
   `entity_id` int(10) unsigned NOT NULL COMMENT 'Table that this extends',
-  `charity_registration__dos__25` varchar(255) collate utf8_unicode_ci default NULL,
-  `employer_identification_number___26` varchar(255) collate utf8_unicode_ci default NULL,
-  `organization_category_41` varchar(255) collate utf8_unicode_ci default NULL,
-  PRIMARY KEY  (`id`),
+  `charity_registration__dos__25` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `employer_identification_number___26` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `organization_category_41` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
   UNIQUE KEY `unique_entity_id` (`entity_id`),
   KEY `INDEX_charity_registration__dos__25` (`charity_registration__dos__25`),
   KEY `INDEX_employer_identification_number___26` (`employer_identification_number___26`),
@@ -4655,7 +4647,7 @@ CREATE TABLE `civicrm_value_organization_constituent_informa_3` (
   KEY `dedupe_index_employer_identification_number___26` (`employer_identification_number___26`),
   CONSTRAINT `FK_civicrm_value_organization_const_0b6696f66ab102ad` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_value_organization_constituent_informa_3`
@@ -4663,7 +4655,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_value_organization_constituent_informa_3` WRITE;
 /*!40000 ALTER TABLE `civicrm_value_organization_constituent_informa_3` DISABLE KEYS */;
-INSERT INTO `civicrm_value_organization_constituent_informa_3` VALUES (1,92,'','','');
 /*!40000 ALTER TABLE `civicrm_value_organization_constituent_informa_3` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4672,19 +4663,19 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_website`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_website` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Unique Website ID',
-  `contact_id` int(10) unsigned default NULL COMMENT 'FK to Contact ID',
-  `url` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Website',
-  `website_type_id` int(10) unsigned default NULL COMMENT 'Which Website type does this website belong to.',
-  PRIMARY KEY  (`id`),
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Unique Website ID',
+  `contact_id` int(10) unsigned DEFAULT NULL COMMENT 'FK to Contact ID',
+  `url` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Website',
+  `website_type_id` int(10) unsigned DEFAULT NULL COMMENT 'Which Website type does this website belong to.',
+  PRIMARY KEY (`id`),
   KEY `UI_website_type_id` (`website_type_id`),
   KEY `FK_civicrm_website_contact_id` (`contact_id`),
   CONSTRAINT `FK_civicrm_website_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_website`
@@ -4692,7 +4683,6 @@ SET character_set_client = @saved_cs_client;
 
 LOCK TABLES `civicrm_website` WRITE;
 /*!40000 ALTER TABLE `civicrm_website` DISABLE KEYS */;
-INSERT INTO `civicrm_website` VALUES (3,1,NULL,1),(4,4,NULL,1);
 /*!40000 ALTER TABLE `civicrm_website` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4701,14 +4691,14 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `civicrm_worldregion`;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `civicrm_worldregion` (
-  `id` int(10) unsigned NOT NULL auto_increment COMMENT 'Country Id',
-  `name` varchar(128) collate utf8_unicode_ci default NULL COMMENT 'Region name to be associated with countries',
-  PRIMARY KEY  (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Country Id',
+  `name` varchar(128) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'Region name to be associated with countries',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `civicrm_worldregion`
@@ -4729,4 +4719,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-09-07 20:06:02
+-- Dump completed on 2010-09-10 16:42:55
