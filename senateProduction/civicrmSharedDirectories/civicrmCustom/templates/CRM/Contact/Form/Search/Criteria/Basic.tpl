@@ -80,7 +80,7 @@
     </td>
     <td>
     <div style="display:block;">{$form.buttons.html}{help id='id-advanced-intro'}</div>
-    <a href="/nyss/civicrm/contact/search/advanced&reset=1" class="resetbutton" style="float:left;margin-left:0;"><span>Reset Form</span></a>
+    <a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton" style="float:left;margin-left:0;"><span>Reset Form</span></a>
     </td>
 </tr>
 <tr>

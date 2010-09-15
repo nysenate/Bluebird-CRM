@@ -101,7 +101,7 @@ function loadPanes( id ) {
         <tr>
             <td>{$form.buttons.html}  {if $form.deleted_contacts}
          {$form.deleted_contacts.html} {$form.deleted_contacts.label}        
-    {/if}<a href="/nyss/civicrm/contact/search/advanced&reset=1" class="resetbutton"><span>Reset Form</span></a></td>
+    {/if}<a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton"><span>Reset Form</span></a></td>
         </tr>
     </table>
 {/strip}
