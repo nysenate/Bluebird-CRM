@@ -158,6 +158,14 @@ $bluebird_db_info = array(
           'last_import_57'
       )
   ),
+  "constituentinformation" => array(
+      "abbrev" => "constinf",
+      "table" => "civicrm_value_constituent_information_1",
+      "cols" => array(
+          'entity_id',
+          'record_type_61'
+      )
+  },
   "email" => array(
       "abbrev" => "em",
       "table" => "civicrm_email",
