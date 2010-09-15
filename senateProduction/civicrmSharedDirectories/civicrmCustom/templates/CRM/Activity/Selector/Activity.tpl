@@ -75,7 +75,7 @@
             {assign var="showTarget" value=0}
             {foreach from=$row.target_contact_name item=targetName key=targetID}
                 {if $showTarget < 5}
-                    {if $showTarget};&nbsp;{/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$targetID`"}" title="{ts}View contact{/ts}">{$targetName}</a>
+                    {if $showTarget} {/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$targetID`"}" title="{ts}View contact{/ts}">{$targetName}</a>
                     {assign var="showTarget" value=$showTarget+1}
                 {/if}
             {/foreach}
