@@ -101,6 +101,10 @@
 #District_Information_7_1 .crm-accordion-header {
 	font-size: 14px;
 }
-
-
+#crm-container .crm-button_qf_Contact_refresh_dedupe {
+	display: none;
+}
+.matching-contacts-actions a.action-item {
+	padding-right: 8px;
+}
 
