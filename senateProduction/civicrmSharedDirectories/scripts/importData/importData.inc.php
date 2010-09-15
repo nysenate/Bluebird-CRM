@@ -933,18 +933,18 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			$first='HoH';
 			$second='MoH';
 
-		} elseif ($aRel['ctRow']['TC2']=='HoH') {
+		} elseif ($aRel['relationshipCtRow']['TC2']=='HoH') {
 
 			$first='MoH';
 			$second='HoH';
 		//default
 		} else {
 
-                        $first='HoH';
+                        $first='MoH';
                         $second='MoH';
 		}
 
-/*implement this later:
+/*implement this later: **decided against
 		} elseif ($aRel['ctRow']['GENDER']=='M') {
 
                         $first='HoH';
