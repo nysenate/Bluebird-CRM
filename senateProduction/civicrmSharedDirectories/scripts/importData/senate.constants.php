@@ -165,7 +165,7 @@ $bluebird_db_info = array(
           'entity_id',
           'record_type_61'
       )
-  },
+  ),
   "email" => array(
       "abbrev" => "em",
       "table" => "civicrm_email",
