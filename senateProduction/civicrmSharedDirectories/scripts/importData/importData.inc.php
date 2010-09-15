@@ -505,6 +505,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                              exit("i/o fail: note");
 }
 
+		//add the constituent information
+                        $params = array();
+                        $params['entity_id'] = $importID;
+                        $params['record_type_61'] = $ictRow['RT'];
+                        if (!writeToFile($fout['constituentinformation'], $params))
+                             exit("i/o fail: constituent information");
+
+
 		//home address
 		$params = create_civi_address(++$addressID, $contactID, $ctRow, 1);
 
@@ -840,7 +848,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 			//if 'Y' then add the tag as a freeform tag
 			if (trim($isRow['IS_TAG'])=='Y') {
-				writeFreeformTag($fout['tag'], $contactID, $isRow['CATEGORY']);
+				writeFreeformTag($fout['tag'], $contactID, $isRow['ISSUEDESCRIPTION']);
 			}
 
 			//get the most recent date
@@ -925,18 +933,18 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 			$first='HoH';
 			$second='MoH';
 
-		} elseif ($aRel['ctRow']['TC2']=='HoH') {
+		} elseif ($aRel['relationshipCtRow']['TC2']=='HoH') {
 
 			$first='MoH';
 			$second='HoH';
 		//default
 		} else {
 
-                        $first='HoH';
+                        $first='MoH';
                         $second='MoH';
 		}
 
-/*implement this later:
+/*implement this later: **decided against
 		} elseif ($aRel['ctRow']['GENDER']=='M') {
 
                         $first='HoH';
