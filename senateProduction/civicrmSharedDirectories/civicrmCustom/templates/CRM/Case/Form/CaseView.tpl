@@ -451,12 +451,13 @@ cj(document).ready(function(){
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
   
-  {if $clientRelationships}
-    <div class="crm-submit-buttons">
+  <!--NYSS 2442 moved button outside of IF clause to allow access if no previous relationships exist-->
+  <div class="crm-submit-buttons">
     <a class="button" href="#" onClick="window.location='{crmURL p='civicrm/contact/view/rel' q="action=add&reset=1&cid=`$contactId`&caseID=`$caseID`"}'; return false;">
-    <span><div class="icon add-icon"></div>{ts}Add client relationship{/ts}</a></span>
-    </div>
-	
+    <span><div class="icon add-icon"></div>{ts}Add client relationship{/ts}</span></a>
+  </div>
+  
+  {if $clientRelationships}
     <table class="report-layout otherRelationships">
     	<tr class="columnheader">
     		<th>{ts}Client Relationship{/ts}</th>
