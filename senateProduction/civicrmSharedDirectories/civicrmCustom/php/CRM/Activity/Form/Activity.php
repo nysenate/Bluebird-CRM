@@ -335,7 +335,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             }
            
         } else if ( in_array( $this->_context, array( 'standalone', 'home' ) ) ) {
-            $url = CRM_Utils_System::url('civicrm/dashboard', 'reset=1' );
+            $url = CRM_Utils_System::url('civicrm/dashboard', 'reset=1&resetCache=1' ); //LCD
         } else if ( $this->_context == 'search' ) {
             $url = CRM_Utils_System::url( 'civicrm/activity/search', 'force=1' );
         } else if ( $this->_context != 'caseActivity' ) {
