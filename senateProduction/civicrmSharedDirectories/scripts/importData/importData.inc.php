@@ -505,6 +505,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                              exit("i/o fail: note");
 }
 
+		//add the constituent information
+                        $params = array();
+                        $params['entity_id'] = $importID;
+                        $params['record_type_61'] = $ictRow['RT'];
+                        if (!writeToFile($fout['constituentinformation'], $params))
+                             exit("i/o fail: constituent information");
+
+
 		//home address
 		$params = create_civi_address(++$addressID, $contactID, $ctRow, 1);
 
@@ -840,7 +848,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
 			//if 'Y' then add the tag as a freeform tag
 			if (trim($isRow['IS_TAG'])=='Y') {
-				writeFreeformTag($fout['tag'], $contactID, $isRow['CATEGORY']);
+				writeFreeformTag($fout['tag'], $contactID, $isRow['ISSUEDESCRIPTION']);
 			}
 
 			//get the most recent date
