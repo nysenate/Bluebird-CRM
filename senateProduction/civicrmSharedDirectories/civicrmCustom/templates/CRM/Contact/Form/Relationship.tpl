@@ -458,15 +458,18 @@ cj(".contact_select .form-checkbox").each( function( ) {
 {/literal} {/if} {literal}
 
 {/literal} {if $action EQ 1}{literal} 
-cj('#saveDetails').hide( );
-cj('#addCurrentEmployer').hide( );
-cj('#addCurrentEmployee').hide( );
+	cj('#saveDetails').hide( );
+	cj('#addCurrentEmployer').hide( );
+	cj('#addCurrentEmployee').hide( );
 
-cj('#rel_contact').focus( function() {
-    cj("input[name=rel_contact_id]").val('');
-    cj('#relationship-refresh').show( );
-    cj('#relationship-refresh-save').hide( );	      
-});
+	//NYSS 2298 altered to better handle behavior in IE; also improves FF
+	cj('#rel_contact').blur( function() {
+	    cj('#rel_contact').change ( function() {
+			cj("input[name=rel_contact_id]").val('');
+	    	cj('#relationship-refresh').show( );
+	    	cj('#relationship-refresh-save').hide( );
+		});
+	});
 
 {/literal}{if $searchRows || $callAjax}{literal} 
 show('saveElements');
