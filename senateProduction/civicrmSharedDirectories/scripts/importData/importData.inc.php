@@ -2,6 +2,11 @@
 
 define('DELIM', '~');
 define("DBNULL", null);
+// ParentID of all top-level category tags in the issue code hierarchy.
+define('CATEGORY_TAG_PARENT_ID', 291);
+// ParentID of all freeform tags.
+define('FREEFORM_TAG_PARENT_ID', 296);
+define('COUNTRY_CODE_USA', 1228);
 
 /*
 ** NOTES:
@@ -560,7 +565,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         'city'               => $ctRow['ADDR_WORK_CITY'],
         'postal_code'        => $ctRow['ADDR_WORK_ZIP'],
         'postal_code_suffix' => DBNULL,
-        'country_id'         => 1228,
+        'country_id'         => COUNTY_CODE_USA,
         'state_province_id'  => $aStates[$ctRow['ADDR_WORK_STATE']]);
 
       if (!writeToFile($fout['address'], $params)) {
@@ -856,18 +861,18 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     //cumulate issues into one note
     $bIssue = false;
     $tstamp = null;
-    $note='';
+    $note = '';
 
     while ($isRow && $isRow['KEY']<$importID) {
       $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
     }
     while ($isRow && $isRow['KEY'] == $importID) {
       $bIssue = true;
-      //pass these params to the tag writer since it has to recursively select the tags
+      //pass these params to tag writer since it has to recursively select tags
       writeRecursiveTags($fout['tag'], $contactID, $isRow['CATEGORY']);
 
       //if 'Y' then add the tag as a freeform tag
-      if (trim($isRow['IS_TAG'])=='Y') {
+      if (trim($isRow['IS_TAG']) == 'Y') {
         writeFreeformTag($fout['tag'], $contactID, $isRow['ISSUEDESCRIPTION']);
       }
 
@@ -1047,7 +1052,10 @@ function update($task, $importSet, $importDir, $sourceDesc)
     switch (strtolower($task)) {
       case 'updatecontactprefixid':
         $prefix_id = isset($aPrefix[$ctRow[40]]) ? $aPrefix[$ctRow[40]] : DBNULL;
-        $dao = &CRM_Core_DAO::executeQuery( "update civicrm_contact set prefix_id={$prefix_id} where source='{$sourceDesc}' AND user_unique_id = {$ctRow[0]};" , CRM_Core_DAO::$_nullArray );
+        $dao = &CRM_Core_DAO::executeQuery(
+              "update civicrm_contact set prefix_id={$prefix_id} ".
+              "where source='{$sourceDesc}' AND user_unique_id = {$ctRow[0]};"
+              , CRM_Core_DAO::$_nullArray );
         break;
     }
   
@@ -1063,22 +1071,22 @@ function writeFreeformTag($f, $id, $tag)
   global $aTags;
 
   //get master tag list, loads into global var
-  if (!isset($aFreeformTags)) getFreeformTags();  
+  if (!isset($aFreeformTags)) {
+    getFreeformTags();  
+  }
 
   //create the tag if necessary - can't exist anywhere so using the big Tag category
   if (!isset($aFreeformTags[$tag]) && !isset($aTags[$tag])) {
-    print_r("not finding tag $tag\n");
-
     $session =& CRM_Core_Session::singleton();
 
     $params = array(
-      'entity_id'     => $contact->id,
+      'entity_id'     => null,
       'name'          => $tag,
       'description'   => $tag,
-      'parent_id'     => 296, //parent_id of free form tags
+      'parent_id'     => FREEFORM_TAG_PARENT_ID,
       'is_selectable' => 1,
       'is_reserverd'  => 0,
-      'used_for'      => civicrm_contact,
+      'used_for'      => 'civicrm_contact',
     );
     $oTag = CRM_Core_BAO_Tag::add($params, CRM_Core_DAO::$_nullArray);
 
@@ -1128,7 +1136,7 @@ function writeRecursiveTags($f, $id, $tag)
 
   //call this function again until we've gone up the chain.
   if ($aTags[$tag]['parent_id']>0) {
-    writeRecursiveTags($f,$id,$aTagsByID[$aTags[$tag]['parent_id']]['name']);
+    writeRecursiveTags($f, $id, $aTagsByID[$aTags[$tag]['parent_id']]['name']);
   }
 } // writeRecursiveTags()
 
@@ -1141,7 +1149,10 @@ function getTags()
 
   $session =& CRM_Core_Session::singleton();
 
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT name, id, parent_id from civicrm_tag where parent_id=291 or id=291;", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery(
+           "SELECT name, id, parent_id from civicrm_tag ".
+           "where parent_id=".CATEGORY_TAG_PARENT_ID.
+           " or id=".CATEGORY_TAG_PARENT_ID.";", CRM_Core_DAO::$_nullArray);
 
   $aTag = array();
 
@@ -1160,7 +1171,10 @@ function getFreeFormTags()
   global $aFreeformTags;
 
   $session =& CRM_Core_Session::singleton();
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT name, id from civicrm_tag where parent_id=296 or id=296;", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery(
+           "SELECT name, id from civicrm_tag ".
+           "where parent_id=".FREEFORM_TAG_PARENT_ID.
+           " or id=".FREEFORM_TAG_PARENT_ID.";", CRM_Core_DAO::$_nullArray);
 
   $aTag = array();
 
@@ -1176,7 +1190,9 @@ function getStates()
   global $aStates;
 
   $session =& CRM_Core_Session::singleton();
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT abbreviation, id from civicrm_state_province where country_id=1228;", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery(
+           "SELECT abbreviation, id from civicrm_state_province ".
+           "where country_id=".COUNTRY_CODE_USA.";", CRM_Core_DAO::$_nullArray);
 
   while ($dao->fetch()) {
     $aStates[$dao->abbreviation] = $dao->id;
@@ -1233,7 +1249,7 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = 1)
     'city'                   => $omis_flds['CITY'],
     'postal_code'            => $omis_flds['ZIP5'],
     'postal_code_suffix'     => $omis_flds['ZIP4'],
-    'country_id'             => 1228,
+    'country_id'             => COUNTRY_CODE_USA,
     'state_province_id'      => $aStates[$omis_flds['STATE']]
   );
   return $addr;
