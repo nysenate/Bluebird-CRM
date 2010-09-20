@@ -4,6 +4,8 @@ define('DELIM', '~');
 define("DBNULL", null);
 // ParentID of all top-level category tags in the issue code hierarchy.
 define('CATEGORY_TAG_PARENT_ID', 291);
+// Parent of all position (legislative) tags.
+define('POSITION_TAG_PARENT_ID', 292);
 // ParentID of all freeform tags.
 define('FREEFORM_TAG_PARENT_ID', 296);
 define('COUNTRY_CODE_USA', 1228);
@@ -252,31 +254,42 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   } while ($isRow && !$done);
 
   if (!$ctRow) {
-    cLog(0,'INFO',"error opening files!");
+    cLog(0, 'INFO', "Error opening files!");
     return false;
   }
 
   //count number of lines in the file
   $numContacts = countFileLines($infiles['contacts']) - $skipped; 
 
-  cLog(0,'info',"importing {$numContacts} lines starting with $startID, skipped $skipped");
-  cLog(0,'info',"starting OMIS IDs: ct=".$ctRow['KEY'].",nt=".$ntRow['KEY'].",cs=".$csRow['KEY'].",is=".$isRow['KEY']."\n");
+  cLog(0, 'info', "importing {$numContacts} lines starting with $startID, skipped $skipped");
+  cLog(0, 'info', "starting OMIS IDs: ct=".$ctRow['KEY'].",nt=".$ntRow['KEY'].",cs=".$csRow['KEY'].",is=".$isRow['KEY']."\n");
 
   //get the max contactID from civi
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT max(id) as maxid from civicrm_contact;", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_contact;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $contactID = $dao->maxid;
   cLog(0,'info',"starting contactID will be ".($contactID+1));
 
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT max(id) as maxid from civicrm_address;", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_address;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $addressID = $dao->maxid;
   cLog(0,'info',"starting addressID will be ".($addressID+1));
 
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT max(id) as maxid from civicrm_activity;", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_activity;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $activityID = $dao->maxid;
   cLog(0,'info',"starting activityID will be ".($activityID+1));
+
+  // Array that maps tag name to tagID.
+  $aTagsByName = array();
+  // Array that maps tagID to its parent tagID.
+  $aTagsByID = array();
+  // Array that stores hierarchy tags that could not be mapped.
+  $aUnsavedTags = array();
+
+  // load all tags, and get max tag ID
+  $tagID = getAllTags($aTagsByName, $aTagsByID);
+  cLog(0,'info',"starting tagID will be ".($tagID+1));
 
   $cCounter = 0;
 
@@ -349,14 +362,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
         //write out the contact
         if (!writeToFile($fout['contact'], $params)) {
-          exit("i/o fail: contact");
+          exit("Error: I/O failure: contact");
         }
   
         //work address
         $params = create_civi_address(++$addressID, $contactID, $ctRow, 2);
 
         if (!writeToFile($fout['address'], $params)) {
-          exit("i/o fail: address");
+          exit("Error: I/O failure: address");
         }
 
         //increase contactID for individual  
@@ -368,7 +381,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $params['contact_id_b'] = $orgID;
         $params['relationship_type_id'] = $aRelLookup['employeeOf'];
         if (!writeToFile($fout['relationship'], $params)) {
-          exit("i/o fail: relationship");        
+          exit("Error: I/O failure: relationship");
         }
       }
     }
@@ -482,36 +495,37 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['household_name'] = DBNULL;
 
     if (!writeToFile($fout['contact'], $params)) {
-      exit("i/o fail: contact");
+      exit("Error: I/O failure: contact");
     }
 
     if ($omis_ext) {
       //concatenate custom fields into a note
-      $nonOmis='';
+      $nonOmis = '';
       foreach ($omis_ext_fields as $fld => $is_bool) {
         if ($is_bool && $ctRow[$fld] == 'T') {
-          $nonOmis.=$fld.': '.$ctRow[$fld].'\n';
+          $nonOmis .= $fld.': '.$ctRow[$fld].'\n';
         }
         else if (!$is_bool && $ctRow[$fld]) {
-          $nonOmis.=$fld.': '.$ctRow[$fld].'\n';
+          $nonOmis .= $fld.': '.$ctRow[$fld].'\n';
         }
       }
 
       //add the other suffix
-      if ($otherSuffix!='null') {
-        $nonOmis.='Other Suffix: '.$otherSuffix;
+      if ($otherSuffix != 'null') {
+        $nonOmis .= 'Other Suffix: '.$otherSuffix;
       }
 
-      $params = array();
-      $params['contact_id'] = $session->get('userID'); //who inserted
-      $params['entity_table'] = 'civicrm_contact';
-      $params['subject'] = 'EXTERNAL DATA';
-      $params['modified_date'] = '';
-      $params['entity_id'] = $contactID;
-      $params['note'] = $nonOmis;
+      $params = array(
+        'entity_table' => 'civicrm_contact',
+        'entity_id' => $contactID,
+        'note' => $nonOmis,
+        'contact_id' => $session->get('userID'), //who inserted
+        'modified_date' => '',
+        'subject' => 'EXTERNAL DATA'
+      );
 
       if (!writeToFile($fout['note'], $params)) {
-        exit("i/o fail: note");
+        exit("Error: I/O failure: note");
       }
     }
 
@@ -520,14 +534,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['entity_id'] = $importID;
     $params['record_type_61'] = $ictRow['RT'];
     if (!writeToFile($fout['constituentinformation'], $params)) {
-      exit("i/o fail: constituent information");
+      exit("Error: I/O failure: constituentinformation");
     }
 
     //home address
     $params = create_civi_address(++$addressID, $contactID, $ctRow, 1);
 
     if (!writeToFile($fout['address'], $params)) {
-      exit("i/o fail: address");
+      exit("Error: I/O failure: address");
     }
 
     $params = array();
@@ -546,7 +560,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['last_import_57'] = date("Y-m-d H:i:s T");
 
     if (!writeToFile($fout['district'], $params)) {
-      exit("i/o fail: district");
+      exit("Error: I/O failure: district");
     }
 
     //non omis work address
@@ -569,7 +583,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         'state_province_id'  => $aStates[$ctRow['ADDR_WORK_STATE']]);
 
       if (!writeToFile($fout['address'], $params)) {
-        exit("i/o fail: address");
+        exit("Error: I/O failure: address");
       }
     }
 
@@ -584,7 +598,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       );
 
       if (!writeToFile($fout['phone'], $params)) {
-        exit("i/o fail: phone");
+        exit("Error: I/O failure: phone");
       }
     }
 
@@ -603,7 +617,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       );
       
       if (!writeToFile($fout['phone'], $params)) {
-        exit("i/o fail: phone");
+        exit("Error: I/O failure: phone");
       }
     }
 
@@ -618,7 +632,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       );
 
       if (!writeToFile($fout['phone'], $params)) {
-        exit("i/o fail: phone");
+        exit("Error: I/O failure: phone");
       }
     }
 
@@ -633,7 +647,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       );
 
       if (!writeToFile($fout['phone'], $params)) {
-        exit("i/o fail: phone");
+        exit("Error: I/O failure: phone");
       }
     }
 
@@ -662,7 +676,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       );
 
       if (!writeToFile($fout['email'], $params)) {
-        exit("i/o fail: email");
+        exit("Error: I/O failure: email");
       }
     }
 
@@ -676,7 +690,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       );
 
       if (!writeToFile($fout['email'], $params)) {
-        exit("i/o fail: email");
+        exit("Error: I/O failure: email");
       }
     }
 
@@ -686,15 +700,16 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $omisData .= $fldname.": ".$fldval.'\n';
     }
 
-    $params = array();
-    $params['contact_id'] = $session->get('userID'); //who inserted
-    $params['entity_table'] = 'civicrm_contact';
-    $params['subject'] = 'OMIS DATA';
-    $params['modified_date'] = DBNULL;
-    $params['entity_id'] = $contactID;
-    $params['note'] = $omisData;
+    $params = array(
+      'entity_table' => 'civicrm_contact',
+      'entity_id' => $contactID,
+      'note' => $omisData,
+      'contact_id' => $session->get('userID'), //who inserted
+      'modified_date' => DBNULL,
+      'subject' => 'OMIS DATA'
+    );
     if (!writeToFile($fout['note'], $params)) {
-      exit("i/o fail: note");
+      exit("Error: I/O failure: note");
     }
     unset($params);
 
@@ -712,14 +727,6 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $ntRow = getLineAsAssocArray($infiles['notes'], DELIM, $omis_nt_fields);
     }
     while ($ntRow && $ntRow['KEY'] == $importID) {
-      //set note params
-      $params = array();
-      $params['contact_id'] = $session->get('userID'); //who inserted
-      $params['entity_table'] = 'civicrm_contact';
-      $params['subject'] = 'OMIS NOTE';
-      $params['modified_date'] = DBNULL;
-      $params['entity_id'] = $contactID;
-
       // fields 4 thru 18 (HL1 to HL15) are the text lines
       $notetext = "Case #: ".$ntRow['HNUM'].'\n'.
                   "Page #: ".$ntRow['HPAG'].'\n'.
@@ -728,10 +735,18 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $idx = "HL".$i;
         $notetext .= $ntRow[$idx].'\n';
       }
-      $params['note'] = $notetext;
+
+      $params = array(
+        'entity_table' => 'civicrm_contact',
+        'entity_id' => $contactID,
+        'note' => $notetext,
+        'contact_id' => $session->get('userID'), //who inserted
+        'modified_date' => DBNULL,
+        'subject' => 'OMIS NOTE'
+      );
 
       if (!writeToFile($fout['note'], $params)) {
-        exit("i/o fail: note");
+        exit("Error: I/O failure: note");
       }
       unset($params);
 
@@ -742,7 +757,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     }
 
     //create activities from cases
-    while ($csRow && $csRow['KEY']<$importID) {
+    while ($csRow && $csRow['KEY'] < $importID) {
       $csRow = getLineAsAssocArray($infiles['cases'], DELIM, $omis_cs_fields);
     }
     while ($csRow && $csRow['KEY'] == $importID) {
@@ -817,7 +832,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
           break;
         default:
           $params['activity_type_id'] = 43; //other
-        }
+      }
 
       //set contact target
       $targParams = array();
@@ -842,11 +857,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       }
 
       if (!writeToFile($fout['activity'], $params))
-        exit("i/o fail: activity");
+        exit("Error: I/O failure: activity");
       if (!writeToFile($fout['activitytarget'], $targParams))
-        exit("i/o fail: activitytarget");
+        exit("Error: I/O failure: activitytarget");
       if (!writeToFile($fout['activitycustom'], $custParams))
-        exit("i/o fail: activitycustom");
+        exit("Error: I/O failure: activitycustom");
       unset($params);
       unset($custParams);
 
@@ -859,21 +874,58 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
     //create notes from issues 
     //cumulate issues into one note
-    $bIssue = false;
     $tstamp = null;
-    $note = '';
+    $note = "";
 
-    while ($isRow && $isRow['KEY']<$importID) {
+    while ($isRow && $isRow['KEY'] < $importID) {
       $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
     }
     while ($isRow && $isRow['KEY'] == $importID) {
-      $bIssue = true;
-      //pass these params to tag writer since it has to recursively select tags
-      writeRecursiveTags($fout['tag'], $contactID, $isRow['CATEGORY']);
+      $issCode = $isRow['ISSUECODE'];
+      $issDesc = trim($isRow['ISSUEDESCRIPTION']);
+      $issCat = $isRow['CATEGORY'];
 
-      //if 'Y' then add the tag as a freeform tag
-      if (trim($isRow['IS_TAG']) == 'Y') {
-        writeFreeformTag($fout['tag'], $contactID, $isRow['ISSUEDESCRIPTION']);
+      /* If the category is in the tags table and is part of the issue code
+         hierarchy (parent is not Freeform or Positions), then link to it
+         as well as any parent tags.
+      */
+      if ($issCat != "*NOMATCH*") {
+        if (isset($aTagsByName[$issCat])) {
+          $tag_id = $aTagsByName[$issCat];
+          $parent_id = $aTagsByID[$tag_id];
+          if ($parent_id == POSITION_TAG_PARENT_ID ||
+              $parent_id == FREEFORM_TAG_PARENT_ID) {
+            echo "Warning: Category [$issCat] exists as a tag, but is not part of the hierarchy (it is either freeform or position).\n";
+          }
+          else {
+            writeEntityTags($fout['entitytag'], $contactID, $tag_id,$aTagsByID);
+          }
+        }
+        else {
+          //echo "Warning: Category [$issCat] not found in tag table.\n";
+          if (isset($aUnsavedTags[$issCat])) {
+            $aUnsavedTags[$issCat]++;
+          }
+          else {
+            $aUnsavedTags[$issCat] = 1;
+          }
+        }
+      }
+
+      // If IS_TAG is set, then the issue description becomes a freeform tag.
+      if ($isRow['IS_TAG'] == 'Y') {
+        // If the issDesc is not yet a tag, then create it.
+        if (isset($aTagsByName[$issDesc])) {
+          $tag_id = $aTagsByName[$issDesc];
+        }
+        else {
+          $tag_id = ++$tagID;
+          $aTagsByName[$issDesc] = $tag_id;
+          $aTagsByID[$tagID] = FREEFORM_TAG_PARENT_ID;
+          writeFreeformTag($fout['tag'], $tag_id, $issDesc);
+        }
+        // Now link the current contact to the freeform tag.
+        writeEntityTags($fout['entitytag'], $contactID, $tag_id, $aTagsByID);
       }
 
       //get the most recent date
@@ -882,7 +934,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $tstamp = $dt;
       }
 
-      $note .= "Issue Code ".$isRow['ISSUECODE'].": ".$isRow['ISSUEDESCRIPTION'].'\n';
+      $note .= "Issue Code $issCode: $issDesc".'\n';
 
       //get another issues 
       $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
@@ -890,17 +942,17 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $isRow['KEY'] = intval($isRow['KEY']);
     }
 
-    //set the note params:
-    $params = array();
-    $params['contact_id'] = $session->get('userID');; //who inserted
-    $params['entity_table'] = 'civicrm_contact';
-    $params['subject'] = "OMIS ISSUE CODES";
-    $params['modified_date'] = $tstamp;
-    $params['entity_id'] = $contactID;
-    $params['note'] = $note;
-
     //now write cumulated codes as one note
-    if ($bIssue) {
+    if (!empty($note)) {
+      //set the note params:
+      $params = array(
+        'entity_table' => 'civicrm_contact',
+        'entity_id' => $contactID,
+        'note' => $note,
+        'contact_id' => $session->get('userID'),   //who inserted
+        'modified_date' => $tstamp,
+        'subject' => "OMIS ISSUE CODES"
+      );
       if (!writeToFile($fout['note'], $params))
         break;
     }
@@ -992,7 +1044,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     writeToFile($fout['relationship'], $params);
   }
 
-  cLog(0,'info',"done converting {$cCounter} contacts.");
+  cLog(0, 'info', "Unsaved tag info (tagName => occurrences):");
+  print_r($aUnsavedTags);
+  cLog(0, 'info', "done converting {$cCounter} contacts.");
 
   return true;
 } // parseData()
@@ -1065,123 +1119,71 @@ function update($task, $importSet, $importDir, $sourceDesc)
 
 
 
-function writeFreeformTag($f, $id, $tag)
+function writeTag($f, $tag_id, $tag_name, $parent_id, $used_for)
 {
-  global $aFreeformTags;
-  global $aTags;
+  $params = array(
+    'id'            => $tag_id,
+    'name'          => $tag_name,
+    'description'   => $tag_name,
+    'parent_id'     => $parent_id,
+    'is_selectable' => 1,
+    'is_reserved'   => 0,
+    'is_tagset'     => 0,
+    'used_for'      => $used_for
+  );
+  return writeToFile($f, $params);
+} // writeTag()
 
-  //get master tag list, loads into global var
-  if (!isset($aFreeformTags)) {
-    getFreeformTags();  
-  }
 
-  //create the tag if necessary - can't exist anywhere so using the big Tag category
-  if (!isset($aFreeformTags[$tag]) && !isset($aTags[$tag])) {
-    $session =& CRM_Core_Session::singleton();
 
-    $params = array(
-      'entity_id'     => null,
-      'name'          => $tag,
-      'description'   => $tag,
-      'parent_id'     => FREEFORM_TAG_PARENT_ID,
-      'is_selectable' => 1,
-      'is_reserverd'  => 0,
-      'used_for'      => 'civicrm_contact',
-    );
-    $oTag = CRM_Core_BAO_Tag::add($params, CRM_Core_DAO::$_nullArray);
-
-    //remember the new tag for reuse
-    $aFreeformTags[$tag] = $oTag->id;
-
-    //print_r("added $tag {$oTag->id}\n");
-    //print_r($oTag);
-  }
-
-  $params = array();
-  $params['entity_table'] = 'civicrm_contact';
-  $params['entity_id'] = $id;
-
-  if (isset($aFreeformTags[$tag])) {
-    $params['tag_id'] = $aFreeformTags[$tag]['id'];
-    writeToFile($f, $params);
-  }
+function writeFreeformTag($f, $tag_id, $tag_name)
+{
+  $parent_id = FREEFORM_TAG_PARENT_ID;
+  $used_for = "civicrm_contact,civicrm_activity,civicrm_case";
+  return writeTag($f, $tag_id, $tag_name, $parent_id, $used_for);
 } // writeFreeformTag()
 
 
 
-function writeRecursiveTags($f, $id, $tag)
+function writeEntityTags($f, $contact_id, $tag_id, $tags_by_id)
 {
-  global $aTags;
-  global $aTagsByID;
-
-  //get master tag list, loads into global var
-  if (!isset($aTags)) getTags();
-  //print_r($aTags);
-  //print_r($aTagsByID);
-  //check the tag exists
-  if (!isset($aTags[$tag])) {
-    // cLog(0,'ERROR', "TAG NOT FOUND: ".$params['tag']);
-    return;
+  // Attach all tags that have a parent tag.
+  while ($tags_by_id[$tag_id]) {
+    $params = array(
+      'entity_table' => 'civicrm_contact',
+      'entity_id' => $contact_id,
+      'tag_id' => $tag_id
+    );
+    writeToFile($f, $params);
+    $tag_id = $tags_by_id[$tag_id];   // get the parent tagID
   }
-
-  //since all tags are filed under the root tag "issue codes", they all have a parent and if the parent is 0 we can stop.
-  if ($aTags[$tag]['parent_id'] == 0) return;
-
-  $params = array();
-  $params['entity_table'] = 'civicrm_contact';
-  $params['entity_id'] = $id;
-  $params['tag_id'] = $aTags[$tag]['id'];
-
-  writeToFile($f, $params);
-
-  //call this function again until we've gone up the chain.
-  if ($aTags[$tag]['parent_id']>0) {
-    writeRecursiveTags($f, $id, $aTagsByID[$aTags[$tag]['parent_id']]['name']);
-  }
-} // writeRecursiveTags()
+} // writeEntityTags()
 
 
 
-function getTags()
+function getAllTags(&$tags_by_name, &$tags_by_id)
 {
-  global $aTags;
-  global $aTagsByID;
+  // This array maps a tag name (issue description) to a tagID.
+  $tags_by_name = array();
+  // This array maps a tagID to its parent tagID.
+  $tags_by_id = array();
+  $max_id = 0;
 
   $session =& CRM_Core_Session::singleton();
 
   $dao = &CRM_Core_DAO::executeQuery(
-           "SELECT name, id, parent_id from civicrm_tag ".
-           "where parent_id=".CATEGORY_TAG_PARENT_ID.
-           " or id=".CATEGORY_TAG_PARENT_ID.";", CRM_Core_DAO::$_nullArray);
-
-  $aTag = array();
+           "SELECT name, id, parent_id from civicrm_tag;",
+           CRM_Core_DAO::$_nullArray);
 
   while ($dao->fetch()) {
-    $aTags[$dao->name]['id'] = $dao->id;
-    $aTags[$dao->name]['parent_id'] = $dao->parent_id;
-    $aTagsByID[$dao->id]['name'] = $dao->name;
-    $aTagsByID[$dao->id]['parent_id'] = $dao->parent_id;    
+    if ($dao->id > $max_id) {
+      $max_id = $dao->id;
+    }
+    $tags_by_name[$dao->name] = $dao->id;
+    $tags_by_id[$dao->id] = $dao->parent_id;    
   }
-} // getTags()
-
-
-
-function getFreeFormTags()
-{
-  global $aFreeformTags;
-
-  $session =& CRM_Core_Session::singleton();
-  $dao = &CRM_Core_DAO::executeQuery(
-           "SELECT name, id from civicrm_tag ".
-           "where parent_id=".FREEFORM_TAG_PARENT_ID.
-           " or id=".FREEFORM_TAG_PARENT_ID.";", CRM_Core_DAO::$_nullArray);
-
-  $aTag = array();
-
-  while ($dao->fetch()) {
-    $aFreeformTags[$dao->name] = $dao->id;
-  }
-} // getFreeFormTags()
+  return $max_id;
+} // getAllTags()
 
 
 
@@ -1212,11 +1214,11 @@ function getOptions($strGroup)
 {
   $session =& CRM_Core_Session::singleton();
  
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $optionGroupID = $dao->id;
 
-  $dao = &CRM_Core_DAO::executeQuery( "SELECT name, label, value from civicrm_option_value where option_group_id=$optionGroupID;", CRM_Core_DAO::$_nullArray );
+  $dao = &CRM_Core_DAO::executeQuery("SELECT name, label, value from civicrm_option_value where option_group_id=$optionGroupID;", CRM_Core_DAO::$_nullArray);
 
   $options = array();
 
