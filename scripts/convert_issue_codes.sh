@@ -8,6 +8,9 @@
 # Created: 2010-03-30
 # Revised: 2010-06-15
 # Revised: 2010-07-30 - add option to keep intermediate files
+# Revised: 2010-09-19 - always set IS_TAG='N' for 83xxx (merge/purge)
+#                     - convert 76xxx to "Taxes" instead of "Tax and Finance"
+#                     - skip 83xxx codes with blank descriptions
 #
 # Note: This script assumes that the first line of each OMIS export file
 #       contains the column headers.  It trims the first line automatically.
@@ -57,40 +60,46 @@ fi
 # Generate list of all unique issue code descriptions, along with the
 # number of times it was used.
 echo "Analyzing issue code descriptions..." >&2
-tail -n +2 "$infile" | cut -d"$fsep" -f4 | sort | uniq -c > $issdesc_file
+tail -n +2 "$infile" | cut -d"$fsep" -f2,4 | sort | uniq -c | sed "s;^[ ]*\([0-9][0-9]*\)[ ]*;\1$fsep;" > $issdesc_file
 echo "There are "`cat $issdesc_file | wc -l`" unique descriptions" >&2
 
 export fsep
 
-cat $issdesc_file | awk --assign fsep="$fsep" '
+cat $issdesc_file | awk -F"$fsep" --assign fsep="$fsep" '
 BEGIN {
   tag_count = 0;
   OFS = fsep;
 }
 {
   occurs = $1;
-  text = substr($0, index($0, $2));
+  code = $2;
+  desc = $3;
 
-  if (occurs <= 5) {
-    #print "discarding (occurs): " text > "/dev/stderr";
-    print text, "N" ;
+  # The 83xxx series issue codes should not become tags.
+  if (substr(code, 1, 2) == "83") {
+    is_tag = "N";
   }
-  else if (occurs > 5 && occurs <= 20 && length(text) > 10) {
-    #print "discarding (occurs/length): " text > "/dev/stderr";
-    print text, "N" ;
+  else if (occurs <= 5) {
+    #print "discarding (occurs): " desc > "/dev/stderr";
+    is_tag = "N";
   }
-  else if (length(text) > 40) {
-    #print "discarding (length): " text > "/dev/stderr";
-    print text, "N" ;
+  else if (occurs > 5 && occurs <= 20 && length(desc) > 10) {
+    #print "discarding (occurs/length): " desc > "/dev/stderr";
+    is_tag = "N";
   }
-  else if (text ~ /^xxx+$/) {
-    #print "discarding (garbage): " text > "/dev/stderr";
-    print text, "N" ;
+  else if (length(desc) > 40) {
+    #print "discarding (length): " desc > "/dev/stderr";
+    is_tag = "N";
+  }
+  else if (desc ~ /^xxx+$/) {
+    #print "discarding (garbage): " desc > "/dev/stderr";
+    is_tag = "N";
   }
   else {
-    print text, "Y" ;
+    is_tag = "Y";
     tag_count++;
   }
+  print code, desc, is_tag;
 }
 END {
   print "There are " tag_count " issue codes that will become tags" > "/dev/stderr";
@@ -101,26 +110,33 @@ echo "Mapping OMIS issue codes to taxonomy elements...." >&2
 tail -n +2 "$infile" | sed -e 's;|$;;' | awk --assign fsep="$fsep" --file "$common" -F"$fsep" --source '
 BEGIN {
   OFS = fsep;
+  skipped = 0;
 }
 {
   id = $1;
   code = $2;
   moddate = $3;
   desc = $4;
-
-  category = convert_isscode_to_category(code);
-  moddate = convert_mmddyy_to_yyyymmdd(moddate);
-  print id, code, moddate, desc, category;
+  
+  if (desc == "" && code ~ /^83/) {
+    skipped++;
+  }
+  else {
+    category = convert_isscode_to_category(code);
+    moddate = convert_mmddyy_to_yyyymmdd(moddate);
+    print id, code, moddate, desc, category;
+  }
 }
 END {
+  print "There are " skipped " issue codes that were skipped." > "/dev/stderr";
 }' > $isscode_table
 
-echo "Sorting issue code table on descriptions..." >&2
-sort -t"$fsep" -k4,4 $isscode_table > $isscode_table_sorted
+echo "Sorting issue code table on issue codes..." >&2
+sort -t"$fsep" -k2,2 $isscode_table > $isscode_table_sorted
 
 echo "Joining sorted issue code table to tag table..." >&2
 echo "KEY${fsep}ISSUECODE${fsep}UPDATED${fsep}ISSUEDESCRIPTION${fsep}CATEGORY${fsep}IS_TAG"
-join -t"$fsep" -1 4 -2 1 -o "1.1 1.2 1.3 1.4 1.5 2.2" $isscode_table_sorted $isscode_tags | sort -t"$fsep" -k1
+join -t"$fsep" -1 2 -2 1 -o "1.1 1.2 1.3 1.4 1.5 2.3" $isscode_table_sorted $isscode_tags | sort -t"$fsep" -k1
 rc=$?
 
 if [ $keep_tempfiles -ne 1 ]; then
