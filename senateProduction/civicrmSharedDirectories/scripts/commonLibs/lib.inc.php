@@ -276,6 +276,7 @@ function cleanData($str)
   $str = trim($str);
   if ($str == 'NULL') $str = '';
   $str = str_replace('array', '', $str);
+  $str = str_replace('null', '', $str);
   return strlen($str) > 0 ? $str : '';
 } // cleanData()
 ?>
