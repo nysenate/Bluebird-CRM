@@ -176,16 +176,25 @@ $bluebird_db_info = array(
           'is_primary'
       )
   ),
+  "entitytag" => array(
+      "abbrev" => "et",
+      "table" => "civicrm_entity_tag",
+      "cols" => array(
+          'entity_table',
+          'entity_id',
+          'tag_id'
+      )
+  ),
   "note" => array(
       "abbrev" => "no",
       "table" => "civicrm_note",
       "cols" => array(
-          'contact_id',
           'entity_table',
-          'subject',
-          'modified_date',
           'entity_id',
-          'note'
+          'note',
+          'contact_id',
+          'modified_date',
+          'subject'
       )
   ),
   "phone" => array(
@@ -210,11 +219,16 @@ $bluebird_db_info = array(
   ),
   "tag" => array(
       "abbrev" => "ta",
-      "table" => "civicrm_entity_tag",
+      "table" => "civicrm_tag",
       "cols" => array(
-          'entity_table',
-          'entity_id',
-          'tag_id'
+          'id',
+          'name',
+          'description',
+          'parent_id',
+          'is_selectable',
+          'is_reserved',
+          'is_tagset',
+          'used_for'
       )
   )
 );
