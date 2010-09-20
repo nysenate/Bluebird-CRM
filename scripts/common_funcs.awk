@@ -111,8 +111,8 @@ function convert_isscode_to_category(isscode,
   isscodes[70000] = "Property Tax";
   isscodes[72000] = "Social Services";
   isscodes[74000] = "Government Operations";
-#  isscodes[76000] = "Taxes";
-  isscodes[76000] = "Tax and Finance";
+  isscodes[76000] = "Taxes";
+#  isscodes[76000] = "Tax and Finance";
   isscodes[78000] = "Transportation";
   isscodes[80000] = "Military Affairs";
   isscodes[82000] = "General Constituent Service";
