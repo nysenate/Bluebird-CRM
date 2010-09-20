@@ -520,7 +520,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         'entity_id' => $contactID,
         'note' => $nonOmis,
         'contact_id' => $session->get('userID'), //who inserted
-        'modified_date' => '',
+        'modified_date' => DBNULL,
         'subject' => 'EXTERNAL DATA'
       );
 
@@ -928,8 +928,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         writeEntityTags($fout['entitytag'], $contactID, $tag_id, $aTagsByID);
       }
 
-      //get the most recent date
-      $dt = formatDate($isRow['UPDATED']);
+      //get the most recent date, which is already in YYYY-MM-DD format
+      $dt = $isRow['UPDATED'];
       if ($tstamp == null || strtotime($dt) > strtotime($tstamp)) {
         $tstamp = $dt;
       }
