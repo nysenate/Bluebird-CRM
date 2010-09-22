@@ -262,7 +262,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   $numContacts = countFileLines($infiles['contacts']) - $skipped; 
 
   cLog(0, 'info', "importing {$numContacts} lines starting with $startID, skipped $skipped");
-  cLog(0, 'info', "starting OMIS IDs: ct=".$ctRow['KEY'].",nt=".$ntRow['KEY'].",cs=".$csRow['KEY'].",is=".$isRow['KEY']."\n");
+  cLog(0, 'info', "starting OMIS IDs: ct=".$ctRow['KEY'].",nt=".$ntRow['KEY'].",cs=".$csRow['KEY'].",is=".$isRow['KEY']);
 
   //get the max contactID from civi
   $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_contact;", CRM_Core_DAO::$_nullArray);
@@ -878,12 +878,19 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $note = "";
 
     while ($isRow && $isRow['KEY'] < $importID) {
+      cLog(0, 'info', "Warning: Skipping issue code id=".$isRow['KEY']);
+      print_r($isRow);
       $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
     }
     while ($isRow && $isRow['KEY'] == $importID) {
       $issCode = $isRow['ISSUECODE'];
       $issDesc = trim($isRow['ISSUEDESCRIPTION']);
       $issCat = $isRow['CATEGORY'];
+
+      $lastCat = strrchr($issCat, ">");
+      if ($lastCat !== false) {
+        $issCat = substr($lastCat, 1);
+      }
 
       /* If the category is in the tags table and is part of the issue code
          hierarchy (parent is not Freeform or Positions), then link to it
@@ -895,14 +902,14 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
           $parent_id = $aTagsByID[$tag_id];
           if ($parent_id == POSITION_TAG_PARENT_ID ||
               $parent_id == FREEFORM_TAG_PARENT_ID) {
-            echo "Warning: Category [$issCat] exists as a tag, but is not part of the hierarchy (it is either freeform or position).\n";
+            cLog(0, 'info', "Warning: Category [$issCat] exists as a tag, but is not part of the hierarchy (it is either freeform or position).");
           }
           else {
             writeEntityTags($fout['entitytag'], $contactID, $tag_id,$aTagsByID);
           }
         }
         else {
-          //echo "Warning: Category [$issCat] not found in tag table.\n";
+          //cLog(0,'info',"Warning: Categ. [$issCat] not found in tag table.");
           if (isset($aUnsavedTags[$issCat])) {
             $aUnsavedTags[$issCat]++;
           }
