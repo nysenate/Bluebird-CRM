@@ -1,6 +1,11 @@
 #!/bin/sh
 #
-# dumpInstance.sh
+# dumpInstance.sh - Perform a MySQL dump for a CRM instance
+#
+# Project: BluebirdCRM
+# Author: Ken Zalewski
+# Organization: New York State Senate
+# Date: 2010-09-12
 #
 
 prog=`basename $0`
