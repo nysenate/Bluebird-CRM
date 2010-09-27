@@ -8,13 +8,43 @@
 # Date: 2010-09-11
 # Revised: 2010-09-15
 #
+# Note:
+#   The configuration file is searched for using the following methods:
+#   1. If the config file is specified on the command line, then use that.
+#   2. If a file named ".bluebird.cfg" is found in the user's home directory,
+#      then use that.
+#   3. If a file named "bluebird.cfg" is found in the root application
+#      directory (the parent dir of the scripts/ dir), then use that.
+#   4. If the BLUEBIRD_CONFIG_FILE environment variable is set, use its value.
+#   5. Otherwise, use the DEFAULT_CONFIG_FILE as specified in defaults.sh.
+#
 
 prog=`basename $0`
-default_cfgfile="/etc/bluebird.ini"
-cfgfile=$default_cfgfile
+script_dir=`dirname $0`
+base_dir=`cd $script_dir/..; echo $PWD`
 group_name=
 group_pattern=
 key_name=
+
+. $script_dir/defaults.sh
+
+# Start by using the default value.
+cfgfile=$DEFAULT_CONFIG_FILE
+
+# Next, set the config file if the BLUEBIRD_CONFIG_FILE env variable is set.
+[ "$BLUEBIRD_CONFIG_FILE" ] && cfgfile="$BLUEBIRD_CONFIG_FILE"
+
+# Next, look in the application base directory.
+if [ -r "$base_dir/bluebird.cfg" ]; then
+  cfgfile="$base_dir/bluebird.cfg"
+fi
+
+# Next, look in the user's home directory.
+if [ -r "$HOME/.bluebird.cfg" ]; then
+  cfgfile="$HOME/.bluebird.cfg"
+fi
+
+# Finally, set the config file if provided on the command line.
 
 while [ $# -gt 0 ]; do
   case "$1" in
