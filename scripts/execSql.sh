@@ -1,6 +1,11 @@
 #!/bin/sh
 #
-# execSql.sh
+# execSql.sh - Execute SQL statement using Bluebird config file for credentials
+#
+# Project: BluebirdCRM
+# Author: Ken Zalewski
+# Organization: New York State Senate
+# Date: 2010-09-23
 #
 
 prog=`basename $0`
@@ -15,6 +20,7 @@ fi
 sqlfile=
 sqlcmd=
 dump_db=0
+dbname=
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -27,9 +33,9 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-dbhost=`$readConfig --group globals --key db.host`
-dbuser=`$readConfig --group globals --key db.user`
-dbpass=`$readConfig --group globals --key db.pass`
+dbhost=`$readConfig --group globals db.host`
+dbuser=`$readConfig --group globals db.user`
+dbpass=`$readConfig --group globals db.pass`
 
 if [ $dump_db -eq 1 ]; then
   mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname
