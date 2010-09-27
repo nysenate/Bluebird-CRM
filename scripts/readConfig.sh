@@ -6,9 +6,9 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-11
-# Revised: 2010-09-15
+# Revised: 2010-09-27
 #
-# Note:
+# Notes:
 #   The configuration file is searched for using the following methods:
 #   1. If the config file is specified on the command line, then use that.
 #   2. If a file named ".bluebird.cfg" is found in the user's home directory,
@@ -18,11 +18,19 @@
 #   4. If the BLUEBIRD_CONFIG_FILE environment variable is set, use its value.
 #   5. Otherwise, use the DEFAULT_CONFIG_FILE as specified in defaults.sh.
 #
+#   The "--global" option is an alias for "--group globals"
+#   The "--instance <name>" option is an alias for "--group instance:<name>"
+#   The "--instance-or-global <name>" option is an alias for:
+#     "--group instance:<name> --group globals", which searches the given
+#     instance by name, and if that instance does not exist, it searches
+#     the "globals" group.  This is a powerful method of overriding global
+#     variables by setting them within a specific instance group.
+#
 
 prog=`basename $0`
 script_dir=`dirname $0`
 base_dir=`cd $script_dir/..; echo $PWD`
-group_name=
+group_names=
 group_pattern=
 key_name=
 
@@ -49,10 +57,14 @@ fi
 while [ $# -gt 0 ]; do
   case "$1" in
     --config-file|-f) shift; cfgfile="$1" ;;
-    --group) shift; group_name="$1" ;;
-    --groups) shift; group_pattern="$1" ;;
-    --all-groups) group_pattern="[^]]" ;;
-    -*) echo "Usage: $prog [--config-file file] [--group] [--groups pattern] [--all-groups] [key]" >&2; exit 1 ;;
+    --global*) group_names="$group_names globals" ;;
+    --group) shift; group_names="$group_names $1" ;;
+    --instance) shift; group_names="$group_names instance:$1" ;;
+    --instance-or-global) shift; group_names="$group_names instance:$1 globals" ;;
+    --list-all-groups) group_pattern="[^]]" ;;
+    --list-all-instances) group_pattern="instance:" ;;
+    --list-matching-groups) shift; group_pattern="$1" ;;
+    -*) echo "Usage: $prog [--config-file file] [--global] [--group name] [--instance name] [--instance-or-global name] [--list-all-groups] [--list-all-instances] [--list-matching-groups pattern] [key]" >&2; exit 1 ;;
     *) key_name="$1"
   esac
   shift
@@ -66,15 +78,46 @@ elif [ ! -r "$cfgfile" ]; then
   exit 1
 fi
 
+errcode=0
+
+# If a group pattern is given (one of the --list options), then simply
+# print out all matching group names.
+#
+# If a group name(s) is given with a key name, then attempt to find the
+# key in one of the groups.  The first group in which the key name is found
+# provides the key value.  If the key is not found in any of the named
+# groups, then return an error code of 1.
+#
+# If only a group name(s) is given, then display all key-value pairs for
+# the first group that matches the group name exactly, or return an error
+# code of 1 if no group name is matched.
+#
+# If only a key name is given, then print out all matching key-value pairs
+# that have the provided key name, across all groups.
+
 if [ "$group_pattern" ]; then
   sed -n -e "s;^\[\([^]]*$group_pattern[^]]*\)\]$;\1;p" $cfgfile
-elif [ "$group_name" -a "$key_name" ]; then
-  sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | grep "^$key_name[ =]" | sed -e "s;^[^=]*=[ ]*;;"
-elif [ "$group_name" ]; then
-  sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | egrep -v "(^[[;]|^$)"
+elif [ "$group_names" -a "$key_name" ]; then
+  errcode=1
+  for group_name in $group_names; do
+    key_line=`sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | grep "^$key_name[ =]"`
+    if [ $? -eq 0 ]; then
+      echo "$key_line" | sed -e "s;^[^=]*=[ ]*;;"
+      errcode=0
+      break
+    fi
+  done
+elif [ "$group_names" ]; then
+  errcode=1
+  for group_name in $group_names; do
+    sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | egrep -v "(^[[;]|^$)"
+    [ $? -eq 0 ] && errcode=0 && break
+  done
 elif [ "$key_name" ]; then
-  grep "^$key_name[ =]" $cfgfile | sed -e "s;^[^=]*=[ ]*;;"
+  key_lines=`grep "^$key_name[ =]" $cfgfile`
+  [ $? -eq 0 ] && echo "$key_lines" | sed -e "s;^[^=]*=[ ]*;;" || errcode=1
 else
   cat $cfgfile
 fi
 
+exit $errcode
