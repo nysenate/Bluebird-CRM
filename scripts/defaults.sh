@@ -8,7 +8,7 @@
 # Date: 2010-09-27
 #
 
-DEFAULT_CONFIG_FILE=/etc/bluebird.ini
+DEFAULT_CONFIG_FILE=/etc/bluebird.cfg
 
 DEFAULT_DB_HOST=localhost
 DEFAULT_DB_USER=crmadmin
