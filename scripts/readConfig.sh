@@ -6,6 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-11
+# Revised: 2010-09-15
 #
 
 prog=`basename $0`
@@ -19,10 +20,10 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --config-file|-f) shift; cfgfile="$1" ;;
     --group) shift; group_name="$1" ;;
-    --all-groups) group_pattern="[^]]" ;;
     --groups) shift; group_pattern="$1" ;;
-    --key) shift; key_name="$1" ;;
-    *) echo "Usage: $prog [--group] [--key]" >&2; exit 1 ;;
+    --all-groups) group_pattern="[^]]" ;;
+    -*) echo "Usage: $prog [--config-file file] [--group] [--groups pattern] [--all-groups] [key]" >&2; exit 1 ;;
+    *) key_name="$1"
   esac
   shift
 done
@@ -42,7 +43,7 @@ elif [ "$group_name" -a "$key_name" ]; then
 elif [ "$group_name" ]; then
   sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | egrep -v "(^[[;]|^$)"
 elif [ "$key_name" ]; then
-  grep "^$key_name[ =]" $cfgfile
+  grep "^$key_name[ =]" $cfgfile | sed -e "s;^[^=]*=[ ]*;;"
 else
   cat $cfgfile
 fi
