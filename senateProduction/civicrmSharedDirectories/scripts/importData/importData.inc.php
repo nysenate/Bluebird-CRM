@@ -374,15 +374,15 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
         //increase contactID for individual  
         ++$contactID;
+      }
 
-        //write out the relationship
-        $params = array();
-        $params['contact_id_a'] = $contactID;
-        $params['contact_id_b'] = $orgID;
-        $params['relationship_type_id'] = $aRelLookup['employeeOf'];
-        if (!writeToFile($fout['relationship'], $params)) {
-          exit("Error: I/O failure: relationship");
-        }
+      //write out the relationship
+      $params = array();
+      $params['contact_id_a'] = $contactID;
+      $params['contact_id_b'] = $orgID;
+      $params['relationship_type_id'] = $aRelLookup['employeeOf'];
+      if (!writeToFile($fout['relationship'], $params)) {
+        exit("Error: I/O failure: relationship");
       }
     }
 
@@ -451,6 +451,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     //ASSUMPTION!!
     $bday = $ctRow['BMM'].$ctRow['BDD'].$ctRow['BYY'];
     $params['birth_date'] =  formatDate($bday,'19');
+
     $params['addressee_id'] = ($ctRow['TC1'] == 100) ? 4 : 1;
     $params['addressee_custom'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : DBNULL;
 
@@ -490,7 +491,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['do_not_mail'] = ($ctRow['MS']=='U') ? 1 : 0;
 
     //set the relationship if its got an org
-    $params['employer_id'] = ($orgID!=null) ? $orgID : DBNULL;
+    $params['employer_id'] = ($orgID>0) ? $orgID : DBNULL;
     $params['nick_name'] = $ctRow['FAM1'];
     $params['household_name'] = DBNULL;
 
@@ -532,7 +533,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     //add the constituent information
     $params = array();
     $params['entity_id'] = $importID;
-    $params['record_type_61'] = $ictRow['RT'];
+    $params['record_type_61'] = $ctRow['RT'];
     if (!writeToFile($fout['constituentinformation'], $params)) {
       exit("Error: I/O failure: constituentinformation");
     }
@@ -972,6 +973,23 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   //write out all relationships
 
   foreach ($aRels as $aRel) {
+
+    //find out who is HoH
+    if ($aRel['ctRow']['TC2'] == 'HoH') {
+      $first='HoH';
+      $second='MoH';
+      $primary='ctRow';
+    } elseif ($aRel['relationshipCtRow']['TC2']=='HoH') {
+      $first='MoH';
+      $second='HoH';
+      $primary='relationshipCtRow';
+    //default
+    } else {
+      $first='MoH';
+      $second='MoH';
+      $primary='ctRow';
+    }
+
     //create the household record
     $params = array();
     $params['id'] = ++$contactID;
@@ -988,16 +1006,27 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['addressee_id'] = 5;
     $params['addressee_custom'] = DBNULL;
     $params['addressee_display'] = 'The '.$aRel['ctRow']['LAST'].' Family';
+
+    /* used to be
     $params['postal_greeting_id'] = 5;
     $params['postal_greeting_custom'] = DBNULL;
     $params['postal_greeting_display'] = 'Dear '.$aRel['ctRow']['LAST'].' Family';
+    */
+
+    $params['postal_greeting_id'] = 4;
+    if ($aRel[$primary]['FAM2']==0 && strlen($aRel[$primary]['FAM2'])>0) $params['postal_greeting_display'] =  'Dear '.$aRel['ctRow']['SALUTE2'].' '.$aRel['ctRow']['LAST'];
+    elseif ($aRel[$primary]['FAM2']>0) $params['postal_greeting_display'] =  'Dear '.$aRel['ctRow']['FAM2'];
+    else $params['postal_greeting_display'] = 'Dear Friends';
+
+    $params['postal_greeting_custom'] = $params['postal_greeting_display'];
+
     $params['organization_name'] = DBNULL;
     $params['job_title'] = DBNULL;
     $params['prefix_id'] = DBNULL;
     $params['suffix_id'] = DBNULL;
     $params['do_not_mail'] = 0;
     $params['employer_id'] = DBNULL;
-    $params['nick_name'] = DBNULL;
+    $params['nick_name'] = $aRel['ctRow']['FAM2'];
     $params['household_name'] = $aRel['ctRow']['LAST'].' Family';
     if (!writeToFile($fout['contact'], $params)) break;
  
@@ -1011,19 +1040,6 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['contact_id_b'] = $aIDMap[$aRel['relationshipImportID']];
     $params['relationship_type_id'] = $aRelLookup[$aRel['type']];
     writeToFile($fout['relationship'], $params);
-
-    //find out who is HoH
-    if ($aRel['ctRow']['TC2'] == 'HoH') {
-      $first='HoH';
-      $second='MoH';
-    } elseif ($aRel['relationshipCtRow']['TC2']=='HoH') {
-      $first='MoH';
-      $second='HoH';
-    //default
-    } else {
-      $first='MoH';
-      $second='MoH';
-    }
 
 /*implement this later: **decided against
     } elseif ($aRel['ctRow']['GENDER']=='M') {
