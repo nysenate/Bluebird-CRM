@@ -7,7 +7,7 @@
 # Date: 2010-09-10
 #
 
-define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.ini');
+define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.cfg');
 
 if (isset($_SERVER['SERVER_NAME'])) {
   $servername = $_SERVER['SERVER_NAME'];
