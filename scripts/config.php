@@ -1,6 +1,6 @@
 <?php
 
-define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.ini');
+define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.cfg');
 
 $bbini = parse_ini_file(BLUEBIRD_CONFIG_FILE, true);
 
