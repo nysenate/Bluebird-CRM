@@ -87,7 +87,6 @@ if [ $no_dbdump -eq 0 ]; then
       $execSql --dump $dbname > $db_backup_dir/$dbname.sql
     fi
     [ $? -eq 0 ] && echo "OK" || echo "Failed"
-    break
   done
 fi
 
