@@ -20,6 +20,7 @@
 #
 #   The "--global" option is an alias for "--group globals"
 #   The "--instance <name>" option is an alias for "--group instance:<name>"
+#   The "--instance-set" option is an alias for "--group instance_sets"
 #   The "--instance-or-global <name>" option is an alias for:
 #     "--group instance:<name> --group globals", which searches the given
 #     instance by name, and if that instance does not exist, it searches
@@ -60,6 +61,7 @@ while [ $# -gt 0 ]; do
     --global*) group_names="$group_names globals" ;;
     --group) shift; group_names="$group_names $1" ;;
     --instance) shift; group_names="$group_names instance:$1" ;;
+    --instance-set) group_names="$group_names instance_sets" ;;
     --instance-or-global|--ig) shift; group_names="$group_names instance:$1 globals" ;;
     --list-all-groups) group_pattern="[^]]" ;;
     --list-all-instances) group_pattern="instance:" ;;
