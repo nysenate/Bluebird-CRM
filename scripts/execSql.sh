@@ -67,6 +67,7 @@ fi
 [ "$dbpass" ] || dbpass=`$readConfig $ig_opt db.pass` || dbhost=$DEFAULT_DB_PASS
 
 if [ $dump_db -eq 1 ]; then
+  # Do not use 'set -x' here, since mysqldump writes to stdout
   mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname
 elif [ "$sqlfile" ]; then
   set -x
