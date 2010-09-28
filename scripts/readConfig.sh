@@ -60,11 +60,11 @@ while [ $# -gt 0 ]; do
     --global*) group_names="$group_names globals" ;;
     --group) shift; group_names="$group_names $1" ;;
     --instance) shift; group_names="$group_names instance:$1" ;;
-    --instance-or-global) shift; group_names="$group_names instance:$1 globals" ;;
+    --instance-or-global|--ig) shift; group_names="$group_names instance:$1 globals" ;;
     --list-all-groups) group_pattern="[^]]" ;;
     --list-all-instances) group_pattern="instance:" ;;
     --list-matching-groups) shift; group_pattern="$1" ;;
-    -*) echo "Usage: $prog [--config-file file] [--global] [--group name] [--instance name] [--instance-or-global name] [--list-all-groups] [--list-all-instances] [--list-matching-groups pattern] [key]" >&2; exit 1 ;;
+    -*) echo "Usage: $prog [--config-file file] [--global] [--group name] [--instance name] [--instance-or-global|--ig name] [--list-all-groups] [--list-all-instances] [--list-matching-groups pattern] [key]" >&2; exit 1 ;;
     *) key_name="$1"
   esac
   shift
