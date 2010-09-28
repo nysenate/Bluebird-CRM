@@ -42,7 +42,7 @@ function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"',
 
   foreach ($fields as $field) {
     if ($mysql_null && ($field === null || ($blank_as_null && strlen($field)==0))) {
-      $output[] = 'NULL';
+      $output[] = '\N';
       continue;
     }
 
@@ -211,7 +211,7 @@ function writeToFile($fhout, $aOut, $done=1, $totalNum=2)
   // Remove all single and double quotes from all field values.
   //$aOut = str_replace(array("'", "\""), "", $aOut);
 
-  fputcsv2($fhout, $aOut, "\t", '', false, false);
+  fputcsv2($fhout, $aOut, "\t", '', true, false);
 
   if ($done % 1000 == 0) {
     echo "wrote $done lines.\n";
