@@ -1014,9 +1014,10 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     */
 
     $params['postal_greeting_id'] = 4;
-    if ($aRel[$primary]['FAM2']==0 && strlen($aRel[$primary]['FAM2'])>0) $params['postal_greeting_display'] =  'Dear '.$aRel['ctRow']['SALUTE2'].' '.$aRel['ctRow']['LAST'];
-    elseif ($aRel[$primary]['FAM2']>0) $params['postal_greeting_display'] =  'Dear '.$aRel['ctRow']['FAM2'];
-    else $params['postal_greeting_display'] = 'Dear Friends';
+    if (strlen(trim($aRel[$primary]['FAM2']))>0) $params['postal_greeting_display'] =  'Dear '.$aRel[$primary]['FAM2'];
+    //elseif (strlen(trim($aRel[$primary]['FAM2']))==0 && strlen(trim($aRel[$primary]['TC2']))>0) $params['postal_greeting_display'] =  'Dear '.$aRel['ctRow']['SALUTE2'].' '.$aRel['ctRow']['LAST'];
+    elseif ($aRel[$primary]['TC2']=='HoH') $params['postal_greeting_display'] =  'Dear '.$aRel[$primary]['SALUTE2'].' '.$aRel[$primary]['LAST'];
+	else $params['postal_greeting_display'] = 'Dear Friends';
 
     $params['postal_greeting_custom'] = $params['postal_greeting_display'];
 
