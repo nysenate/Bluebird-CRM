@@ -491,7 +491,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['do_not_mail'] = ($ctRow['MS']=='U') ? 1 : 0;
 
     //set the relationship if its got an org
-    $params['employer_id'] = ($orgID>0) ? $orgID : DBNULL;
+    $params['employer_id'] = $orgID>0 ? $orgID : DBNULL;
     $params['nick_name'] = $ctRow['FAM1'];
     $params['household_name'] = DBNULL;
 
@@ -975,11 +975,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   foreach ($aRels as $aRel) {
 
     //find out who is HoH
-    if ($aRel['ctRow']['TC2'] == 'HoH') {
+    if ($aRel['ctRow']['TC2'] == '003') {
       $first='HoH';
       $second='MoH';
       $primary='ctRow';
-    } elseif ($aRel['relationshipCtRow']['TC2']=='HoH') {
+    } elseif ($aRel['relationshipCtRow']['TC2']=='003') {
       $first='MoH';
       $second='HoH';
       $primary='relationshipCtRow';
@@ -1016,7 +1016,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['postal_greeting_id'] = 4;
     if (strlen(trim($aRel[$primary]['FAM2']))>0) $params['postal_greeting_display'] =  'Dear '.$aRel[$primary]['FAM2'];
     //elseif (strlen(trim($aRel[$primary]['FAM2']))==0 && strlen(trim($aRel[$primary]['TC2']))>0) $params['postal_greeting_display'] =  'Dear '.$aRel['ctRow']['SALUTE2'].' '.$aRel['ctRow']['LAST'];
-    elseif ($aRel[$primary]['TC2']=='HoH') $params['postal_greeting_display'] =  'Dear '.$aRel[$primary]['SALUTE2'].' '.$aRel[$primary]['LAST'];
+    elseif ($aRel[$primary]['TC2']=='003') $params['postal_greeting_display'] =  'Dear '.$aRel[$primary]['SALUTE2'].' '.$aRel[$primary]['LAST'];
 	else $params['postal_greeting_display'] = 'Dear Friends';
 
     $params['postal_greeting_custom'] = $params['postal_greeting_display'];
