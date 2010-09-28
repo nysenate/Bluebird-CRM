@@ -1,12 +1,13 @@
 <?php
 
-global $bbconfig;
 require_once 'bluebird_config.php';
+
+$bbconfig = get_bluebird_config('bluebird.cfg');
 
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_USE_MEMCACHE', 0);
-define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
 define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
+define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
 
 global $civicrm_root;
 
