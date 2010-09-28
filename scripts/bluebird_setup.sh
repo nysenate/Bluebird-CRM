@@ -5,79 +5,90 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-01
-# Revised: 2010-09-13
+# Revised: 2010-09-27
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 script_dir=`cd $script_dir; echo $PWD`
 readConfig=$script_dir/readConfig.sh
-default_config_env=prod
-default_config_file=/etc/bluebird.ini
-import_dir=/data/importData
-iscript_dir=/data/senateProduction/civicrmSharedDirectories/scripts/importData
+app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
+data_rootdir=`$readConfig --global data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
+import_dir=$data_rootdir/importData
+iscript_dir=$app_rootdir/senateProduction/civicrmSharedDirectories/scripts/importData
 tempdir=/tmp/bluebird_imports
 
 
 usage() {
-  echo "Usage: $prog [--all] [--set instanceSet] [--no-init] [--no-import] [--no-fixperms] [-e config_env] [-f config_file] [--keep] instance_name [instance_name ...]" >&2
+  echo "Usage: $prog [--all] [--set instanceSet] [--no-init] [--no-unzip] [--no-import] [--no-fixperms] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name [instance_name ...]" >&2
 }
 
 create_instance() {
   instance="$1"
-  config_env="$2"
   (
     set -x
     cd $script_dir
-    php civiSetup.php $config_env deletesite $instance
-    php civiSetup.php $config_env deletesite $instance
-    php civiSetup.php $config_env copysite template $instance
-    php civiSetup.php $config_env copysite template $instance
+    $script_dir/deleteInstance.sh --ok $instance
+    php civiSetup.php prod copysite template $instance
+    php civiSetup.php prod copysite template $instance
   )
 }
 
-import_data() {
-  instance="$1"
-  import="$2"
-  srcdesc="$3"
-  importzip="$import_dir/$import.zip"
-  if [ ! -r "$importzip" ]; then
-    echo "$prog: $importzip: Unable to locate import zip file" >&2
-    return
+
+unzip_data() {
+  dataset="$1"
+
+  if [ $force_unzip -eq 1 -o ! -d $tempdir/$dataset ]; then
+    importzip="$import_dir/$dataset.zip"
+    if [ ! -r "$importzip" ]; then
+      echo "$prog: $importzip: Unable to locate dataset zip file" >&2
+      return 1
+    fi
+
+    (
+      cd $tempdir/ || return 1
+      rm -rf $dataset/
+      unzip $importzip
+      cd $dataset/
+      $script_dir/filesToUpper.sh *
+    )
   fi
 
-  unzipdir=$tempdir/$import
   (
-    iu=`echo $import | tr [:lower:] [:upper:]`
-    cd $tempdir
-    rm -rf $import/
-    unzip $importzip
-    cd $import
-    $script_dir/filesToUpper.sh *
+    cd $tempdir/$dataset/
+    iu=`echo $dataset | tr [:lower:] [:upper:]`
     # Convert issue code file into extended format if it hasn't been done yet
     if [ ! -f ${iu}ISSCONV.TXT ]; then
+      echo "Need to convert issue code file ${iu}ISS.TXT"
       set -x
       $script_dir/convert_issue_codes.sh ${iu}ISS.TXT > ${iu}ISSCONV.TXT
     fi
   )
+}
 
+
+import_data() {
+  instance="$1"
+  dataset="$2"
+  srcdesc="$3"
+  unzipdir=$tempdir/$dataset
   (
-    set -x
     cd $iscript_dir
-    php importData.inc.php $instance $import -d $unzipdir -s $srcdesc
+    set -x
+    php importData.inc.php $instance $dataset -d $unzipdir -s $srcdesc
   )
 
   # Clean up converted import data left over by importData.inc.php
   if [ $keep_tempdir -eq 0 ]; then
-    rm -f /tmp/$import-*.tsv
-    rm -rf $unzipdir/
+    ( set -x
+      rm -f /tmp/$dataset-*.tsv
+      rm -rf $unzipdir/
+    )
   fi
 }
 
 
 fix_permissions() {
-  instance="$1"
-  config_env="$2"
   (
     set -x
     $script_dir/fixPermissions.sh
@@ -87,12 +98,12 @@ fix_permissions() {
 
 use_all=0
 instance_set=
-config_env=$default_config_env
-config_file=$default_config_file
 stage=$default_stage
-no_import=0
 no_init=0
+no_unzip=0
+no_import=0
 no_fixperms=0
+force_unzip=0
 keep_tempdir=0
 instances=
 
@@ -100,36 +111,29 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --all) use_all=1 ;;
     --set|-s) shift; instance_set="$1" ;;
-    --config-env|-e) shift; config_env="$1" ;;
-    --config-file|-f) shift; config_file="$1" ;;
+    --no-init|--no-create) no_init=1 ;;
+    --no-unzip|--no-unarchive) no_unzip=1 ;;
     --no-import) no_import=1 ;;
-    --no-init) no_init=1 ;;
-    --no-fixperms) no_fixperms=1 ;;
+    --no-fixperm*) no_fixperms=1 ;;
+    --force-unzip) force_unzip=1 ;;
     --keep|-k) keep_tempdir=1 ;;
+    --temp-dir|-t) shift; tempdir="$1" ;;
+    --use-importdir) keep_tempdir=1; tempdir="$import_dir" ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instances="$instances $1" ;;
   esac
   shift
 done
 
-if [ ! "$config_file" ]; then
-  echo "$prog: Must specify a configuration file" >&2
-  usage
-  exit 1
-elif [ ! -r "$config_file" ]; then
-  echo "$prog: $config_file: File not found" >&2
-  exit 1
-fi
-
 if [ $use_all -eq 1 ]; then
   if [ "$instances" -o "$instance_set" ]; then
     echo "$prog: Cannot use --all if instances have been specified" >&2
     exit 1
   else
-    instances=`$readConfig -f "$config_file" --groups "instance:" | sed "s;^instance:;;"`
+    instances=`$readConfig --list-all-instances | sed "s;^instance:;;"`
   fi
 elif [ "$instance_set" ]; then
-  ival=`$readConfig -f "$config_file" --group "instance_sets" --key "$instance_set"`
+  ival=`$readConfig --instance-set "$instance_set"`
   if [ ! "$ival" ]; then
     echo "$prog: Instance set $instance_set not found" >&2
     exit 1
@@ -142,54 +146,61 @@ if [ ! "$instances" ]; then
   exit 1
 fi
 
-
+locked_instances=`$readConfig --instance-set "LOCKED"`
 mkdir -p "$tempdir"
 
 for instance in $instances; do
-  igroup="instance:$instance"
-  instance_config=`$readConfig -f "$config_file" --group $igroup`
+  instance_config=`$readConfig --instance $instance`
   if [ ! "$instance_config" ]; then
     echo "$prog: Warning: CRM instance [$instance] not found in config file" >&2
     continue
+  elif echo "$locked_instances" | egrep -q "(^|[ ]+)$instance([ ]+|$)"; then
+    echo "$prog: NOTICE: CRM instance [$instance] is LOCKED; skipping" >&2
+    continue
   fi
 
-  instance_name=`$readConfig -f "$config_file" --group $igroup --key name`
-  datasets=`$readConfig -f "$config_file" --group $igroup --key datasets`
-  # Not using is_majority and ldap_group yet...
-  is_majority=`$readConfig -f "$config_file" --group $igroup --key majority`
-  ldap_group=`$readConfig -f "$config_file" --group $igroup --key ldap.group`
-  imap_user=`$readConfig -f "$config_file" --group $igroup --key imap.user`
-  imap_pass=`$readConfig -f "$config_file" --group $igroup --key imap.pass`
+  db_name=`$readConfig --instance $instance db.name`
+  datasets=`$readConfig --instance $instance datasets`
+  # Not using is_majority, ldap_group, imap_user, imap_pass yet...
+  is_majority=`$readConfig --instance $instance majority`
+  ldap_group=`$readConfig --instance $instance ldap.group`
+  imap_user=`$readConfig --instance $instance imap.user`
+  imap_pass=`$readConfig --instance $instance imap.pass`
 
   if [ $no_init -eq 1 ]; then
-    echo "==> Skipping initialization of instance [$instance_name]"
+    echo "==> Skipping initialization of instance [$instance]"
   else
-    echo "==> About to create CRM instance [$instance_name]"
-    create_instance $instance_name $config_env
+    echo "==> About to create CRM instance [$instance]"
+    create_instance $instance
   fi
 
-  if [ $no_import -eq 1 ]; then
-    echo "==> Skipping data importation for instance [$instance_name]"
-  else
-    echo "==> About to import data into CRM instance [$instance_name]"
-    datasets=`echo $datasets | tr , " "`
-    sourcedesc=omis
-    for ds in $datasets; do
-      import_data $instance_name $ds $sourcedesc
-      sourcedesc=ext
-    done
-  fi
+  datasets=`echo $datasets | tr , " "`
+  sourcedesc=omis
 
-    if [ $no_fixperms -eq 1 ]; then
-      echo "==> Skipping permission fixups for instance [$instance_name]"
+  for ds in $datasets; do
+    if [ $no_unzip -eq 1 ]; then
+      echo "==> Skipping data unzip for instance [$instance]"
     else
-      echo "==> About to fix permissions for CRM instance [$instance_name]"
-      fix_permissions $instance_name $config_env
+      unzip_data $ds
     fi
-done
 
-if [ $keep_tempdir -eq 0 ]; then
-  rm -rf "$tempdir"
-fi
+    if [ $no_import -eq 1 ]; then
+      echo "==> Skipping data importation for instance [$instance]"
+    else
+      echo "==> About to import data into CRM instance [$instance]"
+      import_data $instance $ds $sourcedesc
+    fi
+
+
+    sourcedesc=ext
+  done
+
+  if [ $no_fixperms -eq 1 ]; then
+    echo "==> Skipping permission fixups for instance [$instance]"
+  else
+    echo "==> About to fix permissions for CRM instance [$instance]"
+    fix_permissions
+  fi
+done
 
 exit 0
