@@ -163,11 +163,6 @@ switch ($function) {
     apc_clear_cache('user');
     break;
 
-  case "tarall":
-    runCmd("tar -czf /tmp/{$config}.tar.gz {$SC['installDir']}");
-    //backup all databases
-    break;
-
   case "showcividbinfo":
     mysql_connect($SC['dbToHost'], $SC['dbToUser'],$SC['dbToPassword']) or die(mysql_error());
     //mysql_select_db($SC['dbToCiviPrefix'].$SC['dbToName']) or die(mysql_error());
