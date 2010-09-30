@@ -51,6 +51,13 @@ www_rootdir=`$readConfig --ig $instance www.rootdir` || www_rootdir=$DEFAULT_WWW
 errcode=0
 
 if [ $force_ok -eq 0 ]; then
+  echo "Please review before deleting:"
+  echo
+  echo "Domain: $domain"
+  echo "CiviCRM DB Prefix: $db_civicrm_prefix"
+  echo "Drupal DB Prefix: $db_drupal_prefix"
+  echo "WWW Root Directory: $www_rootdir"
+  echo
   echo -n "Are you sure that you want to delete instance $instance ([N]/y)? "
   read ch
   case "$ch" in
