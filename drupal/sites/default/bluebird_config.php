@@ -5,13 +5,13 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2010-09-28
+# Revised: 2010-09-30
 #
 
 function get_bluebird_config($filename = 'bluebird.cfg')
 {
-  $cur_dir = dirname(__FILE__);
-  $base_dir = realpath($cur_dir.'/../../../');
+  $drupal_dir = realpath(dirname(__FILE__).'/../../');
+  $base_dir = realpath($drupal_dir.'/../');
 
   if (file_exists($base_dir."/$filename")) {
     $cfg_file = $base_dir."/$filename";
@@ -39,7 +39,7 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $dbpass = get_key_value($bbini, $shortname, 'db.pass');
   $dbciviprefix = get_key_value($bbini, $shortname, 'db.civicrm.prefix');
   $dbdrupprefix = get_key_value($bbini, $shortname, 'db.drupal.prefix');
-  $drupaldir = realpath($cur_dir.'/../../');
+  $datadir = get_key_value($bbini, $shortname, 'data.rootdir');
 
   $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbciviprefix$shortname";
   $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$shortname";
@@ -49,7 +49,8 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $bbcfg['shortname'] = $shortname;
   $bbcfg['drupal_db_url'] = $drupal_db_url;
   $bbcfg['civicrm_db_url'] = $civicrm_db_url;
-  $bbcfg['drupal_root'] = $drupaldir;
+  $bbcfg['drupal_root'] = $drupal_dir;
+  $bbcfg['data_rootdir'] = $datadir;
 
   return $bbcfg;
 } // get_bluebird_config()
