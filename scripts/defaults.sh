@@ -5,7 +5,7 @@
 # Project: BluebirdCRM
 # Author: Ken Zalewski
 # Organization: New York State Senate
-# Date: 2010-09-27
+# Date: 2010-09-30
 #
 
 DEFAULT_CONFIG_FILE=/etc/bluebird.cfg
@@ -21,8 +21,8 @@ DEFAULT_HTTP_PASS=NONE
 
 DEFAULT_APP_ROOTDIR=/opt/bluebird
 DEFAULT_DATA_ROOTDIR=/var/bluebird
+DEFAULT_DRUPAL_ROOTDIR=/var/www
 DEFAULT_IMPORT_ROOTDIR=/data/importData
-DEFAULT_WWW_ROOTDIR=/var/www
 
 DEFAULT_BACKUP_HOST=localhost
 DEFAULT_BACKUP_ROOTDIR=/crmbackups
