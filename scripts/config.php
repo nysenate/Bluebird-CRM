@@ -1,6 +1,16 @@
 <?php
 
-define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.cfg');
+$base_dir = realpath(dirname(__FILE__).'/../');
+$filename = "bluebird.cfg";
+
+if (file_exists($base_dir."/$filename")) {
+  $cfg_file = $base_dir."/$filename";
+}
+else if (($cfg_file = getenv('BLUEBIRD_CONFIG_FILE')) === false) {
+  $cfg_file = "/etc/$filename";
+}
+
+define('BLUEBIRD_CONFIG_FILE', $cfg_file);
 
 $bbini = parse_ini_file(BLUEBIRD_CONFIG_FILE, true);
 
@@ -12,7 +22,7 @@ $httppass = $bbini['globals']['http.pass'];
 
 if (empty($dbhost) || empty($dbuser) || empty($dbpass)
     || empty($httpuser) || empty($httppass)) {
-  die("Must set global:db and global:httpauth parameters in ".BLUEBIRD_CONFIG_FILE."\n");
+  die("Must set db.host, db.user, db.pass, http.user, http.pass parameters in ".BLUEBIRD_CONFIG_FILE."\n");
 }
 
 define('DBHOST', $dbhost);
@@ -20,15 +30,13 @@ define('DBUSER', $dbuser);
 define('DBPASS', $dbpass);
 define('HTTPUSER', $httpuser);
 define('HTTPPASS', $httppass);
-define('ROOTDIR', '/data/www/');
+define('ROOTDIR', $base_dir.'/drupal');
 define('CIVI_TABLE_PREFIX', 'civicrm_');
-define('CIVI_TEMPLATEDIR', 'civicrmInstallTemplates/');
-define('INSTALLDIR', '/data/senateProduction/');
-define('INSTALLDIR_DEV', '/data/senateDevelopment/');
+define('CIVI_TEMPLATEDIR', $base_dir.'/templates/site');
 define('ROOTDOMAIN', '.crm.nysenate.gov');
 define('ROOTDOMAIN_DEV', '.crmdev.nysenate.gov');
 define('DRUPAL_ROOTDIR', '');
-define('DRUPAL_ROOTDIR_DEV', 'nyssdev/');
+define('DRUPAL_ROOTDIR_DEV', '');
 define('CIVI_DBPREFIX', 'senate_c_');
 define('CIVI_DBPREFIX_DEV', 'senate_dev_c_');
 define('DRUPAL_DBPREFIX', 'senate_d_');
@@ -78,12 +86,12 @@ switch ($config) {
     $SC['dbCiviPrefix'] = CIVI_DBPREFIX;
     $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX;
     $SC['drupalRootDir'] = DRUPAL_ROOTDIR;
-    $SC['templateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['templateDir'] = CIVI_TEMPLATEDIR;
     $SC['rootDomain'] = ROOTDOMAIN;
     $SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
     $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
     $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
-    $SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+    $SC['toTemplateDir'] = CIVI_TEMPLATEDIR;
     $SC['toRootDomain'] = ROOTDOMAIN_DEV;
     break;
 
@@ -91,12 +99,12 @@ switch ($config) {
     $SC['dbCiviPrefix'] = CIVI_DBPREFIX_DEV;
     $SC['dbDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
     $SC['drupalRootDir'] = DRUPAL_ROOTDIR_DEV;
-    $SC['templateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+    $SC['templateDir'] = CIVI_TEMPLATEDIR;
     $SC['rootDomain'] = ROOTDOMAIN_DEV;
     $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
     $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
     $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
-    $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['toTemplateDir'] = CIVI_TEMPLATEDIR;
     $SC['toRootDomain'] = ROOTDOMAIN;
     break;
 
@@ -104,7 +112,7 @@ switch ($config) {
     $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
     $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
     $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
-    $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['templateDir'] = $SC['toTemplateDir'] = CIVI_TEMPLATEDIR;
     $SC['rootDomain'] = ROOTDOMAIN;
     $SC['toRootDomain'] = ".crm2.nysenate.gov";
     break;
@@ -113,18 +121,16 @@ switch ($config) {
     $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX;
     $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX;
     $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR;
-    $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR.CIVI_TEMPLATEDIR;
+    $SC['templateDir'] = $SC['toTemplateDir'] = CIVI_TEMPLATEDIR;
     $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN;
-    $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR;
     break;
 
   case 'dev':
     $SC['dbCiviPrefix'] = $SC['dbToCiviPrefix'] = CIVI_DBPREFIX_DEV;
     $SC['dbDrupalPrefix'] = $SC['dbToDrupalPrefix'] = DRUPAL_DBPREFIX_DEV;
     $SC['drupalRootDir'] = $SC['toDrupalRootDir'] = DRUPAL_ROOTDIR_DEV;
-    $SC['templateDir'] = $SC['toTemplateDir'] = INSTALLDIR_DEV.CIVI_TEMPLATEDIR;
+    $SC['templateDir'] = $SC['toTemplateDir'] = CIVI_TEMPLATEDIR;
     $SC['rootDomain'] = $SC['toRootDomain'] = ROOTDOMAIN_DEV;
-    $SC['installDir'] = $SC['toInstallDir'] = INSTALLDIR_DEV;
     break;
 
   default:
