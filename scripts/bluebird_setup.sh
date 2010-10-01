@@ -28,9 +28,9 @@ create_instance() {
   (
     set -x
     cd $script_dir
-    $script_dir/deleteInstance.sh --ok $instance
-    php civiSetup.php prod copysite template $instance
-    php civiSetup.php prod copysite template $instance
+    $script_dir/copyInstance.sh --delete template $instance
+    $script_dir/manageCiviConfig.sh --update $instance
+    $script_dir/hitInstance.sh $instance
   )
 }
 
