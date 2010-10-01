@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2010-09-27
+# Revised: 2010-09-30
 #
 
 prog=`basename $0`
@@ -15,8 +15,12 @@ readConfig=$script_dir/readConfig.sh
 
 . $script_dir/defaults.sh
 
+usage() {
+  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-i instance] [-h host] [-u user] [-p password] [--create] [--drupal] [dbName]" >&2
+}
+
 if [ $# -lt 1 ]; then
-  echo "Usage: $prog dbName [-f sqlFile | -c sqlCommand] [-d] [-i instance] [-h host] [-u user] [-p password] [--drupal]" >&2
+  usage
   exit 1
 fi
 
@@ -28,6 +32,7 @@ dbhost=
 dbuser=
 dbpass=
 dbname=
+create_db=0
 db_prefix_keyname=db.civicrm.prefix
 default_db_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 
@@ -40,6 +45,7 @@ while [ $# -gt 0 ]; do
     -h|--host) shift; dbhost="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
+    --create) create_db=1 ;;
     --drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
     *) dbname="$1" ;;
@@ -48,6 +54,12 @@ while [ $# -gt 0 ]; do
 done
 
 ig_opt="--global"
+
+# By using the --instance option, this script can calculate the database
+# prefix and the database basename (which are concatenated to form the
+# actual database name).  However, there are two databases for each instance.
+# This script defaults to the CiviCRM database.
+# Use the --drupal option to execute SQL on the Drupal DB instead.
 
 if [ "$instance" ]; then
   ig_opt="--ig $instance"
@@ -69,6 +81,13 @@ fi
 if [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
   mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname
+elif [ $create_db -eq 1 ]; then
+  if [ ! "$dbname" ]; then
+    echo "$prog: Unable to use --create with specifying a database name." >&2
+    exit 1
+  fi
+  set -x
+  mysql -h $dbhost -u $dbuser -p$dbpass -e "create database $dbname" --batch
 elif [ "$sqlfile" ]; then
   set -x
   cat $sqlfile | mysql -h $dbhost -u $dbuser -p$dbpass $dbname
