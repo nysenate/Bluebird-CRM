@@ -34,8 +34,13 @@ base_dir=`cd $script_dir/..; echo $PWD`
 group_names=
 group_pattern=
 key_name=
+no_output=0
 
 . $script_dir/defaults.sh
+
+usage() {
+  echo "Usage: $prog [--config-file file] [--global] [--group name [--group name]...] [--instance name] [--instance-or-global|--ig name] [--list-all-groups] [--list-all-instances] [--list-matching-groups pattern] [--quiet] [key]" >&2
+}
 
 # Start by using the default value.
 cfgfile=$DEFAULT_CONFIG_FILE
@@ -60,13 +65,14 @@ while [ $# -gt 0 ]; do
     --config-file|-f) shift; cfgfile="$1" ;;
     --global*) group_names="$group_names globals" ;;
     --group) shift; group_names="$group_names $1" ;;
-    --instance) shift; group_names="$group_names instance:$1" ;;
+    --instance|-i) shift; group_names="$group_names instance:$1" ;;
     --instance-set) group_names="$group_names instance_sets" ;;
     --instance-or-global|--ig) shift; group_names="$group_names instance:$1 globals" ;;
     --list-all-groups) group_pattern="[^]]" ;;
     --list-all-instances) group_pattern="instance:" ;;
     --list-matching-groups) shift; group_pattern="$1" ;;
-    -*) echo "Usage: $prog [--config-file file] [--global] [--group name] [--instance name] [--instance-or-global|--ig name] [--list-all-groups] [--list-all-instances] [--list-matching-groups pattern] [key]" >&2; exit 1 ;;
+    --quiet|-q) no_output=1 ;;
+    -*) usage; exit 1 ;;
     *) key_name="$1"
   esac
   shift
@@ -96,6 +102,8 @@ errcode=0
 #
 # If only a key name is given, then print out all matching key-value pairs
 # that have the provided key name, across all groups.
+
+[ $no_output -eq 1 ] && exec > /dev/null
 
 if [ "$group_pattern" ]; then
   sed -n -e "s;^\[\([^]]*$group_pattern[^]]*\)\]$;\1;p" $cfgfile
