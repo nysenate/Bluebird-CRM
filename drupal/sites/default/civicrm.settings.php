@@ -1,17 +1,18 @@
 <?php
 
-global $bbconfig;
 require_once 'bluebird_config.php';
+
+$bbconfig = get_bluebird_config('bluebird.cfg');
 
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_USE_MEMCACHE', 0);
-define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
 define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
+define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
 
 global $civicrm_root;
 
 $civicrm_root = $bbconfig['drupal_root'].'/sites/all/modules/civicrm';
-define('CIVICRM_TEMPLATE_COMPILEDIR', $bbconfig['drupal_root'].'/sites/default/files/'.$bbconfig['servername'].'/civicrm/templates_c');
+define('CIVICRM_TEMPLATE_COMPILEDIR', $bbconfig['data_rootdir'].'/'.$bbconfig['servername'].'/civicrm/templates_c');
 define('CIVICRM_UF_BASEURL', 'http://'.$bbconfig['servername'].'/');
 define('CIVICRM_SITE_KEY', '32425kj24h5kjh24542kjh524');
 

@@ -104,7 +104,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql .= "street_address, supplemental_address_1, supplemental_address_2, street_number, street_number_suffix, street_name, street_unit, city, postal_code, postal_code_suffix, state_province_id, geo_code_1, geo_code_2, county_id ";
 	$sql .= " FROM civicrm_contact c ";
 	$sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND a.is_primary=1 ";
-	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=c.id ";
+	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	$sql .= " LEFT  JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7)";
         $sql .= " LEFT  JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
 	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
@@ -164,8 +164,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         $sql = "DROP TABLE tmpExport$rnd;";
         $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-		$href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST'].str_replace('/data/www/nyss/','/',$config->uploadDir).$fname);
-        $status[] = "Task $rnd exported ". sizeof($this->_contactIds). " Contact(s). &nbsp;&nbsp;<a href=\"$href\">Click here</a> to email the link.";
+		//$href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST'].str_replace('/data/www/nyss/','/',$config->uploadDir).$fname);
+        $href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST']."/data/".$_SERVER['HTTP_HOST']."/civicrm/upload/printProduction/".$fname);
+		$status[] = "Task $rnd exported ". sizeof($this->_contactIds). " Contact(s). &nbsp;&nbsp;<a href=\"$href\">Click here</a> to email the link.";
         
         CRM_Core_Session::setStatus( $status );
     }//end of function

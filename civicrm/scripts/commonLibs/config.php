@@ -1,11 +1,12 @@
 <?php
 
-define('RAYCIVIPATH', '/data/senateProduction/modules/civicrm/');
+define('BLUEBIRD_BASEDIR', realpath(dirname(__FILE__).'/../../../'));
+define('RAYCIVIPATH', BLUEBIRD_BASEDIR.'/modules/civicrm/');
 define('RAYDEBUG', true);
-define('RAYIMPORTDIR', '/data/importData/');
+define('RAYIMPORTDIR', BLUEBIRD_BASEDIR.'/importData/');
 define('RAYROOTDOMAIN', ".crm.nysenate.gov");
-define('RAYROOTDIR', "/data/www/nyss/");
-define ('RAYTMP', '/tmp/');
+define('RAYROOTDIR', BLUEBIRD_BASEDIR."/drupal/");
+define('RAYTMP', '/tmp/');
 
 define('SOLRDEBUG', false);
 define('SOLRUPDATE', 1);

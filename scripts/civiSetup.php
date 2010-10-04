@@ -1,8 +1,8 @@
 <?php
 
-$rootDir = "/data/scripts/";
+$script_dir = realpath(dirname(__FILE__));
 
-include_once $rootDir.'functions.inc.php';
+include_once $script_dir.'/functions.inc.php';
 
 $timestart = microtime(1); // note 1
 
@@ -36,7 +36,7 @@ catch (Exception $e) {
 }
 
 // Must wait to include config.php, since it depends on $config being set.
-include_once $rootDir.'config.php';
+include_once $script_dir.'/config.php';
 
 switch ($function) {
   case "copysite":
@@ -161,11 +161,6 @@ switch ($function) {
   case "clearcachestats":
     apc_clear_cache();
     apc_clear_cache('user');
-    break;
-
-  case "tarall":
-    runCmd("tar -czf /tmp/{$config}.tar.gz {$SC['installDir']}");
-    //backup all databases
     break;
 
   case "showcividbinfo":
@@ -313,8 +308,8 @@ function resetDomainConfig()
 
 function fixPermissions()
 {
-  global $rootDir;
-  runCmd("$rootDir/fixPermissions.sh", "setting permissions");
+  global $script_dir;
+  runCmd("$script_dir/fixPermissions.sh", "setting permissions");
 } // fixPermissions()
 
 
