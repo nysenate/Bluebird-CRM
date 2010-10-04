@@ -1051,20 +1051,20 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
                         $second='HoH';
     }
 */
-    //add the head of household relationship to the household record
+    //add the member of household relationship to the household record
     //contactID here is the household
     $params = array();
     $params['contact_id_a'] = $aIDMap[$aRel['relationshipImportID']];
     $params['contact_id_b'] = $contactID; 
-    $params['relationship_type_id'] = $aRelLookup[$first];
+    $params['relationship_type_id'] = $aRelLookup[$second];
     writeToFile($fout['relationship'], $params);
 
-    //add the member of household relationship to the household record
+    //add the head of household relationship to the household record
     //contactID here is the household
     $params = array();
     $params['contact_id_a'] = $aRel['contactID'];
     $params['contact_id_b'] = $contactID;
-    $params['relationship_type_id'] = $aRelLookup[$second];
+    $params['relationship_type_id'] = $aRelLookup[$first];
     writeToFile($fout['relationship'], $params);
   }
 
