@@ -18,8 +18,13 @@ script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 default_rsync_opts="-av --delete --delete-excluded";
-backup_host=`$readConfig --group globals backup.host`
-backup_dir=`$readConfig --group globals backup.rootdir`
+backup_host=`$readConfig --global backup.host`
+backup_dir=`$readConfig --global backup.rootdir`
+db_civicrm_prefix=`$readConfig --global db.civicrm.prefix`
+db_drupal_prefix=`$readConfig --global db.drupal.prefix`
+app_rootdir=`$readConfig --global app.rootdir`
+data_rootdir=`$readConfig --global data.rootdir`
+import_rootdir=`$readConfig --global import.rootdir`
 no_dbdump=0
 dry_run_opt=
 
@@ -46,6 +51,7 @@ if [ "$backup_host" ]; then
     rsync_host_prefix="$backup_host:"
   else
     echo "$prog: Error: Unable to access $backup_host:$backup_dir" >&2
+    exit 1
   fi
 else
   if [ -d "$backup_dir" ]; then
@@ -57,12 +63,13 @@ else
   fi
 fi
 
-# Databases are backed up using mysqldump, not rsync.  The dump is sent
+# Databases are backed up using mysqldump, not rsync.  The DB dump is sent
 # directly to the backup host.
-# The code and config are backed up using rsync.
+# The code, data, and config are backed up using rsync.
 
 db_backup_dir="$backup_dir/database_dumps"
 code_backup_dir="$rsync_host_prefix$backup_dir/application"
+data_backup_dir="$rsync_host_prefix$backup_dir/data"
 other_backup_dir="$rsync_host_prefix$backup_dir/other"
 rsync_opts="$default_rsync_opts $dry_run_opt"
 
@@ -75,7 +82,7 @@ fi
 
 if [ $no_dbdump -eq 0 ]; then
   echo "Calculating databases to be backed up"
-  dbs=`$execSql -c "show databases" | egrep -v "^Database|information_schema"`
+  dbs=`$execSql -c "show databases" | egrep "^($db_civicrm_prefix|$db_drupal_prefix)"`
   echo "Databases to be dumped: " $dbs
 
   echo "Dumping databases"
@@ -94,11 +101,8 @@ echo "Backing up /etc"
 rsync $rsync_opts /etc $other_backup_dir/;
 
 echo "Backing up source code"
-rsync $rsync_opts /data/importData $code_backup_dir/
-#rsync $rsync_opts /data/loadTesting $code_backup_dir/
-rsync $rsync_opts /data/scripts $code_backup_dir/
-rsync $rsync_opts /data/senateProduction $code_backup_dir/
-rsync $rsync_opts /data/sql $code_backup_dir/
-rsync $rsync_opts /data/www $code_backup_dir/
+[ -d $app_rootdir ] && rsync $rsync_opts $app_rootdir/* $code_backup_dir/
+[ -d $data_rootdir ] && rsync $rsync_opts $data_rootdir/* $data_backup_dir/
+[ -d $import_rootdir ] && rsync $rsync_opts $import_rootdir $data_backup_dir/
 
 exit $?

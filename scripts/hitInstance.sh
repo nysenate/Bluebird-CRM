@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# hitInstance.sh
+#
+# Project: BluebirdCRM
+# Author: Ken Zalewski
+# Organization: New York State Senate
+# Date: 2010-09-30
+# Revised: 2010-09-30
+#
+
+prog=`basename $0`
+script_dir=`dirname $0`
+execSql=$script_dir/execSql.sh
+readConfig=$script_dir/readConfig.sh
+
+. $script_dir/defaults.sh
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $prog instanceName" >&2
+  exit 1
+fi
+
+instance="$1"
+
+if ! $readConfig --instance $instance --quiet; then
+  echo "$prog: $instance: Instance not found in config file" >&2
+  exit 1
+fi
+
+http_user=`$readConfig --ig $instance http.user` || http_user="$DEFAULT_HTTP_USER"
+http_pass=`$readConfig --ig $instance http.pass` || http_pass="$DEFAULT_HTTP_PASS"
+base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
+
+echo "Making an HTTP connection to instance [$instance]"
+set -x
+wget -O /dev/null http://$http_user:$http_pass@$instance.$base_domain;
+
+exit $?

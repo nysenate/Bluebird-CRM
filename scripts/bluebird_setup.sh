@@ -14,8 +14,8 @@ script_dir=`cd $script_dir; echo $PWD`
 readConfig=$script_dir/readConfig.sh
 app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --global data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-import_dir=$data_rootdir/importData
-iscript_dir=$app_rootdir/senateProduction/civicrmSharedDirectories/scripts/importData
+import_rootdir=`$readConfig --global import.rootdir` || data_rootdir="$DEFAULT_IMPORT_ROOTDIR"
+iscript_dir=$app_rootdir/civicrm/scripts/importData
 tempdir=/tmp/bluebird_imports
 
 
@@ -28,9 +28,9 @@ create_instance() {
   (
     set -x
     cd $script_dir
-    $script_dir/deleteInstance.sh --ok $instance
-    php civiSetup.php prod copysite template $instance
-    php civiSetup.php prod copysite template $instance
+    $script_dir/copyInstance.sh --delete template $instance
+    $script_dir/manageCiviConfig.sh --update $instance
+    $script_dir/hitInstance.sh $instance
   )
 }
 
@@ -39,7 +39,7 @@ unzip_data() {
   dataset="$1"
 
   if [ $force_unzip -eq 1 -o ! -d $tempdir/$dataset ]; then
-    importzip="$import_dir/$dataset.zip"
+    importzip="$import_rootdir/$dataset.zip"
     if [ ! -r "$importzip" ]; then
       echo "$prog: $importzip: Unable to locate dataset zip file" >&2
       return 1
@@ -118,7 +118,7 @@ while [ $# -gt 0 ]; do
     --force-unzip) force_unzip=1 ;;
     --keep|-k) keep_tempdir=1 ;;
     --temp-dir|-t) shift; tempdir="$1" ;;
-    --use-importdir) keep_tempdir=1; tempdir="$import_dir" ;;
+    --use-importdir) keep_tempdir=1; tempdir="$import_rootdir" ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instances="$instances $1" ;;
   esac
@@ -190,7 +190,6 @@ for instance in $instances; do
       echo "==> About to import data into CRM instance [$instance]"
       import_data $instance $ds $sourcedesc
     fi
-
 
     sourcedesc=ext
   done

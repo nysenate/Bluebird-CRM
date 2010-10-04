@@ -5,36 +5,71 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
+# Revised: 2010-09-30
 #
 
-define('BLUEBIRD_CONFIG_FILE', '/etc/bluebird.cfg');
+function get_bluebird_config($filename = 'bluebird.cfg')
+{
+  $drupal_dir = realpath(dirname(__FILE__).'/../../');
+  $base_dir = realpath($drupal_dir.'/../');
 
-if (isset($_SERVER['SERVER_NAME'])) {
-  $servername = $_SERVER['SERVER_NAME'];
-}
-else if (getenv('SERVER_NAME') !== false) {
-  $servername = getenv('SERVER_NAME');
-}
-else {
-  die("Unable to determine server name.\n");
-}
+  if (file_exists($base_dir."/$filename")) {
+    $cfg_file = $base_dir."/$filename";
+  }
+  else if (($cfg_file = getenv('BLUEBIRD_CONFIG_FILE')) === false) {
+    $cfg_file = "/etc/$filename";
+  }
+  
+  if (isset($_SERVER['SERVER_NAME'])) {
+    $servername = $_SERVER['SERVER_NAME'];
+  }
+  else if (getenv('SERVER_NAME') !== false) {
+    $servername = getenv('SERVER_NAME');
+  }
+  else {
+    die("Unable to determine server name.\n");
+  }
+  
+  $shortname = substr($servername, 0, strpos($servername, '.'));
+  
+  $bbini = parse_ini_file($cfg_file, true);
+  
+  $dbhost = get_key_value($bbini, $shortname, 'db.host');
+  $dbuser = get_key_value($bbini, $shortname, 'db.user');
+  $dbpass = get_key_value($bbini, $shortname, 'db.pass');
+  $dbciviprefix = get_key_value($bbini, $shortname, 'db.civicrm.prefix');
+  $dbdrupprefix = get_key_value($bbini, $shortname, 'db.drupal.prefix');
+  $datadir = get_key_value($bbini, $shortname, 'data.rootdir');
 
-$shortname = substr($servername, 0, strpos($servername, '.'));
-$curdir = dirname(__FILE__);
-$drupalroot = realpath($curdir."/../../");
+  $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbciviprefix$shortname";
+  $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$shortname";
+  
+  $bbcfg = array();
+  $bbcfg['servername'] = $servername;
+  $bbcfg['shortname'] = $shortname;
+  $bbcfg['drupal_db_url'] = $drupal_db_url;
+  $bbcfg['civicrm_db_url'] = $civicrm_db_url;
+  $bbcfg['drupal_root'] = $drupal_dir;
+  $bbcfg['data_rootdir'] = $datadir;
 
-$bbini = parse_ini_file(BLUEBIRD_CONFIG_FILE, true);
+  return $bbcfg;
+} // get_bluebird_config()
 
-$dbhost = $bbini['globals']['db.host'];
-$dbuser = $bbini['globals']['db.user'];
-$dbpass = $bbini['globals']['db.pass'];
-$drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/senate_d_$shortname";
-$civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/senate_c_$shortname";
 
-$bbconfig = array();
-$bbconfig['servername'] = $servername;
-$bbconfig['shortname'] = $shortname;
-$bbconfig['drupal_db_url'] = $drupal_db_url;
-$bbconfig['civicrm_db_url'] = $civicrm_db_url;
-$bbconfig['drupal_root'] = $drupalroot;
-
+/*
+** Return the value of the given key.  If the key is found within the
+** provide instance group, use that.  Otherwise, attempt to locate the
+** key in the 'globals' group.
+*/
+function get_key_value($ini, $instance, $keyname)
+{
+  if (isset($ini['instance:'.$instance][$keyname])) {
+    return $ini['instance:'.$instance][$keyname];
+  }
+  else if (isset($ini['globals'][$keyname])) {
+    return $ini['globals'][$keyname];
+  }
+  else {
+    return false;
+  }
+} // get_key_value()

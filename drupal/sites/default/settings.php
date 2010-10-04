@@ -12,8 +12,9 @@
 # directly to the databases that are used for that instance.
 #
 
-global $bbconfig;
 require_once 'bluebird_config.php';
+
+$bbconfig = get_bluebird_config('bluebird.cfg');
 
 $db_url = $bbconfig['drupal_db_url'];
 $db_prefix = '';

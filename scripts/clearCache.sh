@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-15
-# Revised: 2010-09-27
+# Revised: 2010-09-30
 #
 
 prog=`basename $0`
@@ -21,31 +21,33 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-db_civicrm_prefix=`$readConfig --group globals db.civicrm.prefix`
-db_drupal_prefix=`$readConfig --group globals db.drupal.prefix`
-
 instance="$1"
 
-[ "$db_civicrm_prefix" ] || db_civicrm_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
-[ "$db_drupal_prefix" ] || db_drupal_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
+if ! $readConfig --instance $instance --quiet; then
+  echo "$prog: $instance: Instance not found in config file" >&2
+  exit 1
+fi
+
+data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
+base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 
 echo "Clearing CiviCRM database caches"
 sql="truncate civicrm_cache; truncate civicrm_menu; truncate civicrm_uf_match;"
 ( set -x
-  $execSql "$db_civicrm_prefix$instance" -c "$sql"
+  $execSql -i $instance -c "$sql"
 )
 
 echo "Clearing CiviCRM filesystem caches"
 ( set -x
-  rm -rf /data/files/$instance.crm.nysenate.gov/civicrm/templates_c/*
-  rm -rf /data/files/$instance.crm.nysenate.gov/civicrm/css/*
-  rm -rf /data/files/$instance.crm.nysenate.gov/civicrm/js/*
+  rm -rf $data_rootdir/$instance.$base_domain/civicrm/templates_c/*
+  rm -rf $data_rootdir/$instance.$base_domain/civicrm/css/*
+  rm -rf $data_rootdir/$instance.$base_domain/civicrm/js/*
 )
 
 echo "Clearing Drupal database caches"
 sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_update; truncate cache_menu; truncate cache_block; truncate cache_filter; truncate sessions;"
 ( set -x
-  $execSql "$db_drupal_prefix$instance" -c "$sql"
+  $execSql -i $instance -c "$sql" --drupal
 )
 
 exit 0

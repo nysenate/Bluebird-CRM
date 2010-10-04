@@ -44,13 +44,27 @@ if [ ! "$instance" ]; then
   exit 1
 fi
 
-[ "$domain" ] || domain=`$readConfig --ig $instance base.domain` || domain=$DEFAULT_BASE_DOMAIN
-db_civicrm_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civicrm_prefix=$DEFAULT_DB_CIVICRM_PREFIX
-db_drupal_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drupal_prefix=$DEFAULT_DB_DRUPAL_PREFIX
-www_rootdir=`$readConfig --ig $instance www.rootdir` || www_rootdir=$DEFAULT_WWW_ROOTDIR
+[ "$domain" ] || domain=`$readConfig --ig $instance base.domain` || domain="$DEFAULT_BASE_DOMAIN"
+db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
+db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
+drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
+data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 errcode=0
 
+instance_dir="$drupal_rootdir/sites/$instance.$domain"
+instance_data_dir="$data_rootdir/$instance.$domain"
+
 if [ $force_ok -eq 0 ]; then
+  echo "Please review before deleting:"
+  echo
+  echo "Domain: $domain"
+  echo "CiviCRM DB Prefix: $db_civi_prefix"
+  echo "Drupal DB Prefix: $db_drup_prefix"
+  echo "Drupal Root Directory: $drupal_rootdir"
+  echo "Data Root Directory: $data_rootdir"
+  echo "Will delete: $instance_dir"
+  echo "Will delete: $instance_data_dir"
+  echo
   echo -n "Are you sure that you want to delete instance $instance ([N]/y)? "
   read ch
   case "$ch" in
@@ -60,28 +74,22 @@ if [ $force_ok -eq 0 ]; then
 fi
 
 if [ $db_only -ne 1 ]; then
-  instance_dir="$www_rootdir/sites/$instance.$domain"
   echo "Deleting site files for instance [$instance]"
-  if [ -d "$instance_dir" ]; then
-    ( set -x
-      rm -rf "$instance_dir"
-    ) || errcode=$(($errcode | 1))
-  else
-    echo "$prog: $instance_dir: Instance directory not found" >&2
-    errcode=$(($errcode | 1))
-  fi
+  ( set -x
+    rm -rf "$instance_dir" "$instance_data_dir"
+  ) || errcode=$(($errcode | 1))
 fi
 
 if [ $files_only -ne 1 ]; then
   echo "Deleting Drupal database for instance [$instance]"
   ( set -x
-    $execSql -c "drop database $db_drupal_prefix$instance"
+    $execSql -c "drop database $db_drup_prefix$instance"
   ) || errcode=$(($errcode | 2))
   set +x
 
   echo "Deleting CiviCRM database for instance [$instance]"
   ( set -x
-    $execSql -c "drop database $db_civicrm_prefix$instance"
+    $execSql -c "drop database $db_civi_prefix$instance"
   ) || errcode=$(($errcode | 4))
   set +x
 fi
