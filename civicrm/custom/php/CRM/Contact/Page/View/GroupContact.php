@@ -88,7 +88,7 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
     }
 
     function preProcess() {
-        //$this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true ); //LCD
+        //$this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true ); //NYSS - LCD
 
         //NYSS LCD fix occassional lost cid value
 		$temp_contactid = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, false );

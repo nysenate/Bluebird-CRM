@@ -292,7 +292,7 @@ class CRM_Case_Form_Activity extends CRM_Activity_Form_Activity
         if ( ! empty($this->_relatedContacts) ) {
             $checkBoxes = array( );
 
-			//LCD 
+			//NYSS - LCD 
 			foreach ( $this->_relatedContacts as $id => $row ) {
 				if ( count($row) > 1 ) {
 					$flattened[$id] = $row;
@@ -303,7 +303,7 @@ class CRM_Case_Form_Activity extends CRM_Activity_Form_Activity
 				}
 			}
 			$this->_relatedContacts = $flattened;
-			//LCD end
+			//NYSS - LCD end
             
 			foreach ( $this->_relatedContacts as $id => $row ) {
 				$checkBoxes[$id] = $this->addElement('checkbox', $id, null, '' );

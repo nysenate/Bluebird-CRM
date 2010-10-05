@@ -95,7 +95,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  ),
                           'grouping'  => 'contact-fields',
                           ),
-//RAYOGRAM                   
+//NYSS - RAY                   
                    'civicrm_contribution'   =>
                    array( 'dao'       => 'CRM_Contribute_DAO_Contribution',
                           'fields'    =>
@@ -287,7 +287,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     function select( ) {
         $select               = array( );
         $this->_columnHeaders = array( );
-//RAYOGRAM:
+//NYSS - RAY:
 //        $this->_component     = array( 'contribution_civireport', 'membership_civireport', 'participant_civireport', 'relationship_civireport', 'activity_civireport' );
         $this->_component     = array( 'contribution_civireport', 'membership_civireport', 'participant_civireport', 'relationship_civireport', 'activity_civireport' );
 

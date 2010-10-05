@@ -118,7 +118,7 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
         $path = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid=' . $this->_contactId );
         CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('View Contact'),
                                                           'url'   => $path ) ) );
-        //LCD http://senatedev.senate.state.ny.us/issues/show/2193
+        //NYSS - LCD http://senatedev.senate.state.ny.us/issues/show/2193
 		//http://issues.civicrm.org/jira/browse/CRM-6517
 		//if context = fulltext, don't append
 		if ($_GET['context'] != 'fulltext') {

@@ -343,7 +343,7 @@ class CRM_Import_ImportJob {
                                'title'         => $newTagName,
                                'description'   => $newTagDesc,
                                'is_selectable' => true,
-							   'parent_id'	   => 296, //LCD new tags during import should be imported as keywords
+							   'parent_id'	   => 296, //NYSS - LCD new tags during import should be imported as keywords
                                'used_for'      => 'civicrm_contact' 
                                );
             require_once 'CRM/Core/BAO/Tag.php';

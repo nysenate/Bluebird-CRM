@@ -154,7 +154,7 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
                         t1.is_reserved, t1.parent_id, t1.used_for
                  FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
 				 WHERE t1.parent_id <> 292
-                 GROUP BY t1.parent_id, t1.id"; //LCD exclude positions from tag management screen
+                 GROUP BY t1.parent_id, t1.id"; //NYSS - LCD exclude positions from tag management screen
                  
        $tag = CRM_Core_DAO::executeQuery( $query );
        $values = array( );

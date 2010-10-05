@@ -77,7 +77,7 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
         $groups =& CRM_Core_PseudoConstant::group();
         $this->set('groups', $groups);
         
-		//LCD this should be changed to exclude positions and block restored in the tpl
+		//NYSS - LCD this should be changed to exclude positions and block restored in the tpl
         $tag =& CRM_Core_PseudoConstant::tag();
         if ($tag) {
             $this->set('tag', $tag);
@@ -155,7 +155,7 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
         $this->addElement( 'text', 'newTagDesc', ts('Description'));
         $this->addFormRule(array('CRM_Import_Form_Preview','newTagRule'));    
     
-	//rayogram override 
+	//NYSS - RAY override 
         /*
         $tag =& $this->get('tag');
         if (! empty($tag) ) {

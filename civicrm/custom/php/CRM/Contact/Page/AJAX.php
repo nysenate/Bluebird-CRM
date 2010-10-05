@@ -594,7 +594,7 @@ WHERE {$queryString}
       {$aclWhere}
 ";
 
-             // send query to hook to be modified if needed //LCD required for handling activity assignee search restriction
+             // send query to hook to be modified if needed //NYSS - LCD required for handling activity assignee search restriction
              require_once 'CRM/Utils/Hook.php';
              CRM_Utils_Hook::contactListQuery( $query,
                                               $name,
@@ -615,7 +615,7 @@ WHERE  ce.on_hold = 0 AND cc.is_deceased = 0 AND cc.do_not_email = 0 AND {$query
        {$aclWhere}
 ";
 
-              // send query to hook to be modified if needed //LCD
+              // send query to hook to be modified if needed //NYSS - LCD
               require_once 'CRM/Utils/Hook.php';
               CRM_Utils_Hook::contactListQuery( $query,
                                                $name,
