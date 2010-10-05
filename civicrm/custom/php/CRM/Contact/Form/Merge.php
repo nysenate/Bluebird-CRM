@@ -79,7 +79,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         if ( $rgid ) {
             $urlParam = "reset=1&action=browse&rgid={$rgid}";
             if ( $gid ) $urlParam .= "&gid={$gid}";
-            $session->pushUserContext( CRM_Utils_system::url( 'civicrm/contact/dedupefind', $urlParam ) ); //LCD
+            $session->pushUserContext( CRM_Utils_system::url( 'civicrm/contact/dedupefind', $urlParam ) ); //NYSS - LCD
         }
 
         // ensure that oid is not the current user, if so refuse to do the merge

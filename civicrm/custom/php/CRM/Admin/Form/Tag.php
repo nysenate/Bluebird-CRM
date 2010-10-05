@@ -77,13 +77,13 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form
                 $this->_isTagSet = true;
             }
 
-            //LCD standard behavior is to retrieve ALL tags via pseudoconstant
+            //NYSS - LCD standard behavior is to retrieve ALL tags via pseudoconstant
 			//We want to limit list of parents to only those in issue codes, so we use getTags function instead
 			//also remove select option as tags must be created within Issue Codes parent at minimum
 			//hardcode Keywords tagset as option
 			//$allTag = array ('' => '- ' . ts('select') . ' -') + CRM_Core_PseudoConstant::tag();
 			$allTag = array ('296' => 'Keywords') + CRM_Core_BAO_Tag::getTags( );
-			//LCD end
+			//NYSS - LCD end
 
             if ( $this->_id ) {
                 unset( $allTag[$this->_id] );
