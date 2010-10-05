@@ -242,6 +242,10 @@ $GLOBALS['simpletest_installed'] = TRUE;
 if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
   $db_prefix = $_SERVER['HTTP_USER_AGENT'];
 }
+
+# Use Bluebird custom maintenance pages within our own custom theme.
+$conf['maintenance_theme'] = 'rayCivicrm';
+
 # Cacherouter: use APC for all local caching
 $conf['cache_inc'] = './sites/all/modules/cacherouter/cacherouter.inc';
 $conf['cacherouter'] = array(
