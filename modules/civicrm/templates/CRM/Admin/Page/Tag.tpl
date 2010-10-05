@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -27,9 +27,7 @@
 {capture assign=docLink}{docURL page="Tags Admin"}{/capture}
 
 {if $action eq 1 or $action eq 2 or $action eq 8}
-    <div class="crm-block crm-form-block">
-        {include file="CRM/Admin/Form/Tag.tpl"}	
-    </div>
+    {include file="CRM/Admin/Form/Tag.tpl"}	
 {else}
 <div class="crm-content-block">
     <div id="help">

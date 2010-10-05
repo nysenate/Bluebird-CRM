@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -154,7 +154,7 @@ class CRM_Report_Form_Event_Summary extends CRM_Report_Form {
                 }
             }
         }
-        $clauses[] = "{$this->_aliases['civicrm_event']}.is_template IS NULL";
+        $clauses[] = "({$this->_aliases['civicrm_event']}.is_template IS NULL OR {$this->_aliases['civicrm_event']}.is_template = 0)";
         $this->_where = "WHERE  " . implode( ' AND ', $clauses);          
     }
     

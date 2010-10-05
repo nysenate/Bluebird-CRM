@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -100,7 +100,7 @@ class CRM_Contact_Form_Task_Merge extends CRM_Contact_Form_Task {
             $session->set( 'selectedSearchContactIds', $contactIds );
             
             // create a hidden group and poceed to merge
-            $url = CRM_Utils_System::url( 'civicrm/admin/dedupefind', 
+            $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', 
                                           "reset=1&action=update&rgid={$ruleGroupID}&context=search" );
         }
         

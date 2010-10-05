@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -135,7 +135,7 @@
             if ( val == "bw" || val == "nbw" ) {
                 cj('#' + fldVal ).hide();
                 cj('#' + fldMinMax ).show();
-            } else if (val =="nll") {
+            } else if (val =="nll" || val == "nnll") {
                 cj('#' + fldVal).hide() ;
                 cj('#' + field + '_value').val('');
                 cj('#' + fldMinMax ).hide();

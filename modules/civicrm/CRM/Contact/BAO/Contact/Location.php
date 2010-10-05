@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -124,12 +124,13 @@ LEFT JOIN civicrm_phone ON ( civicrm_phone.contact_id = civicrm_contact.id )
      * @static
      * @access public
      */
-    static function &getMapInfo( $ids, $locationTypeID = null ) 
+    static function &getMapInfo( $ids, $locationTypeID = null, $imageUrlOnly = false ) 
     {
         $idString = ' ( ' . implode( ',', $ids ) . ' ) ';
         $sql = "
    SELECT civicrm_contact.id as contact_id,
           civicrm_contact.contact_type as contact_type,
+          civicrm_contact.contact_sub_type as contact_sub_type,
           civicrm_contact.display_name as display_name,
           civicrm_address.street_address as street_address,
           civicrm_address.supplemental_address_1 as supplemental_address_1,
@@ -192,7 +193,7 @@ AND civicrm_contact.id IN $idString ";
             require_once 'CRM/Contact/BAO/Contact/Utils.php';
             $location['image'] = 
                 CRM_Contact_BAO_Contact_Utils::getImage( isset( $dao->contact_sub_type ) ? 
-                                                         $dao->contact_sub_type : $dao->contact_type );
+                                                         $dao->contact_sub_type : $dao->contact_type, $imageUrlOnly, $dao->contact_id );
             $locations[] = $location;
         }
         return $locations;

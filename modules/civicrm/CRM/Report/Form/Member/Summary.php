@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -50,6 +50,8 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                  );
     protected $_add2groupSupported = false;
     
+    protected $_customGroupExtends = array( 'Membership' );
+    protected $_customGroupGroupBy = false;
     function __construct( ) {
         // UI for selecting columns to appear in the report list
         // array conatining the columns, group_bys and filters build and provided to Form
@@ -78,7 +80,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                 'status_id' =>
                                 array('title'         => ts('Membership Status'),
                                       'operatorType'  => CRM_Report_Form::OP_MULTISELECT,
-                                      'options'       => CRM_Member_PseudoConstant::membershipStatus(),
+                                      'options'       => CRM_Member_PseudoConstant::membershipStatus( null, null, 'label' ),
                                       ),
                                 ),  
                          'group_bys'        =>
@@ -93,6 +95,14 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                        'default'   => true,
                                       'chart'      => true, )
                                 ),
+                         ),
+
+                  'civicrm_contact' =>
+                  array( 'dao'       => 'CRM_Contact_DAO_Contact',
+                         'fields'    =>
+                          array( 'contact_id' => 
+                                 array( 'no_display'=> true, ) 
+                                 )
                          ),
                   
                   'civicrm_contribution' =>
@@ -247,6 +257,9 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
     function from( ) {
         $this->_from = "
         FROM  civicrm_membership {$this->_aliases['civicrm_membership']}
+               
+              LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact']} ON ( {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_contact']}.id )  
+               
               LEFT JOIN civicrm_membership_status 
                         ON ({$this->_aliases['civicrm_membership']}.status_id = civicrm_membership_status.id  )
               LEFT JOIN civicrm_membership_payment payment

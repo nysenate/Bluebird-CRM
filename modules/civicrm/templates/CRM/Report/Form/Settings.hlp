@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,7 +35,7 @@
 {/htxt}
 
 {htxt id="id-report_title"}
-  {ts}This title and the description below will be displayed to users in the reports list when they click the 'CiviReport' menu. The title should reflect the report's default criteria.{/ts}
+  {ts}This title and the description below will be displayed to users in the reports list when they click the 'CiviReport' menu. The title should reflect the report's default criteria. EXAMPLE: Donation Summary - Current Year-to-date{/ts}
 {/htxt}
 
 {htxt id="id-report_header"}
@@ -44,7 +44,7 @@
 {/htxt}
 
 {htxt id="id-report_perms"}
-{ts}You can control access to this report by selecting a 'Permission' from the list. You can also prevent users from modifying the default report criteria and filters for reports by NOT giving them <em>access Report Criteria</em> permission. Those users will be able to run the report - but only with the criteria and filters that you've established for them.{/ts}
+{ts}You can control access to this report by selecting a 'Permission' from the list. For example, you might select <em>access CiviContribute</em> for contribution reports (e.g. the same people who can see contribution data would also have access to the report). You can also prevent users from modifying the default report criteria and filters for reports by NOT giving them <em>access Report Criteria</em> permission. Those users will be able to run the report - but only with the criteria and filters that you've established for them.{/ts}
 {/htxt} 
 
 {htxt id="id-dash_avail"}

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -135,9 +135,6 @@ class CRM_Contact_Task {
                                   19    => array( 'title'  => ts( 'Print PDF Letter for Contacts' ),
                                                   'class'  => 'CRM_Contact_Form_Task_PDF',
                                                   'result' => true ),
-                                  21    => array( 'title'  => ts( 'Merge Contacts' ),
-                                                  'class'  => 'CRM_Contact_Form_Task_Merge',
-                                                  'result' => true ),
                                   22    => array( 'title'  => ts('Unhold Emails'),
                                                   'class'  => 'CRM_Contact_Form_Task_Unhold',
                                                   'result' => true ),
@@ -168,11 +165,17 @@ class CRM_Contact_Task {
                                            'result' => true
                                            );
             }
+            if ( CRM_Core_Permission::check( 'merge duplicate contacts' ) ) {
+                self::$_tasks[21] = array( 'title'  => ts( 'Merge Contacts' ),
+                                           'class'  => 'CRM_Contact_Form_Task_Merge',
+                                           'result' => true 
+                                           );
+            }
             //CRM-4418, check for delete 
             if ( !CRM_Core_Permission::check( 'delete contacts' ) ) {
                 unset( self::$_tasks[8] );
             }
-
+            
             //show map action only if map provider and key is set
             $config = CRM_Core_Config::singleton( );
 

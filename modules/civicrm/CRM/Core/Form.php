@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -998,26 +998,23 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
                 $show24Hours = true;
                 if ( $timeFormat == 1 ) {
                     $show24Hours = false;
-                } 
-                $elemetName = $name;
-                if( is_a($this, 'CRM_Contact_Form_Task_Batch') 
-                	|| is_a($this, 'CRM_Contribute_Form_Task_Batch') 
-                	|| is_a($this, 'CRM_Event_Form_Task_Batch') 
-                	|| is_a($this, 'CRM_Member_Form_Task_Batch')
-                    || is_a($this, 'CRM_Activity_Form_Task_Batch')) { 
-                	$elemetName  = substr( $name, 0, $name.length - 1);
-                	$elemetName .= '_time]' ;
-				}else {
-					$elemetName .= '_time' ;
-				}
-                $this->add('text', $elemetName, ts('Time'), array( 'timeFormat' => $show24Hours ) );
-            }            
-        }
+                }
                 
+                //CRM-6664 -we are having time element name 
+                //in either flat string or an array format. 
+                $elementName = $name.'_time';
+                if ( substr( $name, -1 ) == ']' ) {
+                    $elementName = substr( $name, 0, $name.length - 1).'_time]';
+                }
+                
+                $this->add('text', $elementName, ts('Time'), array( 'timeFormat' => $show24Hours ) );
+            } 
+        }
+        
         if ( $required ) {
             $this->addRule( $name, ts('Please select %1', array(1 => $label)), 'required');
             if ( CRM_Utils_Array::value( 'addTime', $attributes ) ) {
-                $this->addRule( $elemetName, ts('Please select Time'), 'required'); 
+                $this->addRule( $elementName, ts('Please select Time'), 'required'); 
             }
         }
     }
@@ -1040,32 +1037,30 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
      * add a currency and money element to the form
      */
     function addMoney( $name,
-		       $label,
-		       $required = false,
-		       $attributes = null,
-		       $addCurrency = true,
-		       $currencyName = 'currency',
-		       $defaultCurrency = null ) {
-      $element = $this->add( 'text', $name, $label, $attributes, $required );
-      $this->addRule( $name, ts('Please enter a valid amount.'), 'money');
-
-      if ( $addCurrency ) {
-	$this->add( 'select',
-		    $currencyName,
-		    null,
-		    CRM_Core_OptionGroup::values( 'currencies_enabled' ),
-		    true );
-
-	if ( ! $defaultCurrency ) {
-	  $config =& CRM_Core_Config::singleton( );
-	  $defaultCurrency = $config->defaultCurrency;
-	}
-	
-	$this->setDefaults( array( 'currency' => $defaultCurrency ) );
-      }
-
-      return $element;
+                       $label,
+                       $required = false,
+                       $attributes = null,
+                       $addCurrency = true,
+                       $currencyName = 'currency',
+                       $defaultCurrency = null ) {
+        $element = $this->add( 'text', $name, $label, $attributes, $required );
+        $this->addRule( $name, ts('Please enter a valid amount.'), 'money');
+        
+        if ( $addCurrency ) {
+            $this->add( 'select',
+                        $currencyName,
+                        null,
+                        CRM_Core_OptionGroup::values( 'currencies_enabled' ),
+                        true );
+            
+            if ( ! $defaultCurrency ) {
+                $config =& CRM_Core_Config::singleton( );
+                $defaultCurrency = $config->defaultCurrency;
+            }
+            
+            $this->setDefaults( array( 'currency' => $defaultCurrency ) );
+        }
+        
+        return $element;
     }
 }
-
-

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -49,26 +49,25 @@
     </table>
 
     <div id="event-fees">
-    <table class="form-layout"> 
-        {if $paymentProcessor}
-         <div id="paymentProcessor">
+      {if $paymentProcessor}
+         <table id="paymentProcessor" class="form-layout">
              <tr class="crm-event-manage-fee-form-block-payment_processor_id">            
                 <td class="label">{$form.payment_processor_id.label}</td>
-	        <td>{$form.payment_processor_id.html}</td>
+	            <td>{$form.payment_processor_id.html}</td>
              </tr>
-	     <tr>
+	         <tr>
                 <td class="">&nbsp;</td>
                 <td class="description">
                  {ts}If this is a paid event and you want users to be able to register and pay online, select a payment processor to use.{/ts}
                  {ts}NOTE: Alternatively, you can enable the <strong>Pay Later</strong> feature below without setting up a payment processor. All users will then be asked to submit payment offline (e.g. mail in a check, call in a credit card, etc.).{/ts} {docURL page="CiviContribute Payment Processor Configuration"}<td>
              </tr>
-        </div>
+        </table>
         {/if}
            
-        <div id="contributionType">
+        <table id="contributionType" class="form-layout">
             <tr class="crm-event-manage-fee-form-block-contribution_type_id">
-               <td class="label">{$form.contribution_type_id.label}<span class="marker"> *</span>
-               </td>{$form.contribution_type_id.html}
+               <td class="label">{$form.contribution_type_id.label}<span class="marker"> *</span></td>
+               <td>{$form.contribution_type_id.html}</td>
             </tr>
             <tr>
                <td>&nbsp;</td>
@@ -86,8 +85,7 @@
                <td class="description">{ts}This label is displayed with the list of event fees.{/ts}
                </td>
             </tr>
-         </div>
-      </table>
+         </table>
       <table id="payLater" class="form-layout">
           <tr class="crm-event-manage-fee-form-block-is_pay_later">
              <td class="extra-long-fourty label">{$form.is_pay_later.html}</td>
@@ -265,7 +263,7 @@
     
     function warnDiscountDel( ) {
         if ( ! document.getElementsByName('is_discount')[0].checked ) {
-            alert('{/literal}{ts}If you uncheck "Discounts by Signup Date" and Save this form, any existing discount sets will be deleted.{/ts} {ts}This action cannot be undone.{/ts} {ts}If this is NOT what you want to do, you can check "Discounts by Signup Date" again.{/ts}{literal}');
+            alert('{/literal}{ts escape="js"}If you uncheck "Discounts by Signup Date" and Save this form, any existing discount sets will be deleted.{/ts} {ts}This action cannot be undone.{/ts} {ts}If this is NOT what you want to do, you can check "Discounts by Signup Date" again.{/ts}{literal}');
         }
     }
     

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -43,7 +43,7 @@
       <td class="crm-case-subject">{$row.subject}</td>
       <td class="crm-case-type">{$row.type}</td>
       <td class="crm-case-with_contacts">{$row.with_contacts}</td>
-      <td class="crm-case-reporter>{$row.reporter}</td>
+      <td class="crm-case-reporter">{$row.reporter}</td>
       <td class="crm-case-status">{$row.status}</td>
       <td style="white-space: nowrap;">{$row.links}</td>
     </tr>

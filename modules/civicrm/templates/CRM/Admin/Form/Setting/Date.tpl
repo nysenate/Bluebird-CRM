@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,7 +52,7 @@
        </tr>
      </table>
 </fieldset>
-<fieldset><legend>{ts}date Input Fields{/ts}</legend>
+<fieldset><legend>{ts}Date Input Fields{/ts}</legend>
    <table class="form-layout-compressed">   
        <tr class="crm-date-form-block-dateInputFormat">
           <td class="label">{$form.dateInputFormat.label}</td>
@@ -67,7 +67,7 @@
     	<a href="{crmURL p="civicrm/admin/setting/preferences/date" q="reset=1"}" id="advDateSetting" title="{ts}Manage available date ranges and input formats for different types of date fields.{/ts}">&raquo; {ts}Advanced Date Input Settings{/ts}</a>
     </div>
 </fieldset>
-<fieldset>
+<fieldset><legend>{ts}Fiscal Year{/ts}</legend>
    <table class="form-layout-compressed">
        <tr class="crm-date-form-block-fiscalYearStart">
           <td class="label">{$form.fiscalYearStart.label}</td>

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -44,3 +44,16 @@
 </p>
 {/htxt} 
 
+{htxt id="adjust-payment-amount"}
+{ts}If you enter a payment which is different than the scheduled amount, choose one of these options:{/ts}
+<p>
+<strong>{ts}Adjust Pledge Payment Schedule{/ts}</strong><br />
+{ts}The next scheduled payment will be adjusted up or down to make up the difference.{/ts}<br />
+<em>{ts}Example: If you enter a payment of 60 when the scheduled amount is 50, the next scheduled payment is adjusted to 40.{/ts}</em>
+</p>
+<p>
+<strong>{ts}Adjust Total Pledge Amount{/ts}</strong><br />
+{ts}The total amount of the pledge will be adjusted up or down to make up the difference. The payment schedule ( amounts / dates for future pending pledge payments ) is not changed.{/ts}<br />
+<em>{ts}Example: If you enter a payment of 60 when the scheduled amount is 50, the total pledge amount will be increased by 10.{/ts}</em>
+</p>
+{/htxt}

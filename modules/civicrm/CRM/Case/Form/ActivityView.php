@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -99,19 +99,22 @@ class CRM_Case_Form_ActivityView extends CRM_Core_Form
 
         $latestRevisionID = CRM_Activity_BAO_Activity::getLatestActivityId( $activityID );
 
+        $viewPriorActivities = array( );
+        $priorActivities = CRM_Activity_BAO_Activity::getPriorAcitivities( $activityID );
+        foreach( $priorActivities as $activityId => $activityValues ) {
+            if ( CRM_Case_BAO_Case::checkPermission( $activityId, 'view', null, $contactID ) ) {
+                $viewPriorActivities[$activityId] = $activityValues;
+            }
+        }
+
         if ( $revs ) {
             $this->assign('revs',$revs);
-            
-            $priorActivities = CRM_Activity_BAO_Activity::getPriorAcitivities( $activityID );
 
-            $this->assign( 'result' , $priorActivities );
+            $this->assign( 'result' , $viewPriorActivities );
             $this->assign( 'subject', $activitySubject );
-            
             $this->assign( 'latestRevisionID', $latestRevisionID );
         } else {
-            $countPriorActivities = CRM_Activity_BAO_Activity::getPriorCount( $activityID );
-
-            if ( $countPriorActivities >= 1 ) {
+            if ( count( $viewPriorActivities ) > 1 ) {
                 $this->assign( 'activityID', $activityID ); 
             }
 
@@ -130,7 +133,7 @@ class CRM_Case_Form_ActivityView extends CRM_Core_Form
         
         $activityTargetContacts = CRM_Activity_BAO_ActivityTarget::retrieveTargetIdsByActivityId( $activityID ); 
         if (!empty( $activityTargetContacts ) ) {
-            $recentContactId = $activityTargetContacts[1];
+            $recentContactId = $activityTargetContacts[0];
         } else {
             $recentContactId = $contactID; 
         }

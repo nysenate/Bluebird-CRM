@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -316,6 +316,10 @@ ORDER BY parent_id, weight";
         self::buildNavigationTree( $navigations, $parent = NULL );
         $navigationString = null;
 
+        // run the Navigation  through a hook so users can modify it
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::navigationMenu( $navigations );
+        
         //skip children menu item if user don't have access to parent menu item
         $skipMenuItems = array( );
         foreach( $navigations as $key => $value ) {
@@ -330,10 +334,13 @@ ORDER BY parent_id, weight";
                 }
                 $navigationString .= ' { attributes: { "id" : "node_'.$key.'"}, data: { title:"'. $data. '"' .$class.'}';
             } else {
-                $name = self::getMenuName( $value, $skipMenuItems );
-                if ( $name ) {
-                    $removeCharacters = array('/','!','&','*',' ','(',')','.'); 
-                    $navigationString .= '<li class="menumain crm-'.str_replace($removeCharacters,'_',$value['attributes']['label']).'">'. $name;
+            	// Home is a special case
+                if ($value['attributes']['name'] != 'Home') {
+                    $name = self::getMenuName( $value, $skipMenuItems );
+                    if ( $name ) {
+                        $removeCharacters = array('/','!','&','*',' ','(',')','.'); 
+                        $navigationString .= '<li class="menumain crm-'.str_replace($removeCharacters,'_',$value['attributes']['label']).'">'. $name;
+                    }
                 }
             }
             
@@ -480,7 +487,7 @@ ORDER BY parent_id, weight";
                         $componentName = null;
                     }
                 }
-                if ( !$componentName && in_array( $menuName, array( 'Cases', 'CiviCase' ) ) ) { 
+                if ( !$componentName && in_array( $menuName, array( 'Cases', 'CiviCase', 'Find Cases' ) ) ) { 
                     $componentName = 'CiviCase';
                 }
                 if ( $componentName ) {
@@ -561,15 +568,25 @@ ORDER BY parent_id, weight";
             $logoutURL       = CRM_Utils_System::url( 'civicrm/logout', 'reset=1');
             $appendSring     = "<li id=\"menu-logout\" class=\"menumain\"><a href=\"{$logoutURL}\">" . ts('Logout') . "</a></li>";
 
-            $homeURL       = CRM_Utils_System::url( 'civicrm/dashboard', 'reset=1');
+            // get home menu from db
+            $homeParams      = array( 'name' => 'Home' );
+            $homeNav         = array( );
+            self::retrieve( $homeParams, $homeNav );
+            if ( $homeNav ) {
+                $homeURL     = CRM_Utils_System::url( $homeNav['url'] );
+                $homeLabel   = $homeNav['label'];
+            } else {
+                $homeURL     = CRM_Utils_System::url( 'civicrm/dashboard', 'reset=1');
+                $homeLabel   = ts('Home');
+            }
 
             if ( ( $config->userFramework == 'Drupal' ) && 
                  function_exists( 'module_exists' ) &&
                  module_exists('admin_menu') &&
                  user_access('access administration menu') ) {
-                $prepandString = "<li class=\"menumain crm-link-home\">" . ts('Home') . "<ul id=\"civicrm-home\"><li><a href=\"{$homeURL}\">" . ts('CiviCRM Home') . "</a></li><li><a href=\"#\" onclick=\"cj.Menu.closeAll( );cj('#civicrm-menu').toggle( );\">" . ts('Drupal Menu') . "</a></li></ul></li>";
+                $prepandString = "<li class=\"menumain crm-link-home\">" . $homeLabel . "<ul id=\"civicrm-home\"><li><a href=\"{$homeURL}\">" . $homeLabel . "</a></li><li><a href=\"#\" onclick=\"cj.Menu.closeAll( );cj('#civicrm-menu').toggle( );\">" . ts('Drupal Menu') . "</a></li></ul></li>";
             } else {
-                $prepandString = "<li class=\"menumain crm-link-home\"><a href=\"{$homeURL}\" title=\"" . ts('CiviCRM Home') . "\">" . ts('Home') . "</a></li>";
+                $prepandString = "<li class=\"menumain crm-link-home\"><a href=\"{$homeURL}\" title=\"" . $homeLabel . "\">" . $homeLabel . "</a></li>";
             }
 
             // prepend the navigation with locale info for CRM-5027

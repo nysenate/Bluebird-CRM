@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -137,6 +137,10 @@ class CRM_Dedupe_Merger
                     'url'    => CRM_Utils_System::url('civicrm/contact/view', 'reset=1&force=1&cid=$cid&selectedChild=pledge'),
                 )
             );
+
+            // Allow hook_civicrm_merge() to adjust $relTables
+            CRM_Utils_Hook::merge( 'relTables', $relTables);
+
         }
         return $relTables;
     }
@@ -219,6 +223,9 @@ class CRM_Dedupe_Merger
                 'civicrm_uf_group'                => array('created_id'),
                 'civicrm_pledge'                  => array('contact_id'),
             );
+
+            // Allow hook_civicrm_merge() to adjust $cidRefs
+            CRM_Utils_Hook::merge( 'cidRefs', $cidRefs);
         }
         return $cidRefs;
     }
@@ -243,6 +250,9 @@ class CRM_Dedupe_Merger
                 'civicrm_task'             => array('owner_entity_table'       => 'owner_entity_id'),
                 'civicrm_task_status'      => array('responsible_entity_table' => 'responsible_entity_id', 'target_entity_table' => 'target_entity_id'),
             );
+
+            // Allow hook_civicrm_merge() to adjust $eidRefs
+            CRM_Utils_Hook::merge( 'eidRefs', $eidRefs);
         }
         return $eidRefs;
     }
@@ -387,6 +397,9 @@ INNER JOIN  civicrm_participant participant ON ( participant.id = payment.partic
             $sqls[] = "UPDATE IGNORE civicrm_contact SET employer_id = $mainId WHERE employer_id = $otherId";
         }
 
+        // Allow hook_civicrm_merge() to add SQL statements for the merge operation.
+        CRM_Utils_Hook::merge( 'sqls', $sqls, $mainId, $otherId, $tables);
+        
         // call the SQL queries in one transaction
         require_once 'CRM/Core/Transaction.php';
         $transaction = new CRM_Core_Transaction( );

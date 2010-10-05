@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -149,7 +149,7 @@ class CRM_Export_BAO_Export
                         if ( trim ( CRM_Utils_Array::value( 3, $value ) ) ) {
                             $relLocTypeId = CRM_Utils_Array::value( 3, $value );
                         } else {
-                            $relLocTypeId = 1;
+                            $relLocTypeId = 'Primary';
                         }
 
                         if ( $relationField == 'phone' ) { 
@@ -173,7 +173,7 @@ class CRM_Export_BAO_Export
                 $phoneTypeId = CRM_Utils_Array::value( 3, $value );
                 
                 if ( $relationField ) {
-                    if ( in_array ( $relationField, $locationTypeFields ) ) {
+                    if ( in_array ( $relationField, $locationTypeFields ) && is_numeric( $relLocTypeId )  ) {
                         if ( $relPhoneTypeId ) {                            
                             $returnProperties[$relationshipTypes]['location'][$locationTypes[$relLocTypeId]]['phone-' .$relPhoneTypeId] = 1;
                         } else if ( $relIMProviderId ) {                            
@@ -317,7 +317,7 @@ class CRM_Export_BAO_Export
             unset( $returnProperties[$relationKey]['location_type'] );
             unset( $returnProperties[$relationKey]['im_provider'] );
         }
-        
+                
         $allRelContactArray = $relationQuery = array();
         
         foreach ( $contactRelationshipTypes as $rel => $dnt ) {
@@ -371,7 +371,7 @@ class CRM_Export_BAO_Export
                 
                 $relationshipJoin = $relationshipClause = '';
                 if ( $componentTable ) {
-                    $relationshipJoin   = " INNER JOIN $componentTable ctTable ON ctTable.contact_id = contact_a.id ";
+                    $relationshipJoin   = " INNER JOIN $componentTable ctTable ON ctTable.contact_id = {$contactA}";
                 } else {
                     $relID  = implode( ',', $relIDs );
                     $relationshipClause = " AND crel.{$contactA} IN ( {$relID} )";
@@ -475,6 +475,11 @@ class CRM_Export_BAO_Export
         $offset   = 0;
 
         $count = -1;
+
+        // for CRM-3157 purposes
+        require_once 'CRM/Core/I18n.php';
+        $i18n =& CRM_Core_I18n::singleton();
+
         while ( 1 ) {
             $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
             $dao = CRM_Core_DAO::executeQuery( $limitQuery );
@@ -600,7 +605,19 @@ class CRM_Export_BAO_Export
                                     $fldValue .= "-" . $type[1];
                                 }
                             
-                                $row[$fldValue] = $dao->$fldValue;
+                                // CRM-3157: localise country, region (both have ‘country’ context) and state_province (‘province’ context)
+                                switch ($fld) {
+                                case 'country':
+                                case 'world_region':
+                                    $row[$fldValue] = $i18n->crm_translate($dao->$fldValue, array('context' => 'country'));
+                                    break;
+                                case 'state_province':
+                                    $row[$fldValue] = $i18n->crm_translate($dao->$fldValue, array('context' => 'province'));
+                                    break;
+                                default:
+                                    $row[$fldValue] = $dao->$fldValue;
+                                    break;
+                                }
                             }
                         }
                     } else if ( array_key_exists( $field, $contactRelationshipTypes ) ) {
@@ -627,7 +644,19 @@ class CRM_Export_BAO_Export
                                         if ( CRM_Utils_Array::value( 1, $type ) ) {
                                             $fldValue .= "-" . $type[1];
                                         }
-                                        $row[$field . $fldValue] = $relDAO->$fldValue;
+                                        // CRM-3157: localise country, region (both have ‘country’ context) and state_province (‘province’ context)
+                                        switch (true) {
+                                        case in_array('country',      $type):
+                                        case in_array('world_region', $type):
+                                            $row[$field . $fldValue] = $i18n->crm_translate($relDAO->$fldValue, array('context' => 'country'));
+                                            break;
+                                        case in_array('state_province', $type):
+                                            $row[$field . $fldValue] = $i18n->crm_translate($relDAO->$fldValue, array('context' => 'province'));
+                                            break;
+                                        default:
+                                            $row[$field . $fldValue] = $relDAO->$fldValue;
+                                            break;
+                                        }
                                     }
                                 }
                             } else if ( isset( $fieldValue ) && $fieldValue != '' ) {
@@ -642,7 +671,19 @@ class CRM_Export_BAO_Export
                                     $row[$field . $relationField] = $relDAO->$fldValue;
                                 } else {
                                     //normal relationship fields
-                                    $row[$field . $relationField] = $fieldValue;
+                                    // CRM-3157: localise country, region (both have ‘country’ context) and state_province (‘province’ context)
+                                    switch ($relationField) {
+                                    case 'country':
+                                    case 'world_region':
+                                        $row[$field . $relationField] = $i18n->crm_translate($fieldValue, array('context' => 'country'));
+                                        break;
+                                    case 'state_province':
+                                        $row[$field . $relationField] = $i18n->crm_translate($fieldValue, array('context' => 'province'));
+                                        break;
+                                    default:
+                                        $row[$field . $relationField] = $fieldValue;
+                                        break;
+                                    }
                                 }
                             } else {
                                 // if relation field is empty or null
@@ -670,8 +711,24 @@ class CRM_Export_BAO_Export
                             $fldValue    = "{$field}_display";
                             $row[$field] = $dao->$fldValue;
                         } else {
-                            //normal fields
-                            $row[$field] = $fieldValue;
+                            //normal fields with a touch of CRM-3157
+                            switch ($field) {
+                            case 'country':
+                            case 'world_region':
+                                $row[$field] = $i18n->crm_translate($fieldValue, array('context' => 'country'));
+                                break;
+                            case 'state_province':
+                                $row[$field] = $i18n->crm_translate($fieldValue, array('context' => 'province'));
+                                break;
+                            case 'gender':
+                            case 'preferred_communication_method':
+                            case 'preferred_mail_format':
+                                $row[$field] = $i18n->crm_translate($fieldValue);
+                                break;
+                            default:
+                                $row[$field] = $fieldValue;
+                                break;
+                            }
                         }
                     } else {
                         // if field is empty or null
@@ -705,22 +762,6 @@ class CRM_Export_BAO_Export
                 //remove organization name for individuals if it is set for current employer
                 if ( CRM_Utils_Array::value('contact_type', $row ) && $row['contact_type'] == 'Individual' && array_key_exists('organization_name', $row ) ) {
                     $row['organization_name'] = '';
-                }
-
-                // CRM-3157: localise the output
-                // FIXME: we should move this to multilingual stack some day
-                require_once 'CRM/Core/I18n.php';
-                $i18n =& CRM_Core_I18n::singleton();
-                $translatable = array('preferred_communication_method', 
-                                      'preferred_mail_format',
-                                      'gender',
-                                      'state_province',
-                                      'country',
-                                      'world_region');
-                foreach ( $translatable as $column ) {
-                    if ( isset( $row[$column] ) and $row[$column] ) {
-                        $row[$column] = $i18n->translate( $row[$column] );
-                    }
                 }
 
                 // add component info
@@ -921,7 +962,29 @@ class CRM_Export_BAO_Export
                 if ( in_array( $fieldName, $changeFields) ) {
                     $sqlColumns[$fieldName] = "$fieldName text";
                 } else {
-                    $sqlColumns[$fieldName] = "$fieldName varchar(64)";
+                    // set the sql columns for custom data
+                    if ( isset( $query->_fields[$field]['data_type'] ) ) {
+
+                        switch ( $query->_fields[$field]['data_type'] ) {
+                        case 'Country':
+                        case 'StateProvince':
+                        case 'Link':
+                        case 'String':
+                            $sqlColumns[$fieldName] = "$fieldName varchar(255)";
+                            break;
+                          
+                        case 'Memo':
+                            $sqlColumns[$fieldName] = "$fieldName text";
+                            break;
+                          
+                        default:
+                            $sqlColumns[$fieldName] = "$fieldName varchar(64)";
+                            break;
+                        }
+                    } else {
+                        $sqlColumns[$fieldName] = "$fieldName varchar(64)";
+                    }
+
                 }
             }
         }

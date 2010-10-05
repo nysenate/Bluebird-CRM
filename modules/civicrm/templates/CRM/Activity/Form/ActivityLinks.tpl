@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -40,7 +40,7 @@
 {else}
 <ul>
 {foreach from=$activityTypes key=k item=link}
-<li class="crm-activity-type_{$k}"><a href="{$url}{$k}">{if $k NEQ 3}{ts}Record {/ts}{/if}{$link}</a></li>
+<li class="crm-activity-type_{$k}"><a href="{$url}{$k}">{$link}</a></li>
 {/foreach}</ul>
 
 {/if}

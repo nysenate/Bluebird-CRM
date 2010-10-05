@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,14 +30,21 @@ cj( function( ) {
     var custom    = "{/literal}#{$element_name}{literal}";
     var custom_id = "{/literal}input[name={$element_name}_id]{literal}";
 
-    if ( !cj(custom).hasClass('ac_input') ) {
-        cj(custom).autocomplete( url, { width : 250, selectFirst : false, matchContains: true
-        }).result( 
-            function(event, data, formatted) {
-                cj( custom_id ).val( data[1] );
-            }
+    var customObj   = cj(custom);
+    var customIdObj = cj(custom_id);
+    
+    if ( !customObj.hasClass('ac_input') ) {
+        customObj.autocomplete( url, 
+            { width : 250, selectFirst : false, matchContains: true
+            }).result( 
+                function(event, data ) {
+                    customIdObj.val( data[1] );
+                }
         );
-    }
+        customObj.click( function( ) {
+            customIdObj.val('');
+	    }); 
+     }
 });
 </script>
 {/literal}

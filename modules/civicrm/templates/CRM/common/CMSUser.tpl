@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -80,11 +80,11 @@
    {
       var cId = {/literal}'{$cId}'{literal};
       if ( cId ) {
-	 alert('{/literal}{ts}You are logged-in user{/ts}{literal}');
+	 alert('{/literal}{ts escape="js"}You are logged-in user{/ts}{literal}');
 	 frm.checked = false;
       } else {
 	 var siteName = {/literal}'{$config->userFrameworkBaseURL}'{literal};
-	 alert('{/literal}{ts}Please login if you have an account on this site with the link{/ts}{literal} ' + siteName  );
+	 alert('{/literal}{ts escape="js"}Please login if you have an account on this site with the link{/ts}{literal} ' + siteName  );
       }
    }
    var lastName = null;
@@ -104,12 +104,12 @@
       var r = new RegExp( "["+spchar+"]", "i");
       /*regular expression \\ matches a single backslash. this becomes r = /\\/ or r = new RegExp("\\\\").*/
       if ( r.exec(cmsUserName) ) {
-	 alert('{/literal}{ts}Your username contains invalid characters{/ts}{literal}');
+	 alert('{/literal}{ts escape="js"}Your username contains invalid characters{/ts}{literal}');
       	 return;
       } 
       {/literal}{if $config->userFramework == "Joomla"}{literal}
 	 else if ( cmsUserName && cmsUserName.length < 2 ) {
-	    alert('{/literal}{ts}Your username is too short{/ts}{literal}');
+	    alert('{/literal}{ts escape="js"}Your username is too short{/ts}{literal}');
 	    return;	
 	 }
       {/literal}{/if}{literal}

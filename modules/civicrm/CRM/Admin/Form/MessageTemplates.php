@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -46,6 +46,15 @@ class CRM_Admin_Form_MessageTemplates extends CRM_Admin_Form
     // which (and whether) mailing workflow this template belongs to
     protected $_workflow_id = null;
 
+    function preProcess( ) {
+        $this->_id      = CRM_Utils_Request::retrieve('id', 'Positive', $this);
+        $this->_action  = CRM_Utils_Request::retrieve( 'action', 'String',
+                                                       $this, false, 'add' );
+        $this->assign( 'action', $this->_action );
+                
+        $this->_BAOName = 'CRM_Core_BAO_MessageTemplates';
+    }
+
     /**
      * This function sets the default values for the form. 
      * the default values are retrieved from the database
@@ -60,8 +69,13 @@ class CRM_Admin_Form_MessageTemplates extends CRM_Admin_Form
         $this->assign( 'workflow_id', $this->_workflow_id );
 
         // FIXME: we need to fix the Cancel button here as we don’t know whether it’s a workflow template in buildQuickForm()
-        if ($this->_workflow_id and $this->_action & CRM_Core_Action::UPDATE) {
-            $cancelURL = CRM_Utils_System::url('civicrm/admin/messageTemplates', 'selectedChild=workflow&reset=1');
+        if ($this->_action & CRM_Core_Action::UPDATE) {
+            if ($this->_workflow_id){
+                $selectedChild = 'workflow';
+            } else {
+                $selectedChild = 'user';
+            }
+            $cancelURL = CRM_Utils_System::url('civicrm/admin/messageTemplates', "selectedChild={$selectedChild}&reset=1");
             $cancelURL = str_replace('&amp;', '&', $cancelURL);
             $this->addButtons(
                 array(
@@ -219,6 +233,8 @@ class CRM_Admin_Form_MessageTemplates extends CRM_Admin_Form
 
             if ($this->_workflow_id) {
                 CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/admin/messageTemplates', 'selectedChild=workflow&reset=1'));
+            } else {
+                CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/admin/messageTemplates', 'selectedChild=user&reset=1'));
             }
         }
     }

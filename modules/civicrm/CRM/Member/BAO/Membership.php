@@ -2,7 +2,7 @@
 
  /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -126,7 +126,7 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership
         require_once 'CRM/Member/BAO/MembershipLog.php';
         CRM_Member_BAO_MembershipLog::add($membershipLog, CRM_Core_DAO::$_nullArray);
         
-        // reset the group contact cache for this group
+        // reset the group contact cache since smart groups might be affected due to this
         require_once 'CRM/Contact/BAO/GroupContactCache.php';
         CRM_Contact_BAO_GroupContactCache::remove( );
 
@@ -704,7 +704,14 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership
         }
         $dao->contact_id         = $contactID;
         $dao->membership_type_id = $memType;
-        $dao->is_test            = $isTest;
+        
+        //fetch proper membership record.
+        if ( $isTest ) {
+            $dao->is_test = $isTest;
+        } else {
+            $dao->whereAdd( 'is_test IS NULL OR is_test = 0' );
+        }
+        
         //avoid pending membership as current memebrship: CRM-3027
         require_once 'CRM/Member/PseudoConstant.php';        
         $pendingStatusId = array_search( 'Pending', CRM_Member_PseudoConstant::membershipStatus( ) );
@@ -910,7 +917,7 @@ AND civicrm_membership.is_test = %2";
         $tempParams  = $membershipParams;
         $paymentDone = false;
         $result      = null;
-        $isTest = CRM_Utils_Array::value( 'is_test', $membershipParams );
+        $isTest      = CRM_Utils_Array::value( 'is_test', $membershipParams, false );
         $form->assign('membership_assign' , true );
 
         $form->set('membershipTypeID' , $membershipParams['selectMembership']);
@@ -1069,7 +1076,7 @@ AND civicrm_membership.is_test = %2";
             $session = CRM_Core_Session::singleton( );
             $session->setStatus( $message );
             CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/contribute/transact',
-                                                               '_qf_Main_display=true' ) );
+                                                               "_qf_Main_display=true&qfKey={$form->_params['qfKey']}" ) );
         }
         
         $form->_params['membershipID'] = $membership->id;
@@ -1284,7 +1291,11 @@ AND civicrm_membership.is_test = %2";
             $memParams['status_id']     = $updateStatusId;
             $memParams['skipStatusCal'] = true;
         }
-        
+
+        //since we are renewing, 
+        //make status override false.  
+        $memParams['is_override'] = false;
+
         //CRM-4027, create log w/ individual contact.
         if ( $modifiedID ) {
             $ids['userId'] = $modifiedID; 
@@ -1474,7 +1485,15 @@ SELECT c.contribution_page_id as pageID
         
         unset( $fields['membership_contact_id'] );
         $fields = array_merge($fields, CRM_Core_BAO_CustomField::getFieldsForImport('Membership'));
-        
+
+        require_once 'CRM/Member/DAO/MembershipType.php';
+        $membershipType = CRM_Member_DAO_MembershipType::export( );
+
+        require_once 'CRM/Member/DAO/MembershipStatus.php';
+        $membershipStatus = CRM_Member_DAO_MembershipStatus::export( );
+
+        $fields = array_merge( $fields, $membershipType, $membershipStatus );
+               
         return $fields;
     }
     

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -75,7 +75,7 @@ class CRM_Core_OptionGroup
 
     static function &values( $name, $flip = false, $grouping = false,
                              $localize = false, $condition = null,
-                             $valueColumnName = 'label' ) 
+                             $valueColumnName = 'label', $onlyActive = true ) 
     {
         $cacheKey = "CRM_OG_{$name}_{$flip}_{$grouping}_{$localize}_{$condition}_{$valueColumnName}";
         $cache =& CRM_Utils_Cache::singleton( );
@@ -90,9 +90,11 @@ FROM   civicrm_option_value v,
        civicrm_option_group g
 WHERE  v.option_group_id = g.id
   AND  g.name            = %1
-  AND  v.is_active       = 1 
   AND  g.is_active       = 1 ";
         
+        if ( $onlyActive ) {
+            $query .= " AND  v.is_active = 1 ";
+        }
         if ( in_array( $name, self::$_domainIDGroups ) ) {
             $query .= " AND v.domain_id = " . CRM_Core_Config::domainID( );
         }

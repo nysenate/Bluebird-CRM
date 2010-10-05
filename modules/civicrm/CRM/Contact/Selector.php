@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -552,6 +552,12 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         while ($result->fetch()) {
             $row = array( );
 
+            // for CRM-3157 purposes
+            require_once 'CRM/Core/PseudoConstant.php';
+            if (in_array('country',        $names)) $countries =& CRM_Core_PseudoConstant::country();
+            if (in_array('state_province', $names)) $provinces =& CRM_Core_PseudoConstant::stateProvince();
+            if (in_array('world_region',   $names)) $regions   =& CRM_Core_PseudoConstant::worldRegions();
+
             // the columns we are interested in
             foreach ($names as $property) {
                 if ( $property == 'status' ) {
@@ -596,6 +602,12 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
                 } else if ( in_array( $property, array( 'addressee', 'email_greeting', 'postal_greeting' ) ) ) {
                     $greeting = $property.'_display';
                     $row[$property] = $result->$greeting;
+                } elseif ($property == 'country') {
+                    $row[$property] = CRM_Utils_Array::value( $result->country_id, $countries );
+                } elseif ($property == 'state_province') {
+                    $row[$property] = CRM_Utils_Array::value( $result->state_province_id, $provinces );
+                } elseif ($property == 'world_region') {
+                    $row[$property] = $regions[$result->world_region_id];
                 } else {
                     $row[$property] = $result->$property;
                 }

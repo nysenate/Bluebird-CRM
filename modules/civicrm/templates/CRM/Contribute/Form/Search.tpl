@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,10 +52,13 @@
 {if $rowsEmpty || $rows}
 <div class="crm-content-block">
 {if $rowsEmpty}
+<div class="crm-results-block crm-results-block-empty">
     {include file="CRM/Contribute/Form/Search/EmptyResults.tpl"}
+</div>
 {/if}
 
 {if $rows}
+    <div class="crm-results-block">
     {* Search request has returned 1 or more matching rows. *}    
         {* This section handles form elements for action task select and submit *}
         <div class="crm-search-tasks crm-event-search-tasks">
@@ -63,8 +66,11 @@
         </div>
 
         {* This section displays the rows along and includes the paging controls *}
+	<div class="crm-search-results">
         {include file="CRM/Contribute/Form/Selector.tpl" context="Search"}
+	</div>
     {* END Actions/Results section *}
+    </div>
 {/if}
 
 </div>

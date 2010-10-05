@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -816,14 +816,7 @@ class CRM_Profile_Form extends CRM_Core_Form
             // since we are directly adding contact to group lets unset it from mailing
             if ( $key = array_search( $addToGroupId, $mailingType ) ) {
                 unset( $mailingType[$key] );
-            }
-            
-            // add add to group to main group array
-            if ( !isset( $params['group'] ) ) {
-                $params['group'] = array( );
-            }
-            
-            $params['group'][$addToGroupId] = 1;
+            }            
         }
         
         if ( $this->_grid ){

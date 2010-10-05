@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,9 +35,8 @@
  */
 
 /**
- * This class provides the common functionality for sending email to
- * one or a group of contact ids. This class is reused by all the search
- * components in CiviCRM (since they all have send email as a task)
+ * This class provides the common functionality for creating PDF letter for
+ * one or a group of contact ids.
  */
 class CRM_Contact_Form_Task_PDFLetterCommon
 {
@@ -69,6 +68,9 @@ class CRM_Contact_Form_Task_PDFLetterCommon
     static function preProcessSingle( &$form, $cid )
     {
         $form->_contactIds = array( $cid );
+        // put contact display name in title for single contact mode
+        require_once 'CRM/Contact/Page/View.php';
+        CRM_Contact_Page_View::setTitle( $cid );
     }
 
 
@@ -84,8 +86,32 @@ class CRM_Contact_Form_Task_PDFLetterCommon
 
         require_once "CRM/Mailing/BAO/Mailing.php";
         CRM_Mailing_BAO_Mailing::commonLetterCompose( $form );
-        
-        $form->addDefaultButtons( ts('Make PDF Letters') );
+        if ( $form->_single ){
+            $cancelURL   = CRM_Utils_System::url('civicrm/contact/view',
+                                                 "reset=1&cid={$form->_cid}&selectedChild=activity",
+                                                 false, null, false);
+            if( $form->get( 'action' ) == CRM_Core_Action::VIEW ) {
+                $form->addButtons( array(
+                                         array ( 'type'      => 'cancel',
+                                                 'name'      => ts('Done'),
+                                                 'js'        => array( 'onclick' => "location.href='{$cancelURL}'; return false;" ) ),
+                                         )
+                                   );
+            } else {
+                $form->addButtons( array(
+                                         array ( 'type'      => 'submit',
+                                                 'name'      => ts('Make PDF Letter'),
+                                                 'isDefault' => true   ),
+                                         array ( 'type'      => 'cancel',
+                                                 'name'      => ts('Done'),
+                                                 'js'        => array( 'onclick' => "location.href='{$cancelURL}'; return false;" ) ),
+                                         )
+                                   );
+            }
+            
+        } else {
+            $form->addDefaultButtons( ts('Make PDF Letters') );            
+        }
         
         $form->addFormRule( array( 'CRM_Contact_Form_Task_PDFLetterCommon', 'formRule' ), $form );
     }
@@ -168,7 +194,11 @@ class CRM_Contact_Form_Task_PDFLetterCommon
                     
         require_once 'CRM/Mailing/BAO/Mailing.php';
         $mailing = new CRM_Mailing_BAO_Mailing();
-		
+        if ( defined( 'CIVICRM_MAIL_SMARTY' ) ) {
+            require_once 'CRM/Core/Smarty/resources/String.php';
+            civicrm_smarty_register_string_resource( );
+        }
+
         $first = TRUE;
 
         foreach ($form->_contactIds as $item => $contactId) {
@@ -183,7 +213,14 @@ class CRM_Contact_Form_Task_PDFLetterCommon
 	
 			$tokenHtml    = CRM_Utils_Token::replaceContactTokens( $html_message, $contact[$contactId], true       , $messageToken);
             $tokenHtml    = CRM_Utils_Token::replaceHookTokens   ( $tokenHtml, $contact[$contactId]   , $categories, true         );
-            
+                
+            if ( defined( 'CIVICRM_MAIL_SMARTY' ) ) {
+            	$smarty = CRM_Core_Smarty::singleton( );
+            	// also add the contact tokens to the template
+            	$smarty->assign_by_ref( 'contact', $contact );
+            	$tokenHtml = $smarty->fetch( "string:$tokenHtml" );
+            }
+
             if ( $first == TRUE ) {
               $first = FALSE;
               $html .= $tokenHtml;
@@ -206,6 +243,9 @@ class CRM_Contact_Form_Task_PDFLetterCommon
                                 'activity_date_time'   => date('YmdHis'),
                                 'details'              => $html_message,
                                 );
+        if( $form->_activityId ) {
+            $activityParams  += array( 'id'=> $form->_activityId );
+        }
         $activity = CRM_Activity_BAO_Activity::create( $activityParams );
         
         foreach ( $form->_contactIds as $contactId ) {
@@ -215,7 +255,7 @@ class CRM_Contact_Form_Task_PDFLetterCommon
             CRM_Activity_BAO_Activity::createActivityTarget( $activityTargetParams );
         }
         require_once 'CRM/Utils/PDF/Utils.php';
-        CRM_Utils_PDF_Utils::html2pdf( $html, "CiviLetter.pdf", 'portrait' ); 
+        CRM_Utils_PDF_Utils::html2pdf( $html, "CiviLetter.pdf", 'portrait', 'letter' ); 
 
         // we need to call the hook manually here since we redirect and never 
         // go back to CRM/Core/Form.php

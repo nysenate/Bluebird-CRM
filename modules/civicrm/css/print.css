@@ -1,11 +1,7 @@
 /* CiviCRM Print Media Stylesheet */
 
 /* Hide any buttons or other form items when printing*/
-#crm-container .buttons, 
-#crm-container .button, 
-#crm-container .form-submit,
-#crm-container .crm-actions-ribbon,
-#crm-container .crm-submit-buttons {
+#crm-container .buttons, #crm-container .crm-submit-buttons, #crm-container .crm-actions-ribbon, #crm-container .form-submit {
      display: none;
 }
 
@@ -21,11 +17,7 @@ table.form-layout td, table.form-layout th {
 #crm-container {   
     overflow: visible !important;
     font-family      : serif;
-    margin           : 0px 10px 0px 10px;
-	background: none;
-}
-#Print {
-	background: none;
+    margin           : 0px 10px 0px 10px;	
 }
 
 /* CSS for Print and PDF of Reports */
@@ -127,4 +119,3 @@ table.form-layout td, table.form-layout th {
     font-style       : italic;
     float            : right;
 }
-

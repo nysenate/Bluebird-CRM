@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -44,10 +44,6 @@
  */
 function smarty_modifier_crmStripAlternatives($full)
 {
-    $matches = array();
-    if (preg_match('/-ALTERNATIVE ITEM 0-(.*?)-ALTERNATIVE ITEM 1-.*-ALTERNATIVE END-/s', $full, $matches)) {
-        return $matches[1];
-    } else {
-        return $full;
-    }
+    require_once 'CRM/Utils/String.php';
+    return CRM_Utils_String::stripAlternatives($full);
 }

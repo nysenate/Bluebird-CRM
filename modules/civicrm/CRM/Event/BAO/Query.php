@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -113,16 +113,32 @@ class CRM_Event_BAO_Query
             }
         
             //event type
+            if ( CRM_Utils_Array::value( 'event_type', $query->_returnProperties ) ) {
+                $query->_select['event_type']  = "event_type.label as event_type";
+                $query->_element['event_type']     = 1;
+                $query->_tables['event_type']         = 1;
+                $query->_whereTables['event_type']    = 1;
+            }
+
             if ( CRM_Utils_Array::value( 'event_type_id', $query->_returnProperties ) ) {
-                $query->_select['event_type']  = "event_type.label as event_type_id";
+                $query->_select['event_type_id']  = "event_type.id as event_type_id";
                 $query->_element['event_type_id']     = 1;
                 $query->_tables['event_type']         = 1;
                 $query->_whereTables['event_type']    = 1;
             }
 
             //add status
+            if ( CRM_Utils_Array::value( 'participant_status', $query->_returnProperties ) ) {
+                $query->_select['participant_status']  = "participant_status.label as participant_status";
+                $query->_element['participant_status'] = 1;
+                $query->_tables['civicrm_participant'] = 1;
+                $query->_tables['participant_status'] = 1;
+                $query->_whereTables['civicrm_participant'] = 1;
+                $query->_whereTables['participant_status'] = 1;
+            }
+
             if ( CRM_Utils_Array::value( 'participant_status_id', $query->_returnProperties ) ) {
-                $query->_select['participant_status']  = "participant_status.label as participant_status_id";
+                $query->_select['participant_status_id']  = "participant_status.id as participant_status_id";
                 $query->_element['participant_status_id'] = 1;
                 $query->_tables['civicrm_participant'] = 1;
                 $query->_tables['participant_status'] = 1;
@@ -131,15 +147,24 @@ class CRM_Event_BAO_Query
             }
             
             //add role
+            if ( CRM_Utils_Array::value( 'participant_role', $query->_returnProperties ) ) {
+                $query->_select['participant_role']  = "participant_role.label as participant_role";
+                $query->_element['participant_role'] = 1;
+                $query->_tables['civicrm_participant'] = 1;
+                $query->_tables['participant_role'] = 1;
+                $query->_whereTables['civicrm_participant'] = 1;
+                $query->_whereTables['participant_role'] = 1;
+            }
+
             if ( CRM_Utils_Array::value( 'participant_role_id', $query->_returnProperties ) ) {
-                $query->_select['participant_role']  = "participant_role.label as participant_role_id";
+                $query->_select['participant_role_id']  = "participant_role.id as participant_role_id";
                 $query->_element['participant_role_id'] = 1;
                 $query->_tables['civicrm_participant'] = 1;
                 $query->_tables['participant_role'] = 1;
                 $query->_whereTables['civicrm_participant'] = 1;
                 $query->_whereTables['participant_role'] = 1;
             }
-            
+
             //add register date
             if ( CRM_Utils_Array::value( 'participant_register_date', $query->_returnProperties ) ) {
                 $query->_select['participant_register_date' ]  = "civicrm_participant.register_date as participant_register_date";
@@ -488,10 +513,10 @@ class CRM_Event_BAO_Query
                                 'event_title'               => 1,
                                 'event_start_date'          => 1,
                                 'event_end_date'            => 1,
-                                'event_type_id'             => 1,
+                                'event_type'                => 1,
                                 'participant_id'            => 1,
-                                'participant_status_id'     => 1,
-                                'participant_role_id'       => 1,
+                                'participant_status'        => 1,
+                                'participant_role'          => 1,
                                 'participant_register_date' => 1,
                                 'participant_source'        => 1,
                                 'participant_fee_level'     => 1,

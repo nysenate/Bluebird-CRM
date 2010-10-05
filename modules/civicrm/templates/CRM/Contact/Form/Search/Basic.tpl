@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -24,9 +24,9 @@
  +--------------------------------------------------------------------+
 *}
 
-<div class="crm-form-block crm-search-form-block">
 {* Main template for basic search (Find Contacts) *}
 {include file="CRM/Contact/Form/Search/Intro.tpl"}
+<div class="crm-form-block crm-search-form-block">
 {* This section handles form elements for search criteria *}
 <div id="searchForm">
     {include file="CRM/Contact/Form/Search/BasicCriteria.tpl"}

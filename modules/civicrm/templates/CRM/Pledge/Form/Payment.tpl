@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -24,15 +24,34 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for updating pledge payment*} 
+<h3>{ts}Edit Scheduled Pledge Payment{/ts}</h3> 
 <div class="crm-block crm-form-block crm-pledge-payment-form-block">
-<fieldset><legend>{ts}Edit Pledge Payment{/ts}</legend> 
       <table class="form-layout-compressed">
         <tr><td class="label">{ts}Status{/ts}</td><td class="form-layout">{$status}</td></tr>
         <tr><td class="label">{$form.scheduled_date.label}</td>
             <td>{include file="CRM/common/jcalendar.tpl" elementName=scheduled_date}
             <span class="description">{ts}Scheduled Date for Pledge payment.{/ts}</span></td></tr>
         </td></tr>
+	<tr><td class="label">{$form.scheduled_amount.label}</td><td class="form-layout">{$form.scheduled_amount.html}
+	    {if !$pledgePayment}{ts}<a href="#" onclick="adjustPayment();">adjust scheduled amount</a>{help id="adjust-payment-amount"}{/ts}{/if}
+	    </td>
+	</tr>
+	<tr id="adjust-option-type" class="crm-contribution-form-block-option_type">
+         <td class="label"></td> <td>{$form.option_type.html}</td> 
+	</tr>
       </table> 
        <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </fieldset>
 </div> 
+{literal}
+<script type="text/javascript">
+cj(document).ready( function() {
+    cj('#adjust-option-type').hide();
+});
+function adjustPayment( ) {
+cj('#adjust-option-type').show();		    	    
+cj("#scheduled_amount").removeAttr("READONLY");
+cj("#scheduled_amount").css('background-color', '#ffffff');
+}
+</script>
+{/literal}

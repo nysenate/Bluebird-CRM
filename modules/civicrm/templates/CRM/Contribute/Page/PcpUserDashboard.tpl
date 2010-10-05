@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -54,7 +54,6 @@
 <div class="messages status">
 	<div class="icon inform-icon"></div>
 	{ts}You do not have any active Personal Campaign pages.{/ts}
-</dl>
 </div>
 {/if}
 

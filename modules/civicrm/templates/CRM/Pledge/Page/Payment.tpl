@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -46,9 +46,7 @@
     <td>{$row.receive_date|truncate:10:''|crmDate}</td>
     <td>{$row.reminder_date|truncate:10:''|crmDate}</td>
     <td class="right">{if $row.reminder_count}{$row.reminder_count}{/if}</td>
-    <td {if ! ($permission EQ 'edit' and ($row.status eq 'Pending' or $row.status eq 'Overdue' or $row.status eq 'Completed')) } colspan="2"{/if} >
-        {$row.status}
-    </td>	
+    <td {if ! ($permission EQ 'edit' and ($row.status eq 'Pending' or $row.status eq 'Overdue' or $row.status eq 'Completed')) } colspan="2"{/if} >{$row.label}</td>	
 {if $context neq user}
     {if $permission EQ 'edit' and ($row.status eq 'Pending' or $row.status eq 'Overdue' or $row.status eq 'Completed') }
         <td>
@@ -65,7 +63,7 @@
             {/if}
             <br/> 
             {capture assign=editURL}{crmURL p="civicrm/pledge/payment" q="reset=1&action=update&cid=`$contactId`&context=`$context`&ppId=`$row.id`"}{/capture}
-            {ts 1=$editURL}<a href='%1'>Edit Schedule</a>{/ts}
+            {ts 1=$editURL}<a href='%1'>Edit Scheduled Payment</a>{/ts}
         {/if}
         </td>
     {/if}

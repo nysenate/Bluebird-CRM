@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -90,7 +90,7 @@
 
 	<tr>
 	    <td class="label">{ts}Received{/ts}</td>
-    	<td>{if $receive_date}{$receive_date|truncate:10:''|crmDate}{else}({ts}pending{/ts}){/if}</td>
+    	<td>{if $receive_date}{$receive_date|crmDate}{else}({ts}pending{/ts}){/if}</td>
 	</tr>
 	<tr>
 	    <td class="label">{ts}Contribution Status{/ts}</td>
@@ -101,7 +101,7 @@
 	{if $cancel_date}
         <tr>
 	        <td class="label">{ts}Cancelled Date{/ts}</td>
-	        <td>{$cancel_date|truncate:10:''|crmDate}</td>
+	        <td>{$cancel_date|crmDate}</td>
         </tr>
 	    {if $cancel_reason}
 	        <tr>
@@ -128,7 +128,7 @@
 	{if $receipt_date}
     	<tr>
     	    <td class="label">{ts}Receipt Sent{/ts}</td>
-        	<td>{$receipt_date|truncate:10:''|crmDate}</td>
+        	<td>{$receipt_date|crmDate}</td>
     	</tr>
 	{/if}	
 	{foreach from=$note item="rec"} 
@@ -163,7 +163,7 @@
 	{if $thankyou_date}
 	    <tr>
 	        <td class="label">{ts}Thank-you Sent{/ts}</td>
-	        <td>{$thankyou_date|truncate:10:''|crmDate}</td>
+	        <td>{$thankyou_date|crmDate}</td>
 	    </tr>
 	{/if}
 	

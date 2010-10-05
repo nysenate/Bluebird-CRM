@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -749,7 +749,7 @@ WHERE id={$id}; ";
         $relativePath = null;
         $config = CRM_Core_Config::singleton( );
         if ( $config->userFramework == 'Joomla' ) {
-            $userFrameworkBaseURL = trim( $config->userFrameworkBaseURL,'/administrator/' );
+            $userFrameworkBaseURL = trim( str_replace( "/administrator/", "", $config->userFrameworkBaseURL ) );
             $customFileUploadDirectory = strstr( $absolutePath, '/media' );
             $relativePath = $userFrameworkBaseURL . $customFileUploadDirectory;     
         } else if ( $config->userFramework == 'Drupal' ) {   
@@ -1736,23 +1736,16 @@ ORDER BY civicrm_email.is_primary DESC";
             require_once 'CRM/Core/BAO/EntityTag.php';
             CRM_Core_BAO_EntityTag::create( $params['tag'], 'civicrm_contact', $contactID );
         } 
-        
-        // Set status = 'Pending' if profileDoubleOptIn = 1. CRM-5905
-        require_once 'CRM/Core/Config.php';
-        $config = CRM_Core_Config::singleton( );
-        if ( $config->profileDoubleOptIn ) {
-            $groupStatus = 'Pending';
-        }
-        
+                
         //to add profile in default group
         if ( is_array ($addToGroupID) ) {
             $contactIds = array($contactID);
             foreach ( $addToGroupID as $groupId ) {
-                CRM_Contact_BAO_GroupContact::addContactsToGroup( $contactIds, $groupId, 'Admin' , $groupStatus );
+                CRM_Contact_BAO_GroupContact::addContactsToGroup( $contactIds, $groupId );
             }
         } else if ( $addToGroupID ) {
             $contactIds = array($contactID);
-            CRM_Contact_BAO_GroupContact::addContactsToGroup( $contactIds, $addToGroupID , 'Admin' , $groupStatus );
+            CRM_Contact_BAO_GroupContact::addContactsToGroup( $contactIds, $addToGroupID );
         }
 
 
