@@ -1,5 +1,5 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -136,6 +136,7 @@ DROP TABLE IF EXISTS civicrm_acl_contact_cache;
 DROP TABLE IF EXISTS civicrm_contact;
 DROP TABLE IF EXISTS civicrm_acl_entity_role;
 DROP TABLE IF EXISTS civicrm_acl;
+DROP TABLE IF EXISTS civicrm_persistent;
 DROP TABLE IF EXISTS civicrm_discount;
 DROP TABLE IF EXISTS civicrm_component;
 DROP TABLE IF EXISTS civicrm_worldregion;

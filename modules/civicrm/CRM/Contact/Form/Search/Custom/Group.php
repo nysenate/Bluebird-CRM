@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -158,7 +158,6 @@ class CRM_Contact_Form_Search_Custom_Group
                          contact_a.contact_type as contact_type,
                          contact_a.sort_name    as sort_name";
 
-			$issueCodesWhere = ''; //LCD
             //distinguish column according to user selection
             if ( $this->_groups && ! $this->_tags ) {
                 unset( $this->_columns['Tag Name'] );
@@ -166,7 +165,6 @@ class CRM_Contact_Form_Search_Custom_Group
             } else if ( ! $this->_groups && $this->_tags) {
                 unset( $this->_columns['Group Name'] );
                 $selectClause .= ", GROUP_CONCAT(DISTINCT tag_names  ORDER BY tag_names ASC ) as tname";
-				$issueCodesWhere = " AND parent_id <> '292' AND parent_id <> '296' "; //LCD
             } else {
                 $selectClause .=", GROUP_CONCAT(DISTINCT group_names ORDER BY group_names ASC ) as gname , GROUP_CONCAT(DISTINCT tag_names ORDER BY tag_names ASC ) as tname";
             }
@@ -175,7 +173,6 @@ class CRM_Contact_Form_Search_Custom_Group
         $from  = $this->from( );
         
         $where = $this->where( $includeContactIDs );
-		$where .= $issueCodesWhere; //LCD
         
         $sql = " SELECT $selectClause $from WHERE  $where ";
         if ( ! $justIDs ) {
@@ -198,9 +195,6 @@ class CRM_Contact_Form_Search_Custom_Group
         if ( $offset >= 0 && $rowcount > 0 ) {
             $sql .= " LIMIT $offset, $rowcount ";
         }
-		if ($_GET['lcd'] == 1) {
-			echo $sql;
-		}
 
         return $sql;
         
@@ -241,7 +235,7 @@ class CRM_Contact_Form_Search_Custom_Group
             }
                        
             $sql = "CREATE TEMPORARY TABLE Xg_{$this->_tableName} ( contact_id int primary key) ENGINE=HEAP";  
-            CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+            CRM_Core_DAO::executeQuery( $sql );
             
             //used only when exclude group is selected 
             if( $xGroups != 0 ) {
@@ -254,7 +248,7 @@ class CRM_Contact_Form_Search_Custom_Group
                      civicrm_group_contact.status = 'Added' AND
                      civicrm_group_contact.group_id IN( {$xGroups})";
                 
-                CRM_Core_DAO::executeQuery( $excludeGroup, CRM_Core_DAO::$_nullArray );
+                CRM_Core_DAO::executeQuery( $excludeGroup );
 
                 //search for smart group contacts
                 foreach( $this->_excludeGroups as $keys => $values ) {
@@ -269,7 +263,7 @@ class CRM_Contact_Form_Search_Custom_Group
                         
                         $smartGroupQuery = " INSERT IGNORE INTO Xg_{$this->_tableName}(contact_id) $smartSql";
                         
-                        CRM_Core_DAO::executeQuery( $smartGroupQuery, CRM_Core_DAO::$_nullArray );
+                        CRM_Core_DAO::executeQuery( $smartGroupQuery );
                     }
                 }
                 
@@ -279,7 +273,7 @@ class CRM_Contact_Form_Search_Custom_Group
                                                                    contact_id int,
                                                                    group_names varchar(64)) ENGINE=HEAP";
             
-            CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+            CRM_Core_DAO::executeQuery( $sql );
 
             if ( $iGroups ) {
                 $includeGroup = 
@@ -432,7 +426,6 @@ class CRM_Contact_Form_Search_Custom_Group
             }
             
             CRM_Core_DAO::executeQuery( $includeTag );
-            
         }  
 
         $from = " FROM civicrm_contact contact_a";

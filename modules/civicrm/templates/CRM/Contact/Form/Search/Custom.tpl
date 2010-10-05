@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -84,6 +84,7 @@
         {strip}
         <table class="selector" summary="{ts}Search results listings.{/ts}">
             <thead class="sticky">
+                <tr>
                 <th scope="col" title="Select All Rows">{$form.toggleSelect.html}</th>
                 {foreach from=$columnHeaders item=header}
                     <th scope="col">
@@ -96,6 +97,7 @@
                     </th>
                 {/foreach}
                 <th>&nbsp;</th>
+                </tr>
             </thead>
 
             {counter start=0 skip=1 print=false}

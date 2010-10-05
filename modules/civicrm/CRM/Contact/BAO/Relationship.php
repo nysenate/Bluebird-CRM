@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -1032,6 +1032,9 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship
             
             $values[$cid]['memberships'] = $memberships;
         }
+        require_once 'CRM/Member/PseudoConstant.php';
+        $deceasedStatusId = array_search( 'Deceased', CRM_Member_PseudoConstant::membershipStatus( ) ); 
+        
         // done with 'values' array.
         // Finally add / edit / delete memberships for the related contacts
         foreach ( $values as $cid => $details ) {
@@ -1073,7 +1076,11 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship
                     unset($membershipValues['membership_id']);
                     foreach ( $details['relatedContacts'] as $relatedContactId => $donCare) {
                         $membershipValues['contact_id'] = $relatedContactId;
-                                                
+                        if ( $deceasedStatusId && 
+                             CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $relatedContactId, 'is_deceased' ) ) {
+                            $membershipValues['status_id']     = $deceasedStatusId;
+                            $membershipValues['skipStatusCal'] = true;
+                        }
                         if ( $action & CRM_Core_Action::UPDATE ) {
                             //delete the membership record for related
                             //contact before creating new membership record.

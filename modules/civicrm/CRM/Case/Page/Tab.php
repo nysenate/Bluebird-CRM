@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -55,24 +55,39 @@ class CRM_Case_Page_Tab extends CRM_Core_Page
     
     function preProcess( )
     {
+        $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this, false, 'browse');
+        
         // Make sure case types have been configured for the component
         require_once 'CRM/Core/OptionGroup.php';        
-        $caseType = CRM_Core_OptionGroup::values('case_type');
+        $caseType = CRM_Core_OptionGroup::values( 'case_type', false, false, false, null, 'label', false );
         if ( empty( $caseType ) ){
             $this->assign('notConfigured', 1);
             return;
         }
+
+        $activeCaseTypes = CRM_Core_OptionGroup::values( 'case_type' );
+        $this->assign( 'allowToAddNewCase', empty( $activeCaseTypes ) ? false : true );
+
         $this->_id        = CRM_Utils_Request::retrieve( 'id' , 'Positive', $this );
         $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this );
         $this->_context   = CRM_Utils_Request::retrieve( 'context', 'String', $this );
-        $this->_action    = CRM_Utils_Request::retrieve('action', 'String', $this, false, 'browse');
-               
+        
         if ( $this->_contactId ) {
             $this->assign( 'contactId', $this->_contactId );
-
-            // check logged in url permission
+            // check logged in user permission
             require_once 'CRM/Contact/Page/View.php';
-            CRM_Contact_Page_View::checkUserPermission( $this );
+            if ( $this->_id && ($this->_action & CRM_Core_Action::VIEW) ) {
+                //user might have special permissions to view this case, CRM-5666
+                if ( !CRM_Core_Permission::check( 'access all cases and activities' ) ) {
+                    $session   = CRM_Core_Session::singleton( );
+                    $userCases = CRM_Case_BAO_Case::getCases( false, $session->get( 'userID') );
+                    if ( !array_key_exists( $this->_id, $userCases ) ) {
+                        CRM_Core_Error::fatal( ts( 'You are not authorized to access this page.' ) );
+                    }
+                }
+            } else {
+                CRM_Contact_Page_View::checkUserPermission( $this );
+            }
             
             // set page title
             CRM_Contact_Page_View::setTitle( $this->_contactId );
@@ -186,7 +201,7 @@ class CRM_Case_Page_Tab extends CRM_Core_Page
         }        
 
         $this->assign( 'action', $this->_action);
-
+        
         $this->setContext( );        
 
         if ( $this->_action & CRM_Core_Action::VIEW ) {

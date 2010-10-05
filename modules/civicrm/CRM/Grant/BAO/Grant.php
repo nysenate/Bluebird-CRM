@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -389,9 +389,15 @@ class CRM_Grant_BAO_Grant extends CRM_Grant_DAO_Grant
             if ( ! self::$_exportableFields ) {
                 self::$_exportableFields = array( );
             }
+            
+            $grantFields = array( 'grant_status' => array( 'title' => 'Grant Status',
+                                                           'name'  => 'grant_status' ),
+                                  'grant_type'   => array( 'title' => 'Grant Type',
+                                                           'name'  => 'grant_type' ) );
+                                                           
             require_once 'CRM/Grant/DAO/Grant.php';
             $fields = CRM_Grant_DAO_Grant::export( );
-            $fields = array_merge( $fields, CRM_Core_BAO_CustomField::getFieldsForImport('Grant'));
+            $fields = array_merge( $fields, $grantFields, CRM_Core_BAO_CustomField::getFieldsForImport('Grant'));
             self::$_exportableFields = $fields;
         }
 

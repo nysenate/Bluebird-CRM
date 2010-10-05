@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -24,11 +24,10 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for viewing and editing Domain information (for system-generated emails CiviMail-related values) *}
+<div class="crm-block crm-form-block crm-domain-form-block">
 {if !($action eq 4)}
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 {/if}
-<div class="form-item">
-<fieldset>
     <table class="form-layout-compressed">
 	<tr>
         <td>
@@ -83,7 +82,6 @@
     <a href="{crmURL q="action=update&reset=1"}" id="editDomainInfo">&raquo; {ts}Edit Domain Information{/ts}</a>
     </div>
     {/if}
-</fieldset>
 {if !($action eq 4)}
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 {/if}

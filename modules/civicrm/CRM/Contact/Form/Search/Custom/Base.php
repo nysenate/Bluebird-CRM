@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -143,7 +143,7 @@ class CRM_Contact_Form_Search_Custom_Base {
         }
 
         foreach ( $excludeStrings as $string ) {
-            if ( stripos( $sql, $string ) !== false ) {
+            if ( preg_match('/(\s' . $string . ')|(' .$string . '\s)/i', $sql ) ) {
                 CRM_Core_Error::fatal( ts( 'Found illegal \'%1\' string in SQL clause.',
                                            array( 1 => $string ) ) );
             }

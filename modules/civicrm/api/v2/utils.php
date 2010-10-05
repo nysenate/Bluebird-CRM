@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,7 +32,7 @@
  * @subpackage API_utils
  * 
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: utils.php 26712 2010-03-25 07:00:06Z ashwini $
+ * @version $Id: utils.php 29092 2010-08-07 13:46:50Z kiran $
  *
  */
 
@@ -293,6 +293,25 @@ function _civicrm_add_formatted_param(&$values, &$params)
         }
         
         $params['preferred_communication_method'] = $comm;
+        return true;
+    }
+    
+    //format the website params.
+    if ( CRM_Utils_Array::value( 'url', $values ) ) {
+        static $websiteFields;
+        if ( !is_array( $websiteFields ) ) {
+            require_once 'CRM/Core/DAO/Website.php';
+            $websiteFields = CRM_Core_DAO_Website::fields( );
+        }
+        if ( !array_key_exists( 'website', $params ) || 
+             !is_array( $params['website'] ) ) {
+            $params['website'] = array( );
+        }
+        
+        $websiteCount = count( $params['website'] );
+        _civicrm_store_values( $websiteFields, $values,
+                               $params['website'][++$websiteCount] );
+        
         return true;
     }
     

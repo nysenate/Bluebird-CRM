@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -111,6 +111,14 @@ class CRM_Case_Form_Case extends CRM_Core_Form
             return true;
         }
         
+        if ( !$this->_caseId ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            $caseTypes = CRM_Core_OptionGroup::values( 'case_type' );
+            if ( empty( $caseTypes ) ) {
+                CRM_Core_Error::fatal( ts( 'You do not have any active case types' ) );
+            }
+        }
+
         if ( $this->_action & CRM_Core_Action::ADD ) {
             require_once 'CRM/Core/OptionGroup.php';
             $this->_activityTypeId = CRM_Core_OptionGroup::getValue( 'activity_type',
@@ -138,7 +146,8 @@ class CRM_Case_Form_Case extends CRM_Core_Form
        
         CRM_Utils_System::setTitle($details[$this->_activityTypeId]['label']);
         $this->assign('activityType', $details[$this->_activityTypeId]['label']);
-       
+        $this->assign( 'activityTypeDescription', $details[$this->_activityTypeId]['description'] );
+        
         if ( isset($this->_currentlyViewedContactId) ) {
             require_once 'CRM/Contact/BAO/Contact.php';
             $contact = new CRM_Contact_DAO_Contact( );

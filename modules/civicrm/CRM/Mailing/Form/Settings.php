@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -106,7 +106,7 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form
         $defaults['override_verp'] = defined('CIVICRM_TRACK_CIVIMAIL_REPLIES') ? CIVICRM_TRACK_CIVIMAIL_REPLIES : false;
 
         $this->add('checkbox', 'forward_replies', ts('Forward Replies?'));
-        $defaults['forward_replies'] = true;
+        $defaults['forward_replies'] = false;
         
         $this->add('checkbox', 'url_tracking', ts('Track Click-throughs?'));
         $defaults['url_tracking'] = true;

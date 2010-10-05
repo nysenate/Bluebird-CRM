@@ -1,0 +1,53 @@
+{*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.2                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*}
+{htxt id="id-contribution_type"}
+<p>{ts}Select the corresponding contribution type for contributions made using this page (e.g. donation, capital campaign, etc.).
+Contribution types (and associated accounting codes) are included when contributions are exported, so it can helpful to set up
+specific types for accounting purposes. You can add or modify contribution available types from Administer &gt; CiviContribute &gt; Contribution Types.{/ts}</p>
+<p>{ts}NOTE: If you are using this contribution page for membership signup and renewals, the contribution type configured in the
+membership type settings will be used when recording the membership payment. The contribution type selected here will only be used
+if you are also collecting additional contributions (as configured on the Membership Settings page).{/ts}</p>
+{/htxt}
+
+{htxt id="id-intro_msg"}
+{ts}Enter content for the introductory message. This will be displayed below the page title. You can include images, as long as they are already uploaded to a server - click the "Image" button in the button bar.{/ts}
+{/htxt}
+
+{htxt id="id-footer_msg"}
+{ts}If you want content displayed at the bottom of the contribution page, enter it here.{/ts}
+{/htxt}
+
+{htxt id="id-goal_amount"}
+{ts}Enter an optional goal amount for this contribution page (e.g. for this 'campaign'). If you enable a contribution widget for this page, the widget will track progress against this goal. Otherwise, the goal will display as 'no limit'.{/ts}
+{/htxt}
+
+{htxt id="id-start_date"}
+{ts}You can optionally set an "active date range" for this contribution page. These dates are currently only used by the "Contribution Widget" - which will give a "Campaign is over" message if it is accessed outside of the specified range.{/ts}
+{/htxt}
+
+{htxt id="id-honoree_section"}
+{ts}If you want to allow contributors to specify a person whom they are honoring with their gift, check this box. An optional Honoree section will be included in the form. Honoree information is automatically saved and linked with the contribution record.{/ts}
+{/htxt}

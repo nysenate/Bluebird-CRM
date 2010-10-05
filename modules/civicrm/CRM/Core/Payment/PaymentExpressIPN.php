@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -360,6 +360,9 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
 
         $privateData = $privateData ? self::stringToArray($privateData) : '';
 		
+        // Record the current count in array, before we start adding things (for later checks) 
+        $countPrivateData = count($privateData);
+
 		// Private Data consists of : a=contactID, b=contributionID,c=contributionTypeID,d=invoiceID,e=membershipID,f=participantID,g=eventID
 		$privateData['contactID'] = $privateData['a'];
 		$privateData['contributionID'] = $privateData['b'];
@@ -369,9 +372,9 @@ class CRM_Core_Payment_PaymentExpressIPN extends CRM_Core_Payment_BaseIPN {
 		if ( $component == "event" ) {
 			$privateData['participantID'] = $privateData['f'];
 			$privateData['eventID'] = $privateData['g'];
-		}else if ( $component == "contribute" ) {
+		} else if ( $component == "contribute" ) {
 			
-			if ( count($privateData) == 5) {
+			if ( $countPrivateData == 5 ) {
                 $privateData["membershipID"] = $privateData['e'];					
 			}		
 		}

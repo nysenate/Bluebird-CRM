@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -302,6 +302,10 @@ class CRM_Contribute_DAO_Contribution extends CRM_Core_DAO
                 'contribution_type_id' => array(
                     'name' => 'contribution_type_id',
                     'type' => CRM_Utils_Type::T_INT,
+                    'export' => false,
+                    'where' => 'civicrm_contribution.contribution_type_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
                     'FKClassName' => 'CRM_Contribute_DAO_ContributionType',
                 ) ,
                 'contribution_page_id' => array(
@@ -496,12 +500,12 @@ class CRM_Contribute_DAO_Contribution extends CRM_Core_DAO
                 'contribution_status_id' => array(
                     'name' => 'contribution_status_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Contribution Status') ,
+                    'title' => ts('Contribution Status Id') ,
                     'import' => true,
                     'where' => 'civicrm_contribution.contribution_status_id',
                     'headerPattern' => '/status/i',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                     'default' => '',
                 ) ,
                 'honor_type_id' => array(

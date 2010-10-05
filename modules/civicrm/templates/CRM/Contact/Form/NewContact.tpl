@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -61,9 +61,9 @@
       	 cids = cid.split(',');
       	 var i = 0;
       	 cj('li.token-input-token-facebook').each(function(){
-		var displayName = cj(this).children('p').text();
-	 	existingTokens += '{"name":"'+displayName+'","id":"'+cids[i]+'"},';
-	  	i++;
+    		var displayName = cj(this).children('p').text();
+    	 	existingTokens += '{"name":"'+displayName+'","id":"'+cids[i]+'"},';
+    	  	i++;
       	 });
       }
 
@@ -83,8 +83,8 @@
 
                  beforeclose: function(event, ui) {
                      cj(this).dialog("destroy");
-		     cj("#contact-success").fadeOut(5000);
-		     cj("#profiles").val('0');
+        		     cj("#contact-success").fadeOut(5000);
+        		     cj("#profiles").val('');
                  }
              });
          }

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -41,11 +41,11 @@
        <Fields>
 {foreach from=$activity.fields item=field}
           <Field>
-            <Label>{$field.label}</Label>
+            <Label>{$field.label|escape}</Label>
 {if $field.category}
-            <Category>{$field.category}</Category>
+            <Category>{$field.category|escape}</Category>
 {/if}
-            <Value>{$field.value}</Value>
+            <Value>{$field.value|escape}</Value>
             <Type>{$field.type}</Type>
           </Field>
 {/foreach}
@@ -53,11 +53,11 @@
          <CustomGroups>
 {foreach from=$activity.customGroups key=customGroupName item=customGroup}
             <CustomGroup>
-               <GroupName>{$customGroupName}</GroupName>
+               <GroupName>{$customGroupName|escape}</GroupName>
 {foreach from=$customGroup item=field}
                   <Field>
-                    <Label>{$field.label}</Label>
-                    <Value>{$field.value}</Value>
+                    <Label>{$field.label|escape}</Label>
+                    <Value>{$field.value|escape}</Value>
                     <Type>{$field.type}</Type>
                   </Field>
 {/foreach}

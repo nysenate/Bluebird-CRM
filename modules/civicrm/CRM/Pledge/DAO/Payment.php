@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -104,6 +104,12 @@ class CRM_Pledge_DAO_Payment extends CRM_Core_DAO
      */
     public $scheduled_amount;
     /**
+     * Actual amount that is paid as the Pledged installment amount.
+     *
+     * @var float
+     */
+    public $actual_amount;
+    /**
      * 3 character string, value from config setting or input via user.
      *
      * @var string
@@ -197,6 +203,16 @@ class CRM_Pledge_DAO_Payment extends CRM_Core_DAO
                     'required' => true,
                     'import' => true,
                     'where' => 'civicrm_pledge_payment.scheduled_amount',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
+                ) ,
+                'pledge_payment_actual_amount' => array(
+                    'name' => 'actual_amount',
+                    'type' => CRM_Utils_Type::T_MONEY,
+                    'title' => ts('Actual Amount') ,
+                    'import' => true,
+                    'where' => 'civicrm_pledge_payment.actual_amount',
                     'headerPattern' => '',
                     'dataPattern' => '',
                     'export' => true,

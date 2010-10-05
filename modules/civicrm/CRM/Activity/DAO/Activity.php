@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -276,7 +276,7 @@ class CRM_Activity_DAO_Activity extends CRM_Core_DAO
                     'where' => 'civicrm_activity.activity_type_id',
                     'headerPattern' => '/(activity.)?type(.id$)/i',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                     'default' => '',
                 ) ,
                 'activity_subject' => array(
@@ -350,12 +350,12 @@ class CRM_Activity_DAO_Activity extends CRM_Core_DAO
                 'activity_status_id' => array(
                     'name' => 'status_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Activity Status Label') ,
+                    'title' => ts('Activity Status Id') ,
                     'import' => true,
                     'where' => 'civicrm_activity.status_id',
                     'headerPattern' => '/(activity.)?status(.label$)?/i',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                 ) ,
                 'priority_id' => array(
                     'name' => 'priority_id',

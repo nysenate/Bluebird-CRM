@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -92,5 +92,22 @@ class CRM_Case_Info extends CRM_Core_Component_Info
         return null;
     }
     
+    // add shortcut to Create New
+    public function creatNewShortcut( &$shortCuts ) {
+        if ( CRM_Core_Permission::check('access all cases and activities') &&
+             CRM_Core_Permission::check('add contacts') ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            $atype = CRM_Core_OptionGroup::getValue('activity_type', 
+                                                    'Open Case', 
+                                                    'name' );
+            if ( $atype ) {
+                $shortCuts = 
+                    array_merge($shortCuts, array( array( 'path'  => 'civicrm/case/add',
+                                                          'query' => "reset=1&action=add&atype=$atype&context=standalone",
+                                                          'ref'   => 'new-case',
+                                                          'title' => ts('Case') ) ) );
+            }
+        }        
+    }
 }
 

@@ -36,8 +36,9 @@
 				// Simulate a true right click
 				$(this).mousedown( function(e) {
 					var evt = e;
-					console.log(evt);
+					evt.stopPropagation();
 					$(this).mouseup( function(e) {
+					    e.stopPropagation();
 						var srcElement = $(this);
 						$(this).unbind('mouseup');
 						if( evt.button == 2 ) {

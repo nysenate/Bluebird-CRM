@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,16 +23,16 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<fieldset><legend>{ts}Multiple Choice Options{/ts}</legend>
+<fieldset><legend>{ts}Price Field Options{/ts}</legend>
     <div class="description">
-        {ts}Enter up to ten (10) multiple choice options in this table (click 'another choice' for each additional choice). If you need more than ten options, you can create an unlimited number of additional choices using the Edit Multiple Choice Options link after saving this new field. The option 'label' is displayed on the form, while the option 'value' is stored in the contact record. The label and value may be the same or different. Inactive options are hidden when the field is presented.{/ts}
+        {ts}Enter up to ten (10) multiple choice options in this table (click 'another choice' for each additional choice). If you need more than ten options, you can create an unlimited number of additional choices using the Edit Price Options link after saving this new field. Enter a description of the option in the 'Label' column, and the associated price in the 'Amount' column. Click the 'Default' radio button to the left of an option if you want that to be selected by default.{/ts}
     </div>
 	{strip}
 	<table id='optionField'>
 	<tr><th>&nbsp;</th>
 	<th> {ts}Default{/ts}</th>
         <th> {ts}Label{/ts}</th>
-        <th> {ts}Amount{/ts}</th>
+        <th> {ts}Amount{/ts} {help id="id-negative-options"}</th>
         <th> {ts}Weight{/ts}</th>
 	<th> {ts}Active?{/ts}</th>
     </tr>

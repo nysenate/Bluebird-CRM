@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -75,7 +75,7 @@
                 {if $element.data_type neq 'Date'}
                     {$form.address.$blockId.$element_name.html}&nbsp;
                 {elseif $element.skip_calendar NEQ true }
-                    {include file="CRM/common/jcalendar.tpl" elementName=$element_name}
+                    {include file="CRM/common/jcalendar.tpl" blockId=$blockId blockSection='address' elementName=$element_name}
                 {/if}
                 
                 {if $element.html_type eq 'Radio'}

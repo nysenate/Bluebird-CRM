@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -45,7 +45,7 @@
     </div>
 
     {if $action eq 16 and $permission EQ 'edit' and 
-        call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities')}
+        call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities') and $allowToAddNewCase}
         <div class="action-link">
         <a accesskey="N" href="{$newCaseURL}" class="button"><span><div class="icon add-icon"></div> {ts}Add Case{/ts}</span></a>
         </div>

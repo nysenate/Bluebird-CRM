@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -166,8 +166,13 @@ class CRM_Contact_Form_RelatedContact extends CRM_Core_Form
         require_once "CRM/Core/BAO/LocationType.php";
         $locType = CRM_Core_BAO_LocationType::getDefault();
         foreach ( array('phone', 'email', 'address') as $locFld ) {
-            $params[$locFld][1]['is_primary']       = 1;
-            $params[$locFld][1]['location_type_id'] = $locType->id;
+            if ( ! empty($this->_defaults[$locFld]) && $this->_defaults[$locFld][1]['location_type_id'] ) {
+                $params[$locFld][1]['is_primary']       = $this->_defaults[$locFld][1]['is_primary'];
+                $params[$locFld][1]['location_type_id'] = $this->_defaults[$locFld][1]['location_type_id'];
+            } else {
+                $params[$locFld][1]['is_primary']       = 1;
+                $params[$locFld][1]['location_type_id'] = $locType->id;
+            }
         }
 
 	    $params['contact_type'] = $this->_contactType;

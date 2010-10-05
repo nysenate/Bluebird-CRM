@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -95,6 +95,18 @@ class CRM_Member_Info extends CRM_Core_Component_Info
     public function getActivityTypes()
     {
         return null;
+    }
+    
+    // add shortcut to Create New
+    public function creatNewShortcut( &$shortCuts ) {
+        if ( CRM_Core_Permission::check('access CiviMember') &&
+             CRM_Core_Permission::check('edit memberships') ) {
+            $shortCuts = 
+            array_merge($shortCuts, array( array( 'path'  => 'civicrm/member/add',
+                                                  'query' => "reset=1&action=add&context=standalone",
+                                                  'ref'   => 'new-membership',
+                                                  'title' => ts('Membership') ) ));
+        }
     }
     
 }

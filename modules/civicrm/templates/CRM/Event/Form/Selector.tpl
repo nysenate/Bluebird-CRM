@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -80,8 +80,8 @@
         {/if}
    </td>
     <td class="crm-participant-participant_register_date">{$row.participant_register_date|truncate:10:''|crmDate}</td>	
-    <td class="crm-participant-participant_status_id">{$row.participant_status_id}</td>
-    <td class="crm-participant-participant_role_id">{$row.participant_role_id}</td>
+    <td class="crm-participant-participant_status">{$row.participant_status}</td>
+    <td class="crm-participant-participant_role">{$row.participant_role}</td>
     <td>{$row.action|replace:'xx':$participant_id}</td>
    </tr>
   {/foreach}

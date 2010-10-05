@@ -93,7 +93,7 @@ class CRM_Case_Form_ActivityToCase extends CRM_Core_Form
     public function buildQuickForm( )
     { 
         // tokeninput url
-        $tokenUrl = CRM_Utils_System::url( "civicrm/ajax/checkemail", "noemail=1" );
+        $tokenUrl = CRM_Utils_System::url( "civicrm/ajax/checkemail", "noemail=1", false, null, false );
         $this->assign( 'tokenUrl', $tokenUrl );
         
         $this->add( 'text',   'unclosed_cases', ts( 'Select Case' ) );

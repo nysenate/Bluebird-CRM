@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -71,9 +71,9 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
     { 
         require_once 'CRM/Core/OptionGroup.php';        
        
-        $caseStatus  = CRM_Core_OptionGroup::values('case_status');
+        $form->_caseStatus  = CRM_Core_OptionGroup::values('case_status');
         $form->add('select', 'case_status_id',  ts( 'Case Status' ),  
-                    $caseStatus , true  );
+                    $form->_caseStatus , true  );
     }
 
     /**
@@ -107,7 +107,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
      * @access public
      * @return None
      */
-    public function endPostProcess( &$form, &$params ) 
+    public function endPostProcess( &$form, &$params, $activity ) 
     {
         $groupingValues = CRM_Core_OptionGroup::values( 'case_status', false, true, false, null, 'value' );
               
@@ -117,6 +117,14 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
             $params['end_date'] = $params['activity_date_time'];
         } else if ( CRM_Utils_Array::value( $params['case_status_id'], $groupingValues ) == 'Opened' ) {
             $params['end_date'] = "null";
+        }
+
+        if ($activity->subject == 'null'){
+            $activity->subject = ts('Case status changed from %1 to %2', array(1 => CRM_Utils_Array::value( $form->_defaults['case_status_id'], $form->_caseStatus ),
+                                                                               2 => CRM_Utils_Array::value( $params['case_status_id'], $form->_caseStatus )
+                                                                               )
+                                   );
+            $activity->save();            
         }
         
         // FIXME: does this do anything ?

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -49,7 +49,7 @@
     <table class="form-layout">
         <tr class="crm-member-membershiprenew-form-block-payment_processor_id">
             <td class="label">{$form.payment_processor_id.label}</td>
-            <td class="html-adjust">{$form.payment_processor_id.html}</td><br />
+            <td class="html-adjust">{$form.payment_processor_id.html}</td>
         </tr> 
         <tr class="crm-member-membershiprenew-form-block-org_name">  
             <td class="label">{ts}Membership Organization and Type{/ts}</td>
@@ -70,49 +70,50 @@
             <td>{include file="CRM/common/jcalendar.tpl" elementName=renewal_date}</td>
         </tr>
    
-    {if $accessContribution and ! $membershipMode}
-           <table class="form-layout-compressed">
-               <tr class="crm-member-membershiprenew-form-block-record_contribution">
-                   <td>{$form.record_contribution.label}</td>
-                   <td>{$form.record_contribution.html}<br />
-                   <span class="description">{ts}Check this box to enter payment information. You will also be able to generate a customized receipt.{/ts}</span></td>
-               </tr>
-           </table>
-       
-        <div id="recordContribution">
-            <fieldset><legend>{ts}Renewal Payment and Receipt{/ts}</legend>
-            <table class="form-layout-compressed">
-                <tr class="crm-member-membershiprenew-form-block-contribution_type_id">	
-                    <td class="label">{$form.contribution_type_id.label}</td>
-                    <td>{$form.contribution_type_id.html}<br />
-                    <span class="description">{ts}Select the appropriate contribution type for this payment.{/ts}</span></td>
-                </tr>
-                <tr class="crm-member-membershiprenew-form-block-total_amount">
-                    <td class="label">{$form.total_amount.label}</td>
-                    <td>{$form.total_amount.html}<br />
-                    <span class="description">{ts}Membership payment amount. A contribution record will be created for this amount.{/ts}</span></td>
-                </tr>
-                <tr class="crm-member-membershiprenew-form-block-payment_instrument_id">
-                    <td class="label">{$form.payment_instrument_id.label}</td>
-                    <td>{$form.payment_instrument_id.html}</td>
-                </tr>
-                <tr class="crm-member-membershiprenew-form-block-check_number">
-                    <div id="checkNumber"><td class="label">{$form.check_number.label}</td>
-                    <td>{$form.check_number.html|crmReplace:class:six}</td></div>
-                </tr>
-                <tr class="crm-member-membershiprenew-form-block-trxn_id">
-	                <td class="label">{$form.trxn_id.label}</td>
-                    <td>{$form.trxn_id.html}</td>
-                </tr>
-                <tr class="crm-member-membershiprenew-form-block-contribution_status_id">
-                    <td class="label">{$form.contribution_status_id.label}</td>
-                    <td>{$form.contribution_status_id.html}</td>
-                </tr>
-            </table>
-            </fieldset>
-        </div>
+        {if $accessContribution and ! $membershipMode}
+        <tr class="crm-member-membershiprenew-form-block-record_contribution">
+	    <td class="label">{$form.record_contribution.label}</td>
+            <td class="html-adjust">{$form.record_contribution.html}<br />
+            <span class="description">{ts}Check this box to enter payment information. You will also be able to generate a customized receipt.{/ts}</span></td>
+        </tr>
+            
+        <tr id="recordContribution" class="crm-member-membershiprenew-form-block-membership_renewal">
+	    <td colspan="2">
+               <fieldset><legend>{ts}Renewal Payment and Receipt{/ts}</legend>
+                 <table class="form-layout-compressed">
+                    <tr class="crm-member-membershiprenew-form-block-contribution_type_id">	
+                       <td class="label">{$form.contribution_type_id.label}</td>
+                       <td>{$form.contribution_type_id.html}<br />
+                       <span class="description">{ts}Select the appropriate contribution type for this payment.{/ts}</span></td>
+                    </tr>
+                    <tr class="crm-member-membershiprenew-form-block-total_amount">
+                       <td class="label">{$form.total_amount.label}</td>
+                       <td>{$form.total_amount.html}<br />
+                       <span class="description">{ts}Membership payment amount. A contribution record will be created for this amount.{/ts}</span></td>
+                    </tr>
+                    <tr class="crm-member-membershiprenew-form-block-payment_instrument_id">
+                       <td class="label">{$form.payment_instrument_id.label}</td>
+                       <td>{$form.payment_instrument_id.html}</td>
+                    </tr>
+                    <tr id="checkNumber" class="crm-member-membershiprenew-form-block-check_number">
+                       <td class="label">{$form.check_number.label}</td>
+                       <td>{$form.check_number.html|crmReplace:class:six}</td>
+                    </tr>
+                    <tr class="crm-member-membershiprenew-form-block-trxn_id">
+	               <td class="label">{$form.trxn_id.label}</td>
+                       <td>{$form.trxn_id.html}</td>
+                    </tr>
+                    <tr class="crm-member-membershiprenew-form-block-contribution_status_id">
+                       <td class="label">{$form.contribution_status_id.label}</td>
+                       <td>{$form.contribution_status_id.html}</td>
+                    </tr>
+                 </table>
+               </fieldset>
+            </td>
+	 </tr> 
+	 {/if}  
     </table>
-    {/if}
+    
     {if $membershipMode}
      	<div class="spacer"></div>
      	{include file='CRM/Core/BillingBlock.tpl'}

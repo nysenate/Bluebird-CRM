@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -61,7 +61,7 @@ class CRM_Contribute_Import_Parser_Contribution extends CRM_Contribute_Import_Pa
     /**
      * class constructor
      */
-    function __construct( &$mapperKeys, $mapperSoftCredit = null, $mapperPhoneType = null) 
+    function __construct( &$mapperKeys, $mapperSoftCredit = null, $mapperPhoneType = null ) 
     {
         parent::__construct();
         $this->_mapperKeys =& $mapperKeys;
@@ -241,7 +241,7 @@ class CRM_Contribute_Import_Parser_Contribution extends CRM_Contribute_Import_Pa
      * @return boolean      the result of this processing
      * @access public
      */
-    function import( $onDuplicate, &$values) 
+    function import( $onDuplicate, &$values ) 
     {
         // first make sure this is a valid line
         $response = $this->summary( $values );
@@ -533,24 +533,28 @@ class CRM_Contribute_Import_Parser_Contribution extends CRM_Contribute_Import_Pa
             
             return CRM_Contribute_Import_Parser::VALID;
         }
-        
     }
         
     /**
      *  Function to process pledge payments
      */
-    function processPledgePayments( &$formatted ) {
+    function processPledgePayments( &$formatted )
+    {
         if ( CRM_Utils_Array::value( 'pledge_payment_id', $formatted ) &&
              CRM_Utils_Array::value( 'pledge_id', $formatted ) ) {
             //get completed status
             $completeStatusID = CRM_Core_OptionGroup::getValue( 'contribution_status', 'Completed', 'name' );
-                        
-            require_once 'CRM/Pledge/BAO/Payment.php';
-            CRM_Pledge_BAO_Payment::updatePledgePaymentStatus( $formatted['pledge_id'], array( $formatted['pledge_payment_id'] ),  $completeStatusID );
-            
+           
             //need to update payment record to map contribution_id
             CRM_Core_DAO::setFieldValue( 'CRM_Pledge_DAO_Payment', $formatted['pledge_payment_id'], 
                                          'contribution_id', $formatted['contribution_id'] );
+            
+            require_once 'CRM/Pledge/BAO/Payment.php';
+            CRM_Pledge_BAO_Payment::updatePledgePaymentStatus( $formatted['pledge_id'], 
+                                                               array( $formatted['pledge_payment_id'] ),  
+                                                               $completeStatusID,
+                                                               null,
+                                                               $formatted['total_amount'] );
             
             return CRM_Contribute_Import_Parser::PLEDGE_PAYMENT;
         }

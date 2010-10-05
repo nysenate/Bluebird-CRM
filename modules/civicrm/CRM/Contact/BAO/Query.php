@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -192,6 +192,13 @@ class CRM_Contact_BAO_Query
      */
     public $_skipPermission = false;
 
+    /**
+     * should we skip adding of delete clause
+     *
+     * @var boolean
+     */
+    public $_skipDeleteClause = false;
+    
     /**
      * are we in strict mode (use equality over LIKE)
      *
@@ -720,8 +727,14 @@ class CRM_Contact_BAO_Query
                     $elementCmpName = 'phone';
                 }
                 
+                if ( in_array( $elementCmpName, array_keys( $addressCustomFields ) ) ) {
+                    if ( $cfID = CRM_Core_BAO_CustomField::getKeyID( $elementCmpName ) ) {
+                        $addressCustomFieldIds[$cfID][$name] = 1;
+                    }
+                }
                 //add address table only once
-                if ( in_array( $elementCmpName, self::$_locationSpecificFields ) && ! $addAddress
+                if ( ( in_array( $elementCmpName, self::$_locationSpecificFields ) || !empty($addressCustomFieldIds) ) 
+                     && ! $addAddress
                      && !in_array( $elementCmpName, array( 'email', 'phone', 'im', 'openid' ) )) {                         
                     $tName = "$name-address";
                     $aName = "`$name-address`";
@@ -732,11 +745,6 @@ class CRM_Contact_BAO_Query
                     $locationTypeJoin[$tName] = " ( $aName.location_type_id = $ltName.id ) ";
                     $processed[$aName] = 1;
                     $addAddress = true;
-                }
-                if ( in_array( $elementCmpName, array_keys( $addressCustomFields ) ) ) {
-                    if ( $cfID = CRM_Core_BAO_CustomField::getKeyID( $elementCmpName ) ) {
-                        $addressCustomFieldIds[$cfID][$name] = 1;
-                    }
                 }
 
                 $cond = $elementType = '';
@@ -1261,11 +1269,8 @@ class CRM_Contact_BAO_Query
         case 'activity_type_id':
         case 'activity_tags': 
         case 'activity_test':   
+        case 'activity_contact_name':
             CRM_Activity_BAO_Query::whereClauseSingle( $values, $this );
-            return;
-
-        case 'activity_target_name':
-            // since this case is handled with the above
             return;
         case 'birth_date_low':
         case 'birth_date_high': 
@@ -1913,7 +1918,7 @@ class CRM_Contact_BAO_Query
         }
 
         $tables = $newTables;
-
+                
         foreach ( $tables as $name => $value ) {
             if ( ! $value ) {
                 continue;
@@ -1999,6 +2004,7 @@ class CRM_Contact_BAO_Query
             case 'civicrm_activity_tag':
             case 'activity_type':
             case 'activity_status':
+            case 'civicrm_activity_contact':
                 require_once 'CRM/Activity/BAO/Query.php';
                 $from .= CRM_Activity_BAO_Query::from( $name, $mode, $side );
                 continue; 
@@ -2558,32 +2564,37 @@ WHERE  id IN ( $groupIDs )
         
         $n = trim( $value ); 
 
-        $config = CRM_Core_Config::singleton( );
+        if ( $n ) {
+            $config = CRM_Core_Config::singleton( );
 
-        if ( substr( $n, 0 , 1 ) == '"' &&
-             substr( $n, -1, 1 ) == '"' ) {
-            $n     = substr( $n, 1, -1 );
-            $value = strtolower(CRM_Core_DAO::escapeString($n));
-            $value = "'$value'";
-            $op    = '=';
-        } else {
-            $value = strtolower(CRM_Core_DAO::escapeString($n));
-            if ( $wildcard ) {
-                if ( strpos( $value, '%' ) !== false ) {
-                    $value = "'$value'";
-                    // only add wild card if not there
-                } else {
-                    $value = "'$value%'";
-                }
-                $op    = 'LIKE';
-            } else {
+            if ( substr( $n, 0 , 1 ) == '"' &&
+                 substr( $n, -1, 1 ) == '"' ) {
+                $n     = substr( $n, 1, -1 );
+                $value = strtolower(CRM_Core_DAO::escapeString($n));
                 $value = "'$value'";
+                $op    = '=';
+            } else {
+                $value = strtolower(CRM_Core_DAO::escapeString($n));
+                if ( $wildcard ) {
+                    if ( strpos( $value, '%' ) !== false ) {
+                        $value = "'$value'";
+                        // only add wild card if not there
+                    } else {
+                        $value = "'$value%'";
+                    }
+                    $op    = 'LIKE';
+                } else {
+                    $value = "'$value'";
+                }
             }
+            $this->_qill[$grouping][]  = ts( 'Email' ) . " $op '$n'";
+            $this->_where[$grouping][] = " ( civicrm_email.email $op $value )";
+        } else {
+            $this->_qill[$grouping][]  = ts( 'Email' ) . " $op ";
+            $this->_where[$grouping][] = " ( civicrm_email.email $op )";
         }
-
+        
         $this->_tables['civicrm_email'] = $this->_whereTables['civicrm_email'] = 1; 
-        $this->_where[$grouping][] = " ( civicrm_email.email $op $value )";
-        $this->_qill[$grouping][]  = ts( 'Email' ) . " $op '$n'";
     }
 
     /**
@@ -2595,21 +2606,29 @@ WHERE  id IN ( $groupIDs )
     function street_address( &$values ) 
     {
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
-        $op = 'LIKE';
+        
+        if ( !$op ) {
+            $op = 'LIKE';
+        }
         
         $n = trim( $value ); 
-
-        $value = strtolower(CRM_Core_DAO::escapeString($n));
-        if ( strpos( $value, '%' ) !== false ) {
-            $value = "'$value'";
-            // only add wild card if not there
+        
+        if ( $n ) {
+            $value = strtolower(CRM_Core_DAO::escapeString($n));
+            if ( strpos( $value, '%' ) !== false ) {
+                $value = "'$value'";
+                // only add wild card if not there
+            } else {
+                $value = "'$value%'";
+            }
+            $this->_where[$grouping][] = " ( LOWER(civicrm_address.street_address) $op $value )";
+            $this->_qill[$grouping][]  = ts( 'Street' ) . " $op '$n'";
         } else {
-            $value = "'$value%'";
+            $this->_where[$grouping][] = " (civicrm_address.street_address $op $value )";
+            $this->_qill[$grouping][]  = ts( 'Street' ) . " $op ";
         }
 
         $this->_tables['civicrm_address'] = $this->_whereTables['civicrm_address'] = 1; 
-        $this->_where[$grouping][] = " ( LOWER(civicrm_address.street_address) LIKE $value )";
-        $this->_qill[$grouping][]  = ts( 'Street' ) . " ILIKE '$n'";
     }
 
     /**
@@ -2678,8 +2697,13 @@ WHERE  id IN ( $groupIDs )
         $this->_tables['civicrm_address' ] = $this->_whereTables['civicrm_address' ] = 1;
 
         if ( $name == 'postal_code' ) {
-            $this->_where[$grouping][] = "{$field} {$op} '$val'"; 
-            $this->_qill[$grouping][] = ts('Postal code') . " - '$value'";
+            if ( $val ) {
+                $this->_where[$grouping][] = "{$field} {$op} '$val'"; 
+                $this->_qill[$grouping][] = ts('Postal code') . " - '$value'";
+            } else {
+                $this->_where[$grouping][] = "{$field} {$op}"; 
+                $this->_qill[$grouping][] = ts('Postal code') . " {$op}";
+            }
         } else if ( $name =='postal_code_low') { 
             $this->_where[$grouping][] = " ( $field >= '$val' ) ";
             $this->_qill[$grouping][] = ts('Postal code greater than or equal to \'%1\'', array( 1 => $value ) );
@@ -2793,12 +2817,12 @@ WHERE  id IN ( $groupIDs )
         if ( ($name == 'birth_date_low') ||($name == 'birth_date_high') ) {
           
             $this->dateQueryBuilder( $values,
-                                     'contact_a', 'birth_date', 'birth_date', ts('Birth Date'), false );
+                                     'contact_a', 'birth_date', 'birth_date', ts('Birth Date') );
     
         } else if( ($name == 'deceased_date_low') ||($name == 'deceased_date_high') ) {
           
             $this->dateQueryBuilder( $values,
-                                     'contact_a', 'deceased_date', 'deceased_date', ts('Deceased Date'), false );
+                                     'contact_a', 'deceased_date', 'deceased_date', ts('Deceased Date') );
         }
        
     }
@@ -3162,7 +3186,7 @@ WHERE  id IN ( $groupIDs )
 
         // hack for now, add permission only if we are in search
         // FIXME: we should actually filter out deleted contacts (unless requested to do the opposite)
-        $permission = ' ( 1 ) ';
+        $permission = ' ( 1 ) ';        
         $onlyDeleted = in_array(array('deleted_contacts', '=', '1', '0', '0'), $this->_params);
 
         // if we’re explicitely looking for a certain contact’s contribs, events, etc.
@@ -3179,7 +3203,7 @@ WHERE  id IN ( $groupIDs )
 
         if ( ! $this->_skipPermission ) {
             require_once 'CRM/ACL/API.php';
-            $permission = CRM_ACL_API::whereClause( CRM_Core_Permission::VIEW, $this->_tables, $this->_whereTables, null, $onlyDeleted );
+            $permission = CRM_ACL_API::whereClause( CRM_Core_Permission::VIEW, $this->_tables, $this->_whereTables, null, $onlyDeleted, $this->_skipDeleteClause );
             // CRM_Core_Error::debug( 'p', $permission );
             // CRM_Core_Error::debug( 't', $this->_tables );
             // CRM_Core_Error::debug( 'w', $this->_whereTables );
@@ -3318,7 +3342,7 @@ WHERE  id IN ( $groupIDs )
             $groupBy = 'GROUP BY civicrm_activity.id ';
         }
         $query = "$select $from $where $groupBy $order $limit";
-        // CRM_Core_Error::debug('query', $query);
+        //CRM_Core_Error::debug('query', $query); exit();
 
         if ( $returnQuery ) {
             return $query;

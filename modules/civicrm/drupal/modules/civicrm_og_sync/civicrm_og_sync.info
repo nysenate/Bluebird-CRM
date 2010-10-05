@@ -1,5 +1,5 @@
 name = CiviCRM OG Sync
-description = Synchronize Organic Groups and CiviCRM Groups and ACL's. More information at: http://wiki.civicrm.org/confluence//x/nDw
+description = Synchronize Organic Groups and CiviCRM Groups and ACL's. More information at: http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+vs.+Organic+Groups
 version = 3.1
 dependencies[] = civicrm
 dependencies[] = og

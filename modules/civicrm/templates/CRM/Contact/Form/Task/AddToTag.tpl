@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,6 +35,7 @@
             {foreach from=$form.tag item="tag_val"}
                 <div class="{cycle values="odd-row,even-row"}">
                 {$tag_val.html}
+                </div>
             {/foreach}
             </div>
         </td>

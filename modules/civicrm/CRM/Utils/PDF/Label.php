@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -220,7 +220,7 @@ class CRM_Utils_PDF_Label extends TCPDF {
     function generateLabel($var) {
         //wrap the text if it's width is greater than maxwidth 
 //      $this->wordWrap( $texte, $maxwidth); not supported by TCPDF, which does its own wrapping
-      $this->MultiCell($this->width, $this->lineHeight, $var);
+        $this->MultiCell($this->width, $this->lineHeight, $var, '', 'L');
     }
 
  

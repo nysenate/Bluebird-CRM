@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -240,7 +240,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
                                              $statuses, $returnProperties );
             
             require_once 'CRM/Contribute/PseudoConstant.php';
-            $paymentStatusTypes = CRM_Contribute_PseudoConstant::contributionStatus( );
+            $paymentStatusTypes = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
             $duePayment = false;
             foreach ( $statuses as $payId => $value ) {
                 if ( $paymentStatusTypes[$value['status_id']] == 'Overdue' ) {
@@ -262,6 +262,12 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
             $this->_defaults = array_merge( $this->_defaults, $getDefaults );
         }
 
+        $config = CRM_Core_Config::singleton( );
+        // set default country from config if no country set
+        if ( !CRM_Utils_Array::value("billing_country_id-{$this->_bltID}", $this->_defaults ) ) { 
+            $this->_defaults["billing_country_id-{$this->_bltID}"] = $config->defaultContactCountry;
+        }
+        
         // now fix all state country selectors
         require_once 'CRM/Core/BAO/Address.php';
         CRM_Core_BAO_Address::fixAllStateSelects( $this, $this->_defaults );
@@ -296,6 +302,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         $this->applyFilter('__ALL__', 'trim');
         $this->add( 'text', "email-{$this->_bltID}",
                     ts( 'Email Address' ), array( 'size' => 30, 'maxlength' => 60 ), true );
+        $this->addRule( "email-{$this->_bltID}", ts('Email is not valid.'), 'email' );
         
          //build pledge block.
 
@@ -625,9 +632,11 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         
         $units    = array( );
         $unitVals = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $this->_values['recur_frequency_unit'] );
+        $frequencyUnits = CRM_Core_OptionGroup::values( 'recur_frequency_units' );
         foreach ( $unitVals as $key => $val ) {
-            // FIXME: this is not localisable
-            $units[$val] = $this->_values['is_recur_interval'] ? "{$val}(s)" : $val;
+            if ( array_key_exists( $val, $frequencyUnits ) ) {
+                $units[$val] = $this->_values['is_recur_interval'] ? "{$frequencyUnits[$val]}(s)" : $frequencyUnits[$val];
+            }
         }
 
         $frequencyUnit =& $this->add( 'select', 'frequency_unit', null, $units );
@@ -882,7 +891,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
                 $customizedValue = CRM_Core_OptionGroup::getValue( $greeting, 'Customized', 'name' ); 
                 if( $customizedValue  == $greetingType && 
                     ! CRM_Utils_Array::value( $customizedGreeting, $fields ) ) {
-                    $errors[$customizedGreeting] = ts( 'Custom  %1 is a required field if %1 is of type Customized.', 
+                    $errors[$customizedGreeting] = ts( 'Custom %1 is a required field if %1 is of type Customized.', 
                                                        array( 1 => ucwords(str_replace('_'," ", $greeting) ) ) );
                 }
             }
@@ -989,8 +998,8 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
                     $this->set( 'contributeMode', 'express' ); 
                     
                     $donateURL = CRM_Utils_System::url( 'civicrm/contribute', '_qf_Contribute_display=1' ); 
-                    $params['cancelURL' ] = CRM_Utils_System::url( 'civicrm/contribute/transact', '_qf_Main_display=1', true, null, false ); 
-                    $params['returnURL' ] = CRM_Utils_System::url( 'civicrm/contribute/transact', '_qf_Confirm_display=1&rfp=1', true, null, false ); 
+                    $params['cancelURL' ] = CRM_Utils_System::url( 'civicrm/contribute/transact', "_qf_Main_display=1&qfKey={$params['qfKey']}", true, null, false ); 
+                    $params['returnURL' ] = CRM_Utils_System::url( 'civicrm/contribute/transact', "_qf_Confirm_display=1&rfp=1&qfKey={$params['qfKey']}", true, null, false ); 
                     $params['invoiceID' ] = $invoiceID;
 
                     //default action is Sale

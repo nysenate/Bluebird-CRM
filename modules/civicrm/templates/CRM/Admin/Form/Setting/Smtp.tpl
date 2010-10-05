@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -65,9 +65,8 @@
                            <span class="description">{ts}If your SMTP server requires authentication, enter your Username and Password here.{/ts}</span>
                        </td>
                     </tr>
-                    <div class="spacer"></div>
-              </fieldset> 
-           </table>
+                </table>
+           </fieldset>
         </div>
         <div id="bySendmail" class="mailoption">
             <fieldset>
@@ -84,41 +83,43 @@
                         <td>{$form.sendmail_args.html}</td>
                      </tr>
                     </table>
-                     <div class="spacer"></div>
             </fieldset>
-          
         </div>
+        <div class="spacer"></div>
         <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}
          &nbsp;&nbsp;&nbsp;{$form._qf_Smtp_refresh_test.html}</div>
-       
-    </fieldset>
 </div>    
 
 {literal}
 <script type="text/javascript">
     cj( function( ) {
-        $('.mailoption').hide();
-        cj("input[name='outBound_option']").click( function( ) {
-        switch(cj(this).val()) {
-          case "0":
-            show("bySMTP");
-            hide("bySendmail");
-            cj("#_qf_Smtp_refresh_test").show( );
-          break;
-          case "1":
-            hide("bySMTP");
-            show("bySendmail");
-            cj("#_qf_Smtp_refresh_test").show( );
-          break;
-          case "3":
-            $('.mailoption').hide();
-            cj("#_qf_Smtp_refresh_test").show( );
-          break;
-          default:
-            hide("bySMTP");
-            hide("bySendmail");
-            cj("#_qf_Smtp_refresh_test").hide( );
+        showHideMailOptions( cj("input[name='outBound_option']:checked").val( ) ) ;
+        
+        function showHideMailOptions( value ) {
+            switch( value ) {
+              case "0":
+                cj("#bySMTP").show( );
+                cj("#bySendmail").hide( );
+                cj("#_qf_Smtp_refresh_test").show( );
+              break;
+              case "1":
+                cj("#bySMTP").hide( );
+                cj("#bySendmail").show( );
+                cj("#_qf_Smtp_refresh_test").show( );
+              break;
+              case "3":
+                cj('.mailoption').hide();
+                cj("#_qf_Smtp_refresh_test").show( );
+              break;
+              default:
+                cj("#bySMTP").hide( );
+                cj("#bySendmail").hide( );
+                cj("#_qf_Smtp_refresh_test").hide( );
+            }
         }
+        
+        cj("input[name='outBound_option']").click( function( ) {
+            showHideMailOptions( cj(this).val( ) );
         });
     });
     
