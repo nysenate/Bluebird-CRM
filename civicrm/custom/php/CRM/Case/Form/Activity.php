@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -138,8 +138,8 @@ class CRM_Case_Form_Activity extends CRM_Activity_Form_Activity
             }
         }
         
-        $caseType  = CRM_Case_PseudoConstant::caseTypeName( $this->_caseId );
-        $this->_caseType  = $caseType['name'];
+        $caseType  = CRM_Case_BAO_Case::getCaseType( $this->_caseId, 'name' );
+        $this->_caseType = $caseType;
         $this->assign('caseType', $this->_caseType);
 
         require_once 'CRM/Case/XMLProcessor/Process.php';
@@ -287,7 +287,12 @@ class CRM_Case_Form_Activity extends CRM_Activity_Form_Activity
                       
         $this->_relatedContacts = CRM_Case_BAO_Case::getRelatedAndGlobalContacts( $this->_caseId );
         //add case client in send a copy selector.CRM-4438.
-        $this->_relatedContacts[] = CRM_Case_BAO_Case::getContactNames( $this->_caseId );
+        $relatedContacts = CRM_Case_BAO_Case::getContactNames( $this->_caseId );
+        if ( !empty( $relatedContacts ) ) { 
+            foreach ( $relatedContacts as $relatedContact) { 
+                $this->_relatedContacts[] = $relatedContact;
+            }
+        }
         
         if ( ! empty($this->_relatedContacts) ) {
             $checkBoxes = array( );
@@ -409,7 +414,7 @@ class CRM_Case_Form_Activity extends CRM_Activity_Form_Activity
         $isMultiClient = $xmlProcessorProcess->getAllowMultipleCaseClients( );
         $this->assign( 'multiClient', $isMultiClient );
         
-        $targetContacts = array( );
+        $targetContacts =  array( $this->_currentlyViewedContactId );
         if ( CRM_Utils_Array::value( 'hidden_target_contact', $params ) && 
              CRM_Utils_Array::value( 'target_contact_id', $params ) ) {
             $targetContacts = array_unique( explode( ',', $params['target_contact_id'] ) );
@@ -465,11 +470,16 @@ class CRM_Case_Form_Activity extends CRM_Activity_Form_Activity
             
             // always create a revision of an case activity. CRM-4533
             $newActParams = $params;
+            
+            // add target contact values in update mode
+            if ( empty($params['target_contact_id']) && !empty( $this->_defaults['target_contact'] ) ) {
+                $newActParams['target_contact_id'] = $this->_defaults['target_contact'];
+            }
                       
             // record status for status msg
             $recordStatus = 'updated';
         }
-        
+                
         if ( ! isset($newActParams) ) {
             // add more attachments if needed for old activity
             CRM_Core_BAO_File::formatAttachment( $params,
@@ -514,6 +524,7 @@ class CRM_Case_Form_Activity extends CRM_Activity_Form_Activity
             // call begin post process, before the activity is created/updated.
             $this->beginPostProcess( $newActParams );
             $newActParams['case_id'] = $this->_caseId;
+                        
             $activity = CRM_Activity_BAO_Activity::create( $newActParams );
             
             // call end post process, after the activity has been created/updated.

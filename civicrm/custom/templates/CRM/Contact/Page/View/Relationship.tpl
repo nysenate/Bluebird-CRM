@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -153,10 +153,10 @@
 {* end of code to show inactive relationships *}
 
 
+</div>
 {/if} {* close of custom data else*}
 
 {if $searchRows }
  {*include custom data js file*}
  {include file="CRM/common/customData.tpl"}
 {/if}
-</div>

@@ -732,7 +732,7 @@ WHERE  ce.on_hold = 0 AND cc.is_deceased = 0 AND cc.do_not_email = 0 AND {$query
             $addCount = 1; 
         }
         $sortMapper = array( 1 => 'sort_name', (2+$addCount) => 'address', (3+$addCount) => 'city', (4+$addCount) => 'state_province', 
-                             (5+$addCount) => 'email', (6+$addCount) => 'phone' ); //NYSS
+                             (5+$addCount) => 'email', (6+$addCount) => 'phone' ); //NYSS - LCD include address in case resources listing
            
         $sEcho       = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
         $offset      = isset($_REQUEST['iDisplayStart'])? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer'):0;
@@ -800,7 +800,7 @@ WHERE  ce.on_hold = 0 AND cc.is_deceased = 0 AND cc.do_not_email = 0 AND {$query
                                                              $result->contact_sub_type : $result->contact_type, false, $contactID );
                 $searchRows[$contactID]['id']    = $contactID;
                 $searchRows[$contactID]['name']  = $typeImage.' '.$result->sort_name;
-                $searchRows[$contactID]['address']  = $result->street_address; //NYSS
+                $searchRows[$contactID]['address']  = $result->street_address; //NYSS - LCD include address in case resources listing
 				$searchRows[$contactID]['city']  = $result->city;
                 $searchRows[$contactID]['state'] = $result->state_province;
                 $searchRows[$contactID]['email'] = $result->email;
@@ -824,7 +824,7 @@ WHERE  ce.on_hold = 0 AND cc.is_deceased = 0 AND cc.do_not_email = 0 AND {$query
         } elseif ( $typeName == 'Employer of' ) {
             $selectorElements[] = 'employer_of';
         }
-        $selectorElements = array_merge( $selectorElements, array( 'address', 'city', 'state', 'email', 'phone' ) ); //NYSS
+        $selectorElements = array_merge( $selectorElements, array( 'address', 'city', 'state', 'email', 'phone' ) ); //NYSS - LCD
        
         $iFilteredTotal = $iTotal;
         echo CRM_Utils_JSON::encodeDataTableSelector( $searchRows, $sEcho, $iTotal, $iFilteredTotal, $selectorElements );

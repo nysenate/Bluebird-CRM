@@ -107,5 +107,6 @@
 	    {ts 1=$findCasesURL}There are no cases with activities scheduled in the past two weeks. Use %1 to expand your search.{/ts}
         </div>
     {/if}
+
 {/if}
 </div>
