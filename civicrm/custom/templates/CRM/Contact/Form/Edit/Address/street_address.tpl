@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -50,15 +50,13 @@
                </td>
                
                <td colspan="2">
-                  {$form.address.$blockId.street_unit.label}x<br />       
+                  {$form.address.$blockId.street_unit.label}<br />       
                   {$form.address.$blockId.street_unit.html}
                   <a href="#" title="{ts}Edit Street Address{/ts}" onClick="processAddressFields( 'streetAddress', '{$blockId}', 1 );return false;">{ts}Edit Complete Street Address{/ts}</a>
                   {help id="id-edit-complete-street" file="CRM/Contact/Form/Contact.hlp"} 
                </td>
            </tr>
     {/if}
-
-<!--{if $smarty.get.lcd eq 1}{$allAddressFieldValues}{/if}-->
 
 {if $parseStreetAddress eq 1}
 {literal}
@@ -86,13 +84,13 @@ function processAddressFields( name, blockId, loadData ) {
 	var showBlockName = '';
 	var hideBlockName = '';
 
-    if ( name == 'addressElements' ) {
-    	if ( loadData ) {
-	    	streetAddress = '';
-	    } 
-		/*{/literal}{if $smarty.get.lcd eq 1}{literal}alert(streetAddress);{/literal}{/if}{literal}*/
-    	showBlockName = 'addressElements_' + blockId;		   
-		hideBlockName = 'streetAddress_' + blockId;
+        if ( name == 'addressElements' ) {
+             if ( loadData ) {
+	          streetAddress = '';
+	     }
+	     
+             showBlockName = 'addressElements_' + blockId;		   
+	     hideBlockName = 'streetAddress_' + blockId;
 	} else {
         if ( loadData ) {
         	streetNumber = streetName = streetUnit = ''; 

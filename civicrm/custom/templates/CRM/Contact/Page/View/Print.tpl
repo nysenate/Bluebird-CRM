@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -44,7 +44,7 @@
        <span class="element-right"><input onclick="window.print()" class="form-submit default" name="_qf_Print_next" value="{ts}Print{/ts}" type="submit" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="form-submit" name="_qf_Print_back" value="{ts}Done{/ts}" type="submit" /></span>
   </div>
 </form>
-
+<h3 style="margin: .25em;">{$display_name}</h3>
 {include file="CRM/Contact/Page/View/Summary.tpl"}
 <form action="{crmURL p='civicrm/contact/view' q="&cid=`$contactId`&reset=1"}" method="post" id="Print2" >
   <div class="form-item">

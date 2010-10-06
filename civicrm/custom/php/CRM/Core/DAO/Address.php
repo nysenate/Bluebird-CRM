@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -321,7 +321,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_INT,
                     'title' => ts('Street Number') ,
                     'export' => true,
-					'import' => true, //NYSS
+					'import' => true, //NYSS - LCD include parsed address fields in import
                     'where' => 'civicrm_address.street_number',
                     'headerPattern' => '',
                     'dataPattern' => '',
@@ -351,7 +351,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                     'maxlength' => 64,
                     'size' => CRM_Utils_Type::BIG,
                     'export' => true,
-					'import' => true, //NYSS
+					'import' => true, //NYSS - LCD
                     'where' => 'civicrm_address.street_name',
                     'headerPattern' => '',
                     'dataPattern' => '',
@@ -377,7 +377,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                     'maxlength' => 16,
                     'size' => CRM_Utils_Type::TWELVE,
                     'export' => true,
-					'import' => true, //NYSS
+					'import' => true, //NYSS - LCD
                     'where' => 'civicrm_address.street_unit',
                     'headerPattern' => '',
                     'dataPattern' => '',
@@ -385,7 +385,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                 'supplemental_address_1' => array(
                     'name' => 'supplemental_address_1',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Mailing Address') , //NYSS
+                    'title' => ts('Mailing Address') , //NYSS - LCD
                     'maxlength' => 96,
                     'size' => CRM_Utils_Type::HUGE,
                     'import' => true,
@@ -397,7 +397,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                 'supplemental_address_2' => array(
                     'name' => 'supplemental_address_2',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Building') , //NYSS
+                    'title' => ts('Building') , //NYSS - LCD
                     'maxlength' => 96,
                     'size' => CRM_Utils_Type::HUGE,
                     'import' => true,

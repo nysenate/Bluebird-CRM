@@ -223,22 +223,6 @@
      <page_callback>CRM_Dashlet_Page_Activity</page_callback>
   </item>
   <item>
-     <path>civicrm/dashlet/myCases</path>
-     <title>Case Dashlet</title>
-     <page_callback>CRM_Dashlet_Page_myCases</page_callback>
-  </item>
-  <item>
-     <path>civicrm/dashlet/twitter</path>
-     <title>Twitter</title>
-     <page_callback>CRM_Dashlet_Page_Twitter</page_callback>
-  </item>  
-  <item>
-     <path>civicrm/dashlet/allCases</path>
-     <title>All Cases Dashlet</title>
-     <page_callback>CRM_Dashlet_Page_allCases</page_callback>
-     <access_arguments>access all cases and activities</access_arguments>
-  </item>  
-  <item>
     <path>civicrm/ajax/state</path>
     <page_callback>CRM_Core_Page_AJAX_Location::state</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
@@ -257,6 +241,7 @@
      <path>civicrm/ajax/relation</path>
      <page_callback>CRM_Contact_Page_AJAX::relationship</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
+     <page_type>3</page_type>
 </item>
 <item>
      <path>civicrm/ajax/groupTree</path>
@@ -277,11 +262,13 @@
      <path>civicrm/ajax/customvalue</path>
      <page_callback>CRM_Contact_Page_AJAX::deleteCustomValue</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
+     <page_type>3</page_type>
 </item>
 <item>
      <path>civicrm/ajax/ed</path>
      <page_callback>CRM_Contact_Page_AJAX::enableDisable</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
+     <page_type>3</page_type>
 </item>
 <item>
      <path>civicrm/ajax/cmsuser</path>
@@ -307,6 +294,7 @@
      <path>civicrm/ajax/dashboard</path>
      <page_callback>CRM_Contact_Page_AJAX::dashboard</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
+     <page_type>3</page_type>
 </item>
 <item>
      <path>civicrm/ajax/signature</path>
@@ -317,5 +305,37 @@
      <path>civicrm/ajax/relationshipcontacts</path>
      <page_callback>CRM_Contact_Page_AJAX::relationshipContacts</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
+</item>
+<item>
+   <path>civicrm/dashlet/myCases</path>
+   <title>Case Dashlet</title>
+   <page_callback>CRM_Dashlet_Page_MyCases</page_callback>
+</item>
+<item>
+   <path>civicrm/dashlet/allCases</path>
+   <title>All Cases Dashlet</title>
+   <page_callback>CRM_Dashlet_Page_AllCases</page_callback>
+   <access_arguments>access all cases and activities</access_arguments>
+</item> 
+<item>
+   <path>civicrm/contact/deduperules</path>
+   <title>Find and Merge Duplicate Contacts</title>
+   <desc>Manage the rules used to identify potentially duplicate contact records. Scan for duplicates using a selected rule and merge duplicate contact data as needed.</desc>
+   <page_callback>CRM_Contact_Page_DedupeRules</page_callback>
+   <access_arguments>administer dedupe rules;merge duplicate contacts</access_arguments>
+   <adminGroup>Manage</adminGroup>
+   <icon>admin/small/duplicate_matching.png</icon>
+   <weight>105</weight>
+</item>
+<item>
+   <path>civicrm/contact/dedupefind</path>
+   <title>Find and Merge Duplicate Contacts</title>
+   <page_callback>CRM_Contact_Page_DedupeFind</page_callback>
+   <access_arguments>merge duplicate contacts</access_arguments>
+</item>
+<item>
+   <path>civicrm/dashlet/twitter</path>
+   <title>Twitter</title>
+   <page_callback>CRM_Dashlet_Page_Twitter</page_callback>
 </item>
 </menu>

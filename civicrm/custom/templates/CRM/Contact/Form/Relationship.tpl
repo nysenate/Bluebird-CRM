@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -69,10 +69,9 @@
             {/if}
            
             <tr><td class="label">{ts}Status{/ts}</td><td>{if $row.is_active}{ts}Enabled{/ts} {else} {ts}Disabled{/ts}{/if}</td></tr>
-
-            {include file="CRM/Custom/Page/CustomDataView.tpl"}
         {/foreach}
         </table>
+        {include file="CRM/Custom/Page/CustomDataView.tpl"}
         <div class="crm-submit-buttons"><input type="button" name='cancel' value="{ts}Done{/ts}" onclick="location.href='{crmURL p='civicrm/contact/view' q='action=browse&selectedChild=rel'}';"/></div>
         </div>
   {/if}
@@ -105,11 +104,12 @@
                 <td><label>{$sort_name_b}</label></td></tr>
                 <tr class="crm-relationship-form-block-is_current_employer">
                   <td class="label">
-                     <div id="employee"><label>{ts}Current Employee?{/ts}</label></div>
-                     <div id="employer"><label>{ts}Current Employer?{/ts}</label></div>
+                     <span id="employee"><label>{ts}Current Employee?{/ts}</label></span>
+                     <span id="employer"><label>{ts}Current Employer?{/ts}</label></span>
                   </td>
                   <td id="current_employer">{$form.is_current_employer.html}</td>
-                </tr>  
+                </tr>
+             </table>  
             {else} {* action = add *}
              </tr>
              <tr class="crm-relationship-form-block-rel_contact">

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -47,7 +47,7 @@
   {/if}
  </div>
  <div class="crm-accordion-body">
-  { include file="CRM/Contact/Form/Search/AdvancedCriteria.tpl" }
+  {include file="CRM/Contact/Form/Search/AdvancedCriteria.tpl"}
  </div>
 </div>  
 </div>

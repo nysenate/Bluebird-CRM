@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -149,7 +149,9 @@
                         {/if}
                         {if $contactTag OR $source}
                         <tr>
+                            {if $contactTag}
                             <td class="label" id="tagLink"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId&selectedChild=tag"}" title="{ts}Edit Tags{/ts}">{ts}Tags{/ts}</a></td><td id="tags">{$contactTag}</td>
+                            {/if}
                             {if $source}
                             <td class="label">{ts}Source{/ts}</td><td>{$source}</td>
                             {/if}
@@ -299,9 +301,11 @@
                                 <tr>
                                     <td class="label">{ts}Preferred Method(s){/ts}</td><td>{$preferred_communication_method_display}</td>
                                 </tr>
+                                {if $preferred_language}
                                 <tr>
                                     <td class="label">{ts}Preferred Language{/ts}</td><td>{$preferred_language}</td>
                                 </tr>
+                                {/if}
                                 <tr>
                                     <td class="label">{ts}Email Format{/ts}</td><td>{$preferred_mail_format}</td>
                                 </tr>
@@ -353,7 +357,20 @@
                         <div class="clear"></div>
                     </div>
                 </div>
-                
+                {literal}
+                <script type="text/javascript">
+                    cj('.columnheader').click( function( ) {
+                        var aTagObj = cj(this).find('a');
+                        if ( aTagObj.hasClass( "expanded" ) ) {
+                            cj(this).parent().find('tr:not(".columnheader")').hide( );
+                        } else {    
+                            cj(this).parent().find('tr:not(".columnheader")').show( );
+                        }
+                        aTagObj.toggleClass("expanded");
+                        return false;
+                    });
+                </script>
+                {/literal}
                 {if $hookContent and $hookContentPlacement eq 1}
                     {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
                 {/if}
@@ -371,9 +388,14 @@
  function fixTabAbort(event,ui){
 //	jQuery(ui.tab).data("cache.tabs",(jQuery(ui.panel).html() == "") ? false : true);
     }
+
+//explicitly stop spinner
+function stopSpinner( ) {
+ cj('li.crm-tab-button').each(function(){ cj(this).find('span').text(' ');})	 
+}
  cj( function() {
      var tabIndex = cj('#tab_' + selectedTab).prevAll().length;
-     cj("#mainTabContainer").tabs({ selected: tabIndex, spinner: spinnerImage,cache: true, select: fixTabAbort});
+     cj("#mainTabContainer").tabs({ selected: tabIndex, spinner: spinnerImage,cache: true, select: fixTabAbort, load: stopSpinner});
      cj(".crm-tab-button").addClass("ui-corner-bottom");     
  });
  {/literal}

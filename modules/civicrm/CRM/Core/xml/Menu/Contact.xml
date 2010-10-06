@@ -333,4 +333,9 @@
    <page_callback>CRM_Contact_Page_DedupeFind</page_callback>
    <access_arguments>merge duplicate contacts</access_arguments>
 </item>
+<item>
+   <path>civicrm/dashlet/twitter</path>
+   <title>Twitter</title>
+   <page_callback>CRM_Dashlet_Page_Twitter</page_callback>
+</item>
 </menu>

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -50,21 +50,32 @@
 		</td><td>
 		<table class="form-layout-compressed">
             {foreach from=$blocks item="label" key="block"}
-               { include file="CRM/Contact/Form/Edit/$block.tpl" }
+               {include file="CRM/Contact/Form/Edit/$block.tpl"}
             {/foreach}
 		</table>
-		<table class="form-layout-compressed">
+		<table class="crm-section contact_source-section form-layout-compressed">
             <tr class="last-row">
               <td>{$form.contact_source.label}<br />
-                  {$form.contact_source.html}
+                  {$form.contact_source.html|crmReplace:class:twenty}
               </td>
               <td>{$form.external_identifier.label}<br />
-                  {$form.external_identifier.html}
+                  {$form.external_identifier.html|crmReplace:class:six}
               </td>
               {if $contactId}
 				<td><label for="internal_identifier">{ts}Internal Id{/ts}</label><br />{$contactId}</td>
 			  {/if}
             </tr>            
+        </table>
+	   <table class="image_URL-section form-layout-compressed">
+	    <tr>
+	        <td>
+    	        {$form.image_URL.label}<br />
+    	        {$form.image_URL.html|crmReplace:class:twenty}
+     	        {if $imageURL}
+     	            {include file="CRM/Contact/Page/ContactImage.tpl"}
+     	        {/if}
+ 	        </td>
+ 	    </tr>
         </table>
         </td>
         </tr>
@@ -168,8 +179,8 @@ cj('a#expand').click( function( ){
         cj(this).attr('href', '#expand');
     }
     cj(this).html(message);
+    return false;
 });
-
 
 function showHideSignature( blockId ) {
     cj('#Email_Signature_' + blockId ).toggle( );   

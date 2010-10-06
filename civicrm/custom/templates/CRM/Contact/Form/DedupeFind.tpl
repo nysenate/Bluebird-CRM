@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -12,7 +12,7 @@
  |                                                                    |
  | CiviCRM is distributed in the hope that it will be useful, but     |
  | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               | 
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
  | See the GNU Affero General Public License for more details.        |
  |                                                                    |
  | You should have received a copy of the GNU Affero General Public   |
@@ -23,44 +23,16 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{if $title}
-<div class="crm-accordion-wrapper crm-tagGroup-accordion crm-accordion-closed">
- <div class="crm-accordion-header">
-  <div class="icon crm-accordion-pointer"></div> 
-	{$title} 
-  </div><!-- /.crm-accordion-header -->
-  <div class="crm-accordion-body" id="tagGroup">
-{/if}
-    <table class="form-layout-compressed" style="width:98%">
-	<tr><td>{include file="CRM/common/Tag.tpl"}</td></tr>
-	<tr>
-	    {foreach key=key item=item from=$tagGroup}
-		{* $type assigned from dynamic.tpl *}
-		{if !$type || $type eq $key }
-		<td width={cycle name=tdWidth values="70%","30%"}><span class="label">{if $title}{$form.$key.label}{/if}</span>
-		    <table id="tags">
-			{foreach key=k item=it from=$form.$key}
-			    {if $k|is_numeric}
-				<tr class={cycle values="'odd-row','even-row'" name=$key} id="tagid">
-				    <td>
-					<strong>{$it.html}</strong><br />
-					{if $item.$k.description}
-					    <div class="description">
-						{$item.$k.description}
-					    </div>
-					{/if}
-				    </td>
-				</tr>
-			    {/if}
-			{/foreach}   
-		    </table>
-		</td>
-		{/if}
-	    {/foreach}
-	</tr>
-    </table>   
-{if $title}
- </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
-
-{/if}
+<div class="crm-block crm-form-block crm-dedupe-find-form-block">
+<div id="help">
+    {ts}You can search all contacts for duplicates or limit the search to a specific group. After initiating the rule, please be patient as it may take some time to fully process.{/ts} 
+</div>
+   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
+   <table class="form-layout-compressed">
+     <tr class="crm-dedupe-find-form-block-group_id">
+       <td class="label">{$form.group_id.label}</td>
+       <td>{$form.group_id.html}</td>
+     </tr>
+   </table>
+  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+</div>

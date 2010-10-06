@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -42,7 +42,6 @@
 class CRM_Utils_Address_USPS {
     
     static function checkAddress( &$values ) {
-
         if ( ! isset($values['street_address'])     || 
                ( ! isset($values['city']           )   &&
                  ! isset($values['state_province'] )   &&
