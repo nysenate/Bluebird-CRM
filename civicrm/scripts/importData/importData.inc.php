@@ -316,6 +316,10 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     //initialize the org relationship for contact later
     $orgID = null;
 
+    //assume we are going to need to create a contact
+    //org may make contact creation not necessary
+    $createContact=true;
+
     if ($ctRow['RT'] == 7 || $ctRow['RT'] == 6) {
 
       //generate the key, based on: name and full address
@@ -372,19 +376,30 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
           exit("Error: I/O failure: address");
         }
 
-        //increase contactID for individual  
-        ++$contactID;
+        //increase contactID for individual if we're going to need to create a new one
+	if (!empty($ctRow['FIRST']) || !empty($ctRow['LAST'])) {
+      		++$contactID;
+		$createContact=true;
+	} else {
+		$createContact=false;
+	}
       }
 
-      //write out the relationship
-      $params = array();
-      $params['contact_id_a'] = $contactID;
-      $params['contact_id_b'] = $orgID;
-      $params['relationship_type_id'] = $aRelLookup['employeeOf'];
-      if (!writeToFile($fout['relationship'], $params)) {
-        exit("Error: I/O failure: relationship");
-      }
-    }
+      if ($createContact) {
+
+	//write out the relationship
+	//the individual ontact for the relationship is going to happen further down, but
+	//we can already create the relationship since contactID was increased above
+      	$params = array();
+      	$params['contact_id_a'] = $contactID;
+      	$params['contact_id_b'] = $orgID;
+      	$params['relationship_type_id'] = $aRelLookup['employeeOf'];
+
+      	if (!writeToFile($fout['relationship'], $params)) {
+        	exit("Error: I/O failure: relationship");
+      	}
+      } //createContact
+    } //has org
 
     //map civi id to external id for relationships
     //in case relationship parent does not precede current row.
@@ -420,14 +435,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       }
     }
 
-    //if this was just an org entry and there is not contact associated, skip the rest
-    if ($orgID!=null && empty($ctRow['FIRST']) && empty($ctRow['LAST'])) {
-      //get the next contact
-      $ctRow = getLineAsAssocArray($infiles['contacts'], DELIM, $omis_ct_fields);
-      //continue the loop
-      continue;
-    }
-
+   if ($createContact) {
     $params = array();
     $params['id'] = $contactID;
     $params['contact_type'] = 'Individual';
@@ -498,6 +506,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     if (!writeToFile($fout['contact'], $params)) {
       exit("Error: I/O failure: contact");
     }
+   } //createContact
 
     if ($omis_ext) {
       //concatenate custom fields into a note
