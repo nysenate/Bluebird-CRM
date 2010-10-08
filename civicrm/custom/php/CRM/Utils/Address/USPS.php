@@ -53,8 +53,9 @@ class CRM_Utils_Address_USPS {
         $userID = CRM_Core_BAO_Preferences::value( 'address_standardization_userid' );
         $url    = CRM_Core_BAO_Preferences::value( 'address_standardization_url'    );
 
-        if ( empty( $userID ) ||
-             empty( $url ) ) {
+        // $url = "http://production.shippingapis.com/shippingapi.dll";
+
+        if ( empty( $userID ) || empty( $url ) ) {
             return false;
         }
 
