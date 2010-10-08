@@ -6,13 +6,13 @@
 ** Authors: Vishal Mudi, Ken Zalewski
 ** Organization: New York State Senate
 ** Date: 2010-10-04
-** Revised: 2010-10-06
+** Revised: 2010-10-08
 **
 ** Note: The $maintenance_message variable should be set by the script
 **       that is including this one.
 */
 $theme_path = path_to_theme();
-$image_dir = "$theme_path/nyss_skin/images";
+$image_dir = "/$theme_path/nyss_skin/images";
 ?>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
