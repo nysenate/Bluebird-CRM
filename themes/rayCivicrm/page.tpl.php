@@ -95,10 +95,11 @@
   	<a href="<?php print base_path(); ?>logout" class="logout">
   		<div class="icon logout-icon"></div> Logout 
   	</a>
+        <div class="icon settings-icon"></div><span style="color:#4EBAFF;"> <?php echo $role; ?> </span>
   	</div>
   	<div class="account-info-wrapper">
   		<div class="account-info">
-  		<div class="greeting">
+  			<div class="greeting">
 <?php
 $morning = "Good Morning";
 $afternoon = "Good Afternoon";
@@ -113,10 +114,9 @@ $now = time() + (60 * 60 * $offset);
 	}else{ echo $night; }
 			
 ?>,
-  		</div>
-  		
+  			</div>
   			<div class="user-name">
-  				<?php print $user->name; ?> !
+  				<?php print $user->name; ?>
   			</div>
   		</div>
   	</div>
@@ -126,19 +126,17 @@ $now = time() + (60 * 60 * $offset);
 
       if ($tabs != '') {
         print '<div class="tabs">'. $tabs .'</div>';
-      }
-
-      
-      
-         
+      }         
 
       print $help; // Drupal already wraps this one in a class      
-
+      ?>
+     <!-- <div class="crm-title">
+		<h1 class="title"><?php print $title; ?></h1>
+      </div> -->
+    <?php 
       print $content;
       print $feed_icons;
     ?>
-
-
 
   <?php print $closure; ?>
 
