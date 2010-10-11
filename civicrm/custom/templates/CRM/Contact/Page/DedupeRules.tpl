@@ -56,7 +56,7 @@
                         <td></td>
                     {/if}
                     <td>{*$row.action|replace:'xx':$row.id*}{*Limit dedupe actions to run rule only.*}
-                    	<a href="/nyss/civicrm/admin/dedupefind?reset=1&rgid={$row.id}&action=preview">Run Dedupe Rule</a>
+                    	<a href="/civicrm/contact/dedupefind?reset=1&rgid={$row.id}&action=preview">Run Dedupe Rule</a>
                     </td>
                   </tr>
                 {/foreach}
