@@ -112,7 +112,7 @@
             {/foreach}
         </ul>
 
-        <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
+        <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if $viewCustomData.1.4097.fields.19.field_value eq "Yes<i>\n</i>"}friend-of-senator{/if}">
             {if $hookContentPlacement neq 3}
                 
                 {if $hookContent and $hookContentPlacement eq 2}
@@ -124,37 +124,95 @@
                     <table>
                         {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name}
                         <tr>
-                            <td class="label">{ts}Contact Type{/ts}</td>
-                            <td>{$contact_type_label}</td>
-                            {if $current_employer_id}
-                            <td class="label">{ts}Employer{/ts}</td>
-                            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$current_employer_id`"}" title="{ts}view current employer{/ts}">{$current_employer}</a></td>
+                            {if $nick_name}
+                                <td class="label">{ts}Nickname{/ts}</td>
+                                <td>
+                                    {$nick_name}
+                                </td>
                             {/if}
-                            {if $job_title}
-                            <td class="label">{ts}Position{/ts}</td>
-                            <td>{$job_title}</td>
-                            {/if}
-                            {if $legal_name}
-                            <td class="label">{ts}Legal Name{/ts}</td>
-                            <td>{$legal_name}</td>
-                            {if $sic_code}
-                            <td class="label">{ts}SIC Code{/ts}</td>
-                            <td>{$sic_code}</td>
-                            {/if}
-                            {elseif $nick_name}
-                            <td class="label">{ts}Nickname{/ts}</td>
-                            <td>{$nick_name}</td>
-                            {/if}
-                        </tr>
-                        {/if}
-                        {if $contactTag OR $source}
-                        <tr>
-                            {if $contactTag}
-                            <td class="label" id="tagLink"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId&selectedChild=tag"}" title="{ts}Edit Tags{/ts}">{ts}Tags{/ts}</a></td><td id="tags">{$contactTag}</td>
+                            {if $viewCustomData.1.4097.fields.60.field_value}
+                                <td class="label">
+                                   {$viewCustomData.1.4097.fields.60.field_title}
+                                </td>
+                                <td>
+                                   {$viewCustomData.1.4097.fields.60.field_value}
+                                </td>
                             {/if}
                             {if $source}
-                            <td class="label">{ts}Source{/ts}</td><td>{$source}</td>
+                                <td class="label">{ts}Other Source{/ts}</td><td>{$source}</td>
                             {/if}
+                            {if $legal_name}
+                                <td class="label">{ts}Legal Name{/ts}</td>
+                                <td>{$legal_name}</td>
+                            {/if}
+                            {if $sic_code}
+                                <td class="label">{ts}SIC Code{/ts}</td>
+                                <td>{$sic_code}</td>
+                            {/if}
+                            {if $viewCustomData.1.4097.fields.42.field_value}
+                                <td class="label">
+                                   {$viewCustomData.1.4097.fields.42.field_title}
+                                </td>
+                                <td>
+                                   {$viewCustomData.1.4097.fields.42.field_value}
+                                </td>
+                            {/if}
+                            <td class="label">{ts}Contact Type{/ts}</td>
+                            <td>{$contact_type_label}</td>
+                        </tr>
+                        {/if}
+                    </table>
+                    <table>
+                        {if $contactTag OR $source}
+                        <tr>
+                            {if $viewCustomData.1.4097.fields.58.field_value}
+                             <td class="label">
+                                {$viewCustomData.1.4097.fields.58.field_title}
+                             </td>
+                             <td>
+                                {$viewCustomData.1.4097.fields.58.field_value}
+                             </td>
+                            {/if}
+                            {if $viewCustomData.1.4097.fields.33.field_value}
+                             <td class="label">
+                                {$viewCustomData.1.4097.fields.33.field_title}
+                             </td>
+                             <td>
+                                {$viewCustomData.1.4097.fields.33.field_value}
+                             </td>
+                            {/if}
+                            {if $viewCustomData.1.4097.fields.34.field_value}
+                             <td class="label">
+                                {$viewCustomData.1.4097.fields.34.field_title}
+                             </td>
+                             <td>
+                                {$viewCustomData.1.4097.fields.34.field_value}
+                             </td>
+                            {/if}
+                            {if $viewCustomData.1.4097.fields.35.field_value}
+                             <td class="label">
+                                {$viewCustomData.1.4097.fields.35.field_title}
+                             </td>
+                             <td>
+                                {$viewCustomData.1.4097.fields.35.field_value}
+                             </td>
+                            {/if}
+                            {if $gender_display}
+                             <td class="label">
+                                Gender
+                             </td>
+                             <td>
+                                {if $gender_id neq "4"}
+                                    {$gender_display}
+                                {else}
+                                    {$viewCustomData.1.4097.fields.45.field_value}
+                                {/if}
+                             </td>
+                            {/if}
+                            <!-- {if $contactTag}
+                            <td class="label" id="tagLink"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId&selectedChild=tag"}" title="{ts}Edit Tags{/ts}">{ts}Tags{/ts}</a></td><td id="tags">{$contactTag}</td>
+                            {/if} -->
+                            
                         </tr>
                         {/if}
                     </table>
@@ -163,80 +221,7 @@
                 </div><!-- #contactTopBar -->
                 {/if}
                 <div class="contact_details">
-                    <div class="contact_panel">
-                        <div class="contactCardLeft">
-                            <table>
-                                {foreach from=$email key="blockId" item=item}
-                                    {if $item.email}
-                                    <tr>
-                                        <td class="label">{$item.location_type}&nbsp;{ts}Email{/ts}</td>
-                                        <td><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}><a href="mailto:{$item.email}">{$item.email}</a>{if $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}</span></td>
-					                    <td class="description">{if $item.signature_text OR $item.signature_html}<a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>{/if}</td>
-                                    </tr>
-                                    <tr id="Email_Block_{$blockId}_signature" class="hiddenElement">
-                                        <td><strong>{ts}Signature HTML{/ts}</strong><br />{$item.signature_html}<br /><br />
-                                        <strong>{ts}Signature Text{/ts}</strong><br />{$item.signature_text|nl2br}</td>
-                                        <td colspan="2"></td>
-                                    </tr>
-                                    {/if}
-                                {/foreach}
-                                {if $website}
-                                {foreach from=$website item=item}
-                                    {if $item.url}
-                                    <tr>
-                                        <td class="label">{$item.website_type}</td>
-                                        <td><a href="{$item.url}" target="_blank">{$item.url}</a></td>
-                                        <td></td>
-                                    </tr>
-                                    {/if}
-                                {/foreach}
-                                {/if}
-                                {if $user_unique_id}
-                                    <tr>
-                                        <td class="label">{ts}Unique Id{/ts}</td>
-                                        <td>{$user_unique_id}</td>
-                                        <td></td>
-                                    </tr>
-                                {/if}
-                            </table>
-                        </div><!-- #contactCardLeft -->
-
-                        <div class="contactCardRight">
-                            {if $phone OR $im OR $openid}
-                                <table>
-                                    {foreach from=$phone item=item}
-                                        {if $item.phone}
-                                        <tr>
-                                            <td class="label">{$item.location_type}&nbsp;{$item.phone_type}</td>
-                                            <td {if $item.is_primary eq 1}class="primary"{/if}><span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>{$item.phone}</span></td>
-                                        </tr>
-                                        {/if}
-                                    {/foreach}
-                                    {foreach from=$im item=item}
-                                        {if $item.name or $item.provider}
-                                        {if $item.name}<tr><td class="label">{$item.provider}&nbsp;({$item.location_type})</td><td {if $item.is_primary eq 1}class="primary"{/if}>{$item.name}</td></tr>{/if}
-                                        {/if}
-                                    {/foreach}
-                                    {foreach from=$openid item=item}
-                                        {if $item.openid}
-                                            <tr>
-                                                <td class="label">{$item.location_type}&nbsp;{ts}OpenID{/ts}</td>
-                                                <td {if $item.is_primary eq 1}class="primary"{/if}><a href="{$item.openid}">{$item.openid|mb_truncate:40}</a>
-                                                    {if $config->userFramework eq "Standalone" AND $item.allowed_to_login eq 1}
-                                                        <br/> <span style="font-size:9px;">{ts}(Allowed to login){/ts}</span>
-                                                    {/if}
-                                                </td>
-                                            </tr>
-                                        {/if}
-                                    {/foreach}
-                                </table>
-    						{/if}
-                        </div><!-- #contactCardRight -->
-
-                        <div class="clear"></div>
-                    </div><!-- #contact_panel -->
-
-					{if $address}
+                    {if $address}
                     <div class="contact_panel">
                         {foreach from=$address item=add key=locationIndex}
                         <div class="{cycle name=location values="contactCardLeft,contactCardRight"} crm-address_{$locationIndex} crm-address-block crm-address_type_{$add.location_type}">
@@ -286,6 +271,105 @@
                         <div class="clear"></div>
                     </div>
 					{/if}
+					
+					<!-- /address section -->
+					
+                    <div class="contact_panel">
+                        <div class="contactCardLeft">
+                            <table>
+                                {foreach from=$email key="blockId" item=item}
+                                    {if $item.email}
+                                    <tr>
+                                        <td class="label">{$item.location_type}&nbsp;{ts}Email{/ts}</td>
+                                        <td><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
+                                        {*NYSS - LCD #2555*}
+                                        {if $privacy.do_not_email || $item.on_hold}{$item.email}
+                                        {else}<a href="mailto:{$item.email}">{$item.email}</a>{/if}
+                                        {if $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}</span></td>
+					                    <td class="description">{if $item.signature_text OR $item.signature_html}<a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>{/if}</td>
+                                    </tr>
+                                    <tr id="Email_Block_{$blockId}_signature" class="hiddenElement">
+                                        <td><strong>{ts}Signature HTML{/ts}</strong><br />{$item.signature_html}<br /><br />
+                                        <strong>{ts}Signature Text{/ts}</strong><br />{$item.signature_text|nl2br}</td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                    {/if}
+                                {/foreach}
+                                {if $website}
+                                {foreach from=$website item=item}
+                                    {if $item.url}
+                                    <tr>
+                                        <td class="label">{$item.website_type}</td>
+                                        <td><a href="{$item.url}" target="_blank">{$item.url}</a></td>
+                                        <td></td>
+                                    </tr>
+                                    {/if}
+                                {/foreach}
+                                {/if}
+                                {if $user_unique_id}
+                                    <tr>
+                                        <td class="label">{ts}Unique Id{/ts}</td>
+                                        <td>{$user_unique_id}</td>
+                                        <td></td>
+                                    </tr>
+                                {/if}
+                                {if $current_employer}
+                                    <tr>
+                                        <td class="label">{ts}Employer{/ts}</td>
+                                        <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$current_employer_id`"}" title="{ts}view current employer{/ts}">{$current_employer}</a></td>
+                                        <td></td>
+                                    </tr>
+                                {/if}
+                                {if $job_title}
+                                    <tr>
+                                        <td class="label">{ts}Position{/ts}</td>
+                                        <td>{$job_title}</td>
+                                        <td></td>
+                                    </tr>
+                                {/if}
+                            </table>
+                            
+                            
+                        </div><!-- #contactCardLeft -->
+
+                        <div class="contactCardRight">
+                            {if $phone OR $im OR $openid}
+                                <table>
+                                    {foreach from=$phone item=item}
+                                        {if $item.phone}
+                                        <tr>
+                                            <td class="label">{$item.location_type}&nbsp;{$item.phone_type}</td>
+                                            <td {if $item.is_primary eq 1}class="primary"{/if}><span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>{$item.phone}</span></td>
+                                        </tr>
+                                        {/if}
+                                    {/foreach}
+                                    {foreach from=$im item=item}
+                                        {if $item.name or $item.provider}
+                                        {if $item.name}<tr><td class="label">{$item.provider}&nbsp;({$item.location_type})</td><td {if $item.is_primary eq 1}class="primary"{/if}>{$item.name}</td></tr>{/if}
+                                        {/if}
+                                    {/foreach}
+                                    {foreach from=$openid item=item}
+                                        {if $item.openid}
+                                            <tr>
+                                                <td class="label">{$item.location_type}&nbsp;{ts}OpenID{/ts}</td>
+                                                <td {if $item.is_primary eq 1}class="primary"{/if}><a href="{$item.openid}">{$item.openid|mb_truncate:40}</a>
+                                                    {if $config->userFramework eq "Standalone" AND $item.allowed_to_login eq 1}
+                                                        <br/> <span style="font-size:9px;">{ts}(Allowed to login){/ts}</span>
+                                                    {/if}
+                                                </td>
+                                            </tr>
+                                        {/if}
+                                    {/foreach}
+                                
+                                </table>
+    						{/if}
+    						
+                        </div><!-- #contactCardRight -->
+
+                        <div class="clear"></div>
+                    </div><!-- #contact_panel -->
+
+					
 					
                     <div class="contact_panel">
                         <div class="contactCardLeft">
