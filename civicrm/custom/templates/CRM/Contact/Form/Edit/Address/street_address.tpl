@@ -28,7 +28,7 @@
         <td colspan="2">
            <strong>{$form.address.$blockId.street_address.label}</strong><br />
            {$form.address.$blockId.street_address.html}
-        {if $parseStreetAddress eq 1 && $action eq 2}
+        {if $parseStreetAddress eq 1 && $action eq 2 && $form.address.$blockId.location_type_id.value.0 != 6}
            &nbsp;&nbsp;<a href="#" title="{ts}Edit Address Elements{/ts}" onClick="processAddressFields( 'addressElements' , '{$blockId}', 1 );return false;">{ts}Edit Address Elements{/ts}</a>
            {help id="id-edit-street-elements" file="CRM/Contact/Form/Contact.hlp"}
         {/if}
