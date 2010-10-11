@@ -30,16 +30,26 @@
  </div>
 {/if}
 
+{php}
+global $user;
+$rolesList = implode('',$user->roles);
+$role = str_replace('authenticated user','', $rolesList);
+if ($role == 'Superuser' || $role == 'SOS'):
+    //user is SOS or Superuser - let's display some job stuff :)
+    {/php}
+    <div id="current-job">Current job: {$smarty.session.jobID}</div>
+    {php}
+endif;
+{/php}
+
 <div class="civi-search-section">
 <div class="civi-contact-search">
 	<div class="civi-search-title">Find Contacts</div>
 {if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
             <form action="{crmURL p='civicrm/contact/search/basic' h=0 }" name="search_block" id="id_search_block" method="post" onsubmit="getSearchURLValue( );">
             	<div class="input-wrapper">
-                <input type="text" class="form-text" id="civi_sort_name" name="sort_name" value="enter name or email"/>
-                <input type="hidden" id="sort_contact_id" value="" />
-                <input type="submit" value="{ts}Go{/ts}" name="_qf_Basic_refresh" class="form-submit default" style="display: none;"/>
-            	</div>
+                	<div id="quickSearch"></div>{*#2455*}
+                </div>
             </form>
 	{/if}
 
@@ -60,6 +70,36 @@
 </form>
 {literal}
 <script>
+//CRM-6776, enter-to-submit functionality is broken for IE due to hidden field
+//NYSS-2455
+cj( document ).ready( function( ) {
+   var htmlContent = '';
+      if ( cj.browser.msie ) {
+          if( cj.browser.version.substr( 0,1 ) == '7' ) {
+              htmlContent = '<input type="submit" value="Go" name="_qf_Basic_refresh" class="form-submit default" style ="margin-right: -5px" />';
+          } else {
+              htmlContent = '<input type="hidden" name="_qf_Basic_refresh">';
+          }
+          htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width: 12em;" />' + 
+                         '<input type="text" id="sort_contact_id" style="display: none" />';
+          cj( '#quickSearch' ).append( htmlContent );            
+      } else {
+          htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width: 12em;" />' + 
+                         '<input type="hidden" id="sort_contact_id" value="" />' + 
+                         '<input type="submit" value="{ts}Go{/ts}" name="_qf_Basic_refresh" class="form-submit default" style="display: none;" />';    
+          cj( '#quickSearch' ).append( htmlContent );
+   }
+});
+
+$(function(){
+    $('input').keydown(function(e){
+        if (e.keyCode == 13) {
+            $(this).parents('form').submit();
+            return false;
+        }
+    });
+});
+
 $('.civi-general-search').append('<div id="general-form-hack"></div>');
 	$('#general-form-hack').hide()
 		.load('{/literal}{crmURL p='civicrm/contact/search/custom&csid=15&reset=1&snippet=1'}{literal}', 
