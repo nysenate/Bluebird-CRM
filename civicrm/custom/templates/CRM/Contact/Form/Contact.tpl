@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.1                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -47,46 +47,77 @@
         <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
             {$form._qf_Contact_refresh_dedupe.html}
         </span>
-		</td><td>
+		</td>
+		</tr>
+        <tr>
+        <td>
+            <table class="form-layout-compressed">
+                 <tr>
+                 <td>
+                    {$form.nick_name.label}<br />
+                    {$form.nick_name.html|crmReplace:class:big}
+                </td>
+                {if $contactType eq "Individual"}
+                 <td>
+                    
+                {$form.custom_42_38.label}<br />
+                {$form.custom_42_38.html}                    
+                </td>
+                <td>
+                    
+                {$form.custom_60_38.label}<br />
+                {$form.custom_60_38.html}                    
+                </td>
+                {/if}
+                 <td colspan="2">
+                    {$form.contact_source.label}<br />
+                    {$form.contact_source.html}
+                </td>
+                
+                
+                </tr>
+            </table>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        {foreach from = $editOptions item ="title" key="name"}
+        {if $name eq "Address"}
+                {include file="CRM/Contact/Form/Edit/$name.tpl"}
+        {/if}
+        {/foreach}
+        </td>
+        
+        </tr>
+        
+        
+		<tr>
+		<td>
 		<table class="form-layout-compressed">
             {foreach from=$blocks item="label" key="block"}
-               {include file="CRM/Contact/Form/Edit/$block.tpl"}
+               { include file="CRM/Contact/Form/Edit/$block.tpl" }
             {/foreach}
 		</table>
-		<table class="crm-section contact_source-section form-layout-compressed">
+		<table class="form-layout-compressed">
             <tr class="last-row">
-              <td>{$form.contact_source.label}<br />
-                  {$form.contact_source.html|crmReplace:class:twenty}
+              <td>
               </td>
               <td>{$form.external_identifier.label}<br />
-                  {$form.external_identifier.html|crmReplace:class:six}
+                  {$form.external_identifier.html}
               </td>
               {if $contactId}
 				<td><label for="internal_identifier">{ts}Internal Id{/ts}</label><br />{$contactId}</td>
 			  {/if}
             </tr>            
         </table>
-	   <table class="image_URL-section form-layout-compressed">
-	    <tr>
-	        <td>
-    	        {$form.image_URL.label}<br />
-    	        {$form.image_URL.html|crmReplace:class:twenty}
-     	        {if $imageURL}
-     	            {include file="CRM/Contact/Page/ContactImage.tpl"}
-     	        {/if}
- 	        </td>
- 	    </tr>
-        </table>
         </td>
         </tr>
         {if $contactType eq "Individual"}
         <tr>
         <td>
-        </td>
-        <td>
         <table>
          <tr>
-         <td colspan="2">
+         <td>
             {$form.current_employer.label}&nbsp;&nbsp;<br />
             {$form.current_employer.html|crmReplace:class:twenty}
             <div id="employer_address" style="display:none;"></div>
@@ -94,10 +125,6 @@
         <td>
             {$form.job_title.label}<br />
             {$form.job_title.html}
-        </td>
-        <td>
-            {$form.nick_name.label}<br />
-            {$form.nick_name.html|crmReplace:class:big}
         </td>
         </tr>
         </table>
@@ -117,12 +144,7 @@
         <div class="spacer"></div>
     
         
-    {foreach from = $editOptions item = "title" key="name"}
-        {if $name eq "Address"}
-                {include file="CRM/Contact/Form/Edit/$name.tpl"}
-        {/if}
-    {/foreach}
-        
+    
         
    </div>
  </div><!-- /.crm-accordion-body -->
@@ -179,8 +201,8 @@ cj('a#expand').click( function( ){
         cj(this).attr('href', '#expand');
     }
     cj(this).html(message);
-    return false;
 });
+
 
 function showHideSignature( blockId ) {
     cj('#Email_Signature_' + blockId ).toggle( );   
