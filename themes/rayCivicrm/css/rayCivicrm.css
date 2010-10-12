@@ -1005,4 +1005,10 @@ ul.token-input-list-facebook { width:300px;}
 .matching-contacts-actions a.action-item {
 	padding-right: 8px;
 }
-
+#crm-container #contactTopBar .subHeader {
+	color:#3E3E3E;
+	font-family:Helvetica;
+	font-size:13px;
+	font-weight:bold;
+	padding:4px 8px;
+}
