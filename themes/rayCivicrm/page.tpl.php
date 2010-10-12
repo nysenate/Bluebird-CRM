@@ -1,10 +1,14 @@
+<?php 
+if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
+?>
+
 <?php // $Id: page.tpl.php,v 1.15.4.7 2008/12/23 03:40:02 designerbrent Exp $ ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php print $language->language ?>" lang="<?php print $language->language ?>">
 <head>
-	<title><?php print $head_title ?></title>
+	<title><?php print strip_tags($title) ?> | Bluebird</title>
 	<meta http-equiv="content-language" content="<?php print $language->language ?>" />
 	<?php print $meta; ?>
   <?php print $head; ?>
@@ -151,7 +155,7 @@ $now = time() + (60 * 60 * $offset);
 </div>
 
 <div id="dialog" style="display: none;">
-     <form action="<?php $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID']; ?>" method="post" id="formSetJob">
+     <form action="" method="post" id="formSetJob">
         Enter a new SOS Job ID<br/>
      	<input type="text" id="set_jobID" name="set_JobID" />
      </form>
