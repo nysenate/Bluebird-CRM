@@ -30,7 +30,14 @@
 <div class="crm-form-block crm-search-form-block">
 <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
 <div class="crm-submit-buttons">
-   {include file="CRM/common/formButtons.tpl"}
+	{include file="CRM/common/formButtons.tpl"}
+	{*  add dupe buttons *}
+	{if $isDuplicate}
+		<span class="crm-button crm-button_qf_Contact_upload_duplicate">
+        	{$form._qf_Contact_upload_duplicate.html}
+        </span>
+    {/if}
+    <div class="spacer"></div>
 </div>
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
@@ -132,19 +139,6 @@
         </tr>
         {/if}
     </table>
-    
-    {*  add dupe buttons *}
-        
-        {if $isDuplicate}
-            &nbsp;&nbsp;
-            <span class="crm-button crm-button_qf_Contact_upload_duplicate">
-                {$form._qf_Contact_upload_duplicate.html}
-            </span>
-        {/if}
-        <div class="spacer"></div>
-    
-        
-    
         
    </div>
  </div><!-- /.crm-accordion-body -->
