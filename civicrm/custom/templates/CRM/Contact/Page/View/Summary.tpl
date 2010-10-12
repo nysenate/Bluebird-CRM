@@ -47,13 +47,13 @@
                         
                         <li class="crm-delete-action crm-contact-permanently-delete">
                         <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1"}" class="delete button" title="{ts}Delete Permanently{/ts}">
-                        <span><div class="icon delete-icon"></div>{ts}Delete Permanently{/ts}</span>
+                        <span><div class="icon delete-icon"></div>{ts}Delete Contact Permanently{/ts}</span>
                         </a>
                         </li>
                         {else}
                         <li class="crm-delete-action crm-contact-delete">
                         <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId"}" class="delete button" title="{ts}Delete{/ts}">
-                        <span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span>
+                        <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
                         </a>
                         </li>
                         {/if}
@@ -121,6 +121,7 @@
                 
                 {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name OR $contactTag OR $source}
                 <div id="contactTopBar">
+                	<div class="subHeader">Basic Constituent Information</div>
                     <table>
                         {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name}
                         <tr>
