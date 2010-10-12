@@ -198,22 +198,14 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
               <td class="label">{$form.activity_date_time.label}</td>
               <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=activity_date_time}</td>
            </tr>
-           <tr class="crm-case-form-block-duration">
-              <td class="label">{$form.duration.label}</td>
-              <td class="view-value">
-                {$form.duration.html}
-                 <span class="description">{ts}Total time spent on this activity (in minutes).{/ts}
-              </td>
-           </tr> 
+          
            <tr class="crm-case-form-block-status_id">
               <td class="label">{$form.status_id.label}</td><td class="view-value">{$form.status_id.html}</td>
            </tr>
 	   <tr class="crm-case-form-block-priority_id">
               <td class="label">{$form.priority_id.label}</td><td class="view-value">{$form.priority_id.html}</td>
            </tr>
-           <tr>
-              <td colspan="2"><div id="customData"></div></td>
-           </tr>
+           
            <tr class="crm-case-activity-form-block-details">
               <td class="label">{$form.details.label}</td>
               <td class="view-value">
@@ -221,6 +213,19 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                 {if $defaultWysiwygEditor eq 0}{$form.details.html|crmReplace:class:huge}{else}{$form.details.html}{/if}
               </td>
            </tr>
+           
+           <tr class="crm-case-form-block-duration">
+              <td class="label">{$form.duration.label}</td>
+              <td class="view-value">
+                {$form.duration.html}
+                 <span class="description">{ts}Total time spent on this activity (in minutes).{/ts}</span>
+              </td>
+           </tr>
+           
+           <tr>
+              <td colspan="2"><div id="customData"></div></td>
+           </tr>
+           
            <tr>
               <td colspan="2">{include file="CRM/Form/attachment.tpl"}</td>
            </tr>
