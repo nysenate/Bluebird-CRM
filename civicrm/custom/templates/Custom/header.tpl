@@ -37,7 +37,7 @@ $role = str_replace('authenticated user','', $rolesList);
 if ($role == 'Superuser' || $role == 'SOS'):
     //user is SOS or Superuser - let's display some job stuff :)
     {/php}
-    <div id="current-job">Current job: {$smarty.session.jobID}</div>
+    <!--<div id="current-job">Current job: {$smarty.session.jobID}</div>-->
     {php}
 endif;
 {/php}

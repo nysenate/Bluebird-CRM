@@ -24,7 +24,7 @@
 <?php 
 	$rolesList = implode('',$user->roles);
 	$role = str_replace('authenticated user','', $rolesList);
-	?>
+?>
 
 <body class="<?php print $body_classes;?><?php print 'role-'.$role;?>">
 
@@ -117,9 +117,17 @@ $now = time() + (60 * 60 * $offset);
   			</div>
   			<div class="user-name">
   				<?php print $user->name; ?>
+                <?php $contact_id = $_SESSION['userID']; ?>
   			</div>
   		</div>
   	</div>
+    <?php if ( $role == 'Superuser' || $role == 'SOS' ) { ?>
+    	<div class="sos_job">
+    	    [ <?php if ( $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
+        	<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Set Job #</a> ]
+        </div>
+    <?php } ?>
+    
   	<?php } ?>
   	
     <?php
@@ -142,6 +150,26 @@ $now = time() + (60 * 60 * $offset);
 
 </div>
 
+<div id="dialog" style="display: none;">
+     <form action="<?php $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID']; ?>" method="post" id="formSetJob">
+        Enter a new SOS Job ID<br/>
+     	<input type="text" id="set_jobID" name="set_JobID" />
+     </form>
+</div>
+
+<script type="text/javascript">
+function setJobID( ) {
+    cj("#dialog").show( );
+    cj("#dialog").dialog({
+		title: "Set SOS Job ID",
+		modal: true,
+		bgiframe: true,
+		overlay: { opacity: 0.5, background: "black" },
+		beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
+		buttons: { "Set ID": function() { $("#formSetJob").submit(); cj(this).dialog("close"); }}	
+	})
+}
+</script>
 
 </body>
 </html>
