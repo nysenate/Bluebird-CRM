@@ -2,13 +2,59 @@
 
 require_once 'senate.suffixes.php';
 
-$aRelLookup['H'] = 2;
-$aRelLookup['W'] = 2;
-$aRelLookup['S'] = 3;
-$aRelLookup['D'] = 3;
-$aRelLookup['HoH'] = 6;
-$aRelLookup['MoH'] = 7;
-$aRelLookup['employeeOf'] = 4;
+define('DELIM', '~');
+define("DBNULL", null);
+
+// ParentID of all top-level category tags in the issue code hierarchy.
+define('CATEGORY_TAG_PARENT_ID', 291);
+// Parent of all position (legislative) tags.
+define('POSITION_TAG_PARENT_ID', 292);
+// ParentID of all freeform tags.
+define('FREEFORM_TAG_PARENT_ID', 296);
+define('COUNTRY_CODE_USA', 1228);
+
+// location type IDs
+define('LOC_TYPE_HOME', 1);
+define('LOC_TYPE_WORK', 2);
+define('LOC_TYPE_MAIN', 3);
+define('LOC_TYPE_OTHER', 4);
+
+// phone type IDs
+define('PHONE_TYPE_PHONE', 246);
+define('PHONE_TYPE_MOBILE', 247);
+define('PHONE_TYPE_FAX', 248);
+
+// addressee formats
+// check civicrm_option_value table to confirm these values
+define('ADDRESSEE_FULL', 1);
+define('ADDRESSEE_HN', 2);
+define('ADDRESSEE_ORG', 3);
+define('ADDRESSEE_CUSTOM', 4);
+define('ADDRESSEE_THE_HN', 5);
+
+// postal and email greeting formats (currently, they are in sync)
+// check civicrm_option_value table to confirm these values
+define('GREETING_FN', 1);
+define('GREETING_PREFIX_FN_LN', 2);
+define('GREETING_PREFIX_LN', 3);
+define('GREETING_CUSTOM', 4);
+define('GREETING_HN', 5);
+define('GREETING_FAM_HN', 6);
+define('GREETING_NICK', 7);
+define('GREETING_FRIENDS', 8);
+define('GREETING_NICK2', 9);
+define('GREETING_FRIEND', 10);
+
+
+$aRelLookup = array(
+  'H' => 2,
+  'W' => 2,
+  'S' => 3,
+  'D' => 3,
+  'HoH' => 6,
+  'MoH' => 7,
+  'employeeOf' => 4
+);
 
 
 // OMIS database fields
@@ -26,21 +72,25 @@ $omis_ct_fields = array(
 	"PHONE_WORK", "PHONE_WORK_EXT", "PHONE_MOBILE",
 	"FAX_HOME", "FAX_WORK", "EMAIL", "CONTACT_TYPE", "SPOUSE",
 	"CHILDREN", "LOVES_LIZ", "GROUPS", "WEBSITE", "SENIORS",
-	"NON_DISTRICT");
+	"NON_DISTRICT"
+);
 
 $omis_is_fields = array(
 	"KEY", "ISSUECODE", "UPDATED", "ISSUEDESCRIPTION",
-	"CATEGORY", "IS_TAG");
+	"CATEGORY", "IS_TAG"
+);
 
 $omis_cs_fields = array(
 	"KEY", "CASENUM", "CSUBJECT", "CSTAFF", "COPENTIME", "COPENDATE",
 	"CCLOSEDATE", "CHOMEPH", "CWORKPH", "CFAXPH",
 	"CSNUM", "CLAB1", "CID1", "CLAB2", "CID2", "CISSUE", "CFORM", "CPLACE",
-	"CNOTE1", "CNOTE2", "CNOTE3", "CLASTUPDATE", "LEGISLATION");
+	"CNOTE1", "CNOTE2", "CNOTE3", "CLASTUPDATE", "LEGISLATION"
+);
 
 $omis_nt_fields = array(
 	"KEY", "HNUM", "HPAG", "HL1", "HL2", "HL3", "HL4", "HL5", "HL6", "HL7",
-	"HL8", "HL9", "HL10", "HL11", "HL12", "HL13", "HL14", "HL15");
+	"HL8", "HL9", "HL10", "HL11", "HL12", "HL13", "HL14", "HL15"
+);
 
 // The OMIS extended fields that are dumped into Notes.
 //     true = boolean field, false = string field
@@ -123,16 +173,19 @@ $bluebird_db_info = array(
           'gender_id',
           'source',
           'birth_date',
+          'prefix_id',
+          'suffix_id',
           'addressee_id',
           'addressee_custom',
           'addressee_display',
           'postal_greeting_id',
           'postal_greeting_custom',
           'postal_greeting_display',
+          'email_greeting_id',
+          'email_greeting_custom',
+          'email_greeting_display',
           'organization_name',
           'job_title',
-          'prefix_id',
-          'suffix_id',
           'do_not_mail',
           'employer_id',
           'nick_name',
