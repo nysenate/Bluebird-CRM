@@ -232,41 +232,49 @@ function writeToFile($fhout, $aOut, $done=1, $totalNum=2)
 
 
 //OMIS date parser
-function formatDate($str, $forceMillenium=null)
+function formatDate($str, $forceMillenium = null)
 {
   //get rid of spaces
   $str = trim($str);
 
   //add a leading zero in case it is missing
-  if (strlen($str)==5) $str = '0'.$str;
+  if (strlen($str) == 5) {
+    $str = '0'.$str;
+  }
 
   //return if it's the wrong length
-  if (strlen($str)!=6 && strlen($str)!=8) return 'NULL';
+  if (strlen($str) != 6 && strlen($str) != 8) {
+    return null;
+  }
 
-  if (strlen($str)==6) {
+  if (strlen($str) == 6) {
+    // reformat from MMDDYY to MMDDYYYY
     if (is_numeric($forceMillenium)) {
-      $str=substr($str,0,4).$forceMillenium.substr($str,4,2);
+      $str = substr($str,0,4).$forceMillenium.substr($str,4,2);
     } else if (substr($str,4,2) <= substr(date('Y'),2,2)) {
       $str = substr($str,0,4).'20'.substr($str,4,2); 
     } else {
-      $str =  substr($str,0,4).'19'.substr($str,4,2);
+      $str = substr($str,0,4).'19'.substr($str,4,2);
     }
   }
 
   //if the date doesn't look good now, just quit.
-  if (strlen($str)!=8) return 'NULL';
+  if (strlen($str) != 8) {
+    return null;
+  }
 
+  // reformat from MMDDYYYY to YYYY-MM-DD
   $str = substr($str,4,4).'-'.substr($str,0,2).'-'.substr($str,2,2);
 
-  $time=strToTime($str);
+  $time = strtotime($str);
 
   //if not parseable, assume 19 and return the string
-  if ($time==0) return $str;
-  else return date('Y-m-d', $time);
-
-  #if ($str=='1950-02-15') echo date_parse($str);
-    #return date('y-m-d',date_parse($str));
-  #else return 'NULL';
+  if ($time == 0) {
+    return $str;
+  }
+  else {
+    return date('Y-m-d', $time);
+  }
 } // formatDate()
 
 
