@@ -1,5 +1,5 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -285,7 +285,7 @@ INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated
 INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated) VALUES("1245", "Guernsey", "GG", "99", "0");
 INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated) VALUES("1246", "Isle of Man", "IM", "99", "0");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -854,7 +854,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (1918, 1029, "AL", "Alagoas"),
 (1919, 1029, "AM", "Amazonas"),
 (1920, 1029, "AP", "Amapa"),
-(1921, 1029, "BA", "Baia"),
+(1921, 1029, "BA", "Bahia"),
 (1922, 1029, "CE", "Ceara"),
 (1923, 1029, "DF", "Distrito Federal"),
 (1924, 1029, "ES", "Espirito Santo"),
@@ -877,7 +877,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (1941, 1029, "SC", "Santa Catarina"),
 (1942, 1029, "SE", "Sergipe"),
 (1943, 1029, "SP", "Sao Paulo"),
-(1944, 1029, "TO", "Tocatins"),
+(1944, 1029, "TO", "Tocantins"),
 (1945, 1212, "AC", "Acklins and Crooked Islands"),
 (1946, 1212, "BI", "Bimini"),
 (1947, 1212, "CI", "Cat Island"),
@@ -4081,7 +4081,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (NULL, 1050, "19", "Haut-Katanga"),
 (NULL, 1050, "20", "Tanganyika");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -4291,7 +4291,7 @@ INSERT INTO civicrm_currency (id, name, symbol, numeric_code, full_name) VALUES
 (184, "ZMK", NULL, "894", "Zambian Kwacha"),
 (185, "ZWD", "Z$", "716", "Zimbabwe Dollar");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -4525,7 +4525,7 @@ SELECT @eventCompId      := max(id) FROM civicrm_component where name = 'CiviEve
 SELECT @memberCompId     := max(id) FROM civicrm_component where name = 'CiviMember';
 SELECT @pledgeCompId     := max(id) FROM civicrm_component where name = 'CiviPledge';
 SELECT @caseCompId       := max(id) FROM civicrm_component where name = 'CiviCase';
-
+SELECT @grantCompId      := max(id) FROM civicrm_component where name = 'CiviGrant';
 
 INSERT INTO 
    `civicrm_option_value` (`option_group_id`, `label`, `value`, `name`, `grouping`, `filter`, `is_default`, `weight`, `description`, `is_optgroup`, `is_reserved`, `is_active`, `component_id`, `visibility_id`) 
@@ -4560,7 +4560,7 @@ VALUES
    (@option_group_id_act, 'Bulk Email',                         19, 'Bulk Email',         NULL, 1, NULL, 19, 'Bulk Email Sent.',                                                    0, 1, 1, NULL, NULL),
    (@option_group_id_act, 'Assign Case Role',                   20, 'Assign Case Role', NULL,0, 0, 20, '', 0, 0, 1, @caseCompId, NULL),
    (@option_group_id_act, 'Remove Case Role',                   21, 'Remove Case Role', NULL,0, 0, 21, '', 0, 0, 1, @caseCompId, NULL),
-   (@option_group_id_act, 'Print PDF Letter',                   22, 'Print PDF Letter',    NULL, 1, NULL, 22, 'Print PDF Letter.',                                                  0, 1, 1, NULL, NULL),
+   (@option_group_id_act, 'Print PDF Letter',                   22, 'Print PDF Letter',    NULL, 0, NULL, 22, 'Print PDF Letter.',                                                  0, 1, 1, NULL, NULL),
    (@option_group_id_act, 'Merge Case',                         23, 'Merge Case', NULL, 0,  NULL, 23, '', 0, 1, 1, @caseCompId, NULL ),
    (@option_group_id_act, 'Reassigned Case',                    24, 'Reassigned Case', NULL, 0,  NULL, 24, '', 0, 1, 1, @caseCompId, NULL ),
    (@option_group_id_act, 'Link Cases',                         25, 'Link Cases', NULL, 0,  NULL, 25, '', 0, 1, 1, @caseCompId, NULL ),
@@ -4759,7 +4759,11 @@ VALUES
   (@option_group_id_report , 'Contact Demographics Report',             'case/demographics',              'CRM_Report_Form_Case_Demographics',              NULL, 0, NULL, 26, 'Demographic breakdown for case clients (and or non-case contacts) in your database. Includes custom contact fields.', 0, 0, 1, @caseCompId, NULL),
   (@option_group_id_report , 'Database Log Report',                     'contact/log',                    'CRM_Report_Form_Contact_Log',                    NULL, 0, NULL, 27, 'Log of contact and activity records created or updated in a given date range.', 0, 0, 1, NULL, NULL),
   (@option_group_id_report , 'Activity Report (Summary)',               'activitySummary',                'CRM_Report_Form_ActivitySummary',                NULL, 0, NULL, 28, 'Shows activity statistics by type / date', 0, 0, 1, NULL, NULL),
-
+  (@option_group_id_report, 'Bookkeeping Transactions Report',          'contribute/bookkeeping',         'CRM_Report_Form_Contribute_Bookkeeping',         NULL, 0, 0, 29,    'Shows Bookkeeping Transactions Report', 0, 0, 1, 2, NULL),
+  (@option_group_id_report , 'Grant Report', 'grant', 'CRM_Report_Form_Grant', NULL, 0, 0, 30,  'Grant Report', 0, 0, 1, @grantCompId, NULL),
+  (@option_group_id_report, 'Participant list Count Report', 'event/participantlist', 'CRM_Report_Form_Event_ParticipantListCount', NULL, 0, 0, 31, 'Shows the Participant list with Participant Count.', 0, 0, 1, @eventCompId, NULL),
+  (@option_group_id_report, 'Income Count Summary Report', 'event/incomesummary', 'CRM_Report_Form_Event_IncomeCountSummary', NULL, 0, 0, 32, 'Shows the Income Summary of events with Count.', 0, 0, 1, @eventCompId, NULL),
+  
   (@option_group_id_acs, 'Scheduled',  1, 'Scheduled',  NULL, 0, 1,    1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Completed',  2, 'Completed',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Cancelled',  3, 'Cancelled',  NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL),
@@ -4808,10 +4812,10 @@ VALUES
   (@option_group_id_mt, 'Export Grant',       13, 'Export Grant',        NULL, 0, 0,   13, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_mt, 'Export Activity',    14, 'Export Activity',     NULL, 0, 0,   14, NULL, 0, 1, 1, NULL, NULL),
 
-  (@option_group_id_fu, 'daily'    , 'day'  ,    'day',  NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL),
-  (@option_group_id_fu, 'weekly'   , 'week' ,   'week',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
-  (@option_group_id_fu, 'monthly'  , 'month',  'month',  NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL),
-  (@option_group_id_fu, 'yearly'   , 'year' ,   'year',  NULL, 0, NULL, 4, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_fu, 'day'    , 'day'  ,    'day',  NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_fu, 'week'   , 'week' ,   'week',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_fu, 'month'  , 'month',  'month',  NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_fu, 'year'   , 'year' ,   'year',  NULL, 0, NULL, 4, NULL, 0, 1, 1, NULL, NULL),
 
 -- phone types.
   (@option_group_id_pht, 'Phone' ,        1, 'Phone'      , NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
@@ -5122,15 +5126,15 @@ VALUES
 
 -- sample membership status entries
 INSERT INTO
-    civicrm_membership_status(name, start_event, start_event_adjust_unit, start_event_adjust_interval, end_event, end_event_adjust_unit, end_event_adjust_interval, is_current_member, is_admin, weight, is_default, is_active, is_reserved)
+    civicrm_membership_status(name, label, start_event, start_event_adjust_unit, start_event_adjust_interval, end_event, end_event_adjust_unit, end_event_adjust_interval, is_current_member, is_admin, weight, is_default, is_active, is_reserved)
 VALUES
-    ('New', 'join_date', null, null,'join_date','month',3, 1, 0, 1, 0, 1, 0),
-    ('Current', 'start_date', null, null,'end_date', null, null, 1, 0, 2, 1, 1, 0),
-    ('Grace', 'end_date', null, null,'end_date','month', 1, 1, 0, 3, 0, 1, 0),
-    ('Expired', 'end_date', 'month', 1, null, null, null, 0, 0, 4, 0, 1, 0),
-    ('Pending', 'join_date', null, null,'join_date',null,null, 0, 0, 5, 0, 1, 1),
-    ('Cancelled', 'join_date', null, null,'join_date',null,null, 0, 0, 6, 0, 1, 0),
-    ('Deceased', null, null, null, null, null, null, 0, 1, 7, 0, 1, 1);
+    ('New',       'New', 'join_date', null, null,'join_date','month',3, 1, 0, 1, 0, 1, 0),
+    ('Current',   'Current', 'start_date', null, null,'end_date', null, null, 1, 0, 2, 1, 1, 0),
+    ('Grace',     'Grace', 'end_date', null, null,'end_date','month', 1, 1, 0, 3, 0, 1, 0),
+    ('Expired',   'Expired', 'end_date', 'month', 1, null, null, null, 0, 0, 4, 0, 1, 0),
+    ('Pending',   'Pending', 'join_date', null, null,'join_date',null,null, 0, 0, 5, 0, 1, 1),
+    ('Cancelled', 'Cancelled', 'join_date', null, null,'join_date',null,null, 0, 0, 6, 0, 1, 0),
+    ('Deceased',  'Deceased', null, null, null, null, null, null, 0, 1, 7, 0, 1, 1);
 
 
 INSERT INTO `civicrm_preferences_date`
@@ -5464,36 +5468,36 @@ VALUES
    (1, 'Profile', NULL, NULL, 6, 7);
    
 INSERT INTO civicrm_uf_field
-       (id, uf_group_id, field_name,              is_required, is_reserved, weight, visibility,                  in_selector, is_searchable, location_type_id, label,                                         		field_type,    help_post) VALUES
-       (1,  1,           'first_name',            1,           0,           1,      'Public Pages and Listings', 0,           1,             NULL,             'First Name',            		'Individual',  NULL),
-       (2,  1,           'last_name',             1,           0,           2,      'Public Pages and Listings', 0,           1,             NULL,             'Last Name',             		'Individual',  'First and last name will be shared with other visitors to the site.'),
-       (3,  1,           'street_address',        0,           0,           3,      'User and User Admin Only',  0,           0,             1,                'Street Address (Home)', 		'Contact',     NULL),
-       (4,  1,           'city',                  0,           0,           4,      'User and User Admin Only',  0,           0,             1,                'City (Home)',           		'Contact',     NULL),
-       (5,  1,           'postal_code',           0,           0,           5,      'User and User Admin Only',  0,           0,             1,                'Postal Code (Home)',    		'Contact',     NULL),
-       (6,  1,           'country',               0,           0,           6,      'Public Pages and Listings', 0,           1,             1,                'Country (Home)',        		'Contact',     'Your state/province and country of residence will be shared with others so folks can find others in their community.'),
-       (7,  1,           'state_province',        0,           0,           7,      'Public Pages and Listings', 1,           1,             1,                'State (Home)',          		'Contact',     NULL),
-       (8,  2,           'first_name',            1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'First Name',            		'Individual',  NULL),
-       (9,  2,           'last_name',             1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Last Name',             		'Individual',  NULL),
-       (10, 2,           'email',                 1,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL),
-       (11, 3,           'participant_status_id', 1,           1,           1,      'User and User Admin Only',  0,           0,             NULL,             'Participant Status',    		'Participant', NULL),
-       (12, 4,           'first_name',            1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'First Name',            		'Individual',  NULL),
-       (13, 4,           'last_name',             1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Last Name',             		'Individual',  NULL),
-       (14, 4,           'email',                 0,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL),
-       (15, 5,           'organization_name',     1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Organization Name',     		'Organization',NULL),
-       (16, 5,           'email',                 0,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL),
-       (17, 6,           'household_name',        1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Household Name',        		'Household',   NULL),
-       (18, 6,           'email',                 0,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL),
-	   (19 	,7 		    ,'phone' 				 ,1  	      ,0 			,1 	,'User and User Admin Only' ,0 		 	 ,0 			,1 				  ,'Home Phone' 					,'Contact' 	  ,NULL),
-	   (20 	,7 		    ,'phone' 				 ,1  	      ,0 			,2 	,'User and User Admin Only' ,0 		 	 ,0 			,2 				  ,'Home Mobile' 					,'Contact' 	  ,NULL),
-	   (21, 7, 			 'street_address', 		  1, 		   0, 			3, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Primary Address',		'Contact', 	   NULL),
-	   (22, 7, 			 'city',				  1, 		   0, 			4, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'City',  						'Contact', 	   NULL),
-	   (23, 7, 			 'state_province', 		  1, 		   0, 			5, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'State',  						'Contact', 	   NULL),
-	   (24, 7, 			 'postal_code', 		  1, 		   0, 			6, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Postal Code',  				'Contact', 	   NULL),
-	   (25, 7, 			 'email', 				  1, 		   0, 			7, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Primary Email',  				'Contact', 	   NULL),
-	   (26, 7, 			 'group', 				  1, 		   0, 			8, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Groups',  					'Contact', 	   NULL),
-	   (27, 7, 			 'tag', 				  1, 		   0, 			9, 	  	'User and User Admin Only',  0, 	      0, 		     NULL, 			   'Tags', 						'Contact', 	   NULL),
-	   (28  ,7  	    ,'gender'  				 ,1  	      ,0  			,10  	,'User and User Admin Only' ,0  		 ,0  			,NULL,  			 'Gender'  						,'Individual' ,NULL),
-	   (29 	,7 		    ,'birth_date' 			 ,1  	      ,0 			,11 	,'User and User Admin Only' ,0 		 	 ,0 			,NULL, 			  'Date of Birth' 			    ,'Individual' ,NULL);
+       (id, uf_group_id, field_name,              is_required, is_reserved, weight, visibility,                  in_selector, is_searchable, location_type_id, label,                                         		field_type,    help_post, phone_type_id ) VALUES
+       (1,  1,           'first_name',            1,           0,           1,      'Public Pages and Listings', 0,           1,             NULL,             'First Name',            		'Individual',  NULL,  NULL),
+       (2,  1,           'last_name',             1,           0,           2,      'Public Pages and Listings', 0,           1,             NULL,             'Last Name',             		'Individual',  'First and last name will be shared with other visitors to the site.',  NULL),
+       (3,  1,           'street_address',        0,           0,           3,      'User and User Admin Only',  0,           0,             1,                'Street Address (Home)', 		'Contact',     NULL,  NULL),
+       (4,  1,           'city',                  0,           0,           4,      'User and User Admin Only',  0,           0,             1,                'City (Home)',           		'Contact',     NULL,  NULL),
+       (5,  1,           'postal_code',           0,           0,           5,      'User and User Admin Only',  0,           0,             1,                'Postal Code (Home)',    		'Contact',     NULL,  NULL),
+       (6,  1,           'country',               0,           0,           6,      'Public Pages and Listings', 0,           1,             1,                'Country (Home)',        		'Contact',     'Your state/province and country of residence will be shared with others so folks can find others in their community.',  NULL),
+       (7,  1,           'state_province',        0,           0,           7,      'Public Pages and Listings', 1,           1,             1,                'State (Home)',          		'Contact',     NULL,  NULL),
+       (8,  2,           'first_name',            1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'First Name',            		'Individual',  NULL,  NULL),
+       (9,  2,           'last_name',             1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Last Name',             		'Individual',  NULL,  NULL),
+       (10, 2,           'email',                 1,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL,  NULL),
+       (11, 3,           'participant_status_id', 1,           1,           1,      'User and User Admin Only',  0,           0,             NULL,             'Participant Status',    		'Participant', NULL,  NULL),
+       (12, 4,           'first_name',            1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'First Name',            		'Individual',  NULL,  NULL),
+       (13, 4,           'last_name',             1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Last Name',             		'Individual',  NULL,  NULL),
+       (14, 4,           'email',                 0,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL,  NULL),
+       (15, 5,           'organization_name',     1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Organization Name',     		'Organization',NULL,  NULL),
+       (16, 5,           'email',                 0,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL,  NULL),
+       (17, 6,           'household_name',        1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Household Name',        		'Household',   NULL,  NULL),
+       (18, 6,           'email',                 0,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL,  NULL),
+	   (19 	,7 		    ,'phone' 				 ,1  	      ,0 			,1 	,'User and User Admin Only' ,0 		 	 ,0 			,1 				  ,'Home Phone' 					,'Contact' 	  ,NULL,  1 ),
+	   (20 	,7 		    ,'phone' 				 ,1  	      ,0 			,2 	,'User and User Admin Only' ,0 		 	 ,0 			,1 				  ,'Home Mobile' 					,'Contact' 	  ,NULL, 2 ),
+	   (21, 7, 			 'street_address', 		  1, 		   0, 			3, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Primary Address',		'Contact', 	   NULL,  NULL),
+	   (22, 7, 			 'city',				  1, 		   0, 			4, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'City',  						'Contact', 	   NULL,  NULL),
+	   (23, 7, 			 'state_province', 		  1, 		   0, 			5, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'State',  						'Contact', 	   NULL,  NULL),
+	   (24, 7, 			 'postal_code', 		  1, 		   0, 			6, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Postal Code',  				'Contact', 	   NULL,  NULL),
+	   (25, 7, 			 'email', 				  1, 		   0, 			7, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Primary Email',  				'Contact', 	   NULL,  NULL),
+	   (26, 7, 			 'group', 				  1, 		   0, 			8, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Groups',  					'Contact', 	   NULL,  NULL),
+	   (27, 7, 			 'tag', 				  1, 		   0, 			9, 	  	'User and User Admin Only',  0, 	      0, 		     NULL, 			   'Tags', 						'Contact', 	   NULL,  NULL),
+	   (28  ,7  	    ,'gender'  				 ,1  	      ,0  			,10  	,'User and User Admin Only' ,0  		 ,0  			,NULL,  			 'Gender'  						,'Individual' ,NULL,  NULL),
+	   (29 	,7 		    ,'birth_date' 			 ,1  	      ,0 			,11 	,'User and User Admin Only' ,0 		 	 ,0 			,NULL, 			  'Date of Birth' 			    ,'Individual' ,NULL,  NULL);
 
 INSERT INTO civicrm_participant_status_type
   (id, name,                                  label,                                                       class,      is_reserved, is_active, is_counted, weight, visibility_id) VALUES
@@ -5518,7 +5522,7 @@ INSERT INTO `civicrm_contact_type`
   ( 3, 'Organization', 'Organization', NULL, NULL, 1, 1);
 
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -6099,12 +6103,12 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}
+{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 {/if}
 
-{ts}Total Amount{/ts}: {$formValues.total_amount|crmMoney}
+{ts}Total Amount{/ts}: {$formValues.total_amount|crmMoney:$currency}
 {if $receive_date}
 {ts}Received Date{/ts}: {$receive_date|truncate:10:\'\'|crmDate}
 {/if}
@@ -6245,10 +6249,10 @@ rule for Organizations to find the potential duplicates and merge them if approp
              {$line.qty}
             </td>
             <td>
-             {$line.unit_price|crmMoney}
+             {$line.unit_price|crmMoney:$currency}
             </td>
             <td>
-             {$line.line_total|crmMoney}
+             {$line.line_total|crmMoney:$currency}
             </td>
            </tr>
           {/foreach}
@@ -6263,7 +6267,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
        {ts}Total Amount{/ts}
       </td>
       <td {$valueStyle}>
-       {$formValues.total_amount|crmMoney}
+       {$formValues.total_amount|crmMoney:$currency}
       </td>
      </tr>
 
@@ -6459,12 +6463,12 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}
+{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 {/if}
 
-{ts}Total Amount{/ts}: {$formValues.total_amount|crmMoney}
+{ts}Total Amount{/ts}: {$formValues.total_amount|crmMoney:$currency}
 {if $receive_date}
 {ts}Received Date{/ts}: {$receive_date|truncate:10:\'\'|crmDate}
 {/if}
@@ -6605,10 +6609,10 @@ rule for Organizations to find the potential duplicates and merge them if approp
              {$line.qty}
             </td>
             <td>
-             {$line.unit_price|crmMoney}
+             {$line.unit_price|crmMoney:$currency}
             </td>
             <td>
-             {$line.line_total|crmMoney}
+             {$line.line_total|crmMoney:$currency}
             </td>
            </tr>
           {/foreach}
@@ -6623,7 +6627,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
        {ts}Total Amount{/ts}
       </td>
       <td {$valueStyle}>
-       {$formValues.total_amount|crmMoney}
+       {$formValues.total_amount|crmMoney:$currency}
       </td>
      </tr>
 
@@ -6827,13 +6831,13 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}
+{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 
-{ts}Total Amount{/ts}: {$amount|crmMoney}
+{ts}Total Amount{/ts}: {$amount|crmMoney:$currency}
 {else}
-{ts}Amount{/ts}: {$amount|crmMoney} {if $amount_level } - {$amount_level} {/if}
+{ts}Amount{/ts}: {$amount|crmMoney:$currency} {if $amount_level } - {$amount_level} {/if}
 {/if}
 {/if}
 {if $receive_date}
@@ -6949,7 +6953,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {/if}
 {if $is_deductible AND $price}
 
-{ts 1=$price|crmMoney}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}{/if}
+{ts 1=$price|crmMoney:$currency}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}{/if}
 {/if}
 
 {if $customPre}
@@ -7046,10 +7050,10 @@ rule for Organizations to find the potential duplicates and merge them if approp
               {$line.qty}
              </td>
              <td>
-              {$line.unit_price|crmMoney}
+              {$line.unit_price|crmMoney:$currency}
              </td>
              <td>
-              {$line.line_total|crmMoney}
+              {$line.line_total|crmMoney:$currency}
              </td>
             </tr>
            {/foreach}
@@ -7062,7 +7066,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
          {ts}Total Amount{/ts}
         </td>
         <td {$valueStyle}>
-         {$amount|crmMoney}
+         {$amount|crmMoney:$currency}
         </td>
        </tr>
 
@@ -7073,7 +7077,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
          {ts}Amount{/ts}
         </td>
         <td {$valueStyle}>
-         {$amount|crmMoney} {if $amount_level} - {$amount_level}{/if}
+         {$amount|crmMoney:$currency} {if $amount_level} - {$amount_level}{/if}
         </td>
        </tr>
 
@@ -7305,7 +7309,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
       {if $is_deductible AND $price}
         <tr>
          <td colspan="2" {$valueStyle}>
-          <p>{ts 1=$price|crmMoney}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}</p>
+          <p>{ts 1=$price|crmMoney:$currency}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}</p>
          </td>
         </tr>
       {/if}
@@ -7390,13 +7394,13 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}
+{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 
-{ts}Total Amount{/ts}: {$amount|crmMoney}
+{ts}Total Amount{/ts}: {$amount|crmMoney:$currency}
 {else}
-{ts}Amount{/ts}: {$amount|crmMoney} {if $amount_level } - {$amount_level} {/if}
+{ts}Amount{/ts}: {$amount|crmMoney:$currency} {if $amount_level } - {$amount_level} {/if}
 {/if}
 {/if}
 {if $receive_date}
@@ -7512,7 +7516,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {/if}
 {if $is_deductible AND $price}
 
-{ts 1=$price|crmMoney}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}{/if}
+{ts 1=$price|crmMoney:$currency}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}{/if}
 {/if}
 
 {if $customPre}
@@ -7609,10 +7613,10 @@ rule for Organizations to find the potential duplicates and merge them if approp
               {$line.qty}
              </td>
              <td>
-              {$line.unit_price|crmMoney}
+              {$line.unit_price|crmMoney:$currency}
              </td>
              <td>
-              {$line.line_total|crmMoney}
+              {$line.line_total|crmMoney:$currency}
              </td>
             </tr>
            {/foreach}
@@ -7625,7 +7629,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
          {ts}Total Amount{/ts}
         </td>
         <td {$valueStyle}>
-         {$amount|crmMoney}
+         {$amount|crmMoney:$currency}
         </td>
        </tr>
 
@@ -7636,7 +7640,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
          {ts}Amount{/ts}
         </td>
         <td {$valueStyle}>
-         {$amount|crmMoney} {if $amount_level} - {$amount_level}{/if}
+         {$amount|crmMoney:$currency} {if $amount_level} - {$amount_level}{/if}
         </td>
        </tr>
 
@@ -7868,7 +7872,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
       {if $is_deductible AND $price}
         <tr>
          <td colspan="2" {$valueStyle}>
-          <p>{ts 1=$price|crmMoney}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}</p>
+          <p>{ts 1=$price|crmMoney:$currency}The value of this premium is %1. This may affect the amount of the tax deduction you can claim. Consult your tax advisor for more information.{/ts}</p>
          </td>
         </tr>
       {/if}
@@ -16119,7 +16123,7 @@ or need to modify your payment schedule.{/ts}</p>
 </html>
 ', @tpl_ovid_uf_notify, 0,          1) ;
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -16168,6 +16172,11 @@ INSERT INTO `civicrm_dashboard`
 
 -- navigation 
 
+INSERT INTO civicrm_navigation
+ ( domain_id, label, name, url, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+ ( @domainID, 'Home', 'Home', 'civicrm/dashboard&reset=1', NULL, '', NULL, 1, NULL, 0);
+ 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
@@ -16228,7 +16237,8 @@ VALUES
     ( @domainID, 'civicrm/group/add&reset=1',                               'New Group',              'New Group',            'edit groups',      '',             @contactlastID, '1', NULL,  8 ), 
     ( @domainID, 'civicrm/group&reset=1',                                   'Manage Groups',          'Manage Groups',        'access CiviCRM',   '',             @contactlastID, '1', '1',   9 ), 
     ( @domainID, 'civicrm/admin/tag&reset=1&action=add',                    'New Tag',                'New Tag',              'administer CiviCRM', '',           @contactlastID, '1', NULL, 10 ), 
-    ( @domainID, 'civicrm/admin/tag&reset=1',                               'Manage Tags (Categories)', 'Manage Tags (Categories)', 'administer CiviCRM', '',     @contactlastID, '1', NULL, 11 );
+    ( @domainID, 'civicrm/admin/tag&reset=1',                               'Manage Tags (Categories)', 'Manage Tags (Categories)', 'administer CiviCRM', '',     @contactlastID, '1','1', 11 ),
+    ( @domainID, 'civicrm/contact/deduperules&reset=1',  'Find and Merge Duplicate Contacts', 'Find and Merge Duplicate Contacts', 'administer dedupe rules,merge duplicate contacts', 'OR', @contactlastID, '1', NULL, 12 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16422,9 +16432,8 @@ SET @managelastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, 'civicrm/admin/deduperules&reset=1',  'Find and Merge Duplicate Contacts', 'Find and Merge Duplicate Contacts', 'administer CiviCRM', '', @managelastID, '1', NULL, 1 ), 
-    ( @domainID, 'civicrm/admin/access&reset=1',       'Access Control',                    'Access Control',                    'administer CiviCRM', '', @managelastID, '1', NULL, 2 ), 
-    ( @domainID, 'civicrm/admin/synchUser&reset=1',    'Synchronize Users to Contacts',     'Synchronize Users to Contacts',     'administer CiviCRM', '', @managelastID, '1', NULL, 3 );
+    ( @domainID, 'civicrm/admin/access&reset=1',       'Access Control',                    'Access Control',                    'administer CiviCRM', '', @managelastID, '1', NULL, 1 ),
+    ( @domainID, 'civicrm/admin/synchUser&reset=1',    'Synchronize Users to Contacts',     'Synchronize Users to Contacts',     'administer CiviCRM', '', @managelastID, '1', NULL, 2 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16447,9 +16456,11 @@ VALUES
     ( @domainID, 'civicrm/admin/options/instant_messenger_service&group=instant_messenger_service&reset=1',            'Instant Messenger Services',     'Instant Messenger Services',       'administer CiviCRM', '',   @optionListlastID, '1', NULL, 10 ), 
     ( @domainID, 'civicrm/admin/locationType&reset=1',                                                                 'Location Types (Home, Work...)', 'Location Types (Home, Work...)',   'administer CiviCRM', '',   @optionListlastID, '1', NULL, 11 ), 
     ( @domainID, 'civicrm/admin/options/mobile_provider&group=mobile_provider&reset=1',                                'Mobile Phone Providers', 'Mobile Phone Providers',                   'administer CiviCRM', '',   @optionListlastID, '1', NULL, 12 ), 
-    ( @domainID, 'civicrm/admin/options/phone_type&group=phone_type&reset=1',                                          'Phone Types',            'Phone Types',                              'administer CiviCRM', '',   @optionListlastID, '1', NULL, 13 ), 
-    ( @domainID, 'civicrm/admin/options/preferred_communication_method&group=preferred_communication_method&reset=1','Preferred Communication Methods', 'Preferred Communication Methods',   'administer CiviCRM', '',   @optionListlastID, '1', NULL, 14 ),
-    ( @domainID, 'civicrm/admin/options/subtype&reset=1',                                                              'Contact Types',       'Contact Types',                         'administer CiviCRM', '',   @optionListlastID, '1', NULL, 15 );
+    ( @domainID, 'civicrm/admin/options/phone_type&group=phone_type&reset=1',                                          'Phone Types',            'Phone Types',                              'administer CiviCRM', '',   @optionListlastID, '1', NULL, 13 ),  
+    ( @domainID, 'civicrm/admin/options/website_type&group=website_type&reset=1',                                      'Website Types',          'Website Types',                            'administer CiviCRM', '',   @optionListlastID, '1', NULL, 14 ),
+    ( @domainID, 'civicrm/admin/options/preferred_communication_method&group=preferred_communication_method&reset=1',  'Preferred Communication Methods', 'Preferred Communication Methods', 'administer CiviCRM', '',   @optionListlastID, '1', NULL, 15 ),
+    ( @domainID, 'civicrm/admin/options/subtype&reset=1',                                                              'Contact Types',          'Contact Types',                            'administer CiviCRM', '',   @optionListlastID, '1', NULL, 16 ),
+    ( @domainID, 'civicrm/admin/options/wordreplacements&reset=1',                                                     'Word Replacements',      'Word Replacements',                        'administer CiviCRM', '',   @optionListlastID, '1', NULL, 17 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16844,4 +16855,31 @@ INSERT INTO civicrm_navigation
 VALUES    
     ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Pledged But not Paid Report',        'Pledged But not Paid Report',  'access CiviPledge',       '',  @reportlastID,  '1', NULL, 24 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
- UPDATE civicrm_domain SET version = '3.2.beta3';
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Bookkeeping Transactions Report', 'contribute/bookkeeping', 'Shows Bookkeeping Transactions Report', 'access CiviContribute', 'a:26:{s:6:"fields";a:10:{s:12:"display_name";s:1:"1";s:12:"receive_date";s:1:"1";s:12:"total_amount";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:7:"trxn_id";s:1:"1";s:10:"invoice_id";s:1:"1";s:12:"check_number";s:1:"1";s:21:"payment_instrument_id";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:2:"id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:11:"description";s:37:"Shows Bookkeeping Transactions Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:1:"0";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";s:9:"domain_id";i:1;} ');
+ 
+SET @instanceID:=LAST_INSERT_ID( );
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Bookkeeping Transactions Report', 'Bookkeeping Transactions Report', 'access CiviContribute', '', @reportlastID, '1', NULL, 25 );
+
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Grant Report', 'grant', 'Grant Report', 'access CiviGrant', 'a:37:{s:6:"fields";a:2:{s:12:"display_name";s:1:"1";s:25:"application_received_date";s:1:"1";}s:15:"display_name_op";s:3:"has";s:18:"display_name_value";s:0:"";s:12:"gender_id_op";s:2:"in";s:15:"gender_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"grant_type_op";s:2:"in";s:16:"grant_type_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:18:"amount_granted_min";s:0:"";s:18:"amount_granted_max";s:0:"";s:17:"amount_granted_op";s:3:"lte";s:20:"amount_granted_value";s:0:"";s:20:"amount_requested_min";s:0:"";s:20:"amount_requested_max";s:0:"";s:19:"amount_requested_op";s:3:"lte";s:22:"amount_requested_value";s:0:"";s:34:"application_received_date_relative";s:1:"0";s:30:"application_received_date_from";s:0:"";s:28:"application_received_date_to";s:0:"";s:28:"money_transfer_date_relative";s:1:"0";s:24:"money_transfer_date_from";s:0:"";s:22:"money_transfer_date_to";s:0:"";s:23:"grant_due_date_relative";s:1:"0";s:19:"grant_due_date_from";s:0:"";s:17:"grant_due_date_to";s:0:"";s:11:"description";s:12:"Grant Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviGrant";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+
+SET @instanceID:=LAST_INSERT_ID( );
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Grant Report', 'Grant Report', 'access CiviGrant', '',@reportlastID, '1', NULL, 26 );
+
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+ UPDATE civicrm_domain SET version = '3.2.3';

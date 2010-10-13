@@ -30,7 +30,14 @@
 <div class="crm-form-block crm-search-form-block">
 <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
 <div class="crm-submit-buttons">
-   {include file="CRM/common/formButtons.tpl"}
+	{include file="CRM/common/formButtons.tpl"}
+	{*  add dupe buttons *}
+	{if $isDuplicate}
+		<span class="crm-button crm-button_qf_Contact_upload_duplicate">
+        	{$form._qf_Contact_upload_duplicate.html}
+        </span>
+    {/if}
+    <div class="spacer"></div>
 </div>
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
@@ -47,7 +54,52 @@
         <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
             {$form._qf_Contact_refresh_dedupe.html}
         </span>
-		</td><td>
+		</td>
+		</tr>
+        <tr>
+        <td>
+            <table class="form-layout-compressed">
+                 <tr>
+                 <td>
+                    {$form.nick_name.label}<br />
+                    {$form.nick_name.html|crmReplace:class:big}
+                </td>
+                {if $contactType eq "Individual"}
+                 <td>
+                    
+                {$form.custom_42_38.label}<br />
+                {$form.custom_42_38.html}                    
+                </td>
+                <td>
+                    
+                {$form.custom_60_38.label}<br />
+                {$form.custom_60_38.html}                    
+                </td>
+                {/if}
+                 <td colspan="2">
+                    {$form.contact_source.label}<br />
+                    {$form.contact_source.html}
+                </td>
+                
+                
+                </tr>
+            </table>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        {foreach from = $editOptions item ="title" key="name"}
+        {if $name eq "Address"}
+                {include file="CRM/Contact/Form/Edit/$name.tpl"}
+        {/if}
+        {/foreach}
+        </td>
+        
+        </tr>
+        
+        
+		<tr>
+		<td>
 		<table class="form-layout-compressed">
             {foreach from=$blocks item="label" key="block"}
                { include file="CRM/Contact/Form/Edit/$block.tpl" }
@@ -55,8 +107,7 @@
 		</table>
 		<table class="form-layout-compressed">
             <tr class="last-row">
-              <td>{$form.contact_source.label}<br />
-                  {$form.contact_source.html}
+              <td>
               </td>
               <td>{$form.external_identifier.label}<br />
                   {$form.external_identifier.html}
@@ -71,11 +122,9 @@
         {if $contactType eq "Individual"}
         <tr>
         <td>
-        </td>
-        <td>
         <table>
          <tr>
-         <td colspan="2">
+         <td>
             {$form.current_employer.label}&nbsp;&nbsp;<br />
             {$form.current_employer.html|crmReplace:class:twenty}
             <div id="employer_address" style="display:none;"></div>
@@ -84,34 +133,12 @@
             {$form.job_title.label}<br />
             {$form.job_title.html}
         </td>
-        <td>
-            {$form.nick_name.label}<br />
-            {$form.nick_name.html|crmReplace:class:big}
-        </td>
         </tr>
         </table>
         </td>
         </tr>
         {/if}
     </table>
-    
-    {*  add dupe buttons *}
-        
-        {if $isDuplicate}
-            &nbsp;&nbsp;
-            <span class="crm-button crm-button_qf_Contact_upload_duplicate">
-                {$form._qf_Contact_upload_duplicate.html}
-            </span>
-        {/if}
-        <div class="spacer"></div>
-    
-        
-    {foreach from = $editOptions item = "title" key="name"}
-        {if $name eq "Address"}
-                {include file="CRM/Contact/Form/Edit/$name.tpl"}
-        {/if}
-    {/foreach}
-        
         
    </div>
  </div><!-- /.crm-accordion-body -->

@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -92,6 +92,12 @@ class CRM_Member_DAO_MembershipStatus extends CRM_Core_DAO
      * @var string
      */
     public $name;
+    /**
+     * Label for Membership Status
+     *
+     * @var string
+     */
+    public $label;
     /**
      * Event when this status starts.
      *
@@ -188,10 +194,22 @@ class CRM_Member_DAO_MembershipStatus extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_INT,
                     'required' => true,
                 ) ,
-                'name' => array(
+                'membership_status' => array(
                     'name' => 'name',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Name') ,
+                    'title' => ts('Membership Status') ,
+                    'maxlength' => 128,
+                    'size' => CRM_Utils_Type::HUGE,
+                    'import' => true,
+                    'where' => 'civicrm_membership_status.name',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
+                ) ,
+                'label' => array(
+                    'name' => 'label',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Label') ,
                     'maxlength' => 128,
                     'size' => CRM_Utils_Type::HUGE,
                 ) ,

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -43,12 +43,12 @@
         {include file="CRM/common/formButtons.tpl" location="top"}
         </div>
 	<table class="form-layout-compressed">
-    	{if $form.template_id}
-    		<tr class="crm-event-manage-eventinfo-form-block-template_id">
-    			<td class="label">{$form.template_id.label}</td>
-    			<td>{$form.template_id.html} {help id="id-select-template"}</td>
-    		</tr>
-    	{/if}
+    	       {if $form.template_id}
+			<tr class="crm-event-manage-eventinfo-form-block-template_id">
+				<td class="label">{$form.template_id.label}</td>
+    				<td>{$form.template_id.html} {help id="id-select-template"}</td>
+    			</tr>
+    		{/if}
 		{if $form.template_title}
 			<tr class="crm-event-manage-eventinfo-form-block-template_title">
 				<td class="label">{$form.template_title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_event' field='template_title' id=$eventID}{/if}</td>
@@ -155,9 +155,10 @@
 		<script type="text/javascript">
 			cj(document).ready(function() {
 				{/literal}
-				buildCustomData( '{$customDataType}' );
-				{if $customDataSubType}
+				{if $customDataSubType} 
 					buildCustomData( '{$customDataType}', {$customDataSubType} );
+				{else}
+					buildCustomData( '{$customDataType}' );
 				{/if}
 				{literal}
 			});

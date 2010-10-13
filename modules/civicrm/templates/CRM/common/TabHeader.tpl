@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -29,7 +29,7 @@
    {foreach from=$tabHeader key=tabName item=tabValue}
       <li id="tab_{$tabName}" class="crm-tab-button ui-corner-all {if !$tabValue.valid}disabled{/if}">
       {if $tabValue.link and $tabValue.active}
-         <a href="{$tabValue.link}" title="{$tabValue.title}{if !$tabValue.valid} ({ts}disabled{/ts}){/if}">{$tabValue.title}</a>
+         <a href="{$tabValue.link}" title="{$tabValue.title}{if !$tabValue.valid} ({ts}disabled{/ts}){/if}"><span> </span> {$tabValue.title}</a>
       {else}
          <span {if !$tabValue.valid}title="{ts}disabled{/ts}"{/if}>{$tabValue.title}</span>
       {/if}
@@ -42,17 +42,31 @@
 
 <script type="text/javascript"> 
    var selectedTab = 'EventInfo';
-   {if $selectedTab}selectedTab = "{$selectedTab}";{/if}    
+   {if $selectedTab}selectedTab = "{$selectedTab}";{/if}
+   var spinnerImage = '<img src="{$config->resourceBase}i/loading.gif" style="width:10px;height:10px"/>';    
 {literal}
+//explicitly stop spinner
+function stopSpinner( ) {
+ cj('li.crm-tab-button').each(function(){ cj(this).find('span').text(' ');})	 
+}
+
     cj( function() {
         var tabIndex = cj('#tab_' + selectedTab).prevAll().length
         cj("#mainTabContainer").tabs( {
             selected: tabIndex,
+            spinner: spinnerImage,
             select: function(event, ui) {
                 // we need to change the action of parent form, so that form submits to correct page
                 var url = cj.data(ui.tab, 'load.tabs');
-                var actionUrl = url.split( '?' );
-                cj(this).parents("form").attr("action", actionUrl[0] )                
+                {/literal}{if $config->userFramework eq 'Drupal'}{literal}
+                    var actionUrl = url.split( '?' );
+                    var actualUrl = actionUrl[0];
+                {/literal}{else}{literal}
+                    var actionUrl = url.split( '&' );
+                    var actualUrl = actionUrl[0] + '&' + actionUrl[1];
+                {/literal}{/if}{literal}
+
+                cj(this).parents("form").attr("action", actualUrl )                
                 
                 if ( !global_formNavigate ) {
                     var message = '{/literal}{ts escape="js"}Confirm\n\nAre you sure you want to navigate away from this tab?\n\nYou have unsaved changes.\n\nPress OK to continue, or Cancel to stay on the current tab.{/ts}{literal}';
@@ -63,7 +77,8 @@
                     }
                 }
                 return true;
-            }
+            },
+	    load: stopSpinner
         });        
     });
 {/literal}

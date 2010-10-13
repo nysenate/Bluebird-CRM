@@ -25,7 +25,8 @@
 #crm-container .crm-content-block .crm-content-block {padding:0px;}
 /* TABLE STYLING */
 
-#crm-container table {
+#crm-container table,
+table.crm-table-group-summary {
     margin: 0em 0em 1em;
     border-collapse: collapse;
     width: 100%;
@@ -102,7 +103,8 @@ th.sorting_asc {
 /* Set background back to normal gray for form labels which use <th>. Temporary fix until we standardize form layout markup. */
 #crm-container table.form-layout-compressed tbody th.label { background-color: #F7F7F7; }
 
-#crm-container tbody{
+#crm-container tbody,
+table.crm-table-group-summary tbody {
     border-top: none
 }
 
@@ -367,11 +369,13 @@ div.spacer,
     border:none;
 }
 
-#crm-container .crm-section {
+#crm-container .crm-section,
+.crm-section {
     margin-bottom:1em;
 }
 
-#crm-container .crm-section .label {
+#crm-container .crm-section .label,
+.crm-section .label {
     float:left;
     width:15%;
     text-align: right;
@@ -381,7 +385,8 @@ div.spacer,
     text-align: left;
 }
 
-#crm-container .crm-section .content {
+#crm-container .crm-section .content,
+.crm-section .content {
     margin-left:16%;
 }
 
@@ -726,7 +731,14 @@ div.spacer,
 /* Following styles are used to remove the white bullets from the Garland Theme */
 div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
     background-image: none;
+} 
+
+/* But allow them for the help at the top of forms
+*/
+#crm-container #help ul li {
+    background-image: url(menu-leaf.png);
 }
+
 
 /* Styles from jsTree.com menu. Copied here since Drupal styles over-ride otherwise. */
 /* DOTS */
@@ -771,7 +783,7 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
 }
 #crm-container .tree-default li span.clicked { padding:0px 3px 0px 20px; }
 #crm-container .tree-default li a.loading,
-#crm-container .crm-loading-element { background-image:url("../i/loading.gif"); }
+#crm-container .crm-loading-element { background-image:url("../i/loading.gif"); width:20px; height:20px;}
 #crm-container .crm-form-block .crm-loading-element { background-image:url("../i/loading-E6E6DC.gif"); }
 
 #crm-container .tree li {position: relative;}
@@ -1357,7 +1369,8 @@ editor specific classes
     width: 58em;
 }
 
-#crm-container.clear { /* generic container (i.e. div) for floating buttons */
+#crm-container.clear,
+.crm-group-summary .clear { /* generic container (i.e. div) for floating buttons */
     overflow: hidden;
     width: 100%;
 }
@@ -1647,10 +1660,11 @@ table.campaign td,
     margin:0px 0px 0px 8px;
 }
 
-#crm-container #crm-contact-actions-list li { 
+#crm-container .ac_results li { 
 	float:none; 
-	padding: 2px 4px;
+	padding: 4px;
 	margin:0px;
+	line-height: 15px;
 	}
 
 /* Styles for Action Items &  Action Link pop-up */
@@ -1701,7 +1715,17 @@ table.campaign td,
     padding:0px 14px 0 5px;
     background: url("../i/TreePlus.gif") no-repeat right 1px;
     border-left:none;
+    z-index: 2;
 }
+    .btn-slide-active { z-index: 10;} 
+
+.crm-configure-actions,
+.crm-event-participants,
+.crm-event-links,
+.crm-event-more { 
+    min-width:85px; 
+    z-index: 1;
+    }
 
 #crm-container .panel li a {
     text-decoration: none;
@@ -1901,10 +1925,6 @@ div.grippie {
 
 
 
-#crm-container div#contactTopBar td.label {
-    width : 14%;
-}
-
 #crm-container div.contact_panel td.label {
     width : 28%;
 }
@@ -1915,12 +1935,6 @@ div.grippie {
 
 #crm-container #customFields {
     width: 100%;
-}
-
-#crm-container #customFields div.contact_panel td {
-    BORDER-BOTTOM  : lightgray 1px solid; 
-    padding: 4px;
-    vertical-align: top;
 }
 
 #crm-container #customFields div.contact_panel td.talabel {
@@ -2096,6 +2110,8 @@ div.grippie {
     margin-bottom: -6px;
 }
 
+.ui-datepicker { width: 17em; padding: .2em .2em 0; z-index: 9999 !important; }
+
 #crm-container .cke_editor {
     border: 0px none;
 }
@@ -2106,8 +2122,12 @@ div.grippie {
 #crm-container div#printer-friendly {
     float: right;
     position:relative;
-    margin: 0px 0px 0px 0px;
+    margin:-2em 0.5em 0 0;
 }
+    /* For Joomla, margin 0 works correctly */
+    #crm-container table#crm-content div#printer-friendly {
+        margin: 0;
+    }
 
 #crm-container .order-icon {
     height: 15px;
@@ -2125,12 +2145,16 @@ div.grippie {
 }
 
 .ac_results-inner,
-.crm-participant-inner,
+.crm-participant-list-inner,
 .crm-event-links-list-inner,
 .crm-create-new-list-inner,
 .crm-contact-actions-list-inner  {
     background-color:#2f2f2e;
     padding:4px;
+}
+
+.crm-create-new-list-inner {
+  width: 124px!important;			   
 }
 
 /* crm button style */
@@ -2190,13 +2214,17 @@ div.grippie {
     cursor: pointer;
     border:1px solid #3e3e3e;
     }
+    #crm-container .crm-button {
+        padding:0;
+    }
+
     #crm-container input.form-submit,
     #crm-container input[type=button],
     #crm-container input.form-submit-inline { padding:2px 6px;}
     #crm-container .crm-button input[type=button],
     #crm-container .crm-button input.form-submit,
     #crm-container .crm-button input.form-submit-inline{
-        padding:0px;
+        padding:2px 4px;
         margin:0px;
         background: none;
         border:none;
@@ -2251,24 +2279,23 @@ div.grippie {
 #crm-contact-actions-wrapper{
 	position:relative;
 	z-index:15;
+	float: left;
 	}
 
 #crm-event-links-list,
 #crm-create-new-list,
-#crm-contact-actions-list{
-	position:absolute;
-	display:none;
-	top:24px;
-	left:0px;
-	}
-
+#crm-contact-actions-list,
 #crm-participant-list{
 	position:absolute;
 	display:none;
 	top:24px;
-	left:124px;
+	width:220px;
+	left:0px;
 	}
 
+#crm-event-links-link {width:90px;}
+#crm-participant-link { width:120px;}
+#crm-create-new-list{width:124px;}
 .clear { clear: both; }
 
 #crm-contact-actions-list .icon { background-image:url("../i/icons/jquery-ui-FFFFFF.png"); }
@@ -2312,6 +2339,22 @@ div.grippie {
     border-left: 1px solid #a7a7a7;
     border-right: 1px solid #a7a7a7;
     }    
+
+/* =================== */
+/* ! contact actions   */
+/* =================== */
+
+
+#crm-contact-actions-wrapper {
+        width:85px; /* fixes ie bug where button is toooooo long */
+        }
+#crm-contact-actions-list {
+        width:495px; /* fixes ie bug  caused by above*/
+        }
+
+#crm-create-new-link {
+    width:95px;
+    }
 
 /* setup for icons */
 
@@ -2426,10 +2469,8 @@ span.icon {
 
 .crm-accordion-header {
     background-color:#32414f; 
-    -moz-border-radius: 4px; 
     padding:4px 8px;
     cursor: pointer;
-    margin-bottom:4px;
 }
 
 
@@ -2490,6 +2531,42 @@ span.icon {
 	font-weight: normal;
 	padding-left: 0px;	
 	}
+
+.crm-accordion-wrapper {
+    margin-bottom:4px;
+    }
+
+.crm-accordion-closed .crm-accordion-header {
+    -moz-border-radius: 4px; 
+    -webkit-border-radius: 4px;   
+    -khtml-border-radius: 4px; 
+    border-radius:4px; 
+    }
+
+.crm-accordion-open>.crm-accordion-header {
+    -moz-border-radius: 4px 4px 0px 0px; 
+    -webkit-border-radius: 4px 4px 0px 0px;   
+    -khtml-border-radius: 4px 4px 0px 0px; 
+    border-radius:4px 4px 0px 0px;
+    }
+
+.crm-accordion-open>.crm-accordion-body {
+    -moz-border-radius: 0px 0px 4px 4px; 
+    -webkit-border-radius: 0px 0px 4px 4px;   
+    -khtml-border-radius: 0px 0px 4px 4px; 
+    border-radius:0px 0px 4px 4px;
+    border:1px solid #70716B;
+    border-top:0px;
+    padding: 4px; 
+    }
+/* ==================================================================================== */
+/* ! hack to force pages with master accordions 
+     to work, needs updating of tpl files   */
+/* ==================================================================================== */
+#crm-container .crm-master-accordion-header+.crm-accordion-body  { 
+    border:none;
+    padding: 0px;
+    }
 
 
 /* civicrm admin menu */
@@ -2601,7 +2678,7 @@ div#crm-toolTip #hide-tooltip {
 
 .crm-summary-link {
     position: relative;
-    z-index: 5;
+    z-index: 16;
 }
 
 .crm-tooltip-wrapper {
@@ -2613,7 +2690,20 @@ div#crm-toolTip #hide-tooltip {
     padding-bottom: 10px;
     background: transparent url('../i/overlay-pointer.png') no-repeat bottom left;
     font-size:12px;
+    display:none;
 }
+
+.crm-tooltip-down .crm-tooltip-wrapper {
+    top:20px;
+    padding-top: 10px;
+    background: transparent url('../i/overlay-pointer.png') no-repeat top left;
+    overflow: visible;
+}
+
+.crm-tooltip-active {z-index: 20;}
+
+.crm-tooltip-active .crm-tooltip-wrapper {display:block;}
+
 
 .crm-summary-group h2 {
 	padding:2px 4px 0 4px;
@@ -2628,6 +2718,8 @@ div#crm-toolTip #hide-tooltip {
     background-color: #2f2f2e;
     color:#FFF;
     margin-left:11px;
+    min-width: 20px;
+    min-height: 20px;
 }
 #crm-container .crm-tooltip table,
 #crm-container .crm-tooltip table tr td {border:none;}
@@ -2636,13 +2728,17 @@ div#crm-toolTip #hide-tooltip {
     margin-bottom: 0px;
 }
 
-#crm-container .crm-summary-group .crm-section .label {
+/* crm-summary-group appears outside crm-container for contact summary icon overlay */
+#crm-container .crm-summary-group .crm-section .label,
+.crm-summary-group .crm-section .label {
     text-align: left;
     width:40%;
     font-size:11px;
     color:#A7A7A7;
 }
-#crm-container .crm-summary-group .crm-section .content {
+
+#crm-container .crm-summary-group .crm-section .content,
+.crm-summary-group .crm-section .content {
     margin-left:41%;
 }
 
@@ -2760,6 +2856,7 @@ div#civicrm-dashboard form {
 #crm-container table {
     border:1px solid #efefef;
 }
+.crm-tooltip #crm-container table {border-color:transparent;}
 
 #crm-container .crm-form-block table {
     border:none;
@@ -2849,12 +2946,16 @@ table.crm-info-panel td {
 
 #crm-container div#contactTopBar td.label,
 #crm-container div.contact_panel td.label,
+#crm-container #customFields div.contact_panel td.label,
 table.crm-info-panel td.label {
     background-color: #fafafa;
-    width:150px;
+    width:100px;
     text-align: left;
     color: #7a7a60;
 }
+    table.crm-info-panel td.label {
+        width:150px;
+    }
 
 #crm-container .form-layout td.label, 
 #crm-container .form-layout-compressed td.label,
@@ -2896,6 +2997,10 @@ table.crm-info-panel td.label {
 
 #crm-container .crm-tasks table {
     margin: 0;
+}
+
+.crm-results-block {
+    position:relative;
 }
 
 /* accordion-colors */
@@ -2954,7 +3059,7 @@ del,
 #crm-container input.form-submit-inline
 {-moz-border-radius: 3px; -webkit-border-radius: 3px;   -khtml-border-radius: 3px; border-radius:3px; }
 
-#crm-container .crm-accordion-header,
+
 #crm-container div.status,
 div.m ul#civicrm-menu,
 #crm-container #restmsg,
@@ -2974,6 +3079,7 @@ div.m ul#civicrm-menu,
 #crm-container div.messages,
 div#crm-toolTip
 {-moz-border-radius: 4px; -webkit-border-radius: 4px;   -khtml-border-radius: 4px; border-radius:4px; }
+
 
 /* fix autocomplete colors/styles */
 
@@ -3056,16 +3162,6 @@ div#crm-toolTip
 #crm-container span.crm-button_qf_Main_upload input {
     font-size: 1.2em;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 /*

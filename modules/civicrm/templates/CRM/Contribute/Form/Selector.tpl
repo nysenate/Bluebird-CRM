@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -65,12 +65,12 @@
     </td>
     <td class="crm-contribution-type crm-contribution-type_{$row.contribution_type_id}">{$row.contribution_type}</td>
     <td class="crm-contribution-source">{$row.contribution_source}</td>
-    <td class="crm-contribution-receive_date">{$row.receive_date|truncate:10:''|crmDate}</td>
-    <td class="crm-contribution-thankyou_date">{$row.thankyou_date|truncate:10:''|crmDate}</td>
+    <td class="crm-contribution-receive_date">{$row.receive_date|crmDate}</td>
+    <td class="crm-contribution-thankyou_date">{$row.thankyou_date|crmDate}</td>
     <td class="crm-contribution-status"> 
-        {$row.contribution_status_id}<br />
+        {$row.contribution_status}<br />
         {if $row.cancel_date}    
-        {$row.cancel_date|truncate:10:''|crmDate}
+        {$row.cancel_date|crmDate}
         {/if}
     </td>
     <td class="crm-contribution-product_name">{$row.product_name}</td>

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -649,5 +649,43 @@ class CRM_Utils_Hook {
                   $config->userHookClass .
                   '::invoke( 2, $options, $name, $null, $null, $null, \'civicrm_optionValues\' );' );
                                     
+    }
+    
+    /**
+     * This hook allows modification of the navigation menu.
+     * @param $params associated array of navigation menu entry to Modify/Add 
+     * @access public
+     */
+    static function navigationMenu( &$params ) {
+        $config =& CRM_Core_Config::singleton( );
+        require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userHookClass ) . '.php' );
+        $null =& CRM_Core_DAO::$_nullObject;
+        
+        return   
+            eval( 'return ' .
+                  $config->userHookClass .
+                  '::invoke( 1, $params, $null, $null, $null, $null, \'civicrm_navigationMenu\' );' );
+                                    
+    }
+
+    /**
+     * This hook allows modification of the data used to perform merging of duplicates.
+     * @param string $type the type of data being passed (cidRefs|eidRefs|relTables|sqls)
+     * @param array $data  the data, as described in $type
+     * @param int $mainId  contact_id of the contact that survives the merge
+     * @param int $otherId contact_id of the contact that will be absorbed and deleted
+     * @param array $tables when $type is "sqls", an array of tables as it may have been handed to the calling function
+     *
+     * @access public
+     */
+    static function merge( $type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL) {
+        $config =& CRM_Core_Config::singleton( );
+        require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userHookClass ) . '.php' );
+
+        return
+            eval( 'return ' .
+                $config->userHookClass .
+                '::invoke( 5, $type, $data, $mainId, $otherId, $tables , \'civicrm_merge\' );' );
+
     }
 }

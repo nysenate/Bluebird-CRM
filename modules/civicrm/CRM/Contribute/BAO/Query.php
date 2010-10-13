@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -116,6 +116,16 @@ class CRM_Contribute_BAO_Query
             $query->_whereTables['civicrm_contribution'] = 1;
             $query->_whereTables['contribution_status'] = 1;
         }
+
+        // get contribution_status label
+        if ( CRM_Utils_Array::value( 'contribution_status', $query->_returnProperties ) ) {
+            $query->_select['contribution_status']  = "contribution_status.label as contribution_status";
+            $query->_element['contribution_status'] = 1;
+            $query->_tables['civicrm_contribution'] = 1;
+            $query->_tables['contribution_status'] = 1;
+            $query->_whereTables['civicrm_contribution'] = 1;
+            $query->_whereTables['contribution_status'] = 1;
+        }
         
         // get payment instruments
         if ( CRM_Utils_Array::value( 'payment_instrument', $query->_returnProperties ) ) {
@@ -175,10 +185,12 @@ class CRM_Contribute_BAO_Query
        
         case 'contribution_date':
         case 'contribution_date_low':
+        case 'contribution_date_low_time':
         case 'contribution_date_high':
+        case 'contribution_date_high_time':
             // process to / from date
             $query->dateQueryBuilder( $values,
-                                      'civicrm_contribution', 'contribution_date', 'receive_date', 'Contribution Date', false );
+                                      'civicrm_contribution', 'contribution_date', 'receive_date', 'Contribution Date' );
             return;
 
         case 'contribution_amount':
@@ -550,7 +562,7 @@ class CRM_Contribute_BAO_Query
                                 'contribution_end_date'   => 1,
                                 'is_test'                 => 1,
                                 'is_pay_later'            => 1,
-                                'contribution_status_id'  => 1,
+                                'contribution_status'     => 1,
                                 'contribution_recur_id'   => 1, 
                                 'amount_level'            => 1,
                                 'contribution_note'       => 1

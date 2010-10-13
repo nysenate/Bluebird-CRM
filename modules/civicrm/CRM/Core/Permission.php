@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -386,7 +386,9 @@ class CRM_Core_Permission {
                       'access Contact Dashboard'          => ts( 'access Contact Dashboard' ),
                       'translate CiviCRM'                 => ts( 'translate CiviCRM' ),
                       'administer Tagsets'                => ts( 'administer Tagsets' ),
-                      'administer reserved tags'          => ts( 'administer reserved tags' )
+                      'administer reserved tags'          => ts( 'administer reserved tags' ),
+                      'administer dedupe rules'           => ts( 'administer dedupe rules' ),
+                      'merge duplicate contacts'          => ts( 'merge duplicate contacts' )
                       );
 
             if ( defined( 'CIVICRM_MULTISITE' ) && CIVICRM_MULTISITE ) {

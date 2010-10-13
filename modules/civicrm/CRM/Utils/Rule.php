@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -158,7 +158,7 @@ class CRM_Utils_Rule
     {
         $result = $default;
         if ( is_string( $value ) &&
-             preg_match( '/^\d\d\d\d-?\d\d-?\d\d(\s\d\d:\d{1,2})?$/', $value ) ) {
+             preg_match( '/^\d\d\d\d-?\d\d-?\d\d(\s\d\d:\d\d:\d\d|\d\d\d\d\d\d)?$/', $value ) ) {
             $result = $value;
         }
         
@@ -317,9 +317,6 @@ class CRM_Utils_Rule
         $value = str_replace( array( ' ', "\t", "\n" ), '', $value );
 
         $config =& CRM_Core_Config::singleton( );
-
-        setlocale(LC_MONETARY, $config->lcMonetary);
-        $localeInfo = localeconv( );
 
         if ( $config->monetaryThousandSeparator ) {
             $mon_thousands_sep = $config->monetaryThousandSeparator;

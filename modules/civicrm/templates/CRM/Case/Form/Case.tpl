@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -45,17 +45,20 @@
       </div> 
 {else}
 <table class="form-layout">
+    {if $activityTypeDescription }
+        <tr>
+            <div id="help">{$activityTypeDescription}</div>
+        </tr>
+    {/if}
 {if $clientName}
     <tr class="crm-case-form-block-clientName">
-	<td class="label font-size12pt">{ts}Client{/ts}</td>
-	<td class="font-size12pt bold view-value">{$clientName}</td>
+    	<td class="label font-size12pt">{ts}Client{/ts}</td>
+    	<td class="font-size12pt bold view-value">{$clientName}</td>
     </tr>
 {elseif !$clientName and $action eq 1} 
-    <tr class="form-layout-compressed" border="0">			      
-            {if $context eq 'standalone'}
-                {include file="CRM/Contact/Form/NewContact.tpl"}
-            {/if}
-    </tr>
+    {if $context eq 'standalone'}
+        {include file="CRM/Contact/Form/NewContact.tpl"}
+    {/if}
 {/if}
 {* activity fields *}
 {if $form.medium_id.html and $form.activity_location.html}
@@ -82,7 +85,7 @@
 {if $form.activity_subject.html}
     <tr class="crm-case-form-block-activity_subject">
        <td class="label">{$form.activity_subject.label}{help id="id-activity_subject" file="CRM/Case/Form/Case.hlp"}</td>
-       <td>{$form.activity_subject.html}</td>
+       <td>{$form.activity_subject.html|crmReplace:class:huge}</td>
     </tr>
 {/if}
 
@@ -105,20 +108,19 @@
     <tr class="crm-case-form-block-tag">
       <td class="label">{$form.tag.label}</td>
       <td class="view-value"><div class="crm-select-container">{$form.tag.html}</div>
-                             {literal}
-                             <script type="text/javascript">
-                                                     $("select[multiple]").crmasmSelect({
-                                                              addItemTarget: 'bottom',
-                                                              animate: true,
-                                                              highlight: true,
-                                                              sortable: true,
-                                                              respectParents: true
-                                                     });
-                              </script>
-                              {/literal}
+{literal}
+<script type="text/javascript">
+cj("select[multiple]").crmasmSelect({
+    addItemTarget: 'bottom',
+    animate: true,
+    highlight: true,
+    sortable: true,
+    respectParents: true
+});
+</script>
+{/literal}
       </td>
     </tr>
-
 {/if}
 
 <tr class="crm-case-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl"}</td></tr>	     

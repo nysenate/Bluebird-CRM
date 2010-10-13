@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -182,13 +182,14 @@ class CRM_Core_Error extends PEAR_ErrorStack {
         }
 
         $template->assign_by_ref('error', $error);
+        $errorDetails = CRM_Core_Error::debug( '', $error, false );
+        $template->assign_by_ref('errorDetails', $errorDetails);
         
         CRM_Core_Error::debug_var( 'Fatal Error Details', $error );
         CRM_Core_Error::backtrace( 'backTrace', true );
 
         if ( $config->initialized ) {
             $content  = $template->fetch( 'CRM/common/fatal.tpl' );
-            $content .= CRM_Core_Error::debug( 'Error Details:', $error, false );
             echo CRM_Utils_System::theme( 'page', $content, true );
         } else {
             echo "Sorry. A non-recoverable error has occurred. The error trace below might help to resolve the issue<p>";

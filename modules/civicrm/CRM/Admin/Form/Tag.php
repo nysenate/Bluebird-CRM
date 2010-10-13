@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -77,7 +77,8 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form
                 $this->_isTagSet = true;
             }
 
-            $allTag = array ('' => '- ' . ts('select') . ' -') + CRM_Core_PseudoConstant::tag();
+            require_once 'CRM/Core/BAO/Tag.php';
+            $allTag = array ('' => '- ' . ts('select') . ' -') + CRM_Core_BAO_Tag::getTagsNotInTagset( );
 
             if ( $this->_id ) {
                 unset( $allTag[$this->_id] );
@@ -125,11 +126,10 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form
                 $adminReservedTags = false;
             }
             $this->assign( 'adminReservedTags', $adminReservedTags );
-
+            
             parent::buildQuickForm( ); 
         }
     }
-
     
     /**
      * Function to process the form

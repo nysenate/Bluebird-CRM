@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,8 +23,6 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-
-
 <table class="form-layout">
 <tr>
     <td valign="top">
@@ -120,7 +118,7 @@
         {include file="CRM/common/Tag.tpl"}
         <br />
         {$form.privacy.label}<br />
-        {$form.privacy.html|replace:'<input type="hidden" name="privacy[do_not_trade]" value="" /><input id="privacy[do_not_trade]" name="privacy[do_not_trade]" type="checkbox" value="1" class="form-checkbox" /><label for="privacy[do_not_trade]">Do not trade</label>':""} {help id="id-privacy"}
+        {$form.privacy.html} {help id="id-privacy"}
     </td>
 </tr>
 <tr>       

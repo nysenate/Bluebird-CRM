@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,61 +33,12 @@
 {strip}
 
 {foreach from=$groupTree item=cd_edit key=group_id}
-    <fieldset>{if $preview_type eq 'group'}<legend>{$setTitle}</legend>{/if}
-    {if $cd_edit.help_pre}<div class="messages help">{$cd_edit.help_pre}</div><br />{/if}
-    <table class="form-layout">
-    {foreach from=$cd_edit.fields item=element key=field_id}
-    {if ($element.html_type eq 'CheckBox' || $element.html_type eq 'Radio') && $element.options_per_line }
-        {assign var="name" value=`$element.name`} 
-        {assign var="element_name" value=price_$field_id}
-        <tr class="crm-price-field-{$name}">
-           <td class="label">{$form.$element_name.label} </td>
-        <td>
-            {assign var="count" value="1"}
-                <table class="form-layout-compressed">
-                    <tr>
-                   {* sort by fails for option per line. Added a variable to iterate through the element array*}
-                   {assign var="index" value="1"}
-                   {foreach name=outer key=key item=item from=$form.$element_name}
-                        {if $index < 10}
-                            {assign var="index" value=`$index+1`}
-                        {else}
-                          <td class="labels font-light">{$form.$element_name.$key.html}</td>
-                             {if $count == $element.options_per_line}
-                                {assign var="count" value="1"}
-                    </tr>
-                    <tr>
-                            {else}
-                                {assign var="count" value=`$count+1`}
-                            {/if}
-                         {/if}
-                    {/foreach}                    
-                    </tr>
-            </table>
-        </td>
-        {if $element.help_post}
-            <tr>
-               <td>&nbsp;</td>
-               <td class="description">{$element.help_post}</td>
-            </tr>
-        {/if}
-    {else}
-        {assign var="name" value=`$element.name`} 
-        {assign var="element_name" value="price_"|cat:$field_id}  
-        <tr class="crm-price-field-{$name|escape}">
-           <td class="label">{$form.$element_name.label}</td>
-           <td>&nbsp;{$form.$element_name.html}</td>
-        </tr>		
-        {if $element.help_post}
-        <tr class="crm-price-set-help_post">
-           <td>&nbsp;</td>
-           <td class="description">{$element.help_post}</td>
-        </tr>
-        {/if}
-	{/if}
-    {/foreach}
-    </table>
-    {if $cd_edit.help_post}<br /><div class="messages help">{$cd_edit.help_post}</div>{/if}
+    <fieldset>
+	{if $preview_type eq 'group'}<legend>{$setTitle}</legend>{/if}
+    	   <table class="form-layout">
+       	       {assign var="priceSet" value=`$cd_edit`} 
+       	       {include file="CRM/Price/Form/PriceSet.tpl"}
+    	   </table>
     </fieldset>
 {/foreach}
 {/strip}

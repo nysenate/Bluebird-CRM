@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -91,56 +91,57 @@
 {/if}{literal}
 <script type="text/javascript">
        
-       cj(document).ready( function( ) {
-                 getChart( );
-                 cj('#chart_view').click(function( ) {
-		        if ( cj('#chart_view').hasClass('ui-state-default') ) { 
-			   cj('#chart_view').removeClass('ui-state-default').addClass('ui-state-active ui-tabs-selected');
-			   cj('#table_view').removeClass('ui-state-active ui-tabs-selected').addClass('ui-state-default');
-		 	   getChart( );
-			   cj('#tableData').children().html('');
-			}
-		 });
-		 cj('#table_view').click(function( ) {
-		 	if ( cj('#table_view').hasClass('ui-state-default') ) {
-			   cj('#table_view').removeClass('ui-state-default').addClass('ui-state-active ui-tabs-selected');
-			   cj('#chart_view').removeClass('ui-state-active ui-tabs-selected').addClass('ui-state-default');
-			   buildTabularView();
-		 	   cj('#chartData').children().html('');
-			}
-		 });
-           });        
+cj(document).ready( function( ) {
+    getChart( );
+    cj('#chart_view').click(function( ) {
+        if ( cj('#chart_view').hasClass('ui-state-default') ) { 
+            cj('#chart_view').removeClass('ui-state-default').addClass('ui-state-active ui-tabs-selected');
+            cj('#table_view').removeClass('ui-state-active ui-tabs-selected').addClass('ui-state-default');
+            getChart( );
+            cj('#tableData').children().html('');
+        }
+    });
+    cj('#table_view').click(function( ) {
+        if ( cj('#table_view').hasClass('ui-state-default') ) {
+            cj('#table_view').removeClass('ui-state-default').addClass('ui-state-active ui-tabs-selected');
+            cj('#chart_view').removeClass('ui-state-active ui-tabs-selected').addClass('ui-state-default');
+            buildTabularView();
+            cj('#chartData').children().html('');
+        }
+    });
+});        
+           
 function getChart( ) {
-           var year        = cj('#select_year').val( );
-           var charttype   = cj('#chart_type').val( );
-	   var date        = new Date()
-  	   var currentYear = date.getFullYear( );
-	   if ( !charttype ) charttype = 'bvg';     
-	   if ( !year ) year           = currentYear;
+   var year        = cj('#select_year').val( );
+   var charttype   = cj('#chart_type').val( );
+   var date        = new Date()
+   var currentYear = date.getFullYear( );
+   if ( !charttype ) charttype = 'bvg';     
+   if ( !year ) year           = currentYear;
 
-	  var chartUrl = {/literal}"{crmURL p='civicrm/ajax/chart'}"{literal};
-          chartUrl    += "?year=" + year + "&type=" + charttype + "&snippet=" + 4;
-	  
-          cj.ajax({
-                  url     : chartUrl,
-		  async    : false,
-		  success  : function(html){
-                                     cj( "#chartData" ).html( html );
-                             }	 
-          });
-     
+   var chartUrl = {/literal}"{crmURL p='civicrm/ajax/chart' h=0}"{literal};
+   chartUrl    += "&year=" + year + "&type=" + charttype + "&snippet=" + 4;
+
+   cj.ajax({
+       url     : chartUrl,
+       async    : false,
+       success  : function(html){
+           cj( "#chartData" ).html( html );
+       }	 
+   });
+
 }
 
 function buildTabularView( ) {
-	 var tableUrl = {/literal}"{crmURL p='civicrm/contribute/ajax/tableview'}"{literal};
-	 tableUrl    += "?showtable=1&snippet=" + 4;
-	 cj.ajax({
-                  url      : tableUrl,
-		  async    : false,
-		  success  : function(html){
-                                     cj( "#tableData" ).html( html );
-                             }	 
-          });
+    var tableUrl = {/literal}"{crmURL p='civicrm/contribute/ajax/tableview' h=0}"{literal};
+    tableUrl    += "&showtable=1&snippet=" + 4;
+    cj.ajax({
+        url      : tableUrl,
+        async    : false,
+        success  : function(html){
+            cj( "#tableData" ).html( html );
+        }	 
+    });
 }
 
 </script>

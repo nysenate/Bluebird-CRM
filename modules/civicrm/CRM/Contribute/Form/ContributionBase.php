@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -448,8 +448,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form
         if ( $linkText = CRM_Contribute_BAO_PCP::getPcpBlockStatus( $this->_id ) ) {
             $linkTextUrl = CRM_Utils_System::url( 'civicrm/contribute/campaign',
                                                   "action=add&reset=1&pageId={$this->_id}",
-                                                  false, null, true,
-                                                  true );
+                                                  false, null, true );
             $this->assign( 'linkTextUrl', $linkTextUrl );
             $this->assign( 'linkText', $linkText );
         }
@@ -589,6 +588,12 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form
 
         foreach ( $vars as $v ) {
             if ( CRM_Utils_Array::value( $v, $this->_params ) ) {
+                if ( $v == 'frequency_unit' || $v == 'pledge_frequency_unit' ) {
+                    $frequencyUnits =  CRM_Core_OptionGroup::values( 'recur_frequency_units' );
+                    if ( array_key_exists( $this->_params[$v], $frequencyUnits ) ) {
+                        $this->_params[$v] = $frequencyUnits[$this->_params[$v]];
+                    }
+                }
                 $this->assign( $v, $this->_params[$v] );
             }
         }
@@ -787,7 +792,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form
         
         //get all status
         require_once 'CRM/Contribute/PseudoConstant.php';
-        $allStatus = CRM_Contribute_PseudoConstant::contributionStatus( );
+        $allStatus = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
         $validStatus = array( array_search( 'Pending', $allStatus ), 
                               array_search( 'In Progress', $allStatus ),
                               array_search( 'Overdue', $allStatus ), );

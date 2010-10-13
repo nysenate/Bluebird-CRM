@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,13 +34,13 @@
         {ts}Use this form to edit the page title, contribution type (e.g. donation, campaign contribution, etc.), goal amount, introduction, and status (active/inactive) for this online contribution page.{/ts}
     {/if}
 </div>
-      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
+    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
 	<table class="form-layout-compressed">
 	<tr class="crm-contribution-contributionpage-settings-form-block-title"><td class="label">{$form.title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='title' id=$id}{/if}</td><td>{$form.title.html}<br/>
             <span class="description">{ts}This title will be displayed at the top of the page.<br />Please use only alphanumeric, spaces, hyphens and dashes for Title.{/ts}</td>
 	</tr>
 	<tr class="crm-contribution-contributionpage-settings-form-block-contribution_type_id"><td class="label">{$form.contribution_type_id.label}</td><td>{$form.contribution_type_id.html}<br />	
-            <span class="description">{ts}Select the corresponding contribution type for contributions made using this page (e.g. donation, membership fee, etc.). You can add or modify available types using the <strong>Contribution Type</strong> option from the CiviCRM Administrator Control Panel.{/ts}</span></td>
+            <span class="description">{ts}Select the corresponding contribution type for contributions made using this page.{/ts}</span> {help id="id-contribution_type"}</td>
 	</tr>
 	<tr class="crm-contribution-contributionpage-settings-form-block-is_organization"><td>&nbsp;</td><td>{$form.is_organization.html} {$form.is_organization.label}</td></tr>
 	<tr id="for_org_option" class="crm-contribution-form-block-is_organization">
@@ -61,17 +61,17 @@
             </table>
         </td>
     </tr>
-	<tr class="crm-contribution-contributionpage-settings-form-block-intro_text"><td class ="label">{$form.intro_text.label}</td><td>{$form.intro_text.html}<br />
-	    <span class="description">{ts}Enter content for the introductory message. This will be displayed below the page title. You may include HTML formatting tags. You can also include images, as long as they are already uploaded to a server - reference them using complete URLs.{/ts}</span></td>
+	<tr class="crm-contribution-contributionpage-settings-form-block-intro_text">
+	    <td class ="label">{$form.intro_text.label}<br />{help id="id-intro_msg"}</td><td>{$form.intro_text.html}</td>
 	</tr>
-	<tr class="crm-contribution-contributionpage-settings-form-block-footer_text"><td class ="label">{$form.footer_text.label}</td><td>{$form.footer_text.html}<br />
-	    <span class="description">{ts}If you want content displayed at the bottom of the contribution page, enter it here. You may include HTML formatting tags. You can also include images, as long as they are already uploaded to a server - reference them using complete URLs.{/ts}</span></td>
+	<tr class="crm-contribution-contributionpage-settings-form-block-footer_text">
+	    <td class ="label">{$form.footer_text.label}<br />{help id="id-footer_msg"}</td><td>{$form.footer_text.html}</td>
 	</tr>
-	<tr class="crm-contribution-contributionpage-settings-form-block-goal_amount"><td class ="label">{$form.goal_amount.label}</td><td>{$form.goal_amount.html}<br />
-	    <span class="description">{ts}Enter an optional goal amount for this contribution page (e.g. for this 'campaign'). If you enable a contribution widget for this page, the widget will track progress against this goal. Otherwise, the goal will display as 'no limit'.{/ts}</span></td>
+	<tr class="crm-contribution-contributionpage-settings-form-block-goal_amount">
+	    <td class ="label">{$form.goal_amount.label}</td><td>{$form.goal_amount.html} {help id="id-goal_amount"}</td>
 	</tr>
 	<tr class="crm-contribution-contributionpage-settings-form-block-start_date">
-	    <td class ="label">{$form.start_date.label}</td>
+	    <td class ="label">{$form.start_date.label} {help id="id-start_date"}</td>
 	    <td>
 	        {include file="CRM/common/jcalendar.tpl" elementName=start_date}
 	    </td>    
@@ -82,17 +82,17 @@
 	        {include file="CRM/common/jcalendar.tpl" elementName=end_date}
 	    </td>    
     </tr>
-	<tr class="crm-contribution-contributionpage-settings-form-block-honor_block_is_active"><td>&nbsp;</td><td>{$form.honor_block_is_active.html}{$form.honor_block_is_active.label}<br />
-	    <span class="description">{ts}If you want to allow contributors to specify a person whom they are honoring with their gift, check this box. An optional Honoree section will be included in the form. Honoree information is automatically saved and linked with the contribution record.{/ts}</span></td>
+	<tr class="crm-contribution-contributionpage-settings-form-block-honor_block_is_active">
+	    <td>&nbsp;</td><td>{$form.honor_block_is_active.html}{$form.honor_block_is_active.label} {help id="id-honoree_section"}</td>
 	</tr>
 </table>
 <table class="form-layout-compressed" id="honor">
-    	<tr class="crm-contribution-contributionpage-settings-form-block-honor_block_title"><td class="label">{$form.honor_block_title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='honor_block_title' id=$id}{/if}</td><td>{$form.honor_block_title.html}<br />
+    <tr class="crm-contribution-contributionpage-settings-form-block-honor_block_title"><td class="label">{$form.honor_block_title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='honor_block_title' id=$id}{/if}</td><td>{$form.honor_block_title.html}<br />
 	    <span class="description">{ts}Title for the Honoree section (e.g. &quot;Honoree Information&quot;).{/ts}</span></td>
 	</tr>
 	<tr class="crm-contribution-contributionpage-settings-form-block-honor_block_text">
-    	    <td class="label">{$form.honor_block_text.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='honor_block_text' id=$id}{/if}</td><td>{$form.honor_block_text.html}<br />
-    	    <span class="description">{ts}Optional explanatory text for the Honoree section (displayed above the Honoree fields).{/ts}</span></td>
+    	<td class="label">{$form.honor_block_text.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='honor_block_text' id=$id}{/if}</td><td>{$form.honor_block_text.html}<br />
+    	<span class="description">{ts}Optional explanatory text for the Honoree section (displayed above the Honoree fields).{/ts}</span></td>
 	</tr>
 </table>
 <table class="form-layout-compressed">
@@ -101,7 +101,7 @@
     		<span class="description">
         	{if $config->userFramework EQ 'Drupal'}
             	{ts}When your page is active, you can link people to the page by copying and pasting the following URL:{/ts}<br />
-            	<strong>{crmURL a=true p='civicrm/contribute/transact' q="reset=1&id=`$id`"}</strong></dd>
+            	<strong>{crmURL a=true p='civicrm/contribute/transact' q="reset=1&id=`$id`"}</strong>
         	{elseif $config->userFramework EQ 'Joomla'}
             	{ts 1=$title}When your page is active, create front-end links to the contribution page using the Menu Manager. Select <strong>CiviCRM &raquo; Contribution Pages</strong> and select <strong>%1</strong> for the contribution page.{/ts}
         	{/if}

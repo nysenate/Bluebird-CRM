@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -114,7 +114,7 @@ class CRM_Custom_Form_CustomData
     static function setDefaultValues( &$form ) 
     {
         $defaults = array( );
-        CRM_Core_BAO_CustomGroup::setDefaults( $form->_groupTree, $defaults);
+        CRM_Core_BAO_CustomGroup::setDefaults( $form->_groupTree, $defaults, false, false, $form->get('action') );
         return $defaults;
     }
     

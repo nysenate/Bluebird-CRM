@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -26,7 +26,7 @@
 <tr class= "{if $cd_edit.collapse_display}hiddenElement{/if}">
 {if $element.options_per_line != 0}
       <td class="label">{$element.field_title}</td>
-      <td>
+      <td class="crm-custom_data">
           {* sort by fails for option per line. Added a variable to iterate through the element array*}
           {foreach from=$element.field_value item=val}
               {$val}
@@ -36,12 +36,17 @@
       <td class="label">{$element.field_title}</td>
       {if $element.field_type == 'File'}
           {if $element.field_value.displayURL}
-              <td><a href="javascript:imagePopUp('{$element.field_value.displayURL}')" ><img src="{$element.field_value.displayURL}" height = "{$element.field_value.imageThumbHeight}" width="{$element.field_value.imageThumbWidth}"></a></td>
+              <td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$element.field_value.displayURL}')" ><img src="{$element.field_value.displayURL}" height = "{$element.field_value.imageThumbHeight}" width="{$element.field_value.imageThumbWidth}"></a></td>
           {else}
-              <td class="html-adjust"><a href="{$element.field_value.fileURL}">{$element.field_value.fileName}</a></td>
+              <td class="html-adjust crm-custom_data crm-fileURL"><a href="{$element.field_value.fileURL}">{$element.field_value.fileName}</a></td>
           {/if}
+      {elseif $element.field_data_type EQ 'ContactReference' && $element.contact_ref_id}
+          {*Contact ref id passed if user has sufficient permissions - so make a link.*}
+          <td class="html-adjust crm-custom-data crm-contact-reference">
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$element.contact_ref_id`"}" title="View contact">{$element.field_value}</a>
+          </td>
       {else}
-          <td class="html-adjust">{$element.field_value}</td>
+          <td class="html-adjust crm-custom-data">{$element.field_value}</td>
       {/if}
 {/if}
 </tr>

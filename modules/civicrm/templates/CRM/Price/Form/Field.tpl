@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -75,7 +75,7 @@
         </tr>
         <tr class="crm-price-field-form-block-html_type">
            <td class="label">{$form.html_type.label}</td>
-           <td>{$form.html_type.html} {help id="id-negative"}
+           <td>{$form.html_type.html}
           </td>
         </tr>
         {if $action neq 4 and $action neq 2}
@@ -85,27 +85,27 @@
            </td>
         </tr>
         {/if}
-        <tr class="crm-price-field-form-block-count">
+        {if $form.count }
+	    <tr class="crm-price-field-form-block-count">
            <td class="label">{$form.count.label}</td>
            <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='count' id=$id}{/if}{$form.count.html}<br />
-                <span class="description">{ts}Enter a value here if you want to increment the number of registered participants per unit against the maximum number of participants allowed for this event. For example, if this price field is for a table at a fundraiser which seats eight people, you would set Participant Count to 8.{/ts}</span>
+                <span class="description">{ts}Enter a value here if you want to increment the number of registered participants per unit against the maximum number of participants allowed for this event.{/ts}</span>
+                {help id="id-participant-count"}
             </td>
         </tr>
+	    {/if}
     </table>
     <div class="spacer"></div>
     <div id="price-block" {if $action eq 2 && $form.html_type.value.0 eq 'Text'} class="show-block" {else} class="hide-block" {/if}>
         <table class="form-layout">
             <tr class="crm-price-field-form-block-price">
                <td class="label">{$form.price.label}</td>
-               <td>{$form.price.html}</td>
-            </tr>
-            {if $action neq 4}
-            <tr>
-               <td>&nbsp;</td>
-               <td class="description">{ts}Unit price{/ts}
+               <td>{$form.price.html}
+               {if $action neq 4}
+                    <br /><span class="description">{ts}Unit price.{/ts}</span> {help id="id-negative"}
+               {/if}
                </td>
             </tr>
-            {/if}
         </table>
     </div>
 
@@ -175,7 +175,7 @@
         </tr>
 	    <tr class="crm-price-field-form-block-visibility_id">
            <td class="label">{$form.visibility_id.label}</td>
-           <td>&nbsp;{$form.visibility_id.html}</td>
+           <td>&nbsp;{$form.visibility_id.html}  {help id="id-visibility"}</td>
         </tr>
         <tr class="crm-price-field-form-block-is_active">
             <td class="label">{$form.is_active.label}</td>

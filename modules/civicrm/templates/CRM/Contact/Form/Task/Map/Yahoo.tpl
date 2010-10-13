@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -97,8 +97,8 @@
             {literal}
             var data = "{/literal}<a href='{$profileURL}'>{$location.displayName}</a><br />{if !$skipLocationType}{$location.location_type}<br />{/if}{$location.address}<br /><br />Get Directions FROM:&nbsp;<input type=hidden id=to value='{$location.displayAddress}'><input id=from type=text onclick='this.focus();'/>&nbsp;<a href=\"javascript:ypopUp();\">&raquo; Go</a>";
         {/if}
-        var img  = '{$location.image}';
-        {literal}
+	{literal}
+        var img  = '{/literal}{$location.image|replace:"'":"\'"}{literal}';
         var marker = createYahooMarker(GeoPoint, data, img); 
         map.addOverlay(marker); 
         count++;

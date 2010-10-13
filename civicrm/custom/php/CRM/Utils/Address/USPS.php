@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -42,7 +42,6 @@
 class CRM_Utils_Address_USPS {
     
     static function checkAddress( &$values ) {
-
         if ( ! isset($values['street_address'])     || 
                ( ! isset($values['city']           )   &&
                  ! isset($values['state_province'] )   &&
@@ -62,7 +61,7 @@ class CRM_Utils_Address_USPS {
 
         $address2 = str_replace( ',', '', $values['street_address'] );
 
-        //LCD current code passes supp add 1 to Address1 field; but API intends address unit data for that field
+        //NYSS - LCD current code passes supp add 1 to Address1 field; but API intends address unit data for that field
 		//altered to pass street_unit
 		//http://senatedev.senate.state.ny.us/issues/show/2388
         $XMLQuery = '<AddressValidateRequest USERID="'.$userID.'"><Address ID="0"><Address1>'.$values['street_unit'].'</Address1><Address2>'.$address2.'</Address2><City>'.$values['city'].'</City><State>'.$values['state_province'].'</State><Zip5>'.$values['postal_code'].'</Zip5><Zip4>'.$values['postal_code_suffix'].'</Zip4></Address></AddressValidateRequest>';
@@ -112,7 +111,7 @@ class CRM_Utils_Address_USPS {
         $values['postal_code_suffix'] = (string)$xml->Address->Zip4;
         
         if (array_key_exists('Address1', $xml->Address)) {
-			$values['street_unit'] = (string)$xml->Address->Address1; //LCD modified per above
+			$values['street_unit'] = (string)$xml->Address->Address1; //NYSS - LCD modified per above
         }
                 
         return true;

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -96,5 +96,16 @@ class CRM_Contribute_Info extends CRM_Core_Component_Info
         return null;
     }
     
+    // add shortcut to Create New
+    public function creatNewShortcut( &$shortCuts ) {
+        if ( CRM_Core_Permission::check('access CiviContribute') &&
+             CRM_Core_Permission::check('edit contributions') ) {
+            $shortCuts = 
+                array_merge($shortCuts, array( array( 'path'  => 'civicrm/contribute/add',
+                                                      'query' => "reset=1&action=add&context=standalone",
+                                                      'ref'   => 'new-contribution',
+                                                      'title' => ts('Contribution') ) ));
+        }
+    }
 }
 

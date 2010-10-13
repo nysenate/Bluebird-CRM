@@ -1,6 +1,6 @@
 /*
 * +--------------------------------------------------------------------+
-* | CiviCRM version 3.1                                                |
+* | CiviCRM version 3.2                                                |
 * +--------------------------------------------------------------------+
 * | Copyright CiviCRM LLC (c) 2004-2010                                |
 * +--------------------------------------------------------------------+
@@ -27,17 +27,23 @@
 	$('a.crm-summary-link')
 	.addClass('crm-processed')
 	.hover(
-		function()  {
+		function(e)  {
+		    $(this).addClass('crm-tooltip-active');
+		    topDistance = e.pageY - $(window).scrollTop();
+		    if (topDistance < 300 | topDistance < $(this).children('.crm-tooltip-wrapper').height()) {
+		          $(this).addClass('crm-tooltip-down');
+		      }
 			if ($(this).children('.crm-tooltip-wrapper').length == '') {
 				$(this).append('<div class="crm-tooltip-wrapper"><div class="crm-tooltip"></div></div>');
 				$(this).children().children('.crm-tooltip')
 					.html('<div class="crm-loading-element"></div>')
 					.load(this.href);
-			} else {
-				$(this).children('.crm-tooltip-wrapper').show();
 			}
 		},
-		function(){$('.crm-tooltip-wrapper').hide()}
+		function(){
+		  $(this).removeClass('crm-tooltip-active');
+		  $(this).removeClass('crm-tooltip-down');
+		  }
 		)
 	.click(function() {return false});	
 	

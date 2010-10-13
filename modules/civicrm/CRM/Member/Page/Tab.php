@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -82,6 +82,11 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
         }
         $mask = CRM_Core_Action::mask( $permissions );
         
+        // get deceased status id
+        require_once 'CRM/Member/PseudoConstant.php';
+        $allStatus        = CRM_Member_PseudoConstant::membershipStatus( );
+        $deceasedStatusId = array_search( 'Deceased', $allStatus );
+
         //checks membership of contact itself
         while ($dao->fetch()) {
             $membership[$dao->id] = array();
@@ -101,8 +106,14 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
                 }
             }
             if ( ! $dao->owner_membership_id ) {
+                // unset renew and followup link for deceased membership
+                $currentMask = $mask;
+                if ( $dao->status_id == $deceasedStatusId ) { 
+                    $currentMask = $currentMask & ~CRM_Core_Action::RENEW & ~CRM_Core_Action::FOLLOWUP;
+                }
+                
                 $membership[$dao->id]['action'] = CRM_Core_Action::formLink( self::links( 'all' ),
-                                                                             $mask, 
+                                                                             $currentMask, 
                                                                              array('id' => $dao->id, 
                                                                                    'cid'=> $this->_contactId));
             } else {

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -121,7 +121,7 @@ class CRM_Mailing_Event_BAO_Reply extends CRM_Mailing_Event_DAO_Reply {
 
             // CRM-5567: we need to set Reply-To: so that any response
             // to the forward goes to the sender of the reply
-            $parsed->setHeader('Reply-To', empty($replyto) ? $parsed->from->__toString() : $replyto);
+            $parsed->setHeader('Reply-To', $replyto instanceof ezcMailAddress ? $parsed->from->__toString() : $replyto);
 
             // $h must be an array, so we can't use generateHeaders()'s result, 
             // but we have to regenerate the headers because we changed To

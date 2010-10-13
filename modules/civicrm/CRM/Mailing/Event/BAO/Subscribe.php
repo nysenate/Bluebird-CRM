@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -339,22 +339,39 @@ SELECT     civicrm_email.id as email_id
      */
     function commonSubscribe( &$groups, &$params, $contactId = null ) 
     {
-        $success = true;
+        $contactGroups = CRM_Mailing_Event_BAO_Subscribe::getContactGroups($params['email']);
+        $group = array( );
+        $success = null;
         foreach ( $groups as $groupID ) {
+            $title = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Group', $groupID, 'title');
+            if ( array_key_exists( $groupID, $contactGroups ) ) {
+                $group[$groupID]['title']  = $contactGroups[$groupID]['title'];
+                
+                $group[$groupID]['status'] = $contactGroups[$groupID]['status'];
+                $status = ts('You are already subscribed in %1, your subscription is %2.', array(1 => $group[$groupID]['title'], 2 => $group[$groupID]['status']));
+                CRM_Utils_System::setUFMessage( $status );
+                continue;
+            }
+            
             $se = self::subscribe( $groupID,
                                    $params['email'], $contactId );
-            if ( $se !== null ) {
+            if ( $se !== null ) { 
+                $success       = true;
+                $groupAdded[]  = $title;
+                
                 /* Ask the contact for confirmation */
                 $se->send_confirm_request($params['email']);
             } else {
-                $success = false;
+                $success       = true;
+                $groupFailed[] = $title;
             }
         }
-        
         if ( $success ) {
-            CRM_Utils_System::setUFMessage( ts( "Your subscription request has been submitted. Check your inbox shortly for the confirmation email(s). If you do not see a confirmation email, please check your spam/junk mail folder." ) );
-        } else {
-            CRM_Utils_System::setUFMessage( ts( "We had a problem processing your subscription request. You have tried to subscribe to a private group and/or we encountered a database error. Please contact the site administrator" ) );
+            $groupTitle = implode( ',', $groupAdded );
+            CRM_Utils_System::setUFMessage(ts('Your subscription request has been submitted for group %1. Check your inbox shortly for the confirmation email(s). If you do not see a confirmation email, please check your spam/junk mail folder.', array(1 => $groupTitle)));
+        } else if ( $success === 'false' ) {
+            $groupTitle = implode( ',', $groupFailed );
+            CRM_Utils_System::setUFMessage(ts('We had a problem processing your subscription request for group %1. You have tried to subscribe to a private group and/or we encountered a database error. Please contact the site administrator.', array(1 => $groupTitle)));
         }
     }//end of function
 }

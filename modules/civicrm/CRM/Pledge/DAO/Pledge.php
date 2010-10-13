@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -110,6 +110,12 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
      * @var float
      */
     public $amount;
+    /**
+     * Original amount for each of the installments.
+     *
+     * @var float
+     */
+    public $original_installment_amount;
     /**
      * 3 character string, value from config setting or input via user.
      *
@@ -281,6 +287,10 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                 'contribution_type_id' => array(
                     'name' => 'contribution_type_id',
                     'type' => CRM_Utils_Type::T_INT,
+                    'export' => false,
+                    'where' => 'civicrm_pledge.contribution_type_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
                     'FKClassName' => 'CRM_Contribute_DAO_ContributionType',
                 ) ,
                 'contribution_page_id' => array(
@@ -298,6 +308,12 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                     'headerPattern' => '',
                     'dataPattern' => '',
                     'export' => true,
+                ) ,
+                'pledge_original_installment_amount' => array(
+                    'name' => 'original_installment_amount',
+                    'type' => CRM_Utils_Type::T_MONEY,
+                    'title' => ts('Original Installment Amount') ,
+                    'required' => true,
                 ) ,
                 'currency' => array(
                     'name' => 'currency',
@@ -402,12 +418,12 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                 'pledge_status_id' => array(
                     'name' => 'status_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Pledge Status') ,
+                    'title' => ts('Pledge Status Id') ,
                     'import' => true,
                     'where' => 'civicrm_pledge.status_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                 ) ,
                 'pledge_is_test' => array(
                     'name' => 'is_test',

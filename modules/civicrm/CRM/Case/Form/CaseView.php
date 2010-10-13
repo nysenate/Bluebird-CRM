@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -98,17 +98,19 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
         
         $this->assign( 'caseID', $this->_caseID );
         $this->assign( 'contactID', $this->_contactID );
-
+        
         //validate case id.
         $this->_userCases = array( );
+        $session  = CRM_Core_Session::singleton( );
+        $userID   = $session->get( 'userID' );
         if ( !$this->_hasAccessToAllCases ) {
-            $session  = CRM_Core_Session::singleton( );
-            $this->_userCases = CRM_Case_BAO_Case::getCases( false, $session->get( 'userID' ) );
+            $this->_userCases = CRM_Case_BAO_Case::getCases( false, $userID );
             if ( !array_key_exists( $this->_caseID, $this->_userCases ) ) {
                 CRM_Core_Error::fatal( ts( 'You are not authorized to access this page.' ) );
             }
         }
-
+        $this->assign( 'userID', $userID );
+        
         if ( CRM_Case_BAO_Case::caseCount( $this->_contactID ) >= 2 ) {
             $this->_mergeCases = true;
         }
@@ -124,15 +126,15 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
                                            CRM_Utils_Array::value( 'case_type_id' , $values ) );
 
         $statuses      = CRM_Case_PseudoConstant::caseStatus( );
-        $caseTypeName  = CRM_Case_PseudoConstant::caseTypeName( $this->_caseID );
-        $caseType      = CRM_Core_OptionGroup::getLabel( 'case_type', $caseTypeName['id'] );
-
+        $caseTypeName  = CRM_Case_BAO_Case::getCaseType( $this->_caseID, 'name' );
+        $caseType      = CRM_Case_BAO_Case::getCaseType( $this->_caseID );
+        
         $this->_caseDetails = array( 'case_type'       => $caseType,
                                      'case_status'     => $statuses[$values['case_status_id']],
                                      'case_subject'    => CRM_Utils_Array::value( 'subject', $values ),
                                      'case_start_date' => $values['case_start_date']
                                    );
-        $this->_caseType = $caseTypeName['name'];
+        $this->_caseType = $caseTypeName;
         $this->assign ( 'caseDetails', $this->_caseDetails );
         
         $newActivityUrl = 
@@ -209,7 +211,7 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
     {
         //this call is for show related cases.
         if ( $this->_showRelatedCases ) return;
-        
+                
         $xmlProcessor = new CRM_Case_XMLProcessor_Process( );
         $caseRoles    = $xmlProcessor->get( $this->_caseType, 'CaseRoles' );
         $reports      = $xmlProcessor->get( $this->_caseType, 'ActivitySets' );

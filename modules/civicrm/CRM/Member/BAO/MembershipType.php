@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -503,7 +503,10 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
             $today = date( 'Y-m-d' );
         } else {
             //get date in 'Ymd' format, CRM-5795
-            $today = CRM_Utils_Date::processDate( $changeToday, null, false, 'Ymd' );
+            $today = date( 'Ymd' );
+            if ( $changeToday ) {
+                $today = CRM_Utils_Date::processDate( $changeToday, null, false, 'Ymd' );
+            }
             
             $rollover = false;
                         

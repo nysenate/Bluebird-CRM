@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -219,8 +219,8 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form
         }
 
         $enabled = $this->add('checkbox', 'is_active', ts('Enabled?'));
-        
-        if ($isReserved) {
+       
+        if ( $isReserved ) {
             $enabled->freeze( );
         }
         
@@ -326,7 +326,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form
             }
             
             // set db value of filter in params if filter is non editable
-            if ( $this->_id && !array_key_exists( 'filter', $params ) ) {
+            if ( $this->_id && !array_key_exists( 'filter', $params ) && !$this->_gName == 'participant_role' ) {
                 $params['filter'] = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionValue', $this->_id, 'filter', 'id' ) ;
             }
             

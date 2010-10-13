@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,7 +32,7 @@
  * @subpackage API_Relationship
  * 
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Relationship.php 28119 2010-06-04 21:19:16Z lobo $
+ * @version $Id: Relationship.php 29520 2010-09-02 13:28:55Z mover $
  *
  */
 
@@ -56,19 +56,10 @@ require_once 'CRM/Contact/BAO/RelationshipType.php';
 function civicrm_relationship_create( &$params ) {
     _civicrm_initialize( );
 
-    if ( empty( $params ) ) { 
-        return civicrm_create_error( 'No input parameter present' );
-    }
-    
-    if ( ! is_array( $params ) ) {
-        return civicrm_create_error( ts( 'Input parameter is not an array' ) );
-    }
-    
-    if( ! isset( $params['contact_id_a'] ) &&
-        ! isset( $params['contact_id_b'] ) &&
-        ! isset( $params['relationship_type_id'] )) { 
-        
-        return civicrm_create_error( ts('Missing required parameters'));
+    // check params for required fields (add/update)
+    $error = _civicrm_relationship_check_params( $params );
+    if ( civicrm_error( $error ) ) {
+        return $error;
     }
    
     $values = array( );
@@ -134,7 +125,13 @@ function civicrm_relationship_delete( &$params ) {
     }
     
     $relationBAO = new CRM_Contact_BAO_Relationship( );
-    return $relationBAO->del( $params['id'] ) ? civicrm_create_success( ts( 'Deleted relationship successfully' ) ):civicrm_create_error( ts( 'Could not delete relationship' ) );
+    $relationBAO->id = $params['id'];
+    if ( !$relationBAO->find( true ) ) {
+        return civicrm_create_error( ts( 'Relationship id is not valid' ));
+    } else {
+        $relationBAO->del( $params['id'] );
+        return civicrm_create_success( ts( 'Deleted relationship successfully' ) );
+    }
 
 }
 
@@ -277,6 +274,8 @@ function _civicrm_relationship_format_params( &$params, &$values ) {
    
     $fields =& CRM_Contact_DAO_Relationship::fields( );
     _civicrm_store_values( $fields, $params, $values );
+
+    $relationTypes = CRM_Core_PseudoConstant::relationshipType( 'name' );
     
     foreach ($params as $key => $value) {
         // ignore empty values or empty arrays etc
@@ -308,11 +307,30 @@ function _civicrm_relationship_format_params( &$params, &$values ) {
             }
             break;
             
+        case 'relationship_type':
+            foreach ( $relationTypes as $relTypId => $relValue ) {
+                if (  CRM_Utils_Array::key( ucfirst( $value ), $relValue ) ) {
+                    $relationshipTypeId = $relTypId;
+                    break;
+                }
+            }
+            
+            if ( $relationshipTypeId ) {
+                if ( CRM_Utils_Array::value( 'relationship_type_id', $values ) &&
+                     $relationshipTypeId != $values['relationship_type_id'] ) {
+                    return civicrm_create_error( 'Mismatched Relationship Type and Relationship Type Id' );
+                } 
+                $values['relationship_type_id'] = $params['relationship_type_id'] = $relationshipTypeId ;
+            } else {
+                return civicrm_create_error( 'Invalid Relationship Type' );
+            } 
+
         case 'relationship_type_id':            
-            $relationTypes = CRM_Core_PseudoConstant::relationshipType( );
-            if (!array_key_exists($value, $relationTypes)) {
+            if ( $key == 'relationship_type_id' && !array_key_exists($value, $relationTypes) ) {
                 return civicrm_create_error("$key not a valid: $value");
             } 
+        
+            // execute for both relationship_type and relationship_type_id
             $relation = $relationTypes[$params['relationship_type_id']];
             require_once 'CRM/Contact/BAO/Contact.php';
             if ($relation['contact_type_a'] && 
@@ -338,3 +356,57 @@ function _civicrm_relationship_format_params( &$params, &$values ) {
     return array();
 }
 
+
+/**
+ * This function ensures that we have the right input parameters
+ *
+ * We also need to make sure we run all the form rules on the params list
+ * to ensure that the params are valid
+ *
+ * @param array  $params       Associative array of property name/value
+ *                             pairs to insert in new relationship.
+ *
+ * @return bool|CRM_Utils_Error
+ * @access private
+ */
+function _civicrm_relationship_check_params( &$params ) {
+    static $required = array( 'contact_id_a'          => null, 
+                              'contact_id_b'          => null,
+                              'relationship_type_id'  => 'relationship_type');
+    
+    // params should be an array
+    if ( ! is_array( $params ) ) {
+        return civicrm_create_error( 'Input parameter is not an array' );
+    }
+    // cannot create with empty params
+    if ( empty( $params ) ) {
+        return civicrm_create_error( 'Input Parameters empty' );
+    }
+    // check params for validity of Relationship id
+    if ( CRM_Utils_Array::value( 'id', $params ) ) {
+        require_once 'CRM/Contact/BAO/Relationship.php';
+        $relation     = new CRM_Contact_BAO_Relationship();
+        $relation->id = $params['id'];
+        if ( !$relation->find( true ) ) {
+            return civicrm_create_error( 'Relationship id is not valid' );
+        }
+    }
+    
+    $valid = true;
+    $error = '';
+    foreach ( $required as $field => $eitherField ) {
+        if ( ! CRM_Utils_Array::value( $field, $params ) ) {
+            if ( $eitherField && CRM_Utils_Array::value( $eitherField, $params ) ) {
+                continue;
+            }
+            $valid  = false;
+            $error .= " $field";
+        }
+    }
+    
+    if ( ! $valid ) {
+        return civicrm_create_error( "Required fields not found" . $error );
+    }
+    
+    return array();
+}

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright Tech To The People http:tttp.eu (c) 2008                 |
  +--------------------------------------------------------------------+
@@ -68,7 +68,9 @@ class civicrm_CLI {
 		    }
 		}
 		if ( ! $$var ) {
-		    die ("\nUsage: $ php5 ". $_SERVER['PHP_SELF']." -u user -p password -s yoursite.org\n");
+      $a = explode('/', $_SERVER["SCRIPT_NAME"]);
+      $file = $a[count($a) - 1]; 
+		    die ("\nUsage: \$cd /your/civicrm/root; \$php5 bin/". $file." -u user -p password -s yoursite.org (or default)\n");
 		}
 	 }
 	 $this->site=$site;

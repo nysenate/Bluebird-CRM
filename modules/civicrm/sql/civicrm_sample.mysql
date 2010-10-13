@@ -1,5 +1,5 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -129,7 +129,7 @@ INSERT INTO `civicrm_dashboard`
     ( @domain_id, 'Event Income Report (Summary)', 'civicrm/report/instance/13&reset=1&section=1&snippet=4&charts=pieChart', NULL, 'access CiviCRM,access CiviEvent'     , 'AND', 0, 0,'1', 6, NULL, '0'),
     ( @domain_id, 'Membership Report (Summary)'  , 'civicrm/report/instance/9&reset=1&section=2&snippet=4',                  NULL, 'access CiviCRM,access CiviMember'    , 'AND', 0, 0,'1', 7, NULL, '1');
    -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+

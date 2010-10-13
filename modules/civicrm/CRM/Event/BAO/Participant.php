@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -591,11 +591,18 @@ GROUP BY  participant.event_id
             $participantFields = CRM_Event_DAO_Participant::export( );
             $noteField         = array( 'participant_note' => array( 'title' => 'Participant Note',
                                                                      'name'  => 'participant_note'));
+
+            $participantStatus = array( 'participant_status' => array( 'title' => 'Participant Status',
+                                                                       'name'  => 'participant_status' ) );
+
+            $participantRole   = array( 'participant_role'   => array( 'title' => 'Participant Role',
+                                                                       'name'  => 'participant_role' ) );
+
             require_once 'CRM/Core/DAO/Discount.php';
             $discountFields  = CRM_Core_DAO_Discount::export( );
+
+            $fields = array_merge( $participantFields, $participantStatus, $participantRole, $noteField, $discountFields );
             
-            $fields = array_merge( $noteField, $discountFields );
-            $fields = array_merge( $fields, $participantFields );
             // add custom data
             $fields = array_merge($fields, CRM_Core_BAO_CustomField::getFieldsForImport('Participant'));
             self::$_exportableFields = $fields;
@@ -793,6 +800,7 @@ WHERE  civicrm_participant.id = {$participantId}
      */
     static function fixEventLevel( &$eventLevel )
     {
+        require_once 'CRM/Core/BAO/CustomOption.php';
         if ( ( substr( $eventLevel, 0, 1) == CRM_Core_BAO_CustomOption::VALUE_SEPERATOR ) &&
              ( substr( $eventLevel, -1, 1) == CRM_Core_BAO_CustomOption::VALUE_SEPERATOR ) ) {
             $eventLevel = implode( ', ', explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, 
@@ -919,7 +927,7 @@ WHERE  civicrm_participant.id = {$participantId}
      * @access public
      * @static
      */
-    static function updateStatus( $participantIds, $statusId, $updateRegisterDate = true ) 
+    static function updateStatus( $participantIds, $statusId, $updateRegisterDate = false ) 
     {    
         if ( !is_array( $participantIds ) || empty( $participantIds ) || !$statusId ) {
             return;
@@ -994,6 +1002,8 @@ UPDATE  civicrm_participant
         require_once 'CRM/Event/PseudoConstant.php';
         $statusTypes = CRM_Event_PseudoConstant::participantStatus( );
         $participantRoles = CRM_Event_PseudoConstant::participantRole( );
+        $pendingStatuses  = CRM_Event_PseudoConstant::participantStatus( null, 
+                                                                         "class = 'Pending'"  );
         
         //first thing is pull all necessory data from db.
         $participantIdClause = "(" . implode( ',', $allParticipantIds ) . ")";  
@@ -1146,7 +1156,14 @@ UPDATE  civicrm_participant
             
             //now update status of group/one at once.
             $updateParticipantIds[] = $participantId;
-            self::updateStatus( $updateParticipantIds, $toStatusId );
+            
+            //update the register date only when we,
+            //move participant to pending class, CRM-6496
+            $updateRegisterDate = false;
+            if ( array_key_exists( $toStatusId, $pendingStatuses ) ) {
+                $updateRegisterDate = true;
+            }
+            self::updateStatus( $updateParticipantIds, $toStatusId, $updateRegisterDate );
             $processedParticipantIds[] = $participantId;
         }
         

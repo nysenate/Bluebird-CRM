@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -151,7 +151,8 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup
      */
     function thresholdQuery( $checkPermission = true ) {
         require_once 'CRM/Contact/BAO/Contact/Permission.php';
-        $this->_aclFrom = $this->_aclWhere = '';
+        $this->_aclFrom  = '';
+        $this->_aclWhere = ' AND is_deleted = 0 '; // CRM-6603: anonymous dupechecks side-step ACLs
 
         if ( $this->params && !$this->noRules ) { 
             if ( $checkPermission ) {

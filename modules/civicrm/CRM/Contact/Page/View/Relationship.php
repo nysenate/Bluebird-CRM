@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -77,13 +77,14 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page
                 $this->assign( "is_contact_id_a", true );
             }
         }
-        $relType = $viewRelationship[$this->_id]['civicrm_relationship_type_id'];
+        $relType = $viewRelationship[$this->_id]['civicrm_relationship_type_id'];        
         $this->assign( 'viewRelationship', $viewRelationship );        
-                
+
         $this->assign( 'isCurrentEmployer', false );
         if ( $viewRelationship[$this->_id]['employer_id'] ) {
             $this->assign( 'isCurrentEmployer', true);
-        } else if ( CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $this->_contactId, 'employer_id' ) ) {
+        } else if ( $relType == 4 && CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $this->_contactId, 'employer_id' ) ) {
+            // make sure we are viewing employee of relationship
             $this->assign( 'isCurrentEmployer', true);
         }
 

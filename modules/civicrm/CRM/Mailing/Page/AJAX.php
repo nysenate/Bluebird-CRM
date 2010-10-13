@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -42,7 +42,7 @@ class CRM_Mailing_Page_AJAX
     /**
      * Function to fetch the template text/html messages
      */
-    function template( &$config ) 
+    function template(  ) 
     {
         require_once 'CRM/Utils/Type.php';
         $templateId = CRM_Utils_Type::escape( $_POST['tid'], 'Integer' );

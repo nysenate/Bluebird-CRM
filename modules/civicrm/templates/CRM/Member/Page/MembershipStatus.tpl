@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -53,7 +53,7 @@
         </thead>
         {foreach from=$rows item=row}
         <tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {$row.class} {if NOT $row.is_active} disabled{/if} crm-membership-status">
-	        <td class="crm-membership-status-name">{$row.name}</td>	
+	        <td class="crm-membership-status-label">{$row.label}</td>	
 	        <td class="crm-membership-status-start_event">{$row.start_event}</td>
 	        <td class="crm-membership-status-end_event">{$row.end_event}</td>
 	        <td class="crm-membership-status-is_current_member">{if $row.is_current_member eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>

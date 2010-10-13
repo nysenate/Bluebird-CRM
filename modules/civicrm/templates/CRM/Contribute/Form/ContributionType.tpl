@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -24,17 +24,17 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing/deleting contribution type  *}
+<h3>{if $action eq 1}{ts}New Contribution Type{/ts}{elseif $action eq 2}{ts}Edit Contribution Type{/ts}{else}{ts}Delete Contribution Type{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-contribution_type-form-block">
-<fieldset><legend>{if $action eq 1}{ts}New Contribution Type{/ts}{elseif $action eq 2}{ts}Edit Contribution Type{/ts}{else}{ts}Delete Contribution Type{/ts}{/if}</legend>
-  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
    {if $action eq 8}
       <div class="messages status">
           <div class="icon inform-icon"></div>    
           {ts}WARNING: You cannot delete a contribution type if it is currently used by any Contributions, Contribution Pages or Membership Types. Consider disabling this option instead.{/ts} {ts}Deleting a contribution type cannot be undone.{/ts} {ts}Do you want to continue?{/ts}
       </div>
-     {else}
-       <table class="form-layout-compressed">
-       <tr class="crm-contribution-form-block-name">
+   {else}
+     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+     <table class="form-layout-compressed">
+      <tr class="crm-contribution-form-block-name">
  	  <td class="label">{$form.name.label}</td>
 	  <td class="html-adjust">{$form.name.html}</td>	
        </tr>
@@ -59,7 +59,6 @@
 	  <td class="html-adjust">{$form.is_active.html}</td>
        </tr>
       </table> 
-     {/if}
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="botttom"}</div>
-</fieldset>
+   {/if}
+   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="botttom"}</div>
 </div>

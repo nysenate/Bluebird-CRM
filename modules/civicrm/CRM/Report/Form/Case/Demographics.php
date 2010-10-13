@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -327,12 +327,11 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             }
         }
         
-        if ( empty( $clauses ) ) {
-            $this->_where = "WHERE ( 1 ) ";
-        } else {
-             
-            $this->_where = "WHERE " . implode( ' AND ', $clauses );
-        }
+        $clauses[] = "(({$this->_aliases['civicrm_case']}.is_deleted = 0) OR ({$this->_aliases['civicrm_case']}.is_deleted Is Null))";
+        $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_deleted = 0) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
+        $clauses[] = "(({$this->_aliases['civicrm_activity']}.is_current_revision = 1) OR ({$this->_aliases['civicrm_activity']}.is_deleted Is Null))";
+	
+        $this->_where = "WHERE " . implode( ' AND ', $clauses );
         
     }
 

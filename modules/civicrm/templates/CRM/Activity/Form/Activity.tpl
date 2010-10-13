@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -107,8 +107,9 @@
 
             <table class="{if $action eq 4}crm-info-panel{else}form-layout{/if}">
 
-	     {* don't show in activity view mode, since act type is present as a part if title. *}	     	    
-	     {if $action neq 4}	   
+	     {if $action eq 4}
+            <h3>{$activityTypeName}</h3>
+	     {else}	   
              {if $context eq 'standalone' or $context eq 'search' or $context eq 'smog'}
                 <tr class="crm-activity-form-block-activity_type_id">
                    <td class="label">{$form.activity_type_id.label}</td><td class="view-value">{$form.activity_type_id.html}</td>
@@ -199,8 +200,7 @@
                           {* If using plain textarea, assign class=huge to make input large enough. *}
                           {if $defaultWysiwygEditor eq 0}{$form.details.html|crmStripAlternatives|crmReplace:class:huge}{else}{$form.details.html|crmStripAlternatives}{/if}
             		  </td>
-            		{/if}     
-               </td>
+            		{/if}
              </tr> 
              <tr class="crm-activity-form-block-priority_id">
                 <td class="label">{$form.priority_id.label}</td><td class="view-value">{$form.priority_id.html}</td>
@@ -266,7 +266,7 @@
                            </tr>
                            <tr>
                               <td class="label">{$form.followup_activity_subject.label}</td>
-                              <td>{$form.followup_activity_subject.html}</td>
+                              <td>{$form.followup_activity_subject.html|crmReplace:class:huge}</td>
                            </tr>
                         </table>
                        </div><!-- /.crm-accordion-body -->

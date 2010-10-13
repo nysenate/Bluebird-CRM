@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,7 +28,7 @@
 {if $cdType }
   {include file="CRM/Custom/Form/CustomData.tpl"}
 {elseif $priceSetId}
-  {include file="CRM/Price/Form/PriceSet.tpl"}
+  {include file="CRM/Price/Form/PriceSet.tpl" context="standalone"}
 {elseif $showAdditionalInfo and $formType }
   {include file="CRM/Contribute/Form/AdditionalInfo/$formType.tpl"}
 {else}
@@ -97,9 +97,14 @@
         	        <span id='selectPriceSet'>{$form.price_set_id.html}</span>
                     <div id="priceset" class="hiddenElement"></div>	    
         	    {/if}
-        	    <span class="description">{ts}Actual amount given by contributor.{/ts}</span>
-            </td>
+        	    
+            	{if $ppID}{ts}<a href='#' onclick='adjustPayment();'>adjust payment amount</a>{/ts}{help id="adjust-payment-amount"}{/if}
+	            <br /><span class="description">{ts}Actual amount given by contributor.{/ts}</span>
+	    </td>
         </tr>
+	    <tr id="adjust-option-type" class="crm-contribution-form-block-option_type">
+            <td class="label"></td><td {$valueStyle}>{$form.option_type.html}</td> 
+	    </tr>
     {/if}
 
         <tr  class="crm-contribution-form-block-source"><td class="label">{$form.source.label}</td><td{$valueStyle}>{$form.source.html} {help id="id-contrib_source"}</td></tr>
@@ -119,7 +124,7 @@
         {if !$contributionMode}
             <tr class="crm-contribution-form-block-receive_date">
                 <td class="label">{$form.receive_date.label}</td>
-                <td{$valueStyle}>{if $hideCalender neq true}{include file="CRM/common/jcalendar.tpl" elementName=receive_date}{else}{$receive_date|truncate:10:''|crmDate}{/if}<br />
+                <td{$valueStyle}>{if $hideCalender neq true}{include file="CRM/common/jcalendar.tpl" elementName=receive_date}{else}{$receive_date|crmDate}{/if}<br />
                     <span class="description">{ts}The date this contribution was received.{/ts}</span>
                 </td>
             </tr>
@@ -213,6 +218,7 @@
 // bind first click of accordion header to load crm-accordion-body with snippet
 // everything else taken care of by cj().crm-accordions()
 cj(document).ready( function() {
+    cj('#adjust-option-type').hide();	
     cj('.crm-ajax-accordion .crm-accordion-header').one('click', function() { 
     	loadPanes(cj(this).attr('id')); 
     });
@@ -294,6 +300,7 @@ function loadPanes( id ) {
 {/if}
 <br />
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+</div>
     {literal}
     <script type="text/javascript">
      function verify( ) {
@@ -434,6 +441,10 @@ function buildAmount( priceSetId ) {
   cj( "#totalAmount").hide( );
   
 }
+function adjustPayment( ) {
+cj('#adjust-option-type').show();		    	    
+cj("#total_amount").removeAttr("READONLY");
+cj("#total_amount").css('background-color', '#ffffff');
+}
 </script>
 {/literal}
-</div>

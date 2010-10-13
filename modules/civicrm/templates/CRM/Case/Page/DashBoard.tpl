@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,11 +32,8 @@
 
 {capture assign=newCaseURL}{crmURL p="civicrm/contact/view/case" q="action=add&context=standalone&reset=1"}{/capture}
 
-
-
-
 <div class="crm-submit-buttons">
-    {if $newClient}	
+    {if $newClient and $allowToAddNewCase}	
 	    <a href="{$newCaseURL}" class="button"><span><div class="icon add-icon"></div> {ts}Add Case{/ts}</span></a>
     {/if}
     <div class="crm-case-dashboard-switch-view-buttons">
@@ -53,7 +50,13 @@
 </div>
 
 
-<h3>{ts}Summary of Case Involvement{/ts}</h3>
+<h3>
+{if $myCases}
+  {ts}Summary of Case Involvement{/ts}
+{else}
+  {ts}Summary of All Cases{/ts}
+{/if}
+</h3>
 <table class="report">
   <tr class="columnheader">
     <th>&nbsp;</th>
