@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.1                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,16 +23,31 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-block crm-form-block crm-dedupe-find-form-block">
-<div id="help">
-    {ts}You can search all contacts for duplicates or limit the search to a specific group. After initiating the rule, please be patient as it may take some time to fully process.{/ts} 
+
+    {foreach from=$address_groupTree.$blockId item=cd_edit key=group_id}
+
+<div id="{$cd_edit.name}_{$group_id}_{$blockId}" class="form-item">
+<div class="crm-accordion-wrapper crm-accordion-inner crm-{$cd_edit.name}_{$group_id}_{$blockId}-accordion {if $cd_edit.collapse_display eq 0 or $cd_edit.name eq "District_Information" }crm-accordion-open{else}crm-accordion-closed{/if}">
+ <div class="crm-accordion-header">
+  <div class="icon crm-accordion-pointer"></div> 
+{$cd_edit.title}
+
+ </div><!-- /.crm-accordion-header -->
+ <div class="crm-accordion-body">
+
+                {if $cd_edit.help_pre}
+                    <div class="messages help">{$cd_edit.help_pre}</div>
+                {/if}
+                <table class="form-layout-compressed">
+                    {foreach from=$cd_edit.fields item=element key=field_id}
+                        {include file="CRM/Contact/Form/Edit/Address/CustomField.tpl"}
+                    {/foreach}
+                </table>
+                <div class="spacer"></div>
+                {if $cd_edit.help_post}<div class="messages help">{$cd_edit.help_post}</div>{/if}
+ </div><!-- /.crm-accordion-body -->
+</div><!-- /.crm-accordion-wrapper -->
+
+        <div id="custom_group_{$group_id}_{$blockId}"></div>
 </div>
-   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
-   <table class="form-layout-compressed">
-     <tr class="crm-dedupe-find-form-block-group_id">
-       <td class="label">{$form.group_id.label}</td>
-       <td>{$form.group_id.html}</td>
-     </tr>
-   </table>
-  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-</div>
+    {/foreach}
