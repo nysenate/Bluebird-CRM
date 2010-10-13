@@ -1,15 +1,5 @@
 <?php
 
-define('DELIM', '~');
-define("DBNULL", null);
-// ParentID of all top-level category tags in the issue code hierarchy.
-define('CATEGORY_TAG_PARENT_ID', 291);
-// Parent of all position (legislative) tags.
-define('POSITION_TAG_PARENT_ID', 292);
-// ParentID of all freeform tags.
-define('FREEFORM_TAG_PARENT_ID', 296);
-define('COUNTRY_CODE_USA', 1228);
-
 /*
 ** NOTES:
 ** 1. birthdates are assumed to be in the 1900's since OMIS doesn't
@@ -22,8 +12,9 @@ error_reporting(E_ALL && ~E_NOTICE);
 //no limit
 set_time_limit(0);
 
-require_once "../commonLibs/config.php";
-require_once "../commonLibs/lib.inc.php";
+require_once 'senate.constants.php';
+require_once '../commonLibs/config.php';
+require_once '../commonLibs/lib.inc.php';
 
 $prog = $argv[0];
 $task = "import";
@@ -32,7 +23,7 @@ $sourceDesc = "omis";
 $startID = 0;
 
 if (count($argv) <= 1) {
-  die("Usage: $prog [options] instanceURL importSet\nwhere [options] are:\n  -t task\n  -d importDir\n  -s sourceDesc\n  -i startID\n");
+  die("Usage: $prog [options] instanceName importSet\nwhere [options] are:\n  -t task\n  -d importDir\n  -s sourceDesc\n  -i startID\n");
 }
 
 for ($i = 1; $i < count($argv); $i++) {
@@ -64,11 +55,6 @@ if (empty($instance) || empty($importSet)) {
   die("$prog: Must specify an instance and an importSet.\n");
 }
 
-if (strpos($instance, '.') === false) {
-  $instance = $instance.".crm.nysenate.gov";
-  echo "Warning: InstanceURL expanded to $instance\n";
-}
-
 if (empty($importDir)) {
   $importDir = RAYIMPORTDIR.$importSet;
 }
@@ -78,8 +64,8 @@ if (!file_exists($importDir)) {
 }
 
 define('CIVICRM_CONFDIR', RAYROOTDIR.'sites/default');
-if (putenv("SERVER_NAME=$instance") == false) {
-  die("Unable to set SERVER_NAME in environment.\n");
+if (putenv("INSTANCE_NAME=$instance") == false) {
+  die("Unable to set INSTANCE_NAME in environment.\n");
 }
 
 require_once RAYCIVIPATH.'civicrm.config.php';
@@ -87,7 +73,6 @@ require_once 'CRM/Core/Config.php';
 require_once 'CRM/Contact/BAO/Contact.php';
 require_once 'CRM/Core/BAO/CustomValueTable.php';
 require_once 'CRM/Core/BAO/Tag.php';
-require_once 'senate.constants.php';
 
 $config =& CRM_Core_Config::singleton();
 $session =& CRM_Core_Session::singleton();
@@ -294,7 +279,6 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   $cCounter = 0;
 
   $aRels = array();
-  $aIDMap = array();
   $aOrgKey = array();
 
   while ($ctRow) {
@@ -308,23 +292,22 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
     if (RAYDEBUG) markTime('getLine');
 
-    //set the contacts unique importID
+    // Set the unique importID for this contact.
     $importID = $ctRow['KEY'];
 
-    //if this is an org, create an organization for this contact if necessary, then create a contact linked to the org
+    // If this is an org, create an organization for this contact if necessary,
+    // then create a contact linked to the org.
 
     //initialize the org relationship for contact later
     $orgID = null;
 
-    //assume we are going to need to create a contact
-    //org may make contact creation not necessary
-    $createContact=true;
+    // Assume we are going to need to create a contact.
+    // An organization-only record may make contact creation unnecessary.
+    $createContact = true;
 
     if ($ctRow['RT'] == 7 || $ctRow['RT'] == 6) {
-
       //generate the key, based on: name and full address
       $orgKey = $ctRow['OCOMPANY'].$ctRow['HOUSE'].$ctRow['STREET'].$ctRow['CITY'];
-
       //if we already have this business, use the existing one
       //otherwise create a new one
       if (isset($aOrgKey[$orgKey])) {
@@ -333,36 +316,13 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         //remember this org as a new one by key
         $aOrgKey[$orgKey] = $contactID;
 
-        //remember for assocation later:
+        //remember for association later
         $orgID = $contactID;
+        //Append "-1" to end of OMIS ID to differentiate from the contact.
+        $extID = $sourceDesc.$importID.'-1';
 
-        $params = array();
-        $params['id'] = $contactID;
-        $params['contact_type'] = 'Organization';
-        //make sure contacts related to orgs have different IDs since they have to be unique.
-        $params['external_identifier'] = $sourceDesc.$importID.'-1';
-        $params['first_name'] = DBNULL;
-        $params['middle_name'] = DBNULL;
-        $params['last_name'] = DBNULL;
-        $params['sort_name'] = $ctRow['OCOMPANY'];
-        $params['display_name'] = $ctRow['OCOMPANY'];
-        $params['gender_id'] = DBNULL;
-        $params['source'] = $sourceDesc;
-        $params['birth_date'] = DBNULL;
-        $params['addressee_id'] = DBNULL;
-        $params['addressee_custom'] = DBNULL;
-        $params['addressee_display'] = DBNULL;
-        $params['postal_greeting_id'] = DBNULL;
-        $params['postal_greeting_custom'] = DBNULL;
-        $params['postal_greeting_display'] = DBNULL;
-        $params['organization_name'] = $ctRow['OCOMPANY'];
-        $params['job_title'] = DBNULL;
-        $params['prefix_id'] = DBNULL;
-        $params['suffix_id'] = DBNULL;
-        $params['do_not_mail'] = 0;
-        $params['employer_id'] = DBNULL;
-        $params['nick_name'] = $ctRow['FAM1'];
-        $params['household_name'] = DBNULL;
+        $params = create_civi_organization($orgID, $sourceDesc, $importID,
+                                           $ctRow['OCOMPANY'], $ctRow['FAM1']);
 
         //write out the contact
         if (!writeToFile($fout['contact'], $params)) {
@@ -370,143 +330,209 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         }
   
         //work address
-        $params = create_civi_address(++$addressID, $contactID, $ctRow, 2);
+        $params = create_civi_address(++$addressID, $contactID, $ctRow, LOC_TYPE_WORK);
 
         if (!writeToFile($fout['address'], $params)) {
           exit("Error: I/O failure: address");
         }
 
         //increase contactID for individual if we're going to need to create a new one
-	if (!empty($ctRow['FIRST']) || !empty($ctRow['LAST'])) {
-      		++$contactID;
-		$createContact=true;
-	} else {
-		$createContact=false;
-	}
+        if (!empty($ctRow['FIRST']) || !empty($ctRow['LAST'])) {
+          ++$contactID;
+          $createContact = true;
+        } else {
+          $createContact = false;
+        }
       }
 
       if ($createContact) {
-
-	//write out the relationship
-	//the individual ontact for the relationship is going to happen further down, but
-	//we can already create the relationship since contactID was increased above
-      	$params = array();
-      	$params['contact_id_a'] = $contactID;
-      	$params['contact_id_b'] = $orgID;
-      	$params['relationship_type_id'] = $aRelLookup['employeeOf'];
-
+        /*
+        ** Write out the relationship.
+        ** The individual contact for the relationship is going to happen
+        ** further down, but we can already create the relationship since
+        ** contactID was increased above.
+        */
+      	$params = array(
+      	  'contact_id_a' => $contactID,
+          'contact_id_b' => $orgID,
+          'relationship_type_id' => $aRelLookup['employeeOf']
+        );
       	if (!writeToFile($fout['relationship'], $params)) {
-        	exit("Error: I/O failure: relationship");
+          exit("Error: I/O failure: relationship");
       	}
       } //createContact
     } //has org
 
-    //map civi id to external id for relationships
-    //in case relationship parent does not precede current row.
-
-    $aIDMap[$importID] = $contactID;
-
-    //now do handle relationship. safe since contactID was increased to match individual
-    if ($ctRow['SKEY'] > 0 ) {
+    // Handle relationship.
+    // This is safe since contactID was increased to match individual.
+    $spouse_key = $ctRow['SKEY'];
+    if ($spouse_key > 0 ) {
       //if the relationship target exists, just add the info
-      if (isset($aRels[$ctRow['SKEY']])) {
-        $aRels[$ctRow['SKEY']]['relationshipCtRow'] = $ctRow;
-        //make sure that the type is stored if the first entry was missing it
-        if (!isset($aRels[$ctRow['SKEY']]['type'])) {
-          if (strlen(trim($ctRow['RCD'])) > 0) {
-            $aRels[$ctRow['SKEY']]['type'] = $ctRow['RCD'];
-          }
+      if (isset($aRels[$spouse_key])) {
+        $relKey = $spouse_key;
+        $relSide = 'b';
+        $aRels[$relKey]['contactIDb'] = $contactID;
+        // consistency check at the second record in a spousal relationship
+        if ($aRels[$relKey]['omisKEYb'] != $importID ||
+            $aRels[$relKey]['omisKEYa'] != $spouse_key) {
+          cLog(0, 'info', "Warning: Spousal relationship inconsistency at contactID=$contactID, KEY=$importID, SKEY=$spouse_key");
         }
-        //preset a relationship if there is none defined
-        if (!isset($aRels[$ctRow['SKEY']]['type'])) {
-          $aRels[$ctRow['SKEY']]['type'] = 'W';
-        }
+      }
+      else {
+        $relKey = $importID;
+        $relSide = 'a';
+        //otherwise create a new relationship record
+        $aRels[$relKey]['omisKEYa'] = $importID;
+        $aRels[$relKey]['omisKEYb'] = $spouse_key;
+        $aRels[$relKey]['contactIDa'] = $contactID;
+        $aRels[$relKey]['hoh'] = '';   // assume no head-of-household for now
+        $aRels[$relKey]['ctRow'] = $ctRow;   // save the entire record
+      }
 
-        //otherwise remember a rel record
-      } else {
-        $aRels[$importID]['contactID'] = $contactID;
-        $aRels[$importID]['relationshipImportID'] = $ctRow['SKEY'];
-        if (strlen(trim($ctRow['RCD'])) > 0) {
-          $aRels[$importID]['type'] = $ctRow['RCD'];
-        }
-
-        //remember the row so we can pull out other data
-        $aRels[$importID]['ctRow'] = $ctRow;
+      /* Only one of the TC2 codes in a spousal relationship will be set.
+      ** The TC2 that is set identifies the Head of Household.
+      */
+      if ($ctRow['TC2'] > 0) {
+        $aRels[$relKey]['hoh'] = $relSide;
+        $aRels[$relKey]['ctRow'] = $ctRow;
       }
     }
 
-   if ($createContact) {
-    $params = array();
-    $params['id'] = $contactID;
-    $params['contact_type'] = 'Individual';
-    $params['external_identifier'] = $sourceDesc.$importID;
-    $params['first_name'] = $ctRow['FIRST']; 
+    if ($createContact) {
+      $params = array();
+      $params['id'] = $contactID;
+      $params['contact_type'] = 'Individual';
+      $params['external_identifier'] = $sourceDesc.$importID;
+      $params['first_name'] = $ctRow['FIRST']; 
 
-    $mi = trim($ctRow['MI']);
-    $mi = (strlen($mi)>0 && substr($mi,-1) != '.') ? $mi.='.' : $mi;
+      $mi = trim($ctRow['MI']);
+      // if MI is one character, then append a period, otherwise leave as is
+      if (strlen($mi) == 1) {
+        $mi .= '.';
+      }
 
-    $params['middle_name'] = $mi; 
-    $params['last_name'] = $ctRow['LAST']; 
-    $params['sort_name'] = $ctRow['LAST'].', '.$ctRow['FIRST'] .' ' . $mi; 
-    $params['display_name'] = $ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST']; 
-    switch ($ctRow['SEX']) {
-      case 'M': $params['gender_id'] = 2; break;
-      case 'F': $params['gender_id'] = 1; break;
-      default:  $params['gender_id'] = DBNULL; break;
-    }
-    $params['source'] = $sourceDesc;
-    //assume birthday was in the 1900s
-    //ASSUMPTION!!
-    $bday = $ctRow['BMM'].$ctRow['BDD'].$ctRow['BYY'];
-    $params['birth_date'] =  formatDate($bday,'19');
+      $params['middle_name'] = $mi; 
+      $params['last_name'] = $ctRow['LAST']; 
+      $params['sort_name'] = $ctRow['LAST'].', '.$ctRow['FIRST'].' '.$mi; 
+      $params['display_name'] = $ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST']; 
+      switch ($ctRow['SEX']) {
+        case 'M': $params['gender_id'] = 2; break;
+        case 'F': $params['gender_id'] = 1; break;
+        default:  $params['gender_id'] = DBNULL; break;
+      }
+      $params['source'] = $sourceDesc;
+      //assume birthday was in the 1900s
+      //ASSUMPTION!!
+      $bday = $ctRow['BMM'].$ctRow['BDD'].$ctRow['BYY'];
+      $params['birth_date'] = formatDate($bday, '19');
+  
+      // Set Prefix and Suffix IDs.
+      $prefix_id = $suffix_id = DBNULL;
 
-    $params['addressee_id'] = ($ctRow['TC1'] == 100) ? 4 : 1;
-    $params['addressee_custom'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : DBNULL;
+      /*
+      ** It's important to note that OMIS stores two prefixes for each
+      ** record: One for the addressee (INSIDE1) and one for the greeting
+      ** (SALUTE1).  Bluebird only stores one prefix for each contact.
+      ** The INSIDE1 value is used for generating the Bluebird prefix.
+      ** If the INSIDE1 and SALUTE1 are identical, then the Bluebird prefix
+      ** can be used for both the addressee and the greetings.  Otherwise,
+      ** custom greetings will be generated.
+      */
+      if (isset($aPrefix[$ctRow['INSIDE1']])) {
+        $prefix_id = $aPrefix[$ctRow['INSIDE1']];
+      }
 
-    $suffixWord = $aSuffixLookup[$ctRow['SUFFIX']]['suffix'];
-    if ($suffixWord == null) {
-      $suffixWord = '';
-    }
+      // normalize the OMIS suffix into one of the accepted Bluebird suffixes
+      $suffix = $aSuffixLookup[$ctRow['SUFFIX']]['suffix'];
+      if ($suffix) {
+        // convert normalized suffix text into a Bluebird suffix ID
+        $suffix_id = $aSuffix[$suffix];
+      }
+      else {
+        $suffix = '';
+      }
 
-    $params['addressee_display'] = ($ctRow['TC1'] == 100) ? "The ".$ctRow['LAST']." Family" : $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST'] . ' ' . cleanData($suffixWord); //LCD
-    $params['postal_greeting_id'] = 4;
-    if ($ctRow['FAM1']) {
-      $params['postal_greeting_custom'] = "Dear ".$ctRow['FAM1'];
-    }
-    else if ($ctRow['SALUTE1']) {
-      $params['postal_greeting_custom'] = "Dear ".$ctRow['SALUTE1'].' '.$ctRow['LAST'];
-    }
-    else {
-      $params['postal_greeting_custom'] = "Dear Friend";
-    }
-    $params['postal_greeting_display'] = $params['postal_greeting_custom'];
-    //make sure the email address doesn't go into company field
-    $params['organization_name'] = strpos($ctRow['OCOMPANY'],'@')>0 ? '' : $ctRow['OCOMPANY'];
-    $params['job_title'] = DBNULL;
-    if (strlen(trim($ctRow['OTITLE']))>0) {
-      $params['job_title'] = $ctRow['OTITLE'];
-    }
+      $params['prefix_id'] = $prefix_id;
+      $params['suffix_id'] = $suffix_id;
+ 
+      //lookup extra suffix and remember for note
+      $otherSuffix = $aSuffixLookup[$ctRow['SUFFIX']]['otherSuffix'];
+  
+      /********************************************************************
+      ** Set the Addressee to either a template or a custom value.
+      */
+      if ($ctRow['TC1'] == '100') {
+        $addressee_id = ADDRESSEE_CUSTOM;
+        $addressee_custom = "The ".$ctRow['LAST']." Family";
+        $addressee_display = $addressee_custom;
+      }
+      else {
+        $addressee_display = $ctRow['INSIDE1'].' '.$ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST'].' '.$suffix;
+        // If the prefix_id was set, use the standard addressee template.
+        if ($params['prefix_id'] != DBNULL) {
+          $addressee_id = ADDRESSEE_FULL;
+          $addressee_custom = DBNULL;
+        }
+        else {
+          $addressee_id = ADDRESSEE_CUSTOM;
+          $addressee_custom = $addressee_display;
+        }
+      }
 
-    $params['prefix_id'] = isset($aPrefix[$ctRow['INSIDE1']]) ? $aPrefix[$ctRow['INSIDE1']] : DBNULL;
+      $params['addressee_id'] = $addressee_id;
+      $params['addressee_custom'] = $addressee_custom;
+      $params['addressee_display'] = $addressee_display;
 
-    //lookup suffix and remember for note
-    $suffix = $aSuffix[$aSuffixLookup[$ctRow['SUFFIX']]['suffix']];
-    $otherSuffix = $aSuffix[$aSuffixLookup[$ctRow['SUFFIX']]['otherSuffix']];
+      /**********************************************************************
+      ** Set Postal/E-mail Greetings to either a template or a custom value.
+      */
+      if ($ctRow['FAM1']) {
+        $greeting_id = GREETING_NICK;
+        $greeting_custom = DBNULL;
+        $greeting_display = "Dear ".$ctRow['FAM1'];
+      }
+      else if ($ctRow['SALUTE1']) {
+        $greeting_display = "Dear ".$ctRow['SALUTE1'].' '.$ctRow['LAST'];
+        if ($ctRow['INSIDE1'] == $ctRow['SALUTE1'] && $prefix_id != DBNULL) {
+          $greeting_id = GREETING_PREFIX_LN;
+          $greeting_custom = DBNULL;
+        }
+        else {
+          $greeting_id = GREETING_CUSTOM;
+          $greeting_custom = $greeting_display;
+        }
+      }
+      else {
+        $greeting_id = GREETING_FRIEND;
+        $greeting_custom = DBNULL;
+        $greeting_display = "Dear Friend";
+      }
 
-    if (!$suffix || $suffix=='null') $params['suffix_id'] = DBNULL;
-    else $params['suffix_id'] = $suffix;
+      $params['postal_greeting_id'] = $greeting_id;
+      $params['postal_greeting_custom'] = $greeting_custom;
+      $params['postal_greeting_display'] = $greeting_display;
+      $params['email_greeting_id'] = $greeting_id;
+      $params['email_greeting_custom'] = $greeting_custom;
+      $params['email_greeting_display'] = $greeting_display;
 
-    $params['do_not_mail'] = ($ctRow['MS']=='U') ? 1 : 0;
-
-    //set the relationship if its got an org
-    $params['employer_id'] = $orgID>0 ? $orgID : DBNULL;
-    $params['nick_name'] = $ctRow['FAM1'];
-    $params['household_name'] = DBNULL;
-
-    if (!writeToFile($fout['contact'], $params)) {
-      exit("Error: I/O failure: contact");
-    }
-   } //createContact
+      //make sure the email address doesn't go into company field
+      $params['organization_name'] = strpos($ctRow['OCOMPANY'],'@')>0 ? '' : $ctRow['OCOMPANY'];
+      $params['job_title'] = DBNULL;
+      if (strlen(trim($ctRow['OTITLE']))>0) {
+        $params['job_title'] = $ctRow['OTITLE'];
+      }
+  
+      $params['do_not_mail'] = ($ctRow['MS']=='U') ? 1 : 0;
+  
+      //set the relationship if it has an org
+      $params['employer_id'] = $orgID>0 ? $orgID : DBNULL;
+      $params['nick_name'] = $ctRow['FAM1'];
+      $params['household_name'] = DBNULL;
+  
+      if (!writeToFile($fout['contact'], $params)) {
+        exit("Error: I/O failure: contact");
+      }
+    } //createContact
 
     if ($omis_ext) {
       //concatenate custom fields into a note
@@ -521,7 +547,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       }
 
       //add the other suffix
-      if ($otherSuffix != 'null') {
+      if ($otherSuffix) {
         $nonOmis .= 'Other Suffix: '.$otherSuffix;
       }
 
@@ -548,7 +574,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     }
 
     //home address
-    $params = create_civi_address(++$addressID, $contactID, $ctRow, 1);
+    $params = create_civi_address(++$addressID, $contactID, $ctRow, LOC_TYPE_HOME);
 
     if (!writeToFile($fout['address'], $params)) {
       exit("Error: I/O failure: address");
@@ -578,7 +604,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $params = array(
         'id'                 => ++$addressID,
         'contact_id'         => $contactID,
-        'location_type_id'   => 2,
+        'location_type_id'   => LOC_TYPE_WORK,
         'is_primary'         => 0,
         'street_number'      => DBNULL,
         'street_unit'        => DBNULL,
@@ -601,9 +627,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     if (cleanData($ctRow['PHONE']) <> DBNULL) {
       $params = array(
         'contact_id'       => $contactID,
-        'location_type_id' => 1,
+        'location_type_id' => LOC_TYPE_HOME,
         'is_primary'       => 1,
-        'phone_type_id'    => 246,
+        'phone_type_id'    => PHONE_TYPE_PHONE,
         'phone'            => $ctRow['PHONE'],
       );
 
@@ -620,9 +646,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       }
       $params = array(
         'contact_id'        => $contactID,
-        'location_type_id'  => 2,
+        'location_type_id'  => LOC_TYPE_WORK,
         'is_primary'        => 0,
-        'phone_type_id'     => 246,
+        'phone_type_id'     => PHONE_TYPE_PHONE,
         'phone'             => $wphone
       );
       
@@ -635,9 +661,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     if (strlen($ctRow['PHONE_MOBILE']) > 0) {
       $params = array(
         'contact_id'       => $contactID,
-        'location_type_id' => 1,
+        'location_type_id' => LOC_TYPE_HOME,
         'is_primary'       => 0,
-        'phone_type_id'    => 247,
+        'phone_type_id'    => PHONE_TYPE_MOBILE,
         'phone'            => $ctRow['PHONE_MOBILE'],
       );
 
@@ -650,9 +676,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     if (strlen($ctRow['FAX_HOME']) > 0) {
       $params = array(
         'contact_id'       => $contactID,
-        'location_type_id' => 1,
+        'location_type_id' => LOC_TYPE_HOME,
         'is_primary'       => 0,
-        'phone_type_id'    => 248,
+        'phone_type_id'    => PHONE_TYPE_FAX,
         'phone'            => $ctRow['FAX_HOME'],
       );
 
@@ -665,9 +691,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     if (strlen($ctRow['FAX_WORK']) > 0) {
       $params = array(
         'contact_id'       => $contactID,
-        'location_type_id' => 2,
+        'location_type_id' => LOC_TYPE_WORK,
         'is_primary'       => 0,
-        'phone_type_id'    => 248,
+        'phone_type_id'    => PHONE_TYPE_FAX,
         'phone'            => $ctRow['FAX_WORK'],
       );
 
@@ -680,7 +706,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     if (strpos($ctRow['OCOMPANY'],'@') > 0) {
       $params = array(
         'contact_id'       => $contactID,
-        'location_type_id' => 1,
+        'location_type_id' => LOC_TYPE_HOME,
         'email'            => $ctRow['OCOMPANY'],
         'is_primary'       => 1,
       );
@@ -694,7 +720,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     if (strpos($ctRow['EMAIL'],'@') > 0) {
       $params = array(
         'contact_id'       => $contactID,
-        'location_type_id' => 1,
+        'location_type_id' => LOC_TYPE_HOME,
         'email'            => $ctRow['EMAIL'],
         'is_primary'       => 1,
       );
@@ -732,8 +758,13 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       cLog(0,'info',"converted {$cCounter}/{$numContacts} contacts. last uniqueID:{$importID} civicrmID:{$contactID} - {$str}");
     }
 
-    //create notes 
+
+    /*************************************************************************
+    **  Notes (HIS file)
+    *************************************************************************/
     while ($ntRow && $ntRow['KEY'] < $importID) {
+      cLog(0, 'info', "Warning: Skipping note id=".$ntRow['KEY']);
+      print_r($ntRow);
       $ntRow = getLineAsAssocArray($infiles['notes'], DELIM, $omis_nt_fields);
     }
     while ($ntRow && $ntRow['KEY'] == $importID) {
@@ -766,8 +797,15 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $ntRow['KEY'] = intval($ntRow['KEY']);
     }
 
+
+    /*************************************************************************
+    **  Cases (CAS file)
+    *************************************************************************/
+
     //create activities from cases
     while ($csRow && $csRow['KEY'] < $importID) {
+      cLog(0, 'info', "Warning: Skipping case id=".$csRow['KEY']);
+      print_r($csRow);
       $csRow = getLineAsAssocArray($infiles['cases'], DELIM, $omis_cs_fields);
     }
     while ($csRow && $csRow['KEY'] == $importID) {
@@ -882,6 +920,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       ++$activityID;
     }
 
+
+    /*************************************************************************
+    **  Issue Codes (ISS file)
+    *************************************************************************/
+
     //create notes from issues 
     //cumulate issues into one note
     $tstamp = null;
@@ -979,101 +1022,130 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $ctRow = getLineAsAssocArray($infiles['contacts'], DELIM, $omis_ct_fields);
   }
 
+
+  /************************************************************************
+  ** Relationships  -  Finished processing all contacts.
+  ************************************************************************/
+
   //write out all relationships
 
   foreach ($aRels as $aRel) {
-
-    //find out who is HoH
-    if ($aRel['ctRow']['TC2'] == '003') {
-      $first='HoH';
-      $second='MoH';
-      $primary='ctRow';
-    } elseif ($aRel['relationshipCtRow']['TC2']=='003') {
-      $first='MoH';
-      $second='HoH';
-      $primary='relationshipCtRow';
-    //default
-    } else {
-      $first='MoH';
-      $second='MoH';
-      $primary='ctRow';
-    }
+    $family_name = $aRel['ctRow']['LAST'].' Family';
+    $nick_name = trim($aRel['ctRow']['FAM2']);
 
     //create the household record
     $params = array();
     $params['id'] = ++$contactID;
     $params['contact_type'] = 'Household';
-    $params['external_identifier'] = $sourceDesc.$aRel['relationshipImportID'].'-H';
+    $params['external_identifier'] = $sourceDesc.$aRel['omisKEYa'].'+'.$aRel['omisKEYb'];
     $params['first_name'] = DBNULL;
     $params['middle_name'] = DBNULL;
     $params['last_name'] = DBNULL;
-    $params['sort_name'] = $aRel['ctRow']['LAST'].' Family';
-    $params['display_name'] = $aRel['ctRow']['LAST'].' Family';
+    $params['sort_name'] = $family_name;
+    $params['display_name'] = $family_name;
     $params['gender_id'] = DBNULL;
     $params['source'] = $sourceDesc;
     $params['birth_date'] = DBNULL;
-    $params['addressee_id'] = 5;
-    $params['addressee_custom'] = DBNULL;
-    $params['addressee_display'] = 'The '.$aRel['ctRow']['LAST'].' Family';
+    $params['prefix_id'] = DBNULL;
+    $params['suffix_id'] = DBNULL;
 
-    /* used to be
-    $params['postal_greeting_id'] = 5;
-    $params['postal_greeting_custom'] = DBNULL;
-    $params['postal_greeting_display'] = 'Dear '.$aRel['ctRow']['LAST'].' Family';
-    */
+    // set the addressee using TC2 and INSIDE2
 
-    $params['postal_greeting_id'] = 4;
-    if (strlen(trim($aRel[$primary]['FAM2']))>0) $params['postal_greeting_display'] =  'Dear '.$aRel[$primary]['FAM2'];
-    //elseif (strlen(trim($aRel[$primary]['FAM2']))==0 && strlen(trim($aRel[$primary]['TC2']))>0) $params['postal_greeting_display'] =  'Dear '.$aRel['ctRow']['SALUTE2'].' '.$aRel['ctRow']['LAST'];
-    elseif ($aRel[$primary]['TC2']=='003') $params['postal_greeting_display'] =  'Dear '.$aRel[$primary]['SALUTE2'].' '.$aRel[$primary]['LAST'];
-	else $params['postal_greeting_display'] = 'Dear Friends';
+    if ($aRel['ctRow']['TC2'] == '100') {
+      $addressee_id = ADDRESSEE_THE_HN;
+      $addressee_custom = DBNULL;
+      $addressee_display = 'The '.$family_name;
+    }
+    else {
+      $addressee_id = ADDRESSEE_CUSTOM;
+      $addressee_custom = $aRel['ctRow']['INSIDE2'].' '.$aRel['ctRow']['FIRST'].' '.$aRel['ctRow']['MI'].' '.$aRel['ctRow']['LAST'].' '.$aRel['ctRow']['SUFFIX'];
+      $addressee_display = $addressee_custom;
+    }
 
-    $params['postal_greeting_custom'] = $params['postal_greeting_display'];
+    $params['addressee_id'] = $addressee_id;
+    $params['addressee_custom'] = $addressee_custom;
+    $params['addressee_display'] = $addressee_display;
+
+    // set the postal and e-mail greetings using TC2, FAM2, and SALUTE2
+
+    if ($aRel['ctRow']['TC2'] == "100") {
+      $greeting_id = GREETING_HN;
+      $greeting_custom = DBNULL;
+      $greeting_display = 'Dear '.$family_name;
+    }
+    else if (strlen($nick_name) > 0) {
+      $greeting_id = GREETING_NICK2;
+      $greeting_custom = DBNULL;
+      $greeting_display = 'Dear '.$nick_name;
+    }
+    else if ($aRel['ctRow']['SALUTE2']) {
+      $greeting_id = GREETING_CUSTOM;
+      $greeting_custom = 'Dear '.$aRel['ctRow']['SALUTE2'].' '.$aRel['ctRow']['LAST'];
+      $greeting_display = $greeting_custom;
+    }
+    else {
+      $greeting_id = GREETING_FRIENDS;
+      $greeting_custom = DBNULL;
+      $greeting_display = 'Dear Friends';
+    }
+
+    $params['postal_greeting_id'] = $greeting_id;
+    $params['postal_greeting_custom'] = $greeting_custom;
+    $params['postal_greeting_display'] = $greeting_display;
+    $params['email_greeting_id'] = $greeting_id;
+    $params['email_greeting_custom'] = $greeting_custom;
+    $params['email_greeting_display'] = $greeting_display;
 
     $params['organization_name'] = DBNULL;
     $params['job_title'] = DBNULL;
-    $params['prefix_id'] = DBNULL;
-    $params['suffix_id'] = DBNULL;
     $params['do_not_mail'] = 0;
     $params['employer_id'] = DBNULL;
-    $params['nick_name'] = $aRel['ctRow']['FAM2'];
-    $params['household_name'] = $aRel['ctRow']['LAST'].' Family';
+    $params['nick_name'] = $nick_name;
+    $params['household_name'] = $family_name;
+
     if (!writeToFile($fout['contact'], $params)) break;
  
     //add the address
-    $params = create_civi_address(++$addressID, $contactID, $aRel['ctRow'], 1);
+    $params = create_civi_address(++$addressID, $contactID, $aRel['ctRow'], LOC_TYPE_HOME);
     if (!writeToFile($fout['address'], $params)) break;
 
-    //create the spousal relationship
-    $params = array();
-    $params['contact_id_a'] = $aRel['contactID'];
-    $params['contact_id_b'] = $aIDMap[$aRel['relationshipImportID']];
-    $params['relationship_type_id'] = $aRelLookup[$aRel['type']];
-    writeToFile($fout['relationship'], $params);
-
-/*implement this later: **decided against
-    } elseif ($aRel['ctRow']['GENDER']=='M') {
-                        $first='HoH';
-                        $second='MoH';
-    } else {
-                        $first='MoH';
-                        $second='HoH';
+    $rcode = $aRel['ctRow']['RCD'];
+    if (empty($rcode)) {
+      $rcode = 'W';  // default to Wife
     }
-*/
-    //add the member of household relationship to the household record
-    //contactID here is the household
-    $params = array();
-    $params['contact_id_a'] = $aIDMap[$aRel['relationshipImportID']];
-    $params['contact_id_b'] = $contactID; 
-    $params['relationship_type_id'] = $aRelLookup[$second];
+    //create the spousal relationship
+    $params = array(
+      'contact_id_a' => $aRel['contactIDa'],
+      'contact_id_b' => $aRel['contactIDb'],
+      'relationship_type_id' => $aRelLookup[$rcode]
+    );
     writeToFile($fout['relationship'], $params);
 
-    //add the head of household relationship to the household record
+    // Assume Member of Household for both relationships.
+    $relA = $relB = "MoH";
+    if ($aRel['hoh'] == 'a') {
+      $relA = "HoH";
+    }
+    else if ($aRel['hoh'] == 'b') {
+      $relB = "HoH";
+    }
+
+    // Add the relationship between the second spouse and the household
     //contactID here is the household
-    $params = array();
-    $params['contact_id_a'] = $aRel['contactID'];
-    $params['contact_id_b'] = $contactID;
-    $params['relationship_type_id'] = $aRelLookup[$first];
+    $params = array(
+      'contact_id_a' => $aRel['contactIDb'],
+      'contact_id_b' => $contactID,
+      'relationship_type_id' => $aRelLookup[$relB]
+    );
+    writeToFile($fout['relationship'], $params);
+
+    // Add the relationship between the first spouse and the household
+    //contactID here is the household
+    $params = array(
+      'contact_id_a' => $aRel['contactIDa'],
+      'contact_id_b' => $contactID,
+      'relationship_type_id' => $aRelLookup[$relA]
+    );
     writeToFile($fout['relationship'], $params);
   }
 
@@ -1256,8 +1328,7 @@ function getOptions($strGroup)
   $options = array();
 
   while ($dao->fetch()) {
-    $name = $dao->name;
-    if (strlen($dao->label)>0) $name = $dao->label;
+    $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
     $options[$name] = $dao->value;
   }
 
@@ -1266,7 +1337,7 @@ function getOptions($strGroup)
 
 
 
-function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = 1)
+function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = LOC_TYPE_HOME)
 {
   global $aStates;
 
@@ -1290,6 +1361,41 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = 1)
   return $addr;
 } // create_civi_address()
 
+
+function create_civi_organization($orgid, $src, $omisid, $company, $nickname)
+{
+  $org = array(
+    'id' => $orgid,
+    'contact_type' => 'Organization',
+    'external_identifier' => $src.$omisid.'-1',
+    'first_name' => DBNULL,
+    'middle_name' => DBNULL,
+    'last_name' => DBNULL,
+    'sort_name' => $company,
+    'display_name' => $company,
+    'gender_id' => DBNULL,
+    'source' => $src,
+    'birth_date' => DBNULL,
+    'prefix_id' => DBNULL,
+    'suffix_id' => DBNULL,
+    'addressee_id' => DBNULL,
+    'addressee_custom' => DBNULL,
+    'addressee_display' => DBNULL,
+    'postal_greeting_id' => DBNULL,
+    'postal_greeting_custom' => DBNULL,
+    'postal_greeting_display' => DBNULL,
+    'email_greeting_id' => DBNULL,
+    'email_greeting_custom' => DBNULL,
+    'email_greeting_display' => DBNULL,
+    'organization_name' => $company,
+    'job_title' => DBNULL,
+    'do_not_mail' => 0,
+    'employer_id' => DBNULL,
+    'nick_name' => $nickname,
+    'household_name' => DBNULL
+  );
+  return $org;
+} // create_civi_organization()
 
 
 function get_import_files($idir, $iset)
