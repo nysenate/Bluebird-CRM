@@ -936,7 +936,7 @@ ul.token-input-list-facebook { width:300px;}
 	-moz-border-radius:3px 3px 3px 3px;
 	display:block;
 	float:right;
-	background:url("../i/crm-button-bg.gif") repeat-x scroll left top #70716B;
+	background:url("../nyss_skin/images/crm-button-bg.gif") repeat-x scroll left top #70716B;
 	border:1px solid #3E3E3E;
 	color:#FFFFFF;
 	cursor:pointer;
@@ -994,7 +994,7 @@ ul.token-input-list-facebook { width:300px;}
 
 /* Contact summary/edit stuff */
 #contact-summary .crm-accordion-wrapper .crm-accordion-header .crm-accordion-pointer {
-	background-image: url("../i/icons/jquery-ui-3E3E3E.png");
+	background-image: url("../nyss_skin/images/icons-3e3e3e.png");
 }
 #District_Information_7_1 .crm-accordion-header {
 	font-size: 14px;
