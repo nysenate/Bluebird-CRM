@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -83,21 +83,28 @@ class CRM_ACL_API {
      * @param  array $whereTables (reference ) add the tables that are needed for the where clause
      * @param int    $contactID the contactID for whom the check is made
      * @param bool   $onlyDeleted  whether to include only deleted contacts
+     * @param bool   $skipDeleteClause don't add delete clause if this is true, 
+     *               this means it is handled by generating query
      *
      * @return string the group where clause for this user
      * @access public
      */
-    public static function whereClause( $type, &$tables, &$whereTables, $contactID = null, $onlyDeleted = false ) {
+    public static function whereClause( $type, &$tables, &$whereTables, $contactID = null, $onlyDeleted = false, $skipDeleteClause = false ) {
         // first see if the contact has edit / view all contacts
         if ( CRM_Core_Permission::check( 'edit all contacts' ) ||
              ( $type == self::VIEW &&
                CRM_Core_Permission::check( 'view all contacts' ) ) ) {
-            if (CRM_Core_Permission::check('access deleted contacts') and $onlyDeleted) {
-                return '(contact_a.is_deleted)';
-            } else {
-// CRM-6181
-                return '(contact_a.is_deleted = 0)';
+            $deleteClause = ' ( 1 ) ';
+
+            if ( !$skipDeleteClause ) {
+                if (CRM_Core_Permission::check('access deleted contacts') and $onlyDeleted) {
+                    $deleteClause = '(contact_a.is_deleted)';
+                } else {
+                    // CRM-6181
+                    $deleteClause = '(contact_a.is_deleted = 0)';
+                }
             }
+            return $deleteClause;            
         }
 
         if ( $contactID == null ) {

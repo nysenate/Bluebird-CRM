@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -55,7 +55,7 @@
         {/if}
         </td>
     </tr>
-    {include file='CRM/common/ReCAPTCHA.tpl'}
-    <tr><td>&nbsp;</td><td>{$form.buttons.html}</td></tr>
 </table>
-</div>
+{include file='CRM/common/ReCAPTCHA.tpl'}
+<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+</div><!-- end crm-block -->

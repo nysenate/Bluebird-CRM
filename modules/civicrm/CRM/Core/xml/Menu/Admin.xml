@@ -176,6 +176,13 @@
      <weight>260</weight>
   </item>
   <item>
+     <path>civicrm/admin/messageTemplates/add</path>
+     <title>Message Templates</title>
+     <desc>Add/Edit Message Templates</desc>
+     <page_callback>CRM_Admin_Form_MessageTemplates</page_callback>
+     <weight>262</weight>
+  </item>
+  <item>
      <path>civicrm/admin/domain</path>
      <title>Domain Information</title>
      <desc>Configure primary contact name, email, return-path and address information. This information is used by CiviMail to identify the sending organization.</desc>
@@ -394,15 +401,6 @@
      <weight>399</weight>
   </item>
   <item>
-     <path>civicrm/admin/deduperules</path>
-     <title>Find and Merge Duplicate Contacts</title>
-     <desc>Manage the rules used to identify potentially duplicate contact records. Scan for duplicates using a selected rule and merge duplicate contact data as needed.</desc>
-     <page_callback>CRM_Admin_Page_DedupeRules</page_callback>
-     <adminGroup>Manage</adminGroup>
-     <icon>admin/small/duplicate_matching.png</icon>
-     <weight>105</weight>
-  </item> 
-  <item>
      <path>civicrm/admin/options/email_greeting</path>
      <title>Email Greetings</title>
      <desc>Options for assigning email greetings to individual and household contacts.</desc>
@@ -438,11 +436,16 @@
      <page_callback>CRM_Admin_Page_ContactType</page_callback>
      <adminGroup>Option Lists</adminGroup>
      <icon>admin/small/09.png</icon>
+     <weight>420</weight>
   </item>
   <item>
-     <path>civicrm/admin/dedupefind</path>
-     <title>Find and Merge Duplicate Contacts</title>
-     <page_callback>CRM_Admin_Page_DedupeFind</page_callback>
+     <path>civicrm/admin/options/website_type</path>
+     <title>Website Types</title>
+     <desc>Options for assigning website types to contacts.</desc>
+     <path_arguments>group=website_type</path_arguments>
+     <page_callback>CRM_Admin_Page_Options</page_callback>
+     <adminGroup>Option Lists</adminGroup>
+     <weight>425</weight>
   </item>
   <item>
      <path>civicrm/admin/access</path>
@@ -542,5 +545,15 @@
        <page_callback>CRM_Admin_Page_AJAX::processTags</page_callback>
        <access_arguments>access CiviCRM</access_arguments>
        <page_type>3</page_type>
-  </item>  
+  </item>
+  <item>
+     <path>civicrm/admin/tplstrings/add</path>
+     <page_callback>CRM_Admin_Form_Persistent</page_callback>
+     <access_arguments>administer CiviCRM,access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/admin/tplstrings</path>
+     <page_callback>CRM_Admin_Page_Persistent</page_callback>
+     <access_arguments>administer CiviCRM,access CiviCRM</access_arguments>
+  </item>
 </menu>

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,14 +34,16 @@
     <tr class="crm-navigation-form-block-url">
         <td class="label">{$form.url.label}</td><td>{$form.url.html} {help id="id-menu_url" file="CRM/Admin/Form/Navigation.hlp"}</td>
     </tr>
+    { if $form.parent_id.html }
     <tr class="crm-navigation-form-block-parent_id">
         <td class="label">{$form.parent_id.label}</td><td>{$form.parent_id.html} {help id="id-parent" file="CRM/Admin/Form/Navigation.hlp"}</td>
     </tr>
+    {/if}
     <tr class="crm-navigation-form-block-has_separator">
         <td class="label">{$form.has_separator.label}</td><td>{$form.has_separator.html} {help id="id-has_separator" file="CRM/Admin/Form/Navigation.hlp"}</td>
     </tr>
     <tr class="crm-navigation-form-block-permission">
-        <td class="label">{$form.permission.label}<br />{help id="id-menu_permission" file="CRM/Admin/Form/Navigation.hlp"}</td><td>{$form.permission.html}</td>
+        <td class="label">{$form.permission.label}{help id="id-menu_permission" file="CRM/Admin/Form/Navigation.hlp"}</td><td>{$form.permission.html}</td>
     </tr>
     <tr class="crm-navigation-form-block-permission_operator">
         <td class="label">&nbsp;</td><td>{$form.permission_operator.html}&nbsp;{$form.permission_operator.label} {help id="id-permission_operator" file="CRM/Admin/Form/Navigation.hlp"}</td>

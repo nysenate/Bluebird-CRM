@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -318,7 +318,7 @@ class CRM_Contact_Selector_Custom extends CRM_Core_Selector_Base implements CRM_
                     require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
                     $row['contact_type' ] = 
                         CRM_Contact_BAO_Contact_Utils::getImage( $dao->contact_sub_type ? 
-                                                                 $dao->contact_sub_type : $dao->contact_type );
+                                                                 $dao->contact_sub_type : $dao->contact_type ,false,$contactID);
                 }
                 $rows[] = $row;
             }

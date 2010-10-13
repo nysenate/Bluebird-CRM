@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -68,12 +68,14 @@
         {strip}
         <table id="active_membership" class="display">
             <thead>
+            <tr>
                 <th>{ts}Membership{/ts}</th>
                 <th>{ts}Start Date{/ts}</th>
                 <th>{ts}End Date{/ts}</th>
                 <th>{ts}Status{/ts}</th>
                 <th>{ts}Source{/ts}</th>
                 <th></th>
+            </tr>
             </thead>
             {foreach from=$activeMembers item=activeMember}
             <tr id="crm-membership_{$activeMember.id}" class="{cycle values="odd-row,even-row"} {$activeMember.class} crm-membership">
@@ -104,13 +106,15 @@
         <h3 class="font-red">{ts}Pending and Inactive Memberships{/ts}</h3>
         {strip}
         <table id="pending_membership" class="display">
-           <thead>
+            <thead>
+            <tr>
                 <th>{ts}Membership{/ts}</th>
                 <th>{ts}Start Date{/ts}</th>
                 <th>{ts}End Date{/ts}</th>
                 <th>{ts}Status{/ts}</th>
                 <th>{ts}Source{/ts}</th>
                 <th></th>
+            </tr>
             </thead>
             {foreach from=$inActiveMembers item=inActiveMember}
             <tr id="crm-membership_{$inActiveMember.id}" class="{cycle values="odd-row,even-row"} {$inActiveMember.class} crm-membership">
@@ -137,13 +141,15 @@
             {strip}
             <table id="membership_type" class="display">
             <thead>
+            <tr>
                 <th>{ts}Name{/ts}</th>
                 <th>{ts}Period{/ts}</th>
                 <th>{ts}Fixed Start{/ts}</th>		
                 <th>{ts}Minimum Fee{/ts}</th>
                 <th>{ts}Duration{/ts}</th>            
                 <th>{ts}Visibility{/ts}</th>
-                <th></th>   
+                <th></th> 
+            </tr>
             </thead>
             {foreach from=$membershipTypes item=membershipType}
             <tr class="{cycle values="odd-row,even-row"} {$membershipType.class} crm-membership">

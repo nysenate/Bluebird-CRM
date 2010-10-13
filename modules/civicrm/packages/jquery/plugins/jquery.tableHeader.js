@@ -32,7 +32,12 @@ $(document).ready(function() {
           'paddingBottom': $(this).css('paddingBottom')
 	})[0];
       // Adjust width to fit cell and hide.
-      $(div).css('paddingRight', parseInt($(div).css('paddingRight')) + $(this).width() - $(div).width() +'px');
+      
+      //CRM-6467
+      var length = $(this).width() - $(div).width();
+      if ( length < 0 ) length = $(div).width() - $(this).width();
+      $(div).css('paddingRight', parseInt($(div).css('paddingRight')) + length +'px');
+
       cells.push(div);
       
       // Get position.

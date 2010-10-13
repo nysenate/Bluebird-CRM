@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -168,7 +168,7 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
               <td class="view-value"> {if $admin}{$form.source_contact_id.html}{/if}</td>
             </tr>
            <tr class="crm-case-activity-form-block-assignee_contact_id">
-              <td class="label">{ts}Assigned To {/ts}</td>
+              <td class="label">{ts}Assigned To{/ts}</td>
               <td>{$form.assignee_contact_id.html}                   
                   {edit}<span class="description">
                         {ts}You can optionally assign this activity to someone.{/ts}
@@ -262,7 +262,7 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                         </tr>
                         <tr class="crm-case-activity-form-block-followup_activity_subject">
                            <td class="label">{$form.followup_activity_subject.label}</td>
-                           <td>{$form.followup_activity_subject.html}</td>
+                           <td>{$form.followup_activity_subject.html|crmReplace:class:huge}</td>
                         </tr>
                     </table>
  </div><!-- /.crm-accordion-body -->

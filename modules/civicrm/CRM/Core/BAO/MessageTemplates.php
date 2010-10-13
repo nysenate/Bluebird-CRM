@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -394,15 +394,32 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
         require_once 'CRM/Mailing/BAO/Mailing.php';
 
         $domain = CRM_Core_BAO_Domain::getDomain();
-        if ($params['contactId']) {
-            $contactParams = array('contact_id' => $params['contactId']);
-            $contact =& civicrm_contact_get($contactParams);
-        }
 
         $mailing = new CRM_Mailing_BAO_Mailing;
         $mailing->body_text = $text;
         $mailing->body_html = $html;
         $tokens = $mailing->getTokens();
+
+        if ($params['contactId']) {
+            $contactParams = array('contact_id' => $params['contactId']);
+            $returnProperties = array( );
+
+            if ( isset( $tokens['text']['contact'] ) ) {
+                foreach ( $tokens['text']['contact'] as $name ) {
+                    $returnProperties[$name] = 1;
+                }
+            }
+
+            if ( isset( $tokens['html']['contact'] ) ) {
+                foreach ( $tokens['html']['contact'] as $name ) {
+                    $returnProperties[$name] = 1;
+                }
+            }
+            list( $contact ) = $mailing->getDetails($contactParams, $returnProperties, false );
+            $contact = $contact[$params['contactId']];
+            
+            
+        }
 
         $subject = CRM_Utils_Token::replaceDomainTokens($subject, $domain, true, $tokens['text'], true);
         $text    = CRM_Utils_Token::replaceDomainTokens($text,    $domain, true, $tokens['text'], true);
@@ -419,7 +436,7 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
         // parse the three elements with Smarty
         require_once 'CRM/Core/Smarty/resources/String.php';
         civicrm_smarty_register_string_resource();
-        $smarty = CRM_Core_Smarty::singleton();
+        $smarty =& CRM_Core_Smarty::singleton();
         foreach ($params['tplParams'] as $name => $value) {
             $smarty->assign($name, $value);
         }

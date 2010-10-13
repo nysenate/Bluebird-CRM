@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,7 +33,7 @@
     <table class="form-layout-compressed">
     <tr>
         <td><a href="{$newPageURL}" class="button"><span><div class="icon add-icon"></div>{ts}Add Contribution Page{/ts}</span></a></td>
-        <td style="vertical-align: top"><a href="{crmURL p="civicrm/admin/pcp" q="reset=1"}">&raquo; {ts}Manage Personal Campaign Pages{/ts}</a></td>
+        <td style="vertical-align: top"><a class="button" href="{crmURL p="civicrm/admin/pcp" q="reset=1"}"><span>{ts}Manage Personal Campaign Pages{/ts}</span></a> {help id="id-pcp-intro" file="CRM/Contribute/Page/PCP.hlp"}</td>
     </tr>
     </table>
 {/if}
@@ -57,14 +57,14 @@
           </tr>
           </thead>
           {foreach from=$rows item=row}
-        <tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
-            <td>
-               <strong>{$row.title}</strong>
-            </td>
-            <td>{$row.id}</td>
-            <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-            <td>{$row.action|replace:'xx':$row.id}</td>
-        </tr>
+            <tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
+                <td>
+                   <strong>{$row.title}</strong>
+                </td>
+                <td>{$row.id}</td>
+                <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+                <td>{$row.action|replace:'xx':$row.id}</td>
+            </tr>
         {/foreach}
         </table>
         

@@ -277,6 +277,16 @@ class InstallRequirements {
             ),
             true );
 
+        // CRM-6485: make sure the path does not contain PATH_SEPARATOR, as we don’t know how to escape it
+        $this->requireNoPathSeparator(
+            array(
+                'File permissions',
+                'does the CiviCRM path contain PATH_SEPARATOR?',
+                'the ' . $this->getBaseDir() . ' path contains PATH_SEPARATOR (the ' . PATH_SEPARATOR . ' character)',
+                $this->getBaseDir(),
+            )
+        );
+
         $requiredDirectories = array( 'CRM', 'packages', 'templates', 'js', 'api', 'i', 'sql' );
         foreach ( $requiredDirectories as $dir ) {
             $this->requireFile( $crmPath . CIVICRM_DIRECTORY_SEPARATOR . $dir, array("File permissions", "$dir folder exists", "There is no $dir folder" ), true );
@@ -334,6 +344,9 @@ class InstallRequirements {
         // Check for MySQL support
         $this->requireFunction('mysql_connect', array("PHP Configuration", "MySQL support", "MySQL support not included in PHP."));
 
+        // Check for JSON support
+        $this->requireFunction('json_encode', array("PHP Configuration", "JSON support", "JSON support not included in PHP."));
+        
         // Check memory allocation
         $this->requireMemory(32*1024*1024, 64*1024*1024, array("PHP Configuration", "Memory allocated (PHP config option 'memory_limit')", "CiviCRM needs a minimum of 32M allocated to PHP, but recommends 64M.", ini_get("memory_limit")));
 
@@ -456,6 +469,15 @@ class InstallRequirements {
             $this->error($testDetails);
         }
     }
+
+    function requireNoPathSeparator($testDetails)
+    {
+        $this->testing($testDetails);
+        if (substr_count($this->getBaseDir(), PATH_SEPARATOR)) {
+            $this->error($testDetails);
+        }
+    }
+
     function requireNoFile($filename, $testDetails) {
         $this->testing($testDetails);
         $filename = $this->getBaseDir() . $filename;
@@ -803,7 +825,7 @@ class Installer extends InstallRequirements {
                 cache_clear_all();
                 
                 //add basic drupal permissions
-                db_query( 'UPDATE {permission} SET perm = CONCAT( perm, \', access CiviMail subscribe/unsubscribe pages, access all custom data, access uploaded files, make online contributions, profile listings and forms, register for events, view event info, view event participants\') WHERE rid IN (1, 2)' );
+                db_query( 'UPDATE {permission} SET perm = CONCAT( perm, \', access CiviMail subscribe/unsubscribe pages, access all custom data, access uploaded files, make online contributions, profile create, profile edit, profile view, register for events, view event info\') WHERE rid IN (1, 2)' );
                 
             } elseif ( $installType == 'standalone' ) {
                 $standaloneURL = civicrm_cms_base( ) . 'standalone/index.php';

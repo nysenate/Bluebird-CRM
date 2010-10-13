@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -40,7 +40,10 @@
                  		<span><div class="icon print-icon"></div>{ts}Print Summary{/ts}</span>
                  		</a>
                   </li>
-                  <li><a class="vcard " title="{ts}vCard record for this contact.{/ts}" href="{crmURL p='civicrm/contact/view/vcard' q="reset=1&cid=$contactId"}"><span><div class="icon vcard-icon"></div>{ts}vCard{/ts}</span></li>
+                  <li>
+                        <a class="vcard " title="{ts}vCard record for this contact.{/ts}" href="{crmURL p='civicrm/contact/view/vcard' q="reset=1&cid=$contactId"}"><span><div class="icon vcard-icon"></div>{ts}vCard{/ts}</span>
+                        </a>
+                  </li>
                  {if $dashboardURL }
                    <li class="crm-contact-dashboard">
                       <a href="{$dashboardURL}" class="dashboard " title="{ts}dashboard{/ts}">
@@ -75,25 +78,25 @@
 		</div>
 	</div>
 {literal}
-<script>
+<script type="text/javascript">
 
 cj('body').click(function() {
-	 	$('#crm-contact-actions-list').hide();
-	 	});
+    cj('#crm-contact-actions-list').hide();
+});
 	
-	 cj('#crm-contact-actions-list').click(function(event){
-	     event.stopPropagation();
-	 	});
+cj('#crm-contact-actions-list').click(function(event){
+    event.stopPropagation();
+});
 
 cj('#crm-contact-actions-list li').hover(
 	function(){ cj(this).addClass('ac_over');},
 	function(){ cj(this).removeClass('ac_over');}
-	);
+);
 
 cj('#crm-contact-actions-link').click(function(event) {
 	cj('#crm-contact-actions-list').toggle();
 	event.stopPropagation();
-	});
+});
 
 </script>
 {/literal}

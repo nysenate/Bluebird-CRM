@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -866,7 +866,7 @@ function civicrm_cck_views_handlers() {
                  'handlers' => array(
                                      // filter handlers
                                      'civicrm_cck_handler_filter' => array(
-                                                                           'parent' => 'content_handler_filter_many_to_one',
+                                                                           'parent' => 'views_handler_filter_in_operator',
                                                                            ),
                                      ),
                  );

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -93,7 +93,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
 
         $sql .= " ORDER BY parent_id,name";
 
-        $dao =& CRM_Core_DAO::executeQuery( $sql );
+        $dao =& CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray, true, null, false, false );
 
         $orphan = array();
         while ( $dao->fetch( ) ) {
@@ -186,7 +186,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
                   FROM civicrm_tag 
                   WHERE {$parentClause} AND used_for LIKE '%{$usedFor}%' ORDER BY name";
         
-        $dao = CRM_Core_DAO::executeQuery( $query );
+        $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray, true, null, false, false );
         
         while( $dao->fetch( ) ) {
             $tags[$dao->id] = $separator . $dao->name;
@@ -318,10 +318,42 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
     static function getTagSet( $entityTable ) {
         $tagSets = array( );
         $query = "SELECT name FROM civicrm_tag WHERE is_tagset=1 AND parent_id IS NULL and used_for LIKE '%{$entityTable}%'";
-        $dao = CRM_Core_DAO::executeQuery( $query );
+        $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray, true, null, false, false );
         while( $dao->fetch( ) ) {
            $tagSets[] = $dao->name;
         }
         return $tagSets;
     }
+    
+    /**
+     * Function to get the tags that are not children of a tagset.
+     *
+     * @return $tags associated array of tag name and id
+     * @access public
+     * @static
+     */
+    static function getTagsNotInTagset( ) {
+        $tags = $tagSets = array( );
+        // first get all the tag sets
+        $query = "SELECT id FROM civicrm_tag WHERE is_tagset=1 AND parent_id IS NULL";
+        $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
+        while( $dao->fetch( ) ) {
+           $tagSets[] = $dao->id;
+        }
+        
+        $parentClause = '';
+        if ( !empty( $tagSets ) ) {
+            $parentClause = ' WHERE ( parent_id IS NULL ) OR ( parent_id NOT IN ( ' .implode( ',', $tagSets ) .' ) )';
+        }
+        
+        // get that tags that don't have tagset as parent
+        $query = "SELECT id, name FROM civicrm_tag {$parentClause}";
+        $dao = CRM_Core_DAO::executeQuery( $query );
+        while( $dao->fetch( ) ) {
+           $tags[$dao->id] = $dao->name;
+        }
+                
+        return $tags;
+    }
+    
 }

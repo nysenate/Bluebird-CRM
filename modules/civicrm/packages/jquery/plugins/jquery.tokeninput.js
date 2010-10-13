@@ -17,7 +17,7 @@ $.fn.tokenInput = function (url, options) {
         noResultsText: "No results",
         searchingText: "Searching...",
         searchDelay: 600,
-        minChars: 3, //LCD
+        minChars: 1,
         tokenLimit: null,
         jsonContainer: null,
         method: "GET",

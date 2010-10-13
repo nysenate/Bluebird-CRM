@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -129,6 +129,12 @@ class CRM_Core_DAO_MappingField extends CRM_Core_DAO
      */
     public $im_provider_id;
     /**
+     * Which type of website does this site belong
+     *
+     * @var int unsigned
+     */
+    public $website_type_id;
+    /**
      * Relationship type, if required
      *
      * @var int unsigned
@@ -209,8 +215,8 @@ class CRM_Core_DAO_MappingField extends CRM_Core_DAO
                     'name' => 'name',
                     'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Name') ,
-                    'maxlength' => 64,
-                    'size' => CRM_Utils_Type::BIG,
+                    'maxlength' => 255,
+                    'size' => CRM_Utils_Type::HUGE,
                 ) ,
                 'contact_type' => array(
                     'name' => 'contact_type',
@@ -236,6 +242,10 @@ class CRM_Core_DAO_MappingField extends CRM_Core_DAO
                 ) ,
                 'im_provider_id' => array(
                     'name' => 'im_provider_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                ) ,
+                'website_type_id' => array(
+                    'name' => 'website_type_id',
                     'type' => CRM_Utils_Type::T_INT,
                 ) ,
                 'relationship_type_id' => array(

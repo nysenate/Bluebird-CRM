@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -54,6 +54,7 @@ class CRM_Core_I18n_PseudoConstant
                 'en_AU' => 'English (Australia)',
                 'en_GB' => 'English (United Kingdom)',
                 'es_ES' => 'español',
+                'es_MX' => 'español (Mexico)',
                 'fr_FR' => 'français',
                 'fr_CA' => 'français (Canada)',
                 'id_ID' => 'Bahasa Indonesia',

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -336,7 +336,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
         }
 
         // form the name only if missing: CRM-627
-        if( !CRM_Utils_Array::value( 'name', $params ) ) {
+        if( !CRM_Utils_Array::value( 'name', $params ) && !CRM_Utils_Array::value( 'id', $params ) ) {
             require_once 'CRM/Utils/String.php';
             $params['name'] = CRM_Utils_String::titleToVar( $params['title'] );
         }

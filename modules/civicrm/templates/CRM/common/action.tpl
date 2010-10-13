@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,9 +28,12 @@
  cj({/literal}{if $isSnippet }document{else}'#crm-container'{/if}{literal})
  	.bind('click', function(event) {
     if (cj(event.target).is('.btn-slide')) {
+      cj('.panel').css('display', 'none');
       cj(event.target).children().show();
+      cj(event.target).addClass('btn-slide-active');
     } else {
-    	cj('.btn-slide .panel').hide();	
+    	cj('.btn-slide .panel').hide();
+    	cj('.btn-slide-active').removeClass('btn-slide-active');	
 	} 
   });
 </script>

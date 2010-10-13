@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -167,6 +167,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
                 $activity    = new CRM_Activity_DAO_Activity( );
                 $activity->copyValues( $params );
                 $result = $activity->delete( );
+                CRM_Utils_Hook::post( 'delete', 'Activity', $activity->id, $activity );
             }
         } else {
             $activity    = new CRM_Activity_DAO_Activity( );
@@ -266,6 +267,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
         $target              = new CRM_Activity_BAO_ActivityTarget( );
         $target->activity_id = $params['activity_id'];
         $target->target_contact_id = $params['target_contact_id'];
+        // avoid duplicate entries
+        $target->find(true);
         $target->save( );
     }
     
@@ -535,6 +538,10 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
                                        );
             }
         }
+
+        // reset the group contact cache since smart groups might be affected due to this
+        require_once 'CRM/Contact/BAO/GroupContactCache.php';
+        CRM_Contact_BAO_GroupContactCache::remove( );
 
         if ( CRM_Utils_Array::value( 'id', $params ) ) {
             CRM_Utils_Hook::post( 'edit', 'Activity', $activity->id, $activity );
@@ -1794,21 +1801,27 @@ AND cl.modified_id  = c.id
     {
         if ( ! isset( self::$_exportableFields[$name] ) ) {
             self::$_exportableFields[$name] = array( );
-
+            
             // TO DO, ideally we should retrieve all fields from xml, in this case since activity processing is done
             // my case hence we have defined fields as case_*
             if ( $name == 'Activity' ) {
-	            require_once 'CRM/Activity/DAO/Activity.php';            
-    	        $fields = CRM_Activity_DAO_Activity::export( );
+	            require_once 'CRM/Activity/DAO/Activity.php'; 
+                $exportableFields = CRM_Activity_DAO_Activity::export( );
+                $Activityfields   = array( 
+                                          'activity_type'     => array( 'title' => ts('Activity Type'),           'type' => CRM_Utils_Type::T_STRING ),
+                                          'activity_status'   => array( 'title' => ts('Activity Status'),         'type' => CRM_Utils_Type::T_STRING ) 
+                                           );
+                $fields = array_merge( $Activityfields, $exportableFields );
+                
             } else {
 	            //set title to activity fields
 	            $fields = array( 
 	                           'case_subject'                 => array( 'title' => ts('Activity Subject'),        'type' => CRM_Utils_Type::T_STRING ),
-	                           'case_source_contact_id'       => array( 'title' => ts('Activity Reporter'),       'type' => CRM_Utils_Type::T_STRING ),
+                               'case_source_contact_id'       => array( 'title' => ts('Activity Reporter'),       'type' => CRM_Utils_Type::T_STRING ),
 	                           'case_recent_activity_date'    => array( 'title' => ts('Activity Actual Date'),    'type' => CRM_Utils_Type::T_DATE ),
 	                           'case_scheduled_activity_date' => array( 'title' => ts('Activity Scheduled Date'), 'type' => CRM_Utils_Type::T_DATE ),
-	                           'case_recent_activity_type'    => array( 'title' => ts('Activity Type'),           'type' => CRM_Utils_Type::T_INT ),
-	                           'case_activity_status_id'      => array( 'title' => ts('Activity Status'),         'type' => CRM_Utils_Type::T_INT ),
+	                           'case_recent_activity_type'    => array( 'title' => ts('Activity Type'),           'type' => CRM_Utils_Type::T_STRING ),
+                               'case_activity_status'         => array( 'title' => ts('Activity Status'),         'type' => CRM_Utils_Type::T_STRING ),
 	                           'case_activity_duration'       => array( 'title' => ts('Activity Duration'),       'type' => CRM_Utils_Type::T_INT ),
 	                           'case_activity_medium_id'      => array( 'title' => ts('Activity Medium'),         'type' => CRM_Utils_Type::T_INT ),
 	                           'case_activity_details'        => array( 'title' => ts('Activity Details'),        'type' => CRM_Utils_Type::T_TEXT ),
@@ -1983,19 +1996,6 @@ AND cl.modified_id  = c.id
         $activity->id = $activityId;
         if ( !$activity->find( true ) ) return $allow;
         
-        require_once 'CRM/Core/Permission.php';
-        require_once 'CRM/Contact/BAO/Contact/Permission.php';
-        
-        //first check the component permission.
-        $sql = "
-    SELECT  component_id
-      FROM  civicrm_option_value val
-INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.name = %1 )
-     WHERE  val.value = %2";    
-        $params = array( 1 => array( 'activity_type', 'String' ),
-                         2 => array( $activity->activity_type_id, 'Integer' ) );
-        $componentId = CRM_Core_DAO::singleValueQuery( $sql, $params );
-        
         //component related permissions.
         $compPermissions = array( 'CiviCase'       => array( 'administer CiviCase',
                                                              'access my cases and activities',
@@ -2008,6 +2008,44 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
                                   'CiviReport'     => array( 'access CiviReport'     ),
                                   'CiviContribute' => array( 'access CiviContribute' ),
                                   );
+        
+        //return early when it is case activity.
+        require_once 'CRM/Case/BAO/Case.php';
+        $isCaseActivity = CRM_Case_BAO_Case::isCaseActivity( $activityId );
+        //check for civicase related permission.
+        if ( $isCaseActivity ) { 
+            $allow = false;
+            foreach ( $compPermissions['CiviCase'] as $per  ) {
+                if ( CRM_Core_Permission::check( $per ) ) {
+                    $allow = true;
+                    break;
+                }
+            }
+            
+            //check for case specific permissions.
+            if ( $allow ) {
+                $oper = 'view';
+                if ( $action == CRM_Core_Action::UPDATE ) $oper = 'edit'; 
+                $allow = CRM_Case_BAO_Case::checkPermission( $activityId, 
+                                                             $oper,
+                                                             $activity->activity_type_id );
+            }
+            
+            return $allow;
+        }
+        
+        require_once 'CRM/Core/Permission.php';
+        require_once 'CRM/Contact/BAO/Contact/Permission.php';
+        
+        //first check the component permission.
+        $sql = "
+    SELECT  component_id
+      FROM  civicrm_option_value val
+INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.name = %1 )
+     WHERE  val.value = %2";    
+        $params = array( 1 => array( 'activity_type', 'String' ),
+                         2 => array( $activity->activity_type_id, 'Integer' ) );
+        $componentId = CRM_Core_DAO::singleValueQuery( $sql, $params );
         
         if ( $componentId ) {
             require_once 'CRM/Core/Component.php';
@@ -2034,29 +2072,6 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
         //check for source contact.
         if ( !$componentId || $allow ) {
             $allow = CRM_Contact_BAO_Contact_Permission::allow( $activity->source_contact_id, $permission );
-        }
-        
-        require_once 'CRM/Case/BAO/Case.php';
-        $isCaseActivity = CRM_Case_BAO_Case::isCaseActivity( $activityId );
-        
-        //check for civicase related permission.
-        if ( $allow && $isCaseActivity ) { 
-            $allow = false;
-            foreach ( $compPermissions['CiviCase'] as $per  ) {
-                if ( CRM_Core_Permission::check( $per ) ) {
-                    $allow = true;
-                    break;
-                }
-            }
-            
-            //check for case specific permissions.
-            if ( $allow ) {
-                $oper = 'view';
-                if ( $action == CRM_Core_Action::UPDATE ) $oper = 'edit'; 
-                $allow = CRM_Case_BAO_Case::checkPermission( $activityId, 
-                                                             $oper,
-                                                             $activity->activity_type_id );
-            }
         }
         
         //check for target and assignee contacts.

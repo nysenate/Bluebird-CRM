@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -317,7 +317,8 @@ class CRM_Core_Payment_BaseIPN {
         $membership   =& $objects['membership']  ;
         $participant  =& $objects['participant'] ;
         $event        =& $objects['event']       ;
-        
+        $changeToday  =  CRM_Utils_Array::value( 'trxn_date', $input, self::$_now );
+
         $values = array( );
         if ( $input['component'] == 'contribute' ) {
             require_once 'CRM/Contribute/BAO/ContributionPage.php';
@@ -341,9 +342,10 @@ class CRM_Core_Payment_BaseIPN {
                      * In BAO/Membership.php(renewMembership function), we skip the extend membership date and status 
                      * when Contribution mode is notify and membership is for renewal ) 
                      */
-                    CRM_Member_BAO_Membership::fixMembershipStatusBeforeRenew( $currentMembership, $changeToday = null  );
+                    CRM_Member_BAO_Membership::fixMembershipStatusBeforeRenew( $currentMembership, $changeToday );
                     
-                    $dates = CRM_Member_BAO_MembershipType::getRenewalDatesForMembershipType( $membership->id , $changeToday = null );
+                    $dates = CRM_Member_BAO_MembershipType::getRenewalDatesForMembershipType( $membership->id , 
+                                                                                              $changeToday );
                     
                     $dates['join_date'] =  CRM_Utils_Date::customFormat($currentMembership['join_date'], $format );
                     
@@ -364,7 +366,10 @@ class CRM_Core_Payment_BaseIPN {
                                          'start_date'    => CRM_Utils_Date::customFormat( $dates['start_date'],    $format ),
                                          'end_date'      => CRM_Utils_Date::customFormat( $dates['end_date'],      $format ),
                                          'reminder_date' => CRM_Utils_Date::customFormat( $dates['reminder_date'], $format ) );
-                
+                //we might be renewing membership, 
+                //so make status override false.  
+                $formatedParams['is_override'] = false;
+
                 $membership->copyValues( $formatedParams );
                 $membership->save( );
 
@@ -614,7 +619,7 @@ class CRM_Core_Payment_BaseIPN {
             }
         }
 
-        $template = CRM_Core_Smarty::singleton( );
+        $template =& CRM_Core_Smarty::singleton( );
         // CRM_Core_Error::debug('tpl',$template);
         //assign honor infomation to receiptmessage
         if ( $honarID = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_Contribution',
@@ -686,6 +691,10 @@ class CRM_Core_Payment_BaseIPN {
             $template->assign( 'totalAmount' , $input['amount'] );
         }
 
+        if ( $contribution->contribution_type_id ) {
+            $values['contribution_type_id'] = $contribution->contribution_type_id;
+        } 
+
         $template->assign( 'trxn_id', $contribution->trxn_id );
         $template->assign( 'receive_date', 
                            CRM_Utils_Date::mysqlToIso( $contribution->receive_date ) );
@@ -696,6 +705,7 @@ class CRM_Core_Payment_BaseIPN {
                                                    $values ) );
         $template->assign( 'is_monetary', 1 );
         $template->assign( 'is_recur', $recur );
+        $template->assign( 'currency', $contribution->currency );
         if ( $recur ) {
             require_once 'CRM/Core/Payment.php';
             $paymentObject =& CRM_Core_Payment::singleton( $contribution->is_test ? 'test' : 'live', 'Contribute',
@@ -710,7 +720,6 @@ class CRM_Core_Payment_BaseIPN {
         
         require_once 'CRM/Utils/Address.php';
         $template->assign( 'address', CRM_Utils_Address::format( $input ) );
-
         if ( $input['component'] == 'event' ) { 
             require_once 'CRM/Core/OptionGroup.php';
             $participant_role = CRM_Core_OptionGroup::values('participant_role');
@@ -777,12 +786,8 @@ class CRM_Core_Payment_BaseIPN {
             $template->assign( 'isPrimary', 1 );
             $template->assign( 'amount', $primaryAmount );
             $template->assign( 'register_date', CRM_Utils_Date::isoToMysql($participant->register_date) );
-            if ( $contribution->contribution_type_id ) {
-                $template->assign( 'contributionTypeName',
-                                   CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionType',
-                                                                $contribution->contribution_type_id ) );
-            }
             if ( $contribution->payment_instrument_id ) {
+                require_once 'CRM/Contribute/PseudoConstant.php';
                 $paymentInstrument = CRM_Contribute_PseudoConstant::paymentInstrument();
                 $template->assign( 'paidBy', $paymentInstrument[$contribution->payment_instrument_id] );
             }
@@ -883,7 +888,7 @@ class CRM_Core_Payment_BaseIPN {
         $transaction = new CRM_Core_Transaction( );
         
         // reset template values.
-        $template = CRM_Core_Smarty::singleton( );
+        $template =& CRM_Core_Smarty::singleton( );
         $template->clearTemplateVars( ); 
         
         if ( !$baseIPN->validateData( $input, $ids, $objects, false ) ) {

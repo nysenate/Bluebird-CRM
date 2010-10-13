@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -155,8 +155,11 @@ class CRM_Pledge_Page_Tab extends CRM_Core_Page
         } else if ( $this->_action & CRM_Core_Action::DETACH ) { 
             require_once 'CRM/Pledge/BAO/Payment.php';
             require_once 'CRM/Contribute/PseudoConstant.php';
-            CRM_Pledge_BAO_Payment::updatePledgePaymentStatus( $this->_id, null, null, array_search( 'Cancelled', CRM_Contribute_PseudoConstant::contributionStatus() ) );
-
+            CRM_Pledge_BAO_Payment::updatePledgePaymentStatus( $this->_id, null, null, 
+                                                               array_search( 'Cancelled', 
+                                                                             CRM_Contribute_PseudoConstant::contributionStatus( null, 
+                                                                                                                                'name' ) ) );
+            
             $session = CRM_Core_Session::singleton();
             $session->setStatus( ts('Pledge has been Cancelled and all scheduled (not completed) payments have been cancelled.<br />') );
             CRM_Utils_System::redirect( $session->popUserContext() );

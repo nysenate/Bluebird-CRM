@@ -88,6 +88,7 @@
     <RelationshipType>
         <name>Case Manager</name>
         <creator>1</creator>
+		<manager>1</manager>
     </RelationshipType>
     <RelationshipType>
         <name>Case Coordinator</name>

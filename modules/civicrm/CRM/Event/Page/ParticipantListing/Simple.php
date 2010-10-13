@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -109,7 +109,7 @@ LIMIT    $offset, $rowCount";
 
         $params = array( );
 
-        $params['status']       = ts('Group %%StatusMessage%%');
+        $params['status']       = ts('Group') . ' %%StatusMessage%%';
         $params['csvString']    = null;
         $params['buttonTop']    = 'PagerTopButton';
         $params['buttonBottom'] = 'PagerBottomButton';

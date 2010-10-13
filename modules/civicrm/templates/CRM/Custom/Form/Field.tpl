@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -203,7 +203,7 @@ function custom_option_html_type( ) {
             <td class="label">{$form.help_post.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_custom_field' field='help_post' id=$id}{/if}</td>
             <td class="html-adjust">{$form.help_post.html|crmReplace:class:huge}
                 {if $action neq 4}
-                    <span class="description">{ts}Explanatory text displayed to users for this field.{/ts}</span>
+                    <span class="description">{ts}Explanatory text displayed for this field. Pre help is displayed inline on the form (above the field). Post help is displayed in a pop-up - users click the help balloon to view help text.{/ts}</span>
                 {/if}
             </td>
         </tr>

@@ -11,6 +11,8 @@
 
 ----------------------------------------------------------------------- */
 
+@import url("printCivicrm.css") print; /* insert CiviCRM print stylesheet override */
+
 /* reset.css */
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {margin:0;padding:0;border:0;font-weight:inherit;font-style:inherit;font-size:100%;font-family:inherit;vertical-align:baseline;}
 body {line-height:1.5;}
@@ -899,3 +901,114 @@ ul.token-input-list-facebook { width:300px;}
 #_qf_Case_submit_pdf {display:none;}
 
 #search-status #task option[value='19'] {display:none;}
+
+/**** LCD Additions ****/ /**** Previously in extras.css ****/
+
+#crm-container #access,
+#header-access {
+	display: none;
+}
+.main-container #edit-profile {
+	right: 0;
+	width: auto; /* Fixes on zoom out 2436 */
+}
+#crm-container #existing-dashlets-col-0,
+#crm-container #dashlets-header-col-0 {
+	width: 70%;
+}
+#crm-container #existing-dashlets-col-1,
+#crm-container #dashlets-header-col-1 {
+	margin-left:72%;
+	width:26%;
+}
+#check_291 {
+	display: none;
+}
+.tagset-hitarea {
+	display: none;
+}
+#tagLabel_291 {
+	font-size: 120%;
+}
+
+/* used for advanced search reset button; .button class was not available on popup */
+#Advanced a.resetbutton {
+	-moz-border-radius:3px 3px 3px 3px;
+	display:block;
+	float:right;
+	background:url("../i/crm-button-bg.gif") repeat-x scroll left top #70716B;
+	border:1px solid #3E3E3E;
+	color:#FFFFFF;
+	cursor:pointer;
+	font-size:12px;
+	font-weight:normal;
+	margin:0.25em 0.5em 0.25em 0.5em;
+	padding:3px 6px 2px;
+	text-decoration:none;
+	text-shadow:0 1px 0 black;
+}
+
+#crm-container #tagRow291 {
+	display: none;
+}
+#crm-container #tagListWrap {
+	height: 600px;
+	overflow: auto;
+	border: solid 1px #CCCCCC;
+}
+#crm-container #tagListWrap td input {
+	float: left;
+}
+#crm-container #tagListWrap td label {
+	display: block;
+	float: left;
+	padding-left: 2px;
+}
+#crm-container #tagListWrap td label.level2 {
+	font-weight: bold;
+}
+#crm-container #tagListWrap td label.level3 {
+	padding-left: 15px;
+	width: 80%;
+}
+
+/* Hide a few things in case manage page */
+#crm-container .crm-case-caseview-form-block-timeline_id,
+#crm-container .crm-case-caseview-form-block-report_id {
+	display: none;
+}
+
+/* Hide user dashboard and user record links */
+#crm-container .crm-contact-dashboard,
+#crm-container .crm-contact-user-record {
+	display: none;
+}
+
+/* Hide some tag stuff */
+#crm-container .crm-tag-form-block-used_for,
+#crm-container #newTagSet,
+.crm-contact-task-addtotag-form-block-tag #tagRow_tag291,
+.crm-contact-task-removefromtag-form-block-tag #tagRow_tag291 {
+	display: none;
+}
+
+/* Contact summary/edit stuff */
+#contact-summary .crm-accordion-wrapper .crm-accordion-header .crm-accordion-pointer {
+	background-image: url("../i/icons/jquery-ui-3E3E3E.png");
+}
+#District_Information_7_1 .crm-accordion-header {
+	font-size: 14px;
+}
+#crm-container .crm-button_qf_Contact_refresh_dedupe {
+	display: none;
+}
+.matching-contacts-actions a.action-item {
+	padding-right: 8px;
+}
+#crm-container #contactTopBar .subHeader {
+	color:#3E3E3E;
+	font-family:Helvetica;
+	font-size:13px;
+	font-weight:bold;
+	padding:4px 8px;
+}

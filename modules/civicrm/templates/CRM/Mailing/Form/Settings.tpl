@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -39,6 +39,10 @@ cj( function($) {
   }
   cj('#override_verp').click(function(){
       cj('.crm-mailing-settings-form-block-forward_replies,.crm-mailing-settings-form-block-auto_responder').toggle();
+       if (!cj('#override_verp').attr('checked')) { 
+             cj('#forward_replies').attr('checked',false);
+             cj('#auto_responder').attr('checked',false);
+           }
     });
 
 });

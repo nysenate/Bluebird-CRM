@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -220,7 +220,7 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock
                                              $form->_values['pledge_id'], $allPayments, $returnProperties );
             //get all status
             require_once 'CRM/Contribute/PseudoConstant.php';
-            $allStatus = CRM_Contribute_PseudoConstant::contributionStatus( );
+            $allStatus = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
             
             $nextPayment = array( );
             $isNextPayment = false;
@@ -233,8 +233,8 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock
                                                       'scheduled_date'   => CRM_Utils_Date::customFormat( $value['scheduled_date'], 
                                                                                                           '%B %d') 
                                                       );
-                } else if (  !$isNextPayment && 
-                             $allStatus[$value['status_id']] == 'Pending' ) { 
+                } else if ( !$isNextPayment && 
+                            $allStatus[$value['status_id']] == 'Pending' ) { 
                     //get the next payment.
                     $nextPayment =  array( 'id'               => $payID ,
                                            'scheduled_amount' => CRM_Utils_Rule::cleanMoney( $value['scheduled_amount']),
@@ -287,9 +287,12 @@ class CRM_Pledge_BAO_PledgeBlock extends CRM_Pledge_DAO_PledgeBlock
             //Frequency unit drop-down label suffixes switch from *ly to *(s)
             $freqUnitVals  = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $pledgeBlock['pledge_frequency_unit'] );
             $freqUnits = array( );
+            $frequencyUnits = CRM_Core_OptionGroup::values( 'recur_frequency_units' );
             foreach ( $freqUnitVals as $key => $val ) {
-                // FIXME: this is not localisable
-                $freqUnits[$val] = CRM_Utils_Array::value('is_pledge_interval', $pledgeBlock) ? "{$val}(s)" : $val;
+                if ( array_key_exists( $val, $frequencyUnits )  ) { 
+                    $freqUnits[$val] = CRM_Utils_Array::value('is_pledge_interval', $pledgeBlock) ? 
+                        "{$frequencyUnits[$val]}(s)" : $frequencyUnits[$val];
+                }
             }
             $form->addElement( 'select', 'pledge_frequency_unit', null, $freqUnits ); 
         }

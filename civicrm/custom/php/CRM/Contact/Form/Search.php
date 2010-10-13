@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -353,7 +353,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
                                                                           'onclick' => 'toggleTaskAction( true );') );
         $this->assign('ts_sel_id', $selectedRowsRadio->_attributes['id']);
         
-        //LCD
+        //NYSS - LCD - adjustment for better behavior enabling task list after selecting all records
 		//$allRowsRadio = $this->addElement('radio', 'radio_ts', null, '', 'ts_all', array( 'onclick' => $this->getName().".toggleSelect.checked = false; toggleCheckboxVals('mark_x_', this);toggleTaskAction( true );" ) );
 		$allRowsRadio = $this->addElement('radio', 'radio_ts', null, '', 'ts_all', array( 'onclick' => "toggleCheckboxVals('mark_x_', this);toggleTaskAction( true );" ) );
         $this->assign('ts_all_id', $allRowsRadio->_attributes['id']);

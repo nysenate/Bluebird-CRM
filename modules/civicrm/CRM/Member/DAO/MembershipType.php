@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -253,12 +253,17 @@ class CRM_Member_DAO_MembershipType extends CRM_Core_DAO
                     'required' => true,
                     'FKClassName' => 'CRM_Core_DAO_Domain',
                 ) ,
-                'name' => array(
+                'membership_type' => array(
                     'name' => 'name',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Name') ,
+                    'title' => ts('Membership Type') ,
                     'maxlength' => 128,
                     'size' => CRM_Utils_Type::HUGE,
+                    'import' => true,
+                    'where' => 'civicrm_membership_type.name',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
                 ) ,
                 'description' => array(
                     'name' => 'description',

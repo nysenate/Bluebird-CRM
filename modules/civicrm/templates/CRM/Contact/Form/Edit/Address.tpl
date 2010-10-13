@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -89,7 +89,7 @@
   {/if}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
-</fieldset></div>
+</div>
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 {/if}
@@ -173,7 +173,7 @@ function checkLocation( object, noAlert ) {
 		element = cj(this).attr('id');
 		if ( cj(this).val() && element != object && selectedText == cj( '#' + element + ' :selected').text() ) {
 			if ( ! noAlert ) {
-			    var alertText = "{/literal}{ts}Location type{/ts} {literal}" + selectedText + "{/literal} {ts}has already been assigned to another address. Please select another location type for this address.{/ts}{literal}";
+			    var alertText = "{/literal}{ts escape='js'}Location type{/ts} {literal}" + selectedText + "{/literal} {ts escape='js'}has already been assigned to another address. Please select another location type for this address.{/ts}{literal}";
 			    alert( alertText );
 			}
 			cj( '#' + object ).val('');

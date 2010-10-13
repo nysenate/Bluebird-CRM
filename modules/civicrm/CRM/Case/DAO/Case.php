@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -161,7 +161,7 @@ class CRM_Case_DAO_Case extends CRM_Core_DAO
                 'case_type_id' => array(
                     'name' => 'case_type_id',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Case Type') ,
+                    'title' => ts('Case Type Id') ,
                     'required' => true,
                     'maxlength' => 128,
                     'size' => CRM_Utils_Type::HUGE,
@@ -169,7 +169,7 @@ class CRM_Case_DAO_Case extends CRM_Core_DAO
                     'where' => 'civicrm_case.case_type_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                 ) ,
                 'subject' => array(
                     'name' => 'subject',
@@ -208,13 +208,13 @@ class CRM_Case_DAO_Case extends CRM_Core_DAO
                 'case_status_id' => array(
                     'name' => 'status_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Case Status') ,
+                    'title' => ts('Case Status Id') ,
                     'required' => true,
                     'import' => true,
                     'where' => 'civicrm_case.status_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                 ) ,
                 'case_deleted' => array(
                     'name' => 'is_deleted',

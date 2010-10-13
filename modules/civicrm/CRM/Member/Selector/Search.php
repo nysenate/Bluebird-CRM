@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -74,14 +74,15 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
     static $_properties = array( 'contact_id', 'membership_id',
                                  'contact_type',
                                  'sort_name',
-                                 'membership_type_id',
+                                 'membership_type',
                                  'join_date',
                                  'membership_start_date',
                                  'membership_end_date',
                                  'membership_source',
                                  'status_id',
                                  'member_is_test',
-                                 'owner_membership_id'
+                                 'owner_membership_id',
+                                 'membership_status',
                                  );
 
     /** 
@@ -188,10 +189,15 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
      * @access public
      *
      */
-    static function &links( $status = 'all', $isPaymentProcessor = null, $accessContribution = null, $key = null  )
+    static function &links( $status = 'all', 
+                            $isPaymentProcessor = null, 
+                            $accessContribution = null, 
+                            $qfKey = null, 
+                            $context = null  )
     {
-        
-        $extraParams = ($key ) ? "&key={$key}" : null;
+        $extraParams = null;
+        if ( $context == 'search' ) $extraParams .= '&compContext=membership';
+        if ( $qfKey ) $extraParams .= "&key={$qfKey}";
         
         if ( !self::$_links['view'] ) {
             self::$_links['view'] = array(
@@ -345,11 +351,17 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
              $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->membership_id;
             
              if ( ! isset( $result->owner_membership_id ) ) {
+                 // unset renew and followup link for deceased membership
+                 $currentMask = $mask;
+                 if ( $result->status_id == 'Deceased' ) {
+                     $currentMask = $currentMask & ~CRM_Core_Action::RENEW & ~CRM_Core_Action::FOLLOWUP;
+                 }
                  $row['action']   = CRM_Core_Action::formLink( self::links( 'all', 
                                                                             $this->_isPaymentProcessor, 
                                                                             $this->_accessContribution, 
-                                                                            $this->_key ), 
-                                                               $mask,
+                                                                            $this->_key,
+                                                                            $this->_context ), 
+                                                               $currentMask,
                                                                array( 'id'  => $result->membership_id,
                                                                       'cid' => $result->contact_id,
                                                                       'cxt' => $this->_context ) );
@@ -364,7 +376,7 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
              require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
              $row['contact_type' ] = 
                  CRM_Contact_BAO_Contact_Utils::getImage( $result->contact_sub_type ? 
-                                                          $result->contact_sub_type : $result->contact_type );
+                                                          $result->contact_sub_type : $result->contact_type ,false,$result->contact_id);
              
              $rows[] = $row;
          }

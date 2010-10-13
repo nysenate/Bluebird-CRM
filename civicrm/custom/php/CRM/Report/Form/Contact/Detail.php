@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -95,7 +95,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  ),
                           'grouping'  => 'contact-fields',
                           ),
-//RAYOGRAM                   
+//NYSS - RAY                   
                    'civicrm_contribution'   =>
                    array( 'dao'       => 'CRM_Contribute_DAO_Contribution',
                           'fields'    =>
@@ -262,20 +262,9 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                           array( 'phone'  => null),
                           'grouping'  => 'contact-fields',
                           ),
-
-                   'civicrm_tag' => 
-                   array( 'dao'     => 'CRM_Core_DAO_Tag',
-                          'filters' =>             
-                          array( 'tid' => 
-                                 array( 'name'         => 'tag_id',
-                                        'title'        => ts( 'Tag' ),
-                                        'tag'          => true,
-                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'options'      => CRM_Core_PseudoConstant::tag( ) 
-                                        ), 
-                                 ), 
-                          ),
                    );
+
+        $this->_tagFilter = true;
         parent::__construct( );
     }
     
@@ -287,10 +276,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     function select( ) {
         $select               = array( );
         $this->_columnHeaders = array( );
-//RAYOGRAM:
-//        $this->_component     = array( 'contribution_civireport', 'membership_civireport', 'participant_civireport', 'relationship_civireport', 'activity_civireport' );
         $this->_component     = array( 'contribution_civireport', 'membership_civireport', 'participant_civireport', 'relationship_civireport', 'activity_civireport' );
-
         foreach ( $this->_columns as $tableName => $table ) {
             if ( array_key_exists('fields', $table) ) {
                 foreach ( $table['fields'] as $fieldName => $field ) {
@@ -663,7 +649,6 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             $this->alterComponentDisplay( $componentRows);
             
             //unset Conmponent id and contact id from display
-error_log(print_r($this->_columnHeadersComponent,true));
             foreach( $this->_columnHeadersComponent as $componentTitle => $headers ) {
                 $id_header      = "civicrm_" . substr_replace($componentTitle, '', -11, 11) . "_" . substr_replace($componentTitle, '', -11, 11) . "_id";
                 $contact_header = "civicrm_" . substr_replace($componentTitle, '', -11, 11) ."_contact_id";

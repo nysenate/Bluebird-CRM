@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -87,7 +87,7 @@ class CRM_Core_BAO_CMSUser
             $user->$mail = $row[$mail];
             $user->$name = $row[$name];
             $contactCount++;
-            if ($match = CRM_Core_BAO_UFMatch::synchronizeUFMatch( $user, $row[$id], $row[$mail], $uf, 1 ) ) {
+            if ($match = CRM_Core_BAO_UFMatch::synchronizeUFMatch( $user, $row[$id], $row[$mail], $uf, 1, null, true ) ) {
                 $contactCreated++;
             } else {
                 $contactMatching++;
@@ -408,7 +408,7 @@ SELECT username, email
             if ( $row[0] == $name ) {
                 $errors['cms_name'] = ts( 'The username %1 is already taken. Please select another username.', array( 1 => $name) );
             } else if ( $row[1] == $email ) {
-                $errors['email-5'] = ts( 'This email %1 is already registered. Please select another email.', array( 1 => $email) );
+                $errors['email-Primary'] = ts( 'This email %1 is already registered. Please select another email.', array( 1 => $email) );
             }
         }
     }
@@ -547,7 +547,7 @@ SELECT username, email
         $values['password2']    = $params['cms_confirm_pass'];
         $values['email']        = trim($params[$mail]);
         $values['gid']          = $acl->get_group_id( '', $userType);
-        $values['sendEmail']    = 1; 
+        $values['sendEmail']    = 0; 
         
         $useractivation = $userParams->get( 'useractivation' );
         if ( $useractivation == 1 ) { 

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -601,6 +601,12 @@ abstract class CRM_Import_Parser {
         }
     }
 
+    function setActiveFieldWebsiteTypes( $elements ) {
+        for ($i = 0; $i < count( $elements ); $i++) {
+            $this->_activeFields[$i]->_websiteType = $elements[$i];
+        }
+    }
+
     /**
      * Function to set IM Service Provider type fields   
      *
@@ -642,6 +648,12 @@ abstract class CRM_Import_Parser {
     function setActiveFieldRelatedContactPhoneType( $elements ) {
         for ($i = 0; $i < count( $elements ); $i++) {
             $this->_activeFields[$i]->_relatedContactPhoneType = $elements[$i];
+        }        
+    }
+
+    function setActiveFieldRelatedContactWebsiteType( $elements ) {
+        for ($i = 0; $i < count( $elements ); $i++) {
+            $this->_activeFields[$i]->_relatedContactWebsiteType = $elements[$i];
         }        
     }
 
@@ -696,6 +708,11 @@ abstract class CRM_Import_Parser {
                     }
                     
                     $params[$this->_activeFields[$i]->_name][] = $value;
+                } else if ( isset( $this->_activeFields[$i]->_websiteType ) ) {
+                    $value = array( $this->_activeFields[$i]->_name => $this->_activeFields[$i]->_value,
+                                    'website_type_id'               => $this->_activeFields[$i]->_websiteType );
+                    
+                    $params[$this->_activeFields[$i]->_name][] = $value;
                 }
                 
                 if ( ! isset($params[$this->_activeFields[$i]->_name] ) ) {
@@ -732,10 +749,15 @@ abstract class CRM_Import_Parser {
                         }
                         
                         $params[$this->_activeFields[$i]->_related][$this->_activeFields[$i]->_relatedContactDetails][] = $value;
+                    } else if ( isset( $this->_activeFields[$i]->_relatedContactWebsiteType ) ) {
+                            $params[$this->_activeFields[$i]->_related][$this->_activeFields[$i]->_relatedContactDetails][] 
+                                = array( 'url'             => $this->_activeFields[$i]->_value,
+                                         'website_type_id' => $this->_activeFields[$i]->_relatedContactWebsiteType );
+                            
                     } else {
-                        $params[$this->_activeFields[$i]->_related][$this->_activeFields[$i]->_relatedContactDetails] = 
-                            $this->_activeFields[$i]->_value;                        
-                    }
+                            $params[$this->_activeFields[$i]->_related][$this->_activeFields[$i]->_relatedContactDetails] = 
+                                $this->_activeFields[$i]->_value;
+                    }  
                 }
             }
         }

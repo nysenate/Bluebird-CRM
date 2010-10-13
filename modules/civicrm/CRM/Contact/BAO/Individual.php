@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -196,6 +196,8 @@ class CRM_Contact_BAO_Individual extends CRM_Contact_DAO_Contact
         
         if ( $displayName ) {
             $contact->display_name = $displayName;
+        } else if ( $individual && $individual->display_name ) {
+            $contact->display_name = $individual->display_name;
         }
         
         if ( CRM_Utils_Array::value( 'email', $params ) && is_array( $params['email'] ) ) {

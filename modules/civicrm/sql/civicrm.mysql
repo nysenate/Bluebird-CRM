@@ -1,5 +1,5 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -24,7 +24,7 @@
 
 
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.1                                                |
+-- | CiviCRM version 3.2                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -161,6 +161,7 @@ DROP TABLE IF EXISTS civicrm_acl_contact_cache;
 DROP TABLE IF EXISTS civicrm_contact;
 DROP TABLE IF EXISTS civicrm_acl_entity_role;
 DROP TABLE IF EXISTS civicrm_acl;
+DROP TABLE IF EXISTS civicrm_persistent;
 DROP TABLE IF EXISTS civicrm_discount;
 DROP TABLE IF EXISTS civicrm_component;
 DROP TABLE IF EXISTS civicrm_worldregion;
@@ -691,6 +692,28 @@ CREATE TABLE civicrm_discount (
   
 ,      
      CONSTRAINT FK_civicrm_discount_option_group_id FOREIGN KEY (option_group_id) REFERENCES civicrm_option_group(id) ON DELETE CASCADE  
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_persistent
+-- *
+-- * DB Template Customization strings
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_persistent (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Persistent Record Id',
+     context varchar(255) NOT NULL   COMMENT 'Context for which name data pair is to be stored',
+     name varchar(255) NOT NULL   COMMENT 'Name of Context',
+     data longtext    COMMENT 'data associated with name',
+     is_config tinyint NOT NULL  DEFAULT 0 COMMENT 'Config Settings' 
+,
+    PRIMARY KEY ( id )
+ 
+ 
+ 
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -1518,6 +1541,7 @@ CREATE TABLE civicrm_membership_status (
 
      id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Membership Id',
      name varchar(128)    COMMENT 'Name for Membership Status',
+     label varchar(128)    COMMENT 'Label for Membership Status',
      start_event enum('start_date', 'end_date', 'join_date')    COMMENT 'Event when this status starts.',
      start_event_adjust_unit enum('day', 'month', 'year')    COMMENT 'Unit used for adjusting from start_event.',
      start_event_adjust_interval int    COMMENT 'Status range begins this many units from start_event.',
@@ -1631,7 +1655,13 @@ CREATE TABLE civicrm_case (
 ,
     PRIMARY KEY ( id )
  
- 
+    ,     INDEX index_case_type_id(
+        case_type_id
+  )
+  ,     INDEX index_is_deleted(
+        is_deleted
+  )
+  
  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
@@ -2276,12 +2306,13 @@ CREATE TABLE civicrm_mapping_field (
 
      id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Mapping Field ID',
      mapping_id int unsigned NOT NULL   COMMENT 'Mapping to which this field belongs',
-     name varchar(64)    COMMENT 'Mapping field key',
+     name varchar(255)    COMMENT 'Mapping field key',
      contact_type varchar(64)    COMMENT 'Contact Type in mapping',
      column_number int unsigned NOT NULL   COMMENT 'Column number for mapping set',
      location_type_id int unsigned    COMMENT 'Location type of this mapping, if required',
      phone_type_id int unsigned    COMMENT 'Which type of phone does this number belongs.',
      im_provider_id int unsigned    COMMENT 'Which type of IM Provider does this name belong.',
+     website_type_id int unsigned    COMMENT 'Which type of website does this site belong',
      relationship_type_id int unsigned    COMMENT 'Relationship type, if required',
      relationship_direction varchar(6)    ,
      grouping int unsigned   DEFAULT 1 COMMENT 'Used to group mapping_field records into related sets (e.g. for criteria sets in search builder mappings).',
@@ -3348,7 +3379,22 @@ CREATE TABLE civicrm_activity (
 ,
     PRIMARY KEY ( id )
  
- 
+    ,     INDEX UI_source_record_id(
+        source_record_id
+  )
+  ,     INDEX UI_activity_type_id(
+        activity_type_id
+  )
+  ,     INDEX index_medium_id(
+        medium_id
+  )
+  ,     INDEX index_is_current_revision(
+        is_current_revision
+  )
+  ,     INDEX index_is_deleted(
+        is_deleted
+  )
+  
 ,      
      CONSTRAINT FK_civicrm_activity_source_contact_id FOREIGN KEY (source_contact_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
      CONSTRAINT FK_civicrm_activity_phone_id FOREIGN KEY (phone_id) REFERENCES civicrm_phone(id) ON DELETE SET NULL,      
@@ -3448,6 +3494,7 @@ CREATE TABLE civicrm_pledge (
      contribution_type_id int unsigned    COMMENT 'FK to Contribution Type. This is propagated to contribution record when pledge payments are made.',
      contribution_page_id int unsigned    COMMENT 'The Contribution Page which triggered this contribution',
      amount decimal(20,2) NOT NULL   COMMENT 'Total pledged amount.',
+     original_installment_amount decimal(20,2) NOT NULL   COMMENT 'Original amount for each of the installments.',
      currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
      frequency_unit enum('day', 'week', 'month', 'year')   DEFAULT 'month' COMMENT 'Time units for recurrence of pledge payments.',
      frequency_interval int unsigned NOT NULL  DEFAULT 1 COMMENT 'Number of time units for recurrence of pledge payments.',
@@ -4138,6 +4185,7 @@ CREATE TABLE civicrm_pledge_payment (
      pledge_id int unsigned NOT NULL   COMMENT 'FK to Pledge table',
      contribution_id int unsigned    COMMENT 'FK to contribution table.',
      scheduled_amount decimal(20,2) NOT NULL   COMMENT 'Pledged amount for this payment (the actual contribution amount might be different).',
+     actual_amount decimal(20,2)    COMMENT 'Actual amount that is paid as the Pledged installment amount.',
      currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
      scheduled_date datetime NOT NULL   COMMENT 'The date the pledge payment is supposed to happen.',
      reminder_date datetime    COMMENT 'The date that the most recent payment reminder was sent.',

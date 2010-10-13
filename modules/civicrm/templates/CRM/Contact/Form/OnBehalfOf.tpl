@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -70,10 +70,11 @@
  {/if}
 	<div class="crm-section organizationName-section">
       {if $relatedOrganizationFound}
-      <div class="section">
+      <div class="section crm-section">
 		<div class="content">{$form.org_option.html}</div>
       </div>
       <div id="select_org" class="crm-section select_org-section">
+        <div class="label">{$form.organization_name.label}</div>	   
         <div class="content">{$form.organization_id.html|crmReplace:class:big}</div>
       </div>
       {/if}  

@@ -9,8 +9,15 @@
 <div class="content">
 {assign var=elemName  value = 'taglist'}
 {assign var=parID     value = $tagset.parentID}
+{assign var=editTagSet value=false}
 {$form.$elemName.$parID.html}
 {if $action ne 4 or $form.formName eq 'CaseView' }
+ {assign var=editTagSet value=true}
+ {if $action eq 16 and !($permission eq 'edit') }
+   {assign var=editTagSet value=false}
+ {/if}
+{/if}
+{if $editTagSet}
 <script type="text/javascript">
 {literal}
     eval( 'tokenClass = { tokenList: "token-input-list-facebook", token: "token-input-token-facebook", tokenDelete: "token-input-delete-token-facebook", selectedToken: "token-input-selected-token-facebook", highlightedToken: "token-input-highlighted-token-facebook", dropdown: "token-input-dropdown-facebook", dropdownItem: "token-input-dropdown-item-facebook", dropdownItem2: "token-input-dropdown-item2-facebook", selectedDropdownItem: "token-input-selected-dropdown-item-facebook", inputToken: "token-input-input-token-facebook" } ');
@@ -26,20 +33,32 @@
         .addClass("taglist_{/literal}{$tagset.parentID}{literal}")
     cj( ".tag-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) .taglist_{/literal}{$tagset.parentID}{literal}"  )
         .tokenInput( tagUrl, { prePopulate: entityTags, classes: tokenClass, hintText: hintText, ajaxCallbackFunction: 'processTags_{/literal}{$tagset.parentID}{literal}'});
-    cj( ".tag-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input)").addClass("crm-processed-input");
-	function processTags_{/literal}{$tagset.parentID}{literal}( action, id ) {
+    cj( ".tag-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input)").addClass("crm-processed-input");    
+    function processTags_{/literal}{$tagset.parentID}{literal}( action, id ) {
         var postUrl          = "{/literal}{crmURL p='civicrm/ajax/processTags' h=0}{literal}";
         var parentId         = "{/literal}{$tagset.parentID}{literal}";
         var entityId         = "{/literal}{$tagset.entityId}{literal}";
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
         /*var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";*/
-		var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*LCD fix for tag not being created*/
+        if (parentId == "292"){ /* position tag*/
+			var skipTagCreate ="1";
+			}
+		else {
+			var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*LCD fix for tag not being created*/
+		}
         var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
          
-        cj.post( postUrl, { action: action, tagID: id, parentId: parentId, entityId: entityId, entityTable: entityTable,
-                            skipTagCreate: skipTagCreate, skipEntityAction: skipEntityAction, key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
+        cj.post( postUrl, { action: action, 
+                            tagID: id, 
+                            parentId: parentId, 
+                            entityId: entityId, 
+                            entityTable: entityTable,
+                            skipTagCreate: skipTagCreate, 
+                            skipEntityAction: skipEntityAction, 
+                            key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
             function ( response ) {
                 // update hidden element
+                
                 if ( response.id ) {
                     var curVal   = cj( ".taglist_{/literal}{$tagset.parentID}{literal}" ).val( );
                     var valArray = curVal.split(',');

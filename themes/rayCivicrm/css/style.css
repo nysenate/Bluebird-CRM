@@ -360,12 +360,6 @@ table.sticky-header {
 
 .page-admin #breadcrumb {display: none;}
 
-/*NOTE hide privacy */
-
-#commPrefs .do_not_trade {
-	display: none;
-}
-
 /* ============================================================================================================== */
 /* ! hide custom gender row from 
 "Additional Constituent Details"
@@ -378,3 +372,21 @@ accordion   */
 .location .postal-code-search {display: none;}
 
 h1.title .crm-tooltip-wrapper {display:none!important;}
+
+/* SOS Job Handling */
+.sos_job {
+	color:#EEE;
+	height:20px;
+	padding-top:2px;
+	position:absolute;
+	right:28px;
+	top:68px;
+	width:135px;
+	text-align: right;
+	font-size: 11px;
+	z-index: 10;
+	float: right;
+}
+a.setJob {
+	color:#EDEDED;
+}

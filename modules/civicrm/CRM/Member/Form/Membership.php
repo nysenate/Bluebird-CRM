@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -192,23 +192,19 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
             if ( $this->_onlinePendingContributionId ) {
                 $defaults['record_contribution'] = $this->_onlinePendingContributionId;
             } else {
-                $defaults['record_contribution'] = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipPayment', 
-                                                                                $defaults['id'], 
-                                                                                'contribution_id', 
-                                                                                'membership_id' );
+                $contributionId = CRM_Core_DAO::singleValueQuery( "
+  SELECT contribution_id 
+  FROM civicrm_membership_payment 
+  WHERE membership_id = $this->_id 
+  ORDER BY contribution_id 
+  DESC limit 1" );
+               
+                if ( $contributionId ) {
+                    $defaults['record_contribution'] = $contributionId;
+                }
             }
         }
-        
-        if ( $this->_memType ) {
-            $defaults['contribution_type_id'] = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType', 
-                                                                             $this->_memType, 
-                                                                             'contribution_type_id' );
-            
-            $defaults['total_amount'] = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType', 
-                                                                     $this->_memType, 
-                                                                     'minimum_fee' );
-        }
-        
+                
         if ( CRM_Utils_Array::value( 'record_contribution', $defaults ) && ! $this->_mode ) {
             $contributionParams   = array( 'id' => $defaults['record_contribution'] );
             $contributionIds      = array( );
@@ -230,11 +226,6 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
         if ( $this->_action & CRM_Core_Action::UPDATE ) {
             // in this mode by default uncheck this checkbox
             unset($defaults['record_contribution']);
-        }
-        if ( $defaults['membership_type_id'][1] ) {
-            $defaults['receipt_text_signup'] =  CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType', 
-                                                                             $defaults['membership_type_id'][1],
-                                                                             'receipt_text_signup' );
         }
         
         $this->assign( "member_is_test", CRM_Utils_Array::value('member_is_test',$defaults) );
@@ -366,7 +357,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
         $sel =& $this->addElement('hierselect', 
                                   'membership_type_id', 
                                   ts('Membership Organization and Type'), 
-                                  array('onChange' => "buildCustomData( 'Membership', this.value ); setPaymentBlock( this.value );")
+                                  array('onChange' => "buildCustomData( 'Membership', this.value );")
                                   );
         
         $sel->setOptions(array($selMemTypeOrg,  $selOrgMemType));
@@ -382,13 +373,12 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
         
         if ( !$this->_mode ) {
             $this->add('select', 'status_id', ts( 'Membership Status' ), 
-                       array(''=>ts( '- select -' )) + CRM_Member_PseudoConstant::membershipStatus( ) );
+                       array('' =>ts('- select -')) + CRM_Member_PseudoConstant::membershipStatus(null, null, 'label'));
             $this->addElement('checkbox', 'is_override', 
                               ts('Status Override?'), null, 
                               array( 'onClick' => 'showHideMemberStatus()'));
             
-            $this->addElement('checkbox', 'record_contribution', ts('Record Membership Payment?'), null, 
-                              array('onclick' =>"return showHideByValue('record_contribution','','recordContribution','table-row','radio',false);"));
+            $this->addElement('checkbox', 'record_contribution', ts('Record Membership Payment?') );
             
             require_once 'CRM/Contribute/PseudoConstant.php';
             $this->add('select', 'contribution_type_id', 
@@ -881,14 +871,6 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
                 $membership =& CRM_Member_BAO_Membership::create( $params, $ids );
             }
         }
-                
-        if ( CRM_Utils_Array::value( 'send_receipt', $formValues ) ) {
-            require_once 'CRM/Core/DAO.php';
-            CRM_Core_DAO::setFieldValue( 'CRM_Member_DAO_MembershipType', 
-                                         $params['membership_type_id'], 
-                                         'receipt_text_signup',
-                                         $formValues['receipt_text_signup'] );
-        }
 
         $receiptSend = false;
         if ( CRM_Utils_Array::value( 'send_receipt', $formValues ) ) {
@@ -985,6 +967,8 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
             );
         }
         
+        //end date can be modified by hooks, so if end date is set then use it. 
+        $endDate = ( $membership->end_date ) ? $membership->end_date : $endDate ;
         if ( ( $this->_action & CRM_Core_Action::UPDATE ) ) {
             $statusMsg = ts('Membership for %1 has been updated.', array(1 => $this->_memberDisplayName));
             if ( $endDate ) {

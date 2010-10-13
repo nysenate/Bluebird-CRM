@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -94,6 +94,11 @@ class CRM_Report_Info extends CRM_Core_Component_Info
     public function getActivityTypes()
     {
         return null;
+    }
+    
+    // add shortcut to Create New
+    public function creatNewShortcut( &$shortCuts ) {
+
     }
     
 }

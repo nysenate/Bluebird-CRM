@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -1946,7 +1946,11 @@ SELECT $selectClause
      * @return array
      * @access public
      */
-    function getDetails($contactIDs, $returnProperties = null, $skipOnHold = true, $skipDeceased = true, $extraParams = null ) 
+    function getDetails($contactIDs,
+                        $returnProperties = null,
+                        $skipOnHold = true,
+                        $skipDeceased = true,
+                        $extraParams = null ) 
     {
         $params = array( );
         foreach ( $contactIDs  as $key => $contactID ) {
@@ -2165,6 +2169,12 @@ SELECT $selectClause
                            ts('Your Letter'),
                            array('cols' => '80', 'rows' => '8',
                                  'onkeyup' =>"return verify(this)" ) );
+        $action = CRM_Utils_Request::retrieve( 'action', 'String', $this, false );
+        if ( ( CRM_Utils_System::getClassName( $form )  == 'CRM_Contact_Form_Task_PDF' )&& 
+             $action == CRM_Core_Action::VIEW ) { 
+            $form->freeze( 'html_message' );
+        }
+        
     }
     
     /**
