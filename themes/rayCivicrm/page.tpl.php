@@ -31,7 +31,7 @@ if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
 ?>
 
 <body class="<?php print $body_classes;?><?php print 'role-'.$role;?>">
-
+<?php //print_r($_SESSION); ?>
 <?php if ($user->uid && arg(0) == 'civicrm') { ?> 
  <?php if ($footer): ?>
       <div id="footer-bg"></div>
@@ -84,9 +84,9 @@ if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
     <div class="<?php print $left_classes; ?>"><?php print $left; ?></div>
   <?php endif ?>
   <?php 
-  if ($head_title != '' && arg(0) != 'civicrm') {
+  if ($head_title != '' && arg(0) != 'civicrm' && $user->uid) {
   		$quickTitle = explode("|", $head_title);
-        print '<h2>'. $quickTitle[0] .'</h2>';
+        print '<a href="/" style="float:right;"> &raquo; back to Bluebird</a><h2><a href="/">'. $quickTitle[0] .'</a></h2> ';
       }   
  ?> 
   <div class="clear span-24 main-container <?php if (arg(0) != 'civicrm') {?>standard-container<?php } ?>">
@@ -109,7 +109,7 @@ $morning = "Good Morning";
 $afternoon = "Good Afternoon";
 $evening = "Good Evening";
 $night = "Good Night";
-$offset = -4; // time offset from server time (in hours) to adjust time zone
+$offset = 0; // time offset from server time (in hours) to adjust time zone (orig -4)
 // -------------
 $now = time() + (60 * 60 * $offset);
 	if(date("G", $now) >= "5" && date("G", $now) <= "11"){ echo $morning;
@@ -120,8 +120,22 @@ $now = time() + (60 * 60 * $offset);
 ?>,
   			</div>
   			<div class="user-name">
-  				<?php print $user->name; ?>
-                <?php $contact_id = $_SESSION['userID']; ?>
+  				<?php //print $user->name; ?>
+                <?php //insert first name in header greeting; #2288
+					civicrm_initialize( );
+					require_once 'CRM/Core/Config.php';
+					$config =& CRM_Core_Config::singleton( );
+
+					require_once "api/v2/UFGroup.php";
+					$uid = $user->uid;
+					$contactid = civicrm_uf_match_id_get( $uid );
+					
+					require_once "api/v2/Contact.php";
+					$params = array( 'contact_id' => $contactid );
+					$contactrecord = civicrm_contact_get( $params );
+					echo $contactrecord[$contactid]['first_name'];
+				?>
+                
   			</div>
   		</div>
   	</div>
@@ -147,8 +161,25 @@ $now = time() + (60 * 60 * $offset);
       </div> -->
     <?php 
       print $content;
+      
       print $feed_icons;
     ?>
+    <script>
+       $('.messages br').remove();
+       $('.messages').each(function(index){
+           if($(this).html() == '') { $(this).remove();}
+           });
+	   $('.messages').appendTo('#status .messages-container');
+	   if($('#status .messages-container').children().length > 0) {
+	   	$('#status').append('<div id="status-handle"><span class="ui-icon ui-icon-arrowthickstop-1-n"></span></div>');
+	   }
+	   $('#status-handle').click(function(){
+	   	$('.messages-container').slideToggle('fast');
+	   	$('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-n');
+	   	$('#status-handle .ui-icon').toggleClass('ui-icon-arrowthickstop-1-s');
+	   });
+    </script>
+
 
   <?php print $closure; ?>
 
