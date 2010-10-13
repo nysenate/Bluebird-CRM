@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -486,6 +486,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         
         $imProviders  = CRM_Core_PseudoConstant::IMProvider( );
         $websiteTypes = CRM_Core_PseudoConstant::websiteType( );
+        $languages    = CRM_Core_PseudoConstant::languages( );
         require_once 'CRM/Contact/BAO/Contact/Utils.php';
         while ($result->fetch()) {
             if (isset($result->country)) {
@@ -520,6 +521,8 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
                     if ( $typeName ) { 
                         $row[] = "<a href=\"$url\">{$result->$name} (${typeName})</a>";
                     }
+                } else if ( $name == 'preferred_language' ) {
+                    $row[] = $languages[$result->$name];
                 }  else if ( $multipleSelectFields &&
                              array_key_exists($name, $multipleSelectFields ) ) { 
                     //fix to display student checkboxes

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -159,7 +159,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
         }
 
         if ( CRM_Utils_Array::value( 'is_email_receipt', $values )  || CRM_Utils_Array::value( 'onbehalf_dupe_alert', $values ) ) {
-            $template = CRM_Core_Smarty::singleton( );
+            $template =& CRM_Core_Smarty::singleton( );
 
             // get the billing location type
             if ( !array_key_exists('related_contact', $values) ) {
@@ -225,6 +225,12 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
                 'priceSetID'       => CRM_Utils_Array::value('priceSetID',    $values), // CRM-5095
             );
 
+            if ( $contributionTypeId = CRM_Utils_Array::value('contribution_type_id', $values ) ) {
+                $tplParams['contributionTypeId']   = $contributionTypeId;
+                $tplParams['contributionTypeName'] = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionType',
+                                                                                  $contributionTypeId );
+            }
+                        
             // address required during receipt processing (pdf and email receipt)
             if ( $displayAddress = CRM_Utils_Array::value('address', $values) ) {
                 $tplParams['address'] = $displayAddress;
@@ -404,7 +410,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
      */
     static function copy( $id ) 
     {
-        $fieldsFix = array ( 'prefix' => array( 'title' => ts( 'Copy of ' ) ) );
+        $fieldsFix = array('prefix' => array('title' => ts('Copy of') . ' '));
         $copy =& CRM_Core_DAO::copyGeneric( 'CRM_Contribute_DAO_ContributionPage', 
                                             array( 'id' => $id ), 
                                             null, 

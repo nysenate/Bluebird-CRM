@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -172,7 +172,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form
     public $_priceSet;
     
     public $_action;
-    
+
     /** 
      * Function to set variables up before form is built 
      *                                                           
@@ -860,6 +860,30 @@ WHERE  v.option_group_id = g.id
         }
         return parent::getTemplateFileName( );
     }
+    
+    function getContactID( ) 
+    {
+        $tempID = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this );
+        
+        // force to ignore the authenticated user
+        if ( $tempID === '0' ) {
+            return;
+        }
+        
+        //check if this is a checksum authentication
+        $userChecksum = CRM_Utils_Request::retrieve( 'cs', 'String', $this );
+        if ( $userChecksum ) {
+            //check for anonymous user.
+            require_once 'CRM/Contact/BAO/Contact/Utils.php';
+            $validUser = CRM_Contact_BAO_Contact_Utils::validChecksum( $tempID, $userChecksum );
+            if ( $validUser ) return  $tempID;
+        }
+        
+        // check if the user is registered and we have a contact ID
+        $session = CRM_Core_Session::singleton( );
+        return $session->get( 'userID' ); 
+    }
+    
 }
 
 

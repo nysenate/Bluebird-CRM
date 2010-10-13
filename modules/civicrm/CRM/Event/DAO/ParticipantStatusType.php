@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -159,12 +159,17 @@ class CRM_Event_DAO_ParticipantStatusType extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_INT,
                     'required' => true,
                 ) ,
-                'name' => array(
+                'participant_status' => array(
                     'name' => 'name',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Name') ,
+                    'title' => ts('Participant Status') ,
                     'maxlength' => 64,
                     'size' => CRM_Utils_Type::BIG,
+                    'import' => true,
+                    'where' => 'civicrm_participant_status_type.name',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
                 ) ,
                 'label' => array(
                     'name' => 'label',

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -51,7 +51,7 @@
         {*assign var="element_name" value=$element.custom_group_id|cat:_|cat:$field_id|cat:_|cat:$element.name*}
         {assign var="element_name" value=$element.element_name}     
         <tr> 
-         <td class="label">{$form.$element_name.label}</td>
+         <td class="label">{$form.$element_name.label}{if $element.help_post}{help id=$element_name text=$element.help_post}{/if}</td>
          <td>
             {assign var="count" value="1"}
                 <table class="form-layout-compressed">
@@ -79,17 +79,12 @@
                 </table>
          </td>
         </tr>
-        {if $element.help_post}
-        <tr>
-           <td class="label"></td><td class="description">{$element.help_post}</td>
-        </tr>
-        {/if}
 	{else}
         {assign var="name" value=`$element.name`} 
         {*assign var="element_name" value=$group_id|cat:_|cat:$field_id|cat:_|cat:$element.name*}
         {assign var="element_name" value=$element.element_name}  
         <tr>
-          <td class="label">{$form.$element_name.label}</td>
+          <td class="label">{$form.$element_name.label}{if $element.help_post}{help id=$element_name text=$element.help_post}{/if}</td>
 	      <td>
 	    {if $element.data_type neq 'Date'}
             {$form.$element_name.html}&nbsp;
@@ -102,12 +97,6 @@
 	        {include file="CRM/Custom/Form/AutoComplete.tpl"}
         {/if}
           </td>
-        </tr>
-        {if $element.help_post}
-        <tr>
-            <td class="label"></td><td class="description">{$element.help_post}</td>
-        </tr>
-        {/if}
 	{/if}
      {/if}
     {/foreach}

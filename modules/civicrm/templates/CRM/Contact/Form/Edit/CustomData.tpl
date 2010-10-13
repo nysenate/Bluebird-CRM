@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -27,7 +27,7 @@
 <script type="text/javascript">var showTab = Array( );</script>
 
 {foreach from=$groupTree item=cd_edit key=group_id}    
-	<div class="crm-accordion-wrapper crm-address-accordion crm-accordion-closed">
+	<div class="crm-accordion-wrapper crm-address-accordion {if $cd_edit.collapse_display}crm-accordion-closed{else}crm-accordion-open{/if}">
 		<div class="crm-accordion-header">
 			<div id="custom{$group_id}" class="icon crm-accordion-pointer"></div> 
 			{$cd_edit.title}

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -89,6 +89,8 @@ class CRM_Utils_Pager extends Pager_Sliding {
         if( $params['status'] === null ) {
             $params['status'] = ts('Contacts %%StatusMessage%%');
         }
+
+        $params['path'] = CRM_Utils_System::makeURL(CRM_Utils_System::currentPath());
 
         $this->initialize( $params );
 

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -427,6 +427,8 @@ WHERE      c.sort_name LIKE {$this->_text} OR
            ( e.email LIKE {$this->_text}    AND 
              ca.activity_type_id = ov.value AND
              ov.name IN ('Inbound Email', 'Email') )
+AND (ca.is_deleted = 0 OR ca.is_deleted IS NULL OR
+     c.is_deleted = 0 OR c.is_deleted IS NULL)
 ";
 
         $contactSQL[] = "
@@ -441,6 +443,8 @@ WHERE      c.sort_name LIKE {$this->_text} OR
            ( e.email LIKE {$this->_text}    AND 
              ca.activity_type_id = ov.value AND
              ov.name IN ('Inbound Email', 'Email') )
+AND (ca.is_deleted = 0 OR ca.is_deleted IS NULL OR
+     c.is_deleted = 0 OR c.is_deleted IS NULL)
 ";
 
         $contactSQL[] = "
@@ -457,6 +461,8 @@ AND        c.sort_name LIKE {$this->_text}  OR
            ( e.email LIKE {$this->_text} AND
              ca.activity_type_id = ov.value AND
              ov.name IN ('Inbound Email', 'Email') )
+AND (ca.is_deleted = 0 OR ca.is_deleted IS NULL OR
+     c.is_deleted = 0 OR c.is_deleted IS NULL)
 ";
         
         $tables = array( 'civicrm_activity' => array( 'id' => 'id',
@@ -486,6 +492,7 @@ FROM      civicrm_case cc
 LEFT JOIN civicrm_case_contact ccc ON cc.id = ccc.case_id
 LEFT JOIN civicrm_contact c ON ccc.contact_id = c.id
 WHERE     c.sort_name LIKE {$this->_text}
+          AND (cc.is_deleted = 0 OR cc.is_deleted IS NULL)
 {$this->_limitClause}
 ";
 
@@ -502,6 +509,7 @@ FROM      civicrm_case cc
 LEFT JOIN civicrm_case_contact ccc ON cc.id = ccc.case_id
 LEFT JOIN civicrm_contact c ON ccc.contact_id = c.id
 WHERE     cc.id = {$this->_textID}
+          AND (cc.is_deleted = 0 OR cc.is_deleted IS NULL)
 {$this->_limitClause}
     ";
 
@@ -814,6 +822,7 @@ LEFT JOIN  civicrm_activity_target cat ON cat.activity_id = ca.id
 LEFT JOIN  civicrm_contact c3 ON cat.target_contact_id = c3.id
 LEFT JOIN  civicrm_case_activity cca ON cca.activity_id = ca.id
 LEFT JOIN  civicrm_case_contact ccc ON ccc.case_id = cca.case_id
+WHERE (ca.is_deleted = 0 OR ca.is_deleted IS NULL)
 {$this->_limitRowClause}
 ";   
             break;

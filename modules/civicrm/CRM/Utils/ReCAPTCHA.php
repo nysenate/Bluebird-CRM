@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -106,7 +106,7 @@ class CRM_Utils_ReCAPTCHA {
 
     }
 
-    function validate( $value, &$form ) {
+    function validate( $value, $form ) {
         $config = CRM_Core_Config::singleton( );
 
         $resp = recaptcha_check_answer( $config->recaptchaPrivateKey,

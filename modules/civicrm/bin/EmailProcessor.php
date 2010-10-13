@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -228,7 +228,7 @@ class EmailProcessor {
 
 // bootstrap the environment and run the processor
 // you can run this program either from an apache command, or from the cli
-if (isset($argv)) {
+if ( php_sapi_name() == "cli" ) {
   require_once ("bin/cli.php");
   $cli=new civicrm_cli ();
   //if it doesn't die, it's authenticated 

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -167,7 +167,7 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping
         $mapping->find();
         
         $mappingName = $mappingLocation = $mappingContactType = $mappingPhoneType = array( );
-        $mappingImProvider = $mappingRelation = $mappingOperator = $mappingValue = array( );
+        $mappingImProvider = $mappingRelation = $mappingOperator = $mappingValue = $mappingWebsiteType = array( );
         while($mapping->fetch()) {
             $mappingName[$mapping->grouping][$mapping->column_number] = $mapping->name;
             $mappingContactType[$mapping->grouping][$mapping->column_number] = $mapping->contact_type;                
@@ -185,6 +185,10 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping
                 $mappingImProvider[$mapping->grouping][$mapping->column_number] = $mapping->im_provider_id;
             }
             
+            if ( !empty( $mapping->website_type_id ) ) {
+                $mappingWebsiteType[$mapping->grouping][$mapping->column_number] = $mapping->website_type_id;
+            }
+            
             if ( !empty($mapping->relationship_type_id) ) {
                 $mappingRelation[$mapping->grouping][$mapping->column_number] = 
                     "{$mapping->relationship_type_id}_{$mapping->relationship_direction}";
@@ -200,7 +204,7 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping
         }
         
         return array ($mappingName, $mappingContactType, $mappingLocation, $mappingPhoneType,
-                      $mappingImProvider, $mappingRelation, $mappingOperator, $mappingValue);   
+                      $mappingImProvider, $mappingRelation, $mappingOperator, $mappingValue, $mappingWebsiteType );   
     }
 
     /**
@@ -941,11 +945,11 @@ for(var i=0;i<noneArray.length;i++) {
                 }
                 if ( CRM_Utils_Array::value('1',$v) ) {
                     $fldName = $v[1];
-                    if ( CRM_Utils_Array::value('2',$v ) ) {
+                    if ( $v2 = CRM_Utils_Array::value( '2', $v ) && trim( $v2 ) ) {
                         $fldName .= "-{$v[2]}";
                     }
                     
-                    if ( CRM_Utils_Array::value('3',$v) ) {
+                    if ( $v3 = CRM_Utils_Array::value( '3', $v )  && trim( $v3 ) ) {
                         $fldName .= "-{$v[3]}";
                     }
                     

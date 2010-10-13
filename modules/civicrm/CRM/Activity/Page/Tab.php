@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -93,18 +93,38 @@ class CRM_Activity_Page_Tab extends CRM_Core_Page
         $this->_caseId = CRM_Utils_Request::retrieve( 'caseid', 'Integer', $this );
       
         $activityTypeId = CRM_Utils_Request::retrieve('atype', 'Positive', $this );
-        
-        if ( $activityTypeId != 3 ) {
-            $controller = new CRM_Core_Controller_Simple( 'CRM_Activity_Form_Activity',
-                                                           ts('Contact Activities'),
-                                                           $this->_action,
-                                                           false, false, false, true );
-        } else {
+
+        // Email and Create Letter activities use a different form class
+        require_once 'CRM/Core/OptionGroup.php';
+        $emailTypeValue = CRM_Core_OptionGroup::getValue( 'activity_type',
+                                                          'Email',
+                                                          'name' );
+                                                          
+        $letterTypeValue = CRM_Core_OptionGroup::getValue( 'activity_type',
+                                                          'Print PDF Letter',
+                                                          'name' );
+
+
+        switch ( $activityTypeId ) {
+        case $emailTypeValue:
             $wrapper = new CRM_Utils_Wrapper( );
             $arguments = array( 'attachUpload' => 1 );
             return $wrapper->run( 'CRM_Contact_Form_Task_Email', ts('Email a Contact'),  $arguments );
-        }
+            break;
 
+        case $letterTypeValue:
+            $wrapper = new CRM_Utils_Wrapper( );
+            $arguments = array( 'attachUpload' => 1 );
+            return $wrapper->run( 'CRM_Contact_Form_Task_PDF', ts('Create PDF Letter'),  $arguments );
+            break;
+
+        default:
+            $controller = new CRM_Core_Controller_Simple( 'CRM_Activity_Form_Activity',
+                                                          ts('Contact Activities'),
+                                                          $this->_action,
+                                                          false, false, false, true );
+        }
+       
         $controller->setEmbedded( true );
 
         $controller->set( 'contactId', $this->_contactId );
@@ -196,7 +216,18 @@ class CRM_Activity_Page_Tab extends CRM_Core_Page
            ( CRM_Core_Action::UPDATE | CRM_Core_Action::ADD | CRM_Core_Action::VIEW ) ) {
             $this->edit( );
             $activityTypeId = CRM_Utils_Request::retrieve('atype', 'Positive', $this );
-            if ( $activityTypeId == 3 ) {
+            
+            // Email and Create Letter activities use a different form class
+            require_once 'CRM/Core/OptionGroup.php';
+            $emailTypeValue = CRM_Core_OptionGroup::getValue( 'activity_type',
+                                                              'Email',
+                                                              'name' );
+
+            $letterTypeValue = CRM_Core_OptionGroup::getValue( 'activity_type',
+                                                               'Print PDF Letter',
+                                                               'name' );
+            
+            if ( in_array( $activityTypeId, array( $emailTypeValue, $letterTypeValue ) ) ) {
                 return;
             }
          } elseif ( $this->_action & ( CRM_Core_Action::DELETE | CRM_Core_Action::DETACH ) ) {

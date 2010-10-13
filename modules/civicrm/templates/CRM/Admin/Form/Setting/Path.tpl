@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -50,7 +50,7 @@
             <tr class="crm-path-form-block-customTemplateDir">  
                 <td class="label">{$form.customTemplateDir.label}</td>
                 <td>{$form.customTemplateDir.html|crmReplace:class:'huge40'}<br />
-                    <span class="description">{ts}Path where site specific templates are stored if any. This directory is searched first if set.{/ts}</span>
+                    <span class="description">{ts}Path where site specific templates are stored if any. This directory is searched first if set. CiviCase configuration files can also be stored in this custom path.{/ts} {docURL page="CiviCase Configuration"}</span>
                 </td>
             </tr>
             <tr class="crm-path-form-block-customPHPPathDir">  

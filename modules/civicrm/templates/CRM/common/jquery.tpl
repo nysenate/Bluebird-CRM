@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -81,13 +81,16 @@
 <style type="text/css">@import url({$config->resourceBase}packages/jquery/css/dashboard.css);></style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.FormNavigate.js"></script>
+
 <script type="text/javascript" src="{$config->resourceBase}js/rest.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmaccordions.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmasmselect.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmtooltip.js"></script>
 
+<!--[if !(IE 8)]>
 <script type="text/javascript" src="{$config->resourceBase}js/dd_roundies.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/style.js"></script>
+<![endif]-->
 
 <script type="text/javascript">var cj = jQuery.noConflict(); $ = cj;</script>

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -174,6 +174,7 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
         $this->_action = $action;
         $this->_query = new CRM_Contact_BAO_Query( $this->_queryParams, null, null, false, false,
                                                    CRM_Contact_BAO_Query::MODE_ACTIVITY );
+        $this->_query->_distinctComponentClause = 'DISTINCT ( civicrm_activity.id )';
     
     	//CRM_Core_Error::debug( $this->_query ); exit();
     }//end of constructor
@@ -239,11 +240,13 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
                     $row[$property] = $result->$property;
                 }
             }
+            
+            $contactId = CRM_Utils_Array::value( 'contact_id', $row );
+            if ( !$contactId ) $contactId = CRM_Utils_Array::value( 'source_contact_id', $row );
+
             $row['target_contact_name'] = CRM_Activity_BAO_ActivityTarget::getTargetNames( $row['activity_id'] );
             $row['assignee_contact_name'] = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames( $row['activity_id'] );
-            $row['activity_type'] = $row['activity_type_id'];
-            $row['activity_status'] = $row['activity_status_id'];
-            
+                     
             if ( CRM_Utils_Array::value( 'source_contact_id', $row ) ) {
                 $row['source_contact_name'] = CRM_Contact_BAO_Contact::displayName( $row['source_contact_id'] );
             }
@@ -253,7 +256,7 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
             require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
             $row['contact_type'] =
                 CRM_Contact_BAO_Contact_Utils::getImage( $result->contact_sub_type ?
-                                                         $result->contact_sub_type : $result->contact_type );
+                                                         $result->contact_sub_type : $result->contact_type ,false,$result->contact_id);
             $accessMailingReport = false;
             $activityType = CRM_Core_PseudoConstant::activityType( true, true );
             $activityTypeId = CRM_Utils_Array::key( $row['activity_type'], $activityType );
@@ -279,7 +282,7 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
                                                           $this->_key );
             $row['action'] = CRM_Core_Action::formLink( $actionLinks, null,
                                                         array( 'id'  => $result->activity_id,
-                                                               'cid' => $result->contact_id,
+                                                               'cid' => $contactId,
                                                                'cxt' => $this->_context ) );
             $rows[] = $row;
          }

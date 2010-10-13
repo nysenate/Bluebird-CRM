@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -42,12 +42,13 @@ class CRM_Activity_Page_AJAX
     {
         $caseID    = CRM_Utils_Type::escape( $_GET['caseID'], 'Integer' );
         $contactID = CRM_Utils_Type::escape( $_GET['cid'], 'Integer' );
-        $context   = CRM_Utils_Type::escape( $_GET['context'], 'String' );
+        $userID    = CRM_Utils_Type::escape( $_GET['userID'], 'Integer' );
+        $context   = CRM_Utils_Type::escape( CRM_Utils_Array::value( 'context', $_GET ), 'String' );
         
         $params    = $_POST;
         // get the activities related to given case
         require_once "CRM/Case/BAO/Case.php";
-        $activities = CRM_Case_BAO_Case::getCaseActivity( $caseID, $params, $contactID, $context );
+        $activities = CRM_Case_BAO_Case::getCaseActivity( $caseID, $params, $contactID, $context, $userID );
         $page  = CRM_Utils_Array::value( 'page', $_POST );
         $total = $params['total'];
 

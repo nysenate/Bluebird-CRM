@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,12 +34,20 @@
       </div>
    {else}
     <table class="form-layout-compressed">
-     <tr class="crm-membership-status-form-block-name">
+      {if $action eq 2}	   
+      <tr class="crm-membership-status-form-block-name">
 	<td class="label">{$form.name.label}</td>
-        <td class="html-adjust">{$form.name.html}<br />
+        <td class="html-adjust">{$form.name.html}</td>
+      </tr>
+      {/if}
+
+      <tr class="crm-membership-status-form-block-label">
+	<td class="label">{$form.label.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_membership_status' field='label' id=$id}{/if}</td>
+        <td class="html-adjust">{$form.label.html}<br />
            <span class="description">{ts}Display name for this Membership status (e.g. New, Current, Grace, Expired...).{/ts}</span>
         </td>
       </tr>
+
       <tr class="crm-membership-status-form-block-start_event">
         <td class="label">{$form.start_event.label}</td>
         <td class="html-adjust">{$form.start_event.html}<br />

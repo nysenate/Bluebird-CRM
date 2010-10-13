@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -50,31 +50,44 @@ class CRM_Utils_PDF_Utils {
         }
 
         $first = true;
-        $html = "
-<style>
-.page_break {
-  page-break-before: always;
-}
-</style>
-";
+        
+        $html = '
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <style>
+      .page_break {
+        page-break-before: always;
+      }
+    </style>
+  </head>
+  <body>';
 
         $htmlElementstoStrip = array(
                                      '@<head[^>]*?>.*?</head>@siu',
                                      '@<body>@siu',
                                      '@</body>@siu',
+                                     '@<html[^>]*?>@siu',
                                      '@</html>@siu',
                                      '@<!DOCTYPE[^>]*?>@siu',
                                      );
-        $htmlElementsInstead = array("","","","","");                     
+        $htmlElementsInstead = array("","","","","","");                     
         
         foreach ( $values as $value ) {
-            if ( ! $first ) {
-                $html .= "<h2 class=\"page_break\">{$value['to']}: {$value['subject']}</h2><p>";
-            } else {
-                $html .= "<h2>{$value['to']}: {$value['subject']}</h2><p>";
+            if ( $first ) {
                 $first = false;
+                $pattern = '@<html[^>]*?>.*?<body>@siu';
+                preg_match($pattern, $value['html'], $matches);
+                //If there is a header in the template it will be used instead of the default header
+                $html = $matches[0] ? $matches[0] : nothing;
+                //$html .= "<h2>{$value['to']}: {$value['subject']}</h2><p>"; //If needed it should be generated through the message template
+            } else {
+                $html .= "<div style=\"page-break-after: always\"></div>";
+                //$html .= "<h2 class=\"page_break\">{$value['to']}: {$value['subject']}</h2><p>"; //If needed it should be generated through the message template
             }
             if ( $value['html'] ) {
+                //Strip the header from the template to avoid multiple headers within one document causing invalid html
                 $value['html'] = preg_replace( $htmlElementstoStrip,
                                                $htmlElementsInstead,
                                                $value['html'] );
@@ -83,6 +96,11 @@ class CRM_Utils_PDF_Utils {
                 $html .= "{$value['body']}\n";
             }
         }
+
+        $html .= '
+          </body>
+        </html>';
+                        
         $dompdf->load_html( $html );
         $dompdf->render( );
         $dompdf->stream( $fileName );

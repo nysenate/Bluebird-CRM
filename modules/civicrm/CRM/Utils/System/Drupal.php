@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -49,24 +49,15 @@ class CRM_Utils_System_Drupal {
      * @access public
      */
     function setTitle( $title, $pageTitle = null ) {
-        if ( $pageTitle ) {
-			$markupTitle = $pageTitle;
-        	$cleanTitle = strip_tags($pageTitle);
-            $title = $cleanTitle;
+        if ( !$pageTitle ) {
+            $pageTitle = $title;
         }
-        
-        drupal_set_title( $title );
-    	
-        $template =& CRM_Core_Smarty::singleton( );
-		if ($pageTitle != '') {
-        	$template->assign( 'pageTitle', $pageTitle );
-		} else {
-        	$template->assign( 'pageTitle', $title );			
-		}
-		
-
-	}
-
+        if ( arg(0) == 'civicrm' )	{
+            //set drupal title 
+            drupal_set_title( $pageTitle ); 
+        }
+    }
+    
     /**
      * Append an additional breadcrumb tag to the existing breadcrumb
      *
@@ -330,25 +321,55 @@ class CRM_Utils_System_Drupal {
     /**
      * load drupal bootstrap
      */
-    static function loadBootStrap( $config ) {
-        $cmsPath = dirname( dirname( dirname (dirname ( dirname( $config->templateDir ) ) ) ) );
+    static function loadBootStrap( ) 
+    {
+        //take the cms root path.
+        $cmsPath = self::cmsRootPath( );
+        
         if ( !file_exists( "$cmsPath/includes/bootstrap.inc" ) ) {
-            return;
+            echo '<br />Sorry, could not able to locate bootstrap.inc.';
+            exit( );
         }
         
-        $cur_dir = getcwd();
         chdir($cmsPath);
         require_once 'includes/bootstrap.inc';
         @drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
-        //chdir( $cur_dir ); 
+        
+        if ( !function_exists('module_exists') || 
+             !module_exists( 'civicrm' ) ) {
+            echo '<br />Sorry, could not able to load drupal bootstrap.';
+            exit( );
+        }
         
         //load user, we need to check drupal permissions.
         $name = trim( CRM_Utils_Array::value( 'name', $_REQUEST ) );
         $pass = trim( CRM_Utils_Array::value( 'pass', $_REQUEST ) );
         if ( $name ) {
-            module_enable( array( 'user' ) );
-            user_authenticate(  array( 'name' => $name, 'pass' => $pass ) );
+            $user = user_authenticate(  array( 'name' => $name, 'pass' => $pass ) );
+            if ( empty( $user->uid ) ) {
+                echo '<br />Sorry, unrecognized username or password.';
+                exit( );
+            }
         }
+        
+    }
+    
+    static function cmsRootPath( ) 
+    {
+        $cmsRoot  = $valid = null;
+        $pathVars = explode( DIRECTORY_SEPARATOR, $_SERVER['SCRIPT_FILENAME'] );
+        foreach ( $pathVars as $var ) {
+            if ( $var ) {
+                $cmsRoot .= DIRECTORY_SEPARATOR . $var;
+                //stop as we found bootstrap.
+                if ( file_exists( "$cmsRoot/includes/bootstrap.inc" ) ) { 
+                    $valid = true;
+                    break;
+                }
+            }
+        }
+        
+        return ( $valid ) ? $cmsRoot : null; 
     }
     
     /**

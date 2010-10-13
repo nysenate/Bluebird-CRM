@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -64,7 +64,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         require_once 'CRM/Core/BAO/CustomGroup.php';
         require_once 'CRM/Core/OptionGroup.php';
         require_once 'CRM/Core/OptionValue.php';
-        if ( ! CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
+       if ( ! CRM_Core_Permission::check( 'merge duplicate contacts' ) ) {
             CRM_Core_Error::fatal( ts( 'You do not have access to this page' ) );
         }
 
@@ -73,15 +73,22 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         $rgid  = CRM_Utils_Request::retrieve('rgid','Positive', $this, false);
         $gid   = CRM_Utils_Request::retrieve('gid','Positive', $this, false);
         
+        // Block access if user does not have EDIT permissions for both contacts.
+        require_once 'CRM/Contact/BAO/Contact/Permission.php';
+        if ( ! ( CRM_Contact_BAO_Contact_Permission::allow( $cid, CRM_Core_Permission::EDIT ) 
+                 && CRM_Contact_BAO_Contact_Permission::allow( $oid, CRM_Core_Permission::EDIT ) ) ) {
+            CRM_Utils_System::permissionDenied( );
+        }
+        
         $session = CRM_Core_Session::singleton( );
         
         // context fixed.
         if ( $rgid ) {
             $urlParam = "reset=1&action=browse&rgid={$rgid}";
             if ( $gid ) $urlParam .= "&gid={$gid}";
-            $session->pushUserContext( CRM_Utils_system::url( 'civicrm/admin/dedupefind', $urlParam ) );
+            $session->pushUserContext( CRM_Utils_system::url( 'civicrm/contact/dedupefind', $urlParam ) );
         }
-
+        
         // ensure that oid is not the current user, if so refuse to do the merge
         
         if ( $session->get( 'userID' ) == $oid ) {
@@ -92,7 +99,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         }
         
         $diffs = CRM_Dedupe_Merger::findDifferences($cid, $oid);
-
+        
         $mainParams  = array('contact_id' => $cid, 'return.display_name' => 1);
         $otherParams = array('contact_id' => $oid, 'return.display_name' => 1);
         // API 2 has to have the requested fields spelt-out for it
@@ -563,12 +570,17 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         // move other's belongings and delete the other contact
         CRM_Dedupe_Merger::moveContactBelongings($this->_cid, $this->_oid);
         $otherParams = array('contact_id' => $this->_oid);
-        if ( CRM_Core_Permission::check( 'delete contacts' ) ) {
+        if ( CRM_Core_Permission::check( 'merge duplicate contacts' ) && CRM_Core_Permission::check( 'delete contacts' )) {
+            // if ext id is submitted then set it null for contact to be deleted
+            if ( CRM_Utils_Array::value( 'external_identifier', $submitted ) ) {
+                $query = "UPDATE civicrm_contact SET external_identifier = null WHERE id = {$this->_oid}";
+                CRM_Core_DAO::executeQuery( $query );
+            }
             civicrm_contact_delete($otherParams);
         } else {
             CRM_Core_Session::setStatus(ts('Do not have sufficient permission to delete duplicate contact.'));
         }
-
+        
         if (isset($submitted)) {
             $submitted['contact_id'] = $this->_cid;
             CRM_Contact_BAO_Contact::createProfileContact($submitted, CRM_Core_DAO::$_nullArray, $this->_cid);

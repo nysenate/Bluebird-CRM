@@ -455,7 +455,7 @@ function civitest_civicrm_searchTasks( $objectType, &$tasks ) {
 function civitest_civicrm_validate( $formName, &$fields, &$files, &$form ) {
     // sample implementation
     $errors = array( );
-    if ( $formName == 'CRM_Contact_Form_Edit' ) {
+    if ( $formName == 'CRM_Contact_Form_Contact' ) {
        // ensure that external identifier is present and valid
        $externalID = CRM_Utils_Array::value( 'external_identifier', $fields );
        if ( ! $externalID ) {
@@ -564,7 +564,7 @@ function civitest_civicrm_eventDiscount( &$form, &$params ) {
  */
 function civitest_civicrm_buildForm( $formName, &$form ) {
 
-    if ( $formName == 'CRM_Contact_Form_Edit' ) {
+    if ( $formName == 'CRM_Contact_Form_Contact' ) {
         $defaultDate = array( );
         CRM_Utils_Date::getAllDefaultValues( $defaultDate );
         $defaults['custom_3_-1'] = $defaultDate;
@@ -1003,5 +1003,216 @@ function civitest_civicrm_optionValues( &$values, $name ) {
         unset( $values[5] );
     } else if ( $name == 'case_activity_type' ) {
         unset( $values['standard_timeline'] );
+    }
+}
+
+/**
+ * use the mail alter hook to inject raffle ticket numbers for participants
+ * this is not complete, IMO and i'd also store the raffle ticket numbers in a
+ * DB table to be on the safe side
+ */
+function civitest_civicrm_alterMailParams( &$params ) {
+
+    if ( $params['groupName'] == 'msg_tpl_workflow_event' &&
+         $params['valueName'] == 'event_online_receipt' ) {
+
+        $smarty =  CRM_Core_Smarty::singleton( );
+        $values =& $smarty->get_template_vars( );
+        $vars = array( 'lineItem', 'participantID', 'contactID' );
+        foreach ( $vars as $varName ) {
+            $$varName = CRM_Utils_Array::value( $varName, $values, null );
+        }
+
+        // return if no lineitems in event registration
+        if ( ! $lineItem ||
+             ! is_array( $lineItem ) ) {
+            return;
+        }
+
+        // check for price field. the raffle id is 1 (in my test case)
+        define( 'RAFFLE_PRICE_FIELD_ID', 1 );
+        foreach ( $lineItem as $priceSet => $itemValues ) {
+            foreach ( $itemValues as $itemID => $itemValue ) {
+                if ( $itemValue['price_field_id'] != RAFFLE_PRICE_FIELD_ID ) {
+                    continue;
+                }
+
+                $rafflePrefix = "{$contactID}_{$participantID}_";
+                $raffleString = array( );
+                $raffleCount  = 0;
+                switch ( $itemValue['label'] ) {
+                case 'One':
+                    $raffleCount = 1;
+                    break;
+
+                case 'Five':
+                    $raffleCount = 5;
+                    break;
+
+                case 'Ten':
+                    $raffleCount = 10;
+                    break;
+
+                }
+                for ( $i = 1 ; $i <= $raffleCount; $i++ ) {
+                    $raffleString[] = $rafflePrefix . $i;
+                }
+                if ( ! empty( $raffleString ) ) {
+                    $raffleString = implode( ', ', $raffleString );
+                    $params['text'] .= "
+
+===========================================================
+Event Raffle Ticket Numbers
+===========================================================
+
+Thank you for buying raffle tickets.  Your ticket numbers are:$raffleString. Good luck!
+
+";
+                    $htmlSnippet = "
+<center>
+ <table width=\"620\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" id=\"crm-event_receipt\" style=\"font-family: Arial, Verdana, sans-serif; text-align: left;\">
+
+  <tr>
+   <td>
+    <table style=\"border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;\">
+     <tr>
+      <th colspan=\"2\" style=\"text-align: left; padding: 4px; border-bottom: 1px solid #999; background-color: #eee;\">
+       Event Raffle Ticket Numbers      </th>
+     </tr>
+     <tr>
+      <td colspan=\"2\" style=\"padding: 4px; border-bottom: 1px solid #999;\">
+       Thank you for buying raffle tickets.  Your ticket numbers are:$raffleString. Good luck!
+      </td>
+     </tr>
+    </table>
+   </td>
+  </tr>
+ </table>
+</center>
+
+</body>
+";
+
+                    $params['html'] = str_replace( "</body>",
+                                                   $htmlSnippet,
+                                                   $params['html'] );
+                }
+            }
+        }
+    }
+}
+
+function civitest_civicrm_navigationMenu( &$params ) {
+   
+    //  Get the maximum key of $params 
+    $maxKey = ( max( array_keys($params) ) );
+    
+    $params[$maxKey+1] = array ( 
+                       'attributes' => array (
+                                              'label'      => 'Custom Menu Entry',
+                                              'name'       => 'Custom Menu Entry',
+                                              'url'        => null,
+                                              'permission' => null,
+                                              'operator'   => null,
+                                              'separator'  => null,
+                                              'parentID'   => null,
+                                              'navID'      => $maxKey+1,
+                                              'active'     => 1
+                                              ),
+                       'child' =>  array ( 
+                                          '1' => array (
+                                                        'attributes' => array ( 
+                                                                               'label'      => 'Custom Child Menu',
+                                                                               'name'       => 'Custom Child Menu',
+                                                                               'url'        => 'http://www.testlink.com',
+                                                                               'permission' => 'access CiviContribute
+',
+                                                                               'operator'   => null,
+                                                                               'separator'  => 1,
+                                                                               'parentID'   => $maxKey+1,
+                                                                               'navID'      => 1,
+                                                                               'active'     => 1
+                                                                                ),
+                                                        'child' => null 
+                                                        ) ) );    
+}
+
+/**
+ * This hook allows modification of the data used to perform merging of duplicates.
+ * @param string $type the type of data being passed (cidRefs|eidRefs|relTables|sqls)
+ * @param array $data  the data, which depends on the value of $type:
+ *      'relTables':
+ *          an array of tables used for asking user which elements to merge,
+ *          as used at civicrm/contact/merge; each table in the array has this format:
+ *                'rel_table_UNIQUE-TABLE-NICKNAME' => array(
+ *                    'title'  => ts('TITLE'),
+ *                    'tables' => array('TABLE-NAME' [, ...]),
+ *                    'url'    => CRM_Utils_System::url(PATH, QUERY),
+ *                )
+ *      'sqls':
+ *          a one-dimensional array of SQL statements to be run in the final merge operation;
+ *          These SQL statements are run within a single transaction.
+ *      'cidRefs':
+ *          an array of tables and their fields referencing civicrm_contact.contact_id explicitely;
+ *          each table in the array has this format:
+ *                'TABLE-NAME' => array('COLUMN-NAME' [, ...])
+ *      'eidRefs':
+ *          an array of tables and their fields referencing civicrm_contact.contact_id with entity_id;
+ *          each table in the array has this format:
+ *                'TABLE-NAME' => array('entity_table-COLUMN-NAME' => 'entity_id-COLUMN-NAME')
+ * @param int $mainId  contact_id of the contact that survives the merge (only when $type == 'sqls')
+ * @param int $otherId contact_id of the contact that will be absorbed and deleted (only when $type == 'sqls')
+ * @param array $tables when $type is "sqls", an array of tables as it may have been handed to the calling function
+ *
+ * @access public
+ */
+
+function civitest_civicrm_merge ( $type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL ) {
+
+    switch ($type) {
+        case 'relTables':
+            // Allow user to decide whether or not to merge records in `civitest_foo` table
+            $data['rel_table_foo'] = array(
+                'title'  => ts('Foos'),                 // Title as shown to user for this type of data
+                'tables' => array('civitest_foo'),      // Name of database table holding these records
+                'url'    => CRM_Utils_System::url('civicrm/civitest/foo', 'action=browse&cid=$cid'),
+                                                        // URL to view this data for this contact, 
+                                                        // in this case using CiviCRM's native URL utility
+                                                        // NOTE: '$cid' will be replaced with correct 
+                                                        // CiviCRM contact ID.
+            );
+        break;
+
+        case 'cidRefs':
+            // Add references to civitest_foo.contact_id, and civitest_foo.foo_id, both of which
+            // are foreign keys to civicrm_contact.id.  By adding this to $data, records in this
+            // table will be automatically included in the merge.
+            $data['civitest_foo'] = array('contact_id', 'foo_id');
+        break;
+
+        case 'eidRefs':
+            // Add references to civitest_bar table, which is keyed to civicrm_contact.id
+            // using `bar_entity_id` column, when `entity_table` is equal to 'civicrm_contact'. By
+            // adding this to $data, records in this table will be automatically included in
+            // the merge.
+            $data['civitest_bar'] = array('entity_table' => 'bar_entity_id');
+        break;
+
+        case 'sqls':
+            // Note that this hook can be called twice with $type = 'sqls': once with $tables 
+            // and once without. In our case, SQL statements related to table `civicrm_foo`
+            // will be listed in $data when $tables is set; SQL statements related to table
+            // `civicrm_bar` will be listed in $data when $tables is NOT set.  The deciding
+            // factor here is that `civicrm_foo` was referenced above as part of the 'relTables'
+            // data, whereas `civicrm_bar` was not.
+            if ($tables) {
+                // Nothing to do in our case. In some cases, you might want to find and
+                // modify existing SQL statements in $data.
+            } else {
+                // Nothing to do in our case. In some cases, you might want to find and
+                // modify existing SQL statements in $data.
+            }
+        break;
+    
     }
 }

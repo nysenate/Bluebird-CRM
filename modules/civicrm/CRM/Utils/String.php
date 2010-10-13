@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -408,6 +408,24 @@ class CRM_Utils_String {
     static function addJqueryFiles( &$html ) {
         $smarty = CRM_Core_Smarty::singleton( );
         return $smarty->fetch( 'CRM/common/jquery.tpl' ) . $html . '<script type="text/javascript">jQuery.noConflict(true);</script>';
+    }
+
+    /**
+     * Given an ezComponents-parsed representation of
+     * a text with alternatives return only the first one
+     *
+     * @param string $full  all alternatives as a long string (or some other text)
+     *
+     * @return string       only the first alternative found (or the text without alternatives)
+     */
+    static function stripAlternatives($full)
+    {
+        $matches = array();
+        if (preg_match('/-ALTERNATIVE ITEM 0-(.*?)-ALTERNATIVE ITEM 1-.*-ALTERNATIVE END-/s', $full, $matches)) {
+            return $matches[1];
+        } else {
+            return $full;
+        }
     }
 }
 

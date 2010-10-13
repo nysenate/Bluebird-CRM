@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -204,7 +204,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
             if ( $component !== 'membership' ) {
                 CRM_Core_Error::displaySessionError( $result );
                 CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/contribute/transact', 
-                                                                   '_qf_Main_display=true' ) );
+                                                                   "_qf_Main_display=true&qfKey={$form->_params['qfKey']}" ) );
             }
             $membershipResult[1] = $result;
         } else {
@@ -302,7 +302,9 @@ class CRM_Contribute_BAO_Contribution_Utils {
         
         $params = null;
         while ( $dao->fetch( ) ) {
-            $params['By Month'][$dao->contribMonth] = $dao->ctAmt;
+            if ( $dao->contribMonth ) {
+                $params['By Month'][$dao->contribMonth] = $dao->ctAmt;
+            }
         } 
         return $params;
         
@@ -326,11 +328,13 @@ class CRM_Contribute_BAO_Contribution_Utils {
               AND contrib.contribution_status_id = 1
         GROUP BY contribYear
         ORDER BY contribYear";
-        $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $query );
         
         $params = null;
         while ( $dao->fetch( ) ) {
-            $params['By Year'][$dao->contribYear] = $dao->ctAmt;
+            if ( ! empty( $dao->contribYear ) ) {
+                $params['By Year'][$dao->contribYear] = $dao->ctAmt;
+            }
         }
         return $params;
     }

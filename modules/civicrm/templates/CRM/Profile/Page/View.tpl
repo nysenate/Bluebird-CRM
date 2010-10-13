@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -27,32 +27,31 @@
 {* EXAMPLES *}{* $profileFields_1.last_name.label *}{* $profileFields_1.last_name.value *}
 
 {if $overlayProfile } 
-{foreach from=$profileGroups item=group}
-    <div class="crm-summary-group">
-    	 {$group.content}
-    </div>
-{/foreach}
+    {foreach from=$profileGroups item=group}
+        <div class="crm-summary-group">
+        	 {$group.content}
+        </div>
+    {/foreach}
 {else}
-{foreach from=$profileGroups item=group}
-    <h2>{$group.title}</h2>
-    <div id="profilewrap{$groupID}">
-    	 {$group.content}
+    {foreach from=$profileGroups item=group}
+        <h2>{$group.title}</h2>
+        <div id="profilewrap{$groupID}">
+        	 {$group.content}
+        </div>
+    {/foreach}
+    <div class="action-link">
+        {if $listingURL}
+            <a href="{$listingURL}">&raquo; {ts}Back to Listings{/ts}</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        {/if}
+        {if $mapURL}
+            <a href="{$mapURL}">&raquo; {ts}Map Primary Address{/ts}</a>
+        {/if}
     </div>
-{/foreach}
-<div class="action-link">
-{if $listingURL}
-    <a href="{$listingURL}">&raquo; {ts}Back to Listings{/ts}</a>&nbsp;&nbsp;&nbsp;&nbsp;
-{/if}
-    {if $mapURL}
-    <a href="{$mapURL}">&raquo; {ts}Map Primary Address{/ts}</a>
-    {/if}
-
-</div>
 {/if}
 {literal}
      <script type='text/javascript'>
           function contactImagePopUp (url, width, height) {
- 	      newWindow = window.open( url,'name', 'width='+width+', height='+height );
+ 	          newWindow = window.open( url,'name', 'width='+width+', height='+height );
           }
      </script>
 {/literal}

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -364,7 +364,7 @@ abstract class CRM_Contribute_Import_Parser
             /* trim whitespace around the values */
             $empty = true;
             foreach ($values as $k => $v) {
-                $values[$k] = trim($v, " .\t\r\n");
+                $values[$k] = trim($v, " \t\r\n");
             }
 
             if ( CRM_Utils_System::isNull( $values ) ) {

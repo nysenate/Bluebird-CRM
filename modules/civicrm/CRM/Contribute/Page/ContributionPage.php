@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -95,6 +95,7 @@ class CRM_Contribute_Page_ContributionPage extends CRM_Core_Page
                                                                           'url'   => 'civicrm/contribute/transact',
                                                                           'qs'    => 'reset=1&id=%%id%%',
                                                                           'title' => ts('FollowUp'),
+                                                                          'fe'    =>'true',
                                                                           ),
                                         CRM_Core_Action::DISABLE => array(
                                                                           'name'  => ts('Disable'),

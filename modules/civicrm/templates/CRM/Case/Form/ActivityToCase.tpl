@@ -133,7 +133,7 @@ function fileOnCase( action, activityID, currentCaseId ) {
 				var targetContactId = cj("#target_contact_id").val( );
 				
 			    if ( !cj("#unclosed_cases").val( )  ) {
-			       alert('{/literal}{ts}Please select a case from the list{/ts}{literal}.');
+			       alert('{/literal}{ts escape="js"}Please select a case from the list{/ts}{literal}.');
 				   return false;
 				}
 						
@@ -141,10 +141,10 @@ function fileOnCase( action, activityID, currentCaseId ) {
 				cj(this).dialog("destroy");
 									
 				var postUrl = {/literal}"{crmURL p='civicrm/ajax/activity/convert' h=0 }"{literal};
-			        cj.post( postUrl, { activityID: activityID, caseID: selectedCaseId, contactID: contactId, newSubject: subject, targetContactIds: targetContactId, mode: action },
+			        cj.post( postUrl, { activityID: activityID, caseID: selectedCaseId, contactID: contactId, newSubject: subject, targetContactIds: targetContactId, mode: action, key: {/literal}"{crmKey name='civicrm/ajax/activity/convert'}"{literal} },
 					 function( values ) {
 					      if ( values.error_msg ) {
-                             alert( "{/literal}{ts}Unable to file on case{/ts}{literal}.\n\n" + values.error_msg );
+                             alert( "{/literal}{ts escape='js'}Unable to file on case{/ts}{literal}.\n\n" + values.error_msg );
 						     return false;
                           } else {
 					          var destUrl = {/literal}"{crmURL p='civicrm/contact/view/case' q='reset=1&action=view&id=' h=0 }"{literal}; 

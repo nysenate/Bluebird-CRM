@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -106,13 +106,13 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
                               'installments'=>
                               array( 'title'=> ts('Installments'),),
                               
+                              'pledge_create_date' =>
+                              array( 'title'=> ts('Pledge Made Date'), ),                                        
+
                               'start_date'  =>
-                              array( 'title'=> ts('Peldge Start Date'),
+                              array( 'title'=> ts('Pledge Start Date'),
                                      'type' => CRM_Utils_Type::T_DATE ),
                               
-                              'pledge_create_date' =>
-                              array( 'title'=> ts('Pledge Create Date'), ),                                        
-
                               'end_date'    =>   
                               array( 'title'=> ts('Pledge End Date'),
                                      'type' => CRM_Utils_Type::T_DATE ),
@@ -128,7 +128,7 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
                         'filters'   => 
                         array(
                               'pledge_create_date' => 
-                              array( 'title'        => 'Pledge Create Date',
+                              array( 'title'        => 'Pledge Made Date',
                                      'operatorType' => CRM_Report_Form::OP_DATE ),
                               'pledge_amount'  => 
                               array( 'title'        => ts( 'Pledged Amount' ),
@@ -303,9 +303,9 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
         
         // Pledge- Payment Detail Headers 
         $tableHeader = array( 'scheduled_date'  => array ( 'type'  => CRM_Utils_Type::T_DATE , 
-                                                           'title' => 'Payment Scheduled Date'),
+                                                           'title' => 'Next Payment Due'),
                               'scheduled_amount'=> array ( 'type'  => CRM_Utils_Type::T_MONEY , 
-                                                           'title' => 'Payment Amount'),  
+                                                           'title' => 'Next Payment Amount'),  
                               'total_paid'      => array ( 'type'  => CRM_Utils_Type::T_MONEY , 
                                                            'title' => 'Total Amount Paid'),
                               'balance_due'     => array ( 'type'  => CRM_Utils_Type::T_MONEY , 
@@ -360,7 +360,7 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
 
                 // Get Sum of all the payments made
                 $payDetailsSQL = "
-                    SELECT SUM( payment.scheduled_amount ) as total_amount 
+                    SELECT SUM( payment.actual_amount ) as total_amount 
                        FROM civicrm_pledge_payment payment 
                        WHERE payment.pledge_id = {$pledgeID} AND
                              payment.status_id = 1";

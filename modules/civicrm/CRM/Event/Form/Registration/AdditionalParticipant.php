@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -132,7 +132,7 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
             //hack to get set default from eventFees.php
             $this->_discountId = $discountId;
             $this->_pId = $this->_additionalParticipantId;
-            $this->_contactID = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Participant', $this->_additionalParticipantId, 'contact_id' );
+            $this->_contactId = CRM_Core_DAO::getFieldValue('CRM_Event_DAO_Participant', $this->_additionalParticipantId, 'contact_id' );
             $participantDefaults = CRM_Event_Form_EventFees::setDefaultValues( $this ) ;
             $participantDefaults = array_merge( $this->_defaults, $participantDefaults );
             // use primary email address if billing email address is empty
@@ -187,6 +187,7 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
                     ts( 'Email Address' ),
                     array( 'size' => 30, 'maxlength' => 60 ),
                     $required );
+        $this->addRule( "email-{$this->_bltID}", ts('Email is not valid.'), 'email' );
         //add buttons
         $js = null;
         if ( $this->isLastParticipant( true ) && !CRM_Utils_Array::value('is_monetary', $this->_values['event']) ) {
@@ -388,7 +389,11 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
                 $this->_lineItem[$addParticipantNum] = 'skip';
             }
         } else {
-            $params = $this->controller->exportValues( $this->_name );  
+            $params = $this->controller->exportValues( $this->_name );
+            
+            $config = CRM_Core_Config::singleton( );
+            $params['currencyID'] = $config->defaultCurrency;            
+            
             if ( $this->_values['event']['is_monetary'] ) {
 
                 //added for discount
@@ -428,7 +433,7 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
             
             //carry additional participant id, contact id if pre-registered.
             if ( $this->_allowConfirmation && $this->_additionalParticipantId ) {
-                $params['contact_id']     = $this->_contactID;
+                $params['contact_id']     = $this->_contactId;
                 $params['participant_id'] = $this->_additionalParticipantId;
             }
             

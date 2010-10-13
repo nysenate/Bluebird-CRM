@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -89,16 +89,16 @@
              </td>
 	    {/if}
         <td class="crm-case-caseview-case_type label">
-            {ts}Case Type{/ts}:&nbsp;{$caseDetails.case_type}&nbsp;<a href="{crmURL p='civicrm/case/activity' q="action=add&reset=1&cid=`$contactId`&caseid=`$caseId`&selectedChild=activity&atype=`$changeCaseTypeId`"}" title="Change case type (creates activity record)"><span class="icon edit-icon"></span></a>
+            <span class="crm-case-summary-label">{ts}Case Type{/ts}:</span>&nbsp;{$caseDetails.case_type}&nbsp;<a href="{crmURL p='civicrm/case/activity' q="action=add&reset=1&cid=`$contactId`&caseid=`$caseId`&selectedChild=activity&atype=`$changeCaseTypeId`"}" title="Change case type (creates activity record)"><span class="icon edit-icon"></span></a>
         </td>
         <td class="crm-case-caseview-case_status label">
-            {ts}Status{/ts}:&nbsp;{$caseDetails.case_status}&nbsp;<a href="{crmURL p='civicrm/case/activity' q="action=add&reset=1&cid=`$contactId`&caseid=`$caseId`&selectedChild=activity&atype=`$changeCaseStatusId`"}" title="Change case status (creates activity record)"><span class="icon edit-icon"></span></a>
+            <span class="crm-case-summary-label">{ts}Status{/ts}:</span>&nbsp;{$caseDetails.case_status}&nbsp;<a href="{crmURL p='civicrm/case/activity' q="action=add&reset=1&cid=`$contactId`&caseid=`$caseId`&selectedChild=activity&atype=`$changeCaseStatusId`"}" title="Change case status (creates activity record)"><span class="icon edit-icon"></span></a>
         </td>
         <td class="crm-case-caseview-case_start_date label">
-            {ts}Start Date{/ts}:&nbsp;{$caseDetails.case_start_date|crmDate}&nbsp;<a href="{crmURL p='civicrm/case/activity' q="action=add&reset=1&cid=`$contactId`&caseid=`$caseId`&selectedChild=activity&atype=`$changeCaseStartDateId`"}" title="Change case start date (creates activity record)"><span class="icon edit-icon"></span></a>
+            <span class="crm-case-summary-label">{ts}Start Date{/ts}:</span>&nbsp;{$caseDetails.case_start_date|crmDate}&nbsp;<a href="{crmURL p='civicrm/case/activity' q="action=add&reset=1&cid=`$contactId`&caseid=`$caseId`&selectedChild=activity&atype=`$changeCaseStartDateId`"}" title="Change case start date (creates activity record)"><span class="icon edit-icon"></span></a>
         </td>
         <td class="crm-case-caseview-{$caseID} label">
-            {ts}Case ID{/ts}:&nbsp;{$caseID}
+            <span class="crm-case-summary-label">{ts}Case ID{/ts}:</span>&nbsp;{$caseID}
         </td>
     </tr>
     </table>
@@ -170,8 +170,10 @@
     		<th>{ts}Case Role{/ts}</th>
     		<th>{ts}Name{/ts}</th>
     	   	<th>{ts}Phone{/ts}</th>
-                <th>{ts}Email{/ts}</th>
-    		<th>{ts}Actions{/ts}</th>
+            <th>{ts}Email{/ts}</th>
+            {if $relId neq 'client' and $hasAccessToAllCases}
+    		    <th>{ts}Actions{/ts}</th>
+    		{/if}
     	</tr>
 		{assign var=rowNumber value = 1}
         {foreach from=$caseRelationships item=row key=relId}
@@ -194,9 +196,7 @@
             	<div class="icon delete-icon" title="remove contact from case role"></div>
             	</a>
             	
-            	</td>
-          {else}
-           <td></td>
+            </td>
           {/if}
         </tr>
 		{assign var=rowNumber value = `$rowNumber+1`}
@@ -328,7 +328,7 @@ function createRelationship( relType, contactID, relID, rowNumber, relTypeName )
 		buttons: { 
 			"Ok": function() { 	    
 				if ( ! cj("#rel_contact").val( ) ) {
-					alert('{/literal}{ts}Select valid contact from the list{/ts}{literal}.');
+					alert('{/literal}{ts escape="js"}Select valid contact from the list{/ts}{literal}.');
 					return false;
 				}
 
@@ -338,7 +338,7 @@ function createRelationship( relType, contactID, relID, rowNumber, relTypeName )
 				var v1 = cj("#rel_contact_id").val( );
 
 				if ( ! v1 ) {
-					alert('{/literal}{ts}Select valid contact from the list{/ts}{literal}.');
+					alert('{/literal}{ts escape="js"}Select valid contact from the list{/ts}{literal}.');
 					return false;
 				}
 
@@ -354,13 +354,13 @@ function createRelationship( relType, contactID, relID, rowNumber, relTypeName )
                             var html = '<a href=' + contactViewUrl + data.cid +' title="view contact record">' +  data.name +'</a>';
                             cj('#relName_' + rowNumber ).html( html );
                             html = '';
-                            html = '<a onclick="createRelationship( ' + relType +','+ data.cid +', ' + data.rel_id +', ' + rowNumber +', \''+ relTypeName +'\' ); return false" title="edit case role" href="#"><div class="icon edit-icon" ></div></a> &nbsp;&nbsp; <a href=' + deleteUrl + data.rel_id +' onclick = "if (confirm(\'{/literal}{ts}Are you sure you want to delete this relationship{/ts}{literal}?\') ) this.href +=\'&confirmed=1\'; else return false;"><div title="remove contact from case role" class="icon delete-icon"></div></a>';
+                            html = '<a onclick="createRelationship( ' + relType +','+ data.cid +', ' + data.rel_id +', ' + rowNumber +', \''+ relTypeName +'\' ); return false" title="edit case role" href="#"><div class="icon edit-icon" ></div></a> &nbsp;&nbsp; <a href=' + deleteUrl + data.rel_id +' onclick = "if (confirm(\'{/literal}{ts escape="js"}Are you sure you want to delete this relationship{/ts}{literal}?\') ) this.href +=\'&confirmed=1\'; else return false;"><div title="remove contact from case role" class="icon delete-icon"></div></a>';
                             cj('#edit_' + rowNumber ).html( html );
 
 			} else {
 			   html = '<img src="' +resourceBase+'i/edit.png" title="edit case role" onclick="createRelationship( ' + relType +','+ data.cid +', ' + data.rel_id +', ' + rowNumber +', \''+ relTypeName +'\' );">&nbsp;&nbsp;';
 			   var relTypeAdminLink = {/literal}"{crmURL p='civicrm/admin/reltype' q='reset=1' h=0 }"{literal};
-			   var errorMsg = '{/literal}{ts}The relationship type definition for the  {literal}' + relTypeName + '{/literal} case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="{literal}' + relTypeAdminLink + '{/literal}">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
+			   var errorMsg = '{/literal}{ts escape="js"}The relationship type definition for the  {literal}' + relTypeName + '{/literal} case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="{literal}' + relTypeAdminLink + '{/literal}">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
 
 			   //display error message.
 			   var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="icon close-icon"></div>' + '</a>';
@@ -453,11 +453,11 @@ cj(document).ready(function(){
   
   {if $clientRelationships}
     <div class="crm-submit-buttons">
-    <a class="button" href="#" onClick="window.location='{crmURL p='civicrm/contact/view/rel' q="action=add&reset=1&cid=`$contactId`&caseID=`$caseID`"}'">
+    <a class="button" href="#" onClick="window.location='{crmURL p='civicrm/contact/view/rel' q="action=add&reset=1&cid=`$contactId`&caseID=`$caseID`"}'; return false;">
     <span><div class="icon add-icon"></div>{ts}Add client relationship{/ts}</a></span>
     </div>
 	
-    <table class="report-layout">
+    <table class="report-layout otherRelationships">
     	<tr class="columnheader">
     		<th>{ts}Client Relationship{/ts}</th>
     		<th>{ts}Name{/ts}</th>
@@ -465,11 +465,11 @@ cj(document).ready(function(){
     		<th>{ts}Email{/ts}</th>
     	</tr>
         {foreach from=$clientRelationships item=row key=relId}
-        <tr>
+        <tr id="otherRelationship-{$row.cid}">
             <td class="crm-case-caseview-otherrelationship-relation label">{$row.relation}</td>
             <td class="crm-case-caseview-otherrelationship-name" id="relName_{$rowNumber}"><a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$row.cid`"}" title="view contact record">{$row.name}</a></td>
             <td class="crm-case-caseview-otherrelationship-phone" id="phone_{$rowNumber}">{$row.phone}</td>
-	    <td class="crm-case-caseview-otherrelationship-email" id="email_{$rowNumber}">{if $row.email}<a href="{crmURL p='civicrm/contact/view/activity' q="reset=1&action=add&atype=3&cid=`$row.cid`&caseid=`$caseID`"}" title="{ts}compose and send an email{/ts}"><div class="icon email-icon"></div></a>&nbsp;{/if}</td>
+	        <td class="crm-case-caseview-otherrelationship-email" id="email_{$rowNumber}">{if $row.email}<a href="{crmURL p='civicrm/contact/view/activity' q="reset=1&action=add&atype=3&cid=`$row.cid`&caseid=`$caseID`"}" title="{ts}compose and send an email{/ts}"><div class="icon email-icon"></div></a>&nbsp;{/if}</td>
         </tr>
 		{assign var=rowNumber value = `$rowNumber+1`}
         {/foreach}
@@ -485,16 +485,19 @@ cj(document).ready(function(){
   <br />
   
   {if $globalRelationships}
-    <div><input type="button" class="form-submit default" onClick="window.location='{crmURL p='civicrm/group/search' q="reset=1&context=amtg&amtgID=`$globalGroupInfo.id`"}'" value="{ts 1=$globalGroupInfo.title}Add members to %1{/ts}" /></div>
+    <div class="crm-submit-buttons">
+        <a class="button" href="#"  onClick="window.location='{crmURL p='civicrm/group/search' q="reset=1&context=amtg&amtgID=`$globalGroupInfo.id`"}'; return false;">
+        <span><div class="icon add-icon"></div>{ts 1=$globalGroupInfo.title}Add members to %1{/ts}</a></span>
+    </div>
 	
-    <table class="report">
+    <table class="report-layout globalrelationship">
     	<tr class="columnheader">
     		<th>{$globalGroupInfo.title}</th>
     		<th>{ts}Phone{/ts}</th>
     		<th>{ts}Email{/ts}</th>
     	</tr>
         {foreach from=$globalRelationships item=row key=relId}
-        <tr>
+        <tr id="caseResource-{$row.contact_id}">
             <td class="crm-case-caseview-globalrelationship-sort_name label" id="relName_{$rowNumber}"><a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$row.contact_id`"}" title="view contact record">{$row.sort_name}</a></td>
             <td class="crm-case-caseview-globalrelationship-phone" id="phone_{$rowNumber}">{$row.phone}</td>
 	    <td class="crm-case-caseview-globalrelationship-email" id="email_{$rowNumber}">{if $row.email}<a href="{crmURL p='civicrm/contact/view/activity' q="reset=1&action=add&atype=3&cid=`$row.contact_id`&caseid=`$caseID`"}" title="{ts}compose and send an email{/ts}"><div title="compose and send an email" class="icon email-icon"></div></a>&nbsp;{/if}</td>
@@ -566,7 +569,7 @@ function addRole() {
 		buttons: { 
 			"Ok": function() { 	    
 				if ( ! cj("#role_contact").val( ) ) {
-					alert('{/literal}{ts}Select valid contact from the list{/ts}{literal}.');
+					alert('{/literal}{ts escape="js"}Select valid contact from the list{/ts}{literal}.');
 					return false;
 				}
 
@@ -577,13 +580,13 @@ function addRole() {
 				var v1 = cj("#role_contact_id").val( );
 
 				if ( ! v1 ) {
-					alert('{/literal}{ts}Select valid contact from the list{/ts}{literal}.');
+					alert('{/literal}{ts escape="js"}Select valid contact from the list{/ts}{literal}.');
 					return false;
 				}
 
 				var v2 = cj("#role_type").val();
 				if ( ! v2 ) {
-					alert('{/literal}{ts}Select valid type from the list{/ts}{literal}.');
+					alert('{/literal}{ts escape="js"}Select valid type from the list{/ts}{literal}.');
 					return false;
 				}
 				
@@ -603,7 +606,7 @@ function addRole() {
 							} else {
 							     var relTypeName = cj("#role_type :selected").text();  
 							     var relTypeAdminLink = {/literal}"{crmURL p='civicrm/admin/reltype' q='reset=1' h=0 }"{literal};
-			  				     var errorMsg = '{/literal}{ts}The relationship type definition for the  {literal}' + relTypeName + '{/literal} case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="{literal}' + relTypeAdminLink + '{/literal}">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
+			  				     var errorMsg = '{/literal}{ts escape="js"}The relationship type definition for the  {literal}' + relTypeName + '{/literal} case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="{literal}' + relTypeAdminLink + '{/literal}">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
 
 			   				     //display error message.
 			   				     var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="icon close-icon"></div>' + '</a>';
@@ -725,7 +728,7 @@ function addTags() {
                 });
                 
                 var postUrl = {/literal}"{crmURL p='civicrm/case/ajax/processtags' h=0 }"{literal}; 
-                var data = 'case_id=' + caseID + '&tag=' + tagsChecked + '&key=' + {/literal}"{crmKey name='civicrm/ajax/activity/convert'}"{literal};
+                var data = 'case_id=' + caseID + '&tag=' + tagsChecked + '&key=' + {/literal}"{crmKey name='civicrm/case/ajax/processtags'}"{literal};
 
                 cj.ajax({ type: "POST", url: postUrl, data: data, async: false });
                 cj(this).dialog("close"); 
@@ -832,6 +835,7 @@ cj(document).ready(function(){
 
     var dataUrl = {/literal}"{crmURL p='civicrm/ajax/activity' h=0 q='snippet=4&caseID='}{$caseID}"{literal};
     dataUrl = dataUrl + '&cid={/literal}{$contactID}{literal}';
+    dataUrl = dataUrl + '&userID={/literal}{$userID}{literal}'    
 
     {/literal}{if $fulltext}{literal}
     	dataUrl = dataUrl + '&context={/literal}{$fulltext}{literal}';
@@ -902,13 +906,13 @@ function checkSelection( field ) {
 
     switch ( fName )  {
         case '_qf_CaseView_next' :
-            validationMessage = '{/literal}{ts}Please select an activity set from the list.{/ts}{literal}';
+            validationMessage = '{/literal}{ts escape="js"}Please select an activity set from the list.{/ts}{literal}';
             validationField   = 'timeline_id';
-            successAction     = "confirm('{/literal}{ts}Are you sure you want to add a set of scheduled activities to this case?{/ts}{literal}');";
+            successAction     = "confirm('{/literal}{ts escape='js'}Are you sure you want to add a set of scheduled activities to this case?{/ts}{literal}');";
             break;
 
         case 'new_activity' :
-            validationMessage = '{/literal}{ts}Please select an activity type from the list.{/ts}{literal}';
+            validationMessage = '{/literal}{ts escape="js"}Please select an activity type from the list.{/ts}{literal}';
             validationField   = 'activity_type_id';
             if ( document.getElementById('activity_type_id').value == 3 ) {
                 successAction     = "window.location='{/literal}{$newActivityEmailUrl}{literal}' + document.getElementById('activity_type_id').value";            
@@ -918,23 +922,23 @@ function checkSelection( field ) {
             break;
 
         case 'case_report' :
-            validationMessage = '{/literal}{ts}Please select a report from the list.{/ts}{literal}';
+            validationMessage = '{/literal}{ts escape="js"}Please select a report from the list.{/ts}{literal}';
             validationField   = 'report_id';
             successAction     = "window.location='{/literal}{$reportUrl}{literal}' + document.getElementById('report_id').value";
             break;
  
         case '_qf_CaseView_next_merge_case' :
-            validationMessage = '{/literal}{ts}Please select a case from the list to merge with.{/ts}{literal}';
+            validationMessage = '{/literal}{ts escape="js"}Please select a case from the list to merge with.{/ts}{literal}';
             validationField   = 'merge_case_id';
             break;
         case '_qf_CaseView_next_edit_client' :
-            validationMessage = '{/literal}{ts}Please select a client for this case.{/ts}{literal}';
+            validationMessage = '{/literal}{ts escape="js"}Please select a client for this case.{/ts}{literal}';
 	    if ( cj('#contact_id').val( ) == '{/literal}{$contactID}{literal}' ) {
 	       	forceValidation = true;
-                validationMessage = '{/literal}{ts}'+clientName[0]+' is already assigned to this case. Please select some other client for this case.{/ts}{literal}';
+                validationMessage = '{/literal}{ts 1="'+clientName[0]+'" escape="js"}%1 is already assigned to this case. Please select some other client for this case.{/ts}{literal}';
             }
             validationField   = 'change_client_id';
-	    successAction     = "confirm( '{/literal}{ts}Are you sure you want to reassign this case and all related activities and relationships to '+clientName[0]+'?{/ts}{literal}' )";
+	    successAction     = "confirm( '{/literal}{ts 1="'+clientName[0]+'" escape="js"}Are you sure you want to reassign this case and all related activities and relationships to %1?{/ts}{literal}' )";
             break;   	    
     }	
 
@@ -955,7 +959,7 @@ function setSelectorClass( ) {
 function printCaseReport( ){
  
  	var dataUrl = {/literal}"{crmURL p='civicrm/case/report/print'}"{literal};
- 	dataUrl     = dataUrl+ '&cid={/literal}{$contactID}{literal}' 
+ 	dataUrl     = dataUrl+ '&all=1&cid={/literal}{$contactID}{literal}' 
                       +'&caseID={/literal}{$caseID}{literal}';
         window.location = dataUrl;
 }

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -151,7 +151,7 @@ function verify( ) {
  
  {* Group options *}
  {* New Group *}
-<div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
+<div id="new-group" class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
     {ts}Add imported records to a new group{/ts}
@@ -188,7 +188,7 @@ function verify( ) {
 
     {* Tag options *}
     {* New Tag *}
-<div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
+<div id="new-tag" class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div>
   {ts}Create a new tag and assign it to imported records{/ts}            
@@ -235,10 +235,20 @@ function verify( ) {
    {include file="CRM/common/formButtons.tpl" location="bottom"}
 </div>
 </div>
+
 {literal}
 <script type="text/javascript">
 cj(function() {
    cj().crmaccordions(); 
 });
+
+{/literal}{if $invalidGroupName}{literal}
+cj("#new-group").removeClass( 'crm-accordion-closed' ).addClass( 'crm-accordion-open' );
+{/literal}{/if}{literal}
+
+{/literal}{if $invalidTagName}{literal}
+cj("#new-tag").removeClass( 'crm-accordion-closed' ).addClass( 'crm-accordion-open' );
+{/literal}{/if}{literal}
+
 </script>
-{/literal}
+{/literal} 

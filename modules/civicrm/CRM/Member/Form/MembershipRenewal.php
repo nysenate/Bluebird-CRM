@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -150,7 +150,8 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
         $defaults = array( );
         $defaults =& parent::setDefaultValues( );
         $this->_memType = $defaults["membership_type_id"] ;
-        $defaults['renewal_date'] = CRM_Utils_Date::getToday( $defaults['renewal_date'], 'm/d/Y' );
+        $defaults['renewal_date'] = CRM_Utils_Date::getToday( CRM_Utils_Array::value( 'renewal_date', $defaults ),
+                                                              'm/d/Y' );
 
         if ($defaults['id']) {
             $defaults['record_contribution'] = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipPayment', 

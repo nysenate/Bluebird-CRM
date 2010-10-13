@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -148,7 +148,7 @@ abstract class CRM_Core_Page_Basic extends CRM_Core_Page {
         // what action do we want to perform ? (store it for smarty too.. :) 
      
         $this->_action = CRM_Utils_Request::retrieve( 'action', 'String',
-                                               $this, false, 'browse' );
+                                                      $this, false, 'browse' );
         $this->assign( 'action', $this->_action );
 
         // get 'id' if present

@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -268,9 +268,9 @@ class CRM_Grant_DAO_Grant extends CRM_Core_DAO
                 'grant_type_id' => array(
                     'name' => 'grant_type_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Grant Type') ,
+                    'title' => ts('Grant Type Id') ,
                     'required' => true,
-                    'export' => true,
+                    'export' => false,
                     'where' => 'civicrm_grant.grant_type_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
@@ -324,13 +324,13 @@ class CRM_Grant_DAO_Grant extends CRM_Core_DAO
                 'grant_status_id' => array(
                     'name' => 'status_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Grant status') ,
+                    'title' => ts('Grant Status Id') ,
                     'required' => true,
                     'import' => true,
                     'where' => 'civicrm_grant.status_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                 ) ,
             );
         }

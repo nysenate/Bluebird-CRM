@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -24,8 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for adding/editing ACL  *}
+<h3>{if $action eq 1}{ts}New ACL{/ts}{elseif $action eq 2}{ts}Edit ACL{/ts}{else}{ts}Delete ACL{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-acl-form-block">
-<fieldset><legend>{if $action eq 1}{ts}New ACL{/ts}{elseif $action eq 2}{ts}Edit ACL{/ts}{else}{ts}Delete ACL{/ts}{/if}</legend>
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 {if $action eq 8}
   <div class="messages status">
@@ -64,7 +64,7 @@
         </td>
      </tr>
    </table>
-    <div class="status message">{ts}NOTE: For Profile ACLs, the 'View' and 'Edit' operations currently do the same thing. Either option grants users access to profile-based create, edit, view and listings screens. Neither option grants access to administration of profiles.{/ts}</div>
+    <div class="status message">{ts}NOTE: Profile ACL operations affect which modes a profile can be used in (i.e. Create a new contact, Edit your own contact record, View a contact record, etc.). The Create operation is required for profiles embedded in online contribution or event registration forms. None of the operations for Profile ACLs grant access to administration of profiles.{/ts}</div>
   </div>
   <div id="id-custom-acl">
    <table class="form-layout-compressed">
@@ -116,7 +116,6 @@
    </table>
 {/if}
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-</fieldset>
 </div>
 
 {include file="CRM/common/showHide.tpl"}

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -163,7 +163,7 @@
     {/if}    
         <tr id='notice' style="display:none;">
             <td class="label">{$form.receipt_text_signup.label}</td>
-            <td class="html-adjust"><span class="description">{ts}Enter a message you want included at the beginning of the emailed receipt. EXAMPLE: 'Thanks for supporting our organization with your membership.'{/ts}</span>
+            <td class="html-adjust"><span class="description">{ts}If you need to include a special message for this member, enter it here. Otherwise, the confirmation email will include the standard receipt message configured under System Message Templates.{/ts}</span>
                  {$form.receipt_text_signup.html|crmReplace:class:huge}</td>
         </tr>
     </table>
@@ -195,6 +195,26 @@
 
 {if $action neq 8} {* Jscript additions not need for Delete action *} 
 {if $accessContribution and !$membershipMode AND ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId)}
+
+{literal}
+<script type="text/javascript">
+cj( function( ) {
+    cj('#record_contribution').click( function( ) {
+        if ( cj(this).attr('checked') ) {
+            cj('#recordContribution').show( );
+            setPaymentBlock( );
+        } else {
+            cj('#recordContribution').hide( );
+        }
+    });
+    
+    cj('#membership_type_id\\[1\\]').change( function( ) {
+        setPaymentBlock( );
+    });
+});
+</script>
+{/literal}
+
 {include file="CRM/common/showHideByFieldValue.tpl" 
     trigger_field_id    ="record_contribution"
     trigger_value       =""
@@ -241,8 +261,13 @@ function showHideMemberStatus() {
 {/literal}
 {/if}
 {literal}
-function setPaymentBlock( memType ) 
-{
+function setPaymentBlock( ) {
+    var memType = cj('#membership_type_id\\[1\\]').val( );
+    
+    if ( !memType ) {
+        return;
+    }
+    
     var dataUrl = {/literal}"{crmURL p='civicrm/ajax/memType' h=0}"{literal};
     
     cj.post( dataUrl, {mtype: memType}, function( data ) {

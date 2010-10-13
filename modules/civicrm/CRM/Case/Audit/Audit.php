@@ -20,8 +20,8 @@ class Audit
 		 * Loop through the activities in the file and add them to the appropriate region array.
 		 */
 		$doc = new DOMDocument();
-		if ($doc->loadXML($this->xmlString))
-		{
+		
+		if ( $doc->loadXML( $this->xmlString ) ) {
 			$regionList = $this->auditConfig->getRegions();
 
 			$ifBlanks = $this->auditConfig->getIfBlanks();
@@ -30,13 +30,12 @@ class Audit
 			$includeAll = ($includeAll == 'All');			
 			
 			$activityindex = 0;
-			$activityList = $doc->getElementsByTagName("Activity");
+			$activityList = $doc->getElementsByTagName("Activity");			
             
             $caseActivities     = array( );
             $activityStatusType = array( );
 
-			foreach($activityList as $activity)
-			{
+			foreach($activityList as $activity)	{			    
 				$retval[$activityindex] = array();
 				
 				$ifBlankReplacements = array();
@@ -46,8 +45,7 @@ class Audit
 				$category = '';
 				$fieldindex = 1;
 				$fields = $activity->getElementsByTagName("Field");
-				foreach($fields as $field)
-				{
+				foreach( $fields as $field ) {
 					$datatype_elements = $field->getElementsByTagName("Type");
 					$datatype = $datatype_elements->item(0)->nodeValue;
 					
@@ -58,42 +56,34 @@ class Audit
 					$value = $value_elements->item(0)->nodeValue;
 
 					$category_elements = $field->getElementsByTagName("Category");
-					if (! empty($category_elements))
-					{
+					if (! empty($category_elements)) {
 						$category = $category_elements->item(0)->nodeValue;
 					}
 					
 					// Based on the config file, does this field's label and value indicate a completed activity?							
-					if ($label == $this->auditConfig->getCompletionLabel() && $value == $this->auditConfig->getCompletionValue())
-					{
+					if ($label == $this->auditConfig->getCompletionLabel() && $value == $this->auditConfig->getCompletionValue()) {
 						$completed = true;
 					}
 
 					// Based on the config file, does this field's label match the one to use for sorting activities?							
-					if (in_array($label, $this->auditConfig->getSortByLabels()))
-					{
+					if (in_array($label, $this->auditConfig->getSortByLabels())) {
 						$sortValues[$label] = $value;
 					}
 										
-					foreach($regionList as $region)
-					{
+					foreach($regionList as $region) {
 						// Based on the config file, is this field a potential replacement for another?
-						if (! empty($ifBlanks[$region]))
-						{
-							if (in_array($label, $ifBlanks[$region]))
-							{
+						if (! empty($ifBlanks[$region])) {
+							if (in_array($label, $ifBlanks[$region])) {
 								$ifBlankReplacements[$label] = $value;
 							}
 						}
-						
-						if ($this->auditConfig->includeInRegion($label, $region))
-						{
+												
+						if ($this->auditConfig->includeInRegion($label, $region)) {
 							$retval[$activityindex][$region][$fieldindex] = array();
 							$retval[$activityindex][$region][$fieldindex]['label'] = $label;
 							$retval[$activityindex][$region][$fieldindex]['datatype'] = $datatype;
 							$retval[$activityindex][$region][$fieldindex]['value'] = $value;
-							if ($datatype == 'Date')
-							{
+							if ($datatype == 'Date') {
 								$retval[$activityindex][$region][$fieldindex]['includeTime'] = $this->auditConfig->includeTime($label, $region);
 							}
                             
@@ -117,21 +107,18 @@ class Audit
 					$fieldindex++;
 				}
 
-                if ( $printReport ) {
+                if ( $printReport ) {                    
                     $caseActivities[$activityindex] = CRM_Utils_Array::crmArrayMerge($activityStatusType[$activityindex], $caseActivities[$activityindex] );
                     $caseActivities[$activityindex]['sortValues'] = $sortValues;
                 }
 
-
-				if ($includeAll || !$completed)
-				{	
+				if ($includeAll || !$completed) {	
 					$retval[$activityindex]['completed'] = $completed;
 					$retval[$activityindex]['category'] = $category;
 					$retval[$activityindex]['sortValues'] = $sortValues;
 		
 					// Now sort the fields based on the order in the config file.
-					foreach($regionList as $region)
-					{
+					foreach($regionList as $region) {
 						$this->auditConfig->sort($retval[$activityindex][$region], $region);
 					}				
 						
@@ -139,15 +126,11 @@ class Audit
 
 					// If there are any fields with ifBlank specified, replace their values.
 					// We need to do this as a second pass because if we do it while looping through fields we might not have come across the field we need yet.
-					foreach($regionList as $region)
-					{
-						foreach($retval[$activityindex][$region] as &$v)
-						{
+					foreach($regionList as $region) {
+						foreach($retval[$activityindex][$region] as &$v) {
 							$vlabel = $v['label'];
-							if (trim($v['value']) == '' && !empty($ifBlanks[$region][$vlabel]))
-							{
-								if (! empty($ifBlankReplacements[$ifBlanks[$region][$vlabel]]))
-								{
+							if (trim($v['value']) == '' && !empty($ifBlanks[$region][$vlabel])) {
+								if (! empty($ifBlankReplacements[$ifBlanks[$region][$vlabel]])) {
 									$v['value'] = $ifBlankReplacements[$ifBlanks[$region][$vlabel]];
 								}
 							}
@@ -156,14 +139,13 @@ class Audit
 					}
 								
 					$activityindex++;
-				}
-				else
-				{
+				} else {
 					/* This is a little bit inefficient, but the alternative is to do two passes
 					because we don't know until we've examined all the field values whether the activity
 					is completed, since the field that determines it and its value is configurable,
 					so either way isn't ideal. */
 					unset($retval[$activityindex]);
+					unset($caseActivities[$activityindex]);
 				}
 			}
 
@@ -190,22 +172,16 @@ class Audit
 	public function compareActivities($a, $b)
 	{
 		// This should work
-		foreach ($this->auditConfig->getSortByLabels() as $label)
-		{
+		foreach ($this->auditConfig->getSortByLabels() as $label) {
 			$aval .= empty($a['sortValues']) ? "" : (empty($a['sortValues'][$label]) ? "" : $a['sortValues'][$label]);
 			$bval .= empty($b['sortValues']) ? "" : (empty($b['sortValues'][$label]) ? "" : $b['sortValues'][$label]);
 		}
 		
-		if ($aval < $bval)
-		{
+		if ($aval < $bval) {
 			return -1;
-		}
-		elseif ($aval > $bval)
-		{
+		} elseif ($aval > $bval) {
 			return 1;
-		}
-		else
-		{
+		} else {
 			return 0;
 		}
 	}

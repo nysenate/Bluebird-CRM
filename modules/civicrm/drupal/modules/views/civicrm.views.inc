@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -1224,6 +1224,104 @@ function civicrm_views_data() {
                                                                  'handler' => 'views_handler_sort',
                                                                  ),
                                                  );
+
+
+    // CHILLING OUT AT THE CIVICRM_WEBSITE TABLE
+
+    $data['civicrm_website']['table']['group']  = t('CiviCRM Website');
+
+    // Explain how this table joins to others.
+    $data['civicrm_website']['table']['join'] = array(
+                                                    // Directly links to contact table.
+                                                    'civicrm_contact' => array(
+                                                                               'left_field' => 'id',
+                                                                               'field' => 'contact_id',
+                                                                               ),
+                                                    );
+
+    //CiviCRM Website Using Contacts as a pitstop before going on to Participants
+    $data['civicrm_website']['table']['join']['civicrm_participant'] = array(
+                                                                           'left_table' => 'civicrm_contact',
+                                                                           'left_field' => 'id',
+                                                                           'field' => 'contact_id',
+                                                                           );
+
+    //CiviCRM Website Using Contacts as a pitstop before going on to Contributions
+    $data['civicrm_website']['table']['join']['civicrm_contribution'] = array(
+                                                                            'left_table' => 'civicrm_contact',
+                                                                            'left_field' => 'id',
+                                                                            'field' => 'contact_id',
+                                                                            );
+
+    //CiviCRM Website Using Contacts as a pitstop before going on to Activities
+    $data['civicrm_website']['table']['join']['civicrm_activity'] = array(
+                                                                        'left_table' => 'civicrm_contact',
+                                                                        'left_field' => 'id',
+                                                                        'field' => 'contact_id',
+                                                                        );
+
+
+   //CiviCRM Website Using Contacts as a pitstop before going on to Memberhsips
+    $data['civicrm_website']['table']['join']['civicrm_membership'] = array(
+                                                                     'left_table' => 'civicrm_contact',
+                                                                     'left_field' => 'id',
+                                                                     'field' => 'contact_id',
+                                                                     );
+
+
+    //Display Websites in User Views
+    $data['civicrm_website']['table']['join']['users'] = array(
+           'left_table'   => 'civicrm_uf_match',
+           'left_field'   => 'contact_id',
+           'field'        => 'contact_id',
+    );
+
+    //WEBSITE TYPE
+    $data['civicrm_website']['website_type'] = array(
+                                                    'title' => t('Website Type'),
+                                                    'real field' => 'website_type_id',
+                                                    'help' => t('The type of website for the contact'),
+                                                    'field' => array(
+                                                                     'handler' => 'civicrm_handler_field_website_type',
+                                                                     'click sortable' => TRUE,
+                                                                     ),
+
+                                                    'argument' => array(
+                                                                        'handler' => 'views_handler_argument',
+                                                                        ),
+
+                                                    'filter' => array(
+                                                                      'handler' => 'civicrm_handler_filter_website_type',
+                                                                      'allow empty' => TRUE,
+                                                                      ),
+
+                                                    'sort' => array(
+                                                                    'handler' => 'views_handler_sort',
+                                                                    ),
+                                                    );
+
+    //FULL WEB ADDRESS
+    $data['civicrm_website']['url'] = array(
+                                            'title' => t('Website URL'),
+                                            'help' => t('Website URL'),
+                                            'field' => array(
+                                                             'handler' => 'views_handler_field',
+                                                             'click sortable' => TRUE,
+                                                             ),
+
+                                            'argument' => array(
+                                                                'handler' => 'views_handler_argument',
+                                                                ),
+
+                                            'filter' => array(
+                                                              'handler' => 'views_handler_filter_string',
+                                                              'allow empty' => TRUE,
+                                                              ),
+
+                                            'sort' => array(
+                                                            'handler' => 'views_handler_sort',
+                                                            ),
+                                            );
 
 
 
@@ -3912,7 +4010,7 @@ function civicrm_views_data() {
     $data['civicrm_entity_tag']['table']['join']['civicrm_contact'] = array(
                                                                   // Directly links to group table
                                                                    'left_field' => 'id',
-                                                                   'field' => 'contact_id',
+                                                                   'field' => 'entity_id',
                                                                    );
 
 
@@ -4881,8 +4979,14 @@ function civicrm_views_custom_data_cache($data, $entity_type, $groupID, $subType
             } else {
                 $handler = civicrm_get_field_handler( $currentfield['data_type'] );
             }
-
-              //Create the Views Field
+            
+            if ( $currentfield['option_group_id'] ) {
+                $filter_handler = 'civicrm_handler_filter_custom_option';
+            } else {
+                $filter_handler = civicrm_get_filter_handler( $currentfield['data_type'] );
+            }
+            
+            //Create the Views Field
             $data[$currentgroup['table_name']][$currentfield['column_name']] = array(
                                                                                      'title' => $currentfield['label'],
                                                                                      'help' => $currentfield['help_post'],
@@ -4896,21 +5000,21 @@ function civicrm_views_custom_data_cache($data, $entity_type, $groupID, $subType
                                                                                                          ),
 
                                                                                      'filter' => array(
-                                                                                                       'handler' => civicrm_get_filter_handler($currentfield['data_type']),
+                                                                                                       'handler' => $filter_handler
                                                                                                        ),
 
                                                                                      'sort' => array(
                                                                                                      'handler' => civicrm_get_sort_handler($currentfield['data_type']),
                                                                                                      ),
                                                                                      );
-         //For date fields add in 6 arguments
-         if ($currentfield['data_type'] == 'Date'){
-             //@TODO  Still need to get the field under it's respecitve group, I may e able to set the civicrm_views_add_date_arguments() function with a group variable and default it to null
-             $value = array();
-             $value['title'] = $currentfield['label'];
-             $value['name'] = $currentfield['column_name'];
-             civicrm_views_add_date_arguments($data[$currentgroup['table_name']],$value);
-         }
+            //For date fields add in 6 arguments
+            if ( $currentfield['data_type'] == 'Date' ){
+                //@TODO  Still need to get the field under it's respecitve group, I may e able to set the civicrm_views_add_date_arguments() function with a group variable and default it to null
+                $value = array();
+                $value['title'] = $currentfield['label'];
+                $value['name'] = $currentfield['column_name'];
+                civicrm_views_add_date_arguments($data[$currentgroup['table_name']],$value);
+            }
         }
     }
     return $data;
@@ -5280,7 +5384,10 @@ function civicrm_views_handlers() {
                                                                            ),
                        'civicrm_handler_filter_mailing_name' => array(
                                                                       'parent' => 'views_handler_filter_in_operator',
-                                                                      ),                                      
+                                                                      ),
+                       'civicrm_handler_filter_custom_option' => array(
+                                                                       'parent' => 'views_handler_filter_in_operator',
+                                                                       ),
                        
                        // ARGUMENT HANDLERS
                        'civicrm_handler_argument_date_api_contact' => array(

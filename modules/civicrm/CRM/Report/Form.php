@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -765,6 +765,7 @@ class CRM_Report_Form extends CRM_Core_Form {
                           'neq' => ts('Is not equal to'), 
                           'nbw' => ts('Is not between'),
                           'nll' => ts('Is empty (Null)'),
+                          'nnll' => ts('Is not empty (Null)')
                           );
             break;
         case CRM_Report_FORM::OP_SELECT :
@@ -774,7 +775,8 @@ class CRM_Report_Form extends CRM_Core_Form {
             return array( 'in'  => ts('Is one of') );
             break; 
         case CRM_Report_FORM::OP_DATE :
-            return array( 'nll'  => ts('Is empty (Null)') );
+            return array( 'nll'  => ts('Is empty (Null)'),
+                          'nnll' => ts('Is not empty (Null)'));
             break;
         case CRM_Report_FORM::OP_MULTISELECT_SEPARATOR :
             // use this operator for the values, concatenated with separator. For e.g if 
@@ -789,7 +791,8 @@ class CRM_Report_Form extends CRM_Core_Form {
                          'nhas' => ts('Does not contain'), 
                          'eq'   => ts('Is equal to'), 
                          'neq'  => ts('Is not equal to'),
-                         'nll'  => ts('Is empty (Null)')
+                         'nll'  => ts('Is empty (Null)'),
+                         'nnll'  => ts('Is not empty (Null)')
                          );
         }
     }
@@ -834,6 +837,8 @@ class CRM_Report_Form extends CRM_Core_Form {
             return 'IN';
         case 'nll' :
             return 'IS NULL';
+        case 'nnll' :
+            return 'IS NOT NULL';
         default:
             // type is string
             return 'LIKE';
@@ -931,6 +936,7 @@ class CRM_Report_Form extends CRM_Core_Form {
             break;
 
         case 'nll':
+        case 'nnll':
             $sqlOP  = self::getSQLOperator( $op );
             $clause = "( {$field['dbAlias']} $sqlOP )";
             break;
@@ -1546,7 +1552,7 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                             $val   = CRM_Utils_Array::value( "{$fieldName}_value",$this->_params );
                             if ( in_array($op, array('bw', 'nbw')) && ($min || $max) ) {
                                 $value = "{$pair[$op]} " . $min . ' and ' . $max;
-                            } else if ( $op == 'nll' ) {
+                            } else if ( $op == 'nll' || $op == 'nnll' ) {
                                 $value = $pair[$op];
                             } else if ( is_array($val) && (!empty($val)) ) {
                                 $options = $field['options'];

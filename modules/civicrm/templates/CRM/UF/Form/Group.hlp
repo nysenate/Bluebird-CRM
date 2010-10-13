@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -110,5 +110,6 @@
 
 {htxt id='id-is_proximity_search'}
 {ts}If you are using this profile as a search form, you can choose to include proximity searching. When enabled, a proximity search block will be added to the search criteria. This block will contain fields to set the proximity start address, and a field to set a 'Radius' (distance from that address).{/ts}
-{ts}Set proximity search required is you want all searches using this profile to require the user to enter a start address and a radius.{/ts}
+{ts}Set Proximity Search as required if you want all searches using this profile to require the user to enter a start address and a radius.{/ts}
+<p>{ts}IMPORTANT: You must enable a Mapping Provider in order to use the Proximity Search feature (Administer > Configure > Global Settings > Mapping and Geocoding).{/ts}</p>
 {/htxt}
