@@ -4,15 +4,36 @@
 	color: #74C0FC;
 	}
 
-.not-logged-in #block-user-0 {
+.not-logged-in #block-user-0,
+.not-logged-in form#user-login {
 	background:transparent url(../nyss_skin/images/login.png) no-repeat top center;
 	margin-top:50px;
 	height:235px;
 	}
 
-.not-logged-in #block-user-0 .form-required {display:none;}
+.not-logged-in form#user-login {
+    color:#FFFFFF;
+    padding:30px 0;
+    font-size:14px;
+    }
 
-.not-logged-in #block-user-0 input.form-text {border:none;}
+.not-logged-in h1#logo,
+.page-civicrm h1#logo,
+.not-logged-in .form-required,
+.not-logged-in .form-item .description {display:none;}
+
+.not-logged-in div.form-item {
+    margin-left:349px;
+    margin-bottom:8px;
+    }
+.not-logged-in #edit-submit {
+    margin-left:418px;
+    }
+
+.not-logged-in input.form-text {
+    border:none;
+    width:120px;
+    }
 
 .not-logged-in #block-user-0 .content {
 	color:#FFFFFF;
@@ -50,10 +71,18 @@
 
 div.standard-container { background-color: #FFF; padding:4px;}
 
+.not-logged-in div.standard-container {
+    background: transparent;
+    }
+.not-logged-in .tabs,
+.not-logged-in h2 {
+    display:none;
+    }
+
+
 #civi-admin-menu {display:none}
 
 .role-Superuser #civi-admin-menu {display: block;}
-
 /* header */
 
 #header-access,
