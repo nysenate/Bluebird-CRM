@@ -40,13 +40,25 @@
         var entityId         = "{/literal}{$tagset.entityId}{literal}";
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
         /*var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";*/
-		var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*LCD fix for tag not being created*/
+        if (parentId == "292"){ /* position tag*/
+			var skipTagCreate ="1";
+			}
+		else {
+			var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*LCD fix for tag not being created*/
+		}
         var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
          
-        cj.post( postUrl, { action: action, tagID: id, parentId: parentId, entityId: entityId, entityTable: entityTable,
-                            skipTagCreate: skipTagCreate, skipEntityAction: skipEntityAction, key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
+        cj.post( postUrl, { action: action, 
+                            tagID: id, 
+                            parentId: parentId, 
+                            entityId: entityId, 
+                            entityTable: entityTable,
+                            skipTagCreate: skipTagCreate, 
+                            skipEntityAction: skipEntityAction, 
+                            key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
             function ( response ) {
                 // update hidden element
+                
                 if ( response.id ) {
                     var curVal   = cj( ".taglist_{/literal}{$tagset.parentID}{literal}" ).val( );
                     var valArray = curVal.split(',');
