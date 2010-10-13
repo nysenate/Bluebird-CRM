@@ -38,7 +38,9 @@
                   </div>
                   <table id="{$cd_edit.name}_{$count}">
                     {foreach from=$cd_edit.fields item=element key=field_id}
+                       {if ($field_id neq 58) && ($field_id neq 33) && ($field_id neq 34) && ($field_id neq 35) && ($field_id neq 60) && ($field_id neq 45) && ($field_id neq 42) }
                        {include file="CRM/Contact/Page/View/CustomDataFieldView.tpl"}
+                       {/if}
                     {/foreach}
                   </table>
                 </div>

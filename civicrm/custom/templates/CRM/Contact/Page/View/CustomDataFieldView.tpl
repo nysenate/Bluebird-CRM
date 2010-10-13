@@ -23,16 +23,32 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-block crm-form-block crm-dedupe-find-form-block">
-<div id="help">
-    {ts}You can search all contacts for duplicates or limit the search to a specific group. After initiating the rule, please be patient as it may take some time to fully process.{/ts} 
-</div>
-   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div> 
-   <table class="form-layout-compressed">
-     <tr class="crm-dedupe-find-form-block-group_id">
-       <td class="label">{$form.group_id.label}</td>
-       <td>{$form.group_id.html}</td>
-     </tr>
-   </table>
-  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-</div>
+{if $element.field_value}
+<tr class= "{if $cd_edit.collapse_display}hiddenElement{/if}">
+{if $element.options_per_line != 0}
+      <td class="label">{$element.field_title}</td>
+      <td class="crm-custom_data">
+          {* sort by fails for option per line. Added a variable to iterate through the element array*}
+          {foreach from=$element.field_value item=val}
+              {$val}
+          {/foreach}
+      </td>
+  {else}
+      <td class="label">{$element.field_title}</td>
+      {if $element.field_type == 'File'}
+          {if $element.field_value.displayURL}
+              <td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$element.field_value.displayURL}')" ><img src="{$element.field_value.displayURL}" height = "{$element.field_value.imageThumbHeight}" width="{$element.field_value.imageThumbWidth}"></a></td>
+          {else}
+              <td class="html-adjust crm-custom_data crm-fileURL"><a href="{$element.field_value.fileURL}">{$element.field_value.fileName}</a></td>
+          {/if}
+      {elseif $element.field_data_type EQ 'ContactReference' && $element.contact_ref_id}
+          {*Contact ref id passed if user has sufficient permissions - so make a link.*}
+          <td class="html-adjust crm-custom-data crm-contact-reference">
+              <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$element.contact_ref_id`"}" title="View contact">{$element.field_value}</a>
+          </td>
+      {else}
+          <td class="html-adjust crm-custom-data">{$element.field_value}</td>
+      {/if}
+{/if}
+</tr>
+{/if}

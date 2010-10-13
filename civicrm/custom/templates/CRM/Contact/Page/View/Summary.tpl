@@ -210,6 +210,9 @@
                                 {/if}
                              </td>
                             {/if}
+                            {if $preferred_language}
+                                    <td class="label">{ts}Preferred Language{/ts}</td><td>{$preferred_language}</td>
+                                {/if}
                             <!-- {if $contactTag}
                             <td class="label" id="tagLink"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId&selectedChild=tag"}" title="{ts}Edit Tags{/ts}">{ts}Tags{/ts}</a></td><td id="tags">{$contactTag}</td>
                             {/if} -->
@@ -277,7 +280,37 @@
 					
                     <div class="contact_panel">
                         <div class="contactCardLeft">
-                            <table>
+                            {if $phone OR $im OR $openid}
+                                <table>
+                                    {foreach from=$phone item=item}
+                                        {if $item.phone}
+                                        <tr>
+                                            <td class="label">{$item.location_type}&nbsp;{$item.phone_type}</td>
+                                            <td {if $item.is_primary eq 1}class="primary"{/if}><span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>{$item.phone}</span></td>
+                                        </tr>
+                                        {/if}
+                                    {/foreach}
+                                    {foreach from=$im item=item}
+                                        {if $item.name or $item.provider}
+                                        {if $item.name}<tr><td class="label">{$item.provider}&nbsp;({$item.location_type})</td><td {if $item.is_primary eq 1}class="primary"{/if}>{$item.name}</td></tr>{/if}
+                                        {/if}
+                                    {/foreach}
+                                    {foreach from=$openid item=item}
+                                        {if $item.openid}
+                                            <tr>
+                                                <td class="label">{$item.location_type}&nbsp;{ts}OpenID{/ts}</td>
+                                                <td {if $item.is_primary eq 1}class="primary"{/if}><a href="{$item.openid}">{$item.openid|mb_truncate:40}</a>
+                                                    {if $config->userFramework eq "Standalone" AND $item.allowed_to_login eq 1}
+                                                        <br/> <span style="font-size:9px;">{ts}(Allowed to login){/ts}</span>
+                                                    {/if}
+                                                </td>
+                                            </tr>
+                                        {/if}
+                                    {/foreach}
+                                
+                                </table>
+    						{/if}
+                             <table>
                                 {foreach from=$email key="blockId" item=item}
                                     {if $item.email}
                                     <tr>
@@ -329,52 +362,46 @@
                                     </tr>
                                 {/if}
                             </table>
-                            
+                            <table>
+							<tr>
+								<td class="label">{ts}Addressee{/ts}{if $addressee_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
+								<td>{$addressee_display}</td>
+							</tr>
+						 </table>
+
                             
                         </div><!-- #contactCardLeft -->
+                            
+                        
+                        {include file="CRM/Contact/Page/View/Demographics.tpl"}
 
-                        <div class="contactCardRight">
-                            {if $phone OR $im OR $openid}
-                                <table>
-                                    {foreach from=$phone item=item}
-                                        {if $item.phone}
-                                        <tr>
-                                            <td class="label">{$item.location_type}&nbsp;{$item.phone_type}</td>
-                                            <td {if $item.is_primary eq 1}class="primary"{/if}><span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>{$item.phone}</span></td>
-                                        </tr>
-                                        {/if}
-                                    {/foreach}
-                                    {foreach from=$im item=item}
-                                        {if $item.name or $item.provider}
-                                        {if $item.name}<tr><td class="label">{$item.provider}&nbsp;({$item.location_type})</td><td {if $item.is_primary eq 1}class="primary"{/if}>{$item.name}</td></tr>{/if}
-                                        {/if}
-                                    {/foreach}
-                                    {foreach from=$openid item=item}
-                                        {if $item.openid}
-                                            <tr>
-                                                <td class="label">{$item.location_type}&nbsp;{ts}OpenID{/ts}</td>
-                                                <td {if $item.is_primary eq 1}class="primary"{/if}><a href="{$item.openid}">{$item.openid|mb_truncate:40}</a>
-                                                    {if $config->userFramework eq "Standalone" AND $item.allowed_to_login eq 1}
-                                                        <br/> <span style="font-size:9px;">{ts}(Allowed to login){/ts}</span>
-                                                    {/if}
-                                                </td>
-                                            </tr>
-                                        {/if}
-                                    {/foreach}
-                                
-                                </table>
-    						{/if}
-    						
-                        </div><!-- #contactCardRight -->
 
                         <div class="clear"></div>
                     </div><!-- #contact_panel -->
 
 					
 					
+                    
+                </div><!--contact_details-->
+
+                <div id="customFields">
+                    <div class="contact_panel">
+                    {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'}                    
+                    </div>
+                    
                     <div class="contact_panel">
                         <div class="contactCardLeft">
-                            <table>
+                            {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='0'}
+                        </div><!--contactCardLeft-->
+
+                        <div class="contactCardRight">
+                            <div class="crm-accordion-wrapper crm-communications_preferences-accordion crm-accordion-open">
+                             <div class="crm-accordion-header">
+                              <div class="icon crm-accordion-pointer"></div>
+                               Communication Preferences
+                             </div><!-- /.crm-accordion-header -->
+                             <div class="crm-accordion-body">
+                              <table>
                                 <tr><td class="label">{ts}Privacy{/ts}</td>
                                     <td><span class="font-red upper">
                                         {foreach from=$privacy item=priv key=index}
@@ -386,24 +413,12 @@
                                 <tr>
                                     <td class="label">{ts}Preferred Method(s){/ts}</td><td>{$preferred_communication_method_display}</td>
                                 </tr>
-                                {if $preferred_language}
-                                <tr>
-                                    <td class="label">{ts}Preferred Language{/ts}</td><td>{$preferred_language}</td>
-                                </tr>
-                                {/if}
+                                
                                 <tr>
                                     <td class="label">{ts}Email Format{/ts}</td><td>{$preferred_mail_format}</td>
                                 </tr>
                             </table>
-                        </div>
-
-                        {include file="CRM/Contact/Page/View/Demographics.tpl"}
-						
-                        <div class="clear"></div>
-                        <div class="separator"></div>
-						
-						<div class="contactCardLeft">
-						{if $contact_type neq 'Organization'}
+                                {if $contact_type neq 'Organization'}
 						 <table>
 							<tr>
 								<td class="label">{ts}Email Greeting{/ts}{if $email_greeting_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
@@ -415,28 +430,10 @@
 							</tr>
 						 </table>
 						 {/if}
-						</div>
-						<div class="contactCardRight">
-						 <table>
-							<tr>
-								<td class="label">{ts}Addressee{/ts}{if $addressee_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
-								<td>{$addressee_display}</td>
-							</tr>
-						 </table>
-						</div>
-						
-                        <div class="clear"></div>
-                    </div>
-                </div><!--contact_details-->
+                              
+                             </div><!-- /.crm-accordion-body -->
+                            </div><!-- /.crm-accordion-wrapper -->
 
-                <div id="customFields">
-                    <div class="contact_panel">
-                        <div class="contactCardLeft">
-                            {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'}
-                        </div><!--contactCardLeft-->
-
-                        <div class="contactCardRight">
-                            {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='0'}
                         </div>
 
                         <div class="clear"></div>
