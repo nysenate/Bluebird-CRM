@@ -1,11 +1,5 @@
 <?php
 
-/*
-** NOTES:
-** 1. birthdates are assumed to be in the 1900's since OMIS doesn't
-**    include the millenium
-*/
-
 error_reporting(E_ERROR && E_PARSE);
 error_reporting(E_ALL && ~E_NOTICE);
 
@@ -365,36 +359,57 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
     // Handle relationship.
     // This is safe since contactID was increased to match individual.
+
+    /* Only one of the TC2 codes in a spousal relationship will be set.
+    ** The TC2 that is set identifies the Head of Household.
+    ** If neither is set, or both are set, then use oldest person as HoH.
+    */
     $spouse_key = $ctRow['SKEY'];
     if ($spouse_key > 0 ) {
       //if the relationship target exists, just add the info
       if (isset($aRels[$spouse_key])) {
         $relKey = $spouse_key;
-        $relSide = 'b';
         $aRels[$relKey]['contactIDb'] = $contactID;
         // consistency check at the second record in a spousal relationship
         if ($aRels[$relKey]['omisKEYb'] != $importID ||
             $aRels[$relKey]['omisKEYa'] != $spouse_key) {
           cLog(0, 'info', "Warning: Spousal relationship inconsistency at contactID=$contactID, KEY=$importID, SKEY=$spouse_key");
         }
+        /* If neither A nor B had TC2 set, or if both A and B had TC2 set,
+        ** then pick the HoH using birth date.
+        */
+        if (($ctRow['TC2'] > 0 && $aRels[$relKey]['hoh']) ||
+            (empty($ctRow['TC2']) && !$aRels[$relKey]['hoh'])) {
+          // use DOB to pick HoH
+          cLog(0, 'info', "Warning: No definitive Head-of-Household found at contactID=$contactID, KEY=$importID, SKEY=$spouse_key");
+          $bdateA = convert_birth_date($aRels[$relKey]['ctRow']);
+          $bdateB = convert_birth_date($ctRow);
+          if ($bdateB > $bdateA) {
+            $aRels[$relKey]['hoh'] = 'b';
+            $aRels[$relKey]['ctRow'] = $ctRow;
+          }
+          else {
+            // ctRow was also set, so only need to set the hoh
+            $aRels[$relKey]['hoh'] = 'a';
+          }
+        }
+        else if ($ctRow['TC2'] > 0) {
+          $aRels[$relKey]['hoh'] = 'b';
+          $aRels[$relKey]['ctRow'] = $ctRow;
+        }
       }
       else {
         $relKey = $importID;
-        $relSide = 'a';
         //otherwise create a new relationship record
         $aRels[$relKey]['omisKEYa'] = $importID;
         $aRels[$relKey]['omisKEYb'] = $spouse_key;
         $aRels[$relKey]['contactIDa'] = $contactID;
-        $aRels[$relKey]['hoh'] = '';   // assume no head-of-household for now
         $aRels[$relKey]['ctRow'] = $ctRow;   // save the entire record
-      }
-
-      /* Only one of the TC2 codes in a spousal relationship will be set.
-      ** The TC2 that is set identifies the Head of Household.
-      */
-      if ($ctRow['TC2'] > 0) {
-        $aRels[$relKey]['hoh'] = $relSide;
-        $aRels[$relKey]['ctRow'] = $ctRow;
+        if ($ctRow['TC2'] > 0) {
+          $aRels[$relKey]['hoh'] = 'a';  // most likely, this is the HoH
+        } else {
+          $aRels[$relKey]['hoh'] = null;  // most likely, the spouse is HoH
+        }
       }
     }
 
@@ -416,16 +431,13 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $params['sort_name'] = $ctRow['LAST'].', '.$ctRow['FIRST'].' '.$mi; 
       $params['display_name'] = $ctRow['FIRST'].' '.$mi.' '.$ctRow['LAST']; 
       switch ($ctRow['SEX']) {
-        case 'M': $params['gender_id'] = 2; break;
-        case 'F': $params['gender_id'] = 1; break;
+        case 'F': $params['gender_id'] = GENDER_FEMALE; break;
+        case 'M': $params['gender_id'] = GENDER_MALE; break;
         default:  $params['gender_id'] = DBNULL; break;
       }
       $params['source'] = $sourceDesc;
-      //assume birthday was in the 1900s
-      //ASSUMPTION!!
-      $bday = $ctRow['BMM'].$ctRow['BDD'].$ctRow['BYY'];
-      $params['birth_date'] = formatDate($bday, '19');
-  
+      $params['birth_date'] = convert_birth_date($ctRow);
+
       // Set Prefix and Suffix IDs.
       $prefix_id = $suffix_id = DBNULL;
 
@@ -815,21 +827,20 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $params['source_contact_id'] = $session->get('userID');; //who inserted
       $params['subject'] = "OMIS CASE ACTIVITY ".intval($csRow['CASENUM']).": ".$csRow['CSUBJECT'];
 
-      //swap around the dates so it matches contact date format
+      // COPENDATE and CCLOSEDATE are in YYMMDD format, but other OMIS dates
+      // are in MMDDYY format.  So re-format it for use with formatDate().
       $actDate = $csRow['COPENDATE'];
       if (strlen($actDate)==5) $actDate = '0'.$actDate; 
       $actDate = substr($actDate,2,2).substr($actDate,4,2).substr($actDate,0,2);
-      $actCloseDate = $csRow['CCLOSEDATE'];
-      if (strlen($actCloseDate)==5) $actCloseDate = '0'.$actCloseDate;
-      $actCloseDate = substr($actCloseDate,2,2).substr($actCloseDate,4,2).substr($actCloseDate,0,2);
+      $actDate = formatDate($actDate);
 
       //format date for db and add time
-      $params['activity_date_time'] = formatDate($actDate).' '.$csRow['COPENTIME'];
+      $params['activity_date_time'] = $actDate.' '.$csRow['COPENTIME'];
       //if there's a close date, mark as closed
       if (strlen(trim($csRow['CCLOSEDATE']))>0) {
         $params['status_id'] = 2;
         //otherwise, if the open date was prior to 2009 mark it as closed
-      } elseif (date('Y',strtotime(formatDate($actDate)))<'2009') {
+      } elseif (substr($actDate, 0, 4) < '2009') {
         $params['status_id'] = 2;
       } else {
         $params['status_id'] = 1;
@@ -1415,3 +1426,12 @@ function get_import_files($idir, $iset)
   }
   return $ifiles;
 } // get_import_files()
+
+
+function convert_birth_date($omis_flds)
+{
+  //assume birthdate was in the 1900's since OMIS doesn't include the millenium
+  //ASSUMPTION!!
+  $bday = $omis_flds['BMM'].$omis_flds['BDD'].$omis_flds['BYY'];
+  return formatDate($bday, '19');
+} // convert_birth_date()
