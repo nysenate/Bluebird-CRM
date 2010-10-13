@@ -40,41 +40,35 @@
     </script> 				
 {/if}
 
-
-
-
     <table class="form-layout">
 	<tr>
-        <td>
-        
-        
-        
+        <td>        
 		{$form.location_type.label}<br />
         {$form.location_type.html} 
         <div class="description" >
             {ts}Location search uses the PRIMARY location for each contact by default.{/ts}<br /> 
             {ts}To search by specific location types (e.g. Home, Work...), check one or more boxes above.{/ts}
-        </div> 
+        </div>
+        <div style="float:left; margin-top: 15px;">
             {$form.street_address.label}<br />
-            {$form.street_address.html|crmReplace:class:big}<br />
+            {$form.street_address.html|crmReplace:class:big}
+        </div>
+        <div style="float:left; margin-left:10px; margin-top: 15px;">
             {$form.city.label}<br />
-            {$form.city.html}
-  	    </td>	   
-    </tr>
-           
-    <tr>
-       
-        <td>{$form.state_province.label}<br />
-            {$form.state_province.html|crmReplace:class:bigSelect}
+            {$form.city.html|crmReplace:class:big}
+  	    </div>
+		<div style="clear:left;">
+        	{$form.state_province.label}<br />
+            {$form.state_province.html}
+        </div>
         </td>
-    </tr>
+
     {if $addressGroupTree}
-        <tr>
-	    <td>
-	        {include file="CRM/Custom/Form/Search.tpl" groupTree=$addressGroupTree showHideLinks=false}
-            </td>
-        </tr>
+	    <td width="50%">
+	        {include file="CRM/Custom/Form/Search.tpl" groupTree=$addressGroupTree showHideLinks=true}
+        </td>
     {/if}
+    </tr>
     </table>
 </div>
 
