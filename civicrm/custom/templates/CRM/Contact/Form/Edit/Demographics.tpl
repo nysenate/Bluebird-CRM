@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.1                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -38,6 +38,8 @@
         {$form.gender_id.html}
         <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('gender_id', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
         </span>
+         
+        
       <script>
             {literal}
 	           otherGenderurl = "{/literal}{crmURL p='civicrm/contact/add' q="snippet=1&qfKey=`$qfKey`&searchPane=" h=0}{literal}" + 'customData1 .custom_45_-1-row';
@@ -46,7 +48,7 @@
 	           otherGenderHiddenurl = "{/literal}{crmURL p='civicrm/contact/add' q="snippet=1&qfKey=`$qfKey`&searchPane=" h=0}{literal}" + 'customData1 input[type=hidden]';
              cj('#other-gender-hidden').load(otherGenderHiddenurl); */
             {/literal}
-      </script>
+            </script>
   </div>
   <div class="form-item">
         <span class="labels">{$form.birth_date.label}</span>

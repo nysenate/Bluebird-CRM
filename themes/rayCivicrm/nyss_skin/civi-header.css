@@ -19,6 +19,7 @@
     color:#3e3e3e;
     }
     #breadcrumb a {color:#2786C2;}
+    #breadcrumb a.crm-summary-link {display:none;}
 
 #edit-profile {
 	position: absolute;
@@ -80,6 +81,29 @@ padding-left:2px;
 	padding:0 5px;
 	height:27px;
 	}
+	
+	.civi-search-section #gen-search-wrapper input.form-submit {
+	   background:transparent none repeat scroll 0 0;
+       color:transparent;
+       height:23px;
+       position:absolute;
+       right:2px;
+       top:20px;
+       width:15px;
+	   text-indent: -1000px;
+	   border: none;
+	   }
+	#find_contacts {
+	   background:transparent none repeat scroll 0 0;
+       color:transparent;
+       height:23px;
+       position:absolute;
+       right:2px;
+       top:20px;
+       width:15px;
+	   text-indent: -1000px;
+	   border: none;
+	   }   
 .civi-search-section .input-wrapper input {
 	color:#B2B2B2;
 	width:190px;
@@ -310,6 +334,13 @@ img.menu-item-arrow {
 #contactDetails select {
     margin:0 0 2px 0;
     }    
+
+
+/* contact summary */
+#crm-container div#contactTopBar td.label {width:auto;}
+#crm-container  #mainTabContainer .friend-of-senator {
+    border:1px solid #FBCA54 !important;
+    }
 
 
 /* bulk tagging box */
