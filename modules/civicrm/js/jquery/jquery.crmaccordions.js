@@ -1,6 +1,6 @@
 /*
 * +--------------------------------------------------------------------+
-* | CiviCRM version 3.1                                                |
+* | CiviCRM version 3.2                                                |
 * +--------------------------------------------------------------------+
 * | Copyright CiviCRM LLC (c) 2004-2010                                |
 * +--------------------------------------------------------------------+
@@ -32,6 +32,8 @@
 	$('.crm-accordion-header').live('click', function () {
 		$(this).parent().toggleClass('crm-accordion-open');
 		$(this).parent().toggleClass('crm-accordion-closed');
+		//return false to prevent wiring of click event
+		return false;
 		});
 	$('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
 	};

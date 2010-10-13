@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -48,4 +48,12 @@
 
 {htxt id="id-amtg-criteria"}
     {ts 1=$group.title}Use this Search form to find contacts. Mark the contacts you want to add to this group. Then click 'Add Contacts to %1'.{/ts}
+{/htxt}
+
+{htxt id="id-edit-smartGroup"}
+    {ts}Click this button if you want to view and or modify the search criteria used to define the members of this smart group.{/ts}
+{/htxt}
+
+{htxt id="id-add-to-smartGroup"}
+    {ts}You can also add contacts to a smart group directly - regardless of whether they meet the smart group search criteria. For example, you might have a smart group for constituents who live in a certain locality, AND might have a few constituents who want to stay informed about events in that locality even though they no longer live there. Click this button to add contacts directly to this smart group.{/ts}
 {/htxt}

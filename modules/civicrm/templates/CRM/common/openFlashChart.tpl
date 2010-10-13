@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,7 +34,9 @@
        swfobject.embedSWF( flashFilePath, divName,
     		                 xSize, ySize, "9.0.0",
     		                 "expressInstall.swf",
-    		                 {"get-data":loadDataFunction, "id":chartID}
+    		                 {"get-data":loadDataFunction, "id":chartID},
+    		                 null,
+    		                 {"wmode": 'transparent'}
     		                );
     }
 </script>

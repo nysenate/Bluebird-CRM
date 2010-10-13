@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,7 +28,7 @@
         <td colspan="2">
            <strong>{$form.address.$blockId.street_address.label}</strong><br />
            {$form.address.$blockId.street_address.html}
-        {if $parseStreetAddress eq 1 && $action eq 2}
+        {if $parseStreetAddress eq 1 && $action eq 2 && $form.address.$blockId.location_type_id.value.0 != 6}
            &nbsp;&nbsp;<a href="#" title="{ts}Edit Address Elements{/ts}" onClick="processAddressFields( 'addressElements' , '{$blockId}', 1 );return false;">{ts}Edit Address Elements{/ts}</a>
            {help id="id-edit-street-elements" file="CRM/Contact/Form/Contact.hlp"}
         {/if}
@@ -50,15 +50,13 @@
                </td>
                
                <td colspan="2">
-                  {$form.address.$blockId.street_unit.label}x<br />       
+                  {$form.address.$blockId.street_unit.label}<br />       
                   {$form.address.$blockId.street_unit.html}
                   <a href="#" title="{ts}Edit Street Address{/ts}" onClick="processAddressFields( 'streetAddress', '{$blockId}', 1 );return false;">{ts}Edit Complete Street Address{/ts}</a>
                   {help id="id-edit-complete-street" file="CRM/Contact/Form/Contact.hlp"} 
                </td>
            </tr>
     {/if}
-
-<!--{if $smarty.get.lcd eq 1}{$allAddressFieldValues}{/if}-->
 
 {if $parseStreetAddress eq 1}
 {literal}
@@ -77,22 +75,22 @@ function processAddressFields( name, blockId, loadData ) {
 			if (streetAddress == null) { streetAddress = ''; }
 		
 		//http://senatedev.senate.state.ny.us/issues/show/2367
-		/*var suppAddress1 	 = eval( "allAddressValues.supplemental_address_1_" + blockId ).toUpperCase(); //LCD
+		/*var suppAddress1 	 = eval( "allAddressValues.supplemental_address_1_" + blockId ).toUpperCase(); //NYSS - LCD
 			if (suppAddress1 == null) { suppAddress1 = ''; }
-		var suppAddress2 	 = eval( "allAddressValues.supplemental_address_2_" + blockId ).toUpperCase(); //LCD
+		var suppAddress2 	 = eval( "allAddressValues.supplemental_address_2_" + blockId ).toUpperCase(); //NYSS - LCD
 			if (suppAddress2 == null) { suppAddress2 = ''; }*/
 	}
 
 	var showBlockName = '';
 	var hideBlockName = '';
 
-    if ( name == 'addressElements' ) {
-    	if ( loadData ) {
-	    	streetAddress = '';
-	    } 
-		/*{/literal}{if $smarty.get.lcd eq 1}{literal}alert(streetAddress);{/literal}{/if}{literal}*/
-    	showBlockName = 'addressElements_' + blockId;		   
-		hideBlockName = 'streetAddress_' + blockId;
+        if ( name == 'addressElements' ) {
+             if ( loadData ) {
+	          streetAddress = '';
+	     }
+	     
+             showBlockName = 'addressElements_' + blockId;		   
+	     hideBlockName = 'streetAddress_' + blockId;
 	} else {
         if ( loadData ) {
         	streetNumber = streetName = streetUnit = ''; 
@@ -110,8 +108,8 @@ function processAddressFields( name, blockId, loadData ) {
         cj( '#address_' + blockId +'_street_unit'    ).val( streetUnit    );
         cj( '#address_' + blockId +'_street_number'  ).val( streetNumber  );
         cj( '#address_' + blockId +'_street_address' ).val( streetAddress );
-        /*cj( '#address_' + blockId +'_supplemental_address_1' ).val( suppAddress1 ); //LCD
-        cj( '#address_' + blockId +'_supplemental_address_2' ).val( suppAddress2 ); //LCD*/
+        /*cj( '#address_' + blockId +'_supplemental_address_1' ).val( suppAddress1 ); //NYSS - LCD
+        cj( '#address_' + blockId +'_supplemental_address_2' ).val( suppAddress2 ); //NYSS - LCD*/
     }
 }
 

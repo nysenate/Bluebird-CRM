@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,7 +33,7 @@
  * @subpackage API_Membership
  * 
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: MembershipStatus.php 26310 2010-02-18 15:10:24Z shot $
+ * @version $Id: MembershipStatus.php 28934 2010-07-28 18:44:12Z mover $
  *
  */
 
@@ -62,8 +62,18 @@ function civicrm_membership_status_create(&$params)
         return civicrm_create_error('Params can not be empty.');
     }
     
-    if ( ! isset( $params['name'] ) ) {
+    $name = CRM_Utils_Array::value( 'name', $params );
+    if ( !$name ) $name = CRM_Utils_Array::value( 'label', $params );  
+    if ( !$name ) {
         return civicrm_create_error('Missing required fields');
+    }
+    
+    //don't allow duplicate names.
+    require_once 'CRM/Member/DAO/MembershipStatus.php';
+    $status = new CRM_Member_DAO_MembershipStatus( );
+    $status->name = $name;
+    if ( $status->find( true ) ) {
+        return civicrm_create_error( ts( 'A membership status with this name already exists.' ) ); 
     }
     
     require_once 'CRM/Member/BAO/MembershipStatus.php';
@@ -140,6 +150,17 @@ function &civicrm_membership_status_update( &$params )
     
     if ( !isset($params['id']) ) {
         return civicrm_create_error( 'Required parameter missing' );
+    }
+    
+    //don't allow duplicate names.
+    $name = CRM_Utils_Array::value( 'name', $params );
+    if ( $name ) {
+        require_once 'CRM/Member/DAO/MembershipStatus.php';
+        $status = new CRM_Member_DAO_MembershipStatus( );
+        $status->name = $params['name'];
+        if ( $status->find( true ) && $status->id != $params['id'] ) {
+            return civicrm_create_error( ts( 'A membership status with this name already exists.' ) ); 
+        }
     }
     
     require_once 'CRM/Member/BAO/MembershipStatus.php';

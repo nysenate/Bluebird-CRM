@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -111,6 +111,11 @@ class CRM_Core_OptionValue
             $dao->find();
         }
         
+        if ( $groupName == 'case_type' ) {
+            require_once 'CRM/Case/BAO/Case.php';
+            $caseTypeIds = CRM_Case_BAO_Case::getUsedCaseType( );
+        }
+
         require_once 'CRM/Core/Component.php';
         $componentNames = CRM_Core_Component::getNames();
         $visibilityLabels = CRM_Core_PseudoConstant::visibility( );
@@ -130,6 +135,11 @@ class CRM_Core_OptionValue
                     $action -= CRM_Core_Action::DISABLE;
                 }
             }
+
+            if ( ( $groupName == 'case_type' ) && in_array( $dao->value, $caseTypeIds ) ) {
+                $action -= CRM_Core_Action::DELETE;
+            }
+
             $optionValue[$dao->id]['label']  = htmlspecialchars( $optionValue[$dao->id]['label'] );
             $optionValue[$dao->id]['order']  = $optionValue[$dao->id]['weight'];
             $optionValue[$dao->id]['action'] = CRM_Core_Action::formLink($links, $action, 

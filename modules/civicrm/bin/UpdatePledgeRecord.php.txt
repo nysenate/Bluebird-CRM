@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -61,17 +61,20 @@ class CRM_UpdatePledgeRecord
         // $sendReminders = true;
         
         require_once 'CRM/Contribute/PseudoConstant.php';
-        $allStatus = CRM_Contribute_PseudoConstant::contributionStatus( );
+        $allStatus = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
         
         //unset statues that we never use for pledges
-        unset ( $allStatus[1] );
-        unset ( $allStatus[3] );
-        unset ( $allStatus[4] );
+        foreach ( array( 'Completed', 'Cancelled', 'Failed' ) as $statusKey ) {
+            if ( $key = CRM_Utils_Array::key( $statusKey, $allStatus ) ) {
+                unset( $allStatus[$key] );
+            }
+        } 
+        
         $statusIds = implode(',', array_keys( $allStatus ) );
         $updateCnt = 0;
         
         $query = "
-        SELECT    pledge.contact_id    as contact_id,
+SELECT  pledge.contact_id              as contact_id,
         pledge.id                      as pledge_id,
         pledge.amount                  as amount,
         payment.scheduled_date         as scheduled_date,
@@ -87,7 +90,7 @@ class CRM_UpdatePledgeRecord
         payment.status_id              as payment_status,
         pledge.is_test                 as is_test,
         SUM(payment.scheduled_amount)  as amount_due,
-        ( SELECT sum(civicrm_pledge_payment.scheduled_amount) 
+        ( SELECT sum(civicrm_pledge_payment.actual_amount) 
         FROM civicrm_pledge_payment 
         WHERE civicrm_pledge_payment.status_id = 1
         AND  civicrm_pledge_payment.pledge_id = pledge.id
@@ -139,8 +142,8 @@ class CRM_UpdatePledgeRecord
         foreach ( $pledgePayments as $pledgeId => $paymentIds ) {
             // 1. update the pledge /pledge payment status. returns new status when an update happens
             echo "<br />Checking status for Pledge Id: {$pledgeId}";
-            $newStatus   = CRM_Pledge_BAO_Payment::updatePledgePaymentStatus( $pledgeId, $paymentIds,
-                                                                              array_search( 'Overdue', $allStatus ) );
+            $newStatus = CRM_Pledge_BAO_Payment::updatePledgePaymentStatus( $pledgeId, $paymentIds,
+                                                                            array_search( 'Overdue', $allStatus ), null, 0, false, true );
             if ( $newStatus ) {
                 echo "<br />- status updated to: {$allStatus[$newStatus]}";
                 $updateCnt += 1;

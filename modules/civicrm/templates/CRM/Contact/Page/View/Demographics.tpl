@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,8 +34,9 @@
             {if $birthDateViewFormat}	 
                 {$birth_date_display|crmDate:$birthDateViewFormat}
             {else}
-                {$birth_date_display|crmDate}</td>
+                {$birth_date_display|crmDate}
             {/if} 
+        </td>
         </tr>
         <tr>
         {if $is_deceased eq 1}

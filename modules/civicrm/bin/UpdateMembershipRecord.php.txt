@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                               |
+ | CiviCRM version 3.2                                               |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -31,7 +31,7 @@
  * update_contact_membership APIs.
  * It takes the first argument as the domain-id if specified, otherwise takes the domain-id as 1.
  *
- * IMPORTANT: You must set a valid FROM email address on line 199 before and then save the file as
+ * IMPORTANT: You must set a valid FROM email address on line 218 before and then save the file as
  * UpdateMembershipRecord.php prior to running this script.
  */
 
@@ -76,8 +76,9 @@ class CRM_UpdateMembershipRecord {
     {
         $config = CRM_Core_Config::singleton();	
         //get all active statuses of membership, CRM-3984
-        $allStatus = CRM_Member_PseudoConstant::membershipStatus( );
-        $allTypes  = CRM_Member_PseudoConstant::membershipType( );
+        $allStatus    = CRM_Member_PseudoConstant::membershipStatus( );
+        $statusLabels = CRM_Member_PseudoConstant::membershipStatus( null, null, 'label' );
+        $allTypes     = CRM_Member_PseudoConstant::membershipType( );
         
         $query = "
 SELECT civicrm_membership.id                 as membership_id,
@@ -232,7 +233,7 @@ AND    civicrm_membership.is_test = 0
                         // insert the activity log record.
                         $activityParams = array( );
                         $activityParams['subject']            = $allTypes[$dao->membership_type_id] . 
-                            ": Status - " . $allStatus[$newStatus['id']] . 
+                            ": Status - " . $statusLabels[$newStatus['id']] . 
                             ", End Date - " . CRM_Utils_Date::customFormat(CRM_Utils_Date::isoToMysql($dao->end_date), $config->dateformatFull);
                         $activityParams['source_record_id']   = $dao->membership_id; 
                         $activityParams['source_contact_id']  = $dao->contact_id; 

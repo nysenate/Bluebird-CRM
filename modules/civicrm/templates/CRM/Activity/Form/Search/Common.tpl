@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,33 +52,33 @@
 </tr>
 <tr>
    <td>
-      {$form.activity_date_low.label}<br/>
+          {$form.activity_date_low.label}<br/>
 	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_low} 
    </td>
    <td>
-	  {$form.activity_date_high.label}<br/>
+   	  {$form.activity_date_high.label}<br/>
 	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_high}
    </td>
 </tr>
 <tr>
    <td>
-	  {$form.activity_role.label}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('activity_role', '{$form.formName}'); document.getElementById('activity_target_name').value = ''; return false;" >{ts}clear{/ts}</a>)</span><br />
-      {$form.activity_role.html}
+	  {$form.activity_role.html}
+      <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('activity_role', '{$form.formName}'); document.getElementById('activity_contact_name').value = ''; return false;" >{ts}clear{/ts}</a>)</span><br />
    </td>
    <td colspan="2"><br />
-	  {$form.activity_target_name.html}<br />
-      <span class="description font-italic">{ts}Complete OR partial Contact Name.{/ts}</span><br /><br />
+	  {$form.activity_contact_name.html}<br />
+      <span class="description font-italic">{ts}Complete OR partial Name of the Source Contact or the Assignee Contact.{/ts}</span><br /><br />
 	  {$form.activity_test.label} &nbsp; {$form.activity_test.html} 
    </td>
 </tr>
 <tr>
    <td>
-      {$form.activity_subject.label}<br />
-      {$form.activity_subject.html|crmReplace:class:big} 
+	  {$form.activity_subject.label}<br />
+      	  {$form.activity_subject.html|crmReplace:class:big} 
    </td>
    <td colspan="2">
-      {$form.activity_status.label}<br />
-      {$form.activity_status.html} 
+          {$form.activity_status.label}<br />
+          {$form.activity_status.html} 
    </td>
 </tr>
 {if $activityGroupTree}

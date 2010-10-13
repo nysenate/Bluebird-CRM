@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -29,9 +29,7 @@
 
 
 {if $action eq 1 or $action eq 2 or $action eq 8}
-<div class="crm-block crm-form-block">
    {include file="CRM/ACL/Form/ACL.tpl"}
-</div>
 {/if}
 
 <div class="crm-block crm-content-block">
@@ -77,7 +75,7 @@
 
         {if $action ne 1 and $action ne 2}
 	    <div class="action-link">
-    	<a href="{crmURL q="action=add&reset=1"}" id="newACL" class="button"><span>{ts}New ACL{/ts}</span></a>
+    	<a href="{crmURL q="action=add&reset=1"}" id="newACL" class="button"><span><div class="icon add-icon"></div>{ts}Add ACL{/ts}</span></a>
         </div>
         {/if}
 </div>

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -253,12 +253,13 @@ class CRM_Core_Session {
         $this->createScope( $prefix );
 
         if ( empty( $prefix ) ) {
-            $session =& $this->_session[$this->_key];
+            $values =& $this->_session[$this->_key];
         } else {
-            $session =& $this->_session[$this->_key][$prefix];
+            require_once 'CRM/Core/BAO/Cache.php';
+            $values = CRM_Core_BAO_Cache::getItem( 'CiviCRM Session', "CiviCRM_{$prefix}" );
         }
 
-        foreach ($session as $name => $value) {
+        foreach ($values as $name => $value) {
             $vars[$name] = $value;
         }
     }

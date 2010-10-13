@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -312,6 +312,26 @@ class CRM_Utils_File {
         return $files;
     }
 
+    /**
+     * Restrict access to a given directory (by planting there a restrictive .htaccess file)
+     *
+     * @param string $dir  the directory to be secured
+     */
+    static function restrictAccess($dir)
+    {
+        $htaccess = <<<HTACCESS
+<Files "*">
+  Order allow,deny
+  Deny from all
+</Files>
+
+HTACCESS;
+        $file = $dir . '.htaccess';
+        if (file_put_contents($file, $htaccess) === false) {
+            require_once 'CRM/Core/Error.php';
+            CRM_Core_Error::movedSiteError($file);
+        }
+    }
 }
 
 

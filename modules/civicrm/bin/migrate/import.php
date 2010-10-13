@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -66,6 +66,10 @@ class bin_migrate_import {
         $this->profileGroups( $xml, $idMap );
         $this->profileFields( $xml, $idMap );
         $this->profileJoins( $xml, $idMap );
+
+        //create DB Template String sample data
+        $this->dbTemplateString( $xml, $idMap );
+
     }
 
     function copyData( &$dao, &$xml, $save = false, $keyName = null ) {
@@ -278,6 +282,20 @@ AND        v.name = %1
         }
     }
 
+    function dbTemplateString( &$xml, &$idMap ){
+        require_once 'CRM/Core/DAO/Persistent.php';
+        foreach( $xml->Persistent as $persistentXML ){ 
+            foreach( $persistentXML->Persistent as $persistent ){
+                $persistentObj = new CRM_Core_DAO_Persistent();
+
+                if( $persistent->is_config == 1 ){
+                    $persistent->data = serialize( explode(',', $persistent->data ) );
+                }
+                $this->copyData( $persistentObj, $persistent, true, 'context' );
+            }
+        }
+    }
+
     function profileGroups( &$xml, &$idMap ) {
         require_once 'CRM/Core/DAO/UFGroup.php';
         foreach ( $xml->ProfileGroups as $profileGroupsXML ) {
@@ -285,6 +303,7 @@ AND        v.name = %1
                 $profileGroup = new CRM_Core_DAO_UFGroup( );
                 $this->copyData( $profileGroup, $profileGroupXML, true, 'title' );
                 $idMap['profile_group'][$profileGroup->title] = $profileGroup->id;
+                $idMap['profile_group'][$profileGroup->name]  = $profileGroup->id;
             }
         }
     }

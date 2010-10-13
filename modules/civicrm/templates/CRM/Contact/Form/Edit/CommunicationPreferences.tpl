@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -98,14 +98,14 @@
         <tr>
             {foreach key=key item=item from=$commPreference}
                 <td>
-                    <br /><span class="label"{$form.$key.label}</span> {help id="id-$key" file="CRM/Contact/Form/Contact.hlp"}
+                    <br /><span class="label">{$form.$key.label}</span> {help id="id-$key" file="CRM/Contact/Form/Contact.hlp"}
                     {foreach key=k item=i from=$item}
                      <br />{$form.$key.$k.html}
                     {/foreach}
                 </td>
             {/foreach}
                  <td>
-                     <br /><span class="label"{$form.preferred_language.label}</span>
+                     <br /><span class="label">{$form.preferred_language.label}</span>
                      <br />{$form.preferred_language.html}
                 </td>
         </tr>

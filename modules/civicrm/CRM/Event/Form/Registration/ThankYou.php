@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -134,6 +134,9 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration
                 }
             }
         }
+       
+        $this->_submitValues = array_merge( $this->_submitValues, $defaults );
+              
         $this->setDefaults( $defaults );
 
         require_once 'CRM/Friend/BAO/Friend.php';

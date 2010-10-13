@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -25,4 +25,16 @@
 *}
 {htxt id="id-negative"}
     {ts}You may enter a negative amount value if the field or option is being used to discount the total event price.{/ts}
+{/htxt}
+
+{htxt id="id-negative-options"}
+    {ts}You may enter a negative amount value if the field or option is being used to discount the total event price.{/ts}
+{/htxt}
+
+{htxt id="id-participant-count"}
+{ts}Enter a value here if you want to increment the number of registered participants per unit against the maximum number of participants allowed for this event. For example, if this price field is for a table at a fundraiser which seats eight people, you would set Participant Count to 8.{/ts}
+{/htxt}
+
+{htxt id="id-visibility"}
+{ts}Fields with 'Public' visibility will be displayed on your Event Information page AND will be available in the online registration (self-service) form. For some events you may want to allow staff to select special options with special pricing and / or discounts (using negative price set field values). Select 'Admin' visibility for these Price Fields. They will only be included when staff or volunteers are registering participants from the back-office 'Register Event Participants' screen.{/ts}
 {/htxt}

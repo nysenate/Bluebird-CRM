@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -143,7 +143,7 @@ class CRM_Core_BAO_Preferences extends CRM_Core_DAO_Preferences {
         $optionValue = $object->$name;
         require_once 'CRM/Core/OptionGroup.php';
         $groupValues = CRM_Core_OptionGroup::values( $name, false, false, $localize, $condition, $returnField );
-        
+
         //enabled name => label require for new contact edit form, CRM-4605
         if ( $returnNameANDLabels ) {
             $names = $labels = $nameAndLabels = array( );
@@ -180,7 +180,43 @@ class CRM_Core_BAO_Preferences extends CRM_Core_DAO_Preferences {
         
         return ( $returnNameANDLabels ) ? $nameAndLabels : $returnValues;
     }
-    
+
+    static function setValue( $name, $value, $system = true, $userID = null, $keyField = 'name' ) {
+        if ( $system ) {
+            $object = self::systemObject( );
+        } else {
+            $object = self::userObject( $userID );
+        }
+
+        if ( empty( $value ) ) {
+            $object->$name = 'NULL';
+        } else if ( is_array( $value ) ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            $groupValues = CRM_Core_OptionGroup::values( $name, false, false, false, null, $keyField );
+            
+            $cbValues = array( );
+            foreach ( $groupValues as $key => $val ) {
+                if ( CRM_Utils_Array::value( $val, $value ) ) {
+                    $cbValues[$key] = 1;
+                }
+            }
+
+            if ( ! empty( $cbValues ) ) {
+                $object->$name = 
+                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR .
+                    implode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+                             array_keys( $cbValues ) ) .
+                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR;
+            } else {
+                $object->$name = 'NULL';
+            }
+        } else {
+            $object->$name = $value;
+        }
+
+        $object->save( );
+    }
+
 }
 
 

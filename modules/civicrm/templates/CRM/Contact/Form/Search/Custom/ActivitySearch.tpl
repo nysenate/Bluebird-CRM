@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -112,14 +112,12 @@
                             <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a></td>
                         {elseif $fName eq 'activity_subject'}
                             <td>
-                            {if $row.activity_subject NEQ "NULL"}              
                                 {if $row.case_id }
-                                    <a href="{crmURL p='civicrm/case/activity/view' q="reset=1&aid=`$row.activity_id`&cid=`$row.contact_id`&caseID=`$row.case_id`"}">
+                                    <a href="{crmURL p='civicrm/case/activity/view' q="reset=1&aid=`$row.activity_id`&cid=`$row.contact_id`&caseID=`$row.case_id`"}" title="{ts}View activity details{/ts}">
                                 {else}
-                                    <a href="{crmURL p='civicrm/contact/view/activity' q="atype=`$row.activity_type_id`&action=view&reset=1&id=`$row.activity_id`&cid=`$row.contact_id`"}">
+                                    <a href="{crmURL p='civicrm/contact/view/activity' q="atype=`$row.activity_type_id`&action=view&reset=1&id=`$row.activity_id`&cid=`$row.contact_id`"}" title="{ts}View activity details{/ts}">
                                 {/if}
-                                {$row.activity_subject}</a>
-                            {/if}
+                                {if isset($row.activity_subject) AND $row.activity_subject NEQ 'NULL'}{$row.activity_subject}{else}{ts}(no subject){/ts}{/if}</a>
                             </td>
                         {elseif ($fName eq 'activity_id') or ($fName eq 'activity_type_id') or ($fName eq 'case_id')}   
                         {else}

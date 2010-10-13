@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -154,6 +154,12 @@ class CRM_Contact_Form_Edit_CommunicationPreferences
      */
     function setDefaultValues( &$form, &$defaults ) 
     {
+
+        if ( ! empty( $defaults['preferred_language'] ) ) {
+            $languages = array_flip( CRM_Core_PseudoConstant::languages( ) );
+            $defaults['preferred_language'] = $languages[$defaults['preferred_language']];
+        }                                                        
+
         //set default from greeting types CRM-4575.
         $greetingTypes = array('addressee'       => 'addressee_id', 
                                'email_greeting'  => 'email_greeting_id', 

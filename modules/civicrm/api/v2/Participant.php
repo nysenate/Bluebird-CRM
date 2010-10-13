@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,7 +33,7 @@
  * @subpackage API_Participant
  * 
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Participant.php 26310 2010-02-18 15:10:24Z shot $
+ * @version $Id: Participant.php 29021 2010-08-04 11:39:17Z sushant $
  *
  */
 
@@ -74,7 +74,11 @@ function civicrm_participant_create(&$params)
     if ( !isset($params['register_date'] )) {
         $params['register_date']= date( 'YmdHis' );
     }
-    
+    $errors= civicrm_participant_check_params( $params );
+    if ( civicrm_error( $errors ) ) {
+        return $errors;
+    }
+     
     require_once 'CRM/Event/BAO/Participant.php';
     $participant = CRM_Event_BAO_Participant::create($params);
     
@@ -222,30 +226,12 @@ function &civicrm_participant_update(&$params)
         $error = civicrm_create_error( 'Required parameter missing' );
         return $error;
     }
-    
+    $errors= civicrm_participant_check_params( $params );
+    if ( civicrm_error( $errors ) ) {
+        return $errors;
+    }
     require_once 'CRM/Event/BAO/Participant.php';
-    $participantBAO = new CRM_Event_BAO_Participant( );
-    $participantBAO->id = $params['id'];
-    $fields = $participantBAO->fields( );
-    $datefields = array("register_date" => "register_date");    
-    foreach ( array('source','status_id','register_date','role_id') as $v) {    
-        $fields[$v] = $fields['participant_'.$v];
-        unset( $fields['participant_'.$v] );
-    }
-    
-    if ($participantBAO->find(true)) {
-        foreach ( $fields as $name => $field) {
-            if (array_key_exists($name, $params)) {
-                $participantBAO->$name = $params[$name];
-            }
-        }
-        
-        //fix the dates 
-        foreach ( $datefields as $key => $value ) {
-            $participantBAO->$key  = CRM_Utils_Date::customFormat($participantBAO->$key,'%Y%m%d');
-        }
-        $participantBAO->save();
-    }
+    $participantBAO = CRM_Event_BAO_Participant::create( $params );
     
     $participant = array();
     _civicrm_object_to_array( $participantBAO, $participant );
@@ -416,7 +402,7 @@ function civicrm_create_participant_formatted( &$params , $onDuplicate )
     require_once 'CRM/Event/Import/Parser.php';
     if ( $onDuplicate != CRM_Event_Import_Parser::DUPLICATE_NOCHECK) {
         CRM_Core_Error::reset( );
-        $error = civicrm_participant_check_params( $params );
+        $error = civicrm_participant_check_params( $params ,true );
         if ( civicrm_error( $error ) ) {
             return $error;
         }
@@ -430,24 +416,40 @@ function civicrm_create_participant_formatted( &$params , $onDuplicate )
  * @param <type> $params
  * @return <type> 
  */
-function civicrm_participant_check_params( &$params ) 
+function civicrm_participant_check_params( &$params ,$checkDuplicate = false ) 
 {
     require_once 'CRM/Event/BAO/Participant.php';
-    
-    $result = array( );
-    
-    if( CRM_Event_BAO_Participant::checkDuplicate( $params, $result ) ) {
-        $participantID = array_pop( $result );
-        
-        $error = CRM_Core_Error::createError( "Found matching participant record.", 
-                                              CRM_Core_Error::DUPLICATE_PARTICIPANT, 
-                                              'Fatal', $participantID );
-        
-        return civicrm_create_error( $error->pop( ),
-                                     array( 'contactID'     => $params['contact_id'],
-                                            'participantID' => $participantID ) );
+    //check if participant id is valid or not
+    if( CRM_Utils_Array::value( 'id', $params ) ) {
+        $participant = new CRM_Event_BAO_Participant();
+        $participant->id = $params['id'];
+        if ( !$participant->find( true )) {
+            return civicrm_create_error( ts( 'Participant  id is not valid' ));
+        }
     }
-    
+    require_once 'CRM/Contact/BAO/Contact.php';
+    //check if contact id is valid or not
+    if( CRM_Utils_Array::value( 'contact_id', $params ) ) {
+        $contact = new CRM_Contact_BAO_Contact();
+        $contact->id = $params['contact_id'];
+        if ( !$contact->find( true )) {
+            return civicrm_create_error( ts( 'Contact id is not valid' ));
+        }
+    }
+    $result = array( );
+    if( $checkDuplicate ) {
+        if( CRM_Event_BAO_Participant::checkDuplicate( $params, $result ) ) {
+            $participantID = array_pop( $result );
+            
+            $error = CRM_Core_Error::createError( "Found matching participant record.", 
+                                                  CRM_Core_Error::DUPLICATE_PARTICIPANT, 
+                                                  'Fatal', $participantID );
+            
+            return civicrm_create_error( $error->pop( ),
+                                         array( 'contactID'     => $params['contact_id'],
+                                                'participantID' => $participantID ) );
+        }
+    }
     return true;
 }
 

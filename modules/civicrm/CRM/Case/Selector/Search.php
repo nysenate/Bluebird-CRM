@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -75,7 +75,9 @@ class CRM_Case_Selector_Search extends CRM_Core_Selector_Base
                                 'display_name',
                                 'case_id',   
                                 'case_status_id', 
+                                'case_status', 
                                 'case_type_id',
+                                'case_type',
                                 'case_role',
                                 'phone',
                                 );
@@ -332,7 +334,7 @@ class CRM_Case_Selector_Search extends CRM_Core_Selector_Base
                                                           $result->contact_sub_type : $result->contact_type );
                           
              //adding case manager to case selector.CRM-4510.
-             $caseType = CRM_Core_OptionGroup::getValue( 'case_type', $result->case_type_id, 'label', 'String', 'name' );
+             $caseType = CRM_Core_OptionGroup::getValue( 'case_type', $result->case_type, 'label', 'String', 'name' );
              $caseManagerContact = CRM_Case_BAO_Case::getCaseManagerContact( $caseType, $result->case_id );
 
              if ( !empty($caseManagerContact) ) {
@@ -340,7 +342,7 @@ class CRM_Case_Selector_Search extends CRM_Core_Selector_Base
                  $row['casemanager'   ] = CRM_Utils_Array::value('casemanager'   , $caseManagerContact );              
              } 
 
-             if ( in_array($result->case_status_id, $caseStatus) ) {
+             if ( array_key_exists( $result->case_status_id, $caseStatus ) ) {
                  $row['class'] = "status-urgent";
              } else {
                  $row['class'] = "status-normal";

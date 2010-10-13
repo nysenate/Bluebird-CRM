@@ -2,7 +2,7 @@
  
 /*
  +--------------------------------------------------------------------+
- | 'eWAY Core Payment Module for CiviCRM version 3.1 & 1.9            |
+ | 'eWAY Core Payment Module for CiviCRM version 3.2 & 1.9            |
  +--------------------------------------------------------------------+
  | Licensed to CiviCRM under the Academic Free License version 3.0    |
  |                                                                    |

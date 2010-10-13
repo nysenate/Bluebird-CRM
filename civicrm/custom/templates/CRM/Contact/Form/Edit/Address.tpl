@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,15 +28,19 @@
 {* @var $blockId Contains the current address block id, and assigned in the  CRM/Contact/Form/Location.php file *}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
-<div class="crm-address-section">
-<h3>
+<div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open crm-address-section">
+<div class="crm-accordion-header">
+	<div class="icon crm-accordion-pointer"></div>
 	{$title}
-</h3>
+</div>
 {/if}
-
+<div class="crm-accordion-body">
 {if $blockId gt 1}<div class="spacer"></div>{/if}
 
  <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock" {/if}>
+<table>
+  <tr>
+  <td>
   <table class="form-layout-compressed">
      <tr>
 	 {if $className eq 'CRM_Contact_Form_Contact'}
@@ -47,7 +51,7 @@
            {*$form.address.$blockId.is_billing.html*}
         </td>
 	 {/if}
-        {if $blockId gt 1}
+        {if $blockId gt 1 && $form.address.$blockId.location_type_id.value.0 != 6}
             <td>
                 <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;">{ts}delete{/ts}</a>
             </td>
@@ -77,8 +81,12 @@
 
      </td></tr>
   </table>
-
+</td>
+<td>
   {include file="CRM/Contact/Form/Edit/Address/CustomData.tpl"}
+</td>
+</tr>
+</table>
 
   {if $className eq 'CRM_Contact_Form_Contact'}
       <div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
@@ -88,6 +96,7 @@
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
 </div>
+</div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 {/if}
 {literal}

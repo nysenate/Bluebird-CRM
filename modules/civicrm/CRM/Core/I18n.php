@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -51,7 +51,7 @@ class CRM_Core_I18n
      * @param  $locale string  the base of this certain object's existence
      * @return         void
      */
-    private function __construct($locale)
+    function __construct($locale)
     {
         if ($locale != '' and $locale != 'en_US') {
             $config = CRM_Core_Config::singleton();
@@ -233,6 +233,9 @@ class CRM_Core_I18n
 
         // escape SQL if we were asked for it
         if (isset($escape) and ($escape == 'sql')) $text = mysql_escape_string($text);
+
+        // escape for JavaScript (if requested)
+        if (isset($escape) and ($escape == 'js'))  $text = addcslashes($text, "'");
 
         return $text;
     }

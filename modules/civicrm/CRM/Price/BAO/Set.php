@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -426,6 +426,8 @@ WHERE     ct.id = cp.contribution_type_id AND
 
         $dao =& CRM_Core_DAO::executeQuery( $sql, $params );
 
+        $visibility = CRM_Core_PseudoConstant::visibility( 'name' );
+        
         while ( $dao->fetch() ) {
             $fieldID = $dao->id;
 
@@ -436,7 +438,11 @@ WHERE     ct.id = cp.contribution_type_id AND
                 if ( $field == 'id' || is_null( $dao->$field) ) {
                     continue;
                 }
-                $setTree[$setID]['fields'][$fieldID][$field] = $dao->$field;
+                
+                if ( $field == 'visibility_id' ) {
+                    $setTree[$setID]['fields'][$fieldID]['visibility'] = $visibility[$dao->$field];
+                }
+                $setTree[$setID]['fields'][$fieldID][$field] = $dao->$field;                    
             }
             $setTree[$setID]['fields'][$fieldID]['options'] = CRM_Price_BAO_Field::getOptions( $fieldID, false );
         }
@@ -619,11 +625,9 @@ WHERE  id = %1";
         $form->_priceSet = CRM_Utils_Array::value( $priceSetId, $priceSet );
         $form->assign( 'priceSet',  $form->_priceSet );
         require_once 'CRM/Core/PseudoConstant.php';
-        $visibility = CRM_Core_PseudoConstant::visibility( 'name' );
-        $visibilityId =  array_search( 'public', $visibility );
         $className = CRM_Utils_System::getClassName( $form );
         foreach ( $form->_priceSet['fields'] as $field ) {
-            if ( $visibilityId == CRM_Utils_Array::value( 'visibility_id', $field ) || $className == 'CRM_Contribute_Form_Contribution' ) {
+            if ( CRM_Utils_Array::value( 'visibility', $field ) == 'public' || $className == 'CRM_Contribute_Form_Contribution' ) {
                 CRM_Price_BAO_Field::addQuickFormElement( $form, 'price_'.$field['id'], $field['id'], false, 
                                                           CRM_Utils_Array::value( 'is_required', $field, false ) );
             }

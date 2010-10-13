@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -228,7 +228,8 @@ SELECT id
 FROM   civicrm_relationship
 WHERE  (( contact_id_a = %1 AND contact_id_b = %2 AND is_permission_a_b = 1 ) OR
         ( contact_id_a = %2 AND contact_id_b = %1 AND is_permission_b_a = 1 )) AND
-       (id NOT IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1))
+       (contact_id_a NOT IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)) AND
+       (contact_id_b NOT IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1))
 ";
             $params = array( 1 => array( $contactID        , 'Integer' ),
                              2 => array( $selectedContactID, 'Integer' ) );

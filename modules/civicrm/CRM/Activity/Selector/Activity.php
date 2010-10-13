@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -37,10 +37,8 @@
 require_once 'CRM/Core/Form.php';
 require_once 'CRM/Core/Selector/Base.php';
 require_once 'CRM/Core/Selector/API.php';
-
 require_once 'CRM/Utils/Pager.php';
 require_once 'CRM/Utils/Sort.php';
-
 require_once 'CRM/Activity/BAO/Activity.php';
 
 /**
@@ -119,7 +117,7 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
                           $key = null ) 
     {
         $activityTypes   = CRM_Core_PseudoConstant::activityType( false );
-        $activityTypeIds = array_flip( CRM_Core_PseudoConstant::activityType( true, false, false, 'name' ) );
+        $activityTypeIds = array_flip( CRM_Core_PseudoConstant::activityType( true, true, false, 'name' ) );
         
         $extraParams = ( $key ) ? "&key={$key}" : null;
         
@@ -152,9 +150,16 @@ class CRM_Activity_Selector_Activity extends CRM_Core_Selector_Base implements C
         } elseif ( $activityTypeId == $activityTypeIds['Inbound Email'] ) {
             $url      = 'civicrm/contact/view/activity';
             $qsView   = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
+        } elseif ( $activityTypeId == $activityTypeIds['Open Case'] ||
+                   $activityTypeId == $activityTypeIds['Change Case Type'] ||
+                   $activityTypeId == $activityTypeIds['Change Case Status'] ||
+                   $activityTypeId == $activityTypeIds['Change Case Start Date'] ) {
+            $showUpdate =  $showDelete = false;
+            $url      = 'civicrm/contact/view/activity';
+            $qsView   = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
+            $qsUpdate = "atype={$activityTypeId}&action=update&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
         } else {
-            $showUpdate = true;
-            $showDelete = true;
+            $showUpdate = $showDelete = true;
             $url      = 'civicrm/contact/view/activity';
             $qsView   = "atype={$activityTypeId}&action=view&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";
             $qsUpdate = "atype={$activityTypeId}&action=update&reset=1&id=%%id%%&cid=%%cid%%&context=%%cxt%%{$extraParams}";

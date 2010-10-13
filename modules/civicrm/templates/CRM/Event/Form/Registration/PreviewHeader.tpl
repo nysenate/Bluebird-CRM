@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -25,10 +25,7 @@
 *}
 {* Displays Test-drive mode header for Event Registration pages. *}
 <div class="messages status section test_drive-section">
-    <table class="form-layout-compressed">
-    	   <div><img src="{$config->resourceBase}i/Eyeball.gif" alt="{ts}Test-drive{/ts}"/>
+  <img src="{$config->resourceBase}i/Eyeball.gif" alt="{ts}Test-drive{/ts}"/>
 	   <strong>{ts}Test-drive Your Event Registration Page{/ts}</strong>
     	   {ts}This page is currently running in <strong>test-drive mode</strong>. If this is a paid event, transactions will be sent to your payment processor's test server. <strong>No live financial transactions will be submitted. However, a contact record will be created or updated and test event registration and contribution records will be saved to the database. Use obvious test contact names so you can review and delete these records as needed. </strong> Refer to your payment processor's documentation for information on values to use for test credit card number, security code, postal code, etc.{/ts}
-	   </div>
-    </table>
 </div>

@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -219,13 +219,13 @@ class CRM_Member_DAO_Membership extends CRM_Core_DAO
                 'membership_type_id' => array(
                     'name' => 'membership_type_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Membership Type') ,
+                    'title' => ts('Membership Type Id') ,
                     'required' => true,
                     'import' => true,
                     'where' => 'civicrm_membership.membership_type_id',
                     'headerPattern' => '/^(m(embership\s)?type)$/i',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                     'FKClassName' => 'CRM_Member_DAO_MembershipType',
                 ) ,
                 'join_date' => array(
@@ -273,13 +273,13 @@ class CRM_Member_DAO_Membership extends CRM_Core_DAO
                 'status_id' => array(
                     'name' => 'status_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Membership Status') ,
+                    'title' => ts('Membership Status Id') ,
                     'required' => true,
                     'import' => true,
                     'where' => 'civicrm_membership.status_id',
                     'headerPattern' => '/(member(ship|).)?(status)$/i',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                     'FKClassName' => 'CRM_Member_DAO_MembershipStatus',
                 ) ,
                 'is_override' => array(

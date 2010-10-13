@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.1                                                |
+| CiviCRM version 3.2                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -85,7 +85,7 @@ class CRM_Core_I18n_SchemaStructure
                     'description' => 'varchar(255)',
                 ) ,
                 'civicrm_membership_status' => array(
-                    'name' => 'varchar(128)',
+                    'label' => 'varchar(128)',
                 ) ,
                 'civicrm_participant_status_type' => array(
                     'label' => 'varchar(255)',

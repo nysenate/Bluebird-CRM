@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -65,7 +65,7 @@ class CRM_Contact_Task {
         EMAIL_UNHOLD          =    22,
         RESTORE               =    23,
         DELETE_PERMANENTLY    =    24,
-	EXPORT_PRINTPROD      =   100;
+		EXPORT_PRINTPROD      =   100; //NYSS add export print production task
 
     /**
      * the task array
@@ -134,13 +134,10 @@ class CRM_Contact_Task {
                                   19    => array( 'title'  => ts( 'Print PDF Letter for Contacts' ),
                                                   'class'  => 'CRM_Contact_Form_Task_PDF',
                                                   'result' => true ),
-                                  21    => array( 'title'  => ts( 'Merge Contacts' ),
-                                                  'class'  => 'CRM_Contact_Form_Task_Merge',
-                                                  'result' => true ),
                                   22    => array( 'title'  => ts('Unhold Emails'),
                                                   'class'  => 'CRM_Contact_Form_Task_Unhold',
                                                   'result' => true ),
-                                  100    => array( 'title'  => ts('Export For Print Production'),
+                                  100    => array( 'title'  => ts('Export For Print Production'), //NYSS - add print production
                                                   'class'  => 'CRM_Contact_Form_Task_ExportPrintProduction',
                                                   'result' => true ),
                                   self::RESTORE => array(
@@ -170,11 +167,17 @@ class CRM_Contact_Task {
                                            'result' => true
                                            );
             }
+            if ( CRM_Core_Permission::check( 'merge duplicate contacts' ) ) {
+                self::$_tasks[21] = array( 'title'  => ts( 'Merge Contacts' ),
+                                           'class'  => 'CRM_Contact_Form_Task_Merge',
+                                           'result' => true 
+                                           );
+            }
             //CRM-4418, check for delete 
             if ( !CRM_Core_Permission::check( 'delete contacts' ) ) {
                 unset( self::$_tasks[8] );
             }
-
+            
             //show map action only if map provider and key is set
             $config = CRM_Core_Config::singleton( );
 
@@ -276,7 +279,7 @@ class CRM_Contact_Task {
                            6  => self::$_tasks[ 6] ['title'],
                            12 => self::$_tasks[12]['title'],
                            16 => self::$_tasks[16]['title'],
-                           100 => self::$_tasks[100]['title'],
+                           100 => self::$_tasks[100]['title'], //NYSS
                            );
             if ( ! self::$_tasks[12]['title'] ) {
                 //usset it, No edit permission and Map provider info

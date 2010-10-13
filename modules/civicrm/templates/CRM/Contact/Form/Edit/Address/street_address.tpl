@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -67,9 +67,13 @@ function processAddressFields( name, blockId, loadData ) {
             var allAddressValues = {/literal}{if $allAddressFieldValues}{$allAddressFieldValues}{else}''{/if}{literal};
 
 	    var streetName    = eval( "allAddressValues.street_name_"    + blockId );
+	    if (streetName === null) streetName = '';  
 	    var streetUnit    = eval( "allAddressValues.street_unit_"    + blockId );
+	    if (streetUnit === null) streetUnit = '';  
 	    var streetNumber  = eval( "allAddressValues.street_number_"  + blockId );
+	    if (streetNumber === null) streetNumber = '';  
 	    var streetAddress = eval( "allAddressValues.street_address_" + blockId );
+	    if (streetAddress === null) streetAddress = '';  
 	}
 
 	var showBlockName = '';

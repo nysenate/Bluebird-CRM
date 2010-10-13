@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -179,7 +179,6 @@ function calculateText( object ) {
 
 //display calculated amount
 function display( totalfee ) {
-    document.getElementById('pricelabel').style.display = ( totalfee == 0 ) ? "none" : "block";
     var totalEventFee  = formatMoney( totalfee, 2, seperator, thousandMarker);
     document.getElementById('pricevalue').innerHTML = "<b>"+symbol+"</b> "+totalEventFee;
     scriptfee   = totalfee;

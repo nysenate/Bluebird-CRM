@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -247,7 +247,7 @@
         </fieldset>    
     {/if}
 
-    <div id="crm-submit-buttons">
+    <div id="crm-submit-buttons" class="crm-submit-buttons">
 	    {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>
 

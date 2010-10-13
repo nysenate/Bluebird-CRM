@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,7 +38,7 @@ class civicrm_handler_field_membership_status extends views_handler_field {
                 return;
             }
             require_once 'CRM/Member/PseudoConstant.php';
-            self::$_membershipStatus = CRM_Member_PseudoConstant::membershipStatus( );
+            self::$_membershipStatus = CRM_Member_PseudoConstant::membershipStatus( null, null, 'label' );
         }
     }
 

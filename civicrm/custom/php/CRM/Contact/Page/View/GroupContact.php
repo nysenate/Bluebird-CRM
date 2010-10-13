@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -74,6 +74,7 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
 
         // set the userContext stack
         $session = CRM_Core_Session::singleton();
+
         $session->pushUserContext( CRM_Utils_System::url( 'civicrm/contact/view',
                                                           "action=browse&selectedChild=group&cid={$this->_contactId}" ),
                                    false);
@@ -88,7 +89,7 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
     }
 
     function preProcess() {
-        //$this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true ); //LCD
+        //$this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true ); //NYSS - LCD
 
         //NYSS LCD fix occassional lost cid value
 		$temp_contactid = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, false );

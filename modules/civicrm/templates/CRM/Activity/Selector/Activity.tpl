@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -108,9 +108,9 @@
   {/strip}
 
   {include file="CRM/common/pager.tpl" location="bottom"}
-  </form>
   
   {include file="CRM/Case/Form/ActivityToCase.tpl" contactID=$contactId}
+  </form>
 {else}
 
   <div class="messages status">

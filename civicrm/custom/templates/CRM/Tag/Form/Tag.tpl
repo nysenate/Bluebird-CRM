@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -119,8 +119,6 @@ function initTagTree() {
 	{/if}
     {/if}
     </p>
-
-<!--<pre>{$tree|@print_r}</pre>-->
     <ul id="tagtree" class="tree">
         {foreach from=$tree item="node" key="id"}
         <li id="tag_{$id}" class="tagset">

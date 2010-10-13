@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -82,7 +82,7 @@
             <td>{$row.pledge_create_date|truncate:10:''|crmDate}</td>
             <td>{$row.pledge_next_pay_date|truncate:10:''|crmDate}</td>
             <td class="right">{$row.pledge_next_pay_amount|crmMoney}</td>
-            <td>{$row.pledge_status_id}</td>	
+            <td>{$row.pledge_status}</td>	
             <td>{$row.action|replace:'xx':$row.pledge_id}</td>
         </tr>
         <tr id="{$row.pledge_id}_hide" class='{$rowClass}'>

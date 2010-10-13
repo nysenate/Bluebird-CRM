@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,83 +28,110 @@
    * The subclass simply adds properties,
    * for field-specific subclasses to use if they need to.
    */
-class civicrm_cck_handler_filter extends content_handler_filter_many_to_one {
-    protected $content_field;
-    protected $value_form_type = 'textfield';
-
-    function get_value_options() {
-        $this->value_options = $this->allowed_values();
-    }
-
-    // Get allowed values from hook_allowed_values(), if any,
-    // or from content_allowed_values();
-    // mostly copied from parent
-    function allowed_values() {
-        $field = $this->content_field;
-        $options = cckcivirelate_allowed_values($field);
-        if ($this->value_form_type == 'select') { //leaving this in case we allow a choice later
-            // For selects, HTML should be filtered out and entities left unencoded.
-            // See content_allowed_values / content_filter_xss / filter_xss.
-            $options = array_map(create_function('$opt', 'return html_entity_decode(strip_tags($opt), ENT_QUOTES);'), $options);
-        }
-        return (array) $options;
-    }
+class civicrm_cck_handler_filter extends views_handler_filter_in_operator {
+  var $no_single = TRUE;
 
     function value_form(&$form, &$form_state) {
-        $this->get_value_options();
-        $options = $this->value_options;
-        $default_value = (array) $this->value;
+   $values = array();
+   $field = $this->definition['content_field_name'];
+   $options = civicrm_cck_allowed_values($field);
 
-        if (!empty($form_state['exposed'])) {
-            $identifier = $this->options['expose']['identifier'];
+    sort($values);
+    $default_value = implode(', ', $values);
+    $form['value'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Contact Name'),
+      '#description' => t('Enter a contact name.'),
+      '#default_value' => $default_value,
+      '#autocomplete_path' => 'civicrm_cck/autocomplete/'.$field,
+    );
 
-            if (!empty($this->options['expose']['reduce'])) {
-                $options = $this->reduce_value_options();
-
-                if (empty($this->options['expose']['single']) && 
-                    !empty($this->options['expose']['optional'])) {
-                    $default_value = array();
-                }
-            }
-
-            if (!empty($this->options['expose']['single'])) {
-                if (!empty($this->options['expose']['optional']) && 
-                    (empty($default_value) || !empty($this->options['expose']['reduce']))) {
-                    $default_value = 'All';
-                }
-                else if (empty($default_value)) {
-                    $keys = array_keys($options);
-                    $default_value = array_shift($keys);
-                }
-                else {
-                    $copy = $default_value;
-                    $default_value = array_shift($copy);
-                }
-            }
-        }
-
-        $form['value'] = array(
-                               '#type' => $this->value_form_type,
-                               '#title' => $this->value_title,
-                               '#options' => $options,
-                               '#default_value' => $default_value,
-                               // These are only valid for 'select' type, but do no harm to 
-                               checkboxes.
-                               '#multiple' => TRUE,
-                               '#size' => count($options) > 8 ? 8 : count($options),
-                               );
-
-        if (!empty($form_state['exposed']) && 
-            !isset($form_state['input'][$identifier])) {
-            $form_state['input'][$identifier] = $default_value;
-        }
-
-        if (empty($form_state['exposed'])) {
-            $this->helper->options_form($form, $form_state);
-        }
-
-        $form['value']['#autocomplete_path'] = 'cckcivirelate_ind/autocomplete';
-
+    if (!empty($form_state['exposed']) && !isset($form_state['input'][$this->options['expose']['identifier']])) {
+      $form_state['input'][$this->options['expose']['identifier']] = $default_value;
     }
+  }
+
+  function value_validate(&$form, &$form_state) {
+    //$values = drupal_explode_tags($form_state['values']['options']['value']);
+    $values = $form_state['values']['options']['value'];
+    $cids = $this->validate_contact_strings($form['value'], $values);
+
+    if ($cids) {
+      $form_state['values']['options']['value'] = $cids;
+                }
+            }
+
+  function accept_exposed_input($input) {
+    $rc = parent::accept_exposed_input($input);
+
+    if ($rc) {
+      // If we have previously validated input, override.
+      if (isset($this->validated_exposed_input)) {
+        $this->value = $this->validated_exposed_input;
+                }
+                }
+
+    return $rc;
+                }
+
+  function exposed_validate(&$form, &$form_state) {
+    if (empty($this->options['exposed'])) {
+      return;
+            }
+
+    if (empty($this->options['expose']['identifier'])) {
+      return;
+        }
+
+    $identifier = $this->options['expose']['identifier'];
+    $values = $form_state['values'][$identifier];
+
+    $cids = $this->validate_contact_strings($form[$identifier], $values);
+
+    if ($cids) {
+      $this->validated_exposed_input = $cids;
+    }
+        }
+
+  /**
+   * Validate the user string. Since this can come from either the form
+   * or the exposed filter, this is abstracted out a bit so it can
+   * handle the multiple input sources.
+   */
+  function validate_contact_strings(&$form, $value) {
+    
+    $cids = array();
+
+    preg_match('/^(?:\s*|(.*) )?\[\s*cid\s*:\s*(\d+)\s*\]$/', $value, $matches);
+
+    if (!empty($matches)) {
+      // Explicit [cid:n].
+      list(, $title, $cid) = $matches;
+      $cids[] = $cid;
+    }
+    else {
+      // No explicit nid.
+      $references = _civicrm_cck_potential_references($field, $value, TRUE);
+      if (empty($references)) {
+    //    form_error($element[$field_key], t('%name: found no valid post with that title.', array('%name' => $field['widget']['label'])));
+      }
+      else {
+        // TODO:
+        // the best thing would be to present the user with an additional form,
+        // allowing the user to choose between valid candidates with the same title
+        // ATM, we pick the first matching candidate...
+        $cids[] = array_shift(array_keys($references));
+      }
+        }
+
+    return $cids;
+  }
+
+  // Override to do nothing.
+  function value_submit() {
+    }
+
+  // Override to do nothing.
+  function get_value_options() { }
 
 }
