@@ -365,7 +365,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     ** If neither is set, or both are set, then use oldest person as HoH.
     */
     $spouse_key = $ctRow['SKEY'];
-    if ($spouse_key > 0 ) {
+    if ($spouse_key > 0) {
       //if the relationship target exists, just add the info
       if (isset($aRels[$spouse_key])) {
         $relKey = $spouse_key;
@@ -534,7 +534,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $params['job_title'] = $ctRow['OTITLE'];
       }
   
-      $params['do_not_mail'] = ($ctRow['MS']=='U') ? 1 : 0;
+      $params['do_not_mail'] = ($ctRow['MS'] == 'U') ? 1 : 0;
   
       //set the relationship if it has an org
       $params['employer_id'] = $orgID>0 ? $orgID : DBNULL;
@@ -830,7 +830,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       // COPENDATE and CCLOSEDATE are in YYMMDD format, but other OMIS dates
       // are in MMDDYY format.  So re-format it for use with formatDate().
       $actDate = $csRow['COPENDATE'];
-      if (strlen($actDate)==5) $actDate = '0'.$actDate; 
+      if (strlen($actDate) == 5) $actDate = '0'.$actDate; 
       $actDate = substr($actDate,2,2).substr($actDate,4,2).substr($actDate,0,2);
       $actDate = formatDate($actDate);
 
@@ -847,21 +847,36 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       }
       
       $params['details'] = '';
-      if (strlen($csRow['CCLOSEDATE'])>0) $params['details'] .= '\nCASE CLOSED ON '.formatDate($csRow['CCLOSEDATE']);
-      if (strlen($csRow['CNOTE1'])>0) $params['details'] .= '\nNote 1: '.$csRow['CNOTE1'];
-      if (strlen($csRow['CNOTE2'])>0) $params['details'] .= '\nNote 2: '.$csRow['CNOTE2'];
-      if (strlen($csRow['CNOTE3'])>0) $params['details'] .= '\nNote 3: '.$csRow['CNOTE3'];
-      if (strlen($csRow['CHOMEPH'])>0) $params['details'] .= '\nHome Phone: '.$csRow['CHOMEPH'];
-      if (strlen($csRow['CWORKPH'])>0) $params['details'] .= '\nWork Phone: '.$csRow['CWORKPH'];
-      if (strlen($csRow['CFAXPH'])>0) $params['details'] .= '\nFax: '. $csRow['CFAXPH'].'\n';
-      if (strlen($csRow['CSTAFF'])>0) $params['details'] .= '\nStaff: '. $csRow['CSTAFF'].'\n';
-      if (strlen($csRow['CSNUM'])>0) $params['details'] .= '\nSSN: '. $csRow['CSNUM'].'\n';
-      if (strlen($csRow['CLAB1'])>0) $params['details'] .= '\nCLAB1: '. $csRow['CLAB1'].'\n';
-      if (strlen($csRow['CID1'])>0) $params['details'] .= '\nCID1: '. $csRow['CID1'].'\n';
-      if (strlen($csRow['CLAB2'])>0) $params['details'] .= '\nCLAB2: '. $csRow['CLAB2'].'\n';
-      if (strlen($csRow['CID2'])>0) $params['details'] .= '\nCID2: '. $csRow['CID2'].'\n';
-      if (strlen($csRow['CISSUE'])>0) $params['details'] .= '\nIssue: '. $csRow['CISSUE'].'\n';
-      if (trim($csRow['LEGISLATION'])!="|") $params['details'] .= '\nLegislation: '.$csRow['LEGISLATION'];
+      if (strlen($csRow['CCLOSEDATE']) > 0)
+        $params['details'] .= '\nCASE CLOSED ON '.formatDate($csRow['CCLOSEDATE']);
+      if (strlen($csRow['CNOTE1']) > 0)
+        $params['details'] .= '\nNote 1: '.$csRow['CNOTE1'];
+      if (strlen($csRow['CNOTE2']) > 0)
+        $params['details'] .= '\nNote 2: '.$csRow['CNOTE2'];
+      if (strlen($csRow['CNOTE3']) > 0)
+        $params['details'] .= '\nNote 3: '.$csRow['CNOTE3'];
+      if (strlen($csRow['CHOMEPH']) > 0)
+        $params['details'] .= '\nHome Phone: '.$csRow['CHOMEPH'];
+      if (strlen($csRow['CWORKPH']) > 0)
+        $params['details'] .= '\nWork Phone: '.$csRow['CWORKPH'];
+      if (strlen($csRow['CFAXPH']) > 0)
+        $params['details'] .= '\nFax: '.$csRow['CFAXPH'].'\n';
+      if (strlen($csRow['CSTAFF']) > 0)
+        $params['details'] .= '\nStaff: '.$csRow['CSTAFF'].'\n';
+      if (strlen($csRow['CSNUM']) > 0)
+        $params['details'] .= '\nSSN: '.$csRow['CSNUM'].'\n';
+      if (strlen($csRow['CLAB1']) > 0)
+        $params['details'] .= '\nCLAB1: '.$csRow['CLAB1'].'\n';
+      if (strlen($csRow['CID1']) > 0)
+        $params['details'] .= '\nCID1: '.$csRow['CID1'].'\n';
+      if (strlen($csRow['CLAB2']) > 0)
+        $params['details'] .= '\nCLAB2: '.$csRow['CLAB2'].'\n';
+      if (strlen($csRow['CID2']) > 0)
+        $params['details'] .= '\nCID2: '.$csRow['CID2'].'\n';
+      if (strlen($csRow['CISSUE']) > 0)
+        $params['details'] .= '\nIssue: '.$csRow['CISSUE'].'\n';
+      if (trim($csRow['LEGISLATION']) != "|")
+        $params['details'] .= '\nLegislation: '.$csRow['LEGISLATION'];
 
       //activity type
       switch ($csRow['CFORM']) {
@@ -1225,7 +1240,7 @@ function update($task, $importSet, $importDir, $sourceDesc)
         $dao = &CRM_Core_DAO::executeQuery(
               "update civicrm_contact set prefix_id={$prefix_id} ".
               "where source='{$sourceDesc}' AND user_unique_id = {$ctRow[0]};"
-              , CRM_Core_DAO::$_nullArray );
+              , CRM_Core_DAO::$_nullArray);
         break;
     }
   
