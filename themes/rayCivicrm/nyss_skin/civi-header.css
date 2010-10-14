@@ -339,8 +339,9 @@ img.menu-item-arrow {
 /* contact summary */
 #crm-container div#contactTopBar td.label {width:auto;}
 #crm-container  #mainTabContainer .friend-of-senator {
-    border:1px solid #FBCA54 !important;
-    }
+    border-top:5px solid #FBCA54 !important;
+	border-bottom:5px solid #FBCA54 !important;
+}
 
 
 /* bulk tagging box */

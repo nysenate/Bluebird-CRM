@@ -83,7 +83,7 @@ if [ $dump_db -eq 1 ]; then
   mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
-    echo "$prog: Unable to use --create with specifying a database name." >&2
+    echo "$prog: Cannot create a database without specifying its name or instance." >&2
     exit 1
   fi
   set -x

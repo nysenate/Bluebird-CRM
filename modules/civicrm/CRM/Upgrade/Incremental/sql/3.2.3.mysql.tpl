@@ -28,3 +28,42 @@ UPDATE `civicrm_pledge` SET `original_installment_amount` = `amount` / `installm
 UPDATE `civicrm_option_value` 
  SET   {localize field='label'}label = name{/localize}
  WHERE  name IN ('day','month','week','year');
+
+
+-- NYSS Upgrade v1.1
+
+-- NYSS-Navigation Menu
+UPDATE civicrm_navigation SET url = 'civicrm/contact/deduperules&reset=1' WHERE name = 'Merge Duplicate Contacts';
+UPDATE civicrm_navigation SET url = 'civicrm/contact/deduperules&reset=1' WHERE name = 'Find and Merge Duplicate Contacts';
+
+-- NYSS-Word Replacements
+{literal}
+UPDATE civicrm_domain SET locale_custom_strings = 'a:1:{s:5:"en_US";a:2:{s:7:"enabled";a:2:{s:13:"wildcardMatch";a:13:{s:7:"CiviCRM";s:8:"Bluebird";s:9:"Full-text";s:13:"Find Anything";s:16:"Addt\'l Address 1";s:15:"Mailing Address";s:16:"Addt\'l Address 2";s:8:"Building";s:73:"Supplemental address info, e.g. c/o, department name, building name, etc.";s:70:"Department name, building name, complex, or extension of company name.";s:7:"deatils";s:7:"details";s:11:"sucessfully";s:12:"successfully";s:40:"groups, contributions, memberships, etc.";s:27:"groups, relationships, etc.";s:18:"email OR an OpenID";s:5:"email";s:6:"Client";s:11:"Constituent";s:6:"client";s:11:"constituent";s:9:"Job title";s:9:"Job Title";s:9:"Nick Name";s:8:"Nickname";}s:10:"exactMatch";a:4:{s:8:"Position";s:9:"Job Title";s:2:"Id";s:2:"ID";s:6:"Client";s:11:"Constituent";s:6:"client";s:11:"constituent";}}s:8:"disabled";a:2:{s:13:"wildcardMatch";a:0:{}s:10:"exactMatch";a:0:{}}}}' 
+WHERE id = 1;
+{/literal}
+
+-- NYSS-Dashboard
+-- Twitter-disable fullscreen
+UPDATE civicrm_dashboard SET is_fullscreen = 0 WHERE id = 4;
+
+-- Fix all/my cases class path
+UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/MyCases&reset=1&snippet=4' WHERE id = 2;
+UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/AllCases&reset=1&snippet=4' WHERE id = 3;
+
+-- NYSS-Include/Exclude search
+UPDATE civicrm_navigation SET is_active = 1 WHERE id = 206;
+
+-- NYSS-Activity email template
+UPDATE civicrm_msg_template SET msg_subject = '[Bluebird]{if $idHash} [case #{$idHash}]{/if} {$activitySubject}' WHERE id = 1;
+
+-- NYSS-Option values
+INSERT INTO `civicrm_option_value` (`id`, `option_group_id`, `label`, `value`, `name`, `grouping`, `filter`, `is_default`, `weight`, `description`, `is_optgroup`, `is_reserved`, `is_active`, `component_id`, `domain_id`, `visibility_id`) VALUES
+(1064, 64, 'Satellite Office', 'Satellite Office', 'Satellite_Office', NULL, NULL, 0, 19, NULL, 0, 0, 1, NULL, NULL, NULL),
+(1065, 71, 'Satellite Office', 'Satellite Office', 'Satellite_Office', NULL, NULL, 0, 8, NULL, 0, 0, 1, NULL, NULL, NULL);
+
+-- NYSS-District Information custom group default open
+UPDATE civicrm_custom_group SET collapse_display = 1, collapse_adv_display = 0, help_pre = NULL, help_post = NULL WHERE id = 7;
+
+
+
+
