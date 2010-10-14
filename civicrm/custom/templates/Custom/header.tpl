@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,61 +34,70 @@
 global $user;
 $rolesList = implode('',$user->roles);
 $role = str_replace('authenticated user','', $rolesList);
-if ($role == 'Superuser' || $role == 'SOS'):
-    //user is SOS or Superuser - let's display some job stuff :)
-    {/php}
-    <!--<div id="current-job">Current job: {$smarty.session.jobID}</div>-->
-    {php}
-endif;
 {/php}
 
 <div class="civi-search-section">
+
 <div class="civi-contact-search">
 	<div class="civi-search-title">Find Contacts</div>
-{if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
-            <form action="{crmURL p='civicrm/contact/search/basic' h=0 }" name="search_block" id="id_search_block" method="post" onsubmit="getSearchURLValue( );">
-            	<div class="input-wrapper">
-                	<div id="quickSearch"></div>{*#2455*}
-                </div>
-            </form>
+	{if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
+    	<form action="{crmURL p='civicrm/contact/search/basic' h=0 }" name="search_block" id="id_search_block" method="post" onsubmit="getSearchURLValue( );">
+        	<div class="input-wrapper">
+               	<div id="quickSearch"></div>{*#2455*}
+            </div>
+        </form>
 	{/if}
-
 </div>
 
 <div class="civi-general-search">
 	<div class="civi-search-title">Find Anything!</div>
-{if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
-  
-            
-<form id="id_search_block" name="Custom" method="post" action="{crmURL p='civicrm/contact/search/custom' h=0 }">
-            	<div class="input-wrapper" id="gen-search-wrapper">
+	{if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
+		<form id="id_search_block" name="Custom" method="post" action="{crmURL p='civicrm/contact/search/custom' h=0 }">
+           	<div class="input-wrapper" id="gen-search-wrapper">
+				<input type="text" class="form-text" id="civi_text_search" name="text" value="enter any text" style="width:193px;">
+    			<input type="hidden" id="table" name="table">
+				<input type="submit" value="Go" name="_qf_Custom_refresh" class="form-submit default" style="background-image:url(t.gif)"> 
+			</div>
+		</form>
 
-    <input type="text" class="form-text" id="civi_text_search" name="text" value="enter any text">
-    <input type="hidden" id="table" name="table" value="">
-	<input type="submit" value="Search" name="_qf_Custom_refresh" style="display: none;" class="form-submit default"> 
-</div>
-</form>
 {literal}
 <script>
 //CRM-6776, enter-to-submit functionality is broken for IE due to hidden field
 //NYSS-2455
 cj( document ).ready( function( ) {
    var htmlContent = '';
-      if ( cj.browser.msie ) {
-          if( cj.browser.version.substr( 0,1 ) == '7' ) {
-              htmlContent = '<input type="submit" value="Go" name="_qf_Basic_refresh" class="form-submit default" style ="margin-right: -5px" />';
-          } else {
-              htmlContent = '<input type="hidden" name="_qf_Basic_refresh">';
-          }
-          htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width: 12em;" />' + 
-                         '<input type="text" id="sort_contact_id" style="display: none" />';
-          cj( '#quickSearch' ).append( htmlContent );            
-      } else {
-          htmlContent += '<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width: 12em;" />' + 
-                         '<input type="hidden" id="sort_contact_id" value="" />' + 
-                         '<input type="submit" value="{ts}Go{/ts}" name="_qf_Basic_refresh" class="form-submit default" style="display: none;" />';    
-          cj( '#quickSearch' ).append( htmlContent );
-   }
+      htmlContent = '<input type="hidden" name="_qf_Basic_refresh">' +
+	  				'<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width:193px;" value="enter name" />' + 
+                    '<input type="text" id="sort_contact_id" style="display: none" />' +
+					'<input type="submit" id="find_contacts" value="Go" name="_qf_Basic_refresh" class="form-submit default" style="background-image:url(t.gif)" />';
+	  cj( '#quickSearch' ).append( htmlContent );
+
+   var contactUrl = {/literal}"{crmURL p='civicrm/ajax/rest' q='className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=navigation' h=0 }"{literal};
+	  cj( '#civi_sort_name' ).autocomplete( contactUrl, {
+       	  width: 200,
+          selectFirst: false,
+          minChars:3,
+          matchContains: true 	 
+	  }).result(function(event, data, formatted) {
+          document.location={/literal}"{crmURL p='civicrm/contact/view' h=0 q='reset=1&cid='}"{literal}+data[1];
+          return false;
+      });
+
+	$("input[name=sort_name]").focus(function(){
+		var defaultText = $(this).val();
+		if(defaultText === 'enter name'){
+			$(this).val('');
+			$(this).addClass('input-active');			
+			}
+		});
+	$("input[name=sort_name]").blur(function(){
+		var defaultText = $(this).val();
+		if(defaultText === ''){
+			$(this).val('enter name');
+			$(this).removeClass('input-active');
+			}
+		});
+
 });
 
 $(function(){
@@ -108,13 +117,8 @@ $('.civi-general-search').append('<div id="general-form-hack"></div>');
 			});
 </script>
 {/literal}
-
             
-            
-            
-            
-            
-	{/if}
+{/if}
 
 </div>
 <span class="primary-link create-link">
@@ -249,34 +253,7 @@ $('.civi-general-search').append('<div id="general-form-hack"></div>');
 
 </div>
 
-
-
-
-
 </div>
-
-
-
-
-
-{literal}
-<script>
-
-    var contactUrl = {/literal}"{crmURL p='civicrm/ajax/rest' q='className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=navigation' h=0 }"{literal};
-
-    cj( '#civi_sort_name' ).autocomplete( contactUrl, {
-        width: 200,
-        selectFirst: false,
-        minChars:3,
-        matchContains: true 	 
-    }).result(function(event, data, formatted) {
-       document.location={/literal}"{crmURL p='civicrm/contact/view' h=0 q='reset=1&cid='}"{literal}+data[1];
-       return false;
-    });    
-
-</script>
-
-{/literal}
 
 {literal}
 <script type="text/javascript">
