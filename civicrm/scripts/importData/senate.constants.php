@@ -45,6 +45,12 @@ define('GREETING_FRIENDS', 8);
 define('GREETING_NICK2', 9);
 define('GREETING_FRIEND', 10);
 
+// gender IDs
+define('GENDER_FEMALE', 1);
+define('GENDER_MALE', 2);
+define('GENDER_TRANS', 3);
+define('GENDER_OTHER', 4);
+
 
 $aRelLookup = array(
   'H' => 2,
