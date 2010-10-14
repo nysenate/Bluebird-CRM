@@ -64,11 +64,13 @@
 {/if}
 
 
-{if $pageTitle}
+{*if $title*}
 	<div class="crm-title">
-		<h1 class="title">{if $isDeleted}<del>{/if}{$pageTitle}{if $isDeleted}</del>{/if}</h1>
+		<h1 class="title">{if $isDeleted}<del>{/if}{php}
+		  print drupal_get_title();
+		  {/php}{if $isDeleted}</del>{/if}</h1>
 	</div>
-{/if}
+{*/if*}
 
 
 {*{include file="CRM/common/langSwitch.tpl"}*}
