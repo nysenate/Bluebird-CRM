@@ -112,115 +112,108 @@
             {/foreach}
         </ul>
 
-        <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if $viewCustomData.1.4097.fields.19.field_value eq "Yes<i>\n</i>"}friend-of-senator{/if}">
+{*Assign AddConstInfo custom fields*}
+{foreach from=$viewCustomData.1 item=addConstInfo}
+<!--<pre>{$addConstInfo|@print_r}</pre>-->
+	{foreach from=$addConstInfo.fields item=addConstInfoField key=customId}
+        {assign var="custom_$customId" value=$addConstInfoField}
+	{/foreach}
+{/foreach}
+
+        <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if substr_count($custom_19.field_value, 'Yes')}friend-of-senator{/if}">
             {if $hookContentPlacement neq 3}
                 
                 {if $hookContent and $hookContentPlacement eq 2}
                     {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
                 {/if}
-                
+ 
                 {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name OR $contactTag OR $source}
                 <div id="contactTopBar">
                 	<div class="subHeader">Basic Constituent Information</div>
-                    <table>
-                        {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name}
-                        <tr>
-                            {if $nick_name}
+                    
+                    <div class="contact_panel">
+                        <div class="contactCardLeft">
+                    	<table>
+                        {if $nick_name}
+                            <tr>
                                 <td class="label">{ts}Nickname{/ts}</td>
                                 <td>
                                     {$nick_name}
                                 </td>
-                            {/if}
-                            {if $viewCustomData.1.4097.fields.60.field_value}
+                            </tr>
+                        {/if}
+                        {if $custom_60.field_value || $source}
+                        	<tr>
                                 <td class="label">
-                                   {$viewCustomData.1.4097.fields.60.field_title}
+                                   {$custom_60.field_title}
                                 </td>
                                 <td>
-                                   {$viewCustomData.1.4097.fields.60.field_value}
+                                   {$custom_60.field_value}
+                                   {if $custom_60.field_value && $source}<br />{/if}
+                                   {if $source}{$source}{/if}
                                 </td>
-                            {/if}
-                            {if $source}
-                                <td class="label">{ts}Other Source{/ts}</td><td>{$source}</td>
-                            {/if}
-                            {if $legal_name}
+                        	</tr>
+                        {/if}
+                        {if $legal_name}
+                        	<tr>
                                 <td class="label">{ts}Legal Name{/ts}</td>
                                 <td>{$legal_name}</td>
-                            {/if}
-                            {if $sic_code}
+                        	</tr>
+                        {/if}
+                        {if $sic_code}
+                        	<tr>
                                 <td class="label">{ts}SIC Code{/ts}</td>
                                 <td>{$sic_code}</td>
-                            {/if}
-                            {if $viewCustomData.1.4097.fields.42.field_value}
-                                <td class="label">
-                                   {$viewCustomData.1.4097.fields.42.field_title}
-                                </td>
-                                <td>
-                                   {$viewCustomData.1.4097.fields.42.field_value}
-                                </td>
-                            {/if}
-                            <td class="label">{ts}Contact Type{/ts}</td>
-                            <td>{$contact_type_label}</td>
-                        </tr>
+                        	</tr>
                         {/if}
-                    </table>
-                    <table>
-                        {if $contactTag OR $source}
                         <tr>
-                            {if $viewCustomData.1.4097.fields.58.field_value}
-                             <td class="label">
-                                {$viewCustomData.1.4097.fields.58.field_title}
-                             </td>
-                             <td>
-                                {$viewCustomData.1.4097.fields.58.field_value}
-                             </td>
-                            {/if}
-                            {if $viewCustomData.1.4097.fields.33.field_value}
-                             <td class="label">
-                                {$viewCustomData.1.4097.fields.33.field_title}
-                             </td>
-                             <td>
-                                {$viewCustomData.1.4097.fields.33.field_value}
-                             </td>
-                            {/if}
-                            {if $viewCustomData.1.4097.fields.34.field_value}
-                             <td class="label">
-                                {$viewCustomData.1.4097.fields.34.field_title}
-                             </td>
-                             <td>
-                                {$viewCustomData.1.4097.fields.34.field_value}
-                             </td>
-                            {/if}
-                            {if $viewCustomData.1.4097.fields.35.field_value}
-                             <td class="label">
-                                {$viewCustomData.1.4097.fields.35.field_title}
-                             </td>
-                             <td>
-                                {$viewCustomData.1.4097.fields.35.field_value}
-                             </td>
-                            {/if}
-                            {if $gender_display}
-                             <td class="label">
-                                Gender
-                             </td>
-                             <td>
-                                {if $gender_id neq "4"}
-                                    {$gender_display}
-                                {else}
-                                    {$viewCustomData.1.4097.fields.45.field_value}
-                                {/if}
-                             </td>
-                            {/if}
-                            {if $preferred_language}
-                                    <td class="label">{ts}Preferred Language{/ts}</td><td>{$preferred_language}</td>
-                                {/if}
-                            <!-- {if $contactTag}
-                            <td class="label" id="tagLink"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contactId&selectedChild=tag"}" title="{ts}Edit Tags{/ts}">{ts}Tags{/ts}</a></td><td id="tags">{$contactTag}</td>
-                            {/if} -->
-                            
+                            <td class="label">{ts}Contact Type{/ts}
+                            	{if $custom_42.field_value}<br />{$custom_42.field_title}{/if}
+                            </td>
+                            <td>{$contact_type_label}
+                            	{if $custom_42.field_value}<br />{$custom_42.field_value}{/if}
+                            </td>
                         </tr>
+                    	</table>
+                    	</div>
+                    </div>
+                    
+                    <div class="contact_panel">
+                        <div class="contactCardRight">
+                    	<table>
+                        {if $custom_58.field_value}{*Ethnicity*}
+                        	<tr>
+                             	<td class="label">
+                             	   {$custom_58.field_title}
+                             	</td>
+                             	<td>
+                             	   {$custom_58.field_value}
+                             	   {if $custom_62.field_value && $custom_58.field_value}<br />{/if}
+                             	   {$custom_62.field_value}
+                             	</td>
+                        	</tr>
                         {/if}
-                    </table>
-
+                        {if $gender_display}
+                        	<tr>
+                             	<td class="label">
+                             	   	Gender
+                             	</td>
+                             	<td>
+                            	    {$gender_display}
+                             	   	{if $custom_45.field_value && $gender_display}<br />{/if}
+                            	    {$custom_45.field_value}
+                             	</td>
+                        	<tr>
+                        {/if}
+                        {if $preferred_language}
+                        	<tr>
+                            	<td class="label">{ts}Preferred Language{/ts}</td>
+                            	<td>{$preferred_language}</td>
+                        	</tr>
+                        {/if}
+                    	</table>
+                        </div>
+					</div>
                     <div class="clear"></div>
                 </div><!-- #contactTopBar -->
                 {/if}
@@ -347,49 +340,138 @@
                                         <td></td>
                                     </tr>
                                 {/if}
-                                {if $current_employer}
-                                    <tr>
-                                        <td class="label">{ts}Employer{/ts}</td>
-                                        <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$current_employer_id`"}" title="{ts}view current employer{/ts}">{$current_employer}</a></td>
-                                        <td></td>
-                                    </tr>
-                                {/if}
-                                {if $job_title}
-                                    <tr>
-                                        <td class="label">{ts}Position{/ts}</td>
-                                        <td>{$job_title}</td>
-                                        <td></td>
-                                    </tr>
-                                {/if}
+                                
                             </table>
                             <table>
-							<tr>
-								<td class="label">{ts}Addressee{/ts}{if $addressee_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
-								<td>{$addressee_display}</td>
-							</tr>
 						 </table>
-
-                            
                         </div><!-- #contactCardLeft -->
-                            
                         
-                        {include file="CRM/Contact/Page/View/Demographics.tpl"}
+                        <div class="contactCardRight">
+    					{if $contact_type eq 'Individual' AND $showDemographics}
+    					<table>
+                        {if $current_employer}
+                        <tr>
+                        	<td class="label">{ts}Employer{/ts}</td>
+                            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$current_employer_id`"}" title="{ts}view current employer{/ts}">{$current_employer}</a></td>
+                        </tr>
+                        {/if}
+                        {if $job_title}
+                        <tr>
+                        	<td class="label">{ts}Job Title{/ts}</td>
+                        	<td>{$job_title}</td>
+                        </tr>
+                        {/if}
+        				<!--<tr>
+        				    <td class="label">{ts}Gender{/ts}</td>
+                            <td>{$gender_display}
+                                {if $custom_45.field_value && $gender_display}<br />{/if}
+                                {$custom_45.field_value}
+                            </td>
+        				</tr>-->
+        				<tr>
+        				    <td class="label">{ts}Date of birth{/ts}</td><td>
+        				    {if $birthDateViewFormat}	 
+        				        {$birth_date_display|crmDate:$birthDateViewFormat}
+        				    {else}
+        				        {$birth_date_display|crmDate}
+        				    {/if} 
+        					</td>
+        				</tr>
+        				<tr>
+        				{if $is_deceased eq 1}
+        				   {if $deceased_date}<td class="label">{ts}Date Deceased{/ts}</td>
+        				    <td>
+        				     {if $birthDateViewFormat}          
+						{$deceased_date_display|crmDate:$birthDateViewFormat}
+        				     {else}
+        				        {$deceased_date_display|crmDate}
+        				     {/if}
+        				     </td>
+        				{else}<td class="label" colspan=2><span class="font-red upper">{ts}Contact is Deceased{/ts}</span></td>
+        				{/if}
+         				{else}
+         				   <td class="label">{ts}Age{/ts}</td>
+         				   <td>{if $age.y}{ts count=$age.y plural='%count years'}%count year{/ts}{elseif $age.m}{ts count=$age.m plural='%count months'}%count month{/ts}{/if} </td>
+        				 {/if}
+    				</table>
+				    {/if}
+					</div><!-- #contactCardRight -->
+					{*include file="CRM/Contact/Page/View/Demographics.tpl"*}
 
-
-                        <div class="clear"></div>
+                    <div class="clear"></div>
                     </div><!-- #contact_panel -->
-
-					
-					
                     
                 </div><!--contact_details-->
 
-                <div id="customFields">
+                <div id="customFields" style="width:99%;">
                     <div class="contact_panel">
-                    {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'}                    
+                    {*include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'*}
+                    
+                    <!--Additional Constituent Info-->
+                    <div class="customFieldGroup ui-corner-all">
+                	  <div id="Additional_Constituent_Information_1">
+                  		<div class="crm-accordion-header">
+                    	<div onclick="cj(&quot;table#Additional_Constituent_Information_1&quot;).toggle(); cj(this).toggleClass(&quot;expanded&quot;); return false;" class="show-block expanded collapsed ">
+                        Additional Constituent Information
+                    	</div>
+                  		</div>
+                        <table id="Additional_Constituent_Information_1"><tr>
+                        <td style="padding:0;background:none;">
+                        <div class="contactCardLeft">
+                  		<table><tbody>
+                        	<tr>
+                            	<td class="label">{$custom_18.field_title}</td><!--active const-->
+                				<td class="html-adjust crm-custom-data">{$custom_18.field_value}</td>
+                            </tr>
+                            
+                            <tr>
+      							<td class="label">{$custom_17.field_title}</td><!--interest in vol-->
+                				<td class="html-adjust crm-custom-data">{$custom_17.field_value}</td>
+      						</tr>
+                            <tr>
+      							<td class="label">{$custom_19.field_title}</td><!--friend of sen-->
+                				<td class="html-adjust crm-custom-data">{$custom_19.field_value}</td>
+      						</tr>
+                            <tr>
+                            	<td class="label">Voter Registration Status</td><!--voter reg-->
+                				<td class="html-adjust crm-custom-data">{$custom_23.field_value}</td>
+                            </tr>
+                            <tr>
+                            	<td class="label">BOE Date of Registration</td><!--boe date-->
+                				<td class="html-adjust crm-custom-data">{$custom_24.field_value}</td>
+                            </tr>
+                    	</tbody></table>
+                        </div>
+                        <div class="contactCardRight">
+                        <table><tbody>
+                        	<tr>
+                                <td class="label">Professional Accreditations</td><!--prof acc-->
+                				<td class="html-adjust crm-custom-data">{$custom_16.field_value}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Skills/Areas of Interest</td><!--skills-->
+                				<td class="html-adjust crm-custom-data">{$custom_20.field_value}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Honors and Awards</td><!--honors-->
+                				<td class="html-adjust crm-custom-data">{$custom_21.field_value}</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Record Type</td><!--record type-->
+                				<td class="html-adjust crm-custom-data">{$custom_61.field_value}</td>
+                            </tr>
+                        </tbody></table>
+                        </div>
+                        </td></tr></table>
+                	  </div>
+            		</div>
+                    <!--Additional Constituent END-->
+                    
                     </div>
+                    <div class="clear"></div>
                     
                     <div class="contact_panel">
+                      <div style="width:100%">
                         <div class="contactCardLeft">
                             {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='0'}
                         </div><!--contactCardLeft-->
@@ -428,6 +510,10 @@
 								<td class="label">{ts}Postal Greeting{/ts}{if $postal_greeting_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
 								<td>{$postal_greeting_display}</td>
 							</tr>
+							<tr>
+								<td class="label">{ts}Addressee{/ts}{if $addressee_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
+								<td>{$addressee_display}</td>
+							</tr>
 						 </table>
 						 {/if}
                               
@@ -435,9 +521,9 @@
                             </div><!-- /.crm-accordion-wrapper -->
 
                         </div>
-
-                        <div class="clear"></div>
+                      </div><!--end-->
                     </div>
+                    <div class="clear"></div>
                 </div>
                 {literal}
                 <script type="text/javascript">

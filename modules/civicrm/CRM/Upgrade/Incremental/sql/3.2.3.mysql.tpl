@@ -45,6 +45,7 @@ WHERE id = 1;
 -- NYSS-Dashboard
 -- Twitter-disable fullscreen
 UPDATE civicrm_dashboard SET is_fullscreen = 0 WHERE id = 4;
+
 -- Fix all/my cases class path
 UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/MyCases&reset=1&snippet=4' WHERE id = 2;
 UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/AllCases&reset=1&snippet=4' WHERE id = 3;
@@ -61,7 +62,7 @@ INSERT INTO `civicrm_option_value` (`id`, `option_group_id`, `label`, `value`, `
 (1065, 71, 'Satellite Office', 'Satellite Office', 'Satellite_Office', NULL, NULL, 0, 8, NULL, 0, 0, 1, NULL, NULL, NULL);
 
 -- NYSS-District Information custom group default open
-UPDATE civicrm_custom_group SET collapse_display = 0, collapse_adv_display = 0, help_pre = NULL, help_post = NULL WHERE id = 7;
+UPDATE civicrm_custom_group SET collapse_display = 1, collapse_adv_display = 0, help_pre = NULL, help_post = NULL WHERE id = 7;
 
 
 
