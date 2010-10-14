@@ -93,9 +93,9 @@ if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
   <div id="breadcrumb"><?php print $breadcrumb; ?></div>
   <?php if ($user->uid && arg(0) == 'civicrm') { ?>
   	<div id="edit-profile">
-    <a href="<?php print base_path(); ?>user/<?php print $user->uid; ?>/edit">
+    <?php /*?><a href="<?php print base_path(); ?>user/<?php print $user->uid; ?>/edit">
   		<div class="icon settings-icon"></div>Update your Profile 
-  	</a>
+  	</a><?php */?> <!--#2288-->
   	<a href="<?php print base_path(); ?>logout" class="logout">
   		<div class="icon logout-icon"></div> Logout 
   	</a>
