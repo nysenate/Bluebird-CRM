@@ -6,8 +6,8 @@
  * Common functionality for querying the OpenLeg API.
  */
 
-$rootDir='/data/scripts/';
-include_once($rootDir.'functions.inc.php');
+$script_dir = dirname(__FILE__);
+include_once("$script_dir/functions.inc.php");
 
 //define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/api/1.0/xml/');
 //define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/search/?term=otype:action%20AND%20when:[0946684800000%20TO%201270900799000]&format=json');
@@ -30,7 +30,7 @@ try {
 }
 
 //get the config
-include_once($rootDir.'config.php');
+include_once("$script_dir/config.php");
 
 global $SC;
 
