@@ -68,15 +68,15 @@ fi
 # The code, data, and config are backed up using rsync.
 
 db_backup_dir="$backup_dir/database_dumps"
-code_backup_dir="$rsync_host_prefix$backup_dir/application"
-data_backup_dir="$rsync_host_prefix$backup_dir/data"
-other_backup_dir="$rsync_host_prefix$backup_dir/other"
+code_backup_dir="$backup_dir/application"
+data_backup_dir="$backup_dir/data"
+other_backup_dir="$backup_dir/other"
 rsync_opts="$default_rsync_opts $dry_run_opt"
 
 if [ "$backup_host" ]; then
-  ssh $backup_host "mkdir -p '$db_backup_dir' '$code_backup_dir' '$other_backup_dir'"
+  ssh $backup_host "mkdir -p '$db_backup_dir' '$code_backup_dir' '$data_backup_dir' '$other_backup_dir'"
 else
-  mkdir -p "$db_backup_dir" "$code_backup_dir" "$other_backup_dir"
+  mkdir -p "$db_backup_dir" "$code_backup_dir" "$data_backup_dir" "$other_backup_dir"
 fi
 [ $? -eq 0 ] || exit 1
 
@@ -98,11 +98,11 @@ if [ $no_dbdump -eq 0 ]; then
 fi
 
 echo "Backing up /etc"
-rsync $rsync_opts /etc $other_backup_dir/;
+rsync $rsync_opts /etc $rsync_host_prefix$other_backup_dir/;
 
 echo "Backing up source code"
-[ -d $app_rootdir ] && rsync $rsync_opts $app_rootdir/* $code_backup_dir/
-[ -d $data_rootdir ] && rsync $rsync_opts $data_rootdir/* $data_backup_dir/
-[ -d $import_rootdir ] && rsync $rsync_opts $import_rootdir $data_backup_dir/
+[ -d $app_rootdir ] && rsync $rsync_opts $app_rootdir/* $rsync_host_prefix$code_backup_dir/
+[ -d $data_rootdir ] && rsync $rsync_opts $data_rootdir/* $rsync_host_prefix$data_backup_dir/
+[ -d $import_rootdir ] && rsync $rsync_opts $import_rootdir $rsync_host_prefix$data_backup_dir/
 
 exit $?
