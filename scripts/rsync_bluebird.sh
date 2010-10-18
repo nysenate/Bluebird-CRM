@@ -44,9 +44,8 @@ elif [ ! -d "$repo_dir" ]; then
   exit 1
 fi
 
-# rsync the scripts/, senateProduction/, and www/ dirs, but exclude sync
-# for all sites/ directories that are of the form *.*.  This will skip
-# <instance>.crm.nysenate.gov, but not "all" and "default".
+# Exclude rsync for all sites/ directories that are of the form *.*.
+# This will skip <instance>.crm.nysenate.gov, but not "all" and "default".
 set -x
 rsync -rltOv $dry_run_opt $delete_opt --exclude sites/*.* $repo_dir/* "/$target_dir/"
 
