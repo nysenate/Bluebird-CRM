@@ -129,6 +129,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
 	$fname = 'printProduction/printExport'.$rnd.'.tsv';
 
+	//check if printProduction subfolder exists; if not, create it
+	if ( !file_exists($config->uploadDir.'printProduction/') ) {
+		mkdir( $config->uploadDir.'printProduction/', 0775 );
+	}
+
 	$fhout = fopen($config->uploadDir.$fname, 'w');
 
 	$firstLine = true;
