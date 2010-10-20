@@ -126,7 +126,6 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
 
 		//NYSS - LCD #2365
 		$session = & CRM_Core_Session::singleton();
-		$session->set('jobID', '1234');
         $jobID = $session->get('jobID');
 		if ( $jobID ) {
 			$logData .= ', [Job: '.$jobID.']';
