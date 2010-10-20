@@ -307,12 +307,12 @@
      <access_arguments>access CiviCRM</access_arguments>
 </item>
 <item>
-   <path>civicrm/dashlet/myCases</path>
+   <path>civicrm/dashlet/MyCases</path>
    <title>Case Dashlet</title>
    <page_callback>CRM_Dashlet_Page_MyCases</page_callback>
 </item>
 <item>
-   <path>civicrm/dashlet/allCases</path>
+   <path>civicrm/dashlet/AllCases</path>
    <title>All Cases Dashlet</title>
    <page_callback>CRM_Dashlet_Page_AllCases</page_callback>
    <access_arguments>access all cases and activities</access_arguments>
