@@ -49,6 +49,8 @@ UPDATE civicrm_dashboard SET is_fullscreen = 0 WHERE id = 4;
 -- Fix all/my cases class path
 UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/MyCases&reset=1&snippet=4' WHERE id = 2;
 UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/AllCases&reset=1&snippet=4' WHERE id = 3;
+UPDATE civicrm_menu SET path = 'civicrm/dashlet/AllCases', page_callback = 's:25:"CRM_Dashlet_Page_AllCases";' WHERE title = 'All Cases Dashlet';
+UPDATE civicrm_menu SET path = 'civicrm/dashlet/MyCases', page_callback = 's:24:"CRM_Dashlet_Page_MyCases";' WHERE title = 'Case Dashlet';
 
 -- NYSS-Include/Exclude search
 UPDATE civicrm_navigation SET is_active = 1 WHERE id = 206;
