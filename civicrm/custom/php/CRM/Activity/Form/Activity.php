@@ -359,7 +359,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             }
             if ( $qfKey ) $urlParams .= "$keyName=$qfKey";
             $this->assign( 'searchKey',  $qfKey );
-        } else if ( in_array( $this->_context, array( 'standalone', 'home' ) ) ) {
+        } else if ( in_array( $this->_context, array( 'standalone', 'home' ) ) || !$this->_currentlyViewedContactId ) { //NYSS - LCD 2646
             $urlParams = 'reset=1&resetCache=1'; //NYSS - LCD
             $urlString = 'civicrm/dashboard';
         } else if ( $this->_context == 'search' ) {
