@@ -971,6 +971,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $issCat = substr($lastCat, 1);
       }
 
+      // Remember each tagID associated with the current contact.
+      $stored_tag_ids = array();
+
       /* If the category is in the tags table and is part of the issue code
          hierarchy (parent is not Freeform or Positions), then link to it
          as well as any parent tags.
@@ -984,7 +987,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
             cLog(0, 'info', "Warning: Category [$issCat] exists as a tag, but is not part of the hierarchy (it is either freeform or position).");
           }
           else {
-            writeEntityTags($fout['entitytag'], $contactID, $tag_id,$aTagsByID);
+            writeEntityTags($fout['entitytag'], $contactID, $tag_id, $aTagsByID,
+                            $stored_tag_ids);
           }
         }
         else {
@@ -1011,7 +1015,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
           writeFreeformTag($fout['tag'], $tag_id, $issDesc);
         }
         // Now link the current contact to the freeform tag.
-        writeEntityTags($fout['entitytag'], $contactID, $tag_id, $aTagsByID);
+        writeEntityTags($fout['entitytag'], $contactID, $tag_id, $aTagsByID,
+                        $stored_tag_ids);
       }
 
       //get the most recent date, which is already in YYYY-MM-DD format
@@ -1276,16 +1281,20 @@ function writeFreeformTag($f, $tag_id, $tag_name)
 
 
 
-function writeEntityTags($f, $contact_id, $tag_id, $tags_by_id)
+function writeEntityTags($f, $contact_id, $tag_id, $tags_by_id, &$stored_ids)
 {
-  // Attach all tags that have a parent tag.
+  // Attach all tags that have a parent tag.  Top-level tags are not attached.
   while ($tags_by_id[$tag_id]) {
-    $params = array(
-      'entity_table' => 'civicrm_contact',
-      'entity_id' => $contact_id,
-      'tag_id' => $tag_id
-    );
-    writeToFile($f, $params);
+    // Only attach tags that have not been stored for the current contact.
+    if (!in_array($tag_id, $stored_ids, true)) {
+      $params = array(
+        'entity_table' => 'civicrm_contact',
+        'entity_id' => $contact_id,
+        'tag_id' => $tag_id
+      );
+      writeToFile($f, $params);
+      $stored_ids[] = $tag_id;
+    }
     $tag_id = $tags_by_id[$tag_id];   // get the parent tagID
   }
 } // writeEntityTags()
@@ -1303,7 +1312,7 @@ function getAllTags(&$tags_by_name, &$tags_by_id)
   $session =& CRM_Core_Session::singleton();
 
   $dao = &CRM_Core_DAO::executeQuery(
-           "SELECT name, id, parent_id from civicrm_tag;",
+           "SELECT id, name, parent_id from civicrm_tag;",
            CRM_Core_DAO::$_nullArray);
 
   while ($dao->fetch()) {
