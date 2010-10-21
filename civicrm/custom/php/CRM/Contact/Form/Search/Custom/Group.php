@@ -92,6 +92,8 @@ class CRM_Contact_Form_Search_Custom_Group
     
     function buildForm( &$form ) {
 
+		$this->setTitle('Include/Exclude Groups and Tags');
+
         $groups         =& CRM_Core_PseudoConstant::group( );
 
         //NYSS - LCD #2247 exclude positions when constructing list of tags
@@ -507,6 +509,14 @@ class CRM_Contact_Form_Search_Custom_Group
 
     function templateFile( ) {
         return 'CRM/Contact/Form/Search/Custom.tpl';
+    }
+	
+	function setTitle( $title ) {
+        if ( $title ) {
+            CRM_Utils_System::setTitle( $title );
+        } else {
+            CRM_Utils_System::setTitle(ts('Search'));
+        }
     }
 
 }

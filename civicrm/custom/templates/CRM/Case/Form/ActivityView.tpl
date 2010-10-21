@@ -53,8 +53,8 @@
 <tr class="crm-case-activity-view-{$row.label}">
     <td class="label">{$row.label}</td>
     {if $smarty.foreach.report.first AND ( $activityID OR $parentID OR $latestRevisionID )} {* Add a cell to first row with links to prior revision listing and Prompted by (parent) as appropriate *}
-        <td>{$row.value}</td>
-        <td style="padding-right: 50px; text-align: right; font-size: .9em;">
+        <td>{if $row.value eq 'Client'}Constituent{else}{$row.value}{/if}</td>
+        <td style="padding-right: 50px; text-align: right; font-size: .8em;">
             {if $activityID}<a href="javascript:listRevisions({$activityID});">&raquo; {ts}List all revisions{/ts}</a>{if !$latestRevisionID}<br />{ts}(this is the current revision){/ts}{/if}<br />{/if}
             {if $latestRevisionID}<a href="javascript:viewRevision({$latestRevisionID});">&raquo; {ts}View current revision{/ts}</a><br /><span style="color: red;">{ts}(this is not the current revision){/ts}</span><br />{/if}                   
             {if $parentID}<a href="javascript:viewRevision({$parentID});">&raquo; {ts}Prompted by{/ts}</a>{/if}
