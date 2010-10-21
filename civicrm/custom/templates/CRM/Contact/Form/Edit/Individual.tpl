@@ -114,13 +114,13 @@ var checkSimilar =  {$checkSimilar};
 		{$form.nick_name.html|crmReplace:class:$formtextbig}
 	</td>
 	<td>
-		{if $contactId}{assign var='custom_42' value=custom_42_`$contactId`}
+		{if $customId}{assign var='custom_42' value=custom_42_`$customId`}
         {else}{assign var='custom_42' value='custom_42_-1'}{/if}
         {$form.$custom_42.label}<br />
 		{$form.$custom_42.html}                    
 	</td>
 	<td>
-		{if $contactId}{assign var='custom_60' value=custom_60_`$contactId`}
+		{if $customId}{assign var='custom_60' value=custom_60_`$customId`}
         {else}{assign var='custom_60' value='custom_60_-1'}{/if}
         {$form.$custom_60.label}<br />
 		{$form.$custom_60.html}                    

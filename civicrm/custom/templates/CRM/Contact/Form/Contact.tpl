@@ -26,6 +26,17 @@
 {* This form is for Contact Add/Edit interface *}
 <!--<pre>{$form|@print_r}</pre>-->
 
+{*need to retrieve and assign custom record id as its unique to each record*}
+{foreach from=$form item=field}
+	<!--<pre>{$field|@print_r}</pre>-->
+    <!--{$field.name|substring:0:6}-->
+    {if $field.name|substring:0:6 eq 'custom'}
+    	{assign var=customfield value="_"|explode:$field.name}
+        <!--<pre>{$customfield|@print_r}</pre>-->
+        {assign var=customId value=$customfield.2|replace:'-':''}
+    {/if}
+{/foreach}
+
 {if $addBlock}
 {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
 {else}
@@ -124,19 +135,19 @@
         <table class="form-layout-compressed">
         <tr class="custom_field-row">
             <td class="html-adjust" width="20%">
-            	{if $contactId}{assign var='custom_18' value=custom_18_`$contactId`}
+            	{if $customId}{assign var='custom_18' value=custom_18_`$customId`}
         		{else}{assign var='custom_18' value='custom_18_-1'}{/if}
         		{$form.$custom_18.label}<br />
 				{$form.$custom_18.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_18}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
             </td>
             <td class="html-adjust" width="20%">
-            	{if $contactId}{assign var='custom_17' value=custom_17_`$contactId`}
+            	{if $customId}{assign var='custom_17' value=custom_17_`$customId`}
         		{else}{assign var='custom_17' value='custom_17_-1'}{/if}
         		{$form.$custom_17.label}<br />
 				{$form.$custom_17.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
             </td>
             <td class="html-adjust" width="60%">
-            	{if $contactId}{assign var='custom_19' value=custom_19_`$contactId`}
+            	{if $customId}{assign var='custom_19' value=custom_19_`$customId`}
         		{else}{assign var='custom_19' value='custom_19_-1'}{/if}
         		{$form.$custom_19.label}<br />
 				{$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
@@ -144,19 +155,19 @@
         </tr>
         <tr class="custom_field-row">
         	<td class="html-adjust">
-            	{if $contactId}{assign var='custom_16' value=custom_16_`$contactId`}
+            	{if $customId}{assign var='custom_16' value=custom_16_`$customId`}
         		{else}{assign var='custom_16' value='custom_16_-1'}{/if}
         		{$form.$custom_16.label}<br />
 				{$form.$custom_16.html}
             </td>
             <td class="html-adjust">
-            	{if $contactId}{assign var='custom_21' value=custom_21_`$contactId`}
+            	{if $customId}{assign var='custom_21' value=custom_21_`$customId`}
         		{else}{assign var='custom_21' value='custom_21_-1'}{/if}
         		{$form.$custom_21.label}<br />
 				{$form.$custom_21.html}
             </td>
             <td class="html-adjust" rowspan="2">
-            	{if $contactId}{assign var='custom_20' value=custom_20_`$contactId`}
+            	{if $customId}{assign var='custom_20' value=custom_20_`$customId`}
         		{else}{assign var='custom_20' value='custom_20_-1'}{/if}
         		{$form.$custom_20.label}<br />
 				{$form.$custom_20.html}
@@ -164,13 +175,13 @@
         </tr>
         <tr class="custom_field-row">
         	<td class="html-adjust">
-            	{if $contactId}{assign var='custom_23' value=custom_23_`$contactId`}
+            	{if $customId}{assign var='custom_23' value=custom_23_`$customId`}
         		{else}{assign var='custom_23' value='custom_23_-1'}{/if}
         		{$form.$custom_23.label}<br />
 				{$form.$custom_23.html}
             </td>
             <td class="html-adjust">
-            	{if $contactId}{assign var='custom_24' value=custom_24_`$contactId`}
+            	{if $customId}{assign var='custom_24' value=custom_24_`$customId`}
         		{else}{assign var='custom_24' value='custom_24_-1'}{/if}
         		{$form.$custom_24.label}<br />
 				{include file="CRM/common/jcalendar.tpl" elementName=$custom_24}
