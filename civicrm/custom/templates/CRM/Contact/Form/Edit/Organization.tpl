@@ -24,27 +24,59 @@
  +--------------------------------------------------------------------+
 *}
 {* tpl for building Organization related fields *}
+<!--<pre>{$form|@print_r}</pre>-->
+
 <table class="form-layout-compressed">
+	<tr>
+		<td>
+       		{$form.organization_name.label}<br/>
+        	{if $action == 2}
+        	    {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='organization_name' id=$entityID}
+        	{/if}
+       		{$form.organization_name.html|crmReplace:class:big}
+        </td>
+		<td>
+        	{$form.legal_name.label}<br/>
+       		{$form.legal_name.html|crmReplace:class:big}
+        </td>
+		<td>
+        	{$form.nick_name.label}<br/>
+       		{$form.nick_name.html|crmReplace:class:big}
+        </td>
+        <td>
+        	{assign var='custom_41' value='custom_41_-1'}
+            {$form.$custom_41.label}<br/>
+       		{$form.$custom_41.html}
+		</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+	</tr>
     <tr>
-       <td>{$form.organization_name.label}<br/>
-        {if $action == 2}
-            {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='organization_name' id=$entityID}
-        {/if}
-       {$form.organization_name.html|crmReplace:class:big}</td>
-       </tr><tr>
-       <td>{$form.legal_name.label}<br/>
-       {$form.legal_name.html|crmReplace:class:big}</td>
-       </tr><tr>
-       <td>{$form.nick_name.label}<br/>
-       {$form.nick_name.html|crmReplace:class:big}</td>
-       </tr><tr>
-       <td>{$form.sic_code.label}<br/>
-       {$form.sic_code.html|crmReplace:class:big}</td>
-       </tr><tr>
-       <td>{if $action == 1 and $contactSubType}&nbsp;{else}
-              {$form.contact_sub_type.label}<br />
-              {$form.contact_sub_type.html}
-           {/if}
-       </td>
-     </tr>
+		<td>
+        	{assign var='custom_26' value='custom_26_-1'}
+            {$form.$custom_26.label}<br/>
+       		{$form.$custom_26.html|crmReplace:class:big}
+        </td>
+        <td>
+        	{assign var='custom_25' value='custom_25_-1'}
+            {$form.$custom_25.label}<br/>
+       		{$form.$custom_25.html|crmReplace:class:big}
+        </td>
+		<td>
+        	{$form.sic_code.label}<br/>
+       		{$form.sic_code.html|crmReplace:class:big}
+        </td>
+        <td>
+       		{$form.contact_source.label}<br />
+            {$form.contact_source.html|crmReplace:class:big}
+       	</td>
+        <td>
+        	{$form.external_identifier.label}<br />
+            {$form.external_identifier.value}
+        </td>
+        <td>
+        	<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
+            {$contactId}
+        </td>
+	</tr>
 </table>

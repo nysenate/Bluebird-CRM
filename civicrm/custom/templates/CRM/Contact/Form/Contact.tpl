@@ -24,6 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 {* This form is for Contact Add/Edit interface *}
+<!--<pre>{$form|@print_r}</pre>-->
+
 {if $addBlock}
 {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
 {else}
@@ -39,6 +41,7 @@
     {/if}
     <div class="spacer"></div>
 </div>
+
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
@@ -46,103 +49,143 @@
 	
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body" id="contactDetails">
-    <div id="contactDetails">
     <table>
         <tr>
-        <td>
-        {include file="CRM/Contact/Form/Edit/$contactType.tpl"}
-        <span class="crm-button crm-button_qf_Contact_refresh_dedupe">
-            {$form._qf_Contact_refresh_dedupe.html}
-        </span>
-		</td>
+        	<td>
+        	{include file="CRM/Contact/Form/Edit/$contactType.tpl"}
+        	<span class="crm-button crm-button_qf_Contact_refresh_dedupe">
+        	    {$form._qf_Contact_refresh_dedupe.html}
+        	</span>
+			</td>
 		</tr>
         <tr>
-        <td>
-            <table class="form-layout-compressed">
-                 <tr>
-                 <td>
-                    {$form.nick_name.label}<br />
-                    {$form.nick_name.html|crmReplace:class:big}
-                </td>
-                {if $contactType eq "Individual"}
-                 <td>
-                    
-                {$form.custom_42_38.label}<br />
-                {$form.custom_42_38.html}                    
-                </td>
-                <td>
-                    
-                {$form.custom_60_38.label}<br />
-                {$form.custom_60_38.html}                    
-                </td>
-                {/if}
-                 <td colspan="2">
-                    {$form.contact_source.label}<br />
-                    {$form.contact_source.html}
-                </td>
-                
-                
-                </tr>
-            </table>
-        </td>
+        	<td>
+        		{foreach from = $editOptions item ="title" key="name"}
+        		{if $name eq "Address"}
+        	        {include file="CRM/Contact/Form/Edit/$name.tpl"}
+        		{/if}
+        		{/foreach}
+        	</td>
         </tr>
+       	
         <tr>
-        <td>
-        {foreach from = $editOptions item ="title" key="name"}
-        {if $name eq "Address"}
-                {include file="CRM/Contact/Form/Edit/$name.tpl"}
-        {/if}
-        {/foreach}
-        </td>
-        
+        	<td>
+            	<div class="subHeader">Communication Details</div>
+            </td>
         </tr>
-        
-        
 		<tr>
-		<td>
-		<table class="form-layout-compressed">
-            {foreach from=$blocks item="label" key="block"}
-               { include file="CRM/Contact/Form/Edit/$block.tpl" }
-            {/foreach}
-		</table>
-		<table class="form-layout-compressed">
-            <tr class="last-row">
-              <td>
-              </td>
-              <td>{$form.external_identifier.label}<br />
-                  {$form.external_identifier.html}
-              </td>
-              {if $contactId}
-				<td><label for="internal_identifier">{ts}Internal Id{/ts}</label><br />{$contactId}</td>
-			  {/if}
-            </tr>            
-        </table>
-        </td>
+			<td>
+				<table class="form-layout-compressed">
+        	    {foreach from=$blocks item="label" key="block"}
+        	       { include file="CRM/Contact/Form/Edit/$block.tpl" }
+        	    {/foreach}
+				</table>
+        	</td>
         </tr>
+        
         {if $contactType eq "Individual"}
         <tr>
-        <td>
-        <table>
-         <tr>
-         <td>
-            {$form.current_employer.label}&nbsp;&nbsp;<br />
-            {$form.current_employer.html|crmReplace:class:twenty}
-            <div id="employer_address" style="display:none;"></div>
-        </td>
-        <td>
-            {$form.job_title.label}<br />
-            {$form.job_title.html}
-        </td>
+        	<td>
+            	<div class="subHeader">Employment</div>
+            </td>
         </tr>
-        </table>
-        </td>
+        <tr>
+			<td>
+            	<table class="form-layout-compressed individual-contact-details">
+        	    <tr>
+                <td>
+                	{$form.current_employer.label}&nbsp;&nbsp;<br />
+                    {assign var=formtexttwenty value='form-text twenty'}
+        	    	{$form.current_employer.html|crmReplace:class:$formtexttwenty}
+        	    	<div id="employer_address" style="display:none;"></div>
+				</td>
+				<td>
+        	    	{$form.job_title.label}<br />
+        	    	{$form.job_title.html}
+				</td>
+                </tr>
+                </table>
+            </td>
         </tr>
         {/if}
     </table>
-        
-   </div>
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
+
+{*NYSS manually insert indiv custom fields so we can control layout/eliminate dups*}
+{if $contactType eq "Individual"}
+<div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">
+	<div class="crm-accordion-header">
+		<div id="custom1" class="icon crm-accordion-pointer"></div> 
+			Additional Constituent Information
+		</div><!-- /.crm-accordion-header -->
+			
+		<div id="customData1" class="crm-accordion-body">
+        <table class="form-layout-compressed">
+        <tr class="custom_field-row">
+            <td class="html-adjust" width="20%">
+            	{if $contactId}{assign var='custom_18' value=custom_18_`$contactId`}
+        		{else}{assign var='custom_18' value='custom_18_-1'}{/if}
+        		{$form.$custom_18.label}<br />
+				{$form.$custom_18.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_18}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+            </td>
+            <td class="html-adjust" width="20%">
+            	{if $contactId}{assign var='custom_17' value=custom_17_`$contactId`}
+        		{else}{assign var='custom_17' value='custom_17_-1'}{/if}
+        		{$form.$custom_17.label}<br />
+				{$form.$custom_17.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+            </td>
+            <td class="html-adjust" width="60%">
+            	{if $contactId}{assign var='custom_19' value=custom_19_`$contactId`}
+        		{else}{assign var='custom_19' value='custom_19_-1'}{/if}
+        		{$form.$custom_19.label}<br />
+				{$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+            </td>
+        </tr>
+        <tr class="custom_field-row">
+        	<td class="html-adjust">
+            	{if $contactId}{assign var='custom_16' value=custom_16_`$contactId`}
+        		{else}{assign var='custom_16' value='custom_16_-1'}{/if}
+        		{$form.$custom_16.label}<br />
+				{$form.$custom_16.html}
+            </td>
+            <td class="html-adjust">
+            	{if $contactId}{assign var='custom_21' value=custom_21_`$contactId`}
+        		{else}{assign var='custom_21' value='custom_21_-1'}{/if}
+        		{$form.$custom_21.label}<br />
+				{$form.$custom_21.html}
+            </td>
+            <td class="html-adjust" rowspan="2">
+            	{if $contactId}{assign var='custom_20' value=custom_20_`$contactId`}
+        		{else}{assign var='custom_20' value='custom_20_-1'}{/if}
+        		{$form.$custom_20.label}<br />
+				{$form.$custom_20.html}
+            </td>
+        </tr>
+        <tr class="custom_field-row">
+        	<td class="html-adjust">
+            	{if $contactId}{assign var='custom_23' value=custom_23_`$contactId`}
+        		{else}{assign var='custom_23' value='custom_23_-1'}{/if}
+        		{$form.$custom_23.label}<br />
+				{$form.$custom_23.html}
+            </td>
+            <td class="html-adjust">
+            	{if $contactId}{assign var='custom_24' value=custom_24_`$contactId`}
+        		{else}{assign var='custom_24' value='custom_24_-1'}{/if}
+        		{$form.$custom_24.label}<br />
+				{include file="CRM/common/jcalendar.tpl" elementName=$custom_24}
+            </td>
+        </tr>
+        </table>
+		</div>
+		<script type="text/javascript">
+			var eleSpan          = "span#custom1";
+			var eleDiv           = "div#customData1";
+			showTab[1] = {literal}{"spanShow":eleSpan,"divShow":eleDiv}{/literal};
+		</script>
+</div>
+{/if}
+
 <div id='customData'></div>  
     {foreach from = $editOptions item = "title" key="name"}
         {if $name neq "Address" }
@@ -243,7 +286,7 @@ function highlightTabs( ) {
     }
 }
 
-function removeDefaultCustomFields( ) {
+/*function removeDefaultCustomFields( ) {
      //execute only once
      if (removeCustomData) {
 	 cj(".crm-accordion-wrapper").children().each( function() {
@@ -252,7 +295,7 @@ function removeDefaultCustomFields( ) {
 	 });
 	 removeCustomData = false;
      }
-}
+}*/
  
 </script>
 {/literal}
@@ -305,8 +348,6 @@ cj("input#current_employer").click( function( ) {
 });
 </script>
 {/literal}
-
-
 
 {* include common additional blocks tpl *}
 {include file="CRM/common/additionalBlocks.tpl"}
