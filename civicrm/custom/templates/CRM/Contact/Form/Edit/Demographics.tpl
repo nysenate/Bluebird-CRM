@@ -39,7 +39,7 @@
         </span>
   </div>
   <div id="showOtherGender" class="form-item" style="display:none;">
-        {if $contactId}{assign var='custom_45' value=custom_45_`$contactId`}
+        {if $customId}{assign var='custom_45' value=custom_45_`$customId`}
         {else}{assign var='custom_45' value='custom_45_-1'}{/if}
         <span class="labels">{$form.$custom_45.label}</span>
         <span class="fields">{$form.$custom_45.html}</span>
@@ -60,13 +60,13 @@
   
   <div class="rightColumn">
   <div class="form-item">
-        {if $contactId}{assign var='custom_58' value=custom_58_`$contactId`}
+        {if $customId}{assign var='custom_58' value=custom_58_`$customId`}
         {else}{assign var='custom_58' value='custom_58_-1'}{/if}
         <span class="labels">{$form.$custom_58.label}</span>
         <span class="fields">{$form.$custom_58.html}</span>
   </div>
   <div class="form-item">
-        {if $contactId}{assign var='custom_62' value=custom_62_`$contactId`}
+        {if $customId}{assign var='custom_62' value=custom_62_`$customId`}
         {else}{assign var='custom_62' value='custom_62_-1'}{/if}
         <span class="labels">{$form.$custom_62.label}</span>
         <span class="fields">{$form.$custom_62.html}</span>

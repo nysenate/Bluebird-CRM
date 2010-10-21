@@ -28,14 +28,17 @@
 
 {*need to retrieve and assign custom record id as its unique to each record*}
 {foreach from=$form item=field}
-	<!--<pre>{$field|@print_r}</pre>-->
+<!--<pre>{$field|@print_r}</pre>-->
     <!--{$field.name|substring:0:6}-->
     {if $field.name|substring:0:6 eq 'custom'}
-    	{assign var=customfield value="_"|explode:$field.name}
+        {assign var=customfield value="_"|explode:$field.name}
         <!--<pre>{$customfield|@print_r}</pre>-->
-        {assign var=customId value=$customfield.2|replace:'-':''}
+        {if $customfield.2|substring:0:1 neq '-'}
+                {assign var=customId value=$customfield.2}
+        {/if}
     {/if}
 {/foreach}
+{*$customId*}
 
 {if $addBlock}
 {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
