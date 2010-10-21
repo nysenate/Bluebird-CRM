@@ -29,39 +29,52 @@
 	{$title} 
   </div><!-- /.crm-accordion-header -->
   <div id="demographics" class="crm-accordion-body">
+  
+  <div class="leftColumn">
   <div class="form-item">
-        <table id="other-gender"></table>
-        <div id="other-gender-hidden"></div>
         <span class="labels">{$form.gender_id.label}</span>
-        
-	<span class="fields">
-        {$form.gender_id.html}
+        <span class="fields">
+        {$form.gender_id.html|crmInsert:onclick:'showOtherGender()'}
         <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('gender_id', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
         </span>
-         
-        
-      <script>
-            {literal}
-	           otherGenderurl = "{/literal}{crmURL p='civicrm/contact/add' q="snippet=1&qfKey=`$qfKey`&searchPane=" h=0}{literal}" + 'customData1 .custom_45_-1-row';
-	           cj('#other-gender').load(otherGenderurl);
-	           /* apparently not needed... this was supposed to load the hidden input field for other gender...
-	           otherGenderHiddenurl = "{/literal}{crmURL p='civicrm/contact/add' q="snippet=1&qfKey=`$qfKey`&searchPane=" h=0}{literal}" + 'customData1 input[type=hidden]';
-             cj('#other-gender-hidden').load(otherGenderHiddenurl); */
-            {/literal}
-            </script>
+  </div>
+  <div id="showOtherGender" class="form-item" style="display:none;">
+        {if $contactId}{assign var='custom_45' value=custom_45_`$contactId`}
+        {else}{assign var='custom_45' value='custom_45_-1'}{/if}
+        <span class="labels">{$form.$custom_45.label}</span>
+        <span class="fields">{$form.$custom_45.html}</span>
   </div>
   <div class="form-item">
         <span class="labels">{$form.birth_date.label}</span>
         <span class="fields">{include file="CRM/common/jcalendar.tpl" elementName=birth_date}</span>
   </div>
   <div class="form-item">
-       {$form.is_deceased.html}
-       {$form.is_deceased.label}
+       <span class="labels">{$form.is_deceased.label}</span>
+       <span class="fields">{$form.is_deceased.html}</span>
   </div>
   <div id="showDeceasedDate" class="form-item">
        <span class="labels">{$form.deceased_date.label}</span>
        <span class="fields">{include file="CRM/common/jcalendar.tpl" elementName=deceased_date}</span>
   </div> 
+  </div>
+  
+  <div class="rightColumn">
+  <div class="form-item">
+        {if $contactId}{assign var='custom_58' value=custom_58_`$contactId`}
+        {else}{assign var='custom_58' value='custom_58_-1'}{/if}
+        <span class="labels">{$form.$custom_58.label}</span>
+        <span class="fields">{$form.$custom_58.html}</span>
+  </div>
+  <div class="form-item">
+        {if $contactId}{assign var='custom_62' value=custom_62_`$contactId`}
+        {else}{assign var='custom_62' value='custom_62_-1'}{/if}
+        <span class="labels">{$form.$custom_62.label}</span>
+        <span class="fields">{$form.$custom_62.html}</span>
+  </div>
+  </div>
+  
+  <div class="clear"></div>
+  
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 
@@ -75,6 +88,16 @@
         } else {
 	    hide('showDeceasedDate');
         }
-    }     
+    }
+	showOtherGender( );    
+    function showOtherGender( )
+    {
+        var x=document.getElementsByName("gender_id");
+  		if (x[2].checked){
+      	    show('showOtherGender');
+        } else {
+	    	hide('showOtherGender');
+        }
+    }
 </script>
 {/literal}

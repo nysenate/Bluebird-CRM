@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.2                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,31 +23,31 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* tpl for building Household related fields *}
-<table class="form-layout-compressed">
-	<tr>
-		<td>
-			{$form.household_name.label}<br/>
-			{if $action == 2}
-        		{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='household_name' id=$entityID}
-        	{/if}
-       		{$form.household_name.html|crmReplace:class:big}
-		</td>
-       	<td>
-        	{$form.nick_name.label}<br/>
-       		{$form.nick_name.html|crmReplace:class:big}
-       	</td>
-       	<td>
-       		{$form.contact_source.label}<br />
-            {$form.contact_source.html|crmReplace:class:big}
-       	</td>
-        <td>
-        	{$form.external_identifier.label}<br />
-            {$form.external_identifier.value}
-        </td>
-        <td>
-        	<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
-            {$contactId}
-        </td>
-	</tr>
-</table>
+
+<script type="text/javascript">var showTab = Array( );</script>
+
+{foreach from=$groupTree item=cd_edit key=group_id}
+{if $group_id neq 3 && $group_id neq 1} {*NYSS remove org fields as they are integrated directly*}
+	<div class="crm-accordion-wrapper crm-address-accordion {if $cd_edit.collapse_display || $group_id eq 5}crm-accordion-closed{else}crm-accordion-open{/if}">
+		<div class="crm-accordion-header">
+			<div id="custom{$group_id}" class="icon crm-accordion-pointer"></div> 
+			{$cd_edit.title}
+			</div><!-- /.crm-accordion-header -->
+			
+			<div id="customData{$group_id}" class="crm-accordion-body">
+				{include file="CRM/Custom/Form/CustomData.tpl" formEdit=true}
+			</div>
+		<script type="text/javascript">
+			{if $cd_edit.collapse_display eq 0 }
+				var eleSpan          = "span#custom{$group_id}";
+				var eleDiv           = "div#customData{$group_id}";
+				showTab[{$group_id}] = {literal}{"spanShow":eleSpan,"divShow":eleDiv}{/literal};
+			{else}
+				showTab[{$group_id}] = {literal}{"spanShow":""}{/literal};
+			{/if}
+		</script>
+	</div>
+{/if}
+{/foreach}
+
+{include file="CRM/common/customData.tpl"}

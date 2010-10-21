@@ -70,48 +70,73 @@ var checkSimilar =  {$checkSimilar};
 </script>
 {/literal}
 
+{assign var=formtextbig value='form-text big'}
 <table class="form-layout-compressed individual-contact-details">
-    <tr>
+  <tr>
     <td>
         {if $form.prefix_id}
-
-                {$form.prefix_id.label}<br/>
-                {$form.prefix_id.html}
-
+        	{$form.prefix_id.label}<br/>
+            {$form.prefix_id.html}
         {/if}
     </td>
     <td>
-            {$form.first_name.label}<br /> 
-            {if $action == 2}
-                {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='first_name' id=$contactId}
-            {/if}
-            {$form.first_name.html}
+        {$form.first_name.label}<br /> 
+        {if $action == 2}
+            {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='first_name' id=$contactId}
+        {/if}
+        {$form.first_name.html}
     </td>
     <td>
-
-            {$form.middle_name.label}<br />
-            {if $action == 2}
-                {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='middle_name' id=$contactId}
-            {/if}
-            {$form.middle_name.html}
+        {$form.middle_name.label}<br />
+        {if $action == 2}
+            {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='middle_name' id=$contactId}
+        {/if}
+        {$form.middle_name.html}
     </td>
     <td>
-
-            {$form.last_name.label}<br />
-            {if $action == 2}
-                {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='last_name' id=$contactId}
-            {/if}
-            {$form.last_name.html}
+        {$form.last_name.label}<br />
+        {if $action == 2}
+            {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='last_name' id=$contactId}
+        {/if}
+        {$form.last_name.html}
     </td>
     <td>
-	{if $form.suffix_id}
-
-
-                {$form.suffix_id.label}<br/>
-                {$form.suffix_id.html}
-
-	{/if}
-</td>
-</tr>
+		{if $form.suffix_id}
+        	{$form.suffix_id.label}<br/>
+        	{$form.suffix_id.html}
+        {/if}
+	</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+	<td>
+		{$form.nick_name.label}<br />
+		{$form.nick_name.html|crmReplace:class:$formtextbig}
+	</td>
+	<td>
+		{if $contactId}{assign var='custom_42' value=custom_42_`$contactId`}
+        {else}{assign var='custom_42' value='custom_42_-1'}{/if}
+        {$form.$custom_42.label}<br />
+		{$form.$custom_42.html}                    
+	</td>
+	<td>
+		{if $contactId}{assign var='custom_60' value=custom_60_`$contactId`}
+        {else}{assign var='custom_60' value='custom_60_-1'}{/if}
+        {$form.$custom_60.label}<br />
+		{$form.$custom_60.html}                    
+	</td>
+	<td>
+		Other {$form.contact_source.label}<br />
+		{$form.contact_source.html|crmReplace:class:$formtextbig}
+	</td>
+    <td>
+		{$form.external_identifier.label}<br />
+		{$form.external_identifier.value}
+    </td>
+    <td>
+		<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
+		{$contactId}
+    </td>
+  </tr>
     
 </table>
