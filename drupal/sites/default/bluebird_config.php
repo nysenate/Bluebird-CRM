@@ -22,15 +22,17 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   
   if (isset($_SERVER['SERVER_NAME'])) {
     $servername = $_SERVER['SERVER_NAME'];
+    $firstdot = strpos($servername, '.');
+    $shortname = substr($servername, 0, $firstdot);
+    $default_base_domain = substr($servername, $firstdot + 1);
   }
-  else if (getenv('SERVER_NAME') !== false) {
-    $servername = getenv('SERVER_NAME');
+  else if (($shortname = getenv('INSTANCE_NAME')) !== false) {
+    $servername = "";
+    $default_base_domain = "crm.nysenate.gov";
   }
   else {
-    die("Unable to determine server name.\n");
+    die("Unable to determine CRM instance name.\n");
   }
-  
-  $shortname = substr($servername, 0, strpos($servername, '.'));
   
   $bbini = parse_ini_file($cfg_file, true);
   
@@ -40,6 +42,12 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $dbciviprefix = get_key_value($bbini, $shortname, 'db.civicrm.prefix');
   $dbdrupprefix = get_key_value($bbini, $shortname, 'db.drupal.prefix');
   $datadir = get_key_value($bbini, $shortname, 'data.rootdir');
+  $basedomain = get_key_value($bbini, $shortname, 'base.domain') or
+    $basedomain = $default_base_domain;
+
+  // Always set servername, even if SERVER_NAME was set above.  This allows
+  // us to override the domain in the config file.
+  $servername = "$shortname.$basedomain";
 
   $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbciviprefix$shortname";
   $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$shortname";
@@ -51,6 +59,7 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $bbcfg['civicrm_db_url'] = $civicrm_db_url;
   $bbcfg['drupal_root'] = $drupal_dir;
   $bbcfg['data_rootdir'] = $datadir;
+  $bbcfg['base_domain'] = $basedomain;
 
   return $bbcfg;
 } // get_bluebird_config()
