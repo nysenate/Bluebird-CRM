@@ -99,7 +99,7 @@ if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
   	<a href="<?php print base_path(); ?>logout" class="logout">
   		<div class="icon logout-icon"></div> Logout 
   	</a>
-        <div class="icon settings-icon"></div><span style="color:#4EBAFF;"> <?php echo $role; ?> </span>
+        <div class="icon key-icon"></div><span style="color:#4EBAFF;"> <?php echo $role; ?> </span>
   	</div>
   	<div class="account-info-wrapper">
   		<div class="account-info">

@@ -14,3 +14,7 @@
 #crm-container #mainTabContainer li.crm-tab-button a span {display: none;}
 
 #crm-container a#tag-refresh-button {display:block!important;}
+
+#crm-container #Contact #commPrefs label {
+	vertical-align: text-top;
+}

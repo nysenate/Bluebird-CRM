@@ -114,14 +114,18 @@ input.form-submit {
 	
 #header-access div.helpicon,		
 #edit-profile .settings-icon,
-#edit-profile .logout-icon { 
+#edit-profile .logout-icon,
+#edit-profile .key-icon { 
 	background-image:url(images/icons-4EBAFF.png);
 	}
 #edit-profile .settings-icon{
 	background-position: -177px -111px;
 	float: right;
 	}
-
+#edit-profile .key-icon{
+	background-position: -113px -127px;
+	float: right;
+	}
 /* dropdowns */
 
 
