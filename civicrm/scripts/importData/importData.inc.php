@@ -164,7 +164,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   global $omis_ext_fields;
   global $bluebird_db_info;
   global $aStates;
-
+  
   //civi prefixes
   $aPrefix = getOptions('individual_prefix');
 
