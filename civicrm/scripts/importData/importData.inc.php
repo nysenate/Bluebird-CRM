@@ -79,6 +79,9 @@ CRM_Core_DAO::executeQuery("SET FOREIGN_KEY_CHECKS=0;", CRM_Core_DAO::$_nullArra
 
 markTime();
 
+global $aStates;
+getStates();
+
 switch ($task) {
   case "parseonly":
     parseData($importSet, $importDir, $startID, $sourceDesc);
