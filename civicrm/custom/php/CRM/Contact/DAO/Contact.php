@@ -548,7 +548,7 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
                 'nick_name' => array(
                     'name' => 'nick_name',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Nickname') , //NYSS - LCD 2640
+                    'title' => 'Nickname', //NYSS - LCD 2640
                     'maxlength' => 128,
                     'size' => CRM_Utils_Type::HUGE,
                     'import' => true,
