@@ -86,6 +86,10 @@ switch ($task) {
   case "parseonly":
     parseData($importSet, $importDir, $startID, $sourceDesc);
     break;
+  case "updateStates":
+    include('updateStates.php');
+    updateStates($importSet, $importDir, $startID, $sourceDesc);
+    break;
   case "loaddbonly":
     loadDB($importSet);
     break;
