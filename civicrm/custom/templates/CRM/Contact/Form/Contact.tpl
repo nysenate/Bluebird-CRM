@@ -24,21 +24,16 @@
  +--------------------------------------------------------------------+
 *}
 {* This form is for Contact Add/Edit interface *}
-<!--<pre>{$form|@print_r}</pre>-->
 
 {*need to retrieve and assign custom record id as its unique to each record*}
 {foreach from=$form item=field}
-<!--<pre>{$field|@print_r}</pre>-->
-    <!--{$field.name|substring:0:6}-->
     {if $field.name|substring:0:6 eq 'custom'}
         {assign var=customfield value="_"|explode:$field.name}
-        <!--<pre>{$customfield|@print_r}</pre>-->
         {if $customfield.2|substring:0:1 neq '-'}
                 {assign var=customId value=$customfield.2}
         {/if}
     {/if}
 {/foreach}
-{*$customId*}
 
 {if $addBlock}
 {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
@@ -89,9 +84,9 @@
         </tr>
 		<tr>
 			<td>
-				<table class="form-layout-compressed">
+				<table class="crm-section contact_information-section form-layout-compressed">
         	    {foreach from=$blocks item="label" key="block"}
-        	       { include file="CRM/Contact/Form/Edit/$block.tpl" }
+        	       {include file="CRM/Contact/Form/Edit/$block.tpl"}
         	    {/foreach}
 				</table>
         	</td>
