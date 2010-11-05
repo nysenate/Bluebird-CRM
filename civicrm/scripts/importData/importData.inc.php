@@ -79,9 +79,16 @@ CRM_Core_DAO::executeQuery("SET FOREIGN_KEY_CHECKS=0;", CRM_Core_DAO::$_nullArra
 
 markTime();
 
+global $aStates;
+getStates();
+
 switch ($task) {
   case "parseonly":
     parseData($importSet, $importDir, $startID, $sourceDesc);
+    break;
+  case "updateStates":
+    include('updateStates.php');
+    updateStates($importSet, $importDir, $startID, $sourceDesc);
     break;
   case "loaddbonly":
     loadDB($importSet);
@@ -162,8 +169,6 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   global $bluebird_db_info;
   global $aStates;
   
-  getStates();
-
   //civi prefixes
   $aPrefix = getOptions('individual_prefix');
 
