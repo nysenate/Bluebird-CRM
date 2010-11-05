@@ -154,9 +154,10 @@ class CRM_Contact_Form_Edit_Individual {
         CRM_Contact_Form_Edit_Address::formRule( $fields, $errors );
         
         // make sure that firstName and lastName or a primary OpenID is set
-        if ( !$primaryID && ( /*!CRM_Utils_Array::value( 'first_name', $fields ) ||*/  //NYSS - LCD #1807
-                              !CRM_Utils_Array::value( 'last_name' , $fields ) ) ) {
-            $errors['_qf_default'] = ts('First Name and Last Name OR an email OR an OpenID in the Primary Location should be set.'); 
+        if ( !$primaryID && 
+		     !CRM_Utils_Array::value( 'first_name', $fields ) &&  
+             !CRM_Utils_Array::value( 'last_name' , $fields )  ) { //NYSS - LCD #1807
+            $errors['_qf_default'] = ts('First Name, Last Name, or an email address must be set.'); 
         }
         
         //check for duplicate - dedupe rules
