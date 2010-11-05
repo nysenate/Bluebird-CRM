@@ -51,7 +51,7 @@
 <table class="crm-info-panel" id="crm-activity-view-table">
 {foreach from=$report.fields item=row name=report}
 <tr class="crm-case-activity-view-{$row.label}">
-    <td class="label">{$row.label}</td>
+    <td class="label">{if $row.label eq 'Client'}Constituent{else}{$row.label}{/if}</td>
     {if $smarty.foreach.report.first AND ( $activityID OR $parentID OR $latestRevisionID )} {* Add a cell to first row with links to prior revision listing and Prompted by (parent) as appropriate *}
         <td>{if $row.value eq 'Client'}Constituent{else}{$row.value}{/if}</td>
         <td style="padding-right: 50px; text-align: right; font-size: .8em;">
@@ -71,7 +71,7 @@
             <td colspan="3">{$groupTitle}</td>
         </tr>
         {foreach from=$customGroup item=customField name=fields}
-            <tr{if ! $smarty.foreach.fields.last} style="border-bottom: 1px solid #F6F6F6;"{/if}>
+            
 	       <td class="label">{$customField.label}</td>
 	       <td>{$customField.value}</td>
             </tr>
