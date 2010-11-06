@@ -63,14 +63,26 @@
     <script type="text/javascript" src="{$config->resourceBase}packages/ckeditor/ckeditor.js"></script>
 {/if}
 
-
-{*if $title*}
-	<div class="crm-title">
-		<h1 class="title">{if $isDeleted}<del>{/if}{php}
-		  print drupal_get_title();
-		  {/php}{if $isDeleted}</del>{/if}</h1>
-	</div>
-{*/if*}
+<div class="crm-title">
+	<h1 class="title">
+       	{if $isDeleted}<del>{/if}
+       	{php}
+	  		//NYSS 2724 TODO: look at more complete solution to long titles overlapping action buttons
+            $title = drupal_get_title();
+            //$strippedtitle = strip_tags($title);
+            $strippedtitlelen = strlen(strip_tags($title));
+            $titlelen = strlen($title);
+            
+            if( $strippedtitlelen > 28 ) {
+            	$shorttitle = substr( $title, 0, $titlelen-($strippedtitlelen-25));
+                print $shorttitle.'...';
+            } else {
+            	print $title;
+	  		}
+        {/php}
+       	{if $isDeleted}</del>{/if}
+    </h1>
+</div>
 
 
 {*{include file="CRM/common/langSwitch.tpl"}*}
