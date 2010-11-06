@@ -129,7 +129,7 @@
  
                 {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name OR $contactTag OR $source}
                 <div id="contactTopBar">
-                	<div class="subHeader">Basic Constituent Information</div>
+                	<div class="subHeader"><!--Basic Constituent Information-->{$display_name}</div>
                     
                     <div class="contact_panel">
                         <div class="contactCardLeft">
