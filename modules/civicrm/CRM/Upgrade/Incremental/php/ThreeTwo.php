@@ -265,5 +265,58 @@ UPDATE  civicrm_membership_status
         $upgrade = new CRM_Upgrade_Form;
         $upgrade->assign( 'addActivityTypeIndex', $addActivityTypeIndex );
         $upgrade->processSQL($rev);
+		
+		//NYSS v1.1 Drupal related updates
+		
+		//update permissions
+		//SOS
+		db_query( "UPDATE {permission} SET perm = 'access CiviCRM, access CiviReport, access Report Criteria, access all custom data, access uploaded files, add contacts, administer Reports, delete contacts, edit all contacts, edit groups, profile listings, profile view, view all activities, view all contacts' WHERE rid = 6" );
+		//Administrator
+		db_query( "UPDATE {permission} SET perm = 'create users, delete users with role Analytics User, delete users with role Conference Services, delete users with role Data Entry, delete users with role Office Administrator, delete users with role Office Manager, delete users with role Print Production, delete users with role SOS, delete users with role Staff, delete users with role Volunteer, edit users with role Analytics User, edit users with role Conference Services, edit users with role Data Entry, edit users with role Office Administrator, edit users with role Office Manager, edit users with role Print Production, edit users with role SOS, edit users with role Staff, edit users with role Volunteer, access CiviCRM, access CiviReport, access Contact Dashboard, access Report Criteria, access all cases and activities, access all custom data, access deleted contacts, access my cases and activities, access uploaded files, add contacts, administer CiviCRM, administer Reports, delete activities, delete contacts, delete in CiviCase, edit all contacts, edit groups, import contacts, merge duplicate contacts, profile listings, profile listings and forms, profile view, view all activities, view all contacts, assign roles, access administration pages, administer users' WHERE rid = 4" );
+		//Office Admin
+		db_query( "UPDATE {permission} SET perm = 'create users, delete users with role Analytics User, delete users with role Conference Services, delete users with role Data Entry, delete users with role Office Manager, delete users with role Print Production, delete users with role SOS, delete users with role Staff, delete users with role Volunteer, edit users with role Analytics User, edit users with role Conference Services, edit users with role Data Entry, edit users with role Office Manager, edit users with role Print Production, edit users with role SOS, edit users with role Staff, edit users with role Volunteer, access CiviCRM, access CiviReport, access Contact Dashboard, access Report Criteria, access all cases and activities, access all custom data, access deleted contacts, access my cases and activities, access uploaded files, add contacts, administer CiviCRM, administer Reports, delete activities, delete contacts, delete in CiviCase, edit all contacts, edit groups, import contacts, merge duplicate contacts, profile listings, profile listings and forms, profile view, view all activities, view all contacts, assign roles, access administration pages, administer users' WHERE rid = 9" );
+		//Print Production
+		db_query( "UPDATE {permission} SET perm = 'access CiviCRM, access CiviReport, access all custom data, edit groups, import contacts, profile listings, profile view, view all contacts' WHERE rid = 7" );
+		//Superuser
+		db_query( "UPDATE {permission} SET perm = 'create users, delete users with role Administrator, delete users with role Analytics User, delete users with role Conference Services, delete users with role Data Entry, delete users with role Office Administrator, delete users with role Office Manager, delete users with role Print Production, delete users with role SOS, delete users with role Staff, delete users with role Volunteer, edit users with role Administrator, edit users with role Analytics User, edit users with role Conference Services, edit users with role Data Entry, edit users with role Office Administrator, edit users with role Office Manager, edit users with role Print Production, edit users with role SOS, edit users with role Staff, edit users with role Volunteer, administer blocks, use PHP for block visibility, access CiviCRM, access CiviReport, access Contact Dashboard, access Report Criteria, access all cases and activities, access all custom data, access deleted contacts, access my cases and activities, access uploaded files, add contacts, administer CiviCRM, administer CiviCase, administer Reports, administer Tagsets, administer reserved tags, delete activities, delete contacts, delete in CiviCase, edit all contacts, edit groups, import contacts, merge duplicate contacts, profile create, profile edit, profile listings, profile listings and forms, profile view, translate CiviCRM, view all activities, view all contacts, assign roles, access administration pages, access user profiles, administer permissions, administer users, administer userprotect' WHERE rid = 3" );
+		
+		//handle actions/triggers
+		//action (check params field)
+		db_query( "INSERT INTO `actions` (`aid`, `type`, `callback`, `parameters`, `description`) VALUES
+('1', 'system', 'system_goto_action', 'a:1:{s:3:\"url\";s:7:\"civicrm\";}', 'Redirect to CiviCRM Dashboard')" );
+		db_query( "INSERT INTO `actions_aid` (`aid`) VALUES (1)" );
+		//triggers
+		db_query( "
+INSERT INTO `menu_links` (`menu_name`, `mlid`, `plid`, `link_path`, `router_path`, `link_title`, `options`, `module`, `hidden`, `external`, `has_children`, `expanded`, `weight`, `depth`, `customized`, `p1`, `p2`, `p3`, `p4`, `p5`, `p6`, `p7`, `p8`, `p9`, `updated`) VALUES
+('navigation', 337, 17, 'admin/build/trigger', 'admin/build/trigger', 'Triggers', 'a:1:{s:10:\"attributes\";a:1:{s:5:\"title\";s:36:\"Tell Drupal when to execute actions.\";}}', 'system', 0, 0, 0, 0, 0, 3, 0, 2, 17, 337, 0, 0, 0, 0, 0, 0, 0),
+('navigation', 338, 15, 'admin/help/trigger', 'admin/help/trigger', 'trigger', 'a:0:{}', 'system', -1, 0, 0, 0, 0, 3, 0, 2, 15, 338, 0, 0, 0, 0, 0, 0, 0),
+('navigation', 339, 337, 'admin/build/trigger/unassign', 'admin/build/trigger/unassign', 'Unassign', 'a:1:{s:10:\"attributes\";a:1:{s:5:\"title\";s:34:\"Unassign an action from a trigger.\";}}', 'system', -1, 0, 0, 0, 0, 4, 0, 2, 17, 337, 339, 0, 0, 0, 0, 0, 0); " );
+		db_query( "
+INSERT INTO `menu_router` (`path`, `load_functions`, `to_arg_functions`, `access_callback`, `access_arguments`, `page_callback`, `page_arguments`, `fit`, `number_parts`, `tab_parent`, `tab_root`, `title`, `title_callback`, `title_arguments`, `type`, `block_callback`, `description`, `position`, `weight`, `file`) VALUES
+('admin/build/trigger', '', '', 'trigger_access_check', 'a:1:{i:0;s:4:\"node\";}', 'trigger_assign', 'a:0:{}', 7, 3, '', 'admin/build/trigger', 'Triggers', 't', '', 6, '', 'Tell Drupal when to execute actions.', '', 0, 'modules/trigger/trigger.admin.inc'),
+('admin/build/trigger/comment', '', '', 'trigger_access_check', 'a:1:{i:0;s:7:\"comment\";}', 'trigger_assign', 'a:1:{i:0;s:7:\"comment\";}', 15, 4, 'admin/build/trigger', 'admin/build/trigger', 'Comments', 't', '', 128, '', '', '', 0, 'modules/trigger/trigger.admin.inc'),
+('admin/build/trigger/cron', '', '', 'user_access', 'a:1:{i:0;s:18:\"administer actions\";}', 'trigger_assign', 'a:1:{i:0;s:4:\"cron\";}', 15, 4, 'admin/build/trigger', 'admin/build/trigger', 'Cron', 't', '', 128, '', '', '', 0, 'modules/trigger/trigger.admin.inc'),
+('admin/build/trigger/node', '', '', 'trigger_access_check', 'a:1:{i:0;s:4:\"node\";}', 'trigger_assign', 'a:1:{i:0;s:4:\"node\";}', 15, 4, 'admin/build/trigger', 'admin/build/trigger', 'Content', 't', '', 128, '', '', '', 0, 'modules/trigger/trigger.admin.inc'),
+('admin/build/trigger/taxonomy', '', '', 'trigger_access_check', 'a:1:{i:0;s:8:\"taxonomy\";}', 'trigger_assign', 'a:1:{i:0;s:8:\"taxonomy\";}', 15, 4, 'admin/build/trigger', 'admin/build/trigger', 'Taxonomy', 't', '', 128, '', '', '', 0, 'modules/trigger/trigger.admin.inc'),
+('admin/build/trigger/unassign', '', '', 'user_access', 'a:1:{i:0;s:18:\"administer actions\";}', 'drupal_get_form', 'a:1:{i:0;s:16:\"trigger_unassign\";}', 15, 4, '', 'admin/build/trigger/unassign', 'Unassign', 't', '', 4, '', 'Unassign an action from a trigger.', '', 0, 'modules/trigger/trigger.admin.inc'),
+('admin/build/trigger/user', '', '', 'trigger_access_check', 'a:1:{i:0;s:4:\"user\";}', 'trigger_assign', 'a:1:{i:0;s:4:\"user\";}', 15, 4, 'admin/build/trigger', 'admin/build/trigger', 'Users', 't', '', 128, '', '', '', 0, 'modules/trigger/trigger.admin.inc'),
+('admin/help/trigger', '', '', 'user_access', 'a:1:{i:0;s:27:\"access administration pages\";}', 'help_page', 'a:1:{i:0;i:2;}', 7, 3, '', 'admin/help/trigger', 'trigger', 't', '', 4, '', '', '', 0, 'modules/help/help.admin.inc');
+" );
+		db_query( "UPDATE system SET status = 1, schema_version = 0 WHERE filename = 'modules/trigger/trigger.module';" );
+		db_query( "
+CREATE TABLE IF NOT EXISTS `trigger_assignments` (
+  `hook` varchar(32) NOT NULL DEFAULT '',
+  `op` varchar(32) NOT NULL DEFAULT '',
+  `aid` varchar(255) NOT NULL DEFAULT '',
+  `weight` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`hook`,`op`,`aid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		" );
+		db_query( "
+INSERT INTO `trigger_assignments` (`hook`, `op`, `aid`, `weight`) VALUES
+('user', 'view', '1', 1);
+		" );
+		//NYSS end
+		
     }
   }

@@ -35,10 +35,12 @@ UPDATE `civicrm_option_value`
 -- NYSS-Navigation Menu
 UPDATE civicrm_navigation SET url = 'civicrm/contact/deduperules&reset=1' WHERE name = 'Merge Duplicate Contacts';
 UPDATE civicrm_navigation SET url = 'civicrm/contact/deduperules&reset=1' WHERE name = 'Find and Merge Duplicate Contacts';
+INSERT INTO `civicrm_navigation` (`id`, `domain_id`, `label`, `name`, `url`, `permission`, `permission_operator`, `parent_id`, `is_active`, `has_separator`, `weight`) VALUES
+('', 1, 'Import/Export Mappings', 'Import/Export Mappings', 'civicrm/admin/mapping?reset=1', 'access CiviCRM,administer CiviCRM', 'AND', 201, 1, 0, 10);
 
 -- NYSS-Word Replacements
 {literal}
-UPDATE civicrm_domain SET locale_custom_strings = 'a:1:{s:5:"en_US";a:2:{s:7:"enabled";a:2:{s:13:"wildcardMatch";a:13:{s:7:"CiviCRM";s:8:"Bluebird";s:9:"Full-text";s:13:"Find Anything";s:16:"Addt\'l Address 1";s:15:"Mailing Address";s:16:"Addt\'l Address 2";s:8:"Building";s:73:"Supplemental address info, e.g. c/o, department name, building name, etc.";s:70:"Department name, building name, complex, or extension of company name.";s:7:"deatils";s:7:"details";s:11:"sucessfully";s:12:"successfully";s:40:"groups, contributions, memberships, etc.";s:27:"groups, relationships, etc.";s:18:"email OR an OpenID";s:5:"email";s:6:"Client";s:11:"Constituent";s:6:"client";s:11:"constituent";s:9:"Job title";s:9:"Job Title";s:9:"Nick Name";s:8:"Nickname";}s:10:"exactMatch";a:4:{s:8:"Position";s:9:"Job Title";s:2:"Id";s:2:"ID";s:6:"Client";s:11:"Constituent";s:6:"client";s:11:"constituent";}}s:8:"disabled";a:2:{s:13:"wildcardMatch";a:0:{}s:10:"exactMatch";a:0:{}}}}' 
+UPDATE civicrm_domain SET locale_custom_strings = 'a:1:{s:5:"en_US";a:2:{s:7:"enabled";a:2:{s:13:"wildcardMatch";a:18:{s:7:"CiviCRM";s:8:"Bluebird";s:9:"Full-text";s:13:"Find Anything";s:16:"Addt\'l Address 1";s:15:"Mailing Address";s:16:"Addt\'l Address 2";s:8:"Building";s:73:"Supplemental address info, e.g. c/o, department name, building name, etc.";s:70:"Department name, building name, complex, or extension of company name.";s:7:"deatils";s:7:"details";s:11:"sucessfully";s:12:"successfully";s:40:"groups, contributions, memberships, etc.";s:27:"groups, relationships, etc.";s:18:"email OR an OpenID";s:5:"email";s:6:"Client";s:11:"Constituent";s:6:"client";s:11:"constituent";s:9:"Job title";s:9:"Job Title";s:9:"Nick Name";s:8:"Nickname";s:2:"Id";s:2:"ID";s:12:"Do not phone";s:12:"Do Not Phone";s:12:"Do not email";s:12:"Do Not Email";s:11:"Do not mail";s:11:"Do Not Mail";s:10:"Do not sms";s:10:"Do Not SMS";}s:10:"exactMatch";a:3:{s:8:"Position";s:9:"Job Title";s:6:"Client";s:11:"Constituent";s:6:"client";s:11:"constituent";}}s:8:"disabled";a:2:{s:13:"wildcardMatch";a:0:{}s:10:"exactMatch";a:0:{}}}}' 
 WHERE id = 1;
 {/literal}
 
@@ -47,10 +49,10 @@ WHERE id = 1;
 UPDATE civicrm_dashboard SET is_fullscreen = 0 WHERE id = 4;
 
 -- Fix all/my cases class path
-UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/MyCases&reset=1&snippet=4' WHERE id = 2;
-UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/AllCases&reset=1&snippet=4' WHERE id = 3;
-UPDATE civicrm_menu SET path = 'civicrm/dashlet/AllCases', page_callback = 's:25:"CRM_Dashlet_Page_AllCases";' WHERE title = 'All Cases Dashlet';
-UPDATE civicrm_menu SET path = 'civicrm/dashlet/MyCases', page_callback = 's:24:"CRM_Dashlet_Page_MyCases";' WHERE title = 'Case Dashlet';
+UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/myCases&reset=1&snippet=4' WHERE id = 2;
+UPDATE civicrm_dashboard SET url = 'civicrm/dashlet/allCases&reset=1&snippet=4' WHERE id = 3;
+UPDATE civicrm_menu SET path = 'civicrm/dashlet/allCases', page_callback = 's:25:"CRM_Dashlet_Page_AllCases";' WHERE title = 'All Cases Dashlet';
+UPDATE civicrm_menu SET path = 'civicrm/dashlet/myCases', page_callback = 's:24:"CRM_Dashlet_Page_MyCases";' WHERE title = 'Case Dashlet';
 
 -- NYSS-Include/Exclude search
 UPDATE civicrm_navigation SET is_active = 1 WHERE id = 206;
@@ -63,9 +65,22 @@ INSERT INTO `civicrm_option_value` (`id`, `option_group_id`, `label`, `value`, `
 (1064, 64, 'Satellite Office', 'Satellite Office', 'Satellite_Office', NULL, NULL, 0, 19, NULL, 0, 0, 1, NULL, NULL, NULL),
 (1065, 71, 'Satellite Office', 'Satellite Office', 'Satellite_Office', NULL, NULL, 0, 8, NULL, 0, 0, 1, NULL, NULL, NULL);
 
+UPDATE civicrm_option_value SET filter = 0 WHERE label = 'Print PDF Letter';
+
 -- NYSS-District Information custom group default open
 UPDATE civicrm_custom_group SET collapse_display = 1, collapse_adv_display = 0, help_pre = NULL, help_post = NULL WHERE id = 7;
 
+-- NYSS-Add Mailing Exclusions Group
+{literal}
+INSERT INTO `civicrm_group` (`id`, `name`, `title`, `description`, `source`, `saved_search_id`, `is_active`, `visibility`, `where_clause`, `select_tables`, `where_tables`, `group_type`, `cache_date`, `parents`, `children`, `is_hidden`) VALUES
+('', 'Mailing_Exclusions', 'Mailing Exclusions', 'Deceased and do not mail contacts.', NULL, 5, 1, 'User and User Admin Only', ' ( `civicrm_group_contact_cache_4`.group_id = 4 ) ', 'a:12:{s:15:"civicrm_contact";i:1;s:15:"civicrm_address";i:1;s:22:"civicrm_state_province";i:1;s:15:"civicrm_country";i:1;s:13:"civicrm_email";i:1;s:13:"civicrm_phone";i:1;s:10:"civicrm_im";i:1;s:19:"civicrm_worldregion";i:1;s:31:"`civicrm_group_contact_cache_4`";s:132:" LEFT JOIN civicrm_group_contact_cache `civicrm_group_contact_cache_4` ON contact_a.id = `civicrm_group_contact_cache_4`.contact_id ";s:6:"gender";i:1;s:17:"individual_prefix";i:1;s:17:"individual_suffix";i:1;}', 'a:2:{s:15:"civicrm_contact";i:1;s:31:"`civicrm_group_contact_cache_4`";s:132:" LEFT JOIN civicrm_group_contact_cache `civicrm_group_contact_cache_4` ON contact_a.id = `civicrm_group_contact_cache_4`.contact_id ";}', NULL, '2010-11-06 14:19:42', NULL, NULL, 0);
 
+INSERT INTO `civicrm_saved_search` (`id`, `form_values`, `mapping_id`, `search_custom_id`, `where_clause`, `select_tables`, `where_tables`) VALUES
+('', 'a:7:{s:5:"qfKey";s:37:"0115d58ba08db0ff037fa76a39374c60_3224";s:6:"mapper";a:4:{i:1;a:1:{i:0;a:2:{i:0;s:10:"Individual";i:1;s:11:"is_deceased";}}i:2;a:1:{i:0;a:2:{i:0;s:10:"Individual";i:1;s:11:"do_not_mail";}}i:3;a:1:{i:0;a:2:{i:0;s:9:"Household";i:1;s:11:"do_not_mail";}}i:4;a:1:{i:0;a:2:{i:0;s:12:"Organization";i:1;s:11:"do_not_mail";}}}s:8:"operator";a:4:{i:1;a:1:{i:0;s:1:"=";}i:2;a:1:{i:0;s:1:"=";}i:3;a:1:{i:0;s:1:"=";}i:4;a:1:{i:0;s:1:"=";}}s:5:"value";a:4:{i:1;a:1:{i:0;s:1:"1";}i:2;a:1:{i:0;s:1:"1";}i:3;a:1:{i:0;s:1:"1";}i:4;a:1:{i:0;s:1:"1";}}s:4:"task";s:2:"13";s:8:"radio_ts";s:6:"ts_all";s:11:"uf_group_id";s:2:"11";}', 5, NULL, ' (  ( contact_a.is_deceased = 1 AND contact_a.contact_type IN (''Individual'') )  OR  ( contact_a.do_not_mail = 1 AND contact_a.contact_type IN (''Individual'') )  OR  ( contact_a.do_not_mail = 1 AND contact_a.contact_type IN (''Household'') )  OR  ( contact_a.do_not_mail = 1 AND contact_a.contact_type IN (''Organization'') )  ) ', 'a:11:{s:15:"civicrm_contact";i:1;s:15:"civicrm_address";i:1;s:22:"civicrm_state_province";i:1;s:15:"civicrm_country";i:1;s:13:"civicrm_email";i:1;s:13:"civicrm_phone";i:1;s:10:"civicrm_im";i:1;s:19:"civicrm_worldregion";i:1;s:6:"gender";i:1;s:17:"individual_prefix";i:1;s:17:"individual_suffix";i:1;}', 'a:1:{s:15:"civicrm_contact";i:1;}');
+{/literal}
 
+-- NYSS-SAGE mail processing
+UPDATE civicrm_preferences SET address_standardization_provider = 'SAGE', address_standardization_userid = 'SQ0lzOepSH3qnh2r4kN1QeRCMAAan2u', address_standardization_url = 'http://geo.nysenate.gov/api/xml/validate/extended?' WHERE id = 1;
 
+-- NYSS-Clear cache
+TRUNCATE `civicrm_cache`;
