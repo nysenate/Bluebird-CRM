@@ -590,6 +590,9 @@ div.node {
   padding: 0 0 1.417em 0;
   border-bottom: 1px solid #ccc;
 }
+div#node-1 {
+  border: none;
+}
 
 div.node h2 {
   margin-bottom: 0;
@@ -762,6 +765,19 @@ ul.pager span.pager-ellipsis {
 #user-login li.openid-link {
   background-position: 0 0;
   padding-left:18px;
+}
+#user-login-form {
+	text-align: right;
+	margin-left: 20px;
+}
+#user-login-form input.form-submit {
+	margin-right: 0;
+}
+#user-login-form #edit-name-wrapper {
+	margin: 10px 0 0;
+}
+#user-login-form #edit-pass-wrapper {
+	margin: 0 0 4px;
 }
 
 /* @group Fixes */

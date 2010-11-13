@@ -1,0 +1,4 @@
+; $Id$
+name = NYSS 403
+description = Creates Custom 403 page, and then adds that as default 403 url
+core = 6.x
