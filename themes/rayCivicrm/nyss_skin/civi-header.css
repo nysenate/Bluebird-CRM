@@ -125,6 +125,10 @@ padding-left:2px;
 	background:transparent url(images/header-search-active.gif) no-repeat center right;
 	}
 
+.crm-advanced_search_form-accordion>div.crm-accordion-body {
+    border: none;
+    }
+
 /* menu functions */
 
 .crm-link-home,
