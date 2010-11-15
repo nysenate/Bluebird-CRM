@@ -14,7 +14,7 @@ Options -Indexes
 Options +FollowSymLinks
 
 # Redirect root to login
-RedirectMatch 301 ^/$ /user
+#RedirectMatch 301 ^/$ /user
 
 # Make Drupal handle any 404 errors.
 ErrorDocument 404 /index.php
