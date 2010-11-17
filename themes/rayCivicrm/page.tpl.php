@@ -185,7 +185,7 @@ $now = time() + (60 * 60 * $offset);
 
 </div>
 
-<div id="dialog" style="display: none;">
+<div id="dialogJobID" style="display: none;">
      <form action="" method="post" id="formSetJob">
         Enter a new SOS Job ID<br/>
      	<input type="text" id="set_jobID" name="set_JobID" />
@@ -194,8 +194,8 @@ $now = time() + (60 * 60 * $offset);
 
 <script type="text/javascript">
 function setJobID( ) {
-    cj("#dialog").show( );
-    cj("#dialog").dialog({
+    cj("#dialogJobID").show( );
+    cj("#dialogJobID").dialog({
 		title: "Set SOS Job ID",
 		modal: true,
 		bgiframe: true,
