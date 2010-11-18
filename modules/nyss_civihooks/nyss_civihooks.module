@@ -1,4 +1,41 @@
 <?php 
+
+function nyss_civihooks_menu() {
+
+  $items = array();
+
+  $items['nyss_getfile'] = array (
+    'title' => t('NYSS Retrieve file'),
+    'page callback' => 'nyss_civihooks_getfile',
+    'access arguments' => array('create page content'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  return $items;
+}
+
+function nyss_civihooks_getfile() {
+
+	$file = $_REQUEST['file'];
+
+	header("Pragma: public");
+	header("Expires: 0");
+	header("Cache-Control: no-cache,must-revalidate, post-check=0, pre-check=0");
+	header("Cache-Control: public"); 
+	header("Content-Description: File Transfer"); 
+	header("Content-Type: application/csv");
+	header("Content-Disposition: attachment; filename=$filename");
+	header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
+	header('Content-Length: ' . filesize($file));
+
+	$fh = fopen($file, "r");
+	while (!feof($fh)) {
+	      echo fread($fh, 500);
+	      ob_flush();
+	}
+	fclose($fh);
+}
+
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
 
 //echo $query;
@@ -103,3 +140,20 @@ function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 	unset($tasks[24]); //remove delete permanently task, #2373
 	
 }
+
+function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
+	
+	//NYSS #2729 strip line break
+	if ( ( $op == 'edit' || $op == 'create' ) && 
+		 ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
+
+		foreach ( $objectRef['email'] as $key => $block ) {
+			if ( $block['signature_html'] == '<br />' ) {
+				$objectRef['email'][$key]['signature_html'] = NULL;
+			}
+		}
+
+	}
+	
+}
+
