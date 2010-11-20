@@ -78,9 +78,3 @@ $(document).ready(function() {
 
     
 });
-
-
-
-DD_roundies.addRule('.create-link, .account-info-wrapper, .ac_results-inner, .civi-advanced-search-link, .civi-menu, .civi-admin-block, .civi-search-section .input-wrapper, .not-logged-in #block-user-0 #edit-submit, .standard-container', '4px');
-DD_roundies.addRule('#crm-container .column-1 .widget-header, #footer #dashboard-link-wrapper', '4px 4px 0px 0px');
-DD_roundies.addRule('#crm-container .column-1 .widget-content', '0px 0px 4px 4px');
