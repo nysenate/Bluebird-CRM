@@ -87,8 +87,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
      */
     public function postProcess() {
 
+	//get the list of genders
+	$aGender = getOptions("gender");
+
 	//generate random number for export and tables
 	$rnd = mt_rand(1,9999999999999999);
+
+	$this->_contactIds = array_unique($this->_contactIds);
 
 	$ids = implode("),(",$this->_contactIds);
 	$ids = "($ids)";
@@ -108,7 +113,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql .= " LEFT  JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7)";
         $sql .= " LEFT  JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
 	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
-	$sql .= " WHERE c.is_deleted=0 AND c.do_not_mail=0;";
+	$sql .= " WHERE c.is_deleted=0 AND c.do_not_mail=0 ORDER BY CASE WHEN c.gender_id=2 THEN 1 ELSE 999 END, c.birth_date DESC;";
 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
@@ -127,35 +132,47 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
 	$config =& CRM_Core_Config::singleton();
 
-	$fname = 'printProduction/printExport'.$rnd.'.tsv';
-
 	//check if printProduction subfolder exists; if not, create it
-	if ( !file_exists($config->uploadDir.'printProduction/') ) {
-		mkdir( $config->uploadDir.'printProduction/', 0775 );
+	$path = "$config->uploadDir.'printProduction/";
+
+	if ( !file_exists($path) ) {
+		mkdir( $path, 0775 );
 	}
 
-	$fhout = fopen($config->uploadDir.$fname, 'w');
+        $fname = $path.'/printExport'.$rnd.'.tsv';
 
+//echo $config->uploadDir;exit;
+
+	$fhout = fopen($fname, 'w');
+
+        $aHeader=array();
 	$firstLine = true;
         while ($dao->fetch()) {
 
 		//write out the header rowv2($fhout, $aOut,"\t",'',false,false);
 		if ($firstLine) {
 
-			$aOut=array();
 	                foreach($dao as $name=>$val) {
 
 	                        if (!isset($skipVars[$name])) {
-					$aOut[] = $name;
+					$aHeader[] = $name;
 				}
 			}
-			fputcsv2($fhout, $aOut,"\t",'',false,false);
+			fputcsv2($fhout, $aHeader,"\t",'',false,false);
 			$firstLine=false;
 		}
 
 	        $aOut = array();
 		foreach($dao as $name=>$val) {
 			if (!isset($skipVars[$name])) {
+
+				if ($name=="gender_id") $val = $aGender[$val];
+				if ($name=="birth_date") {
+					if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
+					else $val = "";
+//print $val."\n";
+				}
+					
 		                $val = str_replace("'","",$val);
                 		$val = str_replace("\"","",$val);
 				$aOut[] =  $val;
@@ -164,13 +181,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
 	        fputcsv2($fhout, $aOut,"\t",'',false,false);
 	}
-
+//exit;
 	//get rid of helper table
         $sql = "DROP TABLE tmpExport$rnd;";
         $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 		//$href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST'].str_replace('/data/www/nyss/','/',$config->uploadDir).$fname);
-        $href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST']."/data/".$_SERVER['HTTP_HOST']."/civicrm/upload/".$fname);
+        $href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST'].'/nyssgetfile?file='.urlencode($fname));
 		$status[] = "Task $rnd exported ". sizeof($this->_contactIds). " Contact(s). &nbsp;&nbsp;<a href=\"$href\">Click here</a> to email the link.";
         
         CRM_Core_Session::setStatus( $status );
@@ -197,5 +214,62 @@ function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysq
     }
     fwrite($fh, join($delimiter, $output) . "\n");
 }
+/*
+function getIssueCodesForUser() {
 
+	global $issueCodes;
+
+	if (!isset($issueCodes)) {
+
+		$issueCodes = array();
+
+		$dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_tag where name='Issue Codes';", CRM_Core_DAO::$_nullArray);
+  		$dao->fetch();
+  		$parent_id = $dao->id;
+
+		getIssueCodeChildren($parent_id);
+
+
+		$dao = &CRM_Core_DAO::executeQuery("SELECT id,name from civicrm_tag where parent_id = $parent_id;", CRM_Core_DAO::$_nullArray);
+		$foundOne = false;
+ 		while ($dao->fetch()) {
+				
+			$foundOne = true;
+			$codes[$dao->id] = $dao->name;
+		}
+	}
+}
+
+function getIssueCodeChildren($parent_id) {
+
+	$global $issueCodes;
+
+        $issueCodes = array_merge($codes,$arr);
+
+        foreach ($arr as $key=>$val) {
+
+           $arr = getIssueCodeChildren($key);
+
+	}
+}
+*/
+function getOptions($strGroup)
+{
+  $session =& CRM_Core_Session::singleton();
+
+  $dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray);
+  $dao->fetch();
+  $optionGroupID = $dao->id;
+
+  $dao = &CRM_Core_DAO::executeQuery("SELECT name, label, value from civicrm_option_value where option_group_id=$optionGroupID;", CRM_Core_DAO::$_nullArray);
+
+  $options = array();
+
+  while ($dao->fetch()) {
+    $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
+    $options[$dao->value] = $name;
+  }
+
+  return $options;
+} // getOptions()
 
