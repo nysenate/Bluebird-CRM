@@ -1,0 +1,45 @@
+v1.1 Drupal Settings
+
++ Enable Triggers module
++ Trigger Action: Redirect to CiviCRM Dashboard : civicrm
++ Trigger: When user's profile is being viewed
+- Frontpage settings: default frontpage - civicrm/dashboard?reset=1
+- Frontpage settings: authenticated user - redirect - civicrm/dashboard?reset=1
++ User permissions: print production - remove access report criteria
++ User permissions: sos - add access CiviReport, access Report Criteria, administer Reports, edit Groups
++ User permissions: admin/office admin/superuser - merge duplicate contacts
++ User permissions: admin/office admin/superuser - access admin pages, remove access user profiles
+
+CiviCRM Upgrade
+
++ Import/Export Mappings menu item
++ Word replacements:
++ Id > ID (not exact match)
++ Do not phone > Do Not Phone
++ Do not email > Do Not Email
++ Do not mail > Do Not Mail
++ Do not sms > Do Not SMS
++ postal mailing processing: SAGE
++ Mailing Exclusion smart group
+
+Instances to Upgrade
+/civicrm/upgrade?reset=1
+
++ adams
++ krueger
++ oppenheimer
++ peralta
++ sampson
++ sd95
++ sd98
++ sd99
++ template
+
+Manual Config 
+
+UPDATE civicrm_menu SET path = 'civicrm/dashlet/allCases', page_callback = 's:25:"CRM_Dashlet_Page_AllCases";' WHERE title = 'All Cases Dashlet';
+UPDATE civicrm_menu SET path = 'civicrm/dashlet/myCases', page_callback = 's:24:"CRM_Dashlet_Page_MyCases";' WHERE title = 'Case Dashlet';
+
+Reset action/trigger
+
+Reset /data/ symlink
