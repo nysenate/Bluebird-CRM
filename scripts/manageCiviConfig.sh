@@ -57,5 +57,5 @@ app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_AP
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 
-php $script_dir/manageCiviConfig.php $civi_op $dbhost $dbuser $dbpass $dbname $instance.$base_domain $app_rootdir $data_rootdir
+php $script_dir/manageCiviConfig.php $civi_op $dbhost $dbuser $dbpass $dbname $instance.$base_domain "$app_rootdir" "$data_rootdir"
 exit $?
