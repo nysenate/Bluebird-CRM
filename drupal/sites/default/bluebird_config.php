@@ -23,7 +23,12 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   if (isset($_SERVER['SERVER_NAME'])) {
     $servername = $_SERVER['SERVER_NAME'];
     $firstdot = strpos($servername, '.');
-    $shortname = substr($servername, 0, $firstdot);
+    if ($firstdot === false) {
+      $shortname = $servername;
+    }
+    else {
+      $shortname = substr($servername, 0, $firstdot);
+    }
     $default_base_domain = substr($servername, $firstdot + 1);
   }
   else if (($shortname = getenv('INSTANCE_NAME')) !== false) {
