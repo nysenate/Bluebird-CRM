@@ -19,7 +19,7 @@ deleteInstance=$script_dir/deleteInstance.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--civicrm-sql-file file] [--drupal-sql-file file] sourceInstance targetInstance" >&2
+  echo "Usage: $prog [--civicrm-sql-file file] [--drupal-sql-file file] [--delete] sourceInstance targetInstance" >&2
 }
 
 die() {
