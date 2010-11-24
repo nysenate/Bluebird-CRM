@@ -19,6 +19,9 @@ $dbuser = $bbini['globals']['db.user'];
 $dbpass = $bbini['globals']['db.pass'];
 $httpuser = $bbini['globals']['http.user'];
 $httppass = $bbini['globals']['http.pass'];
+$dbciviprefix = $bbini['globals']['db.civicrm.prefix'];
+$dbdrupprefix = $bbini['globals']['db.drupal.prefix'];
+$basedomain = $bbini['globals']['base.domain'];
 
 if (empty($dbhost) || empty($dbuser) || empty($dbpass)
     || empty($httpuser) || empty($httppass)) {
@@ -33,13 +36,13 @@ define('HTTPPASS', $httppass);
 define('ROOTDIR', $base_dir.'/drupal');
 define('CIVI_TABLE_PREFIX', 'civicrm_');
 define('CIVI_TEMPLATEDIR', $base_dir.'/templates/site');
-define('ROOTDOMAIN', '.crm.nysenate.gov');
+define('ROOTDOMAIN', '.'.$basedomain);
 define('ROOTDOMAIN_DEV', '.crmdev.nysenate.gov');
 define('DRUPAL_ROOTDIR', '');
 define('DRUPAL_ROOTDIR_DEV', '');
-define('CIVI_DBPREFIX', 'senate_c_');
+define('CIVI_DBPREFIX', $dbciviprefix);
 define('CIVI_DBPREFIX_DEV', 'senate_dev_c_');
-define('DRUPAL_DBPREFIX', 'senate_d_');
+define('DRUPAL_DBPREFIX', $dbdrupprefix);
 define('DRUPAL_DBPREFIX_DEV', 'senate_dev_d_');
 
 
