@@ -39,7 +39,7 @@ function setState($cID, $matches, $locType = LOC_TYPE_WORK) {
 
                         if ($match<>"NY") cLog(0,'info',"found non-NY state ID $state for $match, contact ID: $cID");
 
-                        $dao1 = &CRM_Core_DAO::executeQuery("UPDATE civicrm_address set state_province_id = $state WHERE contact_id = $cID and location_type_id=$locType and (state_province_id IS NULL OR state_province_id=1031);", CRM_Core_DAO::$_nullArray);
+                        $dao1 = &CRM_Core_DAO::executeQuery("UPDATE civicrm_address set state_province_id = $state WHERE contact_id = $cID and location_type_id=$locType and (state_province_id IS NULL OR state_province_id=0 OR state_province_id=1031);", CRM_Core_DAO::$_nullArray);
                 }
         }
 }
