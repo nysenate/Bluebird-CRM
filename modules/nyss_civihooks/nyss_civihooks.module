@@ -7,33 +7,46 @@ function nyss_civihooks_menu() {
   $items['nyss_getfile'] = array (
     'title' => t('NYSS Retrieve file'),
     'page callback' => 'nyss_civihooks_getfile',
-    'access arguments' => array('create page content'),
+    'access arguments' => array('export print production files'),
     'type' => MENU_SUGGESTED_ITEM,
   );
 
   return $items;
 }
 
+function nyss_civihooks_perm() {
+
+	return array('export print production files');
+	
+}
+
 function nyss_civihooks_getfile() {
+	
+	civicrm_initialize( );
+	require_once 'CRM/Core/Config.php';
+	$config =& CRM_Core_Config::singleton();
 
-	$file = $_REQUEST['file'];
-
-	header("Pragma: public");
-	header("Expires: 0");
-	header("Cache-Control: no-cache,must-revalidate, post-check=0, pre-check=0");
-	header("Cache-Control: public"); 
-	header("Content-Description: File Transfer"); 
-	header("Content-Type: application/csv");
-	header("Content-Disposition: attachment; filename=$filename");
-	header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
-	header('Content-Length: ' . filesize($file));
-
-	$fh = fopen($file, "r");
-	while (!feof($fh)) {
-	      echo fread($fh, 500);
-	      ob_flush();
+	$file 	  = $_REQUEST['file'];
+	$fullpath = $config->uploadDir.'printProduction/'.$file;
+	//echo $fullpath.'<br />';
+	
+	if ( !file_exists($fullpath) || !$file ) {
+		echo "No file provided. Make sure you have entered the full URL.<br />";
+		exit();
 	}
-	fclose($fh);
+	
+	$headers = array ("Pragma: public",
+					  "Expires: 0",
+					  "Cache-Control: no-cache,must-revalidate, post-check=0, pre-check=0",
+					  "Cache-Control: public",
+					  "Content-Description: File Transfer",
+					  "Content-Type: application/csv",
+					  "Content-Disposition: attachment; filename=".basename($file),
+					  "Expires: Mon, 26 Jul 1997 05:00:00 GMT",
+					  'Content-Length: '.filesize($fullpath)
+					 );
+	file_transfer( $fullpath, $headers );
+	
 }
 
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
