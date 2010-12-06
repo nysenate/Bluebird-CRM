@@ -248,7 +248,17 @@ function drupal_query_string_encode($query, $exclude = array(), $parent = '') {
  */
 function drupal_get_destination() {
   if (isset($_REQUEST['destination'])) {
-    return 'destination='. urlencode($_REQUEST['destination']);
+	//NYSS - LCD: need to retain GET variables after login
+	//Implemented patch: http://drupal.org/node/158159
+	//May want to implement: http://drupal.org/project/drupal_override_function
+    //return 'destination='. urlencode($_REQUEST['destination']);
+	$path = isset($_GET['q']) ? $_GET['q'] : '';
+    $query = drupal_query_string_encode($_GET, array('q'));
+    if ($query != '') {
+      $path = '?'.$query;
+    }
+    return 'destination='. urlencode($_REQUEST['destination'].$path);
+	//NYSS end
   }
   else {
     // Use $_GET here to retrieve the original path in source form.
