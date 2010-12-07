@@ -85,29 +85,25 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	//generate random number for export and tables
 	$rnd = mt_rand(1,9999999999999999);
 
-	//add any members of the seed group
-	/*$sql = "SELECT contact_id FROM civicrm_group_contact WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing Seeds');";
-	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-	while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
-
-        $this->_contactIds = array_unique($this->_contactIds);
+    $this->_contactIds = array_unique($this->_contactIds);
 
 	$ids = implode("),(",$this->_contactIds);
-	$ids = "($ids)";*/
+	$ids = "($ids)";
 
 	$sql = "CREATE TEMPORARY TABLE tmpExport$rnd(id int not null primary key);";
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-	/*$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
-    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );*/
+	$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
+	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
 	$sql .= "street_number, street_name, street_unit, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
 	$sql .= "c.birth_date, c.gender_id, phone, ";
 	$sql .= "town_52, ward_53, election_district_49, congressional_district_46, ny_senate_district_47, ny_assembly_district_48, school_district_54, county_50, ";
-	$sql .= "email, a.location_type_id, is_deleted ";
+	$sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
 
 	$sql .= " FROM civicrm_contact c ";
+	$sql .= " INNER JOIN tmpExport$rnd t on t.id=c.id ";
 	$sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND a.is_primary=1 ";
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	$sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
