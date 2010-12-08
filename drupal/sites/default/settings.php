@@ -60,11 +60,15 @@ if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
 # Use Bluebird custom maintenance pages within our own custom theme.
 $conf['maintenance_theme'] = 'rayCivicrm';
 
-# Cacherouter: use APC for all local caching
+# Cacherouter: Try to use APC for all local caching
+$cache_engine = 'db';
+if (function_exists("apc_fetch")) {
+  $cache_engine = 'apc';
+}
 $conf['cache_inc'] = './sites/all/modules/cacherouter/cacherouter.inc';
 $conf['cacherouter'] = array(
   'default' => array(
-    'engine' => 'apc',
+    'engine' => $cache_engine,
     'shared' => FALSE,
     'prefix' => $bbconfig['servername'],
     'static' => FALSE,

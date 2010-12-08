@@ -37,11 +37,12 @@ var global_formNavigate = true;		// Js Global Variable for onChange Flag
 		$(this+ ":input[type='textarea']").keyup(function(){ 
 			global_formNavigate = false; 
 		}); 
-        $(this+ ":submit").click(function(){
-            global_formNavigate = true;
-        });
         $(".token-input-list-facebook").bind( "DOMNodeRemoved DOMNodeInserted", function(){ 
             global_formNavigate = false; 
+        });
+		//NYSS shift order to ensure submit clears error
+		$(this+ ":submit").click(function(){
+            global_formNavigate = true;
         });
     }
 })(jQuery);

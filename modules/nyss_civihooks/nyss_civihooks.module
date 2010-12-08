@@ -1,8 +1,75 @@
 <?php 
+
+function nyss_civihooks_menu() {
+
+  $items = array();
+
+  $items['nyss_getfile'] = array (
+    'title' => t('NYSS Retrieve file'),
+    'page callback' => 'nyss_civihooks_getfile',
+    'access arguments' => array('export print production files'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  return $items;
+}
+
+function nyss_civihooks_perm() {
+
+	return array('export print production files');
+	
+}
+
+function nyss_civihooks_getfile() {
+	
+	civicrm_initialize( );
+	require_once 'CRM/Core/Config.php';
+	$config =& CRM_Core_Config::singleton();
+
+	$file 	  = $_REQUEST['file'];
+	$fullpath = $config->uploadDir.'printProduction/'.$file;
+	//echo "fullpath: $fullpath file: $file";
+	//exit;	
+	
+	if ( !file_exists($fullpath) || !$file ) {
+		echo "No file provided. Make sure you have entered the full URL.<br />";
+		exit();
+	}
+	
+	$headers = array ("Pragma: public",
+					  "Expires: 0",
+					  "Cache-Control: no-cache,must-revalidate, post-check=0, pre-check=0",
+					  "Cache-Control: public",
+					  "Content-Description: File Transfer",
+					  "Content-Type: application/csv",
+					  "Content-Disposition: attachment; filename=".basename($fullpath),
+					  "Expires: Mon, 26 Jul 1997 05:00:00 GMT",
+					  'Content-Length: '.filesize($fullpath)
+					 );
+
+	//don't use this, seems to cause problems...
+	//file_transfer( $fullpath, $headers );
+
+	//spit out the header
+	foreach ($headers as $header) header($header);
+
+	$fh = fopen($fullpath, "r");
+
+	if (!$fh) {
+		echo "No file provided. File requested is: $fullpath.";
+		exit;
+	}
+
+	while (!feof($fh)) {
+		echo fread($fh, 1024);
+		ob_flush();
+	}
+	fclose($fh);
+}
+
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
 
 //echo $query;
-
 
 	//office staff group ID to use for activity assignees and case roles
 	$groupID = '3';
@@ -103,3 +170,20 @@ function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 	unset($tasks[24]); //remove delete permanently task, #2373
 	
 }
+
+function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
+	
+	//NYSS #2729 strip line break
+	if ( ( $op == 'edit' || $op == 'create' ) && 
+		 ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
+
+		foreach ( $objectRef['email'] as $key => $block ) {
+			if ( $block['signature_html'] == '<br />' ) {
+				$objectRef['email'][$key]['signature_html'] = NULL;
+			}
+		}
+
+	}
+	
+}
+

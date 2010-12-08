@@ -66,7 +66,8 @@
 <div class="crm-title">
 	<h1 class="title">
        	{if $isDeleted}<del>{/if}
-       	{php}
+       	{if $tplFile eq 'CRM/Contact/Page/View/Summary.tpl'}
+        {php}
 	  		//NYSS 2724 TODO: look at more complete solution to long titles overlapping action buttons
             $title = drupal_get_title();
             //$strippedtitle = strip_tags($title);
@@ -80,6 +81,11 @@
             	print $title;
 	  		}
         {/php}
+        {else}
+        {php}
+        	print drupal_get_title();
+        {/php}
+        {/if}
        	{if $isDeleted}</del>{/if}
     </h1>
 </div>

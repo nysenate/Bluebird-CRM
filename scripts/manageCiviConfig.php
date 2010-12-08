@@ -77,7 +77,7 @@ function nullifyCiviConfig($dbcon)
 $prog = basename($argv[0]);
 
 if ($argc != 6 && $argc != 9) {
-  echo "$prog: Usage: cmd dbhost dbuser dbpass dbname [crmhost] [appdir] [datadir]\n";
+  echo "Usage: $prog cmd dbhost dbuser dbpass dbname [crmhost] [appdir] [datadir]\n";
   echo "   cmd can be: list, update, or nullify\n";
   exit(1);
 }
