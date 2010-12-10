@@ -290,6 +290,7 @@ class CRM_Contact_Task {
                            12 => self::$_tasks[12]['title'],
                            16 => self::$_tasks[16]['title'],
                            100 => self::$_tasks[100]['title'], //NYSS
+                           101 => self::$_tasks[101]['title'], //NYSS
                            );
             if ( ! self::$_tasks[12]['title'] ) {
                 //usset it, No edit permission and Map provider info
