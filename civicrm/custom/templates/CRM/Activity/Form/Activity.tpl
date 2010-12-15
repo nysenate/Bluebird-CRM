@@ -338,7 +338,7 @@
         {/literal}
     {/if}
     {if ! $form.case_select}
-        {include file="CRM/common/formNavigate.tpl"}
+        {*include file="CRM/common/formNavigate.tpl"*}{*NYSS 2758 problematic in IE8*}
     {/if}
     </div>{* end of form block*}
 {/if} {* end of snippet if*}
