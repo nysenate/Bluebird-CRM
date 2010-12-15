@@ -11,7 +11,7 @@
 
 $script_dir = dirname(__FILE__);
 
-define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/search/?term=otype:bill&format=json');
+define('OPENLEG_ROOT', 'http://open.nysenate.gov:8080/legislation/search/?term=otype:bill&format=json');
 
 #hard coded, represents hidden issue code tag.
 define('TAG_PARENT_ID', 292);
@@ -45,6 +45,9 @@ $issueCodes = array();
 $done = false;
 $i = 1;
 
+// Allow 6 minutes for this script to run, then return a fatal error.
+set_time_limit(360);
+
 while (!$done) {
   $json = openleg_retrieve("&pageIdx=$i&pageSize=$batch");
   if (count($json) == 1) {
@@ -65,9 +68,6 @@ while (!$done) {
     $issueCodes[$size]['description'] = cleanForDb($title.$summary);
     $issueCodes[$size]['parent_id'] = TAG_PARENT_ID;
   }
-
-  // Allow 6 minutes for this script to run, then return a fatal error.
-  set_time_limit(360);
   ++$i;
 }
 
