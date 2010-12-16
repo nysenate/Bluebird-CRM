@@ -26,8 +26,8 @@ if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
 </head>
 
 <?php 
-	$rolesList = implode('',$user->roles);
-	$role = str_replace('authenticated user','', $rolesList);
+	$rolesList = implode(', ',$user->roles);
+	$role = str_replace('authenticated user, ','', $rolesList).'&nbsp;';
 ?>
 
 <body class="<?php print $body_classes;?><?php print 'role-'.$role;?>">

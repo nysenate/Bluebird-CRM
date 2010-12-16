@@ -4,15 +4,14 @@
 /**
  * @file
  * Common functionality for querying the OpenLeg API.
+ *
+ * Author: Sacha Stanton, Rayogram
+ * Author: Ken Zalewski, New York State Senate
  */
 
 $script_dir = dirname(__FILE__);
-include_once("$script_dir/functions.inc.php");
 
-//define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/api/1.0/xml/');
-//define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/search/?term=otype:action%20AND%20when:[0946684800000%20TO%201270900799000]&format=json');
-//define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/search/?term=otype:bill&searchType=bill&format=json');
-define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/search/?term=otype:bill%20AND%20modified:[1276128000000%20TO%201276689599000]&format=json');
+define('OPENLEG_ROOT', 'http://open.nysenate.gov:8080/legislation/search/?term=otype:bill&format=json');
 
 #hard coded, represents hidden issue code tag.
 define('TAG_PARENT_ID', 292);
@@ -20,160 +19,145 @@ define('TAG_PARENT_ID', 292);
 error_reporting(E_ALL & ~E_WARNING);
 
 try {
-        $config = strToLower($argv[1]);
-        $function = strToLower($argv[2]);
-        $SC['dbName'] = $argv[3];
+  $config = strToLower($argv[1]);
+  $function = strToLower($argv[2]);
+  $dbBasename = $argv[3];
 
-} catch (Exception $e) {
-        echo "ARGUMENT ERROR";
-        exit;
+}
+catch (Exception $e) {
+  echo "ARGUMENT ERROR";
+  exit;
 }
 
 //get the config
 include_once("$script_dir/config.php");
 
-global $SC;
+$dbHost = $SC['dbHost'];
+$dbUser = $SC['dbUser'];
+$dbPass = $SC['dbPassword'];
+$dbPrefix = $SC['dbCiviPrefix'];
+$dbName = $dbPrefix.$dbBasename;
 
-ob_start();
-
-echo "requesting...\n\n<br><br>";
-
-$masterList = array();
+echo "Downloading OpenLeg bill data...\n\n";
 
 $batch = 1000;
-
-//do it all in one shot
 $issueCodes = array();
 $done = false;
-$i=1;
+$i = 1;
+
+// Allow 6 minutes for this script to run, then return a fatal error.
+set_time_limit(360);
+
 while (!$done) {
+  $json = openleg_retrieve("&pageIdx=$i&pageSize=$batch");
+  if (count($json) == 1) {
+    $done = true;
+    echo "Got to end of data set.\n";
+    break;
+  }
+  echo "Got ".count($json)." results for page $i in batches of $batch\n";
 
-	//echo "pulling ".($i*$batch)." records.\n"; //$committee\n<br>";
-	$json = openleg_retrieve("&pageIdx=$i&pageSize=$batch");
-	if (count($json)==1) {
-		$done = true;
-		cLog(0, 'INFO', 'got to end of data set');
-		break;
-	}
-print_r("\nGot " . count($json) . " results for page $i in batches of $batch");
-//print_r($json);
-
-	foreach($json as $key=>$bill) {
-//print_r($bill);
-//exit;
-		$size = count($issueCodes);
-		//$issueCodes[$i]['name'] = $bill['billId'][0]." - ".$bill['year'][0];
-		//$issueCodes[$i]['description'] =   str_replace(',','',$bill['title'][0]);
-                //$issueCodes[$i]['parent_id'] =  TAG_PARENT_ID;
-
-		$summary = "";
-		if (isset($bill->summary)) $summary = $bill->summary;
-                $issueCodes[$size]['name'] = cleanForDb($bill->id." - ".$bill->year);
-                $issueCodes[$size]['description'] =   cleanForDb($bill->title." - ".$summary);
-                $issueCodes[$size]['parent_id'] =  TAG_PARENT_ID;
-	}
-	set_time_limit(360);
-	++$i;
+  foreach ($json as $key=>$bill) {
+    $title = $bill->title;
+    $summary = "";
+    if (isset($bill->summary)) {
+      $summary = " - ".$bill->summary;
+    }
+    $size = count($issueCodes);
+    $issueCodes[$size]['name'] = cleanForDb($bill->billno." - ".$bill->year);
+    $issueCodes[$size]['description'] = cleanForDb($title.$summary);
+    $issueCodes[$size]['parent_id'] = TAG_PARENT_ID;
+  }
+  ++$i;
 }
 
-echo "\n\n<br><br>" . count($issueCodes) . " bills downloaded.";
+echo "There were ".count($issueCodes)." bills downloaded.\n";
 
-echo "<pre>";
-//print_r(count($issueCodes));
-//print_r($issueCodes[count($issueCodes)-1]);
-//exit;
-echo "</pre>";
+echo "\nInserting bill data as tags into database...\n\n";
 
-echo "inserting into database...\n\n<br><br>";
+$dbcon = mysql_connect($dbHost, $dbUser, $dbPass) or die(mysql_error());
+mysql_select_db($dbName, $dbcon) or die(mysql_error());
 
-mysql_connect($SC['dbHost'], $SC['dbUser'],$SC['dbPassword']) or die(mysql_error());
-mysql_select_db($SC['dbCiviPrefix'].$SC['dbName']) or die(mysql_error());
+$insertCount = $skipCount = 0;
 
 foreach ($issueCodes as $issueCode) {
-
-                checkAndInsert($issueCode, null);
-		checkAndInsert($issueCode, "FOR");
-		checkAndInsert($issueCode, "AGAINST");
+  if (checkAndInsert($dbcon, $issueCode, null)) {
+    $insertCount++;
+    checkAndInsert($dbcon, $issueCode, "FOR");
+    checkAndInsert($dbcon, $issueCode, "AGAINST");
+  }
+  else {
+    // If the bill itself was already in the DB, then assume the FOR and
+    // AGAINST versions are also in the DB.
+    $skipCount++;
+  }
 }
 
-echo "\n\ndone...\n\n";
+echo "Done inserting bill data into database (inserted=$insertCount, skipped=$skipCount)\n\n";
 
 
-//***********************************************************************************
-
-function checkAndInsert($issueCode, $postFix) {
-
-	global $SC;
-
-	if ($postFix != null) $issueCode['name'] = $issueCode['name'] . ' - ' . $postFix;
-
-                $sql = "SELECT * FROM {$SC['dbCiviPrefix']}{$SC['dbName']}.civicrm_tag where name='".$issueCode['name']."'";
-//print_r("\n\n".$sql."\n\n");
-
-                $result = mysql_query($sql) or die(mysql_error());
-
-                $row = mysql_fetch_assoc( $result );
-//print_r($row);
-                if (!is_array($row)) {
-
-                        cLog(0,"INFO","found missing issueCode {$issueCode['name']}");
-
-                        $sqlVals = "'{$issueCode['name']}','{$issueCode['description']}','{$issueCode['parent_id']}'";
-                        $sql = "INSERT INTO {$SC['dbCiviPrefix']}{$SC['dbName']}.civicrm_tag(name,description,parent_id) VALUES({$sqlVals});";
-                        if ($SC['noExec']) cLog(0,"INFO", $sql);
-                        else {
-				mysql_query($sql);
-				//print "wrote to db.";
-			}
-                }
-
-}
-
-function cleanForDb($str) {
+//**************************************************************************
 
 
-	$str=str_replace(',','',$str);
-	$str=str_replace('\'','',$str);
+function checkAndInsert($dbcon, $issueCode, $postFix)
+{
+  if ($postFix != null) {
+    $issueCode['name'] = $issueCode['name'].' - '.$postFix;
+  }
 
-	return $str;
-}
+  $sql = "SELECT * FROM civicrm_tag where name='".$issueCode['name']."'";
 
-function openleg_curl_request($url, $request_body='') {
+  $result = mysql_query($sql, $dbcon) or die(mysql_error());
+  $row = mysql_fetch_assoc($result);
 
-$ch = curl_init();
+  if (!is_array($row)) {
+    echo "Found missing issueCode: {$issueCode['name']}\n";
+    $sqlVals = "'{$issueCode['name']}','{$issueCode['description']}','{$issueCode['parent_id']}'";
+    $sql = "INSERT INTO civicrm_tag (name, description, parent_id) VALUES ({$sqlVals});";
+    mysql_query($sql, $dbcon);
+    return true;
+  }
+  else {
+    // The issueCode was already in the DB.
+    return false;
+  }
+} // checkAndInsert()
 
- try {
-  curl_setopt($ch, CURLOPT_URL, $url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  $data = curl_exec($ch);
- } catch (Exception $e) {
-  print_r(curl_getinfo($ch));
- }
+
+function cleanForDb($str)
+{
+  return str_replace(array(',', '\''), '', $str);
+} // cleanForDb()
+
+
+function openleg_curl_request($url, $request_body = '')
+{
+  $ch = curl_init();
+
+  try {
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $data = curl_exec($ch);
+  }
+  catch (Exception $e) {
+    print_r(curl_getinfo($ch));
+  }
   curl_close($ch);
   return $data;
-}
+} // openleg_curl_request()
 
-function openleg_retrieve($path, $source=OPENLEG_ROOT) {
 
-	$json = openleg_curl_request($source . $path);
+function openleg_retrieve($path, $source = OPENLEG_ROOT)
+{
+  $json = openleg_curl_request($source.$path);
+  $ret = json_decode($json);
+  if ($ret) return $ret;
+  else return false;
+} // openleg_retrieve()
 
-	$ret = json_decode($json);
-	if ($ret) return $ret;
-	else return false;
-}
 
-function openleg_retrieveOLD($path, $source=OPENLEG_ROOT) {
-
-  $xml = openleg_curl_request($source . str_replace("%2F", "/", urlencode($path)));
-
-  $xml = str_replace("\0","",$xml);
-
-        $ret = simplexml_load_string($xml);
-        if ($ret) return $ret;
-        else return false;
-}
-
-function openleg_meeting($simplexml, $field = 'id') {
+function openleg_meeting($simplexml, $field = 'id')
+{
   switch ($field) {
     case 'date_time':
     case 'meetingDateTime':
@@ -211,11 +195,15 @@ function openleg_meeting($simplexml, $field = 'id') {
   }
 }
 
-function openleg_attribute($simplexml, $field = 'name') {
+
+function openleg_attribute($simplexml, $field = 'name')
+{
   return (string)$simplexml->attributes()->{$field};
 }
 
-function openleg_bill($simplexml, $field = 'sponsor') {
+
+function openleg_bill($simplexml, $field = 'sponsor')
+{
   switch ($field) {
     case 'year':
       return (string)$simplexml->attributes()->year;

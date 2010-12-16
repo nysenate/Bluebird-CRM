@@ -23,48 +23,46 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* Contact Summary template to print contact information *}
-{literal}
-<style type="text/css" media="screen, print">
-<!--
-  #crm-container div {
-    font-size: 12px;
-  }
-  #crm-container .crm-actions-ribbon {
-    display: none;
-  }
-  #Print1 {
-  	float: right;
-  }
-  h3 {
-  	display:none;
-  }
-  h3.display-name {
-  	display:block;
-  	}
--->
-</style>
-{/literal}
-<form action="{crmURL p='civicrm/contact/view' q="&cid=`$contactId`&reset=1"}" method="post" id="Print1" >
-  <div class="form-item">
-       <span class="element-right">
-       <input onclick="window.print(); return false;" class="form-submit default" name="_qf_Print_next" value="{ts}Print{/ts}" type="submit" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-       <input class="form-submit" name="_qf_Print_back" value="{ts}Done{/ts}" type="submit" />
-       </span>
-  </div>
-</form>
-<h3 style="margin: .25em;" class="display-name">{$display_name}</h3>
-{include file="CRM/Contact/Page/View/Summary.tpl"}
-<form action="{crmURL p='civicrm/contact/view' q="&cid=`$contactId`&reset=1"}" method="post" id="Print2" >
-  <div class="form-item">
-       <span class="element-right"><input onclick="window.print()" class="form-submit default" name="_qf_Print_next" value="{ts}Print{/ts}" type="submit" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="form-submit" name="_qf_Print_back" value="{ts}Done{/ts}" type="submit" /></span>
-  </div>
-</form>
-</div>
-{literal}
-<script type="text/javascript">
-cj('#mainTabContainer').children(':first').remove();
-cj('#contact-summary' ).children(':first').remove();
-
-</script>
-{/literal}
+{if $notConfigured} {* Case types not present. Component is not configured for use. *}
+    {include file="CRM/Case/Page/ConfigureError.tpl"}
+{else}
+<tr>
+  <td class="crm-case-common-form-block-case_type" width="25%"><label>{ts}Case Type{/ts}</label>
+    <br />
+      <div class="listing-box" style="width: auto; height: 120px">
+       {foreach from=$form.case_type_id item="case_type_id_val"}
+        <div class="{cycle values="odd-row,even-row"}">
+                {$case_type_id_val.html}
+        </div>
+      {/foreach}
+      </div><br />
+  </td>
+  
+  <td class="crm-case-common-form-block-case_status_id" width="25%">
+    {$form.case_status_id.label}<br /> 
+    {$form.case_status_id.html}<br /><br />	
+    {if $accessAllCases}
+    {*{$form.case_owner.html} <span class="crm-clear-link">(<a href="#" onclick="unselectRadio('case_owner', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span><br />*}
+    {*NYSS 1981 use checkbox*}
+    	{$form.case_owner.html}
+        {$form.case_owner.label}<br />
+    {/if}
+    {if $form.case_deleted}	
+        {$form.case_deleted.html}	
+        {$form.case_deleted.label}	
+    {/if}
+  </td>
+  {if $form.case_tags }
+  <td class="crm-case-common-form-block-case_tags">
+  <label>{ts}Case Tag(s){/ts}</label>
+    <div id="Tag" class="listing-box">
+      {foreach from=$form.case_tags item="tag_val"} 
+        <div class="{cycle values="odd-row,even-row"}">
+        	{$tag_val.html} 
+        </div>
+      {/foreach}
+    </div>
+  </td>
+{/if}
+</tr>     
+{/if}

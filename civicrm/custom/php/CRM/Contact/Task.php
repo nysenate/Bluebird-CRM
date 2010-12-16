@@ -137,10 +137,11 @@ class CRM_Contact_Task {
                                   22    => array( 'title'  => ts('Unhold Emails'),
                                                   'class'  => 'CRM_Contact_Form_Task_Unhold',
                                                   'result' => true ),
-                                  100    => array( 'title'  => ts('Export For Print Production'), //NYSS - add print production
+                                  //NYSS - add print production export
+								  100    => array( 'title'  => ts('Export for Print Production'), 
                                                   'class'  => 'CRM_Contact_Form_Task_ExportPrintProduction',
                                                   'result' => true ),
-                                  self::RESTORE => array(
+								  self::RESTORE => array(
                                       'title'  => ts('Restore Contacts'),
                                       'class'  => 'CRM_Contact_Form_Task_Delete',
                                       'result' => false,
@@ -151,7 +152,16 @@ class CRM_Contact_Task {
                                       'result' => false,
                                   ),
                                   );
-            if( CRM_Contact_BAO_ContactType::isActive( 'Household' ) ) {
+            
+            //NYSS - add district export for merge/perge			
+			if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+                self::$_tasks[101] = array( 'title'  => ts('Export District for Merge/Purge'), 
+                                            'class'  => 'CRM_Contact_Form_Task_ExportDistrict',
+                                            'result' => true 
+                                           );
+            }
+			
+			if( CRM_Contact_BAO_ContactType::isActive( 'Household' ) ) {
                 $label = CRM_Contact_BAO_ContactType::getLabel( 'Household' );
                 self::$_tasks[9] = array( 'title'  => ts( 'Add Contacts to %1',
                                                           array( 1=> $label ) ) ,
@@ -280,6 +290,7 @@ class CRM_Contact_Task {
                            12 => self::$_tasks[12]['title'],
                            16 => self::$_tasks[16]['title'],
                            100 => self::$_tasks[100]['title'], //NYSS
+                           101 => self::$_tasks[101]['title'], //NYSS
                            );
             if ( ! self::$_tasks[12]['title'] ) {
                 //usset it, No edit permission and Map provider info
