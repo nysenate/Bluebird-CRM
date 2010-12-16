@@ -425,11 +425,11 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                     'dataPattern' => '/^[A-Za-z]+(\.?)(\s?[A-Za-z]+){0,2}$/',
                     'export' => true,
                 ) ,
-                'county_id' => array(
+                /*'county_id' => array( //NYSS #2771 remove core county field
                     'name' => 'county_id',
                     'type' => CRM_Utils_Type::T_INT,
                     'FKClassName' => 'CRM_Core_DAO_County',
-                ) ,
+                ) ,*/
                 'state_province_id' => array(
                     'name' => 'state_province_id',
                     'type' => CRM_Utils_Type::T_INT,
@@ -555,7 +555,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                     }
                 }
             }
-            self::$_import = array_merge(self::$_import, CRM_Core_DAO_County::import(true));
+            //self::$_import = array_merge(self::$_import, CRM_Core_DAO_County::import(true)); //NYSS #2771
             self::$_import = array_merge(self::$_import, CRM_Core_DAO_StateProvince::import(true));
             self::$_import = array_merge(self::$_import, CRM_Core_DAO_Country::import(true));
         }
