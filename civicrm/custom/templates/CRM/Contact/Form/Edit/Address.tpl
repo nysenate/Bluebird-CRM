@@ -28,39 +28,35 @@
 {* @var $blockId Contains the current address block id, and assigned in the  CRM/Contact/Form/Location.php file *}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
-<div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open crm-address-section">
+<div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">
 <div class="crm-accordion-header">
 	<div class="icon crm-accordion-pointer"></div>
 	{$title}
-</div>
+ </div><!-- /.crm-accordion-header -->
+ <div class="crm-accordion-body" id="addressBlock">
 {/if}
-<div class="crm-accordion-body">
-{if $blockId gt 1}<div class="spacer"></div>{/if}
 
- <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock" {/if}>
-<table>
-  <tr>
-  <td>
-  <table class="form-layout-compressed">
-     <tr>
+ <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock crm-edit-address-block" {/if}>
+	{if $blockId gt 1}<fieldset><legend>Additional Address</legend>{/if}
+	{if $blockId gt 1 && $form.address.$blockId.location_type_id.value.0 != 6}
+        <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;" class="delete_block">
+        {ts}Delete this address{/ts}</a>
+    {/if}
+  <table class="form-layout-compressed crm-edit-address-form">
+  <tr>  <td>  <table class="form-layout-compressed">     <tr>
 	 {if $className eq 'CRM_Contact_Form_Contact'}
         <td id='Address-Primary-html' colspan="2">
-           {$form.address.$blockId.location_type_id.label}
-           {$form.address.$blockId.location_type_id.html}
-           {$form.address.$blockId.is_primary.html}
-           {*$form.address.$blockId.is_billing.html*}
+           <span class="crm-address-element location_type_id-address-element">{$form.address.$blockId.location_type_id.label}
+           {$form.address.$blockId.location_type_id.html}</span>
+           <span class="crm-address-element is_primary-address-element">{$form.address.$blockId.is_primary.html}</span>
+           {*<span class="crm-address-element is_billing-address-element">{$form.address.$blockId.is_billing.html}</span>*}
         </td>
 	 {/if}
-        {if $blockId gt 1 && $form.address.$blockId.location_type_id.value.0 != 6}
-            <td>
-                <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;">{ts}delete{/ts}</a>
-            </td>
-        {/if}
      </tr>
      {if $form.use_household_address} 
      <tr>
         <td>
-            {$form.use_household_address.html}{$form.use_household_address.label}{help id="id-usehousehold"}<br />
+            {$form.use_household_address.html}{$form.use_household_address.label}{help id="id-usehousehold" file="CRM/Contact/Form/Contact.hlp"}<br />
             <div id="share_household" style="display:none">
                 {$form.shared_household.label}<br />
                 {$form.shared_household.html|crmReplace:class:huge}&nbsp;&nbsp;<span id="show_address"></span>
@@ -72,31 +68,33 @@
      <tr><td>
 
      <table id="address_{$blockId}" style="display:block" class="form-layout-compressed">
-     {* build address block w/ address sequence. *}
-		{foreach item=addressElement from=$addressSequence}
-			{include file=CRM/Contact/Form/Edit/Address/$addressElement.tpl}
-        {/foreach}
-        {include file=CRM/Contact/Form/Edit/Address/geo_code.tpl}
+         {* build address block w/ address sequence. *}
+         {foreach item=addressElement from=$addressSequence}
+              {include file=CRM/Contact/Form/Edit/Address/$addressElement.tpl}
+         {/foreach}
+         {include file=CRM/Contact/Form/Edit/Address/geo_code.tpl}
      </table>
 
      </td></tr>
   </table>
 </td>
 <td>
+  <div class="crm-edit-address-custom_data"> 
   {include file="CRM/Contact/Form/Edit/Address/CustomData.tpl"}
+  </div>
 </td>
 </tr>
 </table>
 
   {if $className eq 'CRM_Contact_Form_Contact'}
       <div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
-          <a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}add address{/ts}</span></a>
+          <a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}Another Address{/ts}</span></a>
       </div>
   {/if}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
 </div>
-</div><!-- /.crm-accordion-body -->
+ </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 {/if}
 {literal}
@@ -179,7 +177,7 @@ function checkLocation( object, noAlert ) {
 		element = cj(this).attr('id');
 		if ( cj(this).val() && element != object && selectedText == cj( '#' + element + ' :selected').text() ) {
 			if ( ! noAlert ) {
-			    var alertText = "{/literal}{ts}Location type{/ts} {literal}" + selectedText + "{/literal} {ts}has already been assigned to another address. Please select another location type for this address.{/ts}{literal}";
+			    var alertText = "{/literal}{ts escape='js'}Location type{/ts} {literal}" + selectedText + "{/literal} {ts escape='js'}has already been assigned to another address. Please select another location type for this address.{/ts}{literal}";
 			    alert( alertText );
 			}
 			cj( '#' + object ).val('');
