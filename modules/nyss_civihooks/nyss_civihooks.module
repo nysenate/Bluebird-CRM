@@ -71,7 +71,6 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
 
 //echo $query;
 
-
 	//office staff group ID to use for activity assignees and case roles
 	$groupID = '3';
 	

@@ -46,7 +46,7 @@
   {/if}
   {/if}
  </div>
- <div class="crm-accordion-body">{*NYSS 2649 LCD improve consistency between AdvSearch popup and full screen*}
+ <div class="crm-accordion-body accordion_wrapper">{*NYSS 2649 LCD improve consistency between AdvSearch popup and full screen*}
   {include file="CRM/Contact/Form/Search/AdvancedCriteria.tpl"}
  </div>
 </div>  

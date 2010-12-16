@@ -1055,9 +1055,18 @@ ul.token-input-list-facebook { width:300px;}
 #crm-container #demographics .form-item span.labels {
 	width: 23%;
 }
-#crm-container #District_Information_7_1 .crm-accordion-open > .crm-accordion-body {
+#crm-container .crm-edit-address-custom_data .crm-accordion-open > .crm-accordion-body {
 	border: none;
 }
-#crm-container #District_Information_7_1 .crm-accordion-header {
+#crm-container .crm-edit-address-custom_data .crm-accordion-header {
 	width: 300px;
+}
+#crm-container .delete_block {
+	display: block;
+	margin-left: 5px;
+}
+#advanced-search-form div.accordion_wrapper {
+	border: none;
+	padding: 0;
+	
 }

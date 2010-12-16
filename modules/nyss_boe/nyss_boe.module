@@ -40,7 +40,7 @@
    * @access public
    */
 
-function civicrm_NYSS_civicrm_buildForm( $formName, &$form ) 
+function nyss_boe_civicrm_buildForm( $formName, &$form ) 
 {    
     if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
         require_once 'CRM/Core/Form/Tag.php';
