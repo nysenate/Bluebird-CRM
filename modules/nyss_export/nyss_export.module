@@ -1,0 +1,3 @@
+<?php 
+function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
+}
