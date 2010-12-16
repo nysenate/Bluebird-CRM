@@ -29,8 +29,7 @@ function nyss_civihooks_getfile() {
 	$file 	  = $_REQUEST['file'];
 	$fullpath = $config->uploadDir.'printProduction/'.$file;
 	//echo "fullpath: $fullpath file: $file";
-	//exit;	
-	
+//exit;	
 	if ( !file_exists($fullpath) || !$file ) {
 		echo "No file provided. Make sure you have entered the full URL.<br />";
 		exit();
@@ -53,18 +52,19 @@ function nyss_civihooks_getfile() {
 	//spit out the header
 	foreach ($headers as $header) header($header);
 
-	$fh = fopen($fullpath, "r");
+        $fh = fopen($fullpath, "r");
 
-	if (!$fh) {
-		echo "No file provided. File requested is: $fullpath.";
-		exit;
-	}
+        if (!$fh) {
 
-	while (!feof($fh)) {
-		echo fread($fh, 1024);
-		ob_flush();
-	}
-	fclose($fh);
+                echo "no file provided. file requested is: $fullpath";
+                exit;
+        }
+
+        while (!feof($fh)) {
+              echo fread($fh, 1024);
+              ob_flush();
+        }
+        fclose($fh);
 }
 
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {

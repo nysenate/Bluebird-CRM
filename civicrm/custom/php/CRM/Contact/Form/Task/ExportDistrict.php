@@ -108,7 +108,6 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	$sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
 	$sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
-	
 	$sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 ELSE 999 END, c.birth_date;";
 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
