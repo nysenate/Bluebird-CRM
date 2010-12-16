@@ -148,7 +148,7 @@
             	{if $customId}{assign var='custom_19' value=custom_19_`$customId`}
         		{else}{assign var='custom_19' value='custom_19_-1'}{/if}
         		{$form.$custom_19.label}<br />
-				{$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_17}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
+				{$form.$custom_19.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$custom_19}', '{$form.formName}'); return false;" >{ts}clear{/ts}</a>)</span>
             </td>
         </tr>
         <tr class="custom_field-row">
