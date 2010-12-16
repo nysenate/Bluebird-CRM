@@ -46,6 +46,8 @@ if [ ! "$backup_dir" ]; then
   exit 1
 fi
 
+echo "CRM BACKUP STARTED on `date`"
+
 if [ "$backup_host" ]; then
   if ssh $backup_host "test -d $backup_dir"; then
     echo "Backup directory [$backup_dir] found on host [$backup_host]"
@@ -73,8 +75,6 @@ code_backup_dir="$backup_dir/application"
 data_backup_dir="$backup_dir/data"
 other_backup_dir="$backup_dir/other"
 rsync_opts="$default_rsync_opts $dry_run_opt"
-
-echo "CRM BACKUP STARTED on `date`"
 
 if [ "$backup_host" ]; then
   ssh $backup_host "mkdir -p '$db_backup_dir' '$code_backup_dir' '$data_backup_dir' '$other_backup_dir'"
