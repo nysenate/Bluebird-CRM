@@ -39,14 +39,9 @@
         var parentId         = "{/literal}{$tagset.parentID}{literal}";
         var entityId         = "{/literal}{$tagset.entityId}{literal}";
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
-        /*var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";*/
-        if (parentId == "292"){ /* position tag*/
-			var skipTagCreate ="1";
-			}
-		else {
-			var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*LCD fix for tag not being created*/
-		}
+		var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*NYSS fix for tag not being created*/
         var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
+		var tagDescription   = "{/literal}{$tagset.description}{literal}"; //NYSS
          
         cj.post( postUrl, { action: action, 
                             tagID: id, 
@@ -54,7 +49,8 @@
                             entityId: entityId, 
                             entityTable: entityTable,
                             skipTagCreate: skipTagCreate, 
-                            skipEntityAction: skipEntityAction, 
+                            skipEntityAction: skipEntityAction,
+							tagDescription: tagDescription, //LCD
                             key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
             function ( response ) {
                 // update hidden element
