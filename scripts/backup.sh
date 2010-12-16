@@ -6,6 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
+# Revised: 2010-12-10
 #
 # Note: When backing up to a non-local directory, SSH is used to make the
 #       connection.  The account under which this script is running should
@@ -73,6 +74,8 @@ data_backup_dir="$backup_dir/data"
 other_backup_dir="$backup_dir/other"
 rsync_opts="$default_rsync_opts $dry_run_opt"
 
+echo "CRM BACKUP STARTED on `date`"
+
 if [ "$backup_host" ]; then
   ssh $backup_host "mkdir -p '$db_backup_dir' '$code_backup_dir' '$data_backup_dir' '$other_backup_dir'"
 else
@@ -105,4 +108,6 @@ echo "Backing up source code"
 [ -d $data_rootdir ] && rsync $rsync_opts $data_rootdir/* $rsync_host_prefix$data_backup_dir/
 [ -d $import_rootdir ] && rsync $rsync_opts $import_rootdir $rsync_host_prefix$data_backup_dir/
 
-exit $?
+echo "CRM BACKUP COMPLETED on `date`"
+
+exit 0
