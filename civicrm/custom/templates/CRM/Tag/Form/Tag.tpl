@@ -101,8 +101,8 @@ function initTagTree() {
 };
 {/literal}
 </script>
-<a name="#saved"></a>
-<span id="restmsg" style="display:none"></span>
+{*<a name="#saved"></a>
+<span id="restmsg" style="display:none"></span>*}{*NYSS*}
 <div id="Tag" class="view-content">
 <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
     <p>
@@ -119,6 +119,11 @@ function initTagTree() {
 	{/if}
     {/if}
     </p>
+    
+    {*NYSS add list of Issue Codes*}
+    <div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
+    <div class="clear"></div>
+    
     <ul id="tagtree" class="tree">
         {foreach from=$tree item="node" key="id"}
         <li id="tag_{$id}" class="tagset">
@@ -138,7 +143,7 @@ function initTagTree() {
                                     <input id="check_{$subsubid}" name="tagList[{$subsubid}]" type="checkbox" {if $tagged[$subsubid]}checked="checked"{/if}/>
                                     <label for="check_{$subsubid}" id="tagLabel_{$subsubid}">{$subsubnode.name}</label>
                                     
-                                    {*LCD Extend to level 4*}
+                                    {*NYSS Extend to level 4*}
                                     {if $subsubnode.children}
                         			<ul>
                             			{foreach from=$subsubnode.children item="subsubsubnode" key="subsubsubid"}
@@ -149,7 +154,7 @@ function initTagTree() {
                             			{/foreach} 
                         			</ul>
                         			{/if}
-                                    {*LCD end*}
+                                    {*NYSS end*}
                                     
                                 </li>
                             {/foreach} 
@@ -193,6 +198,19 @@ function initTagTree() {
     {/if}
 
     {include file="CRM/common/Tag.tpl"}
+    
+    {*NYSS add list of leg positions with descriptions*}
+    <div class="clear_left"></div>
+    <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
+    	<ul>
+        {foreach from=$legpositions item="legposition"}
+        	{if $legposition.description && $legposition.description neq 'No description available.'}
+            	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
+            {/if}
+        {/foreach}
+        </ul>
+    </div>
+    
 </div>
 
 {if $action eq 1 or $action eq 2 }

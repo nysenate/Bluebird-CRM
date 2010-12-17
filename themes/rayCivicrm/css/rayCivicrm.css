@@ -253,6 +253,7 @@ hr.space {background:#fff;color:#fff;}
 .clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
 .clearfix, .container {display:block;}
 .clear {clear:both;}
+.clear_left {clear:left;}
 
 
 /* @group blueprint overrides */
@@ -882,33 +883,39 @@ ul.token-input-list-facebook { width:300px;}
     margin: 0px;
     }
 
-#mainTabContainer div#Tag {position: relative;}
-
-#mainTabContainer div#Tag .tag-292-section,
-#mainTabContainer div#Tag .tag-296-section,
-#mainTabContainer div#Tag .tag-297-section {
-    position: absolute;
+/* Contact Tags Tab*/
+#mainTabContainer div#Tag .tag-section {
+	float: left;
     width: 410px;
-    }
-#mainTabContainer div#Tag .tag-292-section .label,
-#mainTabContainer div#Tag .tag-296-section .label,
-#mainTabContainer div#Tag .tag-297-section .label {
-    float: none;
-    }
-#mainTabContainer div#Tag .tag-292-section .content,
-#mainTabContainer div#Tag .tag-296-section .content,
-#mainTabContainer div#Tag .tag-297-section .content {
-    margin-left: 0px;
-    }
-#mainTabContainer div#Tag .tag-296-section {
-    top:42px;    
-    left:16px;
-    }
-#mainTabContainer div#Tag .tag-292-section,
-#mainTabContainer div#Tag .tag-297-section {
-    top:120px;
-    left:16px;
-    }
+	margin-left: 16px;
+}
+#mainTabContainer div#Tag .tag-section .label {
+	font-size: 120%;
+	margin: 4px 0 -10px;
+	float: none;
+}
+#mainTabContainer div#Tag .tag-section .content {
+	margin-left: 0;
+}
+#mainTabContainer .contactTagsList {
+	font-size: 11px;
+	margin: 0 16px 6px;
+}
+#mainTabContainer ul.token-input-list-facebook {
+	width: 410px;
+}
+#mainTabContainer .legpositions {
+	font-size: 11px;
+	margin: 0 16px 6px;
+	width: 398px;
+	padding: 6px;
+}
+#mainTabContainer .legpositions ul {
+	margin: .5em 0 0 1.5em;
+}
+#mainTabContainer .legpositions .label {
+	font-size: 14px;
+}
 
 /* PDF printing fixes */
 
