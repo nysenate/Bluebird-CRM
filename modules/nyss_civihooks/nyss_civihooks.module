@@ -162,6 +162,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
 	}
 	
+	//Construct some arrays and values to be passed to the tag tab
 	if ( $formName == 'CRM_Tag_Form_Tag' ) {
 	
 		$contactId = $form->getVar( '_entityID' );
@@ -195,6 +196,14 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$form->assign( 'legpos_description', $legpos_description );
 		$form->assign( 'legpos_list', $legpos_list );
 	
+	}
+	
+	//set English as default preferred language
+	if ( $formName == 'CRM_Contact_Form_Contact' ) {
+		
+		$defaults['preferred_language'] = 'en';
+        $form->setDefaults( $defaults );
+		
 	}
 	
 } //close buildForm
