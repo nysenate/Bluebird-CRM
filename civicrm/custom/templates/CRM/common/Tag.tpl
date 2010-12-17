@@ -1,6 +1,6 @@
-{foreach from=$tagset item=tagset}
+{foreach from=$tagset|@array_reverse item=tagset} {*NYSS reverse order so keywords are first*}
 <!--<pre>{$tagset|@print_r}</pre>-->
-{if !$tagset.skipTagCreate}{assign var=skipTagCreateFix value=''}{/if} {*LCD fix tag not being created issues*}
+{if !$tagset.skipTagCreate}{assign var=skipTagCreateFix value=''}{/if} {*NYSS fix tag not being created issues*}
 
 <div class="crm-section tag-section tag-{$tagset.parentID}-section">
 <div class="label">
@@ -41,7 +41,6 @@
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
 		var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*NYSS fix for tag not being created*/
         var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
-		var tagDescription   = "{/literal}{$tagset.description}{literal}"; //NYSS
          
         cj.post( postUrl, { action: action, 
                             tagID: id, 
@@ -50,7 +49,6 @@
                             entityTable: entityTable,
                             skipTagCreate: skipTagCreate, 
                             skipEntityAction: skipEntityAction,
-							tagDescription: tagDescription, //LCD
                             key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
             function ( response ) {
                 // update hidden element
