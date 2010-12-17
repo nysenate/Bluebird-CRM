@@ -226,13 +226,13 @@ class CRM_Admin_Page_AJAX
         
         	while( $dao->fetch( ) ) {
             	$tags[] = array( 'name' => $dao->name,
-                             'id'   => $dao->id );
+                             	 'id'   => $dao->id );
         	}
         
                                
         	if ( empty( $tags ) ) {
             	$tags[] = array( 'name' => $name,
-                             'id'   => $name );            
+                             	 'id'   => $name );            
         	}
         
         	echo json_encode( $tags ); 
@@ -313,8 +313,6 @@ class CRM_Admin_Page_AJAX
         				}
 					}
 				usort($json, "cmp");
-		 		
-				$openleg_url = 'http://open.nysenate.gov/legislation/bill/';
 				
         		for ($j=0; $j < count($json); $j++){
 
@@ -336,12 +334,10 @@ class CRM_Admin_Page_AJAX
 						//if tag exists use; else plan to create new
 						if ( $dao2->fetch( ) ) {
 							$tags[] = array('name' => $positiontag_name,
-											'id'   => $dao2->id,
-											'description' => '<a href='.$openleg_url.$dao2->id.'>'.$openleg_url.$dao2->id.'</a>' );
+											'id'   => $dao2->id );
         	 			} else {
         	 				$tags[] = array('name' => $positiontag_name,
-											'id'   => $positiontag,
-											'description' => '<a href='.$openleg_url.$positiontag.'>'.$openleg_url.$positiontag.'</a>' );
+											'id'   => $positiontag );
         	 			}
 					} //end foreach
 					
@@ -372,8 +368,13 @@ class CRM_Admin_Page_AJAX
         }
         
         $tagID = $_POST['tagID' ];
-		$tagDescription =  $_POST['description' ]; //LCD
-        
+		
+		//NYSS - retrieve OpenLeg ID and construct URL
+		$ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
+		if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
+		$ol_url = 'http://open.nysenate.gov/legislation/bill/'.$ol_id;
+		$bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>';
+		        
         require_once 'CRM/Core/BAO/EntityTag.php';
         $tagInfo = array( );
         // if action is select
@@ -384,7 +385,7 @@ class CRM_Admin_Page_AJAX
             if ( !$skipTagCreate && !is_numeric( $tagID ) ) {
                 $params = array( 'name'      => $tagID, 
                                  'parent_id' => $parentId,
-								 'description' => $tagDescription ); //LCD
+								 'description' => $bill_url ); //LCD
 
                 require_once 'CRM/Core/BAO/Tag.php';
                 $tagObject = CRM_Core_BAO_Tag::add( $params, CRM_Core_DAO::$_nullArray );
@@ -399,7 +400,7 @@ class CRM_Admin_Page_AJAX
                 // save this tag to contact
                 $params = array( 'entity_table' => $entityTable,
                                  'entity_id'    => $entityId,
-                                 'tag_id'       => $tagID);
+                                 'tag_id'       => $tagID );
                              
                 CRM_Core_BAO_EntityTag::add( $params );
             }
