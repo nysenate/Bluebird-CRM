@@ -358,15 +358,12 @@ function getStates()
 function convertProperCase( $string ) {
  
      // list of words we don't want to capitalize
-     $smallWords = array('of', 'a', 'the', 'and', 'an', 
-                    'or', 'nor', 'but', 'is', 'if', 'then', 
-                    'else', 'when', 'at', 'from', 'by', 'on', 
-                    'off', 'for', 'in', 'out', 'over', 'to', 
+     $smallWords = array('of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then', 
+                    'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to', 
                     'into', 'with');
  
      // special words that should be written as-is
-     $specialWords = array('II', 'IV', 'A-Level', "'s", 'UK', 'VI', 
-                                   '<i>', 'III', 'VII');
+     $specialWords = array('II', 'IV', 'A-Level', "'s", 'UK', 'VI', '<i>', 'III', 'VII');
  
      // punctuation used to determine that the following letter 
      // should be capitalised
@@ -389,7 +386,6 @@ function convertProperCase( $string ) {
      // go through each element in the array and check whether 
      // the word appears in the short words list
      // if it is not, we need to capitalize the word
- 
      foreach($allWords as $key => $word) {
           if(!in_array($word, $smallWords)){
                $allWords[$key] = ucfirst($word);

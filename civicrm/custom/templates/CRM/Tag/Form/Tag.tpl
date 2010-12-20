@@ -121,8 +121,10 @@ function initTagTree() {
     </p>
     
     {*NYSS add list of Issue Codes*}
-    <div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
-    <div class="clear"></div>
+    {if $contactIssueCode_list}
+    	<div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
+    	<div class="clear"></div>
+    {/if}
     
     <ul id="tagtree" class="tree">
         {foreach from=$tree item="node" key="id"}
@@ -200,6 +202,7 @@ function initTagTree() {
     {include file="CRM/common/Tag.tpl"}
     
     {*NYSS add list of leg positions with descriptions*}
+    {if $legpositions}
     <div class="clear_left"></div>
     <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
     	<ul>
@@ -210,6 +213,7 @@ function initTagTree() {
         {/foreach}
         </ul>
     </div>
+    {/if}
     
 </div>
 
