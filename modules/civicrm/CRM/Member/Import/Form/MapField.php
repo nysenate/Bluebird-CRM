@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -217,6 +217,11 @@ class CRM_Member_Import_Form_MapField extends CRM_Core_Form {
                 $highlightedFields[] = $name;
             }
         }    
+
+        // modify field title
+        $this->_mapperFields['status_id']          = ts('Membership Status');
+        $this->_mapperFields['membership_type_id'] = ts('Membership Type');
+        
         self::$_contactType = $this->get('contactType');
         $this->assign( 'highlightedFields', $highlightedFields );
     }

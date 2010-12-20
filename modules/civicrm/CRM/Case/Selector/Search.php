@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -334,7 +334,7 @@ class CRM_Case_Selector_Search extends CRM_Core_Selector_Base
                                                           $result->contact_sub_type : $result->contact_type );
                           
              //adding case manager to case selector.CRM-4510.
-             $caseType = CRM_Core_OptionGroup::getValue( 'case_type', $result->case_type, 'label', 'String', 'name' );
+             $caseType           = CRM_Case_BAO_Case::getCaseType( $result->case_id, 'name' );
              $caseManagerContact = CRM_Case_BAO_Case::getCaseManagerContact( $caseType, $result->case_id );
 
              if ( !empty($caseManagerContact) ) {
@@ -342,7 +342,8 @@ class CRM_Case_Selector_Search extends CRM_Core_Selector_Base
                  $row['casemanager'   ] = CRM_Utils_Array::value('casemanager'   , $caseManagerContact );              
              } 
 
-             if ( array_key_exists( $result->case_status_id, $caseStatus ) ) {
+             if ( isset( $result->case_status_id ) && 
+                  array_key_exists( $result->case_status_id, $caseStatus ) ) {
                  $row['class'] = "status-urgent";
              } else {
                  $row['class'] = "status-normal";

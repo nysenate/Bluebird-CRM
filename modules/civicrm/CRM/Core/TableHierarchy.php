@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -72,6 +72,10 @@ class CRM_Core_TableHierarchy {
                          );
 
     static function &info( ) {
+        //get the campaign related tables.
+        require_once 'CRM/Campaign/BAO/Query.php';
+        CRM_Campaign_BAO_Query::info( self::$info );
+        
         return self::$info;
     }
 

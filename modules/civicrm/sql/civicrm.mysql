@@ -1,5 +1,5 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -24,7 +24,7 @@
 
 
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -71,6 +71,7 @@ DROP TABLE IF EXISTS civicrm_uf_field;
 DROP TABLE IF EXISTS civicrm_uf_group;
 DROP TABLE IF EXISTS civicrm_county;
 DROP TABLE IF EXISTS civicrm_line_item;
+DROP TABLE IF EXISTS civicrm_price_field_value;
 DROP TABLE IF EXISTS civicrm_price_field;
 DROP TABLE IF EXISTS civicrm_pledge;
 DROP TABLE IF EXISTS civicrm_case_activity;
@@ -117,12 +118,14 @@ DROP TABLE IF EXISTS civicrm_im;
 DROP TABLE IF EXISTS civicrm_entity_tag;
 DROP TABLE IF EXISTS civicrm_entity_financial_trxn;
 DROP TABLE IF EXISTS civicrm_entity_file;
+DROP TABLE IF EXISTS civicrm_entity_batch;
 DROP TABLE IF EXISTS civicrm_email;
 DROP TABLE IF EXISTS civicrm_dashboard;
 DROP TABLE IF EXISTS civicrm_custom_field;
 DROP TABLE IF EXISTS civicrm_custom_group;
 DROP TABLE IF EXISTS civicrm_country;
 DROP TABLE IF EXISTS civicrm_cache;
+DROP TABLE IF EXISTS civicrm_batch;
 DROP TABLE IF EXISTS civicrm_price_set_entity;
 DROP TABLE IF EXISTS civicrm_price_set;
 DROP TABLE IF EXISTS civicrm_report_instance;
@@ -133,9 +136,13 @@ DROP TABLE IF EXISTS civicrm_tell_friend;
 DROP TABLE IF EXISTS civicrm_grant;
 DROP TABLE IF EXISTS civicrm_case_contact;
 DROP TABLE IF EXISTS civicrm_case;
+DROP TABLE IF EXISTS civicrm_dedupe_exception;
 DROP TABLE IF EXISTS civicrm_dedupe_rule;
 DROP TABLE IF EXISTS civicrm_dedupe_rule_group;
 DROP TABLE IF EXISTS civicrm_participant_status_type;
+DROP TABLE IF EXISTS civicrm_survey;
+DROP TABLE IF EXISTS civicrm_campaign_group;
+DROP TABLE IF EXISTS civicrm_campaign;
 DROP TABLE IF EXISTS civicrm_membership_status;
 DROP TABLE IF EXISTS civicrm_membership_type;
 DROP TABLE IF EXISTS civicrm_task_status;
@@ -312,7 +319,7 @@ CREATE TABLE civicrm_financial_trxn (
      total_amount decimal(20,2) NOT NULL   COMMENT 'amount of transaction',
      fee_amount decimal(20,2)    COMMENT 'actual processor fee if known - may be 0.',
      net_amount decimal(20,2)    COMMENT 'actual funds transfer amount. total less fees. if processor does not report actual fee during transaction, this is set to total_amount.',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      payment_processor varchar(64) NOT NULL   COMMENT 'derived from Processor setting in civicrm.settings.php.',
      trxn_id varchar(255) NOT NULL   COMMENT 'unique processor transaction id, bank id + trans id,... depending on payment_method',
      trxn_result_code varchar(255)    COMMENT 'processor result code' 
@@ -827,7 +834,6 @@ CREATE TABLE civicrm_contact (
      birth_date date    COMMENT 'Date of birth',
      is_deceased tinyint   DEFAULT 0 ,
      deceased_date date    COMMENT 'Date of deceased',
-     mail_to_household_id int unsigned    COMMENT 'OPTIONAL FK to civicrm_contact_household record. If NOT NULL, direct mail communications to household rather than individual location.',
      household_name varchar(128)    COMMENT 'Household Name.',
      primary_contact_id int unsigned    COMMENT 'Optional FK to Primary Contact for this household.',
      organization_name varchar(128)    COMMENT 'Organization Name.',
@@ -885,7 +891,6 @@ CREATE TABLE civicrm_contact (
   )
   
 ,      
-     CONSTRAINT FK_civicrm_contact_mail_to_household_id FOREIGN KEY (mail_to_household_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
      CONSTRAINT FK_civicrm_contact_primary_contact_id FOREIGN KEY (primary_contact_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
      CONSTRAINT FK_civicrm_contact_employer_id FOREIGN KEY (employer_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
@@ -1144,13 +1149,18 @@ CREATE TABLE civicrm_mailing_job (
      start_date datetime    COMMENT 'date on which this job was started.',
      end_date datetime    COMMENT 'date on which this job ended.',
      status enum('Scheduled', 'Running', 'Complete', 'Paused', 'Canceled')    COMMENT 'The state of this job',
-     is_test tinyint   DEFAULT 0 COMMENT 'Is this job for a test mail?' 
+     is_test tinyint   DEFAULT 0 COMMENT 'Is this job for a test mail?',
+     job_type varchar(255)    COMMENT 'Type of mailling job: null | child ',
+     parent_id int unsigned   DEFAULT NULL COMMENT 'Parent job id',
+     job_offset int   DEFAULT 0 COMMENT 'Offset of the child job',
+     job_limit int   DEFAULT 0 COMMENT 'Queue size limit for each child job' 
 ,
     PRIMARY KEY ( id )
  
  
 ,      
-     CONSTRAINT FK_civicrm_mailing_job_mailing_id FOREIGN KEY (mailing_id) REFERENCES civicrm_mailing(id) ON DELETE CASCADE  
+     CONSTRAINT FK_civicrm_mailing_job_mailing_id FOREIGN KEY (mailing_id) REFERENCES civicrm_mailing(id) ON DELETE CASCADE,      
+     CONSTRAINT FK_civicrm_mailing_job_parent_id FOREIGN KEY (parent_id) REFERENCES civicrm_mailing_job(id) ON DELETE CASCADE  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -1231,7 +1241,7 @@ CREATE TABLE civicrm_contribution_recur (
      id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Contribution Recur ID',
      contact_id int unsigned NOT NULL   COMMENT 'Foreign key to civicrm_contact.id .',
      amount decimal(20,2) NOT NULL   COMMENT 'Amount to be contributed or charged each recurrence.',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      frequency_unit enum('day', 'week', 'month', 'year')   DEFAULT 'month' COMMENT 'Time units for recurrence of payment.',
      frequency_interval int unsigned NOT NULL   COMMENT 'Number of time units for recurrence of payment.',
      installments int unsigned    COMMENT 'Total number of payments to be made. Set this to 0 if this is an open-ended commitment i.e. no set end date.',
@@ -1336,7 +1346,7 @@ CREATE TABLE civicrm_product (
      image varchar(255)    COMMENT 'Full or relative URL to uploaded image - fullsize.',
      thumbnail varchar(255)    COMMENT 'Full or relative URL to image thumbnail.',
      price decimal(20,2)    COMMENT 'Sell price or market value for premiums. For tax-deductible contributions, this will be stored as non_deductible_amount in the contribution record.',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      min_contribution decimal(20,2)    COMMENT 'Minimum contribution required to be eligible to select this premium.',
      cost decimal(20,2)    COMMENT 'Actual cost of this product. Useful to determine net return from sale or using this as an incentive.',
      is_active tinyint NOT NULL   COMMENT 'Disabling premium removes it from the premiums_premium join table below.',
@@ -1508,8 +1518,8 @@ CREATE TABLE civicrm_membership_type (
      period_type enum('rolling', 'fixed')    COMMENT 'Rolling membership period starts on signup date. Fixed membership periods start on fixed_period_start_day.',
      fixed_period_start_day int    COMMENT 'For fixed period memberships, month and day (mmdd) on which subscription/membership will start. Period start is back-dated unless after rollover day.',
      fixed_period_rollover_day int    COMMENT 'For fixed period memberships, signups after this day (mmdd) rollover to next period.',
-     relationship_type_id int unsigned    COMMENT 'FK to Relationship Type ID',
-     relationship_direction varchar(6)    ,
+     relationship_type_id varchar(64)    COMMENT 'FK to Relationship Type ID',
+     relationship_direction varchar(128)    ,
      visibility varchar(64)    ,
      weight int    ,
      renewal_msg_id int unsigned    COMMENT 'FK to civicrm_msg_template.id',
@@ -1520,12 +1530,14 @@ CREATE TABLE civicrm_membership_type (
 ,
     PRIMARY KEY ( id )
  
- 
+    ,     INDEX index_relationship_type_id(
+        relationship_type_id
+  )
+  
 ,      
      CONSTRAINT FK_civicrm_membership_type_domain_id FOREIGN KEY (domain_id) REFERENCES civicrm_domain(id) ,      
      CONSTRAINT FK_civicrm_membership_type_member_of_contact_id FOREIGN KEY (member_of_contact_id) REFERENCES civicrm_contact(id) ON DELETE RESTRICT,      
      CONSTRAINT FK_civicrm_membership_type_contribution_type_id FOREIGN KEY (contribution_type_id) REFERENCES civicrm_contribution_type(id) ,      
-     CONSTRAINT FK_civicrm_membership_type_relationship_type_id FOREIGN KEY (relationship_type_id) REFERENCES civicrm_relationship_type(id) ,      
      CONSTRAINT FK_civicrm_membership_type_renewal_msg_id FOREIGN KEY (renewal_msg_id) REFERENCES civicrm_msg_template(id)   
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
@@ -1559,6 +1571,112 @@ CREATE TABLE civicrm_membership_status (
  
  
  
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_campaign
+-- *
+-- * Campaign Details.
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_campaign (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique Campaign ID.',
+     name varchar(255) NOT NULL   COMMENT 'Name of the Campaign.',
+     title varchar(255)    COMMENT 'Title of the Campaign.',
+     description text    COMMENT 'Full description of Campaign.',
+     start_date datetime    COMMENT 'Date and time that Campaign starts.',
+     end_date datetime    COMMENT 'Date and time that Campaign ends.',
+     campaign_type_id int unsigned   DEFAULT NULL COMMENT 'Campaign Type ID.Implicit FK to civicrm_option_value where option_group = campaign_type',
+     status_id int unsigned   DEFAULT NULL COMMENT 'Campaign status ID.Implicit FK to civicrm_option_value where option_group = campaign_status',
+     external_identifier varchar(32)    COMMENT 'Unique trusted external ID (generally from a legacy app/datasource). Particularly useful for deduping operations.',
+     parent_id int unsigned   DEFAULT NULL COMMENT 'Optional parent id for this Campaign.',
+     is_active tinyint   DEFAULT 1 COMMENT 'Is this Campaign enabled or disabled/cancelled?',
+     created_id int unsigned    COMMENT 'FK to civicrm_contact, who created this Campaign.',
+     created_date datetime    COMMENT 'Date and time that Campaign was created.',
+     last_modified_id int unsigned    COMMENT 'FK to civicrm_contact, who recently edited this Campaign.',
+     last_modified_date datetime    COMMENT 'Date and time that Campaign was edited last time.' 
+,
+    PRIMARY KEY ( id )
+ 
+    ,     INDEX UI_campaign_type_id(
+        campaign_type_id
+  )
+  ,     INDEX UI_campaign_status_id(
+        status_id
+  )
+  ,     UNIQUE INDEX UI_external_identifier(
+        external_identifier
+  )
+  
+,      
+     CONSTRAINT FK_civicrm_campaign_parent_id FOREIGN KEY (parent_id) REFERENCES civicrm_campaign(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_campaign_created_id FOREIGN KEY (created_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_campaign_last_modified_id FOREIGN KEY (last_modified_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL  
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_campaign_group
+-- *
+-- * Campaign Group Details.
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_campaign_group (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Campaign Group id.',
+     campaign_id int unsigned NOT NULL   COMMENT 'Foreign key to the activity Campaign.',
+     group_type enum('Include', 'Exclude')   DEFAULT NULL COMMENT 'Type of Group.',
+     entity_table varchar(64)   DEFAULT NULL COMMENT 'Name of table where item being referenced is stored.',
+     entity_id int unsigned   DEFAULT NULL COMMENT 'Entity id of referenced table.' 
+,
+    PRIMARY KEY ( id )
+ 
+ 
+,      
+     CONSTRAINT FK_civicrm_campaign_group_campaign_id FOREIGN KEY (campaign_id) REFERENCES civicrm_campaign(id) ON DELETE CASCADE  
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_survey
+-- *
+-- * Campaign Survey Details.
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_survey (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Survey id.',
+     title varchar(255) NOT NULL   COMMENT 'Title of the Survey.',
+     campaign_id int unsigned   DEFAULT NULL COMMENT 'Foreign key to the Campaign.',
+     activity_type_id int unsigned   DEFAULT NULL COMMENT 'Implicit FK to civicrm_option_value where option_group = activity_type',
+     recontact_interval text    COMMENT 'Recontact intervals for each status.',
+     instructions text    COMMENT 'Script instructions for volunteers to use for the survey.',
+     release_frequency int unsigned   DEFAULT NULL COMMENT 'Number of days for recurrence of release.',
+     max_number_of_contacts int unsigned   DEFAULT NULL COMMENT 'Maximum number of contacts to allow for survey.',
+     default_number_of_contacts int unsigned   DEFAULT NULL COMMENT 'Default number of contacts to allow for survey.',
+     is_active tinyint   DEFAULT 1 COMMENT 'Is this survey enabled or disabled/cancelled?',
+     is_default tinyint   DEFAULT 0 COMMENT 'Is this default survey?',
+     created_id int unsigned    COMMENT 'FK to civicrm_contact, who created this Survey.',
+     created_date datetime    COMMENT 'Date and time that Survey was created.',
+     last_modified_id int unsigned    COMMENT 'FK to civicrm_contact, who recently edited this Survey.',
+     last_modified_date datetime    COMMENT 'Date and time that Survey was edited last time.',
+     result_id int unsigned   DEFAULT NULL COMMENT 'Used to store option group id.' 
+,
+    PRIMARY KEY ( id )
+ 
+    ,     INDEX UI_activity_type_id(
+        activity_type_id
+  )
+  
+,      
+     CONSTRAINT FK_civicrm_survey_campaign_id FOREIGN KEY (campaign_id) REFERENCES civicrm_campaign(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_survey_created_id FOREIGN KEY (created_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_survey_last_modified_id FOREIGN KEY (last_modified_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -1632,6 +1750,32 @@ CREATE TABLE civicrm_dedupe_rule (
  
 ,      
      CONSTRAINT FK_civicrm_dedupe_rule_dedupe_rule_group_id FOREIGN KEY (dedupe_rule_group_id) REFERENCES civicrm_dedupe_rule_group(id)   
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_dedupe_exception
+-- *
+-- * Dedupe exceptions
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_dedupe_exception (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique dedupe exception id',
+     contact_id1 int unsigned    COMMENT 'FK to Contact ID',
+     contact_id2 int unsigned    COMMENT 'FK to Contact ID' 
+,
+    PRIMARY KEY ( id )
+ 
+    ,     UNIQUE INDEX UI_contact_id1_contact_id2(
+        contact_id1
+      , contact_id2
+  )
+  
+,      
+     CONSTRAINT FK_civicrm_dedupe_exception_contact_id1 FOREIGN KEY (contact_id1) REFERENCES civicrm_contact(id) ON DELETE CASCADE,      
+     CONSTRAINT FK_civicrm_dedupe_exception_contact_id2 FOREIGN KEY (contact_id2) REFERENCES civicrm_contact(id) ON DELETE CASCADE  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -1712,7 +1856,7 @@ CREATE TABLE civicrm_grant (
      amount_total decimal(20,2) NOT NULL   COMMENT 'Requested grant amount, in default currency.',
      amount_requested decimal(20,2)    COMMENT 'Requested grant amount, in original currency (optional).',
      amount_granted decimal(20,2)    COMMENT 'Granted amount, in default currency.',
-     currency varchar(8) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(8)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      rationale text    COMMENT 'Grant rationale.',
      status_id int unsigned NOT NULL   COMMENT 'Id of Grant status.' 
 ,
@@ -1849,6 +1993,8 @@ CREATE TABLE civicrm_report_instance (
      domain_id int unsigned NOT NULL   COMMENT 'Which Domain is this instance for',
      title varchar(255)    COMMENT 'Report Instance Title.',
      report_id varchar(64) NOT NULL   COMMENT 'FK to civicrm_option_value for the report template',
+     name varchar(255)    COMMENT 'when combined with report_id/template uniquely identifies the instance',
+     args varchar(255)    COMMENT 'arguments that are passed in the url when invoking the instance',
      description varchar(255)    COMMENT 'Report Instance description.',
      permission varchar(255)    COMMENT 'permission required to be able to run this instance',
      form_values text    COMMENT 'Submitted form values for this report',
@@ -1921,6 +2067,33 @@ CREATE TABLE civicrm_price_set_entity (
   
 ,      
      CONSTRAINT FK_civicrm_price_set_entity_price_set_id FOREIGN KEY (price_set_id) REFERENCES civicrm_price_set(id)   
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_batch
+-- *
+-- * Stores the details of a batch operation Used primarily when doing batch operations with an external system.
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_batch (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique Address ID',
+     name varchar(64)    COMMENT 'Variable name/programmatic handle for this batch.',
+     label varchar(64)    COMMENT 'Friendly Name.',
+     description text    COMMENT 'Description of this batch set.',
+     created_id int unsigned    COMMENT 'FK to Contact ID',
+     created_date datetime    COMMENT 'When was this item created',
+     modified_id int unsigned    COMMENT 'FK to Contact ID',
+     modified_date datetime    COMMENT 'When was this item created' 
+,
+    PRIMARY KEY ( id )
+ 
+ 
+,      
+     CONSTRAINT FK_civicrm_batch_created_id FOREIGN KEY (created_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_batch_modified_id FOREIGN KEY (modified_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -2039,6 +2212,7 @@ CREATE TABLE civicrm_custom_field (
 
      id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Unique Custom Field ID',
      custom_group_id int unsigned NOT NULL   COMMENT 'FK to civicrm_custom_group.',
+     name varchar(64)    COMMENT 'Variable name/programmatic handle for this group.',
      label varchar(255)    COMMENT 'Text for form field label (also friendly name for administering this custom property).',
      data_type enum('String', 'Int', 'Float', 'Money', 'Memo', 'Date', 'Boolean', 'StateProvince', 'Country', 'File', 'Link', 'ContactReference') NOT NULL   COMMENT 'Controls location of data storage in extended_data table.',
      html_type enum('Text', 'TextArea', 'Select', 'Multi-Select', 'AdvMulti-Select', 'Radio', 'CheckBox', 'Select Date', 'Select State/Province', 'Select Country', 'Multi-Select Country', 'Multi-Select State/Province', 'File', 'Link', 'RichTextEditor', 'Autocomplete-Select') NOT NULL   COMMENT 'HTML types plus several built-in extended types.',
@@ -2152,6 +2326,37 @@ CREATE TABLE civicrm_email (
 
 -- /*******************************************************
 -- *
+-- * civicrm_entity_batch
+-- *
+-- * Batch entities (Contributions, Participants, Contacts) to a batch.
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_entity_batch (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'primary key',
+     entity_table varchar(64)    COMMENT 'physical tablename for entity being joined to file, e.g. civicrm_contact',
+     entity_id int unsigned NOT NULL   COMMENT 'FK to entity table specified in entity_table column.',
+     batch_id int unsigned NOT NULL   COMMENT 'FK to civicrm_batch' 
+,
+    PRIMARY KEY ( id )
+ 
+    ,     INDEX index_entity(
+        entity_table
+      , entity_id
+  )
+  ,     UNIQUE INDEX UI_batch_entity(
+        batch_id
+      , entity_id
+      , entity_table
+  )
+  
+,      
+     CONSTRAINT FK_civicrm_entity_batch_batch_id FOREIGN KEY (batch_id) REFERENCES civicrm_batch(id) ON DELETE CASCADE  
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
 -- * civicrm_entity_file
 -- *
 -- * Attaches (joins)  uploaded files (images, documents, etc.) to entities (Contacts, Groups, Actions).
@@ -2194,7 +2399,7 @@ CREATE TABLE civicrm_entity_financial_trxn (
      entity_id int unsigned NOT NULL   ,
      financial_trxn_id int unsigned    ,
      amount decimal(20,2) NOT NULL   COMMENT 'allocated amount of transaction to this entity',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.' 
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.' 
 ,
     PRIMARY KEY ( id )
  
@@ -2388,7 +2593,8 @@ CREATE TABLE civicrm_note (
      note text    COMMENT 'Note and/or Comment.',
      contact_id int unsigned    COMMENT 'FK to Contact ID creator',
      modified_date date    COMMENT 'When was this note last modified/edited',
-     subject varchar(255)    COMMENT 'subject of note description' 
+     subject varchar(255)    COMMENT 'subject of note description',
+     privacy int    COMMENT 'Foreign Key to Note Privacy Level (which is an option value pair and hence an implicit FK)' 
 ,
     PRIMARY KEY ( id )
  
@@ -2412,13 +2618,13 @@ CREATE TABLE civicrm_option_value (
      id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Option ID',
      option_group_id int unsigned NOT NULL   COMMENT 'Group which this option belongs to.',
      label varchar(255) NOT NULL   COMMENT 'Option string as displayed to users - e.g. the label in an HTML OPTION tag.',
-     value varchar(64) NOT NULL   COMMENT 'The actual value stored (as a foreign key) in the data record. Functions which need lookup option_value.title should use civicrm_option_value.option_group_id plus civicrm_option_value.value as the key.',
+     value varchar(512) NOT NULL   COMMENT 'The actual value stored (as a foreign key) in the data record. Functions which need lookup option_value.title should use civicrm_option_value.option_group_id plus civicrm_option_value.value as the key.',
      name varchar(255)    COMMENT 'Stores a fixed (non-translated) name for this option value. Lookup functions should use the name as the key for the option value row.',
-     grouping varchar(64)    COMMENT 'Use to sort and/or set display properties for sub-set(s) of options within an option group. EXAMPLE: Use for college_interest field, to differentiate partners from non-partners.',
+     grouping varchar(255)    COMMENT 'Use to sort and/or set display properties for sub-set(s) of options within an option group. EXAMPLE: Use for college_interest field, to differentiate partners from non-partners.',
      filter int unsigned    COMMENT 'Bitwise logic can be used to create subsets of options within an option_group for different uses.',
      is_default tinyint   DEFAULT 0 COMMENT 'Is this the default option for the group?',
      weight int unsigned NOT NULL   COMMENT 'Controls display sort order.',
-     description varchar(255)    COMMENT 'Optional description.',
+     description text    COMMENT 'Optional description.',
      is_optgroup tinyint   DEFAULT 0 COMMENT 'Is this row simply a display header? Expected usage is to render these as OPTGROUP tags within a SELECT field list of options?',
      is_reserved tinyint   DEFAULT 0 COMMENT 'Is this a predefined system object?',
      is_active tinyint   DEFAULT 1 COMMENT 'Is this option active?',
@@ -2578,7 +2784,10 @@ CREATE TABLE civicrm_uf_match (
 ,
     PRIMARY KEY ( id )
  
-    ,     UNIQUE INDEX UI_uf_name_domain_id(
+    ,     INDEX I_civicrm_uf_match_uf_id(
+        uf_id
+  )
+  ,     UNIQUE INDEX UI_uf_name_domain_id(
         uf_name
       , domain_id
   )
@@ -3171,7 +3380,8 @@ CREATE TABLE civicrm_contribution_page (
      start_date datetime    COMMENT 'Date and time that this page starts.',
      end_date datetime    COMMENT 'Date and time that this page ends. May be NULL if no defined end date/time',
      created_id int unsigned    COMMENT 'FK to civicrm_contact, who created this contribution page',
-     created_date datetime    COMMENT 'Date and time that contribution page was created.' 
+     created_date datetime    COMMENT 'Date and time that contribution page was created.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.' 
 ,
     PRIMARY KEY ( id )
  
@@ -3236,7 +3446,7 @@ CREATE TABLE civicrm_pcp (
      is_thermometer int unsigned   DEFAULT 0 ,
      is_honor_roll int unsigned   DEFAULT 0 ,
      goal_amount decimal(20,2)    COMMENT 'Goal amount of this Personal Campaign Page.',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      referer varchar(255)   DEFAULT NULL ,
      is_active tinyint   DEFAULT 0 COMMENT 'Is Personal Campaign Page enabled/active?' 
 ,
@@ -3375,6 +3585,7 @@ CREATE TABLE civicrm_activity (
      relationship_id int unsigned   DEFAULT NULL COMMENT 'FK to Relationship ID',
      is_current_revision tinyint   DEFAULT 1 ,
      original_id int unsigned    COMMENT 'Activity ID of the first activity record in versioning chain.',
+     result varchar(255)    COMMENT 'Currently being used to store result id for survey activity, FK to option value.',
      is_deleted tinyint   DEFAULT 0  
 ,
     PRIMARY KEY ( id )
@@ -3495,7 +3706,7 @@ CREATE TABLE civicrm_pledge (
      contribution_page_id int unsigned    COMMENT 'The Contribution Page which triggered this contribution',
      amount decimal(20,2) NOT NULL   COMMENT 'Total pledged amount.',
      original_installment_amount decimal(20,2) NOT NULL   COMMENT 'Original amount for each of the installments.',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      frequency_unit enum('day', 'week', 'month', 'year')   DEFAULT 'month' COMMENT 'Time units for recurrence of pledge payments.',
      frequency_interval int unsigned NOT NULL  DEFAULT 1 COMMENT 'Number of time units for recurrence of pledge payments.',
      frequency_day int unsigned NOT NULL  DEFAULT 3 COMMENT 'Day in the period when the pledge payment is due e.g. 1st of month, 15th etc. Use this to set the scheduled dates for pledge payments.',
@@ -3551,8 +3762,7 @@ CREATE TABLE civicrm_price_field (
      active_on datetime   DEFAULT NULL COMMENT 'If non-zero, do not show this field before the date specified',
      expire_on datetime   DEFAULT NULL COMMENT 'If non-zero, do not show this field after the date specified',
      javascript varchar(255)    COMMENT 'Optional scripting attributes for field',
-     visibility_id int unsigned   DEFAULT 1 COMMENT 'Implicit FK to civicrm_option_group with name = \'visibility\'',
-     count int unsigned   DEFAULT NULL COMMENT 'Number of Participants Per field' 
+     visibility_id int unsigned   DEFAULT 1 COMMENT 'Implicit FK to civicrm_option_group with name = \'visibility\'' 
 ,
     PRIMARY KEY ( id )
  
@@ -3562,6 +3772,33 @@ CREATE TABLE civicrm_price_field (
   
 ,      
      CONSTRAINT FK_civicrm_price_field_price_set_id FOREIGN KEY (price_set_id) REFERENCES civicrm_price_set(id)   
+)  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
+
+-- /*******************************************************
+-- *
+-- * civicrm_price_field_value
+-- *
+-- *******************************************************/
+CREATE TABLE civicrm_price_field_value (
+
+
+     id int unsigned NOT NULL AUTO_INCREMENT  COMMENT 'Price Field Value',
+     price_field_id int unsigned NOT NULL   COMMENT 'FK to civicrm_price_field',
+     name varchar(255) NOT NULL   COMMENT 'Price field option name',
+     label varchar(255) NOT NULL   COMMENT 'Price field option label',
+     description text   DEFAULT NULL COMMENT '>Price field option description.',
+     amount varchar(512) NOT NULL   COMMENT 'Price field option amount',
+     count int unsigned   DEFAULT NULL COMMENT 'Number of participants per field option',
+     max_value int unsigned   DEFAULT NULL COMMENT 'Max number of participants per field options',
+     weight int   DEFAULT 1 COMMENT 'Order in which the field options should appear',
+     is_default tinyint   DEFAULT 0 COMMENT 'Is this default price field option',
+     is_active tinyint   DEFAULT 1 COMMENT 'Is this price field active' 
+,
+    PRIMARY KEY ( id )
+ 
+ 
+,      
+     CONSTRAINT FK_civicrm_price_field_value_price_field_id FOREIGN KEY (price_field_id) REFERENCES civicrm_price_field(id)   
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -3576,12 +3813,12 @@ CREATE TABLE civicrm_line_item (
      entity_table varchar(64) NOT NULL   COMMENT 'table which has the transaction',
      entity_id int unsigned NOT NULL   COMMENT 'entry in table',
      price_field_id int unsigned NOT NULL   COMMENT 'FK to price_field',
-     option_group_id int unsigned NOT NULL   COMMENT 'FK to option group',
      label varchar(255) NOT NULL   COMMENT 'descriptive label for item - from custom_option.label',
      qty int unsigned NOT NULL   COMMENT 'How many items ordered',
      unit_price decimal(20,2) NOT NULL   COMMENT 'price of each item',
      line_total decimal(20,2) NOT NULL   COMMENT 'qty * unit_price',
-     participant_count int unsigned   DEFAULT NULL COMMENT 'Participant count for field' 
+     participant_count int unsigned   DEFAULT NULL COMMENT 'Participant count for field',
+     price_field_value_id int unsigned   DEFAULT NULL COMMENT 'Implicit FK to civicrm_option_value' 
 ,
     PRIMARY KEY ( id )
  
@@ -3589,9 +3826,16 @@ CREATE TABLE civicrm_line_item (
         entity_table
       , entity_id
   )
+  ,     UNIQUE INDEX UI_line_item_value(
+        entity_table
+      , entity_id
+      , price_field_value_id
+      , price_field_id
+  )
   
 ,      
-     CONSTRAINT FK_civicrm_line_item_price_field_id FOREIGN KEY (price_field_id) REFERENCES civicrm_price_field(id) ON DELETE CASCADE  
+     CONSTRAINT FK_civicrm_line_item_price_field_id FOREIGN KEY (price_field_id) REFERENCES civicrm_price_field(id) ON DELETE CASCADE,      
+     CONSTRAINT FK_civicrm_line_item_price_field_value_id FOREIGN KEY (price_field_value_id) REFERENCES civicrm_price_field_value(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -3790,7 +4034,8 @@ CREATE TABLE civicrm_address (
      geo_code_1 double    COMMENT 'Latitude',
      geo_code_2 double    COMMENT 'Longitude',
      timezone varchar(8)    COMMENT 'Timezone expressed as a UTC offset - e.g. United States CST would be written as "UTC-6".',
-     name varchar(255)     
+     name varchar(255)    ,
+     master_id int unsigned    COMMENT 'FK to Address ID' 
 ,
     PRIMARY KEY ( id )
  
@@ -3814,7 +4059,8 @@ CREATE TABLE civicrm_address (
      CONSTRAINT FK_civicrm_address_contact_id FOREIGN KEY (contact_id) REFERENCES civicrm_contact(id) ON DELETE CASCADE,      
      CONSTRAINT FK_civicrm_address_county_id FOREIGN KEY (county_id) REFERENCES civicrm_county(id) ON DELETE SET NULL,      
      CONSTRAINT FK_civicrm_address_state_province_id FOREIGN KEY (state_province_id) REFERENCES civicrm_state_province(id) ON DELETE SET NULL,      
-     CONSTRAINT FK_civicrm_address_country_id FOREIGN KEY (country_id) REFERENCES civicrm_country(id) ON DELETE SET NULL  
+     CONSTRAINT FK_civicrm_address_country_id FOREIGN KEY (country_id) REFERENCES civicrm_country(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_address_master_id FOREIGN KEY (master_id) REFERENCES civicrm_address(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -3902,7 +4148,7 @@ CREATE TABLE civicrm_contribution (
      net_amount decimal(20,2)    COMMENT 'actual funds transfer amount. total less fees. if processor does not report actual fee during transaction, this is set to total_amount.',
      trxn_id varchar(255)    COMMENT 'unique transaction id. may be processor id, bank id + trans id, or account number + check number... depending on payment_method',
      invoice_id varchar(255)    COMMENT 'unique invoice id, system generated or passed in',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      cancel_date datetime    COMMENT 'when was gift cancelled',
      cancel_reason text    ,
      receipt_date datetime    COMMENT 'when (if) receipt was sent. populated automatically for online donations w/ automatic receipting',
@@ -3985,7 +4231,7 @@ CREATE TABLE civicrm_contribution_soft (
      contribution_id int unsigned NOT NULL   COMMENT 'FK to contribution table.',
      contact_id int unsigned NOT NULL   COMMENT 'FK to Contact ID',
      amount decimal(20,2) NOT NULL   COMMENT 'Amount of this soft contribution.',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      pcp_id int unsigned   DEFAULT NULL COMMENT 'FK to civicrm_pcp.id',
      pcp_display_in_roll tinyint   DEFAULT 0 ,
      pcp_roll_nickname varchar(255)   DEFAULT NULL ,
@@ -4090,7 +4336,8 @@ CREATE TABLE civicrm_event (
      is_template tinyint   DEFAULT 0 COMMENT 'whether the event has template',
      template_title varchar(255)    COMMENT 'Event Template Title',
      created_id int unsigned    COMMENT 'FK to civicrm_contact, who created this event',
-     created_date datetime    COMMENT 'Date and time that event was created.' 
+     created_date datetime    COMMENT 'Date and time that event was created.',
+     currency varchar(3)    COMMENT '3 character string, value from config setting or input via user.' 
 ,
     PRIMARY KEY ( id )
  
@@ -4119,7 +4366,7 @@ CREATE TABLE civicrm_participant (
      contact_id int unsigned   DEFAULT 0 COMMENT 'FK to Contact ID',
      event_id int unsigned   DEFAULT 0 COMMENT 'FK to Event ID',
      status_id int unsigned NOT NULL  DEFAULT 1 COMMENT 'Participant status ID. FK to civicrm_participant_status_type. Default of 1 should map to status = Registered.',
-     role_id int unsigned   DEFAULT NULL COMMENT 'Participant role ID. Implicit FK to civicrm_option_value where option_group = participant_role.',
+     role_id varchar(128)   DEFAULT NULL COMMENT 'Participant role ID. Implicit FK to civicrm_option_value where option_group = participant_role.',
      register_date datetime    COMMENT 'When did contact register for event?',
      source varchar(128)    COMMENT 'Source of this event registration.',
      fee_level text    COMMENT 'Populate with the label (text) associated with a fee level for paid events with multiple levels. Note that we store the label value and not the key',
@@ -4128,7 +4375,7 @@ CREATE TABLE civicrm_participant (
      fee_amount decimal(20,2)    COMMENT 'actual processor fee if known - may be 0.',
      registered_by_id int unsigned   DEFAULT NULL COMMENT 'FK to Participant ID',
      discount_id int unsigned   DEFAULT NULL COMMENT 'FK to Discount ID',
-     fee_currency varchar(3) NOT NULL   COMMENT '3 character string, value derived from config setting.' 
+     fee_currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value derived from config setting.' 
 ,
     PRIMARY KEY ( id )
  
@@ -4143,7 +4390,7 @@ CREATE TABLE civicrm_participant (
      CONSTRAINT FK_civicrm_participant_contact_id FOREIGN KEY (contact_id) REFERENCES civicrm_contact(id) ON DELETE CASCADE,      
      CONSTRAINT FK_civicrm_participant_event_id FOREIGN KEY (event_id) REFERENCES civicrm_event(id) ON DELETE CASCADE,      
      CONSTRAINT FK_civicrm_participant_status_id FOREIGN KEY (status_id) REFERENCES civicrm_participant_status_type(id) ,      
-     CONSTRAINT FK_civicrm_participant_registered_by_id FOREIGN KEY (registered_by_id) REFERENCES civicrm_participant(id) ON DELETE CASCADE,      
+     CONSTRAINT FK_civicrm_participant_registered_by_id FOREIGN KEY (registered_by_id) REFERENCES civicrm_participant(id) ON DELETE SET NULL,      
      CONSTRAINT FK_civicrm_participant_discount_id FOREIGN KEY (discount_id) REFERENCES civicrm_discount(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
@@ -4186,7 +4433,7 @@ CREATE TABLE civicrm_pledge_payment (
      contribution_id int unsigned    COMMENT 'FK to contribution table.',
      scheduled_amount decimal(20,2) NOT NULL   COMMENT 'Pledged amount for this payment (the actual contribution amount might be different).',
      actual_amount decimal(20,2)    COMMENT 'Actual amount that is paid as the Pledged installment amount.',
-     currency varchar(3) NOT NULL   COMMENT '3 character string, value from config setting or input via user.',
+     currency varchar(3)   DEFAULT NULL COMMENT '3 character string, value from config setting or input via user.',
      scheduled_date datetime NOT NULL   COMMENT 'The date the pledge payment is supposed to happen.',
      reminder_date datetime    COMMENT 'The date that the most recent payment reminder was sent.',
      reminder_count int unsigned   DEFAULT 0 COMMENT 'The number of payment reminders sent.',

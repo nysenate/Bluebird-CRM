@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -46,7 +46,7 @@ class CRM_Case_PseudoConstant extends CRM_Core_PseudoConstant
      * @var array
      * @static
      */
-    static $caseStatus;
+    static $caseStatus = array( );
 
     /**
      * redaction rules
@@ -61,7 +61,14 @@ class CRM_Case_PseudoConstant extends CRM_Core_PseudoConstant
      * @static
      */
     static $caseType = array( );
-
+    
+    /**
+     * Encounter Medium
+     * @var array
+     * @static
+     */
+    static $encounterMedium = array( );
+    
     /**
      * activity type
      * @var array
@@ -83,18 +90,19 @@ class CRM_Case_PseudoConstant extends CRM_Core_PseudoConstant
      * @return array - array reference of all case statues
      * @static
      */
-
-    public static function caseStatus( )
+    public static function caseStatus( $column = 'label', $onlyActive = true )
     {
-        if ( ! self::$caseStatus ) {
-            self::$caseStatus = array( );
-        
+        $cacheKey = "{$column}_".(int)$onlyActive;
+        if ( !isset( self::$caseStatus[$cacheKey] ) ) {
             require_once 'CRM/Core/OptionGroup.php';
-            self::$caseStatus = CRM_Core_OptionGroup::values('case_status');
+            self::$caseStatus[$cacheKey] = CRM_Core_OptionGroup::values( 'case_status', 
+                                                                         false, false, false, null, 
+                                                                         $column, $onlyActive );
         }
-        return self::$caseStatus;
+        
+        return self::$caseStatus[$cacheKey];
     }
-
+    
     /**
      * Get all the redaction rules
      *
@@ -130,20 +138,39 @@ class CRM_Case_PseudoConstant extends CRM_Core_PseudoConstant
      * @return array - array reference of all case type
      * @static
      */
-
-    public static function caseType( $column = 'label' )
+    public static function caseType( $column = 'label', $onlyActive = true )
     {
-        if ( ! array_key_exists($column, self::$caseType) ) {
-            self::$caseType[$column] = array( );
-            
+        $cacheKey = "{$column}_".(int)$onlyActive;
+        if ( !isset( self::$caseType[$cacheKey] ) ) {
             require_once 'CRM/Core/OptionGroup.php';
-            self::$caseType[$column] = 
-                CRM_Core_OptionGroup::values( 'case_type', false, false, 
-                                              false, null, $column );
+            self::$caseType[$cacheKey] =  CRM_Core_OptionGroup::values( 'case_type', 
+                                                                        false, false, false, null, 
+                                                                        $column, $onlyActive );
         }
-        return self::$caseType[$column];
+        
+        return self::$caseType[$cacheKey];
     }
-
+    
+    /**
+     * Get all the Encounter Medium 
+     *
+     * @access public
+     * @return array - array reference of all Encounter Medium.
+     * @static
+     */
+    public static function encounterMedium( $column = 'label', $onlyActive = true )
+    {
+        $cacheKey = "{$column}_".(int)$onlyActive;
+        if ( !isset( self::$encounterMedium[$cacheKey] ) ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            self::$encounterMedium[$cacheKey] =  CRM_Core_OptionGroup::values( 'encounter_medium', 
+                                                                               false, false, false, null, 
+                                                                               $column, $onlyActive );
+        }
+        
+        return self::$encounterMedium[$cacheKey];
+    }
+    
     /**
      * Get all Activty types for the CiviCase component
      *

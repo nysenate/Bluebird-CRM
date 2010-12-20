@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -87,22 +87,36 @@ class CRM_Contribute_Form_ContributionPage_Amount extends CRM_Contribute_Form_Co
 
         $this->addGroup( $default, 'default' );
         
-        
         $this->addElement('checkbox', 'amount_block_is_active', ts('Contribution Amounts section enabled'), null, array( 'onclick' => "showHideAmountBlock( this, 'amount_block_is_active' );" ) );
 
         $this->addElement('checkbox', 'is_monetary', ts('Execute real-time monetary transactions') );
         
         $paymentProcessor =& CRM_Core_PseudoConstant::paymentProcessor( );
+        $recurringPaymentProcessor = array( );
+
+        if ( !empty( $paymentProcessor ) ) {
+            $paymentProcessorIds = implode( ',', array_keys( $paymentProcessor ) );
+            $query = "
+SELECT id
+  FROM civicrm_payment_processor
+ WHERE id IN ({$paymentProcessorIds})
+   AND is_recur = 1";
+            $dao =& CRM_Core_DAO::executeQuery( $query );
+            while ( $dao->fetch( ) ) {
+                $recurringPaymentProcessor[] = $dao->id;
+            } 
+        }
+        $this->assign( 'recurringPaymentProcessor', $recurringPaymentProcessor );
         if ( count($paymentProcessor) ) {
             $this->assign('paymentProcessor',$paymentProcessor);
         }
         $this->add( 'select', 'payment_processor_id', ts( 'Payment Processor' ),
-                    array(''=>ts( '- select -' )) + $paymentProcessor );
+                    array(''=>ts( '- select -' )) + $paymentProcessor, null, array( 'onchange' => "showRecurring( this.value );" ) );
         
         require_once "CRM/Contribute/BAO/ContributionPage.php";
         
         //check if selected payment processor supports recurring payment
-        if ( CRM_Contribute_BAO_ContributionPage::checkRecurPaymentProcessor( $this->_id ) ) {
+        if ( !empty( $recurringPaymentProcessor ) ) {
             $this->addElement( 'checkbox', 'is_recur', ts('Recurring contributions'), null, 
                                array('onclick' => "showHideByValue('is_recur',true,'recurFields','table-row','radio',false); showRecurInterval( );") );
             require_once 'CRM/Core/OptionGroup.php';
@@ -150,6 +164,9 @@ class CRM_Contribute_Form_ContributionPage_Amount extends CRM_Contribute_Form_Co
             $this->addElement( 'text', 'max_reminders', ts('Send up to'), array('size'=>3) );
             $this->addElement( 'text', 'additional_reminder_day', ts('Send additional reminders'), array('size'=>3) );
         }
+        
+        //add currency element.
+        $this->addCurrency( 'currency', ts( 'Currency' ) );
         
         $this->addFormRule( array( 'CRM_Contribute_Form_ContributionPage_Amount', 'formRule' ), $this );
         
@@ -301,13 +318,11 @@ class CRM_Contribute_Form_ContributionPage_Amount extends CRM_Contribute_Form_Co
             if ( CRM_Utils_Array::value( 'amount_block_is_active', $fields ) ) {
                 if ( !CRM_Utils_Array::value( 'is_allow_other_amount', $fields ) &&
                      !$priceSetId ) {
-                    //get the values and labels of amount block
-                    $labels  = CRM_Utils_Array::value( 'label'  , $fields );
+                    //get the values of amount block
                     $values  = CRM_Utils_Array::value( 'value'  , $fields );
                     $isSetRow = false;
                     for ( $i = 1; $i < self::NUM_OPTION; $i++ ) {
-                        if ( ( isset( $values[$i] ) && ( strlen( trim( $values[$i] ) ) > 0 ) ) &&
-                             ( CRM_Utils_Array::value( $i, $labels ) ) ) { 
+                        if ( ( isset( $values[$i] ) && ( strlen( trim( $values[$i] ) ) > 0 ) ) ) { 
                             $isSetRow = true;
                         }
                     }

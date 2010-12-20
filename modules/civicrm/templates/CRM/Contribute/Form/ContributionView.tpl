@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,14 +32,14 @@
        {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
        {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context&key=$searchKey"}	   
        {/if}
-       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}" accesskey="e"><span><div class="icon edit-icon"></div> Edit</span></a>
+       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}" accesskey="e"><span><div class="icon edit-icon"></div>{ts}Edit{/ts}</span></a>
     {/if}
     {if call_user_func(array('CRM_Core_Permission','check'), 'delete in CiviContribute')}
        {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context"}
        {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
        {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context&key=$searchKey"}	   
        {/if}
-       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}"><span><div class="icon delete-icon"></div> Delete</span></a>
+       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}"><span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span></a>
     {/if}
     {include file="CRM/common/formButtons.tpl" location="top"}
     </div>
@@ -51,7 +51,7 @@
     </tr>
     <tr>
         <td class="label">{ts}Contribution Type{/ts}</td>
-    	<td>{$contribution_type}&nbsp; {if $is_test} {ts}(test){/ts} {/if}</td>
+    	<td>{$contribution_type}{if $is_test} {ts}(test){/ts} {/if}</td>
     </tr>
     {if $lineItem}
     <tr>
@@ -150,7 +150,7 @@
 	    <tr>
 	        <td class="label">{ts}Invoice ID{/ts}</td>
 	        <td>{$invoice_id}&nbsp;</td>
-	    </tr
+	    </tr>
 	{/if} 
 
 	{if $honor_display}
@@ -233,14 +233,14 @@
        {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
        {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=update&context=$context&key=$searchKey"}	   
        {/if}
-       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}" accesskey="e"><span><div class="icon edit-icon"></div> Edit</span></a>
+       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}" accesskey="e"><span><div class="icon edit-icon"></div>{ts}Edit{/ts}</span></a>
     {/if}
     {if call_user_func(array('CRM_Core_Permission','check'), 'delete in CiviContribute')}
        {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context"}
        {if ( $context eq 'fulltext' || $context eq 'search' ) && $searchKey}
        {assign var='urlParams' value="reset=1&id=$id&cid=$contact_id&action=delete&context=$context&key=$searchKey"}	   
        {/if}
-       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}"><span><div class="icon delete-icon"></div> Delete</span></a>
+       <a class="button" href="{crmURL p='civicrm/contact/view/contribution' q=$urlParams}"><span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span></a>
     {/if}
     {include file="CRM/common/formButtons.tpl" location="bottom"}
 </div>

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,7 +30,7 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
+ * $Id: $
  *
  */
 
@@ -159,6 +159,23 @@ class CRM_Utils_File {
             }
         }
     }
+
+    public function copyDir( $source, $destination) {
+
+        $dir = opendir($source);
+        @mkdir( $destination );
+        while(false !== ( $file = readdir( $dir )) ) {
+            if (( $file != '.' ) && ( $file != '..' )) {
+                if ( is_dir( $source . DIRECTORY_SEPARATOR . $file ) ) {
+                    CRM_Utils_File::copyDir( $source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file );
+                } else {
+                    copy($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
+                }
+            }
+        }
+        closedir($dir);
+    } 
+
 
     /**
      * Given a file name, recode it (in place!) to UTF-8
@@ -319,19 +336,93 @@ class CRM_Utils_File {
      */
     static function restrictAccess($dir)
     {
-        $htaccess = <<<HTACCESS
+        // note: empty value for $dir can play havoc, since that might result in putting '.htaccess' to root dir 
+        // of site, causing site to stop functioning.
+        // FIXME: we should do more checks here -
+        if ( ! empty( $dir ) ) {
+            $htaccess = <<<HTACCESS
 <Files "*">
   Order allow,deny
   Deny from all
 </Files>
 
 HTACCESS;
-        $file = $dir . '.htaccess';
-        if (file_put_contents($file, $htaccess) === false) {
-            require_once 'CRM/Core/Error.php';
-            CRM_Core_Error::movedSiteError($file);
+            $file = $dir . '.htaccess';
+            if (file_put_contents($file, $htaccess) === false) {
+                require_once 'CRM/Core/Error.php';
+                CRM_Core_Error::movedSiteError($file);
+            }
         }
     }
+
+    /**
+     * Create the base file path from which all our internal directories are
+     * offset. This is derived from the template compile directory set
+     */
+    static function baseFilePath( $templateCompileDir = null ) {
+        static $_path = null;
+        if ( ! $_path ) {
+            if ( $templateCompileDir == null ) {
+                $config =& CRM_Core_Config::singleton( );
+                $templateCompileDir = $config->templateCompileDir;
+            }
+            
+            $path = dirname( $templateCompileDir );
+            
+            //this fix is to avoid creation of upload dirs inside templates_c directory
+            $checkPath = explode( DIRECTORY_SEPARATOR, $path );
+            
+            $cnt = count($checkPath) - 1;
+            if ( $checkPath[$cnt] == 'templates_c' ) {
+                unset( $checkPath[$cnt] );
+                $path = implode( DIRECTORY_SEPARATOR, $checkPath );
+            }
+            
+            $_path = CRM_Utils_File::addTrailingSlash( $path );
+        }
+        return $_path;
+    }
+
+    static function relativeDirectory( $directory ) {
+        // Do nothing on windows
+    	if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+    		return $directory;
+    	}
+    	
+        // check if directory is relative, if so return immediately
+        if ( substr( $directory, 0, 1 ) != DIRECTORY_SEPARATOR ) {
+            return $directory;
+        }
+        
+        // make everything relative from the baseFilePath
+        $basePath = self::baseFilePath( );
+        // check if basePath is a substr of $directory, if so
+        // return rest of string
+        if ( substr( $directory, 0, strlen( $basePath ) ) == $basePath ) {
+            return substr( $directory, strlen( $basePath ) );
+        }
+        
+        // return the original value
+        return $directory;
+    }
+
+    static function absoluteDirectory( $directory ) {
+    	// Do nothing on windows - config will need to specify absolute path
+    	if ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
+    		return $directory;
+    	}
+    	
+        // check if directory is already absolute, if so return immediately
+        if ( substr( $directory, 0, 1 ) == DIRECTORY_SEPARATOR ) {
+            return $directory;
+        }
+        
+        // make everything absolute from the baseFilePath
+        $basePath = self::baseFilePath( );
+
+        return $basePath . $directory;
+    }
+
 }
 
 

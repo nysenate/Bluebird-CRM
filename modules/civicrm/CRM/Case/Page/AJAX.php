@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -122,4 +122,26 @@ class CRM_Case_Page_AJAX
         echo 'true';
         CRM_Utils_System::civiExit( );
     }
+    function caseDetails( ) {
+        $caseId    = CRM_Utils_Type::escape( $_GET['caseId'], 'Integer' );
+        $contactId = CRM_Utils_Type::escape( $_GET['contactId'], 'Integer' );
+        require_once 'CRM/Case/BAO/Case.php';
+        $sql = "SELECT * FROM civicrm_case where id = %1";
+        $dao = CRM_Core_DAO::executeQuery( $sql , array( 1 => array( $caseId,  'Integer' ) ) );
+        
+        while ( $dao->fetch( ) ) {
+             $caseType = CRM_Case_BAO_Case::getCaseType( ( str_replace( CRM_Case_BAO_Case::VALUE_SEPERATOR, "", 
+                                                                        $dao->case_type_id) ) );
+             $caseStatuses = CRM_Case_PseudoConstant::caseStatus();
+             $cs = $caseStatuses[$dao->status_id];
+             $caseDetails = "<html><table><tr><td>Case Subject</td><td>$dao->subject</td></tr>
+                                          <tr><td>Case Type</td><td>$caseType</td></tr> 
+                                          <tr><td> Case Status</td><td>$cs</td></tr>
+                                          <tr><td>Case Start Date</td><td>$dao->start_date</td></tr>
+                                          <tr><td>Case End Date</td><td></td></tr>$dao->end_date</table></html>";        
+             echo $caseDetails;
+         }
+         
+    }
+    
 }

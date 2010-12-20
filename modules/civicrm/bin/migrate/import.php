@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -57,7 +57,8 @@ class bin_migrate_import {
         $this->optionValues( $xml, $idMap );
 
         $this->relationshipTypes( $xml );
-
+        $this->contributionTypes( $xml );
+        
         // now create custom groups
         $this->customGroups( $xml, $idMap );
         $this->customFields( $xml, $idMap );
@@ -143,6 +144,16 @@ WHERE      v.option_group_id = %1
         }
     }
 
+    function contributionTypes( &$xml ) {
+        require_once 'CRM/Contribute/BAO/ContributionType.php';
+        
+        foreach ( $xml->ContributionTypes as $contributionTypesXML ) {
+            foreach ( $contributionTypesXML->ContributionType as $contributionTypeXML ) {
+                $contributionType = new CRM_Contribute_DAO_ContributionType( );
+                $this->copyData( $contributionType, $contributionTypeXML, true, 'name' );
+            }
+        }
+    }
 
     function customGroups( &$xml, &$idMap ) {
         require_once 'CRM/Core/BAO/CustomGroup.php';
@@ -302,7 +313,7 @@ AND        v.name = %1
             foreach ( $profileGroupsXML->ProfileGroup as $profileGroupXML ) {
                 $profileGroup = new CRM_Core_DAO_UFGroup( );
                 $this->copyData( $profileGroup, $profileGroupXML, true, 'title' );
-                $idMap['profile_group'][$profileGroup->title] = $profileGroup->id;
+                $idMap['profile_group'][$profileGroup->name] = $profileGroup->id;
                 $idMap['profile_group'][$profileGroup->name]  = $profileGroup->id;
             }
         }
@@ -314,7 +325,7 @@ AND        v.name = %1
             foreach ( $profileFieldsXML->ProfileField as $profileFieldXML ) {
                 $profileField = new CRM_Core_DAO_UFField( );
                 $profileField->uf_group_id = $idMap['profile_group'][(string ) $profileFieldXML->profile_group_name];
-                $this->copyData( $profileField, $profileFieldXML, false, 'name' );
+                $this->copyData( $profileField, $profileFieldXML, false, 'field_name' );
 
                 // fix field name
                 if ( substr( $profileField->field_name, 0, 7 ) == 'custom.' ) {

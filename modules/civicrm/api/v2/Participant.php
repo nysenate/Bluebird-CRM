@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,7 +33,7 @@
  * @subpackage API_Participant
  * 
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Participant.php 29021 2010-08-04 11:39:17Z sushant $
+ * @version $Id: Participant.php 30461 2010-11-02 06:45:57Z deepak $
  *
  */
 
@@ -436,6 +436,15 @@ function civicrm_participant_check_params( &$params ,$checkDuplicate = false )
             return civicrm_create_error( ts( 'Contact id is not valid' ));
         }
     }
+    
+    //check that event id is not an template
+    if( CRM_Utils_Array::value( 'event_id', $params ) ) {
+        $isTemplate = CRM_Core_DAO::getFieldValue( 'CRM_Event_DAO_Event', $params['event_id'], 'is_template' );
+        if ( !empty( $isTemplate ) ) {
+            return civicrm_create_error( ts( 'Event templates are not meant to be registered' ));
+        }
+    }
+    
     $result = array( );
     if( $checkDuplicate ) {
         if( CRM_Event_BAO_Participant::checkDuplicate( $params, $result ) ) {

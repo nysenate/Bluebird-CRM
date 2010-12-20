@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -79,13 +79,13 @@ class CRM_Contribute_Form_ContributionPage_Premium extends CRM_Contribute_Form_C
         
         $this->add('textarea', 'premiums_intro_text', ts('Introductory Message'), 'rows=5, cols=50');
 
-        $this->add('text','premiums_contact_email',ts('Contact Email') . ' ',CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_email')); 
+        $this->add('text','premiums_contact_email', ts('Contact Email') . ' ', CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_email')); 
         
-        $this->addRule('premiums_contact_email',ts('Please enter a valid email address for Contact Email') . ' ','email');
+        $this->addRule('premiums_contact_email', ts('Please enter a valid email address for Contact Email') . ' ','email');
         
-        $this->add('text','premiums_contact_phone',ts('Contact Phone'),CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_phone'));
+        $this->add('text','premiums_contact_phone', ts('Contact Phone'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_Premium', 'premiums_contact_phone'));
         
-        $this->addRule('premiums_contact_phone',ts('Please enter a valid phone number.'),'phone');
+        $this->addRule('premiums_contact_phone', ts('Please enter a valid phone number.'), 'phone');
 
         $this->addElement('checkbox', 'premiums_display_min_contribution', ts('Display Minimum Contribution Amount?') );
      
@@ -145,7 +145,8 @@ class CRM_Contribute_Form_ContributionPage_Premium extends CRM_Contribute_Form_C
      * @return string 
      * @access public 
      */ 
-    public function getTitle( ) {
+    public function getTitle( )
+    {
         return ts( 'Premiums' );
     }
 }

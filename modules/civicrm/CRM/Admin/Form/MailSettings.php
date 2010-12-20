@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -89,7 +89,10 @@ class CRM_Admin_Form_MailSettings extends CRM_Admin_Form
         
         $this->add('checkbox', 'is_ssl', ts('Use SSL?')); 
         
-        $this->add('checkbox', 'is_default', ts('Default Option?')); 
+		$usedfor = array( 1 => ts('Bounce Processing'),
+						  0 => ts('Email-to-Activity Processing')
+                          );
+        $this->add('select', 'is_default', ts('Used For?'), $usedfor); 
     }
     
     /** 

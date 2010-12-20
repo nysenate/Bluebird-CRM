@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,18 +35,35 @@
 <div class="crm-content-block">
 {if $rowsEmpty}
 	<div class="crm-results-block crm-results-block-empty">
-    {include file="CRM/Contact/Form/Search/EmptyResults.tpl"}
+          {include file="CRM/Contact/Form/Search/EmptyResults.tpl"}
 	</div>
 {elseif $rows}    
 	<div class="crm-results-block">
     {* Search request has returned 1 or more matching rows. *}
        {* This section handles form elements for action task select and submit *}
-	           <div class="crm-search-tasks">
-       {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
-		</div>
+       <div class="crm-search-tasks">
+       {if $taskFile}
+          {if $taskContext}
+            {include file=$taskFile context=$taskContext}
+          {else}
+            {include file=$taskFile}
+          {/if}
+       {else}
+         {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
+       {/if}
+       </div>
+
        {* This section displays the rows along and includes the paging controls *}
-	           <div class="crm-search-results">
-       {include file="CRM/Contact/Form/Selector.tpl"}
+       <div class="crm-search-results">
+       {if $resultFile}
+          {if $resultContext}
+             {include file=$resultFile context=$resultContext}
+          {else}
+             {include file=$resultFile}
+          {/if}
+       {else}
+         {include file="CRM/Contact/Form/Selector.tpl"}
+       {/if}
        </div>
        
     {* END Actions/Results section *}

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -90,7 +90,17 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form
         require_once 'CRM/Contact/BAO/Contact.php';
         $url = CRM_Utils_System::url( 'civicrm/contact/view/pledge', 
                "action=view&reset=1&id={$values['id']}&cid={$values['contact_id']}&context=home" );
-       
+        
+        $recentOther = array( );
+        if ( CRM_Core_Permission::checkActionPermission( 'CiviPledge', CRM_Core_Action::UPDATE ) ) {
+            $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/pledge', 
+                                                             "action=update&reset=1&id={$values['id']}&cid={$values['contact_id']}&context=home" );
+        } 
+        if ( CRM_Core_Permission::checkActionPermission( 'CiviPledge', CRM_Core_Action::DELETE ) ) {
+            $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/pledge', 
+                                                               "action=delete&reset=1&id={$values['id']}&cid={$values['contact_id']}&context=home" );
+        }
+        
         require_once 'CRM/Utils/Money.php';
         $displayName = CRM_Contact_BAO_Contact::displayName( $values['contact_id'] );
         $this->assign( 'displayName', $displayName );
@@ -105,7 +115,9 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form
                                $values['id'],
                                'Pledge',
                                $values['contact_id'],
-                               null );
+                               null,
+                               $recentOther
+                               );
              
         $this->assign( $values );
     }

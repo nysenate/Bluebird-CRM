@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -44,7 +44,7 @@
             <th>{ts}Source{/ts}</th>
             <!--<th>{ts}Port{/ts}</th>-->
             <th>{ts}Use SSL?{/ts}</th>
-            <th>{ts}Default?{/ts}</th>
+            <th>{ts}Used For{/ts}</th>
             <th></th>
         </thead>
         {foreach from=$rows item=row}
@@ -59,7 +59,7 @@
               <td class="crm-mailSettings-source">{$row.source}</td>
               <!--<td>{$row.port}</td>-->
               <td class="crm-mailSettings-is_ssl">{if $row.is_ssl eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
-              <td class="crm-mailSettings-is_default">{if $row.is_default eq 1}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Default{/ts}" />{/if}&nbsp;</td>
+              <td class="crm-mailSettings-is_default">{if $row.is_default eq 1}{ts}Bounce Processing <strong>(Default)</strong>{/ts}{else}{ts}Email-to-Activity{/ts}{/if}&nbsp;</td>
               <td>{$row.action|replace:'xx':$row.id}</td>
           </tr>
         {/foreach}

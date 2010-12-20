@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -104,6 +104,18 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
      * @var string
      */
     public $report_id;
+    /**
+     * when combined with report_id/template uniquely identifies the instance
+     *
+     * @var string
+     */
+    public $name;
+    /**
+     * arguments that are passed in the url when invoking the instance
+     *
+     * @var string
+     */
+    public $args;
     /**
      * Report Instance description.
      *
@@ -224,6 +236,20 @@ class CRM_Report_DAO_Instance extends CRM_Core_DAO
                     'required' => true,
                     'maxlength' => 64,
                     'size' => CRM_Utils_Type::BIG,
+                ) ,
+                'name' => array(
+                    'name' => 'name',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Name') ,
+                    'maxlength' => 255,
+                    'size' => CRM_Utils_Type::HUGE,
+                ) ,
+                'args' => array(
+                    'name' => 'args',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Args') ,
+                    'maxlength' => 255,
+                    'size' => CRM_Utils_Type::HUGE,
                 ) ,
                 'description' => array(
                     'name' => 'description',

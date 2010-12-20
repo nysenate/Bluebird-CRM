@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -81,6 +81,11 @@ class CRM_Grant_BAO_Query
                 $query->_tables['civicrm_grant']  = $query->_whereTables['civicrm_grant'] = 1;
             }
             
+            if ( CRM_Utils_Array::value( 'grant_note', $query->_returnProperties ) ) {
+            $query->_select['grant_note']  = "civicrm_note.note as grant_note";
+            $query->_element['grant_note'] = 1;
+            $query->_tables['grant_note']  = 1;
+        }
             $query->_select['grant_amount_requested'] = 'civicrm_grant.amount_requested as grant_amount_requested';
             $query->_select['grant_amount_granted']   = 'civicrm_grant.amount_granted as grant_amount_granted';
             $query->_select['grant_amount_total']     = 'civicrm_grant.amount_total as grant_amount_total';
@@ -243,6 +248,10 @@ class CRM_Grant_BAO_Query
                 $from .= " $side JOIN civicrm_option_value grant_type ON (civicrm_grant.grant_type_id = grant_type.value AND option_group_grant_type.id = grant_type.option_group_id ) ";
             }
             break;
+        case 'grant_note':
+            $from .= " $side JOIN civicrm_note ON ( civicrm_note.entity_table = 'civicrm_grant' AND
+                                                        civicrm_grant.id = civicrm_note.entity_id )";
+            break;
         } 
         return $from;
         
@@ -273,6 +282,7 @@ class CRM_Grant_BAO_Query
                                 'grant_application_received_date' => 1,
                                 'grant_report_received'           => 1,
                                 'grant_money_transfer_date'       => 1,
+                                'grant_note'                      => 1,
                                 );
        
  

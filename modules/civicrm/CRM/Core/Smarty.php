@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -77,7 +77,8 @@ class CRM_Core_Smarty extends Smarty {
         $config = CRM_Core_Config::singleton( );
 
         if ( isset( $config->customTemplateDir ) && $config->customTemplateDir ) {
-            $this->template_dir = array( $config->customTemplateDir, $config->templateDir );
+            $this->template_dir = array_merge( array( $config->customTemplateDir ),
+                                               $config->templateDir );
         } else {
             $this->template_dir = $config->templateDir;
         }
@@ -126,8 +127,12 @@ class CRM_Core_Smarty extends Smarty {
         $this->assign( 'defaultWysiwygEditor', $defaultWysiwygEditor );
  
         global $tsLocale;
-        $this->assign('langSwitch', CRM_Core_I18n::languages(true));
         $this->assign('tsLocale',   $tsLocale);
+        
+        // CRM-7163 hack: we don’t display langSwitch on upgrades anyway
+        if ( CRM_Utils_Array::value( $config->userFrameworkURLVar, $_REQUEST ) != 'civicrm/upgrade' ) {
+            $this->assign('langSwitch', CRM_Core_I18n::languages(true));
+        }
         
         //check if logged in use has access CiviCRM permission and build menu
         require_once 'CRM/Core/Permission.php';

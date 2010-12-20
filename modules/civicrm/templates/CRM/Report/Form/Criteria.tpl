@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -25,13 +25,19 @@
 *}
 {* Report form criteria section *}
     {if $colGroups}
-
-	           <h3>Display Columns</h3>
- 
+	    <h3>Display Columns</h3>
         {foreach from=$colGroups item=grpFields key=dnc}
             {assign  var="count" value="0"}
+            {* Wrap custom field sets in collapsed accordion pane. *}
+            {if $grpFields.group_title}
+                <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+                    <div class="crm-accordion-header">
+                        <div class="icon crm-accordion-pointer"></div>
+                        {$grpFields.group_title}
+                    </div><!-- /.crm-accordion-header -->
+                    <div class="crm-accordion-body">
+            {/if}
             <table class="criteria-group">
-                {if $grpFields.group_title}<tr><td colspan=4>&raquo;&nbsp;{$grpFields.group_title}:</td></tr>{/if}
                 <tr class="crm-report crm-report-criteria-field crm-report-criteria-field-{$dnc}">
                     {foreach from=$grpFields.fields item=title key=field}
                         {assign var="count" value=`$count+1`}
@@ -45,6 +51,10 @@
                     {/if}
                 </tr>
             </table>
+            {if $grpFields.group_title}
+                    </div><!-- /.crm-accordion-body -->
+                </div><!-- /.crm-accordion-wrapper -->
+            {/if}
         {/foreach}
     {/if}
     
@@ -89,7 +99,17 @@
         <table class="report-layout">
             {foreach from=$filters     item=table key=tableName}
  	        {assign  var="filterCount" value=$table|@count}
-	        {if $colGroups.$tableName.group_title and $filterCount gte 1}</table><table class="report-layout"><tr class="crm-report crm-report-criteria-filter crm-report-criteria-filter-{$tableName}"><td colspan=3>&raquo;&nbsp;{$colGroups.$tableName.group_title}:</td></tr>{/if} 
+            {* Wrap custom field sets in collapsed accordion pane. *}
+	        {if $colGroups.$tableName.group_title and $filterCount gte 1}
+	            </table>
+                <div class="crm-accordion-wrapper crm-accordion crm-accordion-closed">
+                    <div class="crm-accordion-header">
+                        <div class="icon crm-accordion-pointer"></div>
+                        {$colGroups.$tableName.group_title}
+                    </div><!-- /.crm-accordion-header -->
+                    <div class="crm-accordion-body">
+                    <table class="report-layout">
+            {/if}
                 {foreach from=$table       item=field key=fieldName}
                     {assign var=fieldOp     value=$fieldName|cat:"_op"}
                     {assign var=filterVal   value=$fieldName|cat:"_value"}
@@ -111,8 +131,17 @@
                         </tr>
                     {/if}
                 {/foreach}
+                {if $colGroups.$tableName.group_title}
+                        </table>
+                        </div><!-- /.crm-accordion-body -->
+                    </div><!-- /.crm-accordion-wrapper -->
+                    {assign var=closed     value=1"} {*-- ie table tags are closed-- *}
+                {else}
+                     {assign var=closed     value=0"} {*-- ie table tags are not closed-- *}
+                {/if}
+
             {/foreach}
-        </table>
+            {if $closed eq 0 }</table>{/if}
     {/if}
  
     {literal}

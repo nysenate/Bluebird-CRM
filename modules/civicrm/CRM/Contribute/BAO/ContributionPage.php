@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -158,7 +158,9 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
             }
         }
 
-        if ( CRM_Utils_Array::value( 'is_email_receipt', $values )  || CRM_Utils_Array::value( 'onbehalf_dupe_alert', $values ) ) {
+        if ( CRM_Utils_Array::value( 'is_email_receipt', $values )  || 
+             CRM_Utils_Array::value( 'onbehalf_dupe_alert', $values ) || 
+             $returnMessageText ) {
             $template =& CRM_Core_Smarty::singleton( );
 
             // get the billing location type
@@ -181,7 +183,6 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
             if ( !$email ) {
                 list( $displayName, $email ) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $contactID );
             }
-
             
             //for display profile need to get individual contact id,  
             //hence get it from related_contact if on behalf of org true CRM-3767.
@@ -237,6 +238,9 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
                 $tplParams['contributeMode']= null;
             }
 
+            // CRM-6976
+            $originalCCReceipt = CRM_Utils_Array::value( 'cc_receipt' , $values );
+
             // cc to related contacts of contributor OR the one who
             // signs up. Is used for cases like - on behalf of
             // contribution / signup ..etc  
@@ -262,6 +266,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
                 'contactId' => $contactID,
                 'tplParams' => $tplParams,
                 'isTest'    => $isTest,
+            	'PDFFilename' => 'civicrm.pdf',
             );
 
             require_once 'CRM/Core/BAO/MessageTemplates.php';
@@ -292,6 +297,10 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
                 $sendTemplateParams['toEmail']                     = $values['receipt_from_email'];
                 $sendTemplateParams['tplParams']['onBehalfID']     = $contactID;
                 $sendTemplateParams['tplParams']['receiptMessage'] = $message;
+                
+                // fix cc and reset back to original, CRM-6976
+                $sendTemplateParams['cc']      = $originalCCReceipt;
+
                 CRM_Core_BAO_MessageTemplates::sendTemplate($sendTemplateParams);
             }
         }
@@ -509,5 +518,77 @@ WHERE entity_table = 'civicrm_contribution_page'
         }
         return false;
     }
+    
+    
+    /**                                                           
+     * Function to get info for all sections enable/disable.
+     *
+     * @return array $info info regarding all sections.
+     * @access public 
+     */
+    function getSectionInfo( $contribPageIds = array( ) ) 
+    {
+        $info = array( );
+        $whereClause = null;
+        if ( is_array( $contribPageIds ) && !empty( $contribPageIds ) ) {
+            $whereClause = 'WHERE civicrm_contribution_page.id IN ( '. implode( ', ', $contribPageIds ) . ' )';
+        }
+        
+        $sections = array( 'settings',
+                           'amount',
+                           'membership',
+                           'custom',
+                           'thankYou',
+                           'friend',
+                           'pcp',
+                           'widget',
+                           'premium', 
+                           );
+        $query =  "
+   SELECT  civicrm_contribution_page.id as id,
+           civicrm_contribution_page.contribution_type_id as settings, 
+           amount_block_is_active as amount, 
+           civicrm_membership_block.id as membership,
+           civicrm_uf_join.id as custom,
+           civicrm_contribution_page.thankyou_title as thankYou,
+           civicrm_tell_friend.id as friend,
+           civicrm_pcp_block.id as pcp,
+           civicrm_contribution_widget.id as widget,
+           civicrm_premiums.id as premium
+     FROM  civicrm_contribution_page
+LEFT JOIN  civicrm_membership_block    ON ( civicrm_membership_block.entity_id = civicrm_contribution_page.id
+                                            AND civicrm_membership_block.entity_table = 'civicrm_contribution_page'
+                                            AND civicrm_membership_block.is_active = 1 )
+LEFT JOIN  civicrm_uf_join             ON ( civicrm_uf_join.entity_id = civicrm_contribution_page.id 
+                                            AND civicrm_uf_join.entity_table = 'civicrm_contribution_page' 
+                                            AND civicrm_uf_join.is_active = 1 )
+LEFT JOIN  civicrm_tell_friend         ON ( civicrm_tell_friend.entity_id = civicrm_contribution_page.id 
+                                            AND civicrm_tell_friend.entity_table = 'civicrm_contribution_page'
+                                            AND civicrm_tell_friend.is_active = 1)
+LEFT JOIN  civicrm_pcp_block           ON ( civicrm_pcp_block.entity_id = civicrm_contribution_page.id 
+                                            AND civicrm_pcp_block.entity_table = 'civicrm_contribution_page' 
+                                            AND civicrm_pcp_block.is_active = 1 ) 
+LEFT JOIN  civicrm_contribution_widget ON ( civicrm_contribution_widget.contribution_page_id = civicrm_contribution_page.id 
+                                            AND civicrm_contribution_widget.is_active = 1 )
+LEFT JOIN  civicrm_premiums            ON ( civicrm_premiums.entity_id = civicrm_contribution_page.id 
+                                            AND civicrm_premiums.entity_table = 'civicrm_contribution_page' 
+                                            AND civicrm_premiums.premiums_active = 1 )
+           $whereClause";
+        
+        $contributionPage = CRM_Core_DAO::executeQuery( $query );
+        while ( $contributionPage->fetch( ) ) {
+            if ( !is_array( $info[$contributionPage->id] ) ) {
+                $info[$contributionPage->id] = array_fill_keys( array_values( $sections ), false );
+            }
+            foreach ( $sections as $section ) {
+                if ( $contributionPage->$section ) {
+                    $info[$contributionPage->id][$section] = true;
+                }
+            }
+        }
+        
+        return $info;
+    }
+    
 }
 

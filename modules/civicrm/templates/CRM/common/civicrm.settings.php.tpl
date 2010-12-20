@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -78,6 +78,14 @@ define( 'CIVICRM_UF_DSN'           , 'mysql://%%CMSdbUser%%:%%CMSdbPass%%@%%CMSd
  *
  */
 define( 'CIVICRM_DSN'          , 'mysql://%%dbUser%%:%%dbPass%%@%%dbHost%%/%%dbName%%?new_link=true' );
+
+/**
+ * CiviCRM Logging Database
+ *
+ * Used to point to a different database to use for logging (if desired). If unset defaults to equal CIVICRM_DSN.
+ * The CIVICRM_DSN user needs to have the rights to modify the below database schema and be able to write to it.
+ */
+define('CIVICRM_LOGGING_DSN', CIVICRM_DSN);
 
 /**
  * File System Paths:
@@ -202,6 +210,25 @@ define( 'CIVICRM_EVENT_PRICE_SET_DOMAIN_ID', 0 );
  * If set, makes CiviMail default to tracking replies (i.e., using VERP-ed Reply-To:)
  */
 define('CIVICRM_TRACK_CIVIMAIL_REPLIES', false);
+
+/**
+ * This setting logs all emails to a file. Useful for debugging any mail (or civimail) issues.
+ * This will not send any email, so ensure this is commented out in production
+ */
+// define( 'CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log' );
+
+/**
+ * For use with CiviCampaign Petitions
+ * If set, contacts that are created when signing a petition are tagged with the 
+ * defined tag name (default below is 'Unconfirmed')
+ */
+define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
+
+/** 
+ * Defines the group name containing all contacts that have signed a CiviCampaign petition.
+ * Do not unset - required for email verification. Group will be created if it does not exist.
+ */
+define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
 
 /**
  * 

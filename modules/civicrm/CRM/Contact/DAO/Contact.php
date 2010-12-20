@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -321,12 +321,6 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
      */
     public $deceased_date;
     /**
-     * OPTIONAL FK to civicrm_contact_household record. If NOT NULL, direct mail communications to household rather than individual location.
-     *
-     * @var int unsigned
-     */
-    public $mail_to_household_id;
-    /**
      * Household Name.
      *
      * @var string
@@ -387,7 +381,6 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
     {
         if (!(self::$_links)) {
             self::$_links = array(
-                'mail_to_household_id' => 'civicrm_contact:id',
                 'primary_contact_id' => 'civicrm_contact:id',
                 'employer_id' => 'civicrm_contact:id',
             );
@@ -801,16 +794,6 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
                     'headerPattern' => '/^deceased|(d(eceased\s)?date)$/i',
                     'dataPattern' => '',
                     'export' => true,
-                ) ,
-                'mail_to_household_id' => array(
-                    'name' => 'mail_to_household_id',
-                    'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Mail to Household ID') ,
-                    'export' => true,
-                    'where' => 'civicrm_contact.mail_to_household_id',
-                    'headerPattern' => '',
-                    'dataPattern' => '',
-                    'FKClassName' => 'CRM_Contact_DAO_Contact',
                 ) ,
                 'household_name' => array(
                     'name' => 'household_name',

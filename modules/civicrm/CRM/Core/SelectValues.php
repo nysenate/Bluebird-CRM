@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -614,6 +614,7 @@ class CRM_Core_SelectValues
     static function getDatePluginInputFormats( ) {
         $dateInputFormats = array( 
                                   "mm/dd/yy"      => ts('mm/dd/yyyy (12/31/2009)'),
+                                  "dd/mm/yy"      => ts('dd/mm/yyyy (31/12/2009)'),
                                   "yy-mm-dd"      => ts('yyyy-mm-dd (2009-12-31)'),
                                   "dd-mm-yy"      => ts('dd-mm-yyyy (31-12-2009)'),
                                   'dd.mm.yy'      => ts('dd.mm.yyyy (31.12.2009)'),
@@ -626,7 +627,7 @@ class CRM_Core_SelectValues
                                   "dd-mm"         => ts('dd-mm (31-12)'),
                                   "yy-mm"         => ts('yyyy-mm (2009-12)'),
                                   'M yy'          => ts('M yyyy (Dec 2009)'),
-                                  "yy"            => ts('yyyy (2009)'),
+                                  "yy"            => ts('yyyy (2009)')   
                                    );
         
         /*
@@ -650,6 +651,7 @@ class CRM_Core_SelectValues
      */
     static function datePluginToPHPFormats( ) {
         $dateInputFormats = array( "mm/dd/yy"      => 'm/d/Y',
+                                   "dd/mm/yy"      => 'd/m/Y',
                                    "yy-mm-dd"      => 'Y-m-d',
                                    "dd-mm-yy"      => 'd-m-Y',
                                    "dd.mm.yy"      => 'd.m.Y',                                 
@@ -662,8 +664,7 @@ class CRM_Core_SelectValues
                                    "dd-mm"         => 'd-m',
                                    "yy-mm"         => 'Y-m',
                                    "M yy"          => 'M Y',
-                                   "yy"            => 'Y',
-                                  
+                                   "yy"            => 'Y'
                                   );
         return $dateInputFormats;
     }

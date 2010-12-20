@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -44,8 +44,8 @@ require_once 'CRM/Core/Page.php';
  * page.
  *
  */
-class CRM_UF_Page_Field extends CRM_Core_Page {
-    
+class CRM_UF_Page_Field extends CRM_Core_Page
+{
     /**
      * The group id of the field
      *
@@ -62,20 +62,19 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
      */
     private static $_actionLinks;
 
-
     /**
      * Get the action links for this page.
      *
      * @return array $_actionLinks
      *
      */
-    function &actionLinks()
+    function &actionLinks( )
     {
-        if (!isset(self::$_actionLinks)) {
+        if ( !isset( self::$_actionLinks ) ) {
             self::$_actionLinks = array(
                                         CRM_Core_Action::UPDATE  => array(
                                                                           'name'  => ts('Edit'),
-                                                                          'url'   => 'civicrm/admin/uf/group/field',
+                                                                          'url'   => 'civicrm/admin/uf/group/field/update',
                                                                           'qs'    => 'reset=1&action=update&id=%%id%%&gid=%%gid%%',
                                                                           'title' => ts('Edit CiviCRM Profile Field') 
                                                                           ),
@@ -115,15 +114,21 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
      * @access public
      * @static
      */
-    function browse()
+    function browse( )
     {
         $ufField = array();
         $ufFieldBAO = new CRM_Core_BAO_UFField();
         
         // fkey is gid
         $ufFieldBAO->uf_group_id = $this->_gid;
-        $ufFieldBAO->orderBy('weight', 'field_name');
+        $ufFieldBAO->orderBy( 'weight', 'field_name' );
         $ufFieldBAO->find();
+        
+        require_once "CRM/Core/BAO/UFField.php";
+        $profileType = CRM_Core_BAO_UFField::getProfileType( $this->_gid );
+        if ( $profileType == 'Contribution' || $profileType == 'Membership' || $profileType == 'Activity' || $profileType == 'Participant' ) {
+            $this->assign( 'skipCreate', true );
+        }
         
         $locationType = array( );
         $locationType =& CRM_Core_PseudoConstant::locationType();
@@ -131,15 +136,15 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
         require_once 'CRM/Contact/BAO/Contact.php';
         $fields =& CRM_Contact_BAO_Contact::exportableFields( 'All', false, true );
         require_once "CRM/Contribute/BAO/Contribution.php";
-        $fields = array_merge(CRM_Contribute_BAO_Contribution::getContributionFields(), $fields);
-
+        $fields = array_merge( CRM_Contribute_BAO_Contribution::getContributionFields(), $fields );
+        
         if ( CRM_Core_Permission::access( 'Quest' ) ) {
             require_once 'CRM/Quest/BAO/Student.php';
-            $fields = array_merge(CRM_Quest_BAO_Student::exportableFields(), $fields);
+            $fields = array_merge( CRM_Quest_BAO_Student::exportableFields(), $fields );
         }
 
         $select = array( );
-        foreach ($fields as $name => $field ) {
+        foreach ( $fields as $name => $field ) {
             if ( $name ) {
                 $select[$name] = $field['title'];
             }
@@ -147,30 +152,31 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
         $select['group'] = ts('Group(s)'); 
         $select['tag'  ] = ts('Tag(s)');
 
-        while ($ufFieldBAO->fetch()) {
+        while ( $ufFieldBAO->fetch() ) {
             $ufField[$ufFieldBAO->id] = array();
             $phoneType = $locType = '';
-            CRM_Core_DAO::storeValues( $ufFieldBAO, $ufField[$ufFieldBAO->id]);
-            CRM_Core_DAO_UFField::addDisplayEnums($ufField[$ufFieldBAO->id]);
-
+            CRM_Core_DAO::storeValues( $ufFieldBAO, $ufField[$ufFieldBAO->id] );
+            CRM_Core_DAO_UFField::addDisplayEnums( $ufField[$ufFieldBAO->id] );
+            
             $ufField[$ufFieldBAO->id]['label'] = $ufFieldBAO->label; 
 
-            $action = array_sum(array_keys($this->actionLinks()));
-            if ($ufFieldBAO->is_active) {
+            $action = array_sum( array_keys( $this->actionLinks() ) );
+            if ( $ufFieldBAO->is_active ) {
                 $action -= CRM_Core_Action::ENABLE;
             } else {
                 $action -= CRM_Core_Action::DISABLE;
             }
 
-            if ($ufFieldBAO->is_reserved) {
+            if ( $ufFieldBAO->is_reserved ) {
                 $action -= CRM_Core_Action::UPDATE;
                 $action -= CRM_Core_Action::DISABLE;
                 $action -= CRM_Core_Action::DELETE;
             }
             $ufField[$ufFieldBAO->id]['order']  = $ufField[$ufFieldBAO->id]['weight'];
-            $ufField[$ufFieldBAO->id]['action'] = CRM_Core_Action::formLink(self::actionLinks(), $action, 
-                                                                            array('id'  => $ufFieldBAO->id,
-                                                                                  'gid' => $this->_gid));
+            $ufField[$ufFieldBAO->id]['action'] = CRM_Core_Action::formLink( self::actionLinks(),
+                                                                             $action, 
+                                                                             array( 'id'  => $ufFieldBAO->id,
+                                                                                    'gid' => $this->_gid ) );
         }
 
         $returnURL = CRM_Utils_System::url( 'civicrm/admin/uf/group/field',
@@ -180,15 +186,14 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
         CRM_Utils_Weight::addOrder( $ufField, 'CRM_Core_DAO_UFField',
                                     'id', $returnURL, $filter );
         
-        $this->assign('ufField', $ufField);
+        $this->assign( 'ufField', $ufField );
         
         // retrieve showBestResult from session
         $session = CRM_Core_Session::singleton( );
-        $showBestResult = $session->get( 'showBestResult');
+        $showBestResult = $session->get( 'showBestResult' );
         $this->assign( 'showBestResult', $showBestResult );
-        $session->set( 'showBestResult', false );
+        $session->set( 'showBestResult', 0 );
     }
-
 
     /**
      * edit CiviCRM Profile data.
@@ -200,20 +205,20 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
      * @return void
      * @access public
      */
-    function edit($action)
+    function edit( $action )
     {
         // create a simple controller for editing CiviCRM Profile data
-        $controller = new CRM_Core_Controller_Simple('CRM_UF_Form_Field', ts('CiviCRM Profile Field'), $action);
+        $controller = new CRM_Core_Controller_Simple( 'CRM_UF_Form_Field', ts('CiviCRM Profile Field'), $action );
         
         // set the userContext stack
         $session = CRM_Core_Session::singleton();
-        $session->pushUserContext(CRM_Utils_System::url('civicrm/admin/uf/group/field','reset=1&action=browse&gid=' . $this->_gid));
-        $controller->set('gid', $this->_gid);
-        $controller->setEmbedded(true);
+        $session->pushUserContext( CRM_Utils_System::url( 'civicrm/admin/uf/group/field',
+                                                          'reset=1&action=browse&gid=' . $this->_gid ) );
+        $controller->set( 'gid', $this->_gid );
+        $controller->setEmbedded( true );
         $controller->process();
         $controller->run();
     }
-
 
     /**
      * Run the page.
@@ -225,41 +230,41 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
      * @access public
      *
      */
-    function run()
+    function run( )
     {
         // get the group id
-        $this->_gid = CRM_Utils_Request::retrieve('gid', 'Positive',
-                                                  $this, false, 0);
-        if ($this->_gid) {
+        $this->_gid = CRM_Utils_Request::retrieve( 'gid', 'Positive',
+                                                   $this, false, 0 );
+        if ( $this->_gid ) {
             require_once 'CRM/Core/BAO/UFGroup.php';
-            $groupTitle = CRM_Core_BAO_UFGroup::getTitle($this->_gid);
-            $this->assign('gid', $this->_gid);
-            $this->assign('groupTitle', $groupTitle);
-            CRM_Utils_System::setTitle(ts('%1 - CiviCRM Profile Fields', array(1 => $groupTitle)));
+            $groupTitle = CRM_Core_BAO_UFGroup::getTitle( $this->_gid );
+            $this->assign( 'gid', $this->_gid );
+            $this->assign( 'groupTitle', $groupTitle );
+            CRM_Utils_System::setTitle( ts( '%1 - CiviCRM Profile Fields', array( 1 => $groupTitle ) ) );
         }
 
         // get the requested action
-        $action = CRM_Utils_Request::retrieve('action', 'String',
-                                              $this, false, 'browse'); // default to 'browse'
+        $action = CRM_Utils_Request::retrieve( 'action', 'String',
+                                               $this, false, 'browse' ); // default to 'browse'
 
         // assign vars to templates
-        $this->assign('action', $action);
+        $this->assign( 'action', $action );
 
-        $id = CRM_Utils_Request::retrieve('id', 'Positive',
-                                          $this, false, 0);
+        $id = CRM_Utils_Request::retrieve( 'id', 'Positive',
+                                           $this, false, 0 );
         
         // what action to take ?
-        if ($action & (CRM_Core_Action::UPDATE | CRM_Core_Action::ADD | CRM_Core_Action::VIEW | CRM_Core_Action::DELETE)) {
-            $this->edit($action);   // no browse for edit/update/view/delete
+        if ( $action & ( CRM_Core_Action::UPDATE | CRM_Core_Action::ADD | CRM_Core_Action::VIEW | CRM_Core_Action::DELETE ) ) {
+            $this->edit( $action );   // no browse for edit/update/view/delete
         } else if ( $action & CRM_Core_Action::PREVIEW ) {
-            $this->preview($id,$this->_gid) ;
+            $this->preview( $id, $this->_gid );
         } else {
             require_once 'CRM/Core/BAO/UFField.php';
-            $this->browse();
+            $this->browse( );
         }
 
         // Call the parents run method
-        parent::run();
+        parent::run( );
     }
 
     /**
@@ -269,14 +274,15 @@ class CRM_UF_Page_Field extends CRM_Core_Page {
      * @return void
      * @access public
      */
-    function preview($fieldId,$groupId)
+    function preview( $fieldId, $groupId )
     {
-        $controller = new CRM_Core_Controller_Simple('CRM_UF_Form_Preview', ts('Preview Custom Data'), CRM_Core_Action::PREVIEW);
+        $controller = new CRM_Core_Controller_Simple( 'CRM_UF_Form_Preview', ts('Preview Custom Data'), CRM_Core_Action::PREVIEW );
         $session = CRM_Core_Session::singleton();
-        $session->pushUserContext(CRM_Utils_System::url('civicrm/admin/uf/group/field','reset=1&action=browse&gid=' . $this->_gid));
-        $controller->set('fieldId', $fieldId);
-        $controller->set('id', $groupId);
-        $controller->setEmbedded(true);
+        $session->pushUserContext( CRM_Utils_System::url( 'civicrm/admin/uf/group/field',
+                                                          'reset=1&action=browse&gid=' . $this->_gid ) );
+        $controller->set( 'fieldId', $fieldId );
+        $controller->set( 'id', $groupId );
+        $controller->setEmbedded( true );
         $controller->process();
         $controller->run();
     }

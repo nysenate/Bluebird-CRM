@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -80,7 +80,7 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule
             if ($this->params['civicrm_address']['location_type_id']) {
                 $locTypeId = CRM_Utils_Type::escape($this->params['civicrm_address']['location_type_id'], 'Integer', false);
                 if ($locTypeId) {
-                    $where[] = "location_type_id = $locTypeId";
+                    $where[] = "t1.location_type_id = $locTypeId";
                 }
             }
             break;
@@ -93,7 +93,7 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule
         case 'civicrm_note':
             $id = 'entity_id';
             if ($this->params) {
-                $where[] = "entity_table = 'civicrm_contact'";
+                $where[] = "t1.entity_table = 'civicrm_contact'";
             } else {
                 $where[] = "t1.entity_table = 'civicrm_contact'";
                 $where[] = "t2.entity_table = 'civicrm_contact'";
@@ -101,7 +101,7 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule
             break;
         default:
             // custom data tables
-            if (preg_match('/^civicrm_value_/', $this->rule_table)) {
+            if (preg_match('/^civicrm_value_/', $this->rule_table) || preg_match('/^custom_value_/', $this->rule_table)) {
                 $id = 'entity_id';
             } else {
                 CRM_Core_Error::fatal("Unsupported rule_table for civicrm_dedupe_rule.id of {$this->id}");
@@ -112,7 +112,7 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule
         // build SELECT based on the field names containing contact ids
         // if there are params provided, id1 should be 0
         if ($this->params) {
-            $select = "$id id, {$this->rule_weight} weight";
+            $select = "t1.$id id1, {$this->rule_weight} weight";
         } else {
             $select = "t1.$id id1, t2.$id id2, {$this->rule_weight} weight";
         }
@@ -120,16 +120,16 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule
         // build FROM (and WHERE, if it's a parametrised search)
         // based on whether the rule is about substrings or not
         if ($this->params) {
-            $from = $this->rule_table;
+            $from = "{$this->rule_table} t1";
             $str = 'NULL';
             if ( isset( $this->params[$this->rule_table][$this->rule_field] ) ) {
                 $str = CRM_Utils_Type::escape($this->params[$this->rule_table][$this->rule_field], 'String');
             }
             if ($this->rule_length) {
-                $where[] = "SUBSTR({$this->rule_field}, 1, {$this->rule_length}) = SUBSTR('$str', 1, {$this->rule_length})";
-                $where[] = "{$this->rule_field} IS NOT NULL";
+                $where[] = "SUBSTR(t1.{$this->rule_field}, 1, {$this->rule_length}) = SUBSTR('$str', 1, {$this->rule_length})";
+                $where[] = "t1.{$this->rule_field} IS NOT NULL";
             } else {
-                $where[] = "{$this->rule_field} = '$str'";
+                $where[] = "t1.{$this->rule_field} = '$str'";
             }
         } else {
             if ($this->rule_length) {

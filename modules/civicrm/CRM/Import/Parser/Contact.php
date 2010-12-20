@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -137,7 +137,10 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
     function init( ) 
     {
         require_once 'CRM/Contact/BAO/Contact.php';
-        $fields =& CRM_Contact_BAO_Contact::importableFields( $this->_contactType );
+        require_once 'CRM/Core/BAO/Address.php';
+        $contactFields = CRM_Contact_BAO_Contact::importableFields( $this->_contactType );
+        // exclude the address options disabled in the Address Settings
+        $fields        = CRM_Core_BAO_Address::validateAddressOptions( $contactFields );
         
         //CRM-5125
         //supporting import for contact subtypes
@@ -291,37 +294,40 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
         $errorMessage  = null;
         $errorRequired = false;
         switch ($this->_contactType) { 
-
             
         case 'Individual' :
-            if ( ( $this->_firstNameIndex < 0 && $this->_lastNameIndex < 0 ) ) {
+            $missingNames = array( );
+            if ( $this->_firstNameIndex < 0 ||
+                 !CRM_Utils_Array::value( $this->_firstNameIndex, $values ) ) {
                 $errorRequired = true;
-                $errorMessage  = ts('Missing required fields:') . ' ' . ts('First Name') . ' ' . ts('and') . ' ' . ts('Last Name');
-            } else {
-                $errorRequired = 
-                    ! CRM_Utils_Array::value( $this->_firstNameIndex, $values ) &&
-                    ! CRM_Utils_Array::value( $this->_lastNameIndex, $values );
+                $missingNames[] = ts('First Name');
+            }
+            if ( $this->_lastNameIndex < 0 ||
+                 !CRM_Utils_Array::value( $this->_lastNameIndex, $values ) ) {
+                $errorRequired = true;
+                $missingNames[] = ts('Last Name');
+            }
+            if ( $errorRequired ) {
+                $and = ' ' . ts('and') . ' ';
+                $errorMessage = ts('Missing required fields:') . ' ' . implode( $and, $missingNames );
             }
             break;
-
+            
         case 'Household' :
-            if ( $this->_householdNameIndex < 0 ) {
+            if ( $this->_householdNameIndex < 0 || 
+                 !CRM_Utils_Array::value( $this->_householdNameIndex, $values ) ) {
                 $errorRequired = true;
                 $errorMessage  = ts('Missing required fields:') . ' ' . ts('Household Name');
-            } else {
-                $errorRequired = ! CRM_Utils_Array::value($this->_householdNameIndex, $values);
             }
             break;
-
+            
         case 'Organization' :
-            if ( $this->_organizationNameIndex < 0 ) {
+            if ( $this->_organizationNameIndex < 0 || 
+                 !CRM_Utils_Array::value( $this->_organizationNameIndex, $values ) ) {
                 $errorRequired = true;
                 $errorMessage  = ts('Missing required fields:') . ' ' . ts('Organization Name');
-            } else {
-                $errorRequired = ! CRM_Utils_Array::value($this->_organizationNameIndex, $values);
             }
             break;
-
         }
         
         $statusFieldName = $this->_statusFieldName;
@@ -1352,6 +1358,16 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
                                     }
                                 }
                                 
+                            }
+                        }
+                    }
+                    break;
+                case 'county':
+                    if ( !empty( $value ) ) {
+                        $countyNames = CRM_Core_PseudoConstant::county( );
+                        foreach ( $value as $county ) {
+                            if ( !in_array( $county['county'], $countyNames ) ) {
+                                self::addToErrorMsg( ts('County input value not in county table: The County value appears to be invalid. It does not match any value in CiviCRM table of counties.'), $errorMessage );
                             }
                         }
                     }

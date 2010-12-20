@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -24,13 +24,13 @@
  +--------------------------------------------------------------------+
 *}
 {if $showDirectly}
-  {assign var=defaultZoom value=14}  
   {assign var=height value="350px"}
   {assign var=width  value="425px"}
 {else}	
   {assign var=height value="600px"}
   {assign var=width  value="100%"}
 {/if}
+{assign var=defaultZoom value=12}  
 {literal}
 <script src="http://maps.google.com/maps?file=api&v=2&key={/literal}{$mapKey}{literal}" type="text/javascript"></script>
 <script type="text/javascript">
@@ -98,7 +98,7 @@
  	    map.setZoom(map.getBoundsZoomLevel(bounds));
  	    map.setMapType(G_PHYSICAL_MAP);
  	{elseif $location.marker_class eq 'Event' || $location.marker_class eq 'Individual'|| $location.marker_class eq 'Household' || $location.marker_class eq 'Organization' }
- 	    map.setZoom(map.getBoundsZoomLevel(bounds));
+ 	    map.setZoom({$defaultZoom});
 	{else} 
 	    map.setZoom({$defaultZoom}); 
  	{/if}

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -125,7 +125,7 @@ class CRM_Utils_PagerAToZ
         //get the current path
         $path = CRM_Utils_System::currentPath() ;
 
-        $qfKey = $query->_formValues['qfKey'];
+        $qfKey = CRM_Utils_Array::value( 'qfKey', $query->_formValues );
 
         $aToZBar = array( );
         foreach ( $AToZBar as $key => $link ) {

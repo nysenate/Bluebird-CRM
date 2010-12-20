@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -543,9 +543,17 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
      * @access public
      */
     function getTemplateFileName() {
-        return str_replace( '_',
-                            DIRECTORY_SEPARATOR,
-                            CRM_Utils_System::getClassName( $this ) ) .'.tpl';
+        require_once( 'CRM/Core/Extensions.php' );
+        $ext = new CRM_Core_Extensions();
+        if( $ext->isExtensionClass( CRM_Utils_System::getClassName( $this ) ) ) {
+            $filename = $ext->getTemplateName( CRM_Utils_System::getClassName( $this ) );
+            $tplname =  $ext->getTemplatePath( CRM_Utils_System::getClassName( $this ) ) . DIRECTORY_SEPARATOR . $filename;
+        } else {
+            $tplname = str_replace( '_',
+                                    DIRECTORY_SEPARATOR,
+                                    CRM_Utils_System::getClassName( $this ) ) .'.tpl';
+        }
+        return $tplname;
     }
 
     /**
@@ -775,7 +783,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
         if ( !$editor || $forceTextarea ) {
             $editor = 'textarea';
         }
-      
+        if ( $editor == 'joomla default editor' ) {
+            $editor = 'joomlaeditor';
+        }
+        
         $this->addElement( $editor, $name, $label, $attributes );
         $this->assign('editor', $editor);
     }    
@@ -1047,20 +1058,28 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
         $this->addRule( $name, ts('Please enter a valid amount.'), 'money');
         
         if ( $addCurrency ) {
-            $this->add( 'select',
-                        $currencyName,
-                        null,
-                        CRM_Core_OptionGroup::values( 'currencies_enabled' ),
-                        true );
-            
-            if ( ! $defaultCurrency ) {
-                $config =& CRM_Core_Config::singleton( );
-                $defaultCurrency = $config->defaultCurrency;
-            }
-            
-            $this->setDefaults( array( 'currency' => $defaultCurrency ) );
+            $this->addCurrency( $currencyName, null, true, $defaultCurrency );
         }
         
         return $element;
     }
+    
+    /**
+     * add currency element to the form
+     */
+    function addCurrency( $name  = 'currency', 
+                          $label = null,
+                          $required = true,
+                          $defaultCurrency = null ) {
+        require_once 'CRM/Core/OptionGroup.php';
+        $currencies = CRM_Core_OptionGroup::values( 'currencies_enabled' );
+        if ( !$required ) $currencies = array( ''=> ts( '- select -' ) ) + $currencies;
+        $this->add( 'select', $name, $label, $currencies, $required );
+        if ( !$defaultCurrency ) {
+            $config = CRM_Core_Config::singleton( );
+            $defaultCurrency = $config->defaultCurrency;
+        }
+        $this->setDefaults( array( $name => $defaultCurrency ) );
+    }
+
 }

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -129,9 +129,9 @@ class CRM_Contact_Form_Task extends CRM_Core_Form
         $session->replaceUserContext( $url );
         
         require_once 'CRM/Contact/Task.php';
-        $form->_task         = $values['task'];
+        $form->_task         = CRM_Utils_Array::value( 'task', $values ) ;
         $crmContactTaskTasks = CRM_Contact_Task::taskTitles();
-        $form->assign( 'taskName', $crmContactTaskTasks[$form->_task] );
+        $form->assign( 'taskName', CRM_Utils_Array::value( $form->_task, $crmContactTaskTasks ) );
        
         if ( $useTable ) {
             $form->_componentTable = CRM_Core_DAO::createTempTableName( 'civicrm_task_action', false );
@@ -197,9 +197,19 @@ class CRM_Contact_Form_Task extends CRM_Core_Form
                 }
                 $dao->free( );
             } else {
+                // filter duplicates here
+                // CRM-7058
+                // might be better to do this in the query, but that logic is a bit complex
+                // and it decides when to use distinct based on input criteria, which needs
+                // to be fixed and optimized.
+                $alreadySeen = array( );
                 while ( $dao->fetch( ) ) {
-                    $form->_contactIds[] = $dao->contact_id;
+                    if ( ! array_key_exists( $dao->contact_id, $alreadySeen ) ) {
+                        $form->_contactIds[] = $dao->contact_id;
+                        $alreadySeen[$dao->contact_id] = 1;
+                    }
                 }
+                unset( $alreadySeen );
                 $dao->free( );
             }
         } else if ( CRM_Utils_Array::value( 'radio_ts' , $values ) == 'ts_sel') {

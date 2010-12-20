@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -25,10 +25,14 @@
 *}
 {literal}
 <script type="text/javascript">
-function viewActivity( activityID, contactID ) {
-    cj("#view-activity").show( );
+function {/literal}{$list}{literal}viewActivity( activityID, contactID, list ) {
+    if ( list ) {
+        list = "-" + list;
+    }
+    
+    cj("#view-activity" + list ).show( );
 
-    cj("#view-activity").dialog({
+    cj("#view-activity" + list ).dialog({
         title: "View Activity",
         modal: true, 
         width : "680px", // don't remove px
@@ -45,15 +49,14 @@ function viewActivity( activityID, contactID ) {
         },
 
         open:function() {
-            cj("#activity-content").html("");
+            cj("#activity-content" + list , this).html("");
             var viewUrl = {/literal}"{crmURL p='civicrm/case/activity/view' h=0 q="snippet=4" }"{literal};
-            cj("#activity-content").load( viewUrl + "&cid="+contactID + "&aid=" + activityID);
+            cj("#activity-content" + list , this).load( viewUrl + "&cid="+contactID + "&aid=" + activityID + "&type="+list);
             
         },
 
         buttons: { 
             "Done": function() { 	    
-                cj(this).dialog("close"); 
                 cj(this).dialog("destroy"); 
             }
         }

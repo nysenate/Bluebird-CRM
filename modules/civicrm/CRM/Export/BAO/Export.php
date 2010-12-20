@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -209,6 +209,10 @@ class CRM_Export_BAO_Export
                 $returnProperties['contribution_id'] = 1;
             } else if ( $exportMode == CRM_Export_Form_Select::EVENT_EXPORT ) {
                 $returnProperties['participant_id'] = 1;
+                if ( $returnProperties['participant_role'] ) {
+                    unset( $returnProperties['participant_role'] );
+                    $returnProperties['participant_role_id'] = 1;
+                }
             } else if ( $exportMode == CRM_Export_Form_Select::MEMBER_EXPORT ) {
                 $returnProperties['membership_id'] = 1;
             } else if ( $exportMode == CRM_Export_Form_Select::PLEDGE_EXPORT ) {
@@ -270,8 +274,10 @@ class CRM_Export_BAO_Export
                     $returnProperties = array_merge( $returnProperties, $extraReturnProperties );
                 }
         
-                // unset groups, tags, notes for components
-                foreach ( array( 'groups', 'tags', 'notes' ) as $value ) {
+                // unset non exportable fields for components
+                $nonExpoFields = array( 'groups', 'tags', 'notes', 'contribution_status_id', 
+                                        'pledge_status_id', 'pledge_payment_status_id' );
+                foreach ( $nonExpoFields as $value ) {
                     unset( $returnProperties[$value] );
                 }
             }
@@ -293,6 +299,11 @@ class CRM_Export_BAO_Export
         }
         
         if ( $moreReturnProperties ) {
+            // fix for CRM-7066
+            if ( CRM_Utils_Array::value( 'group', $moreReturnProperties ) ) {
+                unset( $moreReturnProperties['group'] );
+                $moreReturnProperties['groups'] = 1;
+            }
             $returnProperties = array_merge( $returnProperties, $moreReturnProperties );
         }
 
@@ -479,7 +490,7 @@ class CRM_Export_BAO_Export
         // for CRM-3157 purposes
         require_once 'CRM/Core/I18n.php';
         $i18n =& CRM_Core_I18n::singleton();
-
+        
         while ( 1 ) {
             $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
             $dao = CRM_Core_DAO::executeQuery( $limitQuery );
@@ -583,7 +594,23 @@ class CRM_Export_BAO_Export
                             $fieldValue = $phoneTypes[$fieldValue];
                         } else if ( $field == 'provider_id' ) {
                             $fieldValue = CRM_Utils_Array::value( $fieldValue, $imProviders );  
+                        } else if ( $field == 'participant_role_id' ) {
+                            require_once 'CRM/Event/PseudoConstant.php';
+                            $participantRoles = CRM_Event_PseudoConstant::participantRole( ) ;
+                            $sep = CRM_Core_DAO::VALUE_SEPARATOR;
+                            $viewRoles = array();
+                            foreach ( explode( $sep, $dao->$field ) as $k => $v ) {
+                                $viewRoles[] = $participantRoles[$v];
+                            }
+                            $fieldValue = implode( ',', $viewRoles );
                         }
+                    } else if ( $field == 'master_address_belongs_to' ) {
+                        $masterAddressId = null;
+                        if ( isset( $dao->master_id ) ) {
+                            $masterAddressId = $dao->master_id;
+                        }
+                        // get display name of contact that address is shared.
+                        $fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName( $masterAddressId, $dao->contact_id );
                     } else {
                         $fieldValue = '';
                     }
@@ -778,7 +805,7 @@ class CRM_Export_BAO_Export
             $dao->free( );
             $offset += $rowCount;
         }
-
+        
         self::writeDetailsToTable( $exportTempTable, $componentDetails, $sqlColumns );
 
         // do merge same address and merge same household processing
@@ -796,6 +823,10 @@ class CRM_Export_BAO_Export
             self::manipulateHeaderRows( $headerRows, $contactRelationshipTypes );
         }
 
+        // call export hook
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::export( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
+        
         // now write the CSV file
         self::writeCSVFromTable( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
 
@@ -846,27 +877,48 @@ class CRM_Export_BAO_Export
     {
         $type       = CRM_Utils_Request::retrieve( 'type',   'Positive', CRM_Core_DAO::$_nullObject );
         $parserName = CRM_Utils_Request::retrieve( 'parser', 'String',   CRM_Core_DAO::$_nullObject );
-        if ( empty( $parserName ) || empty( $type ) ) return;
+        if ( empty( $parserName ) || empty( $type ) ) {
+            return;
+        }
         
-        require_once(str_replace('_', DIRECTORY_SEPARATOR, $parserName ) . ".php");
-        eval( '$errorFileName =' . $parserName . '::errorFileName( $type );' );
-        eval( '$saveFileName =' . $parserName . '::saveFileName( $type );' );
-        if ( empty( $errorFileName ) || empty( $saveFileName ) ) return; 
+        // clean and ensure parserName is a valid string
+        $parserName = CRM_Utils_String::munge( $parserName );
+        $parserClass = explode( '_', $parserName );
         
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Content-Description: File Transfer');
-        header('Content-Type: text/csv');
-        header('Content-Length: ' . filesize( $errorFileName ) );
-        header('Content-Disposition: attachment; filename=' . $saveFileName );
-        
-        readfile( $errorFileName );
-        
+        // make sure parserClass is in the CRM namespace and
+        // at least 3 levels deep
+        if ( $parserClass[0] == 'CRM' &&
+             count( $parserClass ) >= 3 ) {
+            require_once(str_replace('_', DIRECTORY_SEPARATOR, $parserName ) . ".php");
+            // ensure the functions exists
+            if ( method_exists( $parserName, 'errorFileName' ) &&
+                 method_exists( $parserName, 'saveFileName' ) ) {
+                eval( '$errorFileName =' . $parserName . '::errorFileName( $type );' );
+                eval( '$saveFileName =' . $parserName . '::saveFileName( $type );' );
+                if ( ! empty( $errorFileName ) &&
+                     ! empty( $saveFileName ) ) {
+                    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                    header('Content-Description: File Transfer');
+                    header('Content-Type: text/csv');
+                    header('Content-Length: ' . filesize( $errorFileName ) );
+                    header('Content-Disposition: attachment; filename=' . $saveFileName );
+                    
+                    readfile( $errorFileName );
+                }
+            }
+        }
         CRM_Utils_System::civiExit( );
     }
     
     function exportCustom( $customSearchClass, $formValues, $order ) 
     {
-        require_once( str_replace( '_', DIRECTORY_SEPARATOR, $customSearchClass ) . '.php' );
+        require_once "CRM/Core/Extensions.php";
+        $ext = new CRM_Core_Extensions();
+        if( ! $ext->isExtensionClass( $customSearchClass ) ) {
+            require_once( str_replace( '_', DIRECTORY_SEPARATOR, $customSearchClass ) . '.php' );
+        } else {
+            require_once( $ext->classToPath($customSearchClass ));
+        }
         eval( '$search = new ' . $customSearchClass . '( $formValues );' );
       
         $includeContactIDs = false;

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -57,6 +57,16 @@ class CRM_Event_Form_EventFees
         
         $form->_pId        = CRM_Utils_Request::retrieve( 'participantId', 'Positive', $form );
         $form->_discountId = CRM_Utils_Request::retrieve( 'discountId', 'Positive', $form );
+
+        require_once 'CRM/Event/BAO/Event.php';
+        $form->_fromEmails = CRM_Event_BAO_Event::getFromEmailIds( $form->_eventId );
+        
+        //CRM-6907 set event specific currency.
+        if ( $form->_eventId &&  
+             ($currency = CRM_Core_DAO::getFieldValue( 'CRM_Event_DAO_Event', $form->_eventId, 'currency' ) ) ) {
+            $config = CRM_Core_Config::singleton( );
+            $config->defaultCurrency = $currency; 
+        }
     }
     
     /**
@@ -75,7 +85,9 @@ class CRM_Event_Form_EventFees
             $returnProperities = array( 'confirm_email_text', 'contribution_type_id' );
             $details = array( );
             CRM_Core_DAO::commonRetrieveAll( 'CRM_Event_DAO_Event', 'id', $form->_eventId, $details, $returnProperities );
-            $defaults[$form->_pId]['contribution_type_id'] = $details[$form->_eventId]['contribution_type_id'];
+            if ( CRM_Utils_Array::value( 'contribution_type_id', $details[$form->_eventId] ) ) {
+                $defaults[$form->_pId]['contribution_type_id'] = $details[$form->_eventId]['contribution_type_id'];
+            }
         }
         
         if ( $form->_pId ) {
@@ -159,8 +171,10 @@ class CRM_Event_Form_EventFees
         if ( $priceSetId = CRM_Price_BAO_Set::getFor( 'civicrm_event', $form->_eventId ) ) {
             // get price set default values, CRM-4090
             if ( in_array( get_class( $form ), 
-                           array( 'CRM_Event_Form_Registration_Register',
-                                  'CRM_Event_Form_Registration_AdditionalParticipant' ) ) ) {
+                           array( 
+                                 'CRM_Event_Form_Participant',
+                                 'CRM_Event_Form_Registration_Register',
+                                 'CRM_Event_Form_Registration_AdditionalParticipant' ) ) ) {
                 $priceSetValues = self::setDefaultPriceSet( $form->_pId, $form->_eventId );
                 if ( !empty( $priceSetValues ) ) {
                     $defaults[$form->_pId] = array_merge( $defaults[$form->_pId], $priceSetValues );  
@@ -170,6 +184,11 @@ class CRM_Event_Form_EventFees
                 foreach( $form->_priceSet['fields'] as $key => $val ) {
                     foreach ( $val['options'] as $keys => $values ) {
                         if ( $values['is_default'] ) {
+                            if ( get_class($form) != 'CRM_Event_Form_Participant' && 
+                                 CRM_Utils_Array::value( 'is_full', $values ) ) {
+                                continue;
+                            }
+                            
                             if ( $val['html_type'] == 'CheckBox') {
                                 $defaults[$form->_pId]["price_{$key}"][$keys] = 1;
                             } else {
@@ -346,9 +365,9 @@ class CRM_Event_Form_EventFees
             $priceFields = $htmlTypes = $optionValues = array( );
             foreach ( $lineItems[$participantID] as $lineId => $items ) {
                 $priceFieldId  = CRM_Utils_Array::value( 'price_field_id', $items );
-                $optionGroupId = CRM_Utils_Array::value( 'option_group_id', $items );
-                if ( $priceFieldId && $optionGroupId ) {
-                    $priceFields[$priceFieldId] = $optionGroupId;
+                $priceOptionId = CRM_Utils_Array::value( 'price_field_value_id', $items );
+                if ( $priceFieldId && $priceOptionId ) {
+                    $priceFields[$priceFieldId][] = $priceOptionId;
                 }
             }
             
@@ -365,17 +384,7 @@ SELECT  id, html_type
             while ( $fieldDAO->fetch( ) ) {
                 $htmlTypes[$fieldDAO->id] = $fieldDAO->html_type;
             }
-            
-            $sql = "
-SELECT  id, label, name, option_group_id  
-  FROM  civicrm_option_value 
- WHERE  option_group_id IN (" .implode( ',', $priceFields ).')';
-            $valueDAO  = CRM_Core_DAO::executeQuery( $sql );
-            while ( $valueDAO->fetch( ) ) {
-                $optionValues[$valueDAO->option_group_id][$valueDAO->id] = array( 'name'  => $valueDAO->name,
-                                                                                  'label' => $valueDAO->label );
-            }
-            
+           
             foreach ( $lineItems[$participantID] as $lineId => $items ) {
                 $fieldId  = $items['price_field_id'];
                 $htmlType = CRM_Utils_Array::value( $fieldId, $htmlTypes );
@@ -384,19 +393,15 @@ SELECT  id, label, name, option_group_id
                 if ( $htmlType == "Text" ) {
                     $defaults["price_{$fieldId}"] = $items['qty'];
                 } else {
-                    $optionGroupId  = CRM_Utils_Array::value( $fieldId,  $priceFields );
-                    $fieldOptValues = CRM_Utils_Array::value( $optionGroupId, $optionValues ); 
+                    $fieldOptValues = CRM_Utils_Array::value( $fieldId, $priceFields ); 
                     if ( !is_array( $fieldOptValues ) ) continue; 
                     
-                    foreach ( $fieldOptValues as $optionId => $values ) {
-                        if ( $values['label'] == $items['label'] &&
-                             $values['name']  == $items['unit_price'] ) {
-                            if ( $htmlType == "CheckBox" ) {
-                                $defaults["price_{$fieldId}"][$optionId] = true;
-                            } else {
-                                $defaults["price_{$fieldId}"] = $optionId;
-                                break;
-                            }
+                    foreach ( $fieldOptValues as $optionId ) {
+                        if ( $htmlType == "CheckBox" ) {
+                            $defaults["price_{$fieldId}"][$optionId] = true;
+                        } else {
+                            $defaults["price_{$fieldId}"] = $optionId;
+                            break;
                         }
                     }
                 }
@@ -445,7 +450,7 @@ SELECT  id, label, name, option_group_id
             //retrieve custom information
             $form->_values = array( );
             require_once "CRM/Event/Form/Registration/Register.php";
-            CRM_Event_Form_Registration::initPriceSet($form, $event['id'] );
+            CRM_Event_Form_Registration::initEventFee( $form, $event['id'] );
             CRM_Event_Form_Registration_Register::buildAmount( $form, true, $form->_discountId );
             $lineItem = array();
             if ( !CRM_Utils_System::isNull( CRM_Utils_Array::value( 'line_items', $form->_values ) ) ) {
@@ -526,7 +531,9 @@ SELECT  id, label, name, option_group_id
         $form->addElement('checkbox', 
                           'send_receipt', 
                           ts('Send Confirmation?'), null, 
-                          array('onclick' =>"return showHideByValue('send_receipt','','notice','table-row','radio',false);") );
+                          array('onclick' =>"showHideByValue('send_receipt','','notice','table-row','radio',false); showHideByValue('send_receipt','','from-email','table-row','radio',false);") );
+
+        $form->add( 'select', 'from_email_address', ts('From'), $form->_fromEmails['label'] );
 
         $form->add('textarea', 'receipt_text', ts('Confirmation Message') );
         
@@ -545,6 +552,7 @@ SELECT  id, label, name, option_group_id
         require_once "CRM/Core/BAO/Preferences.php";
         $mailingInfo =& CRM_Core_BAO_Preferences::mailingPreferences();
         $form->assign( 'outBound_option', $mailingInfo['outBound_option'] );
+        $form->assign( 'hasPayment', $form->_paymentId );
     }
 }
 

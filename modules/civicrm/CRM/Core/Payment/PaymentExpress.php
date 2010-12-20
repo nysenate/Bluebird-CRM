@@ -1,7 +1,7 @@
 <?php
 /*
   +--------------------------------------------------------------------+
-  | CiviCRM version 3.2                                                |
+  | CiviCRM version 3.3                                                |
   +--------------------------------------------------------------------+
   | This file is a part of CiviCRM.                                    |
   |                                                                    |
@@ -41,6 +41,16 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
     static protected $_mode = null;
 
     static protected $_params = array();
+
+    /**
+     * We only need one instance of this object. So we use the singleton
+     * pattern and cache the instance in this variable
+     *
+     * @var object
+     * @static
+     */
+    static private $_singleton = null;
+
     /**
      * Constructor
      *
@@ -55,6 +65,23 @@ class CRM_Core_Payment_PaymentExpress extends CRM_Core_Payment {
         $this->_processorName    = ts('DPS Payment Express');
     }
 
+    /** 
+     * singleton function used to manage this object 
+     * 
+     * @param string $mode the mode of operation: live or test
+     *
+     * @return object 
+     * @static 
+     * 
+     */ 
+    static function &singleton( $mode, &$paymentProcessor ) {
+        $processorName = $paymentProcessor['name'];
+        if (self::$_singleton[$processorName] === null ) {
+            self::$_singleton[$processorName] = new CRM_Core_Payment_PaymentExpress( $mode, $paymentProcessor );
+        }
+        return self::$_singleton[$processorName];
+    }
+    
     function checkConfig( ) {
         $config = CRM_Core_Config::singleton( );
 

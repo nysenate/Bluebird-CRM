@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -45,5 +45,12 @@
         <p>{$message}</p>
         <p>{$afterUpgradeMessage}</p>
         <p><a href="{$menuRebuildURL}" title="{ts}CiviCRM home page{/ts}" style="color: white; text-decoration: underline;">{ts}Return to CiviCRM home page.{/ts}</a></p>
+      <div class="upgrade-success">
+        <table>
+          <tr><td class="tasklist">
+            {ts 1='http://civicrm.org/civicrm/profile/create?reset=1&gid=15'}Have you registered this site at CiviCRM.org? If not, please help strengthen the CiviCRM ecosystem by taking a few minutes to <a href="%1" target="_blank">fill out the site registration form</a>. The information collected will help us prioritize improvements, target our communications and build the community. If you have a technical role for this site, be sure to check "Keep in Touch" to receive technical updates (a low volume mailing list).{/ts}</td>
+          </tr>
+        </table>
+      </div>
     </div>
 {/if}

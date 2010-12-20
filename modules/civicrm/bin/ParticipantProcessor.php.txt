@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -166,11 +166,15 @@ LEFT JOIN  civicrm_event event ON ( event.id = participant.event_id )
                         //check the target event having space.
                         require_once 'CRM/Event/BAO/Participant.php';
                         $eventOpenSpaces = CRM_Event_BAO_Participant::eventFull( $values['event_id'], true, false );
+                        
                         if ( $eventOpenSpaces && is_numeric( $eventOpenSpaces ) ||  ( $eventOpenSpaces === null ) ) {
                             
                             //get the additional participant if any.
-                            $additonalParticipants = CRM_Event_BAO_Participant::getAdditionalParticipantIds( $participantId ); 
-                            $requiredSpaces = 1 + count( $additonalParticipants );
+                            $additionalIds = CRM_Event_BAO_Participant::getAdditionalParticipantIds( $participantId );
+                            
+                            $allIds = array( $participantId );
+                            if ( !empty( $additionalIds ) ) $allIds = array_merge( $allIds, $additionalIds );
+                            $requiredSpaces = CRM_Event_BAO_Participant::totalEventSeats( $allIds );
                             
                             //need to check as to see if event has enough speces
                             if ( ( $requiredSpaces <= $eventOpenSpaces ) || ( $eventOpenSpaces === null ) ) {

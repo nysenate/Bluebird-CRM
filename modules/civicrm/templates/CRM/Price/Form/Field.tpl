@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,6 +33,7 @@
         if (html_type_name == "Text") {
             document.getElementById("price-block").style.display="block";
             document.getElementById("showoption").style.display="none";
+
         } else {
             document.getElementById("price-block").style.display="none";
             document.getElementById("showoption").style.display="block";
@@ -85,15 +86,7 @@
            </td>
         </tr>
         {/if}
-        {if $form.count }
-	    <tr class="crm-price-field-form-block-count">
-           <td class="label">{$form.count.label}</td>
-           <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_field' field='count' id=$id}{/if}{$form.count.html}<br />
-                <span class="description">{ts}Enter a value here if you want to increment the number of registered participants per unit against the maximum number of participants allowed for this event.{/ts}</span>
-                {help id="id-participant-count"}
-            </td>
-        </tr>
-	    {/if}
+ 
     </table>
     <div class="spacer"></div>
     <div id="price-block" {if $action eq 2 && $form.html_type.value.0 eq 'Text'} class="show-block" {else} class="hide-block" {/if}>
@@ -106,6 +99,25 @@
                {/if}
                </td>
             </tr>
+	    {if $useForEvent}
+	    <tr class="crm-price-field-form-block-count">
+              <td class="label">{$form.count.label}</td>
+              <td>{$form.count.html}<br />
+                <span class="description">{ts}Enter a value here if you want to increment the number of registered participants per unit against the maximum number of participants allowed for this event.{/ts}</span>
+                {help id="id-participant-count"}
+              </td>
+            </tr>
+	    <tr class="crm-price-field-form-block-max_value">
+              <td class="label">{$form.max_value.label}</td>
+              <td>{$form.max_value.html}
+              </td>
+            </tr>
+	    <tr class="crm-price-field-form-block-description">
+              <td class="label">{$form.description.label}</td>
+              <td>{$form.description.html}
+              </td>
+            </tr>
+	  {/if}
         </table>
     </div>
 

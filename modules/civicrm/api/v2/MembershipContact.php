@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,7 +34,7 @@
  * @subpackage API_Membership
  *  
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: MembershipContact.php 29210 2010-08-13 07:18:11Z sunny $
+ * @version $Id: MembershipContact.php 30171 2010-10-14 09:11:27Z mover $
  */
 
 /**

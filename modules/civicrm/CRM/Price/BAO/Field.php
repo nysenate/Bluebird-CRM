@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -87,6 +87,8 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
     static function create( &$params, $ids )
     {
         require_once 'CRM/Core/Transaction.php';
+        require_once 'CRM/Price/BAO/FieldValue.php';
+
         $transaction = new CRM_Core_Transaction( );
         
         $priceField =& self::add( $params, $ids );
@@ -96,54 +98,55 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
             return $priceField;
         }
         
-        $options  = array( );
+        $options  = $optionsIds = array( );
         require_once 'CRM/Price/Form/Field.php';
         $maxIndex = CRM_Price_Form_Field::NUM_OPTION;
         
         if ( $priceField->html_type == 'Text' ) {
             $maxIndex = 1;
+            require_once 'CRM/Price/BAO/FieldValue.php';
+            
+            $fieldValue = new CRM_Price_DAO_FieldValue( );
+            $fieldValue->price_field_id = $priceField->id;
+            
+            // update previous field values( if any )
+            if ( $fieldValue->find(true) ) {
+                $optionsIds['id'] = $fieldValue->id;
+            }
+           
         }
         $defaultArray = array();
         if ( $params['html_type'] == 'CheckBox' && isset($params['default_checkbox_option'] ) ) {
             $tempArray = array_keys( $params['default_checkbox_option'] );
             foreach ( $tempArray as $v ) {
-                if ( $params['option_value'][$v] ) {
+                if ( $params['option_amount'][$v] ) {
                     $defaultArray[$v] = 1;
                 }
             }
         } else {
             if ( CRM_Utils_Array::value( 'default_option', $params ) 
-                 && isset( $params['option_value'][$params['default_option']] ) ) {
+                 && isset( $params['option_amount'][$params['default_option']] ) ) {
                 $defaultArray[$params['default_option']] = 1;
             }
         }  
         for ( $index = 1; $index <= $maxIndex; $index++ ) {
-            if ( $maxIndex == 1 ) {
-                $description = $params['label'];
-            } else {
-                $description = $params['label'] . " - " . trim($params['option_label'][$index]);
-            }
             
             if ( CRM_Utils_Array::value( $index, $params['option_label'] ) &&
-                 !CRM_Utils_System::isNull( $params['option_value'][$index] ) ) {
-                $options[] = array( 'label'       => trim( $params['option_label'][$index] ),
-                                    'name'        => CRM_Utils_Rule::cleanMoney( trim( $params['option_name'][$index] ) ),
-                                    'value'       => CRM_Utils_Rule::cleanMoney( trim( $params['option_value'][$index]) ),
-                                    'description' => $description,
-                                    'weight'      => $params['option_weight'][$index],
-                                    'is_active'   => 1,
-                                    'is_default'  => CRM_Utils_Array::value( $index, $defaultArray)
-                                    );
+                 !CRM_Utils_System::isNull( $params['option_amount'][$index] ) ) {
+                $options = array(
+                                 'price_field_id' => $priceField->id,
+                                 'label'          => trim( $params['option_label'][$index] ),
+                                 'name'           => CRM_Utils_String::munge( $params['option_label'][$index], '_', 64 ),
+                                 'amount'         => CRM_Utils_Rule::cleanMoney( trim( $params['option_amount'][$index]) ),
+                                 'count'          => CRM_Utils_Array::value( $index, $params['option_count'], null ),
+                                 'max_value'      => CRM_Utils_Array::value( $index, $params['option_max_value'], null ),
+                                 'description'    => CRM_Utils_Array::value( $index, $params['option_description'], null ),
+                                 'weight'         => $params['option_weight'][$index],
+                                 'is_active'      => 1,
+                                 'is_default'     => CRM_Utils_Array::value( $index, $defaultArray )
+                                 );
+                CRM_Price_BAO_FieldValue::add($options, $optionsIds);
             }
-        }
-        
-        if ( ! empty( $options ) ) {
-            $params['default_amount_id'] = null;
-            $groupName                   = "civicrm_price_field.amount.{$priceField->id}";
-            require_once 'CRM/Core/OptionGroup.php';
-            CRM_Core_OptionGroup::createAssoc( $groupName,
-                                               $options,
-                                               $params['default_amount_id'] );
         }
         
         $transaction->commit( );
@@ -218,7 +221,9 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
                                                 $fieldId,
                                                 $inactiveNeeded,
                                                 $useRequired = true,
-                                                $label = null ) 
+                                                $label = null,
+                                                $fieldOptions = null,
+                                                $feezeOptions = array( ) ) 
     {
         require_once 'CRM/Utils/Money.php';
         $field = new CRM_Price_DAO_Field();
@@ -227,6 +232,7 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
             /* FIXME: failure! */
             return null;
         }
+        
         $config    = CRM_Core_Config::singleton();
         $qf->assign('currencySymbol', CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Currency',$config->defaultCurrency,'symbol','name') );
         if (!isset($label)) {
@@ -237,14 +243,25 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
             $useRequired = false;
         }
         
+        $customOption = $fieldOptions;
+        if ( !is_array( $customOption ) ) {
+            $customOption = CRM_Price_BAO_Field::getOptions($field->id, $inactiveNeeded);
+        }
+        
         //use value field.
-        $valueFieldName = 'value';
+        $valueFieldName = 'amount';
+        $seperator      = '|';
         switch($field->html_type) {
         case 'Text':
-            $customOption = CRM_Price_BAO_Field::getOptions( $field->id, $inactiveNeeded );
+            $optionKey    = key($customOption);
+            $count        = CRM_Utils_Array::value( 'count', $customOption[$optionKey], '' );
+            $max_value    = CRM_Utils_Array::value( 'max_value', $customOption[$optionKey], '' );
+            $priceVal     = implode( $seperator, array( $customOption[$optionKey][$valueFieldName], $count, $max_value ) );
             
-            // text fields only have one option
-            $optionKey = key($customOption);
+            //check for label.
+            if ( CRM_Utils_Array::value( 'label', $fieldOptions[$optionKey] ) ) {
+                $label = $fieldOptions[$optionKey]['label'];
+            }
             
             if ($field->is_display_amounts) {
                 $label .= '&nbsp;-&nbsp;';
@@ -253,18 +270,23 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
             
             $element =& $qf->add( 'text', $elementName, $label, 
                                   array_merge( array('size' =>"4"), 
-                                               array( 'price' => json_encode( array( $optionKey , $customOption[$optionKey][$valueFieldName] ) ) ) 
+                                               array( 'price' => json_encode( array($optionKey, $priceVal) ) ) 
                                              ),
                                   $useRequired && $field->is_required
                                   );
             
+            // CRM-6902 
+            if ( in_array($optionKey, $feezeOptions) ) {
+                $element->freeze( );
+            }
+
             // integers will have numeric rule applied to them.
             $qf->addRule($elementName, ts('%1 must be an integer (whole number).', array(1 => $label)), 'positiveInteger');
             break;
             
         case 'Radio':
             $choice = array();
-            $customOption = CRM_Price_BAO_Field::getOptions($field->id, $inactiveNeeded);
+
             if ( !$field->is_required ) {
                 // add "none" option
                 $choice[] = $qf->createElement('radio', null, '', '-none-', '0', 
@@ -272,15 +294,23 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
                                               );
             }
             
-            foreach ($customOption as $opt) {
+            foreach ($customOption as $opId => $opt) {
                 if ($field->is_display_amounts) {
                     $opt['label'] .= '&nbsp;-&nbsp;';
                     $opt['label'] .= CRM_Utils_Money::format( $opt[$valueFieldName] );
                 }
+                $count     = CRM_Utils_Array::value( 'count', $opt, '' );
+                $max_value = CRM_Utils_Array::value( 'max_value', $opt, '' );
+                $priceVal  = implode( $seperator, array(  $opt[$valueFieldName], $count, $max_value ) );
 
-                $choice[] = $qf->createElement('radio', null, '', $opt['label'], $opt['id'],
-                                               array('price' => json_encode( array( $elementName, $opt[$valueFieldName] ) ) )
+                $choice[$opId] = $qf->createElement('radio', null, '', $opt['label'], $opt['id'],
+                                               array('price' => json_encode( array( $elementName, $priceVal ) ) )
                                               );
+                
+                // CRM-6902
+                if ( in_array($opId, $feezeOptions) ) {
+                    $choice[$opId]->freeze( );
+                }
             }
             $element =& $qf->addGroup($choice, $elementName, $label);
             
@@ -290,33 +320,56 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
             break;
             
         case 'Select':
-            $customOption = CRM_Price_BAO_Field::getOptions($field->id, $inactiveNeeded);
-            $selectOption = array();
+            $selectOption = $allowedOptions = $priceVal = array();
+            
             foreach ($customOption as $opt) {
-                $amount[ $opt['id'] ] = $opt[$valueFieldName];
+                $count     = CRM_Utils_Array::value( 'count', $opt, '' );
+                $max_value = CRM_Utils_Array::value( 'max_value', $opt, '' );
+                $priceVal[ $opt['id'] ] = implode( $seperator, array(  $opt[$valueFieldName], $count, $max_value ) );
+                
                 if ($field->is_display_amounts) {
                     $opt['label'] .= '&nbsp;-&nbsp;';
                     $opt['label'] .= CRM_Utils_Money::format( $opt[$valueFieldName] );
                 }
                 $selectOption[$opt['id']] = $opt['label'];
+
+                if ( !in_array($opt['id'], $feezeOptions) ) {
+                    $allowedOptions[ ] = $opt['id'];              
+                }
             }
             $element =& $qf->add('select', $elementName, $label,
                                  array( '' => ts('- select -')) + $selectOption,
                                  $useRequired && $field->is_required, 
-                                 array( 'price' => json_encode( $amount ) ) );
+                                 array( 'price' => json_encode( $priceVal ) ) );
+            
+            // CRM-6902
+            $button = substr( $qf->controller->getButtonName(), -4 );
+            if ( !empty($feezeOptions) && $button != 'skip' ) {
+                $qf->addRule($elementName, ts('Participant count for this option is full.') , 'regex', "/".implode('|', $allowedOptions )."/" ); 
+            }
+            
             break;
             
         case 'CheckBox':
-            $customOption = CRM_Price_BAO_Field::getOptions($field->id, $inactiveNeeded);
+
             $check = array();
-            foreach ($customOption as $opt) {
+            foreach ($customOption as $opId => $opt) {
+                $count     = CRM_Utils_Array::value( 'count', $opt, '' );
+                $max_value = CRM_Utils_Array::value( 'max_value', $opt, '' );
+                $priceVal  = implode( $seperator, array( $opt[$valueFieldName], $count, $max_value ) );
+
                 if ($field->is_display_amounts) {
                     $opt['label'] .= '&nbsp;-&nbsp;';
                     $opt['label'] .= CRM_Utils_Money::format( $opt[$valueFieldName] );
                 }
-                $check[] =& $qf->createElement('checkbox', $opt['id'], null, $opt['label'], 
-                                               array('price' => json_encode( array( $opt['id'] , $opt[$valueFieldName] ) ) ) 
+                $check[$opId] =& $qf->createElement('checkbox', $opt['id'], null, $opt['label'], 
+                                               array('price' => json_encode( array( $opt['id'] , $priceVal ) ) ) 
                                               );
+
+                // CRM-6902
+                if ( in_array($opId, $feezeOptions) ) {
+                    $check[$opId]->freeze( );
+                }
             }
             $element =& $qf->addGroup($check, $elementName, $label);
             if ( $useRequired && $field->is_required ) {
@@ -344,14 +397,13 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
         static $options = array();
         
         if ( $reset || empty( $options[$fieldId] ) ) {
-            $groupParams = array( 'name' => "civicrm_price_field.amount.{$fieldId}");
-            
             $values = array( );
-            require_once 'CRM/Core/OptionValue.php';
-            CRM_Core_OptionValue::getValues( $groupParams, $values, 'weight', ! $inactiveNeeded );
+            require_once 'CRM/Price/BAO/FieldValue.php';
+            CRM_Price_BAO_FieldValue::getValues( $fieldId, $values, 'weight', ! $inactiveNeeded );
+            $options[$fieldId] = $values;
         }
-        
-        return $values;
+
+        return $options[$fieldId];
     }
     
     public static function getOptionId( $optionLabel, $fid ) 
@@ -379,7 +431,7 @@ WHERE
             return $dao->id;
         }
     }
-    
+
     /**
      * Delete the price set field.
      *
@@ -398,8 +450,8 @@ WHERE
         
         if ( $field->find( true ) ) {
             // delete the options for this field
-            require_once 'CRM/Core/OptionGroup.php';
-            CRM_Core_OptionGroup::deleteAssoc( "civicrm_price_field.amount.{$id}" );
+            require_once 'CRM/Price/BAO/FieldValue.php';
+            CRM_Price_BAO_FieldValue::deleteValues( $id );
             
             // reorder the weight before delete
             $fieldValues  = array( 'price_set_id' => $field->price_set_id );
@@ -456,7 +508,7 @@ WHERE
                 $priceFields[$priceField->id] = $fields[$key];
             }
         }
-
+        
         if ( !empty( $priceFields ) ) {
             // we should has to have positive amount.
             $sql = "
@@ -469,39 +521,29 @@ WHERE  id IN (" .implode( ',', array_keys( $priceFields ) ).')';
                 $htmlTypes[$fieldDAO->id] = $fieldDAO->html_type;
             }
             
-            // all field val present in option value except text.
-            $selectedAmounts = $amountIds = array( );
-            foreach ( $htmlTypes as $fieldId => $type ) {
-                if ( $type == 'Text' ) {
-                    $sql = "
-SELECT val.id, val.name 
-FROM civicrm_option_value val
-LEFT JOIN civicrm_option_group grp ON ( grp.id = val.option_group_id )
-WHERE grp.name = 'civicrm_price_field.amount.$fieldId'";
-                    $textValue = CRM_Core_DAO::executeQuery( $sql );
-                    while( $textValue->fetch( ) ) {
-                        // calculate text price field amount here itself.
-                        $selectedAmounts[$textValue->id] = $priceFields[$fieldId]*$textValue->name;
-                    }
-                } else {
-                    if ( is_array( $priceFields[$fieldId] ) ) {
-                        $amountIds = array_merge( $amountIds, array_keys( $priceFields[$fieldId] ) );
-                    } else {
-                        $amountIds[] = $priceFields[$fieldId];
-                    }
-                }
-            }
+            $selectedAmounts = array( );
             
-            if ( !empty( $amountIds ) ) {
-                $sql = "
-SELECT  id, name
-FROM  civicrm_option_value 
-WHERE  id IN (" .implode( ',', $amountIds ).')';
-                $optionsDAO = CRM_Core_DAO::executeQuery( $sql );
-                while ( $optionsDAO->fetch( ) ) {
-                    $selectedAmounts[$optionsDAO->id] = $optionsDAO->name;
-                }
+            require_once 'CRM/Price/BAO/FieldValue.php';
+            foreach ( $htmlTypes as $fieldId => $type ) {
+                $options = array( );
+                CRM_Price_BAO_FieldValue::getValues( $fieldId, $options );  
+                
+                if ( empty($options) ) continue;
+                
+                 if ( $type == 'Text') {
+                     foreach( $options as $opId => $option ) { 
+                         $selectedAmounts[$opId] = $priceFields[$fieldId] * $option['amount'];  
+                         break;
+                     }
+                 } else if ( is_array($fields["price_{$fieldId}"]) ) {
+                     foreach ( array_keys($fields["price_{$fieldId}"]) as $opId ) {
+                         $selectedAmounts[$opId] = $options[$opId]['amount'];
+                     }
+                 } else if ( in_array( $fields["price_{$fieldId}"], array_keys($options) ) ) {
+                     $selectedAmounts[$fields["price_{$fieldId}"]] = $options[$fields["price_{$fieldId}"]]['amount'];
+                 }
             }
+
             list( $componentName ) = explode( ':', $fields['_qf_default'] );
             // now we have all selected amount in hand.
             $totalAmount = array_sum( $selectedAmounts );

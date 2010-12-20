@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -88,11 +88,31 @@ class CRM_Member_Form_MembershipView extends CRM_Core_Form
 
                 $membershipType = CRM_Member_BAO_MembershipType::getMembershipTypeDetails($values['membership_type_id']);
                 $direction =  strrev($membershipType['relationship_direction']);
-
-                $values['relationship']          = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_RelationshipType', 
-                                                                                $membershipType['relationship_type_id'], 
+                // To display relationship type in view membership page
+                $relTypeIds = str_replace( CRM_Core_DAO::VALUE_SEPARATOR, ",", $membershipType['relationship_type_id'] );
+                $sql = "
+SELECT relationship_type_id,
+  CASE    
+  WHEN  contact_id_a = {$values['owner_contact_id']} AND contact_id_b = {$values['contact_id']} THEN 'b_a'
+  WHEN  contact_id_b = {$values['owner_contact_id']} AND contact_id_a = {$values['contact_id']} THEN 'a_b'
+END AS 'relType'
+  FROM civicrm_relationship 
+ WHERE relationship_type_id IN ($relTypeIds)";
+                $dao = CRM_Core_DAO::executeQuery( $sql );
+                $values['relationship'] = null; 
+                while ( $dao->fetch( ) ) {
+                    $membershipType['relationship_type_id'] = $dao->relationship_type_id;
+                    $direction = $dao->relType;
+                    if ( $direction && $membershipType['relationship_type_id'] ) {
+                        if ( $values['relationship'] ) {
+                            $values['relationship'] .= ',';
+                        }
+                        $values['relationship'] .= CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_RelationshipType', 
+                                                                                $membershipType['relationship_type_id'],
                                                                                 "name_$direction",
                                                                                 'id');
+                    }
+                }
             }
 
             $displayName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', 
@@ -107,12 +127,24 @@ class CRM_Member_Form_MembershipView extends CRM_Core_Form
             
             $title = $displayName . ' - ' . ts('Membership Type:') . ' ' . $values['membership_type'];
             
+            require_once 'CRM/Core/Permission.php';
+            $recentOther = array( );
+            if ( CRM_Core_Permission::checkActionPermission( 'CiviMember', CRM_Core_Action::UPDATE ) ) {
+                $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/membership', 
+                                                                 "action=update&reset=1&id={$values['id']}&cid={$values['contact_id']}&context=home" );
+            }
+            if ( CRM_Core_Permission::checkActionPermission( 'CiviMember', CRM_Core_Action::DELETE ) ) {
+                $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/membership', 
+                                                                   "action=delete&reset=1&id={$values['id']}&cid={$values['contact_id']}&context=home" );
+            }
             CRM_Utils_Recent::add( $title,
                                    $url,
                                    $values['id'],
                                    'Membership',
                                    $values['contact_id'],
-                                   null );
+                                   null,
+                                   $recentOther
+                                   );
             
             CRM_Member_Page_Tab::setContext($values['contact_id']);
 

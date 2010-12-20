@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -112,14 +112,11 @@ WHERE     pledge_id = %1
         $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
         //calculation of schedule date according to frequency day of period
         //frequency day is not applicable for daily installments
-        if ( $params['frequency_unit'] != 'day' ) {
+        if ( $params['frequency_unit'] != 'day' && $params['frequency_unit'] != 'year') {
             if ( $params['frequency_unit'] != 'week' ) {
                 
-                //for month use day of next month & for year use day of month Jan of next year as next payment date 
+                //for month use day of next month as next payment date 
                 $date['day'] = $params['frequency_day'];
-                if ( $params['frequency_unit'] == 'year' ) {
-                    $date['month'] = '1';
-                }   
             } else if ( $params['frequency_unit'] == 'week' ) {
                 
                 //for week calculate day of week ie. Sunday,Monday etc. as next payment date
@@ -644,6 +641,7 @@ LIMIT 0, %2
                 // set the actual amount of the next pending to '0', set contribution Id to current contribution Id and status as completed 
                 $paymentId = array ( $oldestPayment['id'] ); 
                 self::updatePledgePayments( $pledgeID, array_search( 'Completed', $allStatus ) , $paymentId, 0,$paymentContributionId );
+                CRM_Core_DAO::setFieldValue( 'CRM_Pledge_DAO_Payment',  $oldestPayment['id'], 'scheduled_amount', 0 , 'id' );
                 $oldestPayment = self::getOldestPledgePayment( $pledgeID );
                 if ( !$paymentContributionId ) {
                     // means we are editing payment scheduled payment.

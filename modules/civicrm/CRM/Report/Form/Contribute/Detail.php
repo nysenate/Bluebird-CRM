@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -130,6 +130,8 @@ class CRM_Report_Form_Contribute_Detail extends CRM_Report_Form {
                                  'trxn_id'              => null,
                                  'receive_date'         => array( 'default' => true ),
                                  'receipt_date'         => null,
+                                 'fee_amount'           => null,
+                                 'net_amount'           => null,
                                  'total_amount'         => array( 'title'        => ts( 'Amount' ),
                                                                     'required'     => true,
                                                                     'statistics'   => 

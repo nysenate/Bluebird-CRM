@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -38,15 +38,37 @@
             </tr>
 	{/if}
 	{if $form.contact_edit_options.html}        		       
-	        <tr class="crm-preferences-display-form-block-contact_edit_options">
+	       <tr class="crm-preferences-display-form-block-contact_edit_options">
                <td class="label">{$form.contact_edit_options.label}</td>
-               <td>{$form.contact_edit_options.html}</td>
+               <td>
+               <table style="width:80%">
+                 <tr>
+                   <td style="width:40%">
+                       <span class="label"><strong>{ts}Contact Details{/ts}</strong></span>
+                       <ul id="contactEditBlocks">
+                       {foreach from=$contactBlocks item="title" key="opId"}
+                            <li id="preference-{$opId}-contactedit" class="ui-state-default ui-corner-all" style="padding-left:1px;"><span class='ui-icon ui-icon-arrowthick-2-n-s' style="float:left;"></span><span>{$form.contact_edit_options.$opId.html}</span></li>
+                       {/foreach}
+                       </ul>
+                   </td>
+                   <td>
+                       <span class="label"><strong>{ts}Other Panes{/ts}</strong></span>
+                       <ul id="contactEditOptions">
+                           {foreach from=$editOptions item="title" key="opId"}
+                         <li id="preference-{$opId}-contactedit" class="ui-state-default ui-corner-all" style="padding-left:1px;"><span class='ui-icon ui-icon-arrowthick-2-n-s' style="float:left;"></span><span>{$form.contact_edit_options.$opId.html}</span></li>
+                       {/foreach}
+                       </ul>
+                   </td>
+                 </tr>
+	           </table>
+	       </td>
             </tr>
             <tr class="crm-preferences-display-form-block-description">
                <td>&nbsp;</td>
-               <td class="description">{ts}Select the sections that should be included when adding or editing a contact record. EXAMPLE: If your organization does not record Gender and Birth Date for individuals, then simplify the form by un-checking this option.{/ts}</td>
+               <td class="description">{ts}Select the sections that should be included when adding or editing a contact record. EXAMPLE: If your organization does not record Gender and Birth Date for individuals, then simplify the form by un-checking this option. Drag interface allows you to change the order of the panes displayed on contact add/edit screen.{/ts}</td>
             </tr>
 	{/if}
+
 	{if $form.advanced_search_options.html}
             <tr class="crm-preferences-display-form-block-advanced_search_options">
                <td class="label">{$form.advanced_search_options.label}</td>
@@ -102,4 +124,41 @@
           </table>
 	{/if}
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-   </div>
+</div>
+{if $form.contact_edit_options.html}
+{literal}
+<script type="text/javascript" >
+    cj(function( ) {
+	cj("#contactEditBlocks").sortable({
+			placeholder: 'ui-state-highlight',
+			update: getSorting
+		});
+	cj("#contactEditOptions").sortable({
+			placeholder: 'ui-state-highlight',
+			update: getSorting
+		});
+    });
+ 
+    function getSorting(e, ui) {
+        var params = new Array();
+    	var y = 0;
+	var items = cj("#contactEditBlocks li");
+	if ( items.length > 0 ) {
+	    for( var y=0; y < items.length; y++ ) {
+	        var idState = items[y].id.split('-');
+	        params[y+1] = idState[1];    
+	    }
+	}     
+    
+        items = cj("#contactEditOptions li");
+	if ( items.length > 0 ) { 
+            for( var x=0; x < items.length; x++ ) {
+                var idState = items[x].id.split('-');
+                params[x+y+1] = idState[1];    
+            }
+	}
+        cj('#contact_edit_prefences').val( params.toString( ) );
+    }
+</script>
+{/literal}
+{/if}

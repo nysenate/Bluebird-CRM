@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -77,9 +77,11 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
                           'filters'   =>  
                           array( 'start_date' => array( 'title' => ts( 'Start Date' ),
                                                         'operatorType' => CRM_Report_Form::OP_DATE,
+                                                        'type'         => CRM_Utils_Type::T_DATE
                                                       ),
                                  'end_date' => array( 'title' => ts( 'End Date' ),
-                                                        'operatorType' => CRM_Report_Form::OP_DATE,
+                                                      'operatorType' => CRM_Report_Form::OP_DATE,
+                                                      'type'         => CRM_Utils_Type::T_DATE
                                                       ),
                                  'status_id' => array( 'title' => ts( 'Status' ),
                                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -216,7 +218,8 @@ inner join civicrm_contact $c2 on ${c2}.id=${ccc}.contact_id
                         $from     = CRM_Utils_Array::value( "{$fieldName}_from"    , $this->_params );
                         $to       = CRM_Utils_Array::value( "{$fieldName}_to"      , $this->_params );
                         
-                        $clause = $this->dateClause( $field['dbAlias'], $relative, $from, $to );
+                        $clause = $this->dateClause( $field['dbAlias'], $relative, $from, $to ,
+                                                     CRM_Utils_Array::value( 'type',  $field ));
                     } else {
 
                       $op = CRM_Utils_Array::value( "{$fieldName}_op", $this->_params );

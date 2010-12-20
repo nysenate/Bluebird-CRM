@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -186,9 +186,9 @@ class CRM_Core_DAO_EntityFinancialTrxn extends CRM_Core_DAO
                     'name' => 'currency',
                     'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Currency') ,
-                    'required' => true,
                     'maxlength' => 3,
                     'size' => CRM_Utils_Type::FOUR,
+                    'default' => 'UL',
                 ) ,
             );
         }

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -139,8 +139,26 @@ class CRM_Contact_Selector_Custom extends CRM_Core_Selector_Base implements CRM_
         $this->_formValues        = $formValues;
         $this->_includeContactIds = $includeContactIds;
 
-        require_once( str_replace( '_', DIRECTORY_SEPARATOR, $customSearchClass ) . '.php' );
-        eval( '$this->_search = new ' . $customSearchClass . '( $formValues );' );
+        require_once( 'CRM/Core/Extensions.php' );
+        $ext = new CRM_Core_Extensions();
+
+        if( ! $ext->isExtensionKey( $customSearchClass ) ) {
+            if( $ext->isExtensionClass( $customSearchClass ) ) {
+                $customSearchFile = $ext->classToPath( $customSearchClass );
+                require_once( $customSearchFile );
+            } else {
+                require_once( str_replace( '_', DIRECTORY_SEPARATOR, $customSearchClass ) . '.php' );
+            }
+            eval( '$this->_search = new ' . $customSearchClass . '( $formValues );' );
+        } else {
+            $customSearchFile = $ext->keyToPath( $customSearchClass, 'search' );
+            require_once( $customSearchFile );
+            eval( '$this->_search = new ' . $ext->keyToClass( $customSearchClass, 'search' ) . '( $formValues );' );
+        }
+
+
+
+        
     }//end of constructor
 
 

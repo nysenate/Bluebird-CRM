@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -80,8 +80,12 @@ function smarty_function_crmAPI( $params, &$smarty ) {
         $smarty->trigger_error("assign: missing 'var' parameter");
         return;
     }
-    
-    $smarty->assign($params["var"],$result);
+
+    if (!empty($params['json'])) {
+      $smarty->assign($params["var"],json_encode($result));
+    } else {
+      $smarty->assign($params["var"],$result);
+    }
 }
 
 

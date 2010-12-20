@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -217,6 +217,102 @@ class CRM_Core_BAO_Preferences extends CRM_Core_DAO_Preferences {
         $object->save( );
     }
 
+    static function fixAndStoreDirAndURL( &$params ) {
+        $sql = "
+SELECT v.name as valueName, g.name as optionName
+FROM   civicrm_option_value v,
+       civicrm_option_group g
+WHERE  ( g.name = 'directory_preferences'
+OR       g.name = 'url_preferences' )
+AND    v.option_group_id = g.id
+AND    v.is_active = 1
+";
+
+        $dirParams = array( );
+        $urlParams = array( );
+        $dao    = CRM_Core_DAO::executeQuery( $sql );
+        while ( $dao->fetch( ) ) {
+            if ( ! isset( $params[$dao->valueName] ) ) {
+                continue;
+            }
+            if ( $dao->optionName == 'directory_preferences' ) {
+                $dirParams[$dao->valueName] = CRM_Utils_Array::value( $dao->valueName, $params, '' );
+            } else {
+                $urlParams[$dao->valueName] = CRM_Utils_Array::value( $dao->valueName, $params, '' );
+            }
+            unset( $params[$dao->valueName] );
+        }
+
+        if ( ! empty( $dirParams ) ) {
+            CRM_Core_BAO_Preferences::storeDirectoryOrURLPreferences( $dirParams, 'directory' );
+        }
+
+        if ( ! empty( $urlParams ) ) {
+            CRM_Core_BAO_Preferences::storeDirectoryOrURLPreferences( $urlParams, 'url' );
+        }
+    }
+
+    static function storeDirectoryOrURLPreferences( &$params, $type = 'directory' ) {
+        $optionName = ( $type == 'directory' ) ? 'directory_preferences' : 'url_preferences';
+
+        $sql = "
+UPDATE civicrm_option_value v,
+       civicrm_option_group g
+SET    v.value = %1,
+       v.is_active = 1
+WHERE  g.name = %2
+AND    v.option_group_id = g.id
+AND    v.name = %3
+";
+
+        require_once 'CRM/Utils/File.php';
+        foreach ( $params as $name => $value ) {
+            // always try to store relative directory or url from CMS root
+            if ( $type == 'directory' ) {
+                $value = CRM_Utils_File::relativeDirectory( $value );
+            } else {
+                $value = CRM_Utils_System::relativeURL( $value );
+            }
+            $sqlParams = array( 1 => array( $value     , 'String' ),
+                                2 => array( $optionName, 'String' ),
+                                3 => array( $name      , 'String' ) );
+            CRM_Core_DAO::executeQuery( $sql, $sqlParams );
+        }
+    }
+
+    static function retrieveDirectoryAndURLPreferences( &$params, $setInConfig = false ) {
+        if ( $setInConfig ) {
+            $config =& CRM_Core_Config::singleton( );
+        }
+
+        $sql = "
+SELECT v.name as valueName, v.value, g.name as optionName
+FROM   civicrm_option_value v,
+       civicrm_option_group g
+WHERE  ( g.name = 'directory_preferences'
+OR       g.name = 'url_preferences' )
+AND    v.option_group_id = g.id
+AND    v.is_active = 1
+";
+
+        require_once 'CRM/Utils/File.php';
+
+        $dao    = CRM_Core_DAO::executeQuery( $sql );
+        while ( $dao->fetch( ) ) {
+            if ( ! $dao->value ) {
+                continue;
+            }
+            if ( $dao->optionName == 'directory_preferences' ) {
+                $value = CRM_Utils_File::absoluteDirectory( $dao->value );
+            } else {
+                $value = CRM_Utils_System::absoluteURL( $dao->value );
+            }
+            $params[$dao->valueName] = $value;
+            if ( $setInConfig ) {
+                $config->{$dao->valueName} = $value;
+            }
+        }
+    }
 }
 
 

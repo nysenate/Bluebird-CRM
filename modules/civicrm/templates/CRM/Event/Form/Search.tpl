@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -66,10 +66,10 @@
     {* Search request has returned 1 or more matching rows. *}
         {* This section handles form elements for action task select and submit *}
         <div class="crm-search-tasks crm-event-search-tasks">
-           {include file="CRM/common/searchResultTasks.tpl"}
+           {include file="CRM/common/searchResultTasks.tpl" context='Event'}
 	    </div>
         {* This section displays the rows along and includes the paging controls *}
-    	<div class="crm-event-search-results">
+    	<div id='participantSearch' class="crm-event-search-results">
 	        {include file="CRM/Event/Form/Selector.tpl" context="Search"}
         </div>
     {* END Actions/Results section *}

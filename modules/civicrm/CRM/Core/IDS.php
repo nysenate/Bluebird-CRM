@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -77,17 +77,22 @@ class CRM_Core_IDS {
       require_once 'IDS/Init.php';
 
       // init the PHPIDS and pass the REQUEST array
-      $config = CRM_Core_Config::singleton( );
+      $config =& CRM_Core_Config::singleton( );
+
       $configFile = $config->configAndLogDir . 'Config.IDS.ini';
-        if ( ! file_exists( $configFile ) ) {
-            global $civicrm_root;
-            $contents = "
+      if ( ! file_exists( $configFile ) ) {
+          $tmpDir = empty( $config->uploadDir ) ? CIVICRM_TEMPLATE_COMPILEDIR : $config->uploadDir;
+          // also clear the stat cache in case we are upgrading
+          clearstatcache( );
+
+          global $civicrm_root;
+          $contents = "
 [General]
     filter_type         = xml
     filter_path         = {$civicrm_root}/packages/IDS/default_filter.xml
-    tmp_path            = $config->uploadDir
+    tmp_path            = $tmpDir
     HTML_Purifier_Path  = IDS/vendors/htmlpurifier/HTMLPurifier.auto.php
-    HTML_Purifier_Cache = $config->uploadDir
+    HTML_Purifier_Cache = $tmpDir
     scan_keys           = false
     exceptions[]        = __utmz
     exceptions[]        = __utmc
@@ -96,6 +101,7 @@ class CRM_Core_IDS {
     exceptions[]        = body_html
     exceptions[]        = msg_html
     exceptions[]        = msg_text
+    exceptions[]        = msg_subject
     exceptions[]        = description
     html[]              = intro
     html[]              = thankyou_text
@@ -109,7 +115,6 @@ class CRM_Core_IDS {
     html[]              = renewal_text
     html[]              = help_pre
     html[]              = help_post
-    html[]              = msg_html
     html[]              = confirm_title
     html[]              = confirm_text
     html[]              = confirm_footer_text
@@ -117,6 +122,7 @@ class CRM_Core_IDS {
     html[]              = report_header
     html[]              = report_footer
     html[]              = data
+    html[]              = instructions
 ";
             if ( file_put_contents( $configFile, $contents ) === false ) {
                 require_once 'CRM/Core/Error.php';

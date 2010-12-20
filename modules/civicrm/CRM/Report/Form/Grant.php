@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -40,6 +40,8 @@ class CRM_Report_Form_Grant extends CRM_Report_Form {
     
     protected $_addressField = false;
     
+    protected $_customGroupExtends = array( 'Grant' );
+
     function __construct( ) {
         $this->_columns = 
             array( 
@@ -256,7 +258,7 @@ class CRM_Report_Form_Grant extends CRM_Report_Form {
                     }
                     if ( ! empty( $clause ) ) {
                         $clauses[] = $clause;
-                        $this->_where = "WHERE" . implode( ' AND ', $clauses ); 
+                        $this->_where = "WHERE " . implode( ' AND ', $clauses ); 
                     }
                     
                 }

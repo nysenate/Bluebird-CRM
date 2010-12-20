@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -127,9 +127,12 @@ class CRM_Event_BAO_Query
                 $query->_whereTables['event_type']    = 1;
             }
 
-            //add status
-            if ( CRM_Utils_Array::value( 'participant_status', $query->_returnProperties ) ) {
+            //add status and status_id
+            if ( CRM_Utils_Array::value( 'participant_status', $query->_returnProperties ) ||
+                 CRM_Utils_Array::value( 'participant_status_id', $query->_returnProperties ) ) {
                 $query->_select['participant_status']  = "participant_status.label as participant_status";
+                $query->_select['participant_status_id']  = "participant_status.id as participant_status_id";
+                $query->_element['participant_status_id'] = 1;
                 $query->_element['participant_status'] = 1;
                 $query->_tables['civicrm_participant'] = 1;
                 $query->_tables['participant_status'] = 1;
@@ -137,15 +140,6 @@ class CRM_Event_BAO_Query
                 $query->_whereTables['participant_status'] = 1;
             }
 
-            if ( CRM_Utils_Array::value( 'participant_status_id', $query->_returnProperties ) ) {
-                $query->_select['participant_status_id']  = "participant_status.id as participant_status_id";
-                $query->_element['participant_status_id'] = 1;
-                $query->_tables['civicrm_participant'] = 1;
-                $query->_tables['participant_status'] = 1;
-                $query->_whereTables['civicrm_participant'] = 1;
-                $query->_whereTables['participant_status'] = 1;
-            }
-            
             //add role
             if ( CRM_Utils_Array::value( 'participant_role', $query->_returnProperties ) ) {
                 $query->_select['participant_role']  = "participant_role.label as participant_role";
@@ -157,7 +151,7 @@ class CRM_Event_BAO_Query
             }
 
             if ( CRM_Utils_Array::value( 'participant_role_id', $query->_returnProperties ) ) {
-                $query->_select['participant_role_id']  = "participant_role.id as participant_role_id";
+                $query->_select['participant_role_id']  = "civicrm_participant.role_id as participant_role_id";
                 $query->_element['participant_role_id'] = 1;
                 $query->_tables['civicrm_participant'] = 1;
                 $query->_tables['participant_role'] = 1;
@@ -368,15 +362,9 @@ class CRM_Event_BAO_Query
                         $val[$k] = $k;
                     }
                 } 
-                $role = implode (',' ,$val);
             } else {
-                $role = $value;
+                $value = array( $value => 1 );  
             }
-
-            if (count($val) > 1) {
-                $op = 'IN';
-                $role = "({$role})";
-            }     
 
             require_once 'CRM/Event/PseudoConstant.php';
             $roleTypes = CRM_Event_PseudoConstant::participantRole( );
@@ -391,10 +379,7 @@ class CRM_Event_BAO_Query
             }
 
             $query->_qill[$grouping][]  = ts('Participant Role %1', array( 1 => $op ) ) . ' ' . implode( ' ' . ts('or') . ' ', $names );
-            $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( "civicrm_participant.role_id", 
-                                                                              $op,
-                                                                              $role,
-                                                                              "Integer" );
+            $query->_where[$grouping][] = " civicrm_participant.role_id REGEXP '[[:<:]]" . implode( '[[:>:]]|[[:<:]]', array_keys( $value ) ) . "[[:>:]]' ";
             
             $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
             return;
@@ -516,7 +501,8 @@ class CRM_Event_BAO_Query
                                 'event_type'                => 1,
                                 'participant_id'            => 1,
                                 'participant_status'        => 1,
-                                'participant_role'          => 1,
+                                'participant_role_id'       => 1,
+                                'participant_note'          => 1,
                                 'participant_register_date' => 1,
                                 'participant_source'        => 1,
                                 'participant_fee_level'     => 1,

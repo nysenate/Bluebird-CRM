@@ -54,8 +54,9 @@ $GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'] =
             'hiddenselect'  =>array('HTML/QuickForm/hiddenselect.php','HTML_QuickForm_hiddenselect'),
             'text'          =>array('HTML/QuickForm/text.php','HTML_QuickForm_text'),
             'textarea'      =>array('HTML/QuickForm/textarea.php','HTML_QuickForm_textarea'),
-            'ckeditor'     =>array('HTML/QuickForm/ckeditor.php','HTML_QuickForm_CKEditor'),
+            'ckeditor'      =>array('HTML/QuickForm/ckeditor.php','HTML_QuickForm_CKEditor'),
             'tinymce'       =>array('HTML/QuickForm/tinymce.php','HTML_QuickForm_TinyMCE'),
+            'joomlaeditor'  =>array('HTML/QuickForm/joomlaeditor.php','HTML_QuickForm_JoomlaEditor'),
             'link'          =>array('HTML/QuickForm/link.php','HTML_QuickForm_link'),
             'advcheckbox'   =>array('HTML/QuickForm/advcheckbox.php','HTML_QuickForm_advcheckbox'),
             'date'          =>array('HTML/QuickForm/date.php','HTML_QuickForm_date'),
@@ -1969,7 +1970,7 @@ class HTML_QuickForm extends HTML_Common
                              'data', // data i/p of persistent table
                              'sqlQuery' // CRM-6673
                              );
-                                    
+                                  
         $values = array();
         if (null === $elementList) {
             // iterate over all elements, calling their exportValue() methods
@@ -1989,8 +1990,8 @@ class HTML_QuickForm extends HTML_Common
                 
                 // hack to fix extra <br /> injected by CKEDITOR, we should remove this code
                 // once the bug is fixed and is part of release https://dev.fckeditor.net/ticket/5293
-                if ( is_a( $this->_elements[$key], 'HTML_QuickForm_CKeditor' ) ) {
-                    $value[$fldName] = rtrim( CRM_Utils_Array::value( $fldName, $value ), '<br />');
+                if ( is_a( $this->_elements[$key], 'HTML_QuickForm_CKeditor' ) && ( CRM_Utils_Array::value( $fldName, $value ) == '<br />' ) ) {
+                    $value[$fldName] = rtrim( $value[$fldName], '<br />');
                 }
                 
                 if (is_array($value)) {
