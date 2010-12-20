@@ -139,8 +139,8 @@ class CRM_Contact_Task {
                                                   'result' => true ),
                                   //NYSS - add print production export
 								  100    => array( 'title'  => ts('Export for Print Production'), 
-                                                  'class'  => 'CRM_Contact_Form_Task_ExportPrintProduction',
-                                                  'result' => true ),
+                                                   'class'  => 'CRM_Contact_Form_Task_ExportPrintProduction',
+                                                   'result' => true ),
 								  self::RESTORE => array(
                                       'title'  => ts('Restore Contacts'),
                                       'class'  => 'CRM_Contact_Form_Task_Delete',

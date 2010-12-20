@@ -63,9 +63,6 @@ class CRM_Utils_Address_SAGE
             return false;
         }
 
-        // $url = 'http://geo.nysenate.gov/GeoApi/api/xml/validate/extended?';
-        // $api_key = 'JsP46xRBHVQDVhL4XNrvM8VQDNDkA3';
-
         $api_key = $userID;
         $addr2 = str_replace( ',', '', $values['street_address'] );    
         $city  = $values['city'];

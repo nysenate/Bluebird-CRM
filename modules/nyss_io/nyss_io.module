@@ -13,7 +13,7 @@ function nyss_io_menu () {
   $items['importdata'] = array (
     'title' => t('Import Data'),
     'page callback' => 'nyss_ioimportdata_page',
-    'access arguments' => array('create page content'),
+    'access arguments' => array('export print production files'),
     'type' => MENU_SUGGESTED_ITEM,
   );
 
@@ -355,3 +355,99 @@ function getStates()
   return $options;
 } // getStates()
 
+function convertProperCase( $string ) {
+ 
+     // list of words we don't want to capitalize
+     $smallWords = array('of', 'a', 'the', 'and', 'an', 
+                    'or', 'nor', 'but', 'is', 'if', 'then', 
+                    'else', 'when', 'at', 'from', 'by', 'on', 
+                    'off', 'for', 'in', 'out', 'over', 'to', 
+                    'into', 'with');
+ 
+     // special words that should be written as-is
+     $specialWords = array('II', 'IV', 'A-Level', "'s", 'UK', 'VI', 
+                                   '<i>', 'III', 'VII');
+ 
+     // punctuation used to determine that the following letter 
+     // should be capitalised
+     $punctuation = array('.', '-', ':', '!', '\'', '-', '?');
+ 
+     // replacements
+     $replacements = array( array(''', '\'') );
+ 
+     // replace any non-letters or numbers with spaces so we 
+     // know what the actual words are
+     $cleanString = preg_replace("/[^\w]/", ' ', $string);
+ 
+     // the original string split into an array of individual 
+     // characters so we can replace the modified characters
+     $originalStringSplit = str_split($string);
+ 
+     // split the string of letters and spaces only into an array
+     $allWords = explode(' ', $cleanString);
+ 
+     // go through each element in the array and check whether 
+     // the word appears in the short words list
+     // if it is not, we need to capitalize the word
+ 
+     foreach($allWords as $key => $word) {
+          if(!in_array($word, $smallWords)){
+               $allWords[$key] = ucfirst($word);
+          }
+     }
+ 
+     // convert the array back to a string
+     $allWords = implode(' ', $allWords);
+ 
+     // the title-cased string split into characters so we can 
+     // replace them original characters with them
+     $titleStringSplit = str_split($allWords);
+ 
+     // check through each character and replace the one stored 
+     // in the original string if it is a letter
+     foreach($titleStringSplit as $key => $char) {
+          if($char != " ") {
+               $originalStringSplit[$key] = $char;
+          }
+     }
+ 
+     // join all the characters back into a string
+     $titleString = implode('', $originalStringSplit);
+ 
+     // make the first letter after certain punctuation capitalized, 
+     // regardless of the normal rules. I.e. "Shakespeare: The Bard"
+     foreach($punctuation as $char) {
+          // match anything which starts with the punctuation type that 
+          // we are checking for until the first letter which follows it
+          // and replace that with a capitalized version of the string
+          // I.e.
+          // : the => |: t| => : The
+          // Twentieth-century => |-c| => Twentieth-Century
+          $titleString = preg_replace("/(" . preg_quote($char) . "\s*[a-zA-Z])/ie", "strtoupper('\\1')", $titleString);
+     }
+ 
+     // capitalize the very first letter of the sentence, as it may 
+     // appear after punctuation which we would not normally
+     // use to determine whether a word should be capitalised
+     $titleString = preg_replace("/(^[^a-zA-Z]*[a-zA-Z])/ie", "strtoupper('\\1')", $titleString);
+ 
+     // find and replace text
+     foreach($replacements as $replacement) {
+          $find = $replacement[0];
+          $replace = $replacement[1];
+          $titleString = str_ireplace($find, $replace, $titleString);
+     }
+ 
+     // sort out any "special" words last so they are not 
+     // overwritten with our previous rules
+     foreach($specialWords as $specialWord) {
+          // check for each special word, regardless of case and 
+          // replace it with the word stored in the array
+          $titleString = preg_replace("/\b" . $specialWord . "\b/i", $specialWord, $titleString);
+     }
+ 
+     return $titleString;
+}
+
+
+}
