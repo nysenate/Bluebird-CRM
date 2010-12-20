@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -342,7 +342,7 @@ class CRM_Core_Payment_PayPalProIPN extends CRM_Core_Payment_BaseIPN {
         }
         
         $input['is_test']    = self::retrieve( 'test_ipn'     , 'Integer', 'POST', false );
-        $input['fee_amount'] = self::retrieve( 'payment_fee'  , 'Money'  , 'POST', false );
+        $input['fee_amount'] = self::retrieve( 'mc_fee'       , 'Money'  , 'POST', false );
         $input['net_amount'] = self::retrieve( 'settle_amount', 'Money'  , 'POST', false );
         $input['trxn_id']    = self::retrieve( 'txn_id'       , 'String' , 'POST', false );
     }

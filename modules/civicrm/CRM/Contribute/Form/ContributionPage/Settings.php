@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -156,6 +156,8 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
             $session = CRM_Core_Session::singleton( );
             $params['created_id']   = $session->get( 'userID' );
             $params['created_date'] = date('YmdHis');
+            $config = CRM_Core_Config::singleton( );
+            $params['currency'] = $config->defaultCurrency;
         }            
        
         $params['is_active']             = CRM_Utils_Array::value('is_active'            , $params, false);
@@ -179,6 +181,8 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
         $dao =& CRM_Contribute_BAO_ContributionPage::create( $params );
 
         $this->set( 'id', $dao->id );
+        
+        parent::postProcess( );
     }
 
     /** 
@@ -187,7 +191,8 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
      * @return string 
      * @access public 
      */ 
-    public function getTitle( ) {
+    public function getTitle( )
+    {
         return ts( 'Title and Settings' );
     }
 }

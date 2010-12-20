@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -230,7 +230,17 @@ class CRM_Pledge_BAO_Pledge extends CRM_Pledge_DAO_Pledge
         require_once 'CRM/Core/Config.php';
         $url = CRM_Utils_System::url( 'civicrm/contact/view/pledge', 
                "action=view&reset=1&id={$pledge->id}&cid={$pledge->contact_id}&context=home" );
-       
+        
+        $recentOther = array( );
+        if ( CRM_Core_Permission::checkActionPermission( 'CiviPledge', CRM_Core_Action::UPDATE ) ) {
+            $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/pledge', 
+                                                             "action=update&reset=1&id={$pledge->id}&cid={$pledge->contact_id}&context=home" );
+        } 
+        if ( CRM_Core_Permission::checkActionPermission( 'CiviPledge', CRM_Core_Action::DELETE ) ) {
+            $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/pledge', 
+                                                               "action=delete&reset=1&id={$pledge->id}&cid={$pledge->contact_id}&context=home" );
+        }
+        
         $config = CRM_Core_Config::singleton();
         require_once 'CRM/Utils/Money.php';
         $contributionTypes = CRM_Contribute_PseudoConstant::contributionType();
@@ -244,7 +254,9 @@ class CRM_Pledge_BAO_Pledge extends CRM_Pledge_DAO_Pledge
                                $pledge->id,
                                'Pledge',
                                $pledge->contact_id,
-                               null );
+                               null,
+                               $recentOther
+                               );
         
         return $pledge;
    }
@@ -667,7 +679,7 @@ WHERE  $whereCond
             
             require_once 'CRM/Pledge/DAO/Pledge.php';
             $fields = CRM_Pledge_DAO_Pledge::export( );
-
+            
             require_once 'CRM/Pledge/DAO/Payment.php';
             $fields = array_merge( $fields, CRM_Pledge_DAO_Payment::export( ) );
             
@@ -677,12 +689,26 @@ WHERE  $whereCond
                                        'pledge_next_pay_date'       => array( 'title' => ts('Next Payment Date') ),
                                        'pledge_next_pay_amount'     => array( 'title' => ts('Next Payment Amount') ),
                                        'pledge_payment_paid_amount' => array( 'title' => ts('Paid Amount') ),
-                                       'pledge_payment_paid_date'   => array( 'title' => ts('Paid Date') )
+                                       'pledge_payment_paid_date'   => array( 'title' => ts('Paid Date') ),
+                                       'pledge_payment_status'      => array( 'title'    => ts('Pledge Payment Status'), 
+                                                                              'name'     => 'pledge_payment_status',
+                                                                              'data_type'=> CRM_Utils_Type::T_STRING )
                                        );
 
-            $pledgeFields     = array( 'pledge_status'     => array( 'title' => 'Pledge Status',
-                                                                     'name'  => 'pledge_status' ) );
-
+            
+            $pledgeFields     = array( 'pledge_status'               => array( 'title'    => 'Pledge Status',
+                                                                               'name'     => 'pledge_status',
+                                                                               'data_type'=> CRM_Utils_Type::T_STRING ),
+                                       'pledge_frequency_unit'       => array( 'title'    => 'Pledge Frequency Unit',
+                                                                               'name'     => 'pledge_frequency_unit',
+                                                                               'data_type'=> CRM_Utils_Type::T_ENUM ),
+                                       'pledge_frequency_interval'   => array( 'title'    => 'Pledge Frequency Interval',
+                                                                               'name'     => 'pledge_frequency_interval',
+                                                                               'data_type'=> CRM_Utils_Type::T_INT ),
+                                       'pledge_contribution_page_id' => array( 'title'    => 'Pledge Contribution Page Id',
+                                                                               'name'     => 'pledge_contribution_page_id',
+                                                                               'data_type'=> CRM_Utils_Type::T_INT ) );
+            
             $fields = array_merge( $fields, $pledgeFields, $calculatedFields );
            
             // add custom data

@@ -141,6 +141,49 @@ function civitest_civicrm_buildAmount( $pageType,
                                       &$form,
                                       &$amount ) {
 
+
+    //sample to modify priceset fee 
+    $priceSetId = $form->get( 'priceSetId' );
+    if ( !empty( $priceSetId ) ) {
+        $feeBlock =& $amount;				      
+        
+        //lets do check for event/contribution.
+        if ( !in_array( $pageType, array( 'contribution', 'event' ) ) ||
+             !is_array( $feeBlock ) ||
+             empty( $feeBlock ) ) {
+            return;
+        }
+        
+        //in case of event we get eventId,
+        //so lets apply hook for eventId = 1
+        if ( $pageType == 'event' && $form->_eventId != 1 ) {
+            return;
+        }
+        
+        //in case of contrbution 
+        //for online case we get page id so we could apply for specific
+        if ( $pageType == 'contribution' ) {
+            if ( !in_array( get_class( $form ), array( 'CRM_Contribute_Form_Contribution',
+                                                       'CRM_Contribute_Form_Contribution_Main') ) ) {
+                return;
+            }
+        }
+        
+        //start modifying price set fee.
+        foreach ( $feeBlock as &$fee ) {
+            if ( !is_array( $fee['options'] ) ) {
+                continue;
+            }
+            foreach ( $fee['options'] as &$option ) {
+                //for sample lets modify first option from all fields.
+                $option['amount'] = 100;
+                $option['label']  = ts( 'Power of hooks' );
+                break;
+            }
+        }
+    }
+    //done w/ priceset sample.
+
     // only modify the contributon page with id = 1
     if ( $pageType != 'contribution' ||
          $form->_id != 1 ) {
@@ -742,16 +785,16 @@ AND    v.weight > 0
 }
 
 /**
- * Sample hook to add more shortcuts
+ * Sample hook to add more actions for Create New
  */
-function civitest_civicrm_shortcuts( &$options ) {
-    // add link to create new profile
-    $options[] = array( 'url'   => '/civicrm/admin/uf/group?action=add&reset=1',
+function civitest_civicrm_links( $op, $objectName, $objectId, &$links ) {
+    if ( $op == 'create.new.shorcuts' ) {
+      // add link to create new profile
+      $links[] = array( 'url'   => '/civicrm/admin/uf/group?action=add&reset=1',
                         'title' => ts('New Profile'),
                         'ref'   => 'new-profile');
-    
+    }                 
 }
-
 
 function civitest_civicrm_membershipTypeValues( &$form, &$membershipTypeValues ) {
     $membershipTypeValues[1]['name']        = 'General (50% discount)';
@@ -1215,4 +1258,72 @@ function civitest_civicrm_merge ( $type, &$data, $mainId = NULL, $otherId = NULL
         break;
     
     }
+}
+
+/**
+ * This hook provides a way to override the default privacy behavior for notes.
+ * $node['privacy'] is an integer, by default either 0 meaning no privacy, or 1
+ * meaning the note is displayed to author only.  
+ * @param array $note (reference) Associative array of values for this note
+ */
+function civitest_civicrm_notePrivacy (&$note) {
+
+    /* CiviCRM will check for existence of $note['notePrivacy_hidden'].
+     *
+     * If this value is not set, CiviCRM will show or display the note
+     * based on the default, which is to count a note as private if it has
+     * any non-zero value in $note['privacy'], and then to display private
+     * notes only to the note author.
+     *
+     * If this value is set, CiviCRM will hide the note if the value is
+     * TRUE, and display the note if the value is FALSE.
+     */
+
+    if ($note['privacy']) {
+        if ($my_business_rules_say_so) {
+            $note['notePrivacy_hidden'] = TRUE;
+        } else {
+            $note['notePrivacy_hidden'] = FALSE;
+        }
+    }
+}
+
+/* a ready to use module is available at  http://github.com/tttp/civi_export */
+function civitest_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
+    $writeHeader = true;
+    $offset = 0;
+    $limit  = 200;
+
+    $query = "
+SELECT *
+FROM   $exportTempTable
+";
+    require_once 'CRM/Core/Report/Excel.php';
+    while ( 1 ) {
+        $limitQuery = $query . "
+LIMIT $offset, $limit
+";
+        $dao = CRM_Core_DAO::executeQuery( $limitQuery );
+
+        if ( $dao->N <= 0 ) {
+            break;
+        }
+
+        $componentDetails = array( );
+        while ( $dao->fetch( ) ) {
+            $row = array( );
+
+            foreach ( $sqlColumns as $column => $dontCare ) {
+                $row[$column] = $dao->$column;
+            }
+
+            $componentDetails[] = $row;
+        }
+        CRM_Core_Report_Excel::writeHTMLFile( "Export_Records", $headerRows,
+                                             $componentDetails, null, $writeHeader );
+        $writeHeader = false;
+        $offset += $limit;
+    }
+    
+    CRM_Utils_System::civiExit( );
 }

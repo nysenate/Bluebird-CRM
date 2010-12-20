@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -148,9 +148,36 @@ AND    {$this->_componentClause}";
             $createPdf = true;
         }
         
+        $excludeContactIds = array( );
+        if ( !$createPdf ) {
+            $returnProperties = array( 'email'        => 1,
+                                       'do_not_email' => 1,
+                                       'is_deceased'  => 1,
+                                       'on_hold'      => 1
+                                       );
+            
+            require_once 'CRM/Mailing/BAO/Mailing.php';
+            list( $contactDetails ) = 
+                CRM_Mailing_BAO_Mailing::getDetails( $this->_contactIds, $returnProperties, false, false );
+            
+            foreach ( $contactDetails as $id => $values ) {
+                if ( empty( $values['email'] ) ||
+                     CRM_Utils_Array::value( 'do_not_email', $values ) || 
+                     CRM_Utils_Array::value( 'is_deceased', $values ) ||
+                     CRM_Utils_Array::value( 'on_hold', $values ) ) {
+                    $suppressedEmails++;
+                    $excludeContactIds[] = $values['contact_id'];
+                }
+            }
+        }
+                
         foreach ( $details as $contribID => $detail ) {
             $input = $ids = $objects = array( );
             
+            if ( in_array( $detail['contact'], $excludeContactIds ) ) {
+                continue;
+            }
+
             $input['component'] = $detail['component'];
 
             $ids['contact'     ]      = $detail['contact'];
@@ -186,22 +213,29 @@ AND    {$this->_componentClause}";
                 $mail = str_replace( "\n\n", "<p>", $mail );
                 $mail = str_replace( "\n", "<br/>", $mail );
             }
-            
+
             $message[] = $mail;
 
             // reset template values before processing next transactions
             $template->clearTemplateVars( );
         }
-        
         if ( $createPdf ) {
             require_once 'CRM/Utils/PDF/Utils.php';
-            CRM_Utils_PDF_Utils::domlib( $message, 'civicrmContributionReceipt.pdf' );
+            CRM_Utils_PDF_Utils::domlib( $message,
+                                         'civicrmContributionReceipt.pdf',
+                                         false,
+                                         'portrait',
+                                         'letter' );
             CRM_Utils_System::civiExit( );
         } else {
-            $status = array( '', ts('Your mail has been sent.') );
+            if ( $suppressedEmails ) {
+                $status = array( '', ts( 'Email was NOT sent to %1 contacts (no email address on file, or communication preferences specify DO NOT EMAIL, or contact is deceased).', array( 1 => $suppressedEmails ) ) );
+            } else {
+                $status = array( '', ts( 'Your mail has been sent.' ) );
+            }
             CRM_Core_Session::setStatus( $status );
         }
-        
+
     }
 
 }

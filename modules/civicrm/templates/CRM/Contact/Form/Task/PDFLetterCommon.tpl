@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -237,24 +237,41 @@ function tokenReplHtml ( )
         oEditor = CKEDITOR.instances['html_message'];
 		oEditor.setData( {/literal}'{$message_html}'{literal});
 		loadEditor();	
-		oEditor.on( 'onFocus', verify );
     }
-
+    cj( function() {
+     	 oEditor = CKEDITOR.instances['html_message'];
+	 oEditor.on( 'focus', verify );
+     });
 {/literal}
 {/if}
 {if $editor eq "tinymce"}
 {literal}
 	function customEvent() {
 		loadEditor();
-		tinyMCE.get('html_message').onKeyPress.add(function(ed, e) {
- 		verify();
-		});
 	}
 
 tinyMCE.init({
 	oninit : "customEvent"
 });
 
+cj( function() {
+  cj('div.html').hover( 
+  function( ) {
+    if ( cj('#html_message').tinymce() ) {
+      tinyMCE.get('html_message').onKeyPress.add(function(ed, e) {
+        verify( );
+      });
+    }
+  },
+  function( ) {
+   if ( cj('#html_message').tinymce() ) {
+     if ( tinyMCE.get('html_message').getContent() ) {
+       verify( );
+     } 
+   }
+  }	
+  );
+});
 {/literal}
 {/if}
 {include file="CRM/common/Filter.tpl"}

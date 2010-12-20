@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -48,6 +48,8 @@ class CRM_Report_Form_Event_Summary extends CRM_Report_Form {
                                  );
 
     protected $_add2groupSupported = false;
+
+    protected $_customGroupExtends = array( 'Event' );
 
     function __construct( ) {
         

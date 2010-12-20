@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,8 +52,9 @@ class CRM_Mailing_Event_BAO_Resubscribe {
     public static function &resub_to_mailing($job_id, $queue_id, $hash) {
         /* First make sure there's a matching queue event */
         $q =& CRM_Mailing_Event_BAO_Queue::verify($job_id, $queue_id, $hash);
+        $success = null;
         if (! $q) {
-            return null;
+            return $success;
         }
 
         // check if this queue_id was actually unsubscribed 
@@ -61,7 +62,7 @@ class CRM_Mailing_Event_BAO_Resubscribe {
         $ue->event_queue_id = $queue_id;
         $ue->org_unsubscribe = 0;
         if (! $ue->find(true)) {
-            return null;
+            return $success;
         }
         
         $contact_id = $q->contact_id;
@@ -141,6 +142,7 @@ class CRM_Mailing_Event_BAO_Resubscribe {
 
         $contacts = array($contact_id);
         foreach ($groups as $group_id => $group_name) {
+            $notadded = 0;
             if ($group_name) {
                 list($total, $added, $notadded) = CRM_Contact_BAO_GroupContact::addContactsToGroup( $contacts, $group_id, 'Email');
             }

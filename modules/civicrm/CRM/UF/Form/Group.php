@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -72,6 +72,9 @@ class CRM_UF_Form_Group extends CRM_Core_Form
     {
         // current form id 
         $this->_id = $this->get('id');
+        if ( !$this->_id ) {
+            $this->_id = CRM_Utils_Request::retrieve( 'id', 'Positive', $this, false, 0 );
+        }
         $this-> assign('gid',$this->_id);
         $this->_group    =& CRM_Core_PseudoConstant::group( ); 
         
@@ -132,12 +135,7 @@ class CRM_UF_Form_Group extends CRM_Core_Form
         // title
         $this->add('text', 'title', ts('Profile Name'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_UFGroup', 'title'), true);
         
-        if ( isset ($ufgroupId ) ){
-            if( !( $this->_action & CRM_Core_Action::UPDATE ) ) {
-                $this->addRule( 'title', ts('Profile Title is already exist in Database.'), 'objectExists', 
-                                array( 'CRM_Core_DAO_UFGroup', $ufgroupId, 'title' ) );
-            }
-        }
+        
         //add checkboxes
         $uf_group_type = array();
         $UFGroupType = CRM_Core_SelectValues::ufGroupTypes( );
@@ -191,6 +189,8 @@ class CRM_UF_Form_Group extends CRM_Core_Form
             $this->freeze();
             $this->addElement('button', 'done', ts('Done'), array('onclick' => "location.href='civicrm/admin/uf/group?reset=1&action=browse'"));
         }
+        
+        $this->addFormRule( array( 'CRM_UF_Form_Group', 'formRule' ), $this ); 
     }
 
     /**
@@ -270,6 +270,37 @@ class CRM_UF_Form_Group extends CRM_Core_Form
         return $defaults;
     }
 
+
+
+    /**
+     * global form rule
+     *
+     * @param array $fields  the input form values
+     * @param array $files   the uploaded files if any
+     * @param array $self    current form object.
+     *
+     * @return true if no errors, else array of errors
+     * @access public
+     * @static
+     */
+    static function formRule( $fields, $files, $self ) 
+    {
+        $errors = array();
+        
+        //validate profile title as well as name.
+        $title  = $fields['title'];
+        $name   = CRM_Utils_String::munge( $title, '_', 64 );
+        $query  = 'select count(*) from civicrm_uf_group where ( name like %1 OR title like %2 ) and id != %3';
+        $pCnt   = CRM_Core_DAO::singleValueQuery( $query, array( 1 => array( $name,           'String'  ),
+                                                                 2 => array( $title,          'String'  ),
+                                                                 3 => array( (int)$self->_id, 'Integer' ) ) );
+        if ( $pCnt ) {
+            $errors['title'] = ts( 'Profile \'%1\' already exists in Database.', array( 1 => $title ) );
+        }
+        
+        return empty($errors) ? true : $errors;
+    }
+    
     /**
      * Process the form
      *
@@ -322,7 +353,7 @@ class CRM_UF_Form_Group extends CRM_Core_Form
             if ( $this->_action & CRM_Core_Action::UPDATE ) {
                 CRM_Core_Session::setStatus(ts("Your CiviCRM Profile '%1' has been saved.", array(1 => $ufGroup->title)));
             } else {
-                $url = CRM_Utils_System::url( 'civicrm/admin/uf/group/field', 'reset=1&action=add&gid=' . $ufGroup->id);
+                $url = CRM_Utils_System::url( 'civicrm/admin/uf/group/field/add', 'reset=1&action=add&gid=' . $ufGroup->id);
                 CRM_Core_Session::setStatus(ts('Your CiviCRM Profile \'%1\' has been added. You can add fields to this profile now.',
                                                array(1 => $ufGroup->title)));
                 $session = CRM_Core_Session::singleton( );

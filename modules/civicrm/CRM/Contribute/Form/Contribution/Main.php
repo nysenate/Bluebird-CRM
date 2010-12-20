@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -527,7 +527,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         $extraOption = array('onclick' =>"enableHonorType();");
         // radio button for Honor Type
         $honorOptions = array( );
-        $honor =CRM_Core_PseudoConstant::honor( ); 
+        $honor = CRM_Core_PseudoConstant::honor( ); 
         foreach ($honor as $key => $var) {
             $honorTypes[$key] = HTML_QuickForm::createElement('radio', null, null, $var, $key, $extraOption );
         }
@@ -669,13 +669,6 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         $errors = array( );
         $amount = self::computeAmount( $fields, $self );
         
-        $email = $fields["email-{$self->_bltID}"];
-        require_once 'CRM/Core/BAO/UFMatch.php';
-        if ( CRM_Core_BAO_UFMatch::isDuplicateUser( $email ) ) {
-            $errors["email-{$self->_bltID}"] = ts( 'The email %1 already exists in the database.',
-                                                   array( 1 => $email ) );
-        }
-
         //check for atleast one pricefields should be selected
         if ( CRM_Utils_Array::value( 'priceSetId', $fields ) ) {
             $priceField = new CRM_Price_DAO_Field( );
@@ -695,7 +688,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
             }
             
             require_once 'CRM/Price/BAO/Set.php';
-            CRM_Price_BAO_Set::processAmount( $self->_priceSet['fields'], 
+            CRM_Price_BAO_Set::processAmount( $self->_values['fee'], 
                                               $fields, $lineItem );
             if ($fields['amount'] < 0) {
                 $errors['_qf_default'] = ts( "Contribution can not be less than zero. Please select the options accordingly" );
@@ -972,7 +965,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         if ( $priceSetId = CRM_Utils_Array::value( 'priceSetId', $params ) ) {
             $lineItem = array( );
             require_once 'CRM/Price/BAO/Set.php';
-            CRM_Price_BAO_Set::processAmount( $this->_values['fee']['fields'], $params, $lineItem[$priceSetId] );
+            CRM_Price_BAO_Set::processAmount( $this->_values['fee'], $params, $lineItem[$priceSetId] );
             $this->set( 'lineItem', $lineItem );
         }
         $this->set( 'amount', $params['amount'] ); 
@@ -1005,7 +998,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
                     //default action is Sale
                     $params['payment_action'] = 'Sale';
                     
-                    $payment =& CRM_Core_Payment::singleton( $this->_mode, 'Contribute', $this->_paymentProcessor, $this ); 
+                    $payment =& CRM_Core_Payment::singleton( $this->_mode, $this->_paymentProcessor, $this ); 
                     $token = $payment->setExpressCheckout( $params ); 
                     if ( is_a( $token, 'CRM_Core_Error' ) ) { 
                         CRM_Core_Error::displaySessionError( $token ); 

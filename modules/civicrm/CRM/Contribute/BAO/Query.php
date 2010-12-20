@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -59,15 +59,6 @@ class CRM_Contribute_BAO_Query
             require_once 'CRM/Contribute/BAO/Contribution.php';
             $fields =& CRM_Contribute_BAO_Contribution::exportableFields( );
             
-            // add field to get recur_id
-            $fields['contribution_recur_id'] = array('name'  => 'contribution_recur_id',
-                                                     'title' => ts('Recurring Contributions ID'),
-                                                     'where' => 'civicrm_contribution.contribution_recur_id'
-                                                     );
-            $fields['contribution_note']     = array('name'  => 'contribution_note',
-                                                     'title' => ts('Contribution Note')
-                                                     );
-
             unset( $fields['contribution_contact_id'] );
 
             self::$_contributionFields = $fields;
@@ -109,7 +100,7 @@ class CRM_Contribute_BAO_Query
 
         // get contribution_status
         if ( CRM_Utils_Array::value( 'contribution_status_id', $query->_returnProperties ) ) {
-            $query->_select['contribution_status_id']  = "contribution_status.name as contribution_status_id";
+            $query->_select['contribution_status_id']  = "contribution_status.value as contribution_status_id";
             $query->_element['contribution_status_id'] = 1;
             $query->_tables['civicrm_contribution'] = 1;
             $query->_tables['contribution_status'] = 1;
@@ -563,6 +554,7 @@ class CRM_Contribute_BAO_Query
                                 'is_test'                 => 1,
                                 'is_pay_later'            => 1,
                                 'contribution_status'     => 1,
+                                'contribution_status_id'  => 1,
                                 'contribution_recur_id'   => 1, 
                                 'amount_level'            => 1,
                                 'contribution_note'       => 1

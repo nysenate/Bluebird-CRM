@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -49,7 +49,7 @@ class CRM_Event_Page_AJAX
         if ( ! $name ){
             $name = '%';
         }
-        $whereClause = " title LIKE '$name%' ";
+        $whereClause = " title LIKE '$name%' AND ( civicrm_event.is_template IS NULL OR civicrm_event.is_template = 0 )";
         
         $query = "
 SELECT title, id
@@ -133,6 +133,26 @@ WHERE cg.name LIKE 'civicrm_event.amount%'
 
         require_once "CRM/Utils/JSON.php";
         echo json_encode( $elements );
+        CRM_Utils_System::civiExit( );
+    } 
+
+    /**
+     * Function to get default participant role
+     */
+    function participantRole( ) {
+        
+        require_once 'CRM/Utils/Type.php';
+        
+        $eventID = $_GET['eventId'] ;
+       
+        $defaultRoleId = CRM_Core_DAO::getFieldValue( 'CRM_Event_DAO_Event', 
+                                                      $eventID, 
+                                                      'default_role_id',
+                                                      'id'
+                                                      );
+        require_once "CRM/Utils/JSON.php";
+        $participantRole = array( 'role' => $defaultRoleId );
+        echo json_encode( $participantRole );
         CRM_Utils_System::civiExit( );
     } 
 }

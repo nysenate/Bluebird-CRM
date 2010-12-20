@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -60,8 +60,8 @@ class CRM_Dedupe_Finder
             CRM_Core_Error::fatal("$level rule for $ctype does not exist");
         }
 
+        $rgBao->fillTable();
         $dao = new CRM_Core_DAO();
-        $dao->query($rgBao->tableQuery());
         $dao->query($rgBao->thresholdQuery());
         $dupes = array();
         while ($dao->fetch()) {
@@ -104,8 +104,8 @@ class CRM_Dedupe_Finder
         }
         $params['check_permission'] = CRM_Utils_Array::value( 'check_permission', $params, true );
 
+        $rgBao->fillTable();
         $dao = new CRM_Core_DAO();
-        $dao->query($rgBao->tableQuery());
         $dao->query($rgBao->thresholdQuery($params['check_permission']));
         $dupes = array();
         while ($dao->fetch()) {

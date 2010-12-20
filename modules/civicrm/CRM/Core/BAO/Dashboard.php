@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -234,13 +234,18 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard
 
         // if content is empty and url is set, retrieve it from url
         if ( !$dao->content && $dao->url ) {
-            if ( substr( $dao->url, 0, 4 ) === 'http' ) {
-                $url = $dao->url;
-            } else {
-                $url = CRM_Utils_System::url( $dao->url, null, true, null, false );     
+            $url = $dao->url;
+            
+            // CRM-7087 
+            // -lets use relative url for internal use.
+            // -make sure relative url should not be htmlize.
+            if ( substr( $dao->url, 0, 4 ) != 'http' ) {
+                if ( $config->userFramework == 'Joomla' ||
+                     ( $config->userFramework == 'Drupal' && !variable_get('clean_url', '0' ) ) ) {
+                    $url = CRM_Utils_System::url( $dao->url, null, false, null, false );
+                }
             }
-
-
+            
             //get content from url
             $dao->content = CRM_Utils_System::getServerResponse( $url );
             $dao->created_date = date( "YmdHis" );

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -823,11 +823,12 @@ class CRM_Utils_Date
         }
         
         $supportableFormats = array(
-                                    'mm/dd'   => '%B %E%f',
-                                    'dd-mm'   => '%E%f %B',
-                                    'yy-mm'   => '%Y %B',
-                                    'M yy'    => '%b %Y',  
-                                    'yy'      => '%Y',
+                                    'mm/dd'    => '%B %E%f',
+                                    'dd-mm'    => '%E%f %B',
+                                    'yy-mm'    => '%Y %B',
+                                    'M yy'     => '%b %Y',  
+                                    'yy'       => '%Y',
+                                    'dd/mm/yy' => '%E%f %B %Y',
                                     );
         
         if ( array_key_exists( $birthDateFormat, $supportableFormats ) ) {
@@ -1302,13 +1303,22 @@ class CRM_Utils_Date
      *
      *  @return string $mysqlDate date format that is excepted by mysql
      */
-    static function processDate( $date, $time = null, $returnNullString = false, $format = 'YmdHis' ) {
+    static function processDate( $date, $time = null, $returnNullString = false, $format = 'YmdHis', $inputCustomFormat = null ) {
         $mysqlDate = null;
         
         if ( $returnNullString ) {
             $mysqlDate = 'null';
         }
         
+        $config = CRM_Core_Config::singleton( );
+        $inputFormat = $config->dateInputFormat;
+        
+        if ( !empty( $inputCustomFormat ) ) {
+            $inputFormat = $inputCustomFormat;
+        }
+        if ( $inputFormat == 'dd/mm/yy' ) {
+              $date = str_replace( '/', '-', $date );
+        }
         if ( trim( $date ) ) {
             $mysqlDate = date( $format, strtotime( $date . ' '. $time ) );
         }

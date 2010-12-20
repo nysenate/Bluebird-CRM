@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -239,7 +239,7 @@ class CRM_Contact_Form_Domain extends CRM_Core_Form {
         CRM_Core_BAO_Domain::edit($params, $this->_id);
         
         //set domain from email address, CRM-3552 
-        $emailName = '"' . $params['email_name'] . '"<' . $params['email_address'] . '>';
+        $emailName = '"' . $params['email_name'] . '" <' . $params['email_address'] . '>';
         
         $emailParams = array( 'label'       => $emailName,
                               'description' => $params['description'],

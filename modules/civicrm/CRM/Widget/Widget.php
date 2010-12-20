@@ -151,18 +151,19 @@ WHERE  id = %1";
         // movie clip colors, must be in '0xRRGGBB' format
         $data->colors = array();
 
-        $data->colors["title"]     = $widget->color_title;
-        $data->colors["button"]    = $widget->color_button;
-        $data->colors["bar"]       = $widget->color_bar;
-        $data->colors["main_text"] = $widget->color_main_text;
-        $data->colors["main"]      = $widget->color_main;
-        $data->colors["main_bg"]   = $widget->color_main_bg;
-        $data->colors["bg"]        = $widget->color_bg;
+        $hexPrefix = '0x';
+        $data->colors["title"]     = str_replace( '#', $hexPrefix, $widget->color_title );
+        $data->colors["button"]    = str_replace( '#', $hexPrefix, $widget->color_button );
+        $data->colors["bar"]       = str_replace( '#', $hexPrefix, $widget->color_bar );
+        $data->colors["main_text"] = str_replace( '#', $hexPrefix, $widget->color_main_text );
+        $data->colors["main"]      = str_replace( '#', $hexPrefix, $widget->color_main );
+        $data->colors["main_bg"]   = str_replace( '#', $hexPrefix, $widget->color_main_bg );
+        $data->colors["bg"]        = str_replace( '#', $hexPrefix, $widget->color_bg );
 
         // these two have colors as normal hex format
         // because they're being used in a CSS object
-        $data->colors["about_link"]    = $widget->color_about_link;
-        $data->colors["homepage_link"] = $widget->color_homepage_link;
+        $data->colors["about_link"]    = str_replace( '#', $hexPrefix, $widget->color_about_link );
+        $data->colors["homepage_link"] = str_replace( '#', $hexPrefix, $widget->color_homepage_link );
 
         require_once 'CRM/Core/Error.php';
         return $data;

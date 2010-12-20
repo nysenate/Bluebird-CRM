@@ -83,7 +83,7 @@ echo; echo Creating $DBNAME database
 mysqladmin -f -u $DBUSER $PASSWDSECTION $DBARGS create $DBNAME
 echo; echo Creating database structure
 mysql -u $DBUSER $PASSWDSECTION $DBARGS $DBNAME < civicrm.mysql
-mysql -u $DBUSER $PASSWDSECTION $DBARGS $DBNAME < trigger.mysql
+#mysql -u $DBUSER $PASSWDSECTION $DBARGS $DBNAME < trigger.mysql
 
 # load civicrm_generated.mysql sample data unless special DBLOAD is passed
 if [ -z $DBLOAD ]; then

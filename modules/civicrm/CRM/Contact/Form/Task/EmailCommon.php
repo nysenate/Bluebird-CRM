@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -182,8 +182,13 @@ class CRM_Contact_Form_Task_EmailCommon
         }
         
     	if ( is_array ( $form->_contactIds ) && $toSetDefault ) {
-            $returnProperties = array( 'sort_name' => 1, 'email' => 1, 'do_not_email' => 1,
-                                       'on_hold' => 1, 'display_name' => 1, 'preferred_mail_format' => 1 );
+            $returnProperties = array( 'sort_name'             => 1, 
+                                       'email'                 => 1, 
+                                       'do_not_email'          => 1, 
+                                       'is_deceased'           => 1,
+                                       'on_hold'               => 1, 
+                                       'display_name'          => 1, 
+                                       'preferred_mail_format' => 1 );
         
             require_once 'CRM/Mailing/BAO/Mailing.php';
             
@@ -212,7 +217,7 @@ class CRM_Contact_Form_Task_EmailCommon
             }
 
     		if ( empty( $toArray ) ) {
-    			CRM_Core_Error::statusBounce( ts('Selected contact(s) do not have a valid email address, or communication preferences specify DO NOT EMAIL, or they are deceased or Primary email address is On Hold).' ));
+    			CRM_Core_Error::statusBounce( ts('Selected contact(s) do not have a valid email address, or communication preferences specify DO NOT EMAIL, or they are deceased or Primary email address is On Hold.' ));
     		}
     	}
 	

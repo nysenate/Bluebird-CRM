@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -67,11 +67,11 @@ function checkSelection( field ) {
 	alert( validationMessage );
         return false;
     } else if ( cj('#contact_id').val( ) == {/literal}{$contactId}{literal} ) {
-      	validationMessage = '{/literal}{ts 1="'+clientName[0]+'" escape="js"}%1 is already assigned to this case. Please select some other client for this case.{/ts}{literal}';
+      	validationMessage = '{/literal}{ts 1="'+clientName[0]+'"}%1 is already assigned to this case. Please select some other client for this case.{/ts}{literal}';
 	alert( validationMessage );
         return false;    
     } else {
-        validationMessage = '{/literal}{ts 1="'+clientName[0]+'" escape="js"}Are you sure you want to reassign this case and all related activities and relationships to %1?{/ts}{literal}';
+        validationMessage = '{/literal}{ts 1="'+clientName[0]+'"}Are you sure you want to reassign this case and all related activities and relationships to %1?{/ts}{literal}';
         if ( confirm( validationMessage ) ) {
 	    this.href+='&amp;confirmed=1'; 
         } else {

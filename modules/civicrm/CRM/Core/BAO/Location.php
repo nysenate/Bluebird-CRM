@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -300,60 +300,7 @@ WHERE e.id = %1";
             CRM_Core_BAO_Block::blockDelete( $name, $params );
         }
     }
-
-    /**
-     * Function to cleanup Contact locations
-     * Basically we need to delete unwanted location types for a contact in Edit mode
-     * create() is also called by createProfileContact(), in that case we should preserve other location type's,
-     * This is a special case where we need to delete location types that are not submitted.
-     * 
-     * @param array $params associated array of formatted params
-     * @return void
-     * @static
-     */
-    static function cleanupContactLocations( $params )
-    {
-        //get the contact id from params
-        $contactId = CRM_Utils_Array::value( 'contact_id', $params );
-        
-        // get existing locations
-        $deleteBlocks  = array( );
-        $dbBlockValues = self::getValues( array( 'contact_id' => $contactId ) );
-        
-        foreach ( self::$blocks as $block ) {
-            if ( !is_array( $dbBlockValues[$block] ) ) continue;
-            foreach ( $dbBlockValues[$block] as $dbCount => $dbValues ) {
-                if ( !is_array( $params[$block] ) ) {
-                    $deleteBlocks[$block] = $dbBlockValues[$block];
-                    continue;
-                }
-                
-                $valueSubmitted = false;
-                foreach ( $params[$block] as $submitCount => $submitValues ) {
-                    if ( $submitValues['location_type_id'] == $dbValues['location_type_id'] ) {
-                        //unset from submitted since we map it across db.
-                        unset( $params[$block][$submitCount] );
-                        $valueSubmitted = true;
-                        break;
-                    }
-                }
-                
-                //since this value not present in submit params.
-                if ( !$valueSubmitted ) {
-                    $deleteBlocks[$block][$dbCount] = $dbValues;
-                }
-            }
-        }
-        
-        //finally delete unwanted blocks.
-        foreach ( $deleteBlocks as $blockName => $blockValues ) {
-            if ( !is_array( $blockValues ) ) continue;
-            foreach ( $blockValues as $count => $deleteBlock ) {
-                CRM_Core_BAO_Block::blockDelete( $blockName, $deleteBlock ); 
-            }
-        }
-    }
-    
+   
     /* Function to copy or update location block. 
      *
      * @param  int  $locBlockId  location block id.

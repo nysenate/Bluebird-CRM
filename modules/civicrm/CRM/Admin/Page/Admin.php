@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -81,6 +81,10 @@ class CRM_Admin_Page_Admin extends CRM_Core_Page
         
         if ( in_array("CiviReport", $config->enableComponents) ) {
             $groups['CiviReport'] = ts( 'CiviReport' );
+        }
+
+        if ( in_array("CiviCampaign", $config->enableComponents) ) {
+            $groups['CiviCampaign'] = ts( 'CiviCampaign' );
         }
 
         require_once 'CRM/Core/Menu.php';

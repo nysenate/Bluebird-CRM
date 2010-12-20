@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -39,7 +39,9 @@ require_once 'CRM/Report/Form.php';
 class CRM_Report_Form_Contact_CurrentEmployer extends CRM_Report_Form {
 
     protected $_summary = null;
-    
+
+    protected $_customGroupExtends = array( 'Contact', 'Individual' );
+
     function __construct( ) {
         
         $this->_columns = 

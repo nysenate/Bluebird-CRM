@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -214,15 +214,17 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
             $this->$varName = CRM_Utils_Array::value( $c, $this->_editOptions );
             $this->assign( substr( $varName, 1 ), $this->$varName );
         }
-        
-        //get the householdname
-        if ( isset($defaults['mail_to_household_id']) ) {
-            $householdName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', 
-                                                          $defaults['mail_to_household_id'], 
-                                                          'display_name', 
-                                                          'id' );
-            $this->assign( 'householdName',$householdName );
+
+        // get contact name of shared contact names
+        $sharedAddresses = array( );
+        $shareAddressContactNames = CRM_Contact_BAO_Contact_Utils::getAddressShareContactNames( $defaults['address'] );
+        foreach ( $defaults['address'] as $key => $addressValue ) {
+            if ( CRM_Utils_Array::value( 'master_id', $addressValue ) && !$shareAddressContactNames[ $addressValue['master_id']]['is_deleted'] ) {
+                $sharedAddresses[$key]['shared_address_display'] = array( 'address' => $addressValue['display'],
+                    'name'    => $shareAddressContactNames[ $addressValue['master_id'] ]['name'] ); 
+            }
         }
+        $this->assign( 'sharedAddresses', $sharedAddresses );
 
         //get the current employer name
         if ( CRM_Utils_Array::value( 'contact_type', $defaults ) == 'Individual' ) {
@@ -332,27 +334,6 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
         // see if any other modules want to add any tabs
         require_once 'CRM/Utils/Hook.php';
         CRM_Utils_Hook::tabs( $allTabs, $this->_contactId );
-
-        if( $config->civiHRD ) {
-            $hrdOrder = array(
-                       'rel'           => 1,
-                       'case'          => 2,
-                       'activity'      => 3,
-                       'participant'   => 4,
-                       'grant'         => 5,
-                       'contribute'    => 6,
-                       'group'         => 7,
-                       'note'          => 8,
-                       'tag'           => 9,
-                       'log'           => 10
-                       );
-
-            foreach( $allTabs as $i => $tab ) {
-                if( array_key_exists( $tab['id'],  $hrdOrder ) ) {
-                    $allTabs[$i]['weight'] = $hrdOrder[$tab['id']];
-                }
-            }
-        }
 
         // now sort the tabs based on weight
         require_once 'CRM/Utils/Sort.php';

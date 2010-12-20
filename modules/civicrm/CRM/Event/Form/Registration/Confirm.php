@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -92,7 +92,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration
             //we lost rfp in case of additional participant. So set it explicitly.
             if ( $rfp || CRM_Utils_Array::value( 'additional_participants', $this->_params[0], false ) ) {
                 require_once 'CRM/Core/Payment.php'; 
-                $payment =& CRM_Core_Payment::singleton( $this->_mode, 'Event', $this->_paymentProcessor, $this );
+                $payment =& CRM_Core_Payment::singleton( $this->_mode, $this->_paymentProcessor, $this );
                 $expressParams = $payment->getExpressCheckoutDetails( $this->get( 'token' ) );
                              
                 $params['payer'       ] = $expressParams['payer'       ];
@@ -216,7 +216,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration
         $this->assignToTemplate( );
         if( $this->_params[0]['amount'] || $this->_params[0]['amount'] == 0 ) {
             $this->_amount = array();
-                        
+
             foreach( $this->_params as $k => $v ) {
                 if ( is_array( $v ) ) {
                     foreach (array ('first_name', 'last_name') as $name) {
@@ -291,6 +291,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration
                     if ( count( $values ) ) {
                         $formattedValues[$count]['additionalCustomPost'] = $values;
                     }
+                    $formattedValues[$count]['additionalCustomPost'] = array_diff_assoc( $formattedValues[$count]['additionalCustomPost'], $formattedValues[$count]['additionalCustomPre'] );
                     $formattedValues[$count]['additionalCustomPostGroupTitle'] = CRM_Utils_Array::value( 'groupTitle', $groupName );
                 }
                 $count++; 
@@ -376,21 +377,8 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration
         $this->assign( 'isRequireApproval', $this->_requireApproval );
         
         // Assign Participant Count to Lineitem Table
-        if ( $this->_priceSetId ) {
-            // Assign Participant Count to Lineitem Table
-            $query = "SELECT count from civicrm_price_field where price_set_id = %1 ";
-            $params = array( 1 => array( $this->_priceSetId, 'Integer' ));
-            $dao = CRM_Core_DAO::executeQuery( $query, $params );
-            $participantCount = array();
-            while ( $dao->fetch() ) {
-                if ( ! empty( $dao->count ) ){
-                    $participantCount[] = $dao->count;
-                } 
-            }
-            if ( !empty( $participantCount ) ) {
-                $this->assign( 'participantCount', $participantCount );
-            }
-        }
+        require_once "CRM/Price/BAO/Set.php";
+        $this->assign( 'pricesetFieldsCount', CRM_Price_BAO_Set::getPricesetCount( $this->_priceSetId ) );
     }
     
     /**
@@ -512,7 +500,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration
             if ( $this->_values['event']['is_monetary'] ) {
                 require_once 'CRM/Core/Payment.php';
                 if ( is_array( $this->_paymentProcessor ) ) {
-                    $payment =& CRM_Core_Payment::singleton( $this->_mode, 'Event', $this->_paymentProcessor, $this );
+                    $payment =& CRM_Core_Payment::singleton( $this->_mode, $this->_paymentProcessor, $this );
                 }
                 $pending = false;
                 $result  = null;
@@ -704,7 +692,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration
             
             // do a transfer only if a monetary payment greater than 0
             if ( $this->_values['event']['is_monetary'] && $primaryParticipant && $payment ) {
-                $payment->doTransferCheckout( $primaryParticipant );
+                $payment->doTransferCheckout( $primaryParticipant, 'event' );
             }
             
         } else {

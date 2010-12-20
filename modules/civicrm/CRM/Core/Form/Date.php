@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -103,11 +103,11 @@ Class CRM_Core_Form_Date
                            'previous.week'        => ts('Previous Week'),
                            'previous.day'         => ts('Previous Day'),
 
-                           'previous_before.year'    => ts('Previous Before Year'),
-                           'previous_before.quarter' => ts('Previous Before Quarter'),
-                           'previous_before.month'   => ts('Previous Before Month'),
-                           'previous_before.week'    => ts('Previous Before Week'),
-                           'previous_before.day'     => ts('Previous Before Day'),
+                           'previous_before.year'    => ts('Prior to Previous Year'),
+                           'previous_before.quarter' => ts('Prior to Previous Quarter'),
+                           'previous_before.month'   => ts('Prior to Previuos Month'),
+                           'previous_before.week'    => ts('Prior to Previous Week'),
+                           'previous_before.day'     => ts('Prior to Previous Day'),
                            
                            'previous_2.year'    => ts('Previous 2 Years'),
                            'previous_2.quarter' => ts('Previous 2 Quarters'),
@@ -115,22 +115,22 @@ Class CRM_Core_Form_Date
                            'previous_2.week'    => ts('Previous 2 Weeks'),
                            'previous_2.day'     => ts('Previous 2 Days'),
 
-                           'earlier.year'    => ts('Earlier Year'),
-                           'earlier.quarter' => ts('Earlier Quarter'),
-                           'earlier.month'   => ts('Earlier Month'),
-                           'earlier.week'    => ts('Earlier Week'),
-                           'earlier.day'     => ts('Earlier Day'),
+                           'earlier.year'    => ts('To End of Prior Year'),
+                           'earlier.quarter' => ts('To End of Prior Quarter'),
+                           'earlier.month'   => ts('To End of Prior Month'),
+                           'earlier.week'    => ts('To End of Prior Week'),
+                           'earlier.day'     => ts('To End of Prior Day'),
 
-                           'greater.year'    => ts('Greater Year'),
-                           'greater.quarter' => ts('Greater Quarter'),
-                           'greater.month'   => ts('Greater Month'),
-                           'greater.week'    => ts('Greater Week'),
-                           'greater.day'     => ts('Greater Day'),
+                           'greater.year'    => ts('Current Year to-date'),
+                           'greater.quarter' => ts('Current Quarter to-date'),
+                           'greater.month'   => ts('Current Month to-date'),
+                           'greater.week'    => ts('Current Week to-date'),
+                           'greater.day'     => ts('Current Day'),
 
-                           'ending.year'     => ts('Ending Year'),
-                           'ending.quarter'  => ts('Ending Quarter'),
-                           'ending.month'    => ts('Ending Month'),
-                           'ending.week'     => ts('Ending Week'),
+                           'ending.year'     => ts('From 12 Months Ago'),
+                           'ending.quarter'  => ts('From 3 Months Ago'),
+                           'ending.month'    => ts('From 1 Month Ago'),
+                           'ending.week'     => ts('From 1 Week Ago'),
                            );
         if( $addReportFilters ) {
             require_once 'CRM/Report/Form.php';

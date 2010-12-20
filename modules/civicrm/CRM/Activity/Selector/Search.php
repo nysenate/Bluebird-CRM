@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -112,6 +112,14 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
     protected $_context = null;
     
     /**
+     * what component context are we being invoked from
+     *   
+     * @access protected     
+     * @var string
+     */     
+    protected $_compContext = null;
+
+    /**
      * queryParams is the array returned by exportValues called on
      * the HTML_QuickForm_Controller for that page.
      *
@@ -159,7 +167,8 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
                          $activityClause = null,
                          $single = false,
                          $limit = null,
-                         $context = 'search' ) 
+                         $context = 'search',
+                         $compContext = null ) 
     {
         // submitted form values
         $this->_queryParams =& $queryParams;
@@ -167,7 +176,8 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
         $this->_single  = $single;
         $this->_limit   = $limit;
         $this->_context = $context;
-        
+        $this->_compContext = $compContext;
+
         $this->_activityClause = $activityClause;
         
         // type of selector
@@ -232,8 +242,15 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
          require_once 'CRM/Mailing/BAO/Mailing.php';
          $mailingIDs =& CRM_Mailing_BAO_Mailing::mailingACLIDs( );
          $accessCiviMail = CRM_Core_Permission::check( 'access CiviMail' );
+         
          while ( $result->fetch( ) ) {
-            $row = array( );
+             $row = array( );
+
+             // ignore rows where we dont have an activity id
+             if ( empty( $result->activity_id ) ) {
+                 continue;
+             }
+
             // the columns we are interested in
             foreach ( self::$_properties as $property) {
                 if ( isset( $result->$property ) ) {
@@ -242,7 +259,9 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
             }
             
             $contactId = CRM_Utils_Array::value( 'contact_id', $row );
-            if ( !$contactId ) $contactId = CRM_Utils_Array::value( 'source_contact_id', $row );
+            if ( !$contactId ) {
+                $contactId = CRM_Utils_Array::value( 'source_contact_id', $row );
+            }
 
             $row['target_contact_name'] = CRM_Activity_BAO_ActivityTarget::getTargetNames( $row['activity_id'] );
             $row['assignee_contact_name'] = CRM_Activity_BAO_ActivityAssignment::getAssigneeNames( $row['activity_id'] );
@@ -279,7 +298,8 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
                                                           CRM_Utils_Array::value( 'source_record_id', $row ),
                                                           $accessMailingReport,
                                                           CRM_Utils_Array::value( 'activity_id', $row ),
-                                                          $this->_key );
+                                                          $this->_key,
+                                                          $this->_compContext );
             $row['action'] = CRM_Core_Action::formLink( $actionLinks, null,
                                                         array( 'id'  => $result->activity_id,
                                                                'cid' => $contactId,
@@ -349,6 +369,10 @@ class CRM_Activity_Selector_Search extends CRM_Core_Selector_Base implements CRM
          return self::$_columnHeaders;
      }
      
+     function alphabetQuery( ) {
+         return $this->_query->searchQuery( null, null, null, false, false, true );
+     }
+
      function &getQuery( ) {
          return $this->_query;
      }

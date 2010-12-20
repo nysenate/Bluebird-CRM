@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -147,7 +147,7 @@ class CRM_Event_BAO_Event extends CRM_Event_DAO_Event
         $session   = & CRM_Core_Session::singleton();
         $contactId = $session->get('userID');
         if ( !$contactId ) {
-            $contactId = $params['contact_id'];
+            $contactId = CRM_Utils_Array::value( 'contact_id', $params );
         }
         
         // Log the information on successful add/edit of Event
@@ -287,25 +287,28 @@ class CRM_Event_BAO_Event extends CRM_Event_DAO_Event
      * Function to get current/future Events 
      *
      * @param $all boolean true if events all are required else returns current and future events
+     * @param $id  int     id of a specific event to return
      *
      * @static
      */
-    static function getEvents( $all = false, $id = false) 
+    static function getEvents( $all = false, $id = false, $isActive = true ) 
     {
-        $query = "SELECT `id`, `title`, `start_date` FROM `civicrm_event`";
+        $query = "SELECT `id`, `title`, `start_date` FROM `civicrm_event` WHERE ( civicrm_event.is_template IS NULL OR civicrm_event.is_template = 0 )";
         
-        if ( !$all ) {
-            $endDate = date( 'YmdHis' );
-            $query .= " WHERE `end_date` >= {$endDate} OR end_date IS NULL";
-        }
         if ( $id ) {
-            $query .= " WHERE `id` = {$id}";
+            $query .= " AND `id` = {$id}";
+        } elseif ( !$all ) {
+            $endDate = date( 'YmdHis' );
+            $query .= " AND ( `end_date` >= {$endDate} OR end_date IS NULL )";
         }
+        if ( $isActive ) {
+            $query .= " AND civicrm_event.is_active = 1";
+        } 
 
         $query .= " ORDER BY title asc";
         $events = array( );
         
-        $dao =& CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
+        $dao =& CRM_Core_DAO::executeQuery( $query );
         while ( $dao->fetch( ) ) {
             if ( CRM_Event_BAO_Event::checkPermission( $dao->id ) && $dao->title ) { 
                 $events[$dao->id] = $dao->title . ' - '.CRM_Utils_Date::customFormat($dao->start_date);
@@ -499,27 +502,18 @@ LIMIT      0, 10
             $eventIdsClause = "WHERE p.event_id IN (" . implode( ',', $eventIds ) . ") $roleSQL ";
         }
         
-        // add participant counts on a per-event, per-status-type basis
-        $statusTypes =& CRM_Event_PseudoConstant::participantStatus();
-        $query = "
-  SELECT  event_id, status_id, COUNT(*) count, class
-    FROM  civicrm_participant p 
-    JOIN  civicrm_participant_status_type pst ON ( p.status_id = pst.id )
-          {$eventIdsClause}
-     AND  p.contact_id NOT IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)
-GROUP BY  event_id, status_id";
-        $st = CRM_Core_DAO::executeQuery( $query );
-        
-        while ($st->fetch()) {
-            if ( !CRM_Utils_Array::value( $st->status_id, $statusTypes ) ) {
-                continue;
+        $statusTypes = CRM_Event_PseudoConstant::participantStatus();
+        $participantStatusSummary  = self::getParticipantCount( false, false, false, false, $eventIds, true );
+        foreach ( $participantStatusSummary as $eventId => $values ) {
+            foreach ( $values as $statusId => $statusValues ) {
+                $class = $statusValues['class'];
+                $count = CRM_Utils_Array::value( 'count', $statusValues );
+                $urlString  = "reset=1&force=1&event=$eventId&status=$statusId"; 
+                $statusInfo =  array( 'url'   => CRM_Utils_System::url( 'civicrm/event/search', $urlString ),
+                                      'name'  => $statusTypes[$statusId],
+                                      'count' => $count );
+                $eventSummary['events'][$eventId]['statuses'][$class][] = $statusInfo;
             }
-            $eventSummary['events'][$st->event_id]['statuses'][$st->class][] = 
-                array( 'url'   => CRM_Utils_System::url( 'civicrm/event/search', 
-                                                         "reset=1&force=1&event=$st->event_id&status=$st->status_id"),
-                       'name'  => $statusTypes[$st->status_id],
-                       'count' => $st->count,
-                       );
         }
         
         $countedStatusANDRoles    = array_merge(  $countedStatus ,  $countedRoles );
@@ -540,21 +534,27 @@ GROUP BY  event_id, status_id";
      * @param  boolean $status         consider counted participant.
      * @param  boolean $considerRole   consider role for participant count.
      * @param  boolean $role           consider counted( is filter role) participant.
+     * @param  array   $eventIds       consider participants from given events.
+     * @param  boolean $countWithStatus  retrieve participant count w/ each participant status.
      *
      * @access public
      * @return array array with count of participants for each event based on status/role
      */
-    function getParticipantCount( $considerStatus = true, $status = true, $considerRole = true, $role = true ) 
-    {
+    function getParticipantCount( $considerStatus = true, 
+                                  $status = true, 
+                                  $considerRole = true, 
+                                  $role = true, 
+                                  $eventIds = array( ),
+                                  $countWithStatus = false ) {
+        
         // consider both role and status for counted participants, CRM-4924.
         require_once 'CRM/Event/PseudoConstant.php';
-        
+        require_once 'CRM/Event/BAO/Participant.php';
         $operator = " AND ";
         // not counted participant.
         if ( $considerStatus && $considerRole && !$status && !$role ) {
             $operator = " OR ";
         }
-        
         $clause = array( );
         if ( $considerStatus ) {
             $statusTypes  = CRM_Event_PseudoConstant::participantStatus( null, 'is_counted = 1' ); 
@@ -587,25 +587,68 @@ GROUP BY  event_id, status_id";
             $sqlClause = ' AND ( ' . implode( $operator, $clause ) . ' )';
         }
         
-        $query = "
-   SELECT  civicrm_event.id AS id, count( civicrm_participant.id ) AS participant
-     FROM  civicrm_event 
-LEFT JOIN  civicrm_participant ON ( civicrm_event.id = civicrm_participant.event_id )
-    WHERE  civicrm_participant.is_test = 0 
-      AND  civicrm_event.is_active = 1
-           {$sqlClause}
-      AND  civicrm_participant.contact_id NOT IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)
- GROUP BY  civicrm_event.id
- ORDER BY  civicrm_event.end_date DESC
-  LIMIT 0, 10
-";
-        $participant = array( );
-        $event = CRM_Core_DAO::executeQuery( $query );
-        while ( $event->fetch( ) ) {
-            $participant[$event->id] = $event->participant;
+        $eventLimit = 10;
+        if ( is_array( $eventIds ) && !empty( $eventIds ) ) {
+            $eventLimit = null;
+            $sqlClause .= ' AND civicrm_event.id IN (' . implode( ',', $eventIds ) . ')';
         }
         
-        return $participant;
+        $select = '
+    SELECT   civicrm_event.id as id, 
+             civicrm_participant.id as participantId';
+        $from = '
+      FROM   civicrm_event 
+INNER JOIN   civicrm_participant ON ( civicrm_event.id = civicrm_participant.event_id )
+INNER JOIN   civicrm_contact contact ON ( contact.id = civicrm_participant.contact_id AND contact.is_deleted = 0 )';
+        
+        if ( $countWithStatus ) {
+            $select .= ', status_id as statusId, status_type.class as statusClass';
+            $from .= ' 
+INNER JOIN   civicrm_participant_status_type status_type ON ( civicrm_participant.status_id = status_type.id )'; 
+        }
+        
+        $where = "
+     WHERE   ( civicrm_participant.is_test = 0 OR civicrm_participant.is_test IS NULL ) 
+       AND   civicrm_event.is_active = 1
+             {$sqlClause}";
+        
+        $orderBy = 'Order By civicrm_event.end_date DESC';
+        $participantIds = $participantCount = array( );
+        
+        $query = "$select $from $where $orderBy";
+        $event = CRM_Core_DAO::executeQuery( $query );
+        while ( $event->fetch( ) ) {
+            //we are interested in first 10 events only.
+            if ( $eventLimit && 
+                 count( array_keys( $participantIds ) ) > $eventLimit ) {
+                break;
+            }
+            if ( $countWithStatus ) {
+                $participantIds[$event->id][$event->statusId]['pIds'][$event->participantId] = $event->participantId;
+                $participantIds[$event->id][$event->statusId]['statusClass'] = $event->statusClass;
+            } else {
+                $participantIds[$event->id][$event->participantId] = $event->participantId;
+            }
+        }
+        
+        //poped last 11th events participants.
+        if ( $eventLimit && count( array_keys( $participantIds ) ) > $eventLimit ) array_pop( $participantIds );
+        
+        //pickup event seats
+        foreach ( $participantIds as $eventId => $pInfo ) { 
+            $pIds = $pInfo;
+            if ( $countWithStatus ) {
+                foreach ( $pInfo as $statusId => $values ) {
+                    $participantCount[$eventId][$statusId]['count'] = 
+                        CRM_Event_BAO_Participant::totalEventSeats( $values['pIds'] ); 
+                    $participantCount[$eventId][$statusId]['class'] = $values['statusClass'];
+                }
+            } else {
+                $participantCount[$eventId] = CRM_Event_BAO_Participant::totalEventSeats( $pIds );
+            }
+        }
+        
+        return $participantCount;
     }
     
     /**
@@ -1071,6 +1114,7 @@ WHERE civicrm_event.is_active = 1
                         'confirm_email_text' => CRM_Utils_Array::value('confirm_email_text', $values['event']),
                         'isShowLocation'     => CRM_Utils_Array::value('is_show_location',   $values['event']),
                     ),
+                    'PDFFilename' => 'civicrm.pdf',
                 );
 
                 // address required during receipt processing (pdf and email receipt)
@@ -1535,7 +1579,7 @@ WHERE  id = $cfID
                                                                                     $isCustomProfile,
                                                                                     $participantParams );
                     if ( $profilePost ) {
-                        $customProfile[$i]['additionalCustomPost'] =  $profilePost;
+                        $customProfile[$i]['additionalCustomPost'] =  array_diff_assoc( $profilePost, $profilePre );
                         $customProfile[$i] = array_merge( $groupTitles, $customProfile[$i] );
                     }
                     $i++;
@@ -1733,4 +1777,86 @@ WHERE  ce.loc_block_id = $locBlockId";
         return $permissions;
     }
 
+    /**
+     * Build From Email as the combination of all the email ids of the logged in user,
+     * the domain email id and the email id configured for the event
+     * 
+     * @param int $eventId   the id of the event
+     * 
+     * @return array         an array of email ids
+     * @access public
+     * @static
+     */
+    static function getFromEmailIds( $eventId = null ) 
+    {
+        static $emails;
+        $session   = CRM_Core_Session::singleton( );
+        $contactID = $session->get( 'userID' );
+        
+        $cacheKey  = 'd';
+        if ( $eventId ) $cacheKey .= '_eid_'.$eventId;
+        if ( $contactID ) $cacheKey .= '_cid_'.$contactID;
+
+        $fromEmailValues = $fromEmailIds = $eventEmail = $contactEmails = array( );
+        
+        if ( isset( $emails[$cacheKey] ) ) { 
+            return $emails[$cacheKey];
+        }
+
+        if ( $eventId ) {
+            // add the email id configured for the event
+            $params           = array( 'id' => $eventId );
+            $returnProperties = array( 'confirm_from_name', 'confirm_from_email', 'cc_confirm', 'bcc_confirm' );
+            
+            CRM_Core_DAO::commonRetrieve( 'CRM_Event_DAO_Event', $params, $eventEmail, $returnProperties );
+            if( CRM_Utils_Array::value( 'confirm_from_name', $eventEmail ) 
+                && CRM_Utils_Array::value( 'confirm_from_email', $eventEmail ) ) {
+                $fromEmailValues[] = $fromEmailIds[] = 
+                    "{$eventEmail['confirm_from_name']} <{$eventEmail['confirm_from_email']}>";
+            }
+        }
+
+        // add the domain email id
+        require_once 'CRM/Core/BAO/Domain.php';
+        $domainEmail = CRM_Core_BAO_Domain::getNameAndEmail( );
+        $domainEmail = "$domainEmail[0] <$domainEmail[1]>";
+        if ( !in_array( $domainEmail, $fromEmailIds ) ) {
+            $fromEmailValues[] = $fromEmailIds[] = $domainEmail;
+        }
+        
+        require_once 'CRM/Core/BAO/Email.php';
+        // add logged in user's active email ids
+        if ( $contactID ) {
+            $contactEmails = CRM_Core_BAO_Email::allEmails( $contactID );
+            $fromDisplayName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $contactID, 'display_name' );
+            
+            foreach( $contactEmails as $emailId => $emailVal ) {
+                $email = trim( $emailVal['email'] );
+                if ( !$email || $emailVal['on_hold'] ) {
+                    continue;
+                }
+                
+                $fromEmail = "$fromDisplayName <$email>";
+                if ( !in_array( $fromEmail, $fromEmailIds ) ) {
+                    $fromEmailValues[$emailId]  = $fromEmailIds[] = $fromEmail;
+                    $fromEmailValues[$emailId] .= $emailVal['locationType']; 
+                    
+                    if ( CRM_Utils_Array::value( 'is_primary', $emailVal ) ) {
+                        $fromEmailValues[$emailId] .=  ' ' . ts('(preferred)');
+                    }
+                }
+            }
+        }
+        
+        foreach ( $fromEmailValues as $key => $value ) {
+            $emailValues[] = htmlspecialchars( $value );
+        }
+        
+        $emails[$cacheKey] = array( 'name'  => $fromEmailIds, 
+                                    'label' => $emailValues,
+                                    'cc'    => CRM_Utils_Array::value( 'cc_confirm', $eventEmail ),
+                                    'bcc'   => CRM_Utils_Array::value( 'bcc_confirm', $eventEmail ) ) ;
+        return $emails[$cacheKey];
+    }
 }
+

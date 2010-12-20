@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -29,9 +29,9 @@
 {if $context eq 'dashboard'}{assign var='context' value='pledgeDashboard'}{/if}
 <table class="nestedSelector">
   <tr class="columnheader">
-    <th>{ts}Scheduled Amount{/ts}</th>
-    <th>{ts}Scheduled Date{/ts}</th>
-    <th>{ts}Paid Amount{/ts}</th>
+    <th>{ts}Amount Due{/ts}</th>
+    <th>{ts}Due Date{/ts}</th>
+    <th>{ts}Amount Paid{/ts}</th>
     <th>{ts}Paid Date{/ts}</th>
     <th>{ts}Last Reminder{/ts}</th>
     <th>{ts}Reminders Sent{/ts}</th>

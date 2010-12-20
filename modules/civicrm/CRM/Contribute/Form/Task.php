@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -94,7 +94,7 @@ class CRM_Contribute_Form_Task extends CRM_Core_Form
     {
         $form->_contributionIds = array();
 
-        $values = $form->controller->exportValues( 'Search' );
+        $values = $form->controller->exportValues( $form->get( 'searchFormName' ) );
 
         $form->_task = $values['task'];
         $contributeTasks = CRM_Contribute_Task::tasks();
@@ -135,8 +135,14 @@ class CRM_Contribute_Form_Task extends CRM_Core_Form
         require_once 'CRM/Utils/Rule.php';
         $urlParams = 'force=1';
         if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams .= "&qfKey=$qfKey";
-        
-        $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/contribute/search', $urlParams ) );
+
+        $searchFormName = strtolower( $form->get( 'searchFormName' ) );
+        if ( $searchFormName == 'search' ) {
+            $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/contribute/search', $urlParams ) );
+        } else {
+            $session->replaceUserContext( CRM_Utils_System::url( "civicrm/contact/search/$searchFormName",
+                                                                 $urlParams ) );
+        }
     }
 
     /**

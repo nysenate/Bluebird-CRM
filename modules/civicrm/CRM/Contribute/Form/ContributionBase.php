@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -304,7 +304,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form
 
                 // ensure that processor has a valid config
                 $this->_paymentObject =&
-                    CRM_Core_Payment::singleton( $this->_mode, 'Contribute', $this->_paymentProcessor, $this );
+                    CRM_Core_Payment::singleton( $this->_mode, $this->_paymentProcessor, $this );
                 $error = $this->_paymentObject->checkConfig( );
                 if ( ! empty( $error ) ) {
                     CRM_Core_Error::fatal( $error );
@@ -533,6 +533,11 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form
         
         $this->_amount   = $this->get( 'amount' );
         
+        //CRM-6907
+        $config = CRM_Core_Config::singleton( );
+        $config->defaultCurrency = CRM_Utils_Array::value( 'currency', 
+                                                           $this->_values, 
+                                                           $config->defaultCurrency );
     }
 
     /** 
@@ -720,6 +725,7 @@ class CRM_Contribute_Form_ContributionBase extends CRM_Core_Form
                     CRM_Core_Session::setStatus("Some of the profile fields cannot be configured for this page.");
                 }
                 
+                $fields = array_diff_assoc( $fields, $this->_fields );
                 $this->assign( $name, $fields );
                 
                 $addCaptcha = false;

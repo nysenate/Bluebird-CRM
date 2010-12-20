@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -46,8 +46,9 @@
   </tr>
 
   {counter start=0 skip=1 print=false}
-  {foreach from=$rows item=row}
-  <tr id='crm-grant_{$row.grant_id}' class="{cycle values="odd-row,even-row"} crm-grant crm-grant_status-{$row.grant_status}">
+  {foreach from=$rows item=row}  
+  <tr id='crm-grant_{$row.grant_id}' class="{cycle values="odd-row,even-row"} crm-grant crm-grant_status-{$row.grant_status_id}">
+
   {if !$single }  
      {if $context eq 'Search' }       
         {assign var=cbName value=$row.checkbox}

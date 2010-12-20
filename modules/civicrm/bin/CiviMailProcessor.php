@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -96,7 +96,7 @@ class CiviMailProcessor {
         require_once 'CRM/Mailing/MailStore.php';
         $store = CRM_Mailing_MailStore::getStore($name);
 
-        require_once 'api/Mailer.php';
+        require_once 'api/v2/Mailer.php';
 
         // process fifty at a time, CRM-4002
         while ($mails = $store->fetchNext(50)) {
@@ -164,42 +164,73 @@ class CiviMailProcessor {
                            }
                         }
                     }
-                    crm_mailer_event_bounce($job, $queue, $hash, $text);
+                    $params = array ( 'job_id'         => $job,
+                                      'event_queue_id' => $queue,
+                                      'hash'           => $hash,
+                                      'body'           => $text
+                                      );
+                    civicrm_mailer_event_bounce( $params );
                     break;
                 case 'c':
                 case 'confirm':
-                    crm_mailer_event_confirm($job, $queue, $hash);
+                    $params = array ( 'job_id'         => $job,
+                                      'event_queue_id' => $queue,
+                                      'hash'           => $hash
+                                      );
+                    civicrm_mailer_event_confirm( $params );
                     break;
                 case 'o':
                 case 'optOut':
-                    crm_mailer_event_domain_unsubscribe($job, $queue, $hash);
+                    $params = array ( 'job_id'         => $job,
+                                      'event_queue_id' => $queue,
+                                      'hash'           => $hash
+                                      );
+                    civicrm_mailer_event_domain_unsubscribe( $params );
                     break;
                 case 'r':
                 case 'reply':
                     // instead of text and HTML parts (4th and 6th params) send the whole email as the last param
-                    crm_mailer_event_reply($job, $queue, $hash, null, $replyTo, null, $mail->generate());
+                    $params = array ( 'job_id'         => $job,
+                                      'event_queue_id' => $queue,
+                                      'hash'           => $hash,
+                                      'bodyTxt'        => null,
+                                      'replyTo'        => $rt,
+                                      'bodyHTML'       => null,
+                                      'fullEmail'      => $mail->generate()
+                                      );
+                    civicrm_mailer_event_reply( $params );
                     break;
                 case 'e':
                 case 're':
                 case 'resubscribe':
-                    crm_mailer_event_resubscribe($job, $queue, $hash);
+                    $params = array ( 'job_id'         => $job,
+                                      'event_queue_id' => $queue,
+                                      'hash'           => $hash
+                                      );
+                    civicrm_mailer_event_resubscribe( $params );
                     break;
                 case 's':
                 case 'subscribe':
-                    crm_mailer_event_subscribe($mail->from->email, $job);
+                    $params = array ( 'email'          => $mail->from->email,
+                                      'group_id'       => $job
+                                      );
+                    civicrm_mailer_event_subscribe( $params );
                     break;
                 case 'u':
                 case 'unsubscribe':
-                    crm_mailer_event_unsubscribe($job, $queue, $hash);
+                    $params = array ( 'job_id'         => $job,
+                                      'event_queue_id' => $queue,
+                                      'hash'           => $hash
+                                      );
+                    civicrm_mailer_event_unsubscribe( $params );
                     break;
                 }
-
+                
                 $store->markProcessed($key);
             }
         }
     }
-
-}
+  }
 
 // bootstrap the environment and run the processor
 session_start();
@@ -222,11 +253,11 @@ $lock = new CRM_Core_Lock('CiviMailProcessor');
 if ($lock->isAcquired()) {
     // try to unset any time limits
     if (!ini_get('safe_mode')) set_time_limit(0);
-
+    
     // cleanup directories with old mail files (if they exist): CRM-4452
     CiviMailProcessor::cleanupDir($config->customFileUploadDir . DIRECTORY_SEPARATOR . 'CiviMail.ignored');
     CiviMailProcessor::cleanupDir($config->customFileUploadDir . DIRECTORY_SEPARATOR . 'CiviMail.processed');
-
+    
     // if there are named sets of settings, use them - otherwise use the default (null)
     $names = isset($_REQUEST['names']) && is_array($_REQUEST['names']) ? $_REQUEST['names'] : array( null );
     

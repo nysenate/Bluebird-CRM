@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -79,7 +79,7 @@ class CRM_Pledge_DAO_Payment extends CRM_Core_DAO
      * @var boolean
      * @static
      */
-    static $_log = false;
+    static $_log = true;
     /**
      *
      * @var int unsigned
@@ -221,9 +221,9 @@ class CRM_Pledge_DAO_Payment extends CRM_Core_DAO
                     'name' => 'currency',
                     'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Currency') ,
-                    'required' => true,
                     'maxlength' => 3,
                     'size' => CRM_Utils_Type::FOUR,
+                    'default' => 'UL',
                 ) ,
                 'pledge_payment_scheduled_date' => array(
                     'name' => 'scheduled_date',
@@ -264,7 +264,7 @@ class CRM_Pledge_DAO_Payment extends CRM_Core_DAO
                     'where' => 'civicrm_pledge_payment.status_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
-                    'export' => true,
+                    'export' => false,
                 ) ,
             );
         }

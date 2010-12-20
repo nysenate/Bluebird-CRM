@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -68,6 +68,7 @@
 {if $priceSet}
     <fieldset id="priceset" class="crm-group priceset-group"><legend>{$event.fee_label}</legend>
         {include file="CRM/Price/Form/PriceSet.tpl"}
+	{include file="CRM/Price/Form/ParticipantCount.tpl"}
     </fieldset>
     {if $form.is_pay_later}
         <div class="crm-section pay_later-section">
@@ -145,8 +146,13 @@
 
     function allowParticipant( ) { 		
 	{/literal}{if $allowGroupOnWaitlist}{literal}
-	    var additionalParticipants = cj('#additional_participants').val();	
-	    allowGroupOnWaitlist( additionalParticipants );
+	    var additionalParticipants = cj('#additional_participants').val();
+	    var pricesetParticipantCount = 0;
+	    {/literal}{if $priceSet}{literal}
+	      pricesetParticipantCount = pPartiCount;
+	    {/literal}{/if}{literal}
+	
+	    allowGroupOnWaitlist( additionalParticipants, pricesetParticipantCount );
 	{/literal}{/if}{literal}
     }
 
@@ -185,20 +191,31 @@
     }
     
     {/literal}{if $allowGroupOnWaitlist}{literal}
-       allowGroupOnWaitlist( 0 );
+       allowGroupOnWaitlist( 0, 0 );
     {/literal}{/if}{literal}
     
-    function allowGroupOnWaitlist( additionalParticipants )
+    function allowGroupOnWaitlist( additionalParticipants, pricesetParticipantCount )
     {	
+      {/literal}{if $isAdditionalParticipants}{literal}
       if ( !additionalParticipants ) {
       	additionalParticipants = cj('#additional_participants').val();
       }
-      if ( additionalParticipants == '' ) {
-           additionalParticipants = 0;
-      }
+      {/literal}{else}{literal}
+        additionalParticipants = 0;
+      {/literal}{/if}{literal}
+
+      additionalParticipants = parseInt( additionalParticipants );
+      if ( ! additionalParticipants ) {
+      	 additionalParticipants = 0;
+      }     
+
       var availableRegistrations = {/literal}'{$availableRegistrations}'{literal};
       var totalParticipants = parseInt( additionalParticipants ) + 1;
-
+      
+      if ( pricesetParticipantCount ) {
+      	// add priceset count if any 
+      	totalParticipants += parseInt(pricesetParticipantCount) - 1;
+      }
       var isrequireApproval = {/literal}'{$requireApprovalMsg}'{literal};
  
       if ( totalParticipants > availableRegistrations ) {

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<script type="text/javascript" src="{$config->resourceBase}packages/OpenFlashChart/js/json/json2.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}packages/OpenFlashChart/js/json/openflashchart.packed.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/OpenFlashChart/js/swfobject.js"></script>
 {literal}
 <script type="text/javascript">

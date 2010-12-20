@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -150,6 +150,8 @@ class CRM_Activity_Form_Search extends CRM_Core_Form
      */ 
     function preProcess( ) 
     { 
+        $this->set( 'searchFormName', 'Search' );
+
         /** 
          * set the button names 
          */   
@@ -287,7 +289,8 @@ class CRM_Activity_Form_Search extends CRM_Core_Form
                                          'isDefault' => true ) 
                                   )    );
     }
-    
+   
+ 
     /**
      * The post processing of the form gets done here.
      *
@@ -322,6 +325,14 @@ class CRM_Activity_Form_Search extends CRM_Core_Form
         if ( isset( $this->_ssID ) && empty( $_POST ) ) {
             // if we are editing / running a saved search and the form has not been posted
             $this->_formValues = CRM_Contact_BAO_SavedSearch::getFormValues( $this->_ssID );
+        }
+        if ( CRM_Utils_Array::value( 'activity_survey_id', $this->_formValues ) ) {
+            require_once ('CRM/Campaign/BAO/Survey.php');
+            // if the user has choosen a survey but not any activity type, we force the activity type
+            $sid = CRM_Utils_Array::value( 'activity_survey_id', $this->_formValues ) ;
+            $activity_type_id = CRM_Core_DAO::getFieldValue( 'CRM_Campaign_DAO_Survey', $sid, 'activity_type_id' );
+
+            $this->_formValues['activity_type_id'][ $activity_type_id ] = 1;
         }
 
         if ( ! CRM_Utils_Array::value( 'activity_test', $this->_formValues ) ) {
@@ -446,6 +457,11 @@ class CRM_Activity_Form_Search extends CRM_Core_Form
             $this->_defaults  ['activity_status_id'] = $status;
         }
 
+        $survey = CRM_Utils_Request::retrieve( 'survey', 'Positive',
+                                              CRM_Core_DAO::$_nullObject );
+        if ( $survey ) {
+            $this->_formValues['activity_survey_id'] = $survey;
+        }
         $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive', CRM_Core_DAO::$_nullObject );
         
         if ( $cid ) {

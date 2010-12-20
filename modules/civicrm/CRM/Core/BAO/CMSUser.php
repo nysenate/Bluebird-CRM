@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -352,8 +352,9 @@ class CRM_Core_BAO_CMSUser
         $isJoomla = ucfirst($config->userFramework) == 'Joomla' ? true : false;
         
         $dao = new CRM_Core_DAO( );
-        $name  = $dao->escape( $params['name'] );
-        $email = $dao->escape( $params['mail'] );
+        $name  = $dao->escape( CRM_Utils_Array::value( 'name', $params ) );
+        $email = $dao->escape( CRM_Utils_Array::value( 'mail', $params ) );
+
 
         if ( $isDrupal ) {
             _user_edit_validate(null, $params );
@@ -380,10 +381,9 @@ class CRM_Core_BAO_CMSUser
             }
         
             $sql = "
-SELECT count(*)
+SELECT name, mail
   FROM {$config->userFrameworkUsersTableName}
- WHERE LOWER(name) = LOWER('$name')
-";
+ WHERE (LOWER(name) = LOWER('$name')) OR (LOWER(mail) = LOWER('$email'))";
         } elseif ( $isJoomla ) {
             //don't allow the special characters and min. username length is two
             //regex \\ to match a single backslash would become '/\\\\/' 
@@ -397,7 +397,7 @@ SELECT username, email
  WHERE (LOWER(username) = LOWER('$name')) OR (LOWER(email) = LOWER('$email'))
 ";
         }
-
+        
         $db_cms = DB::connect($config->userFrameworkDSN);
         if ( DB::isError( $db_cms ) ) { 
             die( "Cannot connect to UF db via $dsn, " . $db_cms->getMessage( ) ); 
@@ -405,10 +405,15 @@ SELECT username, email
         $query = $db_cms->query( $sql );
         $row = $query->fetchRow( );
         if ( !empty( $row ) ) {
-            if ( $row[0] == $name ) {
-                $errors['cms_name'] = ts( 'The username %1 is already taken. Please select another username.', array( 1 => $name) );
-            } else if ( $row[1] == $email ) {
-                $errors['email-Primary'] = ts( 'This email %1 is already registered. Please select another email.', array( 1 => $email) );
+            $dbName  = CRM_Utils_Array::value( 0, $row );
+            $dbEmail = CRM_Utils_Array::value( 1, $row );
+            if ( strtolower( $dbName ) == strtolower( $name ) ) {
+                $errors['cms_name'] = ts( 'The username %1 is already taken. Please select another username.', 
+                                          array( 1 => $name ) );
+            }
+            if ( strtolower( $dbEmail ) == strtolower( $email ) ) {
+                $errors[$emailName] = ts( 'This email %1 is already registered. Please select another email.', 
+                                          array( 1 => $email) );
             }
         }
     }

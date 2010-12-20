@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -187,7 +187,7 @@
                                 {foreach from=$website item=item}
                                     {if $item.url}
                                     <tr>
-                                        <td class="label">{$item.website_type}</td>
+                                        <td class="label">{$item.website_type} {ts}Website{/ts}</td>
                                         <td><a href="{$item.url}" target="_blank">{$item.url}</a></td>
                                         <td></td>
                                     </tr>
@@ -250,11 +250,11 @@
                                             <br /><a href="{crmURL p='civicrm/contact/map' q="reset=1&cid=`$contactId`&lid=`$add.location_type_id`"}" title="{ts 1='&#123;$add.location_type&#125;'}Map %1 Address{/ts}"><span class="geotag">{ts}Map{/ts}</span></a>
                                         {/if}</td>
                                     <td>
-                                        {if $householdName and $locationIndex eq 1}
-                                        <strong>{ts}Household Address:{/ts}</strong><br />
-                                        <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$mail_to_household_id`"}">{$householdName}</a><br />
-                                        {/if}
-                                        {$add.display|nl2br}
+                                        {if $sharedAddresses.$locationIndex.shared_address_display.name}
+                                             <strong>{ts}Shared with:{/ts}</strong><br />
+                                             {$sharedAddresses.$locationIndex.shared_address_display.name}<br />
+                                         {/if}
+                                         {$add.display|nl2br}
                                     </td>
                                 </tr>
                             </table>
@@ -430,7 +430,6 @@ function showHideSignature( blockId ) {
 
 		buttons: { 
 			"Done": function() { 
-				cj(this).dialog("close"); 
 				cj(this).dialog("destroy"); 
 			} 
 		} 

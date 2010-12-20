@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -45,17 +45,17 @@
         {include file="CRM/common/formButtons.tpl" location="bottom"}
     </div>
     <table class="crm-info-panel">
-        <tr><td class="label">{ts}Member{/ts}</td><td class="bold"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contact_id&context=$context"}" title="{ts}View contact summary{/ts}">{$displayName}&nbsp;</td></tr>
+        <tr><td class="label">{ts}Member{/ts}</td><td class="bold"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contact_id&context=$context"}" title="{ts}View contact summary{/ts}">{$displayName}</td></tr>
         {if $owner_display_name}
             <tr><td class="label">{ts}By Relationship{/ts}</td><td>{$relationship}&nbsp;&nbsp;<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$owner_contact_id&context=$context"}" title="{ts}View primary member contact summary{/ts}">{$owner_display_name}</a>&nbsp;</td></tr>
         {/if}
-        <tr><td class="label">{ts}Membership Type{/ts}</td><td>{$membership_type}&nbsp;</td></tr>
-        <tr><td class="label">{ts}Status{/ts}</td><td>{$status}&nbsp;</td></tr>
-        <tr><td class="label">{ts}Source{/ts}</td><td>{$source}&nbsp;</td></tr>
-        <tr><td class="label">{ts}Join date{/ts}</td><td>{$join_date|crmDate}&nbsp;</td></tr>
-        <tr><td class="label">{ts}Start date{/ts}</td><td>{$start_date|crmDate}&nbsp;</td></tr>
-        <tr><td class="label">{ts}End date{/ts}</td><td>{$end_date|crmDate}&nbsp;</td></tr>
-        <tr><td class="label">{ts}Reminder date{/ts}</td><td>{$reminder_date|crmDate}&nbsp;</td></tr>
+        <tr><td class="label">{ts}Membership Type{/ts}</td><td>{$membership_type}</td></tr>
+        <tr><td class="label">{ts}Status{/ts}</td><td>{$status}</td></tr>
+        <tr><td class="label">{ts}Source{/ts}</td><td>{$source}</td></tr>
+        <tr><td class="label">{ts}Join date{/ts}</td><td>{$join_date|crmDate}</td></tr>
+        <tr><td class="label">{ts}Start date{/ts}</td><td>{$start_date|crmDate}</td></tr>
+        <tr><td class="label">{ts}End date{/ts}</td><td>{$end_date|crmDate}</td></tr>
+        <tr><td class="label">{ts}Reminder date{/ts}</td><td>{$reminder_date|crmDate}</td></tr>
     </table>
 
     {include file="CRM/Custom/Page/CustomDataView.tpl"}

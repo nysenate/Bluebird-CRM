@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -161,51 +161,102 @@ class CRM_Mailing_Selector_Event    extends CRM_Core_Selector_Base
         require_once 'CRM/Mailing/BAO/Mailing.php';
         $mailing = CRM_Mailing_BAO_Mailing::getTableName();
 
+        require_once 'CRM/Contact/BAO/Contact.php';
+        $contact    = CRM_Contact_BAO_Contact::getTableName();
+
+        require_once 'CRM/Core/BAO/Email.php';
+        $email      = CRM_Core_BAO_Email::getTableName();
+
         require_once 'CRM/Mailing/BAO/Job.php';
         $job = CRM_Mailing_BAO_Job::getTableName();
         if ( ! isset( $this->_columnHeaders ) ) {
+                 
             $this->_columnHeaders = array( 
                 array(
-                    'name'  => ts('Contact'),
+                    'name'      => ts('Contact'),
+                    'sort'      => $contact.'.sort_name',
+                    'direction' => CRM_Utils_Sort::ASCENDING
                 ), 
                 array(
-                    'name' => ts('Email Address'),
+                    'name'      => ts('Email Address'),
+                    'sort'      => $email.'.email',
+                    'direction' => CRM_Utils_Sort::DONTCARE,
+
                 ), 
             );
-            if ($this->_event_type == 'bounce') {
-                $this->_columnHeaders = array_merge($this->_columnHeaders, array(
-                    array(
-                        'name'  => ts('Bounce Type'),
-                    ),
-                    array(
-                        'name'  => ts('Bounce Reason'),
-                    ),
-                ));
-            } elseif ($this->_event_type == 'unsubscribe') {
-                $this->_columnHeaders = array_merge($this->_columnHeaders, array(
-                    array(
-                        'name'  => ts('Opt-Out'),
-                    ),
-                ));
-            } elseif ($this->_event_type == 'click') {
-                $this->_columnHeaders = array_merge($this->_columnHeaders, array(
-                    array(
-                        'name'  => ts('URL'),
-                    ),
-                ));
-            } elseif ($this->_event_type == 'forward') {
+
+            switch( $this->_event_type ) {
+            case 'queue':
+                $dateSort = $job.'.start_date';
+                break;
+
+            case 'delivered':
+                require_once 'CRM/Mailing/Event/BAO/Delivered.php';
+                $dateSort = CRM_Mailing_Event_BAO_Delivered::getTableName().'.time_stamp';
+                break;
+                
+            case 'opened':
+                require_once 'CRM/Mailing/Event/BAO/Opened.php';
+                $dateSort = CRM_Mailing_Event_BAO_Opened::getTableName().'.time_stamp';
+                break;
+                
+            case 'bounce':
+                require_once 'CRM/Mailing/Event/BAO/Bounce.php';
+                $dateSort = CRM_Mailing_Event_BAO_Bounce::getTableName().'.time_stamp';
+                $this->_columnHeaders = array_merge($this->_columnHeaders, 
+                                                    array( array(
+                                                                 'name'  => ts('Bounce Type'),
+                                                                 ),
+                                                           array(
+                                                                 'name'  => ts('Bounce Reason'),
+                                                                 ),
+                                                           ));
+                break;
+                
+            case 'forward':
+                require_once 'CRM/Mailing/Event/BAO/Forward.php';
+                $dateSort = CRM_Mailing_Event_BAO_Forward::getTableName().'.time_stamp';
+                
                 $this->_columnHeaders = array_merge($this->_columnHeaders,
-                array(
-                    array(
-                        'name'  => ts('Forwarded Email'),
-                    ),
-                ));
+                                                    array( array(
+                                                                 'name'  => ts('Forwarded Email'),
+                                                                 ),
+                                                           ));
+                break;
+                
+            case 'reply':
+                require_once 'CRM/Mailing/Event/BAO/Reply.php';
+                $dateSort = CRM_Mailing_Event_BAO_Reply::getTableName().'.time_stamp';
+                break;
+                
+            case 'unsubscribe':
+                require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
+                $dateSort = CRM_Mailing_Event_BAO_Unsubscribe::getTableName().'.time_stamp';
+                $this->_columnHeaders = array_merge($this->_columnHeaders, array( array(
+                                                                                        'name'  => ts('Opt-Out'),
+                                                                                    ),
+                                                                                  ));
+                break;
+                
+            case 'click':
+                require_once 'CRM/Mailing/Event/BAO/TrackableURLOpen.php';
+                $dateSort = CRM_Mailing_Event_BAO_TrackableURLOpen::getTableName().'.time_stamp';
+                $this->_columnHeaders = array_merge($this->_columnHeaders, array( array(
+                                                                                        'name'  => ts('URL'),
+                                                                                        ),
+                                                                                  ));
+                break;
+                
+            default:
+                return 0;
             }
 
             $this->_columnHeaders = array_merge($this->_columnHeaders,
                 array(
                     array(
-                        'name' => ts('Date'),
+                        'name'      => ts('Date'),
+                        'sort'      => $dateSort,
+                        'direction' => CRM_Utils_Sort::DESCENDING,
                     ), 
                 ));
         }
@@ -261,7 +312,7 @@ class CRM_Mailing_Selector_Event    extends CRM_Core_Selector_Base
             return $event->getTotalCount(   $this->_mailing_id,
                                             $this->_job_id,
                                             $this->_is_distinct );
-
+            break;
         case 'reply':
             require_once 'CRM/Mailing/Event/BAO/Reply.php';
             $event = new CRM_Mailing_Event_BAO_Reply();
@@ -390,7 +441,7 @@ class CRM_Mailing_Selector_Event    extends CRM_Core_Selector_Base
         if (empty($events)) {
             $events = array(
                 'queue'     => ts('Intended Recipients'),
-                'delivered' => ts('Succesful Deliveries'),
+                'delivered' => ts('Successful Deliveries'),
                 'bounce'    => ts('Bounces'),
                 'forward'   => ts('Forwards'),
                 'reply'     => $this->_is_distinct 

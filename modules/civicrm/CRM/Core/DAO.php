@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -249,7 +249,8 @@ class CRM_Core_DAO extends DB_DataObject
      */
     function &fields( ) 
     {
-        return null;
+        $result = null;
+        return $result;
     }
 
     function table() 
@@ -876,7 +877,7 @@ FROM   civicrm_domain
     }
 
     /**
-     * execute a query and get the singleton result
+     * execute a query and get the single result
      *
      * @param string $query query to be executed 
      * 

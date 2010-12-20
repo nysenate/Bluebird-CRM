@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -55,8 +55,10 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
         $q =& CRM_Mailing_Event_BAO_Queue::verify($params['job_id'],
                                                   $params['event_queue_id'],
                                                   $params['hash']);
+        $success = null;
+
         if (! $q) {
-            return null;
+            return $success;
         }
 
         require_once 'CRM/Core/Transaction.php';
@@ -74,6 +76,7 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
              
         $bounce->copyValues($params);
         $bounce->save();
+        $success = true;
 
         $bounceTable    = CRM_Mailing_Event_BAO_Bounce::getTableName();
         $bounceType     = CRM_Mailing_DAO_BounceType::getTableName();
@@ -111,6 +114,8 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
             }
         }
         $transaction->commit( );
+
+        return $success;
     }
 
     /**
@@ -223,8 +228,16 @@ class CRM_Mailing_Event_BAO_Bounce extends CRM_Mailing_Event_DAO_Bounce {
             $query .= " GROUP BY $queue.id ";
         }
 
-        $query .= " ORDER BY $contact.sort_name, $bounce.time_stamp DESC ";
-
+        $orderBy = "sort_name ASC, {$bounce}.time_stamp DESC";
+        if ($sort) {
+            if ( is_string( $sort ) ) {
+                $orderBy = $sort;
+            } else {
+                $orderBy = trim( $sort->orderBy() );
+            }
+        }
+        $query .= " ORDER BY {$orderBy} ";
+        
         if ($offset||$rowCount) {//Added "||$rowCount" to avoid displaying all records on first page
             $query .= ' LIMIT ' 
                     . CRM_Utils_Type::escape($offset, 'Integer') . ', ' 

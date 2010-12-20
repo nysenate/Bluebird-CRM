@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -51,6 +51,7 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form
     public function preProcess( ) 
     {
         require_once 'CRM/Event/BAO/Participant.php';
+        require_once 'CRM/Core/DAO.php';
         $values = $ids = array( );
         $participantID = CRM_Utils_Request::retrieve( 'id', 'Positive', $this, true );
         $contactID     = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true ); 
@@ -90,28 +91,49 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form
         }
         
         $values[$participantID]['totalAmount'] = CRM_Utils_Array::value( 'fee_amount', $values[$participantID] );
+  
+        // Get registered_by contact ID and display_name if participant was registered by someone else (CRM-4859)
+        if ( CRM_Utils_Array::value( 'participant_registered_by_id', $values[$participantID] ) ) {
+            $values[$participantID]['registered_by_contact_id'] = CRM_Core_DAO::getFieldValue( "CRM_Event_DAO_Participant", 
+                                                        $values[$participantID]['participant_registered_by_id'],
+                                                        'contact_id', 'id' );
+            require_once 'CRM/Contact/BAO/Contact.php';
+            $values[$participantID]['registered_by_display_name'] = CRM_Contact_BAO_Contact::displayName($values[$participantID]['registered_by_contact_id']);
+            
+        }
+        
+        // Check if this is a primaryParticipant (registered for others) and retrieve additional participants if true  (CRM-4859)
+        if ( CRM_Event_BAO_Participant::isPrimaryParticipant( $participantID ) ){
+            $values[$participantID]['additionalParticipants'] = CRM_Event_BAO_Participant::getAdditionalParticipants( $participantID );
+        }
         
         // get the option value for custom data type 	
         $roleCustomDataTypeID      = CRM_Core_OptionGroup::getValue( 'custom_data_type', 'ParticipantRole', 'name' );
         $eventNameCustomDataTypeID = CRM_Core_OptionGroup::getValue( 'custom_data_type', 'ParticipantEventName', 'name' );
         $eventTypeCustomDataTypeID = CRM_Core_OptionGroup::getValue( 'custom_data_type', 'ParticipantEventType', 'name' );
+        $allRoleIDs = explode( CRM_Core_DAO::VALUE_SEPARATOR,$values[$participantID]['role_id'] );
+        $groupTree  = array( );
+        $finalTree  = array( );
         
-        $roleGroupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID, null, 
-                                                             $values[$participantID]['role_id'], $roleCustomDataTypeID );
-        
-        $eventGroupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID, null, 
-                                                              $values[$participantID]['event_id'], $eventNameCustomDataTypeID );
-        $eventTypeID = CRM_Core_DAO::getFieldValue( "CRM_Event_DAO_Event", 
-                                                    $values[$participantID]['event_id'], 'event_type_id', 'id' );
-        $eventTypeGroupTree =& 
-            CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID, null, 
-                                               $eventTypeID, $eventTypeCustomDataTypeID );
-
-        $groupTree = CRM_Utils_Array::crmArrayMerge( $roleGroupTree, $eventGroupTree );
-        $groupTree = CRM_Utils_Array::crmArrayMerge( $groupTree, $eventTypeGroupTree );
-        $groupTree = CRM_Utils_Array::crmArrayMerge( $groupTree, CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID ) );
-        
-        CRM_Core_BAO_CustomGroup::buildCustomDataView( $this, $groupTree );
+        foreach ( $allRoleIDs as $k => $v ) {
+            $roleGroupTree      =& CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID, null, $v, $roleCustomDataTypeID );
+            $eventGroupTree     =& CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID, null, 
+                                                                      $values[$participantID]['event_id'], $eventNameCustomDataTypeID );
+            $eventTypeID        = CRM_Core_DAO::getFieldValue( "CRM_Event_DAO_Event", $values[$participantID]['event_id'], 'event_type_id', 'id' );
+            $eventTypeGroupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID, null, $eventTypeID, $eventTypeCustomDataTypeID );
+            $groupTree = CRM_Utils_Array::crmArrayMerge( $roleGroupTree, $eventGroupTree );
+            $groupTree = CRM_Utils_Array::crmArrayMerge( $groupTree, $eventTypeGroupTree );
+            $groupTree = CRM_Utils_Array::crmArrayMerge( $groupTree, CRM_Core_BAO_CustomGroup::getTree( 'Participant', $this, $participantID ) );
+            foreach ( $groupTree as $treeId => $trees ) {
+                $finalTree[$treeId] = $trees;
+            }
+        }
+        CRM_Core_BAO_CustomGroup::buildCustomDataView( $this, $finalTree );
+        $eventTitle  = CRM_Core_DAO::getFieldValue( 'CRM_Event_DAO_Event', $values[$participantID]['event_id'], 'title' );
+        //CRM-7150, show event name on participant view even if the event is disabled
+        if ( ! CRM_Utils_Array::value( 'event', $values[$participantID] ) ) {
+            $values[$participantID]['event'] = $eventTitle;
+        }
         $this->assign( $values[$participantID] );
         
         // add viewed participant to recent items list
@@ -120,8 +142,17 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form
         $url = CRM_Utils_System::url( 'civicrm/contact/view/participant', 
                                       "action=view&reset=1&id={$values[$participantID]['id']}&cid={$values[$participantID]['contact_id']}&context=home" );
         
+        $recentOther = array( );
+        if ( CRM_Core_Permission::check('edit event participants') ) {
+            $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/participant', 
+                                                             "action=update&reset=1&id={$values[$participantID]['id']}&cid={$values[$participantID]['contact_id']}&context=home" );
+        } 
+        if ( CRM_Core_Permission::check('delete in CiviEvent') ) {
+            $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/participant', 
+                                                               "action=delete&reset=1&id={$values[$participantID]['id']}&cid={$values[$participantID]['contact_id']}&context=home" );
+        }
+
         $participantRoles = CRM_Event_PseudoConstant::participantRole();
-        $eventTitle  = CRM_Core_DAO::getFieldValue( 'CRM_Event_DAO_Event', $values[$participantID]['event_id'], 'title' );
         $displayName = CRM_Contact_BAO_Contact::displayName( $contactID );
         
         $participantCount = array();
@@ -131,19 +162,29 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form
             }
         }
         if ( $participantCount ) {
-            $this->assign( 'participantCount', $participantCount );
+            $this->assign( 'pricesetFieldsCount', $participantCount );
         }
         $this->assign( 'displayName', $displayName );
          
         $title = $displayName . ' (' . $participantRoles[$values[$participantID]['role_id']] . ' - ' . $eventTitle . ')' ;
         
+        require_once 'CRM/Core/DAO.php';
+        $sep = CRM_Core_DAO::VALUE_SEPARATOR;
+        $viewRoles = array( );
+        foreach ( explode( $sep, $values[$participantID]['role_id'] ) as $k => $v ) {
+            $viewRoles[] = $participantRoles[$v];
+        }
+        $values[$participantID]['role_id'] = implode( ', ', $viewRoles );
+        $this->assign( 'role', $values[$participantID]['role_id'] );
         // add Participant to Recent Items
         CRM_Utils_Recent::add( $title,
                                $url,
                                $values[$participantID]['id'],
                                'Participant',
                                $values[$participantID]['contact_id'],
-                               null );
+                               null,
+                               $recentOther
+                               );
     }
 
     /**

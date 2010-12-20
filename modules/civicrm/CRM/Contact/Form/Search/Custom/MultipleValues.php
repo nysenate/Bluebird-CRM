@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,6 +52,10 @@ class CRM_Contact_Form_Search_Custom_MultipleValues
                                                                CRM_Core_DAO::$_nullObject,
                                                                null, -1 );
 
+        $this->_group = CRM_Utils_Array::value( 'group', $this->_formValues ); 
+        
+        $this->_tag = CRM_Utils_Array::value( 'tag', $this->_formValues ); 
+
         $this->_columns = array( ts('Contact Id')   => 'contact_id',
                                  ts('Contact Type') => 'contact_type',
                                  ts('Name')         => 'sort_name' );
@@ -93,10 +97,20 @@ class CRM_Contact_Form_Search_Custom_MultipleValues
          */
         $this->setTitle('Multiple Value Custom Group Search and Export');
 
-        $form->add( 'text',
-                    'sort_name',
-                    ts( 'Contact Name' ),
-                    true );
+        $form->add( 'text', 'sort_name', ts( 'Contact Name' ), true );
+
+        // add select for contact type
+        $contactTypes = array( '' => ts('- any contact type -') ) + CRM_Contact_BAO_ContactType::getSelectElements( );
+        $form->add('select', 'contact_type', ts('Find...'), $contactTypes );
+
+        // add select for groups
+        $group = array('' => ts('- any group -')) + CRM_Core_PseudoConstant::group( );
+        $form->addElement('select', 'group', ts('in'), $group);
+
+        // add select for tags
+        $tag = array('' => ts('- any tag -')) + CRM_Core_PseudoConstant::tag( );
+        $form->addElement('select', 'tag', ts('Tagged'), $tag);
+
         if ( empty( $this->_groupTree ) ) {
             CRM_Core_Error::statusBounce( ts("Atleast one Custom Group must be present, for Custom Group search."),
                                           CRM_Utils_System::url( 'civicrm/contact/search/custom/list',
@@ -145,14 +159,27 @@ contact_a.sort_name    as sort_name,
     }
     
     function from( ) {
-        $from = "FROM      civicrm_contact contact_a";
+        $from = "FROM civicrm_contact contact_a";
         $customFrom = array( );
+        // lets do an INNER JOIN so we get only relevant values rather than all values
         if ( !empty( $this->_tables ) ) {
             foreach ( $this->_tables as $tableName => $fields ) {
-                $customFrom[ ] = " LEFT JOIN $tableName ON {$tableName}.entity_id = contact_a.id ";
+                $customFrom[ ] = " INNER JOIN $tableName ON {$tableName}.entity_id = contact_a.id ";
             }
-            return $from . implode( ' ', $customFrom );
+            $from .= implode( ' ', $customFrom );
         }
+		
+        // This prevents duplicate rows when contacts have more than one tag any you select "any tag"
+        if ( $this->_tag ) {
+            $from .= " LEFT JOIN civicrm_entity_tag t ON (t.entity_table='civicrm_contact' 
+                       AND contact_a.id = t.entity_id)";
+        }
+		
+        if ( $this->_group ) {
+            $from .= " LEFT JOIN civicrm_group_contact cgc ON ( cgc.contact_id = contact_a.id 
+                       AND cgc.status = 'Added')";
+        }
+		
         return $from;
     }
 
@@ -170,7 +197,26 @@ contact_a.sort_name    as sort_name,
             $clause[] = "contact_a.sort_name LIKE %{$count}";
             $count++;
         }
-
+		
+        $contact_type = CRM_Utils_Array::value( 'contact_type',
+                                          		$this->_formValues );
+        if ( $contact_type != null ) {
+            $contactType = explode( CRM_Core_DAO::VALUE_SEPARATOR, $contact_type );
+            if ( count( $contactType ) > 1 ) {
+                $clause[] = "contact_a.contact_type = '$contactType[0]' AND contact_a.contact_sub_type = '$contactType[1]'";
+            } else {
+                $clause[] = "contact_a.contact_type = '$contactType[0]'";
+            }
+        }
+		
+        if ( $this->_tag ) {
+            $clause[] = "t.tag_id = {$this->_tag}";
+        }
+		
+        if ( $this->_group ) {
+            $clause[] = "cgc.group_id = {$this->_group}";
+        }
+		
         $where = '( 1 )';
         if ( ! empty( $clause ) ) {
             $where .= ' AND ' . implode( ' AND ', $clause );

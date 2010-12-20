@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,7 +33,7 @@
  * @subpackage API_CustomGroup
  *
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: CustomGroup.php 28934 2010-07-28 18:44:12Z mover $
+ * @version $Id: CustomGroup.php 30758 2010-11-15 15:09:56Z neha $
  */
 
 /**
@@ -171,11 +171,11 @@ function civicrm_custom_field_create( $params )
         return civicrm_create_error("params is not an array ");
     }
     
-    if ( !( CRM_Utils_Array::value('custom_group_id', $params ) ) ) {                        
+    if ( ! CRM_Utils_Array::value( 'custom_group_id', $params ) ) {                        
         return civicrm_create_error("Missing Required field :custom_group_id");
     }
     
-    if (!($params['label']) ) {                                     
+    if ( !( CRM_Utils_Array::value( 'label', $params ) ) ) {                                     
         return civicrm_create_error("Missing Required field :label");
     }
     

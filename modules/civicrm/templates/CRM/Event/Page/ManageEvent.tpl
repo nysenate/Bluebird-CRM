@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -24,18 +24,18 @@
  +--------------------------------------------------------------------+
 *}
 {capture assign=newEventURL}{crmURL p='civicrm/event/add' q="action=add&reset=1"}{/capture}
-{capture assign=icalFile}{crmURL p='civicrm/event/ical' q="reset=1"}{/capture}
-{capture assign=icalFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1"}{/capture}
-{capture assign=rssFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1&rss=1"}{/capture}
-{capture assign=htmlFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1&html=1"}{/capture}
+{capture assign=icalFile}{crmURL p='civicrm/event/ical' q="reset=1" fe=1}{/capture}
+{capture assign=icalFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1" fe=1}{/capture}
+{capture assign=rssFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1&rss=1" fe=1}{/capture}
+{capture assign=htmlFeed}{crmURL p='civicrm/event/ical' q="reset=1&page=1&html=1" fe=1}{/capture}
 <div class="float-right">
-    <a href="{$htmlFeed}" title="{ts}HTML listing of current and future public events.{/ts}">
+    <a href="{$htmlFeed}" target="_blank" title="{ts}HTML listing of current and future public events.{/ts}">
     <img src="{$config->resourceBase}i/applications-internet.png" alt="{ts}HTML listing of current and future public events.{/ts}" /></a>&nbsp;&nbsp;
-    <a href="{$rssFeed}" title="{ts}Get RSS 2.0 feed for current and future public events.{/ts}">
+    <a href="{$rssFeed}" target="_blank" title="{ts}Get RSS 2.0 feed for current and future public events.{/ts}">
     <img src="{$config->resourceBase}i/feed-icon.png" alt="{ts}Get RSS 2.0 feed for current and future public events.{/ts}" /></a>&nbsp;&nbsp;
     <a href="{$icalFile}" title="{ts}Download iCalendar file for current and future public events.{/ts}">
     <img src="{$config->resourceBase}i/office-calendar.png" alt="{ts}Download iCalendar file for current and future public events.{/ts}" /></a>&nbsp;&nbsp;
-    <a href="{$icalFeed}" title="{ts}Get iCalendar feed for current and future public events.{/ts}">
+    <a href="{$icalFeed}" target="_blank" title="{ts}Get iCalendar feed for current and future public events.{/ts}">
     <img src="{$config->resourceBase}i/ical_feed.gif" alt="{ts}Get iCalendar feed for current and future public events.{/ts}" /></a>&nbsp;&nbsp;&nbsp;{help id='icalendar'}
 </div>
 {include file="CRM/Event/Form/SearchEvent.tpl"}

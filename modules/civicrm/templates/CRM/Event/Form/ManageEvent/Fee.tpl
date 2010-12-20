@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -49,6 +49,14 @@
     </table>
 
     <div id="event-fees">
+        <table id="currency" class="form-layout">
+             <tr class='crm-event-manage-fee-form-block-currency'>
+                <td class="label">{$form.currency.label}</td>
+	        <td>{$form.currency.html}<br />
+	          <span class="description">{ts}Select the currency to be used for event registration.{/ts}</span>
+	        </td>
+             </tr>
+        </table>
       {if $paymentProcessor}
          <table id="paymentProcessor" class="form-layout">
              <tr class="crm-event-manage-fee-form-block-payment_processor_id">            

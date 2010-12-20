@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -67,10 +67,13 @@ class CRM_Mailing_Event_BAO_Subscribe extends CRM_Mailing_Event_DAO_Subscribe {
         // CRM-1797 - allow subscription only to public groups
         $params = array('id' => (int) $group_id);
         $defaults = array();
+        $contact_id = null;
+        $success    = null;
+
         require_once 'CRM/Contact/BAO/Group.php';
         $bao = CRM_Contact_BAO_Group::retrieve($params, $defaults);
-        if (substr($bao->visibility, 0, 6) != 'Public') {
-            return null;
+        if ( $bao && substr($bao->visibility, 0, 6) != 'Public') {
+            return $success;
         }
         
         $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
@@ -114,14 +117,14 @@ LEFT JOIN civicrm_email      ON contact_a.id = civicrm_email.contact_id
             $formatted['onDuplicate'] = CRM_Import_Parser::DUPLICATE_SKIP;
             $formatted['fixAddress'] = true;
             $contact =& civicrm_contact_format_create($formatted);
-            if (civicrm_error($contact, CRM_Core_Error)) {
-                return null;
+            if (civicrm_error($contact, 'CRM_Core_Error')) {
+                return $success;
             }
             $contact_id = $contact['id'];
         } else if ( ! is_numeric( $contact_id ) &&
                     (int ) $contact_id > 0 ) {
             // make sure contact_id is numeric
-            return null;
+            return $success;
         }
 
         require_once 'CRM/Core/BAO/Email.php';
@@ -142,7 +145,7 @@ SELECT     civicrm_email.id as email_id
 
         if ( ! $dao->fetch( ) ) {
             CRM_Core_Error::fatal( 'Please file an issue with the backtrace' );
-            return null;
+            return $success;
         }
 
         $se = new CRM_Mailing_Event_BAO_Subscribe();
@@ -174,14 +177,15 @@ SELECT     civicrm_email.id as email_id
      * @static
      */
     public static function &verify($contact_id, $subscribe_id, $hash) {
+        $success = null;
         $se = new CRM_Mailing_Event_BAO_Subscribe();
         $se->contact_id = $contact_id;
         $se->id = $subscribe_id;
         $se->hash = $hash;
         if ($se->find(true)) {
-            return $se;
+            $success = $se;
         }
-        return null;
+        return $success;
     }
 
     /**

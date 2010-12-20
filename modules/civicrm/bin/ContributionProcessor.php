@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -165,6 +165,21 @@ class CiviContributeProcessor {
                     // We don't/can't process subscription notifications, which appear
                     // to be identified by transaction ids beginning with S-
                     if ( substr( $value, 0, 2 ) == 'S-' )  {
+                        continue;
+                    }
+
+                    // Before we bother making a remote API call to PayPal to lookup
+                    // details about a transaction, let's make sure that it doesn't
+                    // already exist in the database.
+                    require_once 'CRM/Contribute/DAO/Contribution.php';
+                    $dao = new CRM_Contribute_DAO_Contribution;
+                    $dao->trxn_id = $value;
+                    if ( $dao->find(true) ) {
+                        preg_match('/(\d+)$/', $name, $matches);
+                        $seq = $matches[1];
+                        $email = $result["l_email{$seq}"];
+                        $amt = $result["l_amt{$seq}"];
+                        CRM_Core_Error::debug_log_message( "Skipped (already recorded) - $email, $amt, $value ..<p>", true );
                         continue;
                     }
                     

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -505,8 +505,9 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             //if relationship type change and previously it was
             //employer / emplyee relationship with current employer
             //than clear the current employer. CRM-3235.
-            if ( CRM_Utils_Array::value( 'current_employee_id', $this->_values ) &&
-                 $relationshipTypeId != $this->_values['relationship_type_id'] ) {
+            if ( ( CRM_Utils_Array::value( 'current_employee_id', $this->_values ) &&
+                  $relationshipTypeId != $this->_values['relationship_type_id'] ) || 
+                 ( ! $params['is_active'] ) ) {
                 require_once 'CRM/Contact/BAO/Contact/Utils.php';
                 CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer( $this->_values['current_employee_id'] );
             }
@@ -576,7 +577,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
         
         
         // Membership for related contacts CRM-1657
-        if ( CRM_Core_Permission::access( 'CiviMember' ) ) {
+        if ( CRM_Core_Permission::access( 'CiviMember' ) && ( !$duplicate ) ) {
             CRM_Contact_BAO_Relationship::relatedMemberships( $this->_contactId, 
                                                               $params, $ids, 
                                                               $this->_action );
