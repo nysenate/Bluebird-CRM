@@ -169,6 +169,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		
 		//Construct list of tags, comma-separated
 		//CRM_Core_Error::debug($form);
+		$contactTagsList = array();
 		$contactTags = CRM_Core_BAO_EntityTag::getContactTags( $contactId );
         if ( !empty( $contactTags ) ) {
             $contactTagsList = implode( ', ', $contactTags );
@@ -176,6 +177,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$form->assign( 'contactTagsList', $contactTagsList );
 		
 		//Construct list of issue codes, comma-separated
+		$contactIssueCode_list = array();
+		$contactIssueCode_item = array();
 		$contactIssueCodes = CRM_Core_BAO_EntityTag::getChildEntityTags( 291, $contactId );
         foreach ( $contactIssueCodes as $contactIssueCode ) {
 			$contactIssueCode_item[] = $contactIssueCode['name'];
@@ -184,6 +187,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$form->assign( 'contactIssueCode_list', $contactIssueCode_list );
 		
 		//Construct list of Legislative Positions
+		$legpos_list = array();
+		$legpos_description = array();
 		$legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails( 292, $contactId );
 		//CRM_Core_Error::debug($legpositions);
 		foreach ( $legpositions as $legposition ) {
