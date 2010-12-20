@@ -248,7 +248,8 @@ class CRM_Admin_Page_AJAX
         		
         		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 				$content = curl_exec($ch);
-		
+				
+				$json = array();
 		 		$json = json_decode($content, true);
        
 				curl_close($ch);
