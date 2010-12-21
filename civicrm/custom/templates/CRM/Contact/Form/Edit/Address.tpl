@@ -37,16 +37,17 @@
 {/if}
 
  <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock crm-edit-address-block" {/if}>
-	{if $blockId gt 1}<fieldset><legend>Additional Address</legend>{/if}
+  {if $blockId gt 1}<fieldset><legend>{ts}Additional Address{/ts}</legend>{/if}
 	{if $blockId gt 1 && $form.address.$blockId.location_type_id.value.0 != 6}
         <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;" class="delete_block">
         {ts}Delete this address{/ts}</a>
     {/if}
   <table class="form-layout-compressed crm-edit-address-form">
-    {if $masterAddress.$blockId gt 0 }
+     {if $masterAddress.$blockId gt 0 }
         <tr><td><div class="message status"><div class="icon inform-icon"></div>&nbsp; {ts 1=$masterAddress.$blockId}This address is shared with %1 contact record(s). Modifying this address will automatically update the shared address for these contacts.{/ts}</div></td></tr>
-    {/if}
-	<tr><td>  
+     {/if}
+     <tr>
+	<td>  
 	<table class="form-layout-compressed">
 	<tr>
 	 {if $className eq 'CRM_Contact_Form_Contact'}
@@ -56,7 +57,7 @@
            <span class="crm-address-element is_primary-address-element">{$form.address.$blockId.is_primary.html}</span>
            {*<span class="crm-address-element is_billing-address-element">{$form.address.$blockId.is_billing.html}</span>*}
         </td>
-	 {/if}
+	 {*/if*}
      </tr>
      <script type="text/javascript">
      {literal}
@@ -192,17 +193,20 @@
 
      </td></tr>
   </table>
-</td>
-<td>{*NYSS end*}
+</td>{*NYSS end left col*}
+<td>
   <div class="crm-edit-address-custom_data"> 
   {include file="CRM/Contact/Form/Edit/Address/CustomData.tpl"}
   </div> 
 
-  {if $className eq 'CRM_Contact_Form_Contact'}
-      <div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
-          <a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}Another Address{/ts}</span></a>
-      </div>
-  {/if}
+</td>
+</tr></table>
+
+{if $className eq 'CRM_Contact_Form_Contact'}
+	<div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
+    	<a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}Another Address{/ts}</span></a>
+    </div>
+{/if}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
 </div>
