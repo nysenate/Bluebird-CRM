@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,6 +30,9 @@
     {if $action eq 4}
         <div class="crm-block crm-content-block crm-activity-view-block">
     {else}
+        {if $context NEQ 'standalone'}
+            <h3>{if $action eq 1 or $action eq 1024}{ts 1=$activityTypeName}New %1{/ts}{elseif $action eq 8}{ts 1=$activityTypeName}Delete %1{/ts}{else}{ts 1=$activityTypeName}Edit %1{/ts}{/if}</h3> 
+        {/if}
         <div class="crm-block crm-form-block crm-activity-form-block">
     {/if}
     {* added onload javascript for source contact*}
@@ -120,6 +123,13 @@
                 </tr>
              {/if}
 	     {/if}
+	     
+	     {if $surveyActivity} 
+               <tr class="crm-activity-form-block-survey">
+                 <td class="label">{ts}Survey Title{/ts}</td><td class="view-value">{$surveyTitle}</td>
+               </tr>
+	     {/if}
+	     
              <tr class="crm-activity-form-block-source_contact_id">
                 <td class="label">{$form.source_contact_id.label}</td>
                 <td class="view-value">
@@ -146,13 +156,13 @@
              
              <tr class="crm-activity-form-block-assignee_contact_id">
              {if $action eq 4}
-                <td class="label">{ts}Assigned To {/ts}</td><td class="view-value">
+                <td class="label">{ts}Assigned To{/ts}</td><td class="view-value">
 			    {foreach from=$assignee_contact key=id item=name}
 			        <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$id"}">{$name}</a>;&nbsp;
 			    {/foreach}
                 </td>
              {else}
-                <td class="label">{ts}Assigned To {/ts}</td>
+                <td class="label">{ts}Assigned To{/ts}</td>
                 <td>{$form.assignee_contact_id.html}
                    {edit}<span class="description">{ts}You can optionally assign this activity to someone. Assigned activities will appear in their Activities listing at CiviCRM Home.{/ts}
                            {if $config->activityAssigneeNotification}
@@ -209,7 +219,11 @@
              <tr class="crm-activity-form-block-priority_id">
                 <td class="label">{$form.priority_id.label}</td><td class="view-value">{$form.priority_id.html}</td>
              </tr>
-             
+	     {if $surveyActivity } 
+               <tr class="crm-activity-form-block-result">
+                 <td class="label">{$form.result.label}</td><td class="view-value">{$form.result.html}</td>
+               </tr>
+	     {/if}
              {if $form.tag.html}
                  <tr class="crm-activity-form-block-tag">
                     <td class="label">{$form.tag.label}</td>
@@ -321,16 +335,11 @@
         <script type="text/javascript">
        	cj(document).ready(function() {
     		{/literal}
-    		buildCustomData( '{$customDataType}' );
-    		{if $customDataSubType}
-    			buildCustomData( '{$customDataType}', {$customDataSubType} );
-    		{else}
-    		    {literal}
-    		    if ( cj("#activity_type_id").val( ) ) {
-    		        buildCustomData( '{/literal}{$customDataType}{literal}', cj("#activity_type_id").val( ) );
-    	        }
-    	        {/literal}
-    		{/if}
+                {if $customDataSubType}
+                    buildCustomData( '{$customDataType}', {$customDataSubType} );
+                {else}
+                    buildCustomData( '{$customDataType}' );
+                {/if}
     		{literal}
     	});
 

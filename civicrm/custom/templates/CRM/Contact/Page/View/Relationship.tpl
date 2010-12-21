@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -66,10 +66,23 @@
             {else}
                 {assign var = "rtype" value = "b_a" }
             {/if*}
-            <tr id="rel_{$rel.id}" class="{cycle values="odd-row,even-row"}">
+            
+            <tr id="rel_{$rel.id}" class="{cycle values="odd-row,even-row"} row-relationship {if $rel.is_permission_a_b eq 1 or $rel.is_permission_b_a eq 1}row-highlight{/if}">
+
             {if $relationshipTabContext}
-                <td><strong><a href="{crmURL p='civicrm/contact/view/rel' q="action=view&reset=1&selectedChild=rel&cid=`$contactId`&id=`$rel.id`&rtype=`$rel.rtype`"}">{$rel.relation}</a></strong><br />
-                <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$rel.cid`"}">{$rel.name}</a></td>
+                <td>{*NYSS*}
+                <strong><a href="{crmURL p='civicrm/contact/view/rel' q="action=view&reset=1&selectedChild=rel&cid=`$contactId`&id=`$rel.id`&rtype=`$rel.rtype`"}">{$rel.relation}</a></strong>
+				{if ($rel.cid eq $rel.contact_id_a and $rel.is_permission_a_b eq 1) OR
+			    	($rel.cid eq $rel.contact_id_b and $rel.is_permission_b_a eq 1) }
+		            <span id="permission-b-a" class="crm-marker permission-relationship"> *</span>
+		        {/if}
+				<br />
+                <a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$rel.cid`"}">{$rel.name}</a>
+				{if ($contactId eq $rel.contact_id_a and $rel.is_permission_a_b eq 1) OR
+			    	($contactId eq $rel.contact_id_b and $rel.is_permission_b_a eq 1) } 
+		    	    <span id="permission-a-b" class="crm-marker permission-relationship"> *</span>
+		        {/if}
+				</td>
             {else}
                 <td><strong>{$rel.relation}</strong><br />
                 {$rel.name}</td>
@@ -80,11 +93,15 @@
                 <td>{$rel.state}</td>
                 <td>{$rel.email}</td>
                 <td>{$rel.phone}</td> 
-                <td>{$rel.action|replace:'xx':$rel.id}</td>
+                <td>{$rel.action|replace:'xx':$rel.id}</td>{*NYSS*}
             </tr>
         {/foreach}
         </table>
         {/strip}
+        </div>
+
+        <div id="permission-legend" class="crm-content-block">
+	     <span class="crm-marker">* </span>{ts}Indicates a permissioned relationship. This contact can be viewed and updated by the other.{/ts}
         </div>
 {/if}
 {* end of code to show current relationships *}

@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -82,7 +82,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
      * @var boolean
      * @static
      */
-    static $_log = false;
+    static $_log = true;
     /**
      * Unique Address ID
      *
@@ -245,6 +245,12 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
      */
     public $name;
     /**
+     * FK to Address ID
+     *
+     * @var int unsigned
+     */
+    public $master_id;
+    /**
      * class constructor
      *
      * @access public
@@ -268,6 +274,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                 'county_id' => 'civicrm_county:id',
                 'state_province_id' => 'civicrm_state_province:id',
                 'country_id' => 'civicrm_country:id',
+                'master_id' => 'civicrm_address:id',
             );
         }
         return self::$_links;
@@ -509,6 +516,17 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                     'headerPattern' => '/^location|(l(ocation\s)?name)$/i',
                     'dataPattern' => '/^\w+$/',
                     'export' => true,
+                ) ,
+                'master_id' => array(
+                    'name' => 'master_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Master Address ID') ,
+                    'import' => true,
+                    'where' => 'civicrm_address.master_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
+                    'FKClassName' => 'CRM_Core_DAO_Address',
                 ) ,
             );
         }

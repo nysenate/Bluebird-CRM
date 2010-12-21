@@ -52,7 +52,6 @@
                             key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },
             function ( response ) {
                 // update hidden element
-                
                 if ( response.id ) {
                     var curVal   = cj( ".taglist_{/literal}{$tagset.parentID}{literal}" ).val( );
                     var valArray = curVal.split(',');

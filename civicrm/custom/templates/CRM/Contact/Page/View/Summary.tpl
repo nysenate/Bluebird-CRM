@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -47,7 +47,7 @@
                         
                         <li class="crm-delete-action crm-contact-permanently-delete">
                         <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1"}" class="delete button" title="{ts}Delete Permanently{/ts}">
-                        <span><div class="icon delete-icon"></div>{ts}Delete Contact Permanently{/ts}</span>
+                        <span><div class="icon delete-icon"></div>{ts}Delete Contact Permanently{/ts}</span>{*NYSS*}
                         </a>
                         </li>
                         {else}
@@ -126,7 +126,7 @@
                 {if $hookContent and $hookContentPlacement eq 2}
                     {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
                 {/if}
- 
+                
                 {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name OR $contactTag OR $source}
                 <div id="contactTopBar">
                 	<div class="subHeader"><!--Basic Constituent Information-->{$display_name}</div>
@@ -229,11 +229,11 @@
                                             <br /><a href="{crmURL p='civicrm/contact/map' q="reset=1&cid=`$contactId`&lid=`$add.location_type_id`"}" title="{ts 1='&#123;$add.location_type&#125;'}Map %1 Address{/ts}"><span class="geotag">{ts}Map{/ts}</span></a>
                                         {/if}</td>
                                     <td>
-                                        {if $householdName and $locationIndex eq 1}
-                                        <strong>{ts}Household Address:{/ts}</strong><br />
-                                        <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$mail_to_household_id`"}">{$householdName}</a><br />
-                                        {/if}
-                                        {$add.display|nl2br}
+                                        {if $sharedAddresses.$locationIndex.shared_address_display.name}
+                                             <strong>{ts}Shared with:{/ts}</strong><br />
+                                             {$sharedAddresses.$locationIndex.shared_address_display.name}<br />
+                                         {/if}
+                                         {$add.display|nl2br}
                                     </td>
                                 </tr>
                             </table>
@@ -595,7 +595,6 @@ function showHideSignature( blockId ) {
 
 		buttons: { 
 			"Done": function() { 
-				cj(this).dialog("close"); 
 				cj(this).dialog("destroy"); 
 			} 
 		} 

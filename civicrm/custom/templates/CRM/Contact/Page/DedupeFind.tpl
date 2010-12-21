@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,11 +33,19 @@
 	{assign var="qParams" value="reset=1&cid=`$main.srcID`&oid=`$main.dstID`&action=update&rgid=`$rgid`"}
 	{if $gid}{assign var="qParams" value="$qParams&gid=`$gid`"}{/if}
         {capture assign=merge}<a href="{crmURL p='civicrm/contact/merge' q="`$qParams`"}" target="_blank">{ts}merge{/ts}</a>{/capture}
-        <tr class="{cycle values="odd-row,even-row"}">
+        <tr id="dupeRow_{$main.srcID}_{$main.dstID}" class="{cycle values="odd-row,even-row"}">
           <td>{$srcLink}</td>
           <td>{$dstLink}</td>
           <td>{$main.weight}</td>
-          <td style="text-align: right;">{if $main.canMerge}{$merge}{else}<em>{ts}Insufficient access rights - cannot merge{/ts}</em>{/if}</td>
+          <td style="text-align: right;">
+	  {if $main.canMerge}
+              {$merge}
+	      &nbsp;|&nbsp;
+	      <a id='notDuplicate' href="#" title={ts}not a duplicate{/ts} onClick="processDupes( {$main.srcID}, {$main.dstID}, 'dupe-nondupe', 'dupe-listing' );return false;">{ts}not a duplicate{/ts}</a>
+	  {else}
+	       <em>{ts}Insufficient access rights - cannot merge{/ts}</em>
+	  {/if}
+	  </td>
         </tr>
     {/foreach}
   </table>
@@ -48,7 +56,11 @@
         {if $dupe_name}
           {capture assign=link}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$dupe_id"}">{$dupe_name}</a>{/capture}
           {capture assign=merge}<a href="{crmURL p='civicrm/contact/merge' q="reset=1&cid=$cid&oid=$dupe_id"}">{ts}merge{/ts}</a>{/capture}
-          <tr class="{cycle values="odd-row,even-row"}"><td>{$link}</td><td style="text-align: right">{$merge}</td></tr>
+          <tr class="{cycle values="odd-row,even-row"}">
+	    <td>{$link}</td>
+	    <td style="text-align: right">{$merge}</td>
+	    <td style="text-align: right"><a id='notDuplicate' href="#" title={ts}not a duplicate{/ts} onClick="processDupes( {$main.srcID}, {$main.dstID}, 'dupe-nondupe' );return false;">{ts}not a duplicate{/ts}</a></td>
+	    </tr>
         {/if}
       {/foreach}
     </table>
@@ -65,3 +77,6 @@
 {else}
 {include file="CRM/Contact/Form/DedupeFind.tpl"}
 {/if}
+
+{* process the dupe contacts *}
+{include file='CRM/common/dedupe.tpl'}

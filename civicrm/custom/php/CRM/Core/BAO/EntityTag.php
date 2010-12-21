@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -315,7 +315,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
      * Function to get child contact tags given parentId
      */
     static function getChildEntityTags( $parentId, $entityId, $entityTable = 'civicrm_contact' ) {
-		$entityTags = array( );
+        $entityTags = array( );
         $query = "SELECT ct.id as tag_id, name FROM civicrm_tag ct
                     INNER JOIN civicrm_entity_tag et ON ( et.entity_id = {$entityId} AND
                      et.entity_table = '{$entityTable}' AND  et.tag_id = ct.id)
@@ -333,7 +333,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
     }  
 
     /**
-     * NYSS treat separately as modifying the above screws up stuff when json tag lists are created elsewhere
+     * NYSS: treat separately as modifying the above screws up stuff when json tag lists are created elsewhere
      */
     static function getChildEntityTagDetails( $parentId, $entityId, $entityTable = 'civicrm_contact' ) {
         //NYSS include description field in array returned
