@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -25,7 +25,7 @@
 *}
 {* This form is for Contact Add/Edit interface *}
 
-{*need to retrieve and assign custom record id as its unique to each record*}
+{*NYSS need to retrieve and assign custom record id as its unique to each record*}
 {foreach from=$form item=field}
     {if $field.name|substring:0:6 eq 'custom'}
         {assign var=customfield value="_"|explode:$field.name}
@@ -39,18 +39,13 @@
 {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
 {else}
 <div class="crm-form-block crm-search-form-block">
+{if call_user_func(array('CRM_Core_Permission','check'), 'administer CiviCRM') }
+    <a href='{crmURL p="civicrm/admin/setting/preferences/display" q="reset=1"}' title="{ts}Click here to configure the panes.{/ts}"><span class="icon settings-icon"></span></a>
+{/if}
 <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
 <div class="crm-submit-buttons">
-	{include file="CRM/common/formButtons.tpl"}
-	{*  add dupe buttons *}
-	{if $isDuplicate}
-		<span class="crm-button crm-button_qf_Contact_upload_duplicate">
-        	{$form._qf_Contact_upload_duplicate.html}
-        </span>
-    {/if}
-    <div class="spacer"></div>
+   {include file="CRM/common/formButtons.tpl"}
 </div>
-
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div> 
@@ -65,6 +60,12 @@
         	<span class="crm-button crm-button_qf_Contact_refresh_dedupe">
         	    {$form._qf_Contact_refresh_dedupe.html}
         	</span>
+        	{if $isDuplicate}
+            &nbsp;&nbsp;
+            <span class="crm-button crm-button_qf_Contact_upload_duplicate">
+                {$form._qf_Contact_upload_duplicate.html}
+            </span>
+            {/if}
 			</td>
 		</tr>
         <tr>
@@ -212,6 +213,7 @@ var action = "{/literal}{$action}{literal}";
 var removeCustomData = true;
 showTab[0] = {"spanShow":"span#contact","divShow":"div#contactDetails"};
 cj(function( ) {
+    cj().crmaccordions( ); 
 	cj(showTab).each( function(){ 
         if( this.spanShow ) {
             cj(this.spanShow).removeClass( ).addClass('crm-accordion-open');
@@ -228,8 +230,8 @@ cj(function( ) {
 			cj( prevEle).remove();
 		}
 		//open tab if form rule throws error
-		if ( cj(this).children().find('span.crm-error').text() ) {
-			cj(this).show().prev().children('span:first').removeClass( 'crm-accordion-closed' ).addClass('crm-accordion-open');
+		if ( cj(this).children( ).find('span.crm-error').text( ).length > 0 ) {
+			cj(this).parent( ).removeClass( 'crm-accordion-closed' ).addClass('crm-accordion-open');
 		}
 	});
 
@@ -247,8 +249,8 @@ cj('a#expand').click( function( ){
         cj(this).attr('href', '#expand');
     }
     cj(this).html(message);
+    return false;
 });
-
 
 function showHideSignature( blockId ) {
     cj('#Email_Signature_' + blockId ).toggle( );   

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -37,7 +37,7 @@
         <table class="form-layout-compressed">
             {* Loop through all defined search criteria fields (defined in the buildForm() function). *}
             {foreach from=$elements item=element}
-                {if $element neq 'tag'}
+                {if $element neq 'tag'}{*NYSS*}
                 <tr class="crm-contact-custom-search-form-row-{$element}">
                     <td class="label">{$form.$element.label}</td>
                     {if $element eq 'start_date'}

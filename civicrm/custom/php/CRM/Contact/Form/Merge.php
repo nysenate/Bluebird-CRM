@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -73,6 +73,8 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         $rgid  = CRM_Utils_Request::retrieve('rgid','Positive', $this, false);
         $gid   = CRM_Utils_Request::retrieve('gid','Positive', $this, false);
         
+        self::validateContacts( $cid, $oid );
+        
         // Block access if user does not have EDIT permissions for both contacts.
         require_once 'CRM/Contact/BAO/Contact/Permission.php';
         if ( ! ( CRM_Contact_BAO_Contact_Permission::allow( $cid, CRM_Core_Permission::EDIT ) 
@@ -80,6 +82,43 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
             CRM_Utils_System::permissionDenied( );
         }
         
+        // get user info of main contact.
+        $config = CRM_Core_Config::singleton( );
+        require_once 'CRM/Core/Permission.php';
+        $viewUser = CRM_Core_Permission::check('access user profiles');
+        $mainUfId = CRM_Core_BAO_UFMatch::getUFId( $cid );
+        if ( $mainUfId ) {
+           
+            if ( $config->userFramework == 'Drupal' ) {
+                $mainUser = user_load( $mainUfId );
+            } else if ( $config->userFramework == 'Joomla' ) {
+                $mainUser = JFactory::getUser( $mainUfId );
+            }
+        }
+        
+        $this->assign( 'mainUfId', $mainUfId );
+        $this->assign( 'mainUfName', $mainUser->name );
+        
+        // get user info of other contact.
+        $otherUfId = CRM_Core_BAO_UFMatch::getUFId( $oid );
+        if ( $otherUfId ) {
+            if ( $config->userFramework == 'Drupal' ) {
+                $otherUser = user_load( $otherUfId );
+            } else if ( $config->userFramework == 'Joomla' ) {
+                $otherUser = JFactory::getUser( $otherUfId );
+            }
+        }
+        
+        $this->assign( 'otherUfId', $otherUfId );
+        $this->assign( 'otherUfName', $otherUser->name );
+        
+        $cmsUser = false;
+        if ( $mainUfId || $otherUfId ) {
+            $cmsUser = true;  
+        }
+        
+        $this->assign( 'user', $cmsUser );
+                
         $session = CRM_Core_Session::singleton( );
         
         // context fixed.
@@ -100,8 +139,8 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         
         $diffs = CRM_Dedupe_Merger::findDifferences($cid, $oid);
         
-        $mainParams  = array('contact_id' => $cid, 'return.display_name' => 1);
-        $otherParams = array('contact_id' => $oid, 'return.display_name' => 1);
+        $mainParams  = array('contact_id' => $cid, 'return.display_name' => 1, 'return.contact_sub_type' => 1);
+        $otherParams = array('contact_id' => $oid, 'return.display_name' => 1, 'return.contact_sub_type' => 1);
         // API 2 has to have the requested fields spelt-out for it
         foreach (CRM_Dedupe_Merger::$validFields as $field) {
             $mainParams["return.$field"] = $otherParams["return.$field"] = 1;
@@ -120,7 +159,12 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
             CRM_Core_Error::fatal( ts( 'The other contact record does not exist' ) );
         }
 
+        require_once 'CRM/Contact/BAO/ContactType.php';
+        $subtypes = CRM_Contact_BAO_ContactType::subTypePairs( null, true, '' );
+
         $this->assign('contact_type', $main['contact_type']);
+        $this->assign('main_contact_subtype',  $subtypes[$main['contact_sub_type']]);
+        $this->assign('other_contact_subtype', $subtypes[$other['contact_sub_type']]);
         $this->assign('main_name',    $main['display_name']);
         $this->assign('other_name',   $other['display_name']);
         $this->assign('main_cid',     $main['contact_id']);
@@ -295,12 +339,25 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
             $this->addElement('checkbox', "move_$name");
             $relTables[$name]['main_url']  = str_replace('$cid', $cid, $relTables[$name]['url']);
             $relTables[$name]['other_url'] = str_replace('$cid', $oid, $relTables[$name]['url']);
+            if ( $name == 'rel_table_users' ) {
+                $relTables[$name]['main_url']    = str_replace('$ufid', $mainUfId,  $relTables[$name]['url']);
+                $relTables[$name]['other_url']   = str_replace('$ufid', $otherUfId, $relTables[$name]['url']);
+                $find = array( '$ufid', '$ufname');
+                $replace = array( $mainUfId, $mainUser->name );
+                $relTables[$name]['main_title']  = str_replace( $find, $replace, $relTables[$name]['title']);
+                $replace = array( $otherUfId, $otherUser->name );
+                $relTables[$name]['other_title'] = str_replace( $find, $replace, $relTables[$name]['title']);
+            }
+            if ( $name == 'rel_table_memberships' ) {
+                $this->addElement('checkbox', "operation[move_{$name}][add]", null, ts('add new'));
+            }
         }
         foreach ($relTables as $name => $null) {
             $relTables["move_$name"] = $relTables[$name];
             unset($relTables[$name]);
         }
         $this->assign('rel_tables', $relTables);
+        $this->assign( 'userContextURL', $session->readUserContext( ) );
     }
     
     function setDefaultValues()
@@ -334,6 +391,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         
         $relTables =& CRM_Dedupe_Merger::relTables();
         $moveTables = $locBlocks = array( );
+        $tableOperations = array( );
         foreach ($formValues as $key => $value) {
             if ($value == $this->_qfZeroBug) $value = '0';
             if ((in_array(substr($key, 5), CRM_Dedupe_Merger::$validFields) or 
@@ -354,6 +412,13 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
                     CRM_Utils_Array::value( 'locTypeId', $formValues['location'][$fieldName][$fieldCount] );
             } elseif (substr($key, 0, 15) == 'move_rel_table_' and $value == '1') {
                 $moveTables = array_merge($moveTables, $relTables[substr($key, 5)]['tables']);
+                if ( array_key_exists('operation', $formValues) ) {
+                    foreach ( $relTables[substr($key, 5)]['tables'] as $table ) {
+                        if ( array_key_exists($key, $formValues['operation']) ) {
+                            $tableOperations[$table] = $formValues['operation'][$key];
+                        }
+                    }
+                }
             }
         }
         
@@ -513,7 +578,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
 
         // handle the related tables
         if (isset($moveTables)) {
-            CRM_Dedupe_Merger::moveContactBelongings($this->_cid, $this->_oid, $moveTables);
+            CRM_Dedupe_Merger::moveContactBelongings($this->_cid, $this->_oid, $moveTables, $tableOperations);
         }
         
         // move file custom fields
@@ -596,5 +661,21 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
 		}
 		
         CRM_Utils_System::redirect($url);
+    }
+    
+    function validateContacts( $cid, $oid ) {
+        if ( !$cid || !$oid ) return; 
+        require_once 'CRM/Dedupe/DAO/Exception.php';
+        $exception = new CRM_Dedupe_DAO_Exception( );
+        $exception->contact_id1 = $cid;
+        $exception->contact_id2 = $oid;
+        //make sure contact2 > contact1.
+        if ( $cid > $oid ) {
+            $exception->contact_id1 = $oid;
+            $exception->contact_id2 = $cid;
+        }
+        if ( $exception->find( true ) ) {
+            CRM_Core_Error::fatal( ts( 'Oops, these contacts seems to be marked as non duplicates.' ) );
+        }
     }
 }

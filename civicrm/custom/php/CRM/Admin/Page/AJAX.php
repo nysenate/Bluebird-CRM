@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -401,7 +401,7 @@ class CRM_Admin_Page_AJAX
                 // save this tag to contact
                 $params = array( 'entity_table' => $entityTable,
                                  'entity_id'    => $entityId,
-                                 'tag_id'       => $tagID );
+                                 'tag_id'       => $tagID);
                              
                 CRM_Core_BAO_EntityTag::add( $params );
             }

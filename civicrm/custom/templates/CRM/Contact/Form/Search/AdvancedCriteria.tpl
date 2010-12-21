@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -68,7 +68,6 @@ function loadPanes( id ) {
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
         {include file="CRM/Contact/Form/Search/Criteria/Basic.tpl"}
-            
     </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
     {foreach from=$allPanes key=paneName item=paneValue}
@@ -99,9 +98,7 @@ function loadPanes( id ) {
 
     <table class="form-layout">
         <tr>
-            <td>{$form.buttons.html}  {if $form.deleted_contacts}
-         {$form.deleted_contacts.html} {$form.deleted_contacts.label}        
-    {/if}<a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton"><span>Reset Form</span></a></td>
+            <td>{$form.buttons.html}<a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton"><span>Reset Form</span></a></td>
         </tr>
     </table>
 {/strip}
