@@ -586,7 +586,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
     //add the constituent information
     $params = array();
-    $params['entity_id'] = $importID;
+    $params['entity_id'] = $contactID;
     $params['record_type_61'] = $ctRow['RT'];
     if (!writeToFile($fout['constituentinformation'], $params)) {
       exit("Error: I/O failure: constituentinformation");
