@@ -76,6 +76,7 @@ $nyss_iofields['civicrm_address'] = array(
 	),
 	'street_address' => array(
                 'fld' => 'street_address',
+                'handler' => 'convertProperCase',
         ),
 );
 
