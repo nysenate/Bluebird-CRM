@@ -9,12 +9,14 @@ $nyss_iofields['civicrm_contact'] = array(
 	),
 	'first_name' => array(
 		'fld' => 'first_name',
+		'handler' => 'convertProperCase',
 	),
 	'mid' => array(
 		'fld' => 'middle_name',
 	),
 	'last_name' => array(
 		'fld' => 'last_name',
+                'handler' => 'convertProperCase',
 	),
 	'suffix_id' => array(
 		'fld' => 'suffix_id',
@@ -46,18 +48,22 @@ $nyss_iofields['civicrm_address'] = array(
 	),
 	'street_name' => array(
 		'fld' => 'street_name',
+                'handler' => 'convertProperCase',
 	),
 	'street_unit' => array(
 		'fld' => 'street_unit',
 	),
 	'supplemental_address_1' => array(
 		'fld' => 'supplemental_address_1',
+                'handler' => 'convertProperCase',
 	),
 	'supplemental_address_2' => array(
 		'fld' => 'supplemental_address_2',
+                'handler' => 'convertProperCase',
 	),
 	'city' => array(
 		'fld' => 'city',
+                'handler' => 'convertProperCase',
 	),
 	'st' => array(
 		'fld' => 'state_province_id',
@@ -68,6 +74,9 @@ $nyss_iofields['civicrm_address'] = array(
 	'postal' => array(
 		'fld' => 'postal_code_suffix',
 	),
+	'street_address' => array(
+                'fld' => 'street_address',
+        ),
 );
 
 $nyss_iofields['civicrm_email'] = array(
@@ -80,6 +89,7 @@ $nyss_iofields['civicrm_email'] = array(
         ),
 	'email' => array(
 		'fld' => 'email',
+		'required' => true,
 	),
 );
 
@@ -93,6 +103,7 @@ $nyss_iofields['civicrm_phone'] = array(
         ),
 	'phone' => array(
 		'fld' => 'phone',
+                'required' => true,
 	),
 );
 
