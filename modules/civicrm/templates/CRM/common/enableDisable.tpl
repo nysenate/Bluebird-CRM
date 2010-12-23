@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -79,7 +79,7 @@ function hideEnableDisableStatusMsg( ) {
 }
 
 cj( '#enableDisableStatusMsg' ).hide( );
-function enableDisable( recordID, recordBAO, op ) {
+function enableDisable( recordID, recordBAO, op, reloadPage ) {
     	if ( op == 'enable-disable' ) {
        	   var st = {/literal}'{ts escape="js"}Disable Record{/ts}'{literal};
     	} else if ( op == 'disable-enable' ) {
@@ -96,10 +96,6 @@ function enableDisable( recordID, recordBAO, op ) {
 			opacity: 0.5, 
 			background: "black" 
 		},
-
-        	beforeclose: function(event, ui) {
-            	        cj(this).dialog("destroy");
-        	},
 
 		open:function() {
        		        var postUrl = {/literal}"{crmURL p='civicrm/ajax/statusmsg' h=0 }"{literal};
@@ -126,12 +122,10 @@ function enableDisable( recordID, recordBAO, op ) {
 		buttons: { 
 			"Cancel": function() { 
 				cj(this).dialog("close"); 
-				cj(this).dialog("destroy"); 
 			},
 			"OK": function() { 	    
-			        saveEnableDisable( recordID, recordBAO, op );
-			        cj(this).dialog("close"); 
-			        cj(this).dialog("destroy");
+			        saveEnableDisable( recordID, recordBAO, op, reloadPage );
+			        cj(this).dialog("close");			        
 			}
 		} 
 	});
@@ -147,7 +141,7 @@ function noServerResponse( ) {
     }
 }
 
-function saveEnableDisable( recordID, recordBAO, op ) {
+function saveEnableDisable( recordID, recordBAO, op, reloadPage ) {
     cj( '#enableDisableStatusMsg' ).hide( );
     var postUrl = {/literal}"{crmURL p='civicrm/ajax/ed' h=0 }"{literal};
 
@@ -158,6 +152,9 @@ function saveEnableDisable( recordID, recordBAO, op ) {
         //this is custom status set when record update success.
         if ( html.status == 'record-updated-success' ) {
            
+            if ( reloadPage ) {
+                document.location.reload( );
+            }
             //change row class and show/hide action links.
             modifySelectorRow( recordID, op );
 

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -49,6 +49,7 @@ class CRM_Profile_Form_Edit extends CRM_Profile_Form
     protected $_cancelURL = null;
     protected $_errorURL  = null;
     protected $_context;
+    protected $_blockNo;
 
     /**
      * pre processing work done here.
@@ -66,8 +67,15 @@ class CRM_Profile_Form_Edit extends CRM_Profile_Form
         //set the context for the profile
         $this->_context = CRM_Utils_Request::retrieve( 'context', 'String', $this );
         
+        //set the block no
+        $this->_blockNo = CRM_Utils_Request::retrieve( 'blockNo', 'String', $this );
+            
         if ( $this->_context ) {
             $this->assign( 'context', $this->_context );
+        }
+
+        if ( $this->_blockNo ) {
+            $this->assign( 'blockNo', $this->_blockNo );
         }
 
         if ( $this->get( 'skipPermission' ) ) {
@@ -145,7 +153,12 @@ SELECT module
         if ( $this->_context != 'dialog' ) {
             $this->_postURL   = CRM_Utils_Array::value( 'postURL', $_POST );
             $this->_cancelURL = CRM_Utils_Array::value( 'cancelURL', $_POST );
-            
+
+            $gidString = $this->_gid;
+            if ( !empty( $this->_profileIds ) ) {
+                $gidString = implode( ',', $this->_profileIds );
+            }
+
             if ( ! $this->_postURL ) {
                 $this->_postURL = $ufGroup->post_URL;
             }
@@ -154,8 +167,8 @@ SELECT module
                 if ( $this->_context == 'Search' ) {
                     $this->_postURL = CRM_Utils_System::url( 'civicrm/contact/search' );
                 } elseif ( $this->_id && $this->_gid ) {
-                    $this->_postURL = CRM_Utils_System::url('civicrm/profile/view',
-                                                            "reset=1&id={$this->_id}&gid={$this->_gid}" );
+                   $this->_postURL = CRM_Utils_System::url('civicrm/profile/view',
+                                                            "reset=1&id={$this->_id}&gid={$gidString}" );
                 }
             }
             
@@ -164,7 +177,7 @@ SELECT module
                     $this->_cancelURL = $ufGroup->cancel_URL;
                 } else {
                     $this->_cancelURL = CRM_Utils_System::url('civicrm/profile',
-                                                              "reset=1&gid={$this->_gid}" );
+                                                              "reset=1&gid={$gidString}" );
                 }
             }
             
@@ -243,8 +256,13 @@ SELECT module
         $session = CRM_Core_Session::singleton( );
         // only replace user context if we do not have a postURL
         if ( ! $this->_postURL  ) {
+            $gidString = $this->_gid;
+            if ( !empty( $this->_profileIds ) ) {
+                $gidString = implode( ',', $this->_profileIds );
+            }
+
             $url = CRM_Utils_System::url( 'civicrm/profile/view',
-                                          "reset=1&id={$this->_id}&gid={$this->_gid}" );
+                                          "reset=1&id={$this->_id}&gid={$gidString}" );
         }
 
         $session->replaceUserContext( $url );

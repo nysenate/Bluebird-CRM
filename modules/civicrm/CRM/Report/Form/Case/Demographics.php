@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -264,7 +264,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
         ";
             
 		foreach($this->_columns as $t => $c) {
-			if (substr($t, 0, 13) == 'civicrm_value') {
+			if (substr($t, 0, 13) == 'civicrm_value' || substr($t, 0, 12) == 'custom_value') {
                 $this->_from .= " LEFT JOIN $t {$this->_aliases[$t]} ON {$this->_aliases[$t]}.entity_id = ";
                 $this->_from .= ($c['ext'] == 'Activity') ? "{$this->_aliases['civicrm_activity']}.id" : "{$this->_aliases['civicrm_contact']}.id";
 			}
@@ -393,7 +393,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
 
 			// handle custom fields
 			foreach($row as $k => $r) {
-				if (substr($k, 0, 13) == 'civicrm_value') {
+				if (substr($k, 0, 13) == 'civicrm_value' || substr($k, 0, 12) == 'custom_value') {
 					if ( $r || $r=='0' ) {
 						if ($newval = $this->getCustomFieldLabel( $k, $r )) {
 							$rows[$rowNum][$k] = $newval;

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -94,16 +94,17 @@ class CRM_Mailing_Event_BAO_Queue extends CRM_Mailing_Event_DAO_Queue {
      * @static
      */
     public static function &verify($job_id, $queue_id, $hash) {
+        $success = null;
         $q = new CRM_Mailing_Event_BAO_Queue();
         if (!empty($job_id) && !empty($queue_id) && !empty($hash)) {
             $q->id = $queue_id;
             $q->job_id = $job_id;
             $q->hash = $hash;
             if ($q->find(true)) {
-                return $q;
+                $success = $q;
             }
         }
-        return null;
+        return $success;
     }
 
 
@@ -190,6 +191,15 @@ class CRM_Mailing_Event_BAO_Queue extends CRM_Mailing_Event_DAO_Queue {
         $contact    = CRM_Contact_BAO_Contact::getTableName();
         $email      = CRM_Core_BAO_Email::getTableName();
 
+        $orderBy = "sort_name ASC, {$job}.start_date DESC";
+        if ($sort) {
+            if ( is_string( $sort ) ) {
+                $orderBy = $sort;
+            } else {
+                $orderBy = trim( $sort->orderBy() );
+            }
+        }
+
         $query =    "
             SELECT      $contact.display_name as display_name,
                         $contact.id as contact_id,
@@ -213,7 +223,7 @@ class CRM_Mailing_Event_BAO_Queue extends CRM_Mailing_Event_DAO_Queue {
                     . CRM_Utils_Type::escape($job_id, 'Integer');
         }
 
-        $query .= " ORDER BY $contact.sort_name, $job.start_date DESC ";
+        $query .= " ORDER BY {$orderBy} ";
 
         if ($offset||$rowCount) {//Added "||$rowCount" to avoid displaying all records on first page
             $query .= ' LIMIT ' 

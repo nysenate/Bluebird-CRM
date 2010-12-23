@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -341,10 +341,12 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
 
              // the columns we are interested in
              foreach (self::$_properties as $property) {             
-                 $row[$property] = $result->$property;
+                 if ( property_exists( $result, $property ) ) {
+                     $row[$property] = $result->$property;
+                 }
              }
              
-             if ( $row['member_is_test'] ) {
+             if ( CRM_Utils_Array::value('member_is_test', $row) ) {
                  $row['membership_type'] = $row['membership_type'] . " (test)";
              }
 
@@ -353,7 +355,7 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
              if ( ! isset( $result->owner_membership_id ) ) {
                  // unset renew and followup link for deceased membership
                  $currentMask = $mask;
-                 if ( $result->status_id == 'Deceased' ) {
+                 if ( $result->membership_status == 'Deceased' ) {
                      $currentMask = $currentMask & ~CRM_Core_Action::RENEW & ~CRM_Core_Action::FOLLOWUP;
                  }
                  $row['action']   = CRM_Core_Action::formLink( self::links( 'all', 

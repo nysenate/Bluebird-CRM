@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -64,16 +64,16 @@
 function processAddressFields( name, blockId, loadData ) {
 
 	if ( loadData ) { 
-        var allAddressValues = {/literal}{if $allAddressFieldValues}{$allAddressFieldValues}{else}''{/if}{literal};
-	    var streetName   	 = eval( "allAddressValues.street_name_"    + blockId );
-			if (streetName == null) { streetName = ''; }
-	    var streetUnit    	 = eval( "allAddressValues.street_unit_"    + blockId );
-			if (streetUnit == null) { streetUnit = ''; }
-	    var streetNumber  	 = eval( "allAddressValues.street_number_"  + blockId );
-			if (streetNumber == null) { streetNumber = ''; }
-	    var streetAddress 	 = eval( "allAddressValues.street_address_" + blockId );
-			if (streetAddress == null) { streetAddress = ''; }
-		
+            var allAddressValues = {/literal}{if $allAddressFieldValues}{$allAddressFieldValues}{else}''{/if}{literal};
+
+	    var streetName    = eval( "allAddressValues.street_name_"    + blockId );
+	    if (streetName === null) streetName = '';  
+	    var streetUnit    = eval( "allAddressValues.street_unit_"    + blockId );
+	    if (streetUnit === null) streetUnit = '';  
+	    var streetNumber  = eval( "allAddressValues.street_number_"  + blockId );
+	    if (streetNumber === null) streetNumber = '';  
+	    var streetAddress = eval( "allAddressValues.street_address_" + blockId );
+	    if (streetAddress === null) streetAddress = '';  
 		//http://senatedev.senate.state.ny.us/issues/show/2367
 		/*var suppAddress1 	 = eval( "allAddressValues.supplemental_address_1_" + blockId ).toUpperCase(); //NYSS - LCD
 			if (suppAddress1 == null) { suppAddress1 = ''; }
@@ -92,24 +92,25 @@ function processAddressFields( name, blockId, loadData ) {
              showBlockName = 'addressElements_' + blockId;		   
 	     hideBlockName = 'streetAddress_' + blockId;
 	} else {
-        if ( loadData ) {
-        	streetNumber = streetName = streetUnit = ''; 
-        }
-		showBlockName = 'streetAddress_' + blockId;
-        hideBlockName = 'addressElements_'+ blockId;
-    }
+             if ( loadData ) {
+                  streetNumber = streetName = streetUnit = ''; 
+             }
 
-    show( showBlockName );
-    hide( hideBlockName );
+             showBlockName = 'streetAddress_' +  blockId;
+             hideBlockName = 'addressElements_'+ blockId;
+       }
 
-    // set the values.
-    if ( loadData ) {
-    	cj( '#address_' + blockId +'_street_name'    ).val( streetName    );   
-        cj( '#address_' + blockId +'_street_unit'    ).val( streetUnit    );
-        cj( '#address_' + blockId +'_street_number'  ).val( streetNumber  );
-        cj( '#address_' + blockId +'_street_address' ).val( streetAddress );
-        /*cj( '#address_' + blockId +'_supplemental_address_1' ).val( suppAddress1 ); //NYSS - LCD
-        cj( '#address_' + blockId +'_supplemental_address_2' ).val( suppAddress2 ); //NYSS - LCD*/
+       show( showBlockName );
+       hide( hideBlockName );
+
+       // set the values.
+       if ( loadData ) {
+          cj( '#address_' + blockId +'_street_name'    ).val( streetName    );   
+          cj( '#address_' + blockId +'_street_unit'    ).val( streetUnit    );
+          cj( '#address_' + blockId +'_street_number'  ).val( streetNumber  );
+          cj( '#address_' + blockId +'_street_address' ).val( streetAddress );
+          /*cj( '#address_' + blockId +'_supplemental_address_1' ).val( suppAddress1 ); //NYSS - LCD
+          cj( '#address_' + blockId +'_supplemental_address_2' ).val( suppAddress2 ); //NYSS - LCD*/
     }
 }
 

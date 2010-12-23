@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,7 +35,7 @@ var totalfee       = 0;
 var thousandMarker = '{/literal}{$config->monetaryThousandSeparator}{literal}';
 var seperator      = '{/literal}{$config->monetaryDecimalPoint}{literal}';
 var symbol         = '{/literal}{$currencySymbol}{literal}';
-
+var optionSep      = '|';
 var priceSet = price = Array( );
 cj("input,#priceset select,#priceset").each(function () {
 
@@ -47,7 +47,8 @@ cj("input,#priceset select,#priceset").each(function () {
     //default calcution of element. 
     eval( 'var option = ' + cj(this).attr('price') ) ;
     ele        = option[0];
-    addprice   = parseFloat( option[1] );    
+    optionPart = option[1].split(optionSep);
+    addprice   = parseFloat( optionPart[0] );    
     
     if( cj(this).attr('checked') ) {
       totalfee   += addprice;
@@ -74,7 +75,8 @@ cj("input,#priceset select,#priceset").each(function () {
     //default calcution of element. 
     eval( 'var option = ' + cj(this).attr('price') ); 
     ele        = option[0];
-    addprice   = parseFloat( option[1] );
+    optionPart = option[1].split(optionSep);
+    addprice   = parseFloat( optionPart[0] );
     if ( ! price[ele] ) {
       price[ele] = 0;
     }
@@ -104,7 +106,8 @@ cj("input,#priceset select,#priceset").each(function () {
       if ( ! price[ele] ) {
        price[ele] = 0;
       }
-      addprice    = parseFloat( option[1] );
+      optionPart = option[1].split(optionSep);
+      addprice   = parseFloat( optionPart[0] );
       var curval  = textval * addprice;
       if ( textval >= 0 ) {
   	totalfee   = parseFloat(totalfee) + curval - parseFloat(price[ele]);
@@ -127,7 +130,12 @@ cj("input,#priceset select,#priceset").each(function () {
 	price[ele] = 0;
       }
       eval( 'var selectedText = ' + cj(this).attr('price') );
-      var addprice = parseFloat( selectedText[cj(this).val( )] );
+      var addprice = 0;
+      if ( cj(this).val( ) ) {
+        optionPart = selectedText[cj(this).val( )].split(optionSep);
+        addprice   = parseFloat( optionPart[0] );
+      } 
+
     if ( addprice ) {
 	totalfee   = parseFloat(totalfee) + addprice - parseFloat(price[ele]);
 	price[ele] = addprice;
@@ -140,8 +148,13 @@ cj("input,#priceset select,#priceset").each(function () {
 	price[ele] = 0;
       }
       eval( 'var selectedText = ' + cj(this).attr('price') );
-      var addprice = parseFloat( cj(selectedText).attr( cj(this).val( ) ) );
-      
+
+      var addprice = 0;
+      if ( cj(this).val( ) ) {
+        optionPart = selectedText[cj(this).val( )].split(optionSep);
+        addprice   = parseFloat( optionPart[0] );
+      }
+
       if ( addprice ) {
 	totalfee   = parseFloat(totalfee) + addprice - parseFloat(price[ele]);
 	price[ele] = addprice;
@@ -164,7 +177,8 @@ function calculateText( object ) {
   if ( ! price[ele] ) {
     price[ele] = 0;
   }
-  addprice    = parseFloat( option[1] );
+  var optionPart = option[1].split(optionSep);
+  addprice    = parseFloat( optionPart[0] );
   var textval = parseFloat( cj(object).attr('value') );
   var curval  = textval * addprice;
     if ( textval >= 0 ) {

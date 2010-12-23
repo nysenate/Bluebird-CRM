@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -23,11 +23,12 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<div class="crm-block crm-form-block crm-case-activity-form-block">
+
 {* this template is used for adding/editing activities for a case. *}
 {if $cdType }
    {include file="CRM/Custom/Form/CustomData.tpl"}
 {else}
+<div class="crm-block crm-form-block crm-case-activity-form-block">
     {if $action neq 8 and $action  neq 32768 }
 
 {* added onload javascript for source contact*}
@@ -238,11 +239,11 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                        {/foreach}
                    </table>
                    {/strip}
+                  </div><!-- /.crm-accordion-body -->
+           </div><!-- /.crm-accordion-wrapper -->
                   </div>
                 </td>
             </tr>
-       </div><!-- /.crm-accordion-body -->
-</div><!-- /.crm-accordion-wrapper -->
 
             {/if}
            <tr>
@@ -301,9 +302,10 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                 </td>
              </tr>
              {/if}
+                 <tr class="crm-case-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl"}</td></tr>
+             </table>
+
            {/if}
-           <tr class="crm-case-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl"}</td></tr>
-       </table>
      
      <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 
@@ -387,7 +389,6 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
     }	
     </script>
     {/literal}
-
+  </div>
 {/if} {* end of main if block*}
 </script>
-</div>

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -83,16 +83,14 @@
     <td>{ts}Configure input and display formats for Date fields.{/ts}</td>
 </tr>
 
-{if $config->userFramework != 'Standalone'}
 <tr>
     <td class="nowrap"><a href="{crmURL p='civicrm/admin/setting/uf' q='reset=1'}" id="idUF">&raquo; {ts 1=$config->userFramework}%1 Integration Settings{/ts}</a></td>
     <td>{ts 1=$config->userFramework}%1 version and user table name.{/ts}</td>
 </tr>
-{/if}
 
 <tr>
     <td class="nowrap"><a href="{crmURL p='civicrm/admin/setting/misc' q='reset=1'}" id="idMisc">&raquo; {ts}Miscellaneous Settings{/ts}</a></td>
-    <td>{ts}Dashboard caching time, enable Version Checking and configure optional reCAPTCHA feature to prevent automated abuse of public forms.{/ts}</td>
+    <td>{ts}Dashboard caching time, move to trash / undelete, change logging, version checking and reCAPTCHA (prevents automated abuse of public forms).{/ts}</td>
 </tr>
 
 <tr>

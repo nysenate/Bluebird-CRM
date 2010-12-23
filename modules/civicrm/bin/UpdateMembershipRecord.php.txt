@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                               |
+ | CiviCRM version 3.3                                               |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -39,19 +39,27 @@ class CRM_UpdateMembershipRecord {
     
     function __construct() 
     {
-        $this->initialize( );
-
-        $config = CRM_Core_Config::singleton();
-
-        // this does not return on failure
-        CRM_Utils_System::authenticateScript( true );
-
-        //log the execution time of script
-        CRM_Core_Error::debug_log_message( 'UpdateMembershipRecord.php');
-
-        // load bootstrap to call hooks
-        require_once 'CRM/Utils/System.php';
-        CRM_Utils_System::loadBootStrap(  );
+        // you can run this program either from an apache command, or from the cli
+        if ( php_sapi_name( ) == "cli" ) {
+            require_once ("cli.php");
+            $cli = new civicrm_cli ( );
+            //if it doesn't die, it's authenticated
+        } else { 
+            //from the webserver
+            $this->initialize( );
+          
+            $config = CRM_Core_Config::singleton();
+           
+            // this does not return on failure
+            CRM_Utils_System::authenticateScript( true );
+            
+            //log the execution time of script
+            CRM_Core_Error::debug_log_message( 'UpdateMembershipRecord.php' );
+            
+            // load bootstrap to call hooks
+            require_once 'CRM/Utils/System.php';
+            CRM_Utils_System::loadBootStrap(  );
+        }
     }
 
     function initialize( ) {
@@ -59,7 +67,10 @@ class CRM_UpdateMembershipRecord {
         require_once 'CRM/Core/Config.php';
 
         $config = CRM_Core_Config::singleton();
+    }
 
+    public function updateMembershipStatus( )
+    {
         require_once 'CRM/Member/BAO/MembershipLog.php';
         require_once 'CRM/Member/BAO/Membership.php';
         require_once 'CRM/Core/BAO/MessageTemplates.php';
@@ -70,11 +81,7 @@ class CRM_UpdateMembershipRecord {
         require_once 'CRM/Member/PseudoConstant.php';
         require_once 'CRM/Contact/BAO/Contact.php';
         require_once 'CRM/Activity/BAO/Activity.php';
-    }
-    
-    public function updateMembershipStatus( )
-    {
-        $config = CRM_Core_Config::singleton();	
+
         //get all active statuses of membership, CRM-3984
         $allStatus    = CRM_Member_PseudoConstant::membershipStatus( );
         $statusLabels = CRM_Member_PseudoConstant::membershipStatus( null, null, 'label' );
@@ -106,6 +113,10 @@ AND    civicrm_membership.is_test = 0
         require_once 'CRM/Core/Smarty.php';
         $smarty =& CRM_Core_Smarty::singleton();
         
+        require_once 'CRM/Core/BAO/Domain.php';
+        $domainValues     = CRM_Core_BAO_Domain::getNameAndEmail( );
+        $fromEmailAddress = "$domainValues[0] <$domainValues[1]>";
+
         while ( $dao->fetch( ) ) {
             echo ".";
             
@@ -213,13 +224,10 @@ AND    civicrm_membership.is_test = 0
                     $toEmail  = CRM_Contact_BAO_Contact::getPrimaryEmail( $dao->contact_id );
                     
                     if ( $toEmail ) {
-                        // Set the FROM email address for reminder emails here.
-                        // This must be a valid account for your SMTP service.
-                        $from = "EMAIL@FIXME.ORG";
                         $result = CRM_Core_BAO_MessageTemplates::sendReminder( $dao->contact_id,
                                                                                $toEmail,
                                                                                $memType->renewal_msg_id,
-                                                                               $from );
+                                                                               $fromEmailAddress );
                         if ( ! $result ||
                              is_a( $result, 'PEAR_Error' ) ) {
                             // we could not send an email, for now we ignore

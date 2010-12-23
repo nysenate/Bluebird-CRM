@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -79,9 +79,7 @@ class CRM_Contribute_Form_ContributionPage_Delete extends CRM_Contribute_Form_Co
         if ( $dao->find(true) ) {
             $this->_relatedContributions = true;
             $this->assign('relatedContributions',true);
-            
         }
-        
     }
 
     /**
@@ -90,8 +88,8 @@ class CRM_Contribute_Form_ContributionPage_Delete extends CRM_Contribute_Form_Co
      * @return None
      * @access public
      */
-    public function buildQuickForm( ) {
-
+    public function buildQuickForm( )
+    {
         $this->_title = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage', $this->_id, 'title' );
         $this->assign( 'title', $this->_title );
 
@@ -99,17 +97,16 @@ class CRM_Contribute_Form_ContributionPage_Delete extends CRM_Contribute_Form_Co
         //then onle cancel button is displayed
         $buttons = array();
         if ( ! $this->_relatedContributions ) {
-            $buttons[]  =  array ( 'type'      => 'next',
-                                   'name'      => ts('Delete Contribution Page'),
-                                   'isDefault' => true   );
+            $buttons[] = array ( 'type'      => 'next',
+                                 'name'      => ts('Delete Contribution Page'),
+                                 'isDefault' => true );
         }
-
-        $buttons[] =  array ( 'type'       => 'cancel',
-                              'name'      => ts('Cancel') 
-                              );
+        
+        $buttons[] = array ( 'type' => 'cancel',
+                             'name' => ts('Cancel') 
+                             );
             
         $this->addButtons( $buttons );
-        
     }
 
     /**
@@ -118,8 +115,8 @@ class CRM_Contribute_Form_ContributionPage_Delete extends CRM_Contribute_Form_Co
      * @return void
      * @access public
      */
-    public function postProcess( ) {
-        
+    public function postProcess( )
+    {
         require_once 'CRM/Core/Transaction.php';
         $transaction = new CRM_Core_Transaction( );
         

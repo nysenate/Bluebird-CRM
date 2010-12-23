@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -448,12 +448,14 @@ class CRM_Contact_Form_Task_Label extends CRM_Contact_Form_Task
                 }
                 $family = trim (implode(" & ", $first_names) . " " . $last_name );		// collapse the tree to summarize
                 if ($count) {
-                    $rows[$data['ID']]['addressee_display'] .=  "\n" . trim( $family );
+                    $processedNames .=  "\n" . $family;
                 } else {
-                    $rows[$data['ID']]['addressee_display']  = trim( $family ); 		// build display_name string
+                    $processedNames  = $family;	                            	// build display_name string
                 }
                 $count++;
             }
+            $rows[$data['ID']]['addressee'] = $rows[$data['ID']]['addressee_display'] = 
+                $rows[$data['ID']]['display_name'] = $processedNames;
         }
     }
 

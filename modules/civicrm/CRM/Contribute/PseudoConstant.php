@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,6 +35,7 @@
  */
 
 require_once 'CRM/Core/OptionGroup.php';
+require_once 'CRM/Core/PseudoConstant.php';
 
 /**
  * This class holds all the Pseudo constants that are specific to Contributions. This avoids

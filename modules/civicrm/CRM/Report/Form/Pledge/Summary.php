@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -40,7 +40,8 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
 
     protected $_summary = null;
     protected $_totalPaid = false;
-    
+    protected $_customGroupExtends = array( 'Pledge' );
+
     function __construct( ) {
         $this->_columns = 
             array(
@@ -275,7 +276,8 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
         // get the acl clauses built before we assemble the query
         $this->buildACLClause( $this->_aliases['civicrm_contact'] );
         $this->select ( );
-        $this->from   ( null, true );
+        $this->from   ( );
+        $this->customDataFrom( );
         $this->where  ( ); 
         $this->limit( );  
         
@@ -387,10 +389,10 @@ class CRM_Report_Form_Pledge_Summary extends CRM_Report_Form {
         // Displaying entire data on the form
         if( ! empty( $display ) ) {
             foreach( $display as $key => $value ) {                
-                $row = array( );  
+                $row = array( );
                 foreach ( $this->_columnHeaders as $columnKey => $columnValue ) {
-                    if ( CRM_Utils_Array::value( $columnKey, $value ) ) {
-                        $row[ $columnKey ] = $value [ $columnKey ];
+                    if ( array_key_exists( $columnKey, $value ) ) {
+                        $row[$columnKey] = CRM_Utils_Array::value( $columnKey, $value )? $value[$columnKey] : '';
                     }
                 } 
                 $rows[ ] = $row;

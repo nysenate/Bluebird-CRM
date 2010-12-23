@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -220,7 +220,7 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form
             // store the submitted values in an array
             $params = $this->exportValues();
             $params['option_group_id'] = $this->_gid;
-
+            
             if ($this->_action & CRM_Core_Action::UPDATE ) {
                 $ids['optionValue'] = $this->_id;
             }

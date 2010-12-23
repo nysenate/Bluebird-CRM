@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -108,7 +108,7 @@ var checkSimilar =  {$checkSimilar};
     
     <tr>
         <td colspan="2">
-            {$form.current_employer.label}&nbsp;&nbsp;<br />
+            {$form.current_employer.label}&nbsp;{help id="id-current-employer" file="CRM/Contact/Form/Contact.hlp"}<br />
             {$form.current_employer.html|crmReplace:class:twenty}
             <div id="employer_address" style="display:none;"></div>
         </td>
@@ -121,7 +121,7 @@ var checkSimilar =  {$checkSimilar};
             {$form.nick_name.html|crmReplace:class:big}
         </td>
         <td>
-            {if $action == 1 and $contactSubType}&nbsp;{else}
+            {if $buildContactSubType}&nbsp;
                {$form.contact_sub_type.label}<br />
                {$form.contact_sub_type.html}
             {/if}

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -47,7 +47,10 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
 {
     protected $_memType = null;
     
-    
+    protected $_onlinePendingContributionId;
+
+    protected $_mode;
+
     public function preProcess()  
     {  
         //custom data related code
@@ -97,7 +100,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
                 } else if ( $paymentProcessor['payment_processor_type'] == 'Dummy' && $this->_mode == 'live' ) {
                     continue;
                 } else {
-                    $paymentObject =& CRM_Core_Payment::singleton( $this->_mode, 'Contribute', $paymentProcessor, $this );
+                    $paymentObject =& CRM_Core_Payment::singleton( $this->_mode, $paymentProcessor, $this );
                     $error = $paymentObject->checkConfig( );
                     if ( empty( $error ) ) {
                         $validProcessors[$ppID] = $label;
@@ -353,7 +356,12 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
         if ( count($selMemTypeOrg) == 2 ) {
             unset($selMemTypeOrg[0], $selOrgMemType[0][0]);
         }
-        
+        //sort membership organization and type, CRM-6099
+        natcasesort( $selMemTypeOrg );
+        foreach( $selOrgMemType as $index => $orgMembershipType ) {
+            natcasesort( $orgMembershipType );
+            $selOrgMemType[$index] = $orgMembershipType;
+        }
         $sel =& $this->addElement('hierselect', 
                                   'membership_type_id', 
                                   ts('Membership Organization and Type'), 
@@ -462,14 +470,15 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
         $errors = array( );
         
         //check if contact is selected in standalone mode
-        if ( isset( $params['contact_select_id'] ) && !$params['contact_select_id'] ) {
-            $errors['contact'] = ts('Please select a contact or create new contact');
+        if ( isset( $fields['contact_select_id'][1] ) && !$fields['contact_select_id'][1] ) {
+            $errors['contact[1]'] = ts('Please select a contact or create new contact');
         }
         
-        if (!$params['membership_type_id'][1]) {
+        if ( !CRM_Utils_Array::value( 1, $params['membership_type_id'] ) ) {
             $errors['membership_type_id'] = ts('Please select a membership type.');
         }
-        if ( $params['membership_type_id'][1] && CRM_Utils_Array::value( 'payment_processor_id', $params ) ) {
+        if ( CRM_Utils_Array::value( 1, $params['membership_type_id'] ) && 
+             CRM_Utils_Array::value( 'payment_processor_id', $params ) ) {
             // make sure that credit card number and cvv are valid
             require_once 'CRM/Utils/Rule.php';
             if ( CRM_Utils_Array::value( 'credit_card_type', $params ) ) {
@@ -485,13 +494,17 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
             }
         }
         
-        $joinDate = CRM_Utils_Date::processDate( $params['join_date'] );
-        if ( $joinDate ) {
+        $joinDate = null;
+        if ( CRM_Utils_Array::value( 'join_date', $params ) ) {
+            $joinDate = CRM_Utils_Date::processDate( $params['join_date'] );
             require_once 'CRM/Member/BAO/MembershipType.php';
             $membershipDetails = CRM_Member_BAO_MembershipType::getMembershipTypeDetails( $params['membership_type_id'][1] );
             
-            $startDate = CRM_Utils_Date::processDate( $params['start_date'] );
-            if ( $startDate && $membershipDetails['period_type'] == 'rolling' ) {
+            $startDate = null;
+            if ( CRM_Utils_Array::value( 'start_date', $params ) ) {
+                $startDate = CRM_Utils_Date::processDate( $params['start_date'] );
+            }
+            if ( $startDate && CRM_Utils_Array::value( 'period_type', $membershipDetails ) == 'rolling' ) {
                 if ( $startDate < $joinDate ) {
                     $errors['start_date'] = ts( 'Start date must be the same or later than join date.' );
                 }
@@ -501,7 +514,10 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
             // and that end date is later than start date
             // If selected membership type has duration unit as 'lifetime'
             // and end date is set, then give error
-            $endDate = CRM_Utils_Date::processDate( $params['end_date'] );
+            $endDate = null;
+            if ( CRM_Utils_Array::value( 'end_date', $params ) ) {
+                $endDate = CRM_Utils_Date::processDate( $params['end_date'] );
+            }
             if ( $endDate ) {
                 if ( $membershipDetails['duration_unit'] == 'lifetime' ) {
                     $errors['end_date'] = ts('The selected Membership Type has a lifetime duration. You cannot specify an End Date for lifetime memberships. Please clear the End Date OR select a different Membership Type.');
@@ -553,7 +569,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
         
         if ( isset( $params['is_override'] ) &&
              $params['is_override']          &&
-             ! $params['status_id'] ) {
+             ! CRM_Utils_Array::value( 'status_id', $params ) ) {
             $errors['status_id'] = ts('Please enter the status.');
         }
         
@@ -605,7 +621,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
 
         // set the contact, when contact is selected
         if ( CRM_Utils_Array::value('contact_select_id', $formValues ) ) {
-            $this->_contactID = CRM_Utils_Array::value('contact_select_id', $formValues);
+            $this->_contactID = $formValues['contact_select_id'][1];
         }
 
         $params['contact_id'] = $this->_contactID;
@@ -776,7 +792,7 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
             require_once 'CRM/Core/Payment/Form.php';
             CRM_Core_Payment_Form::mapParams( $this->_bltID, $this->_params, $paymentParams, true );
             
-            $payment =& CRM_Core_Payment::singleton( $this->_mode, 'Contribute', $this->_paymentProcessor, $this );
+            $payment =& CRM_Core_Payment::singleton( $this->_mode, $this->_paymentProcessor, $this );
             
             $result  =& $payment->doDirectPayment( $paymentParams );
                       

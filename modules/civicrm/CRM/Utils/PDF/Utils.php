@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -38,7 +38,10 @@
 class CRM_Utils_PDF_Utils {
 
     static function domlib( $text,
-                            $fileName = 'civicrm.pdf' ) {
+                            $fileName = 'civicrm.pdf',
+                            $output = false,
+                            $orientation = 'landscape',
+                            $paperSize   = 'a3' ) {
         require_once 'packages/dompdf/dompdf_config.inc.php';
         $dompdf = new DOMPDF( );
         
@@ -102,14 +105,21 @@ class CRM_Utils_PDF_Utils {
         </html>';
                         
         $dompdf->load_html( $html );
+        $dompdf->set_paper ($paperSize, $orientation);
         $dompdf->render( );
-        $dompdf->stream( $fileName );
+        
+        if ( $output ) {
+            return $dompdf->output( );
+        } else {
+            $dompdf->stream( $fileName );
+        }
     }
 
     static function html2pdf( $text,
                               $fileName = 'civicrm.pdf',
                               $orientation = 'landscape',
-                              $paperSize   = 'a3' ) {
+                              $paperSize   = 'a3',
+                              $output = false ) {
         require_once 'packages/dompdf/dompdf_config.inc.php';
         spl_autoload_register('DOMPDF_autoload');
         $dompdf = new DOMPDF( );
@@ -135,7 +145,11 @@ class CRM_Utils_PDF_Utils {
         $dompdf->load_html( $html );
         $dompdf->set_paper ($paperSize, $orientation);
         $dompdf->render( );
-        $dompdf->stream( $fileName );
+        if ( $output ) {
+            return $dompdf->output( );
+        } else {
+            $dompdf->stream( $fileName );
+        }
     }
 
     static function &pdflib( $fileName,
@@ -226,7 +240,7 @@ class CRM_Utils_PDF_Utils {
                 header("Content-Disposition: inline; filename={$output}.pdf");
                 echo $buf;
                 CRM_Utils_System::civiExit( ); 
-           } else {
+            } else {
                 return $buf;
             }
         }

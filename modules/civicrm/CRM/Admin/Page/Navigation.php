@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -103,7 +103,9 @@ class CRM_Admin_Page_Navigation extends CRM_Core_Page_Basic
      * Browse all menus
      */
      function browse(  ) {
-         // need this so that we don't call parent
+         // assign home id to the template 
+         $homeMenuId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Navigation', 'Home', 'id', 'name' );
+         $this->assign( 'homeMenuId', $homeMenuId );
      }
 }
 

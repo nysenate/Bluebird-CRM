@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -171,23 +171,9 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration
         $this->assign( 'isOnWaitlist', $isOnWaitlist );
         $this->assign( 'isRequireApproval', $isRequireApproval );
         
-        
         // Assign Participant Count to Lineitem Table
-        if ( $this->_priceSetId ) {
-            $query = "SELECT count from civicrm_price_field where price_set_id = %1 ";
-            $params = array( 1 => array( $this->_priceSetId, 'Integer' ));
-            $dao = CRM_Core_DAO::executeQuery( $query, $params );
-            $participantCount = array();
-            while ( $dao->fetch() ) {
-                if ( ! empty( $dao->count ) ){
-                    $participantCount[] = $dao->count;
-                } 
-            }
-            
-            if ( !empty( $participantCount ) ) {
-                $this->assign( 'participantCount', $participantCount );
-            }
-        }
+        require_once "CRM/Price/BAO/Set.php";
+        $this->assign( 'pricesetFieldsCount', CRM_Price_BAO_Set::getPricesetCount( $this->_priceSetId ) );    
         
         // can we blow away the session now to prevent hackery
         $this->controller->reset( );

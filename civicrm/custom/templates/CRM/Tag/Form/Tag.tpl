@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -34,7 +34,7 @@
 <script type="text/javascript">
 
 options = {ldelim} ajaxURL:"{crmURL p='civicrm/ajax/rest' h=0}"
-       ,closetxt:'<div class="icon close-icon"></div>'
+       ,closetxt:'<div class="ui-icon ui-icon-close" style="float:left"></div>'
       {rdelim} 
 entityID={$entityID};
 entityTable='{$entityTable}';
@@ -47,14 +47,14 @@ cj(document).ready(function(){initTagTree()});
 function initTagTree() {
     //unobsctructive elements are there to provide the function to those not having javascript, no need for the others
     cj(".unobstructive").hide();
-    cj("#tagtree").treeview({
-        animated: "fast",
-        collapsed: true,
-        unique: true
-    });
+
+    //load js tree.
+    cj("#tagtree").jstree({"plugins" : ["themes", "html_data"]});
+
     cj("#tagtree ul input:checked").each (function(){
-        cj(this).parents("li").children(".hit").addClass('highlighted');
+        cj(this).parents("li").children(".jstree-icon").addClass('highlighted');
     });
+
     cj("#tagtree input").change(function(){
         tagid = this.id.replace("check_", "");
 
@@ -101,8 +101,7 @@ function initTagTree() {
 };
 {/literal}
 </script>
-<a name="#saved"></a>
-<span id="restmsg" style="display:none"></span>
+{*<span id="restmsg" style="display:none"></span>*}{*NYSS*}
 <div id="Tag" class="view-content">
 <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
     <p>
@@ -119,18 +118,25 @@ function initTagTree() {
 	{/if}
     {/if}
     </p>
+    
+    {*NYSS add list of Issue Codes*}
+    {if $contactIssueCode_list}
+    	<div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
+    	<div class="clear"></div>
+    {/if}
+    
     <ul id="tagtree" class="tree">
         {foreach from=$tree item="node" key="id"}
         <li id="tag_{$id}" class="tagset">
             {if ! $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
             {if $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
-            <label for="check_{$id}x" {if $node.children}{*class="hit"*}{/if} id="tagLabel_{$id}">{$node.name}</label>
+            {if $node.children} <span class="hit"></span> {/if} <label for="check_{$id}" id="tagLabel_{$id}">{$node.name}</label> 
             {if $node.children}
             <ul>
                 {foreach from=$node.children item="subnode" key="subid"}
                     <li id="tag_{$subid}">
                         <input id="check_{$subid}" name="tagList[{$subid}]" type="checkbox" {if $tagged[$subid]}checked="checked"{/if}/>
-                        <label for="check_{$subid}" {if $subnode.children}class="hit"{/if} id="tagLabel_{$subid}">{$subnode.name}</label>
+                        {if $subnode.children} <span class="hit"></span> {/if} <label for="check_{$subid}" id="tagLabel_{$subid}">{$subnode.name}</label> 
                         {if $subnode.children}
                         <ul>
                             {foreach from=$subnode.children item="subsubnode" key="subsubid"}
@@ -138,7 +144,7 @@ function initTagTree() {
                                     <input id="check_{$subsubid}" name="tagList[{$subsubid}]" type="checkbox" {if $tagged[$subsubid]}checked="checked"{/if}/>
                                     <label for="check_{$subsubid}" id="tagLabel_{$subsubid}">{$subsubnode.name}</label>
                                     
-                                    {*LCD Extend to level 4*}
+                                    {*NYSS Extend to level 4*}
                                     {if $subsubnode.children}
                         			<ul>
                             			{foreach from=$subsubnode.children item="subsubsubnode" key="subsubsubid"}
@@ -149,7 +155,7 @@ function initTagTree() {
                             			{/foreach} 
                         			</ul>
                         			{/if}
-                                    {*LCD end*}
+                                    {*NYSS end*}
                                     
                                 </li>
                             {/foreach} 
@@ -160,17 +166,7 @@ function initTagTree() {
             </ul>
             {/if}
         </li>	 
-        {/foreach}
-        <li>
-        <div class="action-link">
-    <a href="#saved" class="button" id="tag-refresh-button">
-        <span>
-            <div class="icon refresh-icon"></div>
-            Refresh Tags
-            </span>
-    </a>
-</div>
-        </li> 
+        {/foreach} 
     </ul>
    
       {*foreach from=$tag item="row" key="id"}
@@ -193,6 +189,21 @@ function initTagTree() {
     {/if}
 
     {include file="CRM/common/Tag.tpl"}
+    
+    {*NYSS add list of leg positions with descriptions*}
+    {if $legpositions}
+    <div class="clear_left"></div>
+    <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
+    	<ul>
+        {foreach from=$legpositions item="legposition"}
+        	{if $legposition.description && $legposition.description neq 'No description available.'}
+            	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
+            {/if}
+        {/foreach}
+        </ul>
+    </div>
+    {/if}
+    
 </div>
 
 {if $action eq 1 or $action eq 2 }

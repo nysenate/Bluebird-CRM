@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -79,7 +79,7 @@ class CRM_Activity_DAO_Activity extends CRM_Core_DAO
      * @var boolean
      * @static
      */
-    static $_log = false;
+    static $_log = true;
     /**
      * Unique  Other Activity ID
      *
@@ -197,6 +197,12 @@ class CRM_Activity_DAO_Activity extends CRM_Core_DAO
      * @var int unsigned
      */
     public $original_id;
+    /**
+     * Currently being used to store result id for survey activity, FK to option value.
+     *
+     * @var string
+     */
+    public $result;
     /**
      *
      * @var boolean
@@ -408,6 +414,13 @@ class CRM_Activity_DAO_Activity extends CRM_Core_DAO
                     'name' => 'original_id',
                     'type' => CRM_Utils_Type::T_INT,
                     'FKClassName' => 'CRM_Activity_DAO_Activity',
+                ) ,
+                'activity_result' => array(
+                    'name' => 'result',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Result') ,
+                    'maxlength' => 255,
+                    'size' => CRM_Utils_Type::HUGE,
                 ) ,
                 'is_deleted' => array(
                     'name' => 'is_deleted',

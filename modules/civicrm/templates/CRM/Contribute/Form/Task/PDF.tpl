@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -29,7 +29,7 @@
       {include file="CRM/Contribute/Form/Task.tpl"}
 </div>
 <div id="help">
-    {ts}You may choose to Email receipts to Contributers OR Download a PDF file containing one receipt per page to your computer when you click <strong>Process Receipt(s)</strong>. Your browser may display the file for you automatically, or you may need to open it for printing using any PDF reader (such as Adobe&reg; Reader).{/ts}
+    {ts}You may choose to Email receipts to Contributers OR Download a PDF file containing one receipt per page to your local computer by clicking <strong>Process Receipt(s)</strong>. Your browser may display the file for you automatically, or you may need to open it for printing using any PDF reader (such as Adobe&reg; Reader).{/ts}
 </div>
 
   {$form.output.pdf_receipt.html}

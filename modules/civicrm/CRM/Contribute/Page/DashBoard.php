@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,40 +52,19 @@ class CRM_Contribute_Page_DashBoard extends CRM_Core_Page
     function preProcess( ) 
     {
         CRM_Utils_System::setTitle( ts('CiviContribute') );
-
-        $startToDate = array( );
-        $yearToDate  = array( );
-        $monthToDate = array( );
-
-        $status = array( 'Valid', 'Cancelled' );
         
-        $startDate = null;
-        $config = CRM_Core_Config::singleton( );
-        $currentMonth = date('m');
-        $currentDay   = date('d');
-        if ( (int ) $config->fiscalYearStart['M']  > $currentMonth ||
-             ( (int ) $config->fiscalYearStart['M'] == $currentMonth &&
-               (int ) $config->fiscalYearStart['d'] > $currentDay ) ) {
-            $year     = date( 'Y' ) - 1;
-        } else {
-            $year     = date( 'Y' );
-        }
-        $year  = array('Y' => $year );
-        $yearDate = $config->fiscalYearStart;
-        $yearDate = array_merge( $year, $yearDate);
-        $yearDate = CRM_Utils_Date::format( $yearDate );
-  
-        $monthDate = date('Ym') . '01';
-
-        $prefixes = array( 'start', 'month', 'year'  );
-        $status   = array( 'Valid', 'Cancelled' );
-       
-        $yearNow = $yearDate + 10000;
+        $status      = array( 'Valid', 'Cancelled' );
+        $prefixes    = array( 'start', 'month', 'year'  );
+        $startDate   = null;
+        $startToDate = $monthToDate = $yearToDate = array( );
         
-        // we are specific since we want all information till this second
-        $now       = date( 'Ymd' );
-       
+        //get contribution dates.
         require_once 'CRM/Contribute/BAO/Contribution.php';
+        $dates = CRM_Contribute_BAO_Contribution::getContributionDates( );
+        foreach ( array( 'now', 'yearDate', 'monthDate' ) as $date ) {
+            $$date = $dates[$date];
+        }
+        $yearNow = $yearDate + 10000;
         foreach ( $prefixes as $prefix ) {
             $aName = $prefix . 'ToDate';
             $dName = $prefix . 'Date';
@@ -93,12 +72,13 @@ class CRM_Contribute_Page_DashBoard extends CRM_Core_Page
             if ( $prefix == 'year') {
                 $now  = $yearNow;
             }
-
+            
             foreach ( $status as $s ) {
                 ${$aName}[$s]        = CRM_Contribute_BAO_Contribution::getTotalAmountAndCount( $s, $$dName, $now );
                 ${$aName}[$s]['url'] = CRM_Utils_System::url( 'civicrm/contribute/search',
                                                               "reset=1&force=1&status=1&start={$$dName}&end=$now&test=0");
             }
+            
             $this->assign( $aName, $$aName );
         }
         

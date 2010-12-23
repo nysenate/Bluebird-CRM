@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,8 +32,8 @@
   
   <div class="leftColumn">
   <div class="form-item">
-        <span class="labels">{$form.gender_id.label}</span>
-        <span class="fields">
+        <span class="label">{$form.gender_id.label}</span>
+        <span class="value">
         {$form.gender_id.html|crmInsert:onclick:'showOtherGender()'}
         <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('gender_id', '{$form.formName}'); return false;">{ts}clear{/ts}</a>)</span>
         </span>
@@ -45,16 +45,16 @@
         <span class="fields">{$form.$custom_45.html}</span>
   </div>
   <div class="form-item">
-        <span class="labels">{$form.birth_date.label}</span>
-        <span class="fields">{include file="CRM/common/jcalendar.tpl" elementName=birth_date}</span>
+        <span class="label">{$form.birth_date.label}</span>
+        <span class="value">{include file="CRM/common/jcalendar.tpl" elementName=birth_date}</span>
   </div>
   <div class="form-item">
        <span class="labels">{$form.is_deceased.label}</span>
        <span class="fields">{$form.is_deceased.html}</span>
   </div>
   <div id="showDeceasedDate" class="form-item">
-       <span class="labels">{$form.deceased_date.label}</span>
-       <span class="fields">{include file="CRM/common/jcalendar.tpl" elementName=deceased_date}</span>
+       <span class="label">{$form.deceased_date.label}</span>
+       <span class="value">{include file="CRM/common/jcalendar.tpl" elementName=deceased_date}</span>
   </div> 
   </div>
   
@@ -83,10 +83,11 @@
     showDeceasedDate( );    
     function showDeceasedDate( )
     {
-        if (document.getElementsByName("is_deceased")[0].checked) {
-      	    show('showDeceasedDate');
+        if ( cj("#is_deceased").is(':checked') ) {
+      	    cj("#showDeceasedDate").show( );
         } else {
-	    hide('showDeceasedDate');
+	        cj("#showDeceasedDate").hide( );
+            cj("#deceased_date").val('');
         }
     }
 	showOtherGender( );    

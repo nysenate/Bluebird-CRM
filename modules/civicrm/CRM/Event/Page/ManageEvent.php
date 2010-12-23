@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -71,18 +71,6 @@ class CRM_Event_Page_ManageEvent extends CRM_Core_Page
             $deleteExtra = ts('Are you sure you want to delete this Event?');
             
             self::$_actionLinks = array(
-                                        CRM_Core_Action::UPDATE  => array(
-                                                                          'name'  => ts('Configure'),
-                                                                          'url'   => CRM_Utils_System::currentPath( ),
-                                                                          'qs'    => 'action=update&id=%%id%%&reset=1',
-                                                                          'title' => ts('Configure Event') 
-                                                                          ),
-                                        CRM_Core_Action::PREVIEW => array(
-                                                                          'name'  => ts('Test-drive'),
-                                                                          'url'   => 'civicrm/event/info',
-                                                                          'qs'    => 'reset=1&action=preview&id=%%id%%',
-                                                                          'title' => ts('Preview') 
-                                                                          ),
                                         CRM_Core_Action::DISABLE => array(
                                                                           'name'  => ts('Disable'),
                                                                           'extra' => 'onclick = "enableDisable( %%id%%,\''. 'CRM_Event_BAO_Event' . '\',\'' . 'enable-disable' . '\' );"',
@@ -246,8 +234,9 @@ ORDER BY start_date desc
                 $manageEvent[$dao->id]['action'] = CRM_Core_Action::formLink( self::links(), 
                                                                               $action, 
                                                                               array( 'id' => $dao->id ),
+                                                                              ts( 'more' ),
                                                                               true );
-
+                
                 $params = array( 'entity_id'    => $dao->id, 
                                  'entity_table' => 'civicrm_event',
                                  'is_active'    => 1

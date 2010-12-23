@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -26,7 +26,7 @@
 {* add/update/view custom data group *}
 <div class="crm-block crm-form-block">
     <div id="help">{ts}Use Custom Field Sets to add logically related fields for a specific type of CiviCRM record (e.g. contact records, contribution records, etc.).{/ts} {help id="id-group_intro"}</div>
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
+    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     <table class="form-layout">
     <tr>
         <td class="label">{$form.title.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_custom_group' field='title' id=$gid}{/if}</td> 
@@ -74,7 +74,7 @@
         <td>{$form.help_post.html}</td>
     </tr>
     </table>
-    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
+    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>
 {if $action eq 2 or $action eq 4} {* Update or View*}
     <p></p>
@@ -136,8 +136,10 @@ function showRange()
 {
     if( cj("#is_multiple :checked").length ) {
         cj("tr#multiple").show();
+        cj("select#style option[value='Tab']").attr("selected", "selected");
     } else { 
         cj("tr#multiple").hide();
+        cj("select#style option[value='Inline']").attr("selected", "selected");
     } 
 }
 

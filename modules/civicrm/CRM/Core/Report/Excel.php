@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -147,6 +147,35 @@ class CRM_Core_Report_Excel {
             return $result;
         }
     } // end of the 'getTableCsv()' function
+
+    function writeHTMLFile ( $fileName, &$header, &$rows, $titleHeader = null, $outputHeader = true ) {
+        if ( $outputHeader ) {
+            require_once 'CRM/Utils/System.php';
+            CRM_Utils_System::download( CRM_Utils_String::munge( $fileName ),
+                                        'application/vnd.ms-excel',
+                                        CRM_Core_DAO::$_nullObject,
+                                        'xls',
+                                        false );
+        }
+        echo "<table><thead><tr>";
+        foreach ( $header as $field ) {
+          echo "<th>$field</th>";
+        } // end while
+        echo "</tr></thead><tbody>";
+        $i = 0;
+        $fields_cnt = count($header);
+
+        foreach ( $rows as $row ) {
+            $schema_insert = '';
+            $colNo = 0;
+            echo "<tr>";
+            foreach ( $row as $j => $value ) {
+                echo "<td>".htmlentities ($value,ENT_COMPAT,'UTF-8')."</td>";
+            } // end for
+            echo "</tr>";
+        } // end for
+        echo "</tbody></table>";
+    } 
 
     function writeCSVFile( $fileName, &$header, &$rows, $titleHeader = null, $outputHeader = true ) {
         if ( $outputHeader ) {

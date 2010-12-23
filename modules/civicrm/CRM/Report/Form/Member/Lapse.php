@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -44,7 +44,8 @@ class CRM_Report_Form_Member_Lapse extends CRM_Report_Form {
     protected $_emailField   = false;
     protected $_phoneField   = false;
     protected $_charts       = array( '' => 'Tabular' );
-    
+    protected $_customGroupExtends = array( 'Membership' );
+
     function __construct( ) {
         // UI for selecting columns to appear in the report list
         // array conatining the columns, group_bys and filters build and provided to Form

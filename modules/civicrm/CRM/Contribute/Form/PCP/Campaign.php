@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -42,12 +42,16 @@ require_once 'CRM/Contribute/BAO/PCP.php';
 
 class CRM_Contribute_Form_PCP_Campaign extends CRM_Core_Form
 {
- 
+    public $_context;
+     
     public function preProcess()  
     {
         // we do not want to display recently viewed items, so turn off
         $this->assign('displayRecent' , false );
-
+        
+        $this->_context = CRM_Utils_Request::retrieve('context', 'String', $this );
+        $this->assign('context', $this->_context );
+        
         $this->_pageId = CRM_Utils_Request::retrieve( 'id', 'Positive', $this, false );        
         $title = ts('Setup a Personal Campaign Page - Step 2');
         
@@ -304,6 +308,8 @@ class CRM_Contribute_Form_PCP_Campaign extends CRM_Core_Form
                                          array(1 => $pageStatus, 2 => $approvalMessage, 3 => $notifyStatus)) );
         if ( ! $this->_pageId ) {
             $session->pushUserContext( CRM_Utils_System::url( 'civicrm/contribute/pcp/info', "reset=1&id={$pcp->id}&ap={$anonymousPCP}" ) );
-        } 
+        } elseif ( $this->_context == 'dashboard' ) {
+            $session->pushUserContext( CRM_Utils_System::url( 'civicrm/admin/pcp', "reset=1" ) );
+        }
     }
 }

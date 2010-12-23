@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -64,7 +64,7 @@ class CRM_Contact_BAO_Contact_Utils
                     $imageUrl = $config->resourceBase . $imageUrl;
                 }
                 $imageInfo[$contactType]['image'] = 
-                    "<div class=\"icon crm-icon {$typeInfo['name']}-icon\" style=\"background: url('{$imageUrl}')\"></div>";
+                    "<div class=\"icon crm-icon {$typeInfo['name']}-icon\" style=\"background: url('{$imageUrl}')\" title=\"{$contactType}\"></div>";
                 $imageInfo[$contactType]['url']   = $imageUrl;
             } else {
                 $isSubtype = ( array_key_exists('parent_id', $typeInfo) && 
@@ -78,7 +78,7 @@ class CRM_Contact_BAO_Contact_Utils
            		
 
                 $imageInfo[$contactType]['image'] = 
-                 	"<div class=\"icon crm-icon {$type}-icon\"></div>";
+                 	"<div class=\"icon crm-icon {$type}-icon\" title=\"{$contactType}\"></div>";
                 $imageInfo[$contactType]['url']   = null;
             }
         }
@@ -356,7 +356,7 @@ WHERE contact_a.id ={$contactId} AND contact_b.id={$orgId}; ";
             
             //FIXME : currently civicrm mysql_query support only single statement
             //execution, though mysql 5.0 support multiple statement execution.
-            $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );  
+            $dao = CRM_Core_DAO::executeQuery( $query );  
         }
     }
 
@@ -372,7 +372,7 @@ WHERE contact_a.id ={$contactId} AND contact_b.id={$orgId}; ";
 SET contact_a.organization_name=contact_b.organization_name 
 WHERE contact_a.employer_id=contact_b.id AND contact_b.id={$organizationId}; ";
 
-        $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );        
+        $dao = CRM_Core_DAO::executeQuery( $query );        
     }
 
     /**
@@ -388,7 +388,7 @@ WHERE contact_a.employer_id=contact_b.id AND contact_b.id={$organizationId}; ";
 SET organization_name=NULL, employer_id = NULL
 WHERE id={$contactId}; ";
         
-        $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $query );
         
         // need to handle related meberships. CRM-3792
         if ( $employerId ) {
@@ -751,4 +751,86 @@ Group By  componentId";
         return $contactDetails;
     }
     
+    /**
+     * Function handles shared contact address processing
+     * In this function we just modify submitted values so that new address created for the user
+     * has same address as shared contact address. We copy the address so that search etc will be 
+     * much efficient.
+     *
+     * @param array $address this is associated array which contains submitted form values
+     *                       
+     * @return void
+     * @static
+     * @access public
+     */
+    static function processSharedAddress( &$address ) 
+    {
+        if ( !is_array( $address ) ) return;
+        
+        // Sharing contact address during create mode is pretty straight forward.
+        // In update mode we should check following:
+        // - We should check if user has uncheck shared contact address
+        // - If yes then unset the master_id or may be just delete the address that copied master
+        //    Normal update process will automatically create new address with submitted values
+                
+        // 1. loop through entire subnitted address array
+        $masterAddress = array( );
+        $skipFields = array( 'is_primary', 'location_type_id', 'is_billing', 'master_id' );
+        foreach( $address as &$values ) {
+            // 2. check if master id exists, if not continue
+            if ( !CRM_Utils_Array::value( 'master_id', $values ) ||
+                 !CRM_Utils_Array::value( 'use_shared_address', $values ) ) {
+                // we should unset master id when use uncheck share address for existing address
+                $values['master_id'] = 'null';
+                continue;
+            }
+            
+            // 3. get the address details for master_id
+            $masterAddress = new CRM_Core_BAO_Address( );
+            $masterAddress->id = CRM_Utils_Array::value( 'master_id', $values );
+            $masterAddress->find( true );
+            
+            // 4. modify submitted params and update it with shared contact address
+            // make sure you preserve specific form values like location type, is_primary_ is_billing, master_id
+            foreach ( $values as $field => $submittedValue ) {
+                if ( !in_array( $field, $skipFields ) && isset( $masterAddress->$field ) ) {
+                    $values[$field] = $masterAddress->$field;
+                }
+            } 
+        }
+    }
+
+    /**
+     * Function to get the list of contact name give address associated array
+     *
+     * @param array $addresses associated array of 
+     *
+     * @return $contactNames associated array of contact names
+     * @static
+     */
+    static function getAddressShareContactNames( &$addresses ) {
+        $contactNames = array( );
+        // get the list of master id's for address
+        $masterAddressIds = array( ); 
+        foreach ( $addresses as $key => $addressValue ) {
+            if ( CRM_Utils_Array::value( 'master_id', $addressValue ) ) {
+                $masterAddressIds[] = $addressValue['master_id'];
+            }
+        }
+        
+        if ( !empty( $masterAddressIds ) ) {
+            $query = 'SELECT ca.id, cc.display_name, cc.id as cid, cc.is_deleted
+                      FROM civicrm_contact cc
+                           INNER JOIN civicrm_address ca ON cc.id = ca.contact_id
+                      WHERE ca.id IN  ( ' . implode( ',', $masterAddressIds ) . ')';
+            $dao = CRM_Core_DAO::executeQuery( $query );
+
+            while ( $dao->fetch( ) ) {
+                $contactViewUrl = CRM_Utils_System::url( 'civicrm/contact/view', "reset=1&cid={$dao->cid}" );
+                $contactNames[ $dao->id ] = array( 'name' => "<a href='{$contactViewUrl}'>{$dao->display_name}</a>", 
+                                                   'is_deleted' => $dao->is_deleted );                
+            }
+        }
+        return $contactNames;
+    }
 }

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,8 +37,8 @@
  *
  */
 
-require_once ('CRM/Event/BAO/Event.php');
-require_once ('CRM/Utils/PDF/Label.php');
+require_once 'CRM/Event/BAO/Event.php';
+require_once 'CRM/Utils/PDF/Label.php';
 
 /**
  * This class print the name badges for the participants
@@ -157,20 +157,22 @@ class CRM_Event_Badge {
       * @return  null      
       * @access  public
       */
-    function createLabels(&$participants)
+    function createLabels( &$participants )
     {
         require_once 'CRM/Utils/String.php';
         
-        $this->pdf = new CRM_Utils_PDF_Label($this->format,'mm');
+        $this->pdf = new CRM_Utils_PDF_Label( $this->format, 'mm' );
         $this->pdfExtraFormat();
         $this->pdf->Open();
+        $this->pdf->setPrintHeader( false );
+	 $this->pdf->setPrintFooter( false );
         $this->pdf->AddPage();
-        $this->pdf->AddFont('DejaVu Sans', '', 'DejaVuSans.php');
-        $this->pdf->SetFont('DejaVu Sans');
-        $this->pdf->SetGenerator($this, "generateLabel");
+        $this->pdf->AddFont( 'DejaVu Sans', '', 'DejaVuSans.php' );
+        $this->pdf->SetFont( 'DejaVu Sans' );
+        $this->pdf->SetGenerator( $this, "generateLabel" );
        
-        foreach ($participants as $participant) {
-          $this->pdf->AddPdfLabel($participant);
+        foreach ( $participants as $participant ) {
+          $this->pdf->AddPdfLabel( $participant );
         }
         $this->pdf->Output( $this->event->title.'.pdf', 'D' );
     }

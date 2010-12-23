@@ -90,7 +90,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	$ids = implode("),(",$this->_contactIds);
 	$ids = "($ids)";
 
-	$sql = "CREATE TEMPORARY TABLE tmpExport$rnd(id int not null primary key);";
+	$sql = "CREATE TABLE tmpExport$rnd(id int not null primary key);";
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";

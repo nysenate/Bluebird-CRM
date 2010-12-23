@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -86,6 +86,10 @@ class CRM_Contact_Form_Edit_Address
                           ts('Billing location for this contact'),  
                           ts('Billing location for this contact'), 
                           $js );
+        
+        // hidden element to store master address id
+        $form->addElement('hidden', "address[$blockId][master_id]" );
+        
         
         require_once 'CRM/Core/BAO/Preferences.php';
         $addressOptions = CRM_Core_BAO_Preferences::valueOptions( 'address_options', true, null, true );
@@ -219,6 +223,19 @@ class CRM_Contact_Form_Edit_Address
             $form->assign( "dnc_groupTree", null ); // unset the temp smarty var that got created
         }
         // address custom data processing ends ..
+        
+        // shared address
+        $form->addElement( 'checkbox', "address[$blockId][use_shared_address]", null, ts('Share Address With') );
+        
+        // get the reserved for address
+        $profileId  = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', 'shared_address', 'id', 'name' );
+        
+        if ( !$profileId ) {
+            CRM_Core_Error::fatal( ts('Your install is missing required "Shared Address" profile.') );
+        }
+
+        require_once 'CRM/Contact/Form/NewContact.php';
+        CRM_Contact_Form_NewContact::buildQuickForm( $form, $blockId, array( $profileId ) );        
     }
     
     /**
@@ -234,6 +251,7 @@ class CRM_Contact_Form_Edit_Address
      */
     static function formRule( $fields, $errors )
     {
+        $errors = array( );
         // check for state/county match if not report error to user.
         if ( is_array( $fields['address'] ) ) {
             foreach ( $fields['address'] as $instance => $addressValues ) {
@@ -254,21 +272,24 @@ class CRM_Contact_Form_Edit_Address
                     if ( $stateProvinceId != ts('- type first letter(s) -') ) {
                         if ( !array_key_exists( $stateProvinceId, CRM_Core_PseudoConstant::stateProvince( false, false ) ) ) {
                             $stateProvinceId = null;
-                            $errors["address[$instance][state_province_id]"] = "Please select a valid State/Province name.";
+                            $errors["address[$instance][state_province_id]"] = ts('Please select a valid State/Province name.');
                         }
                     }
                 }
                 
                 //do check for mismatch countries 
                 if ( $stateProvinceId && $countryId ) {
-                    $stateProvinceDAO = new CRM_Core_DAO_StateProvince();
+                    $stateProvinceDAO = new CRM_Core_DAO_StateProvince( );
                     $stateProvinceDAO->id = $stateProvinceId;
                     $stateProvinceDAO->find(true);
                     if ( $stateProvinceDAO->country_id != $countryId ) {
                         // countries mismatch hence display error
                         $stateProvinces = CRM_Core_PseudoConstant::stateProvince( );
                         $countries =& CRM_Core_PseudoConstant::country( );
-                        $errors["address[$instance][state_province_id]"] = "State/Province " . $stateProvinces[$stateProvinceId] . " is not part of ". $countries[$countryId] . ". It belongs to " . $countries[$stateProvinceDAO->country_id] . "." ;
+                        $errors["address[$instance][state_province_id]"] = ts( 'State/Province %1 is not part of %2. It belongs to %3.', 
+                                                                           array( 1 => $stateProvinces[$stateProvinceId],
+                                                                                  2 => $countries[$countryId],
+                                                                                  3 => $countries[$stateProvinceDAO->country_id] ) ) ;
                     }
                 }
                 
@@ -276,17 +297,25 @@ class CRM_Contact_Form_Edit_Address
                 
                 //state county validation
                 if ( $stateProvinceId && $countyId ) {
-                    $countyDAO = new CRM_Core_DAO_County();
+                    $countyDAO = new CRM_Core_DAO_County( );
                     $countyDAO->id = $countyId;
                     $countyDAO->find(true);
-                    
                     if ( $countyDAO->state_province_id != $stateProvinceId ) {
-                        $counties =& CRM_Core_PseudoConstant::county();
-                        $errors["address[$instance][county_id]"] = "County " . $counties[$countyId] . " is not part of ". $stateProvinces[$stateProvinceId] . ". It belongs to " . $stateProvinces[$countyDAO->state_province_id] . "." ;
+                        $counties =& CRM_Core_PseudoConstant::county( );
+                        $errors["address[$instance][county_id]"] = ts( 'County %1 is not part of %2. It belongs to %3.', 
+                                                                           array( 1 => $counties[$countyId],
+                                                                                  2 => $stateProvinces[$stateProvinceId],
+                                                                                  3 => $stateProvinces[$countyDAO->state_province_id] ) ) ;
                     }
+                }
+                
+                if ( CRM_Utils_Array::value( 'use_shared_address', $addressValues ) && !CRM_Utils_Array::value( 'master_id', $addressValues ) ) {
+                    $errors["address[$instance][use_shared_address]"] = ts( 'Please select valid shared contact or a contact with valid address.' ) ;
                 }
             }
         }
+        
+        return empty($errors) ? true : $errors;
     }
 
     static function fixStateSelect( &$form,

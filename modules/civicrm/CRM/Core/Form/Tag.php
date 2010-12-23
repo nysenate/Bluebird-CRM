@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -85,18 +85,47 @@ class CRM_Core_Form_Tag
                     $tagset[$tagsetItem]['entityId'] = $entityId;
                     require_once 'CRM/Core/BAO/EntityTag.php';
                     $entityTags = CRM_Core_BAO_EntityTag::getChildEntityTags( $parentId, $entityId, $entityTable );                    
-                    if ( !empty( $entityTags ) ) {
-                        // assign as simple array for display in smarty
-                        $tagset[$tagsetItem]['entityTagsArray'] =  $entityTags;
-                        // assign as json for js widget
-                        $tagset[$tagsetItem]['entityTags'] =  json_encode( array_values( $entityTags ) );
-                        
-                        if ( !empty( $form->_entityTagValues ) ) {
-                            $form->_entityTagValues = CRM_Utils_Array::crmArrayMerge( $entityTags, $form->_entityTagValues );
+                } elseif ( !empty( $form->_submitValues['taglist'] ) && 
+                           CRM_Utils_Array::value( $parentId, $form->_submitValues['taglist']) ) {
+
+                    $allTags = CRM_Core_Pseudoconstant::tag( );
+                    $tagIds  = explode( ',', $form->_submitValues['taglist'][$parentId] );
+                    foreach( $tagIds as $tagId ) {
+                        if ( is_numeric( $tagId ) ) {
+                            $tagName = $allTags[$tagId];
                         } else {
-                            $form->_entityTagValues = $entityTags;
-                        }                        
+                            $tagName = $tagId;
+                        }
+                        
+                        $entityTags[$tagId] = array( 'id'   => $tagId,
+                                                     'name' => $tagName );
+                    } 
+                } elseif ( !empty($form->_formValues['contact_tags']) ) {
+                    require_once 'CRM/Core/BAO/Tag.php';
+                    $contactTags = CRM_Core_BAO_Tag::getTagsUsedFor( 'civicrm_contact', true, false, $parentId );
+
+                    foreach( array_keys($form->_formValues['contact_tags']) as $tagId ) {
+                        if ( CRM_Utils_Array::value($tagId, $contactTags) ) {
+                            $tagName = $tagId;
+                            if ( is_numeric($tagId) ) $tagName = $contactTags[$tagId];
+
+                            $entityTags[$tagId] = array( 'id'   => $tagId,
+                                                         'name' => $tagName );
+                        }
                     }
+                }    
+                
+                if ( !empty( $entityTags ) ) {
+                    // assign as simple array for display in smarty
+                    $tagset[$tagsetItem]['entityTagsArray'] =  $entityTags;
+                    // assign as json for js widget
+                    $tagset[$tagsetItem]['entityTags'] =  json_encode( array_values( $entityTags ) );
+
+                    if ( !empty( $form->_entityTagValues ) ) {
+                        $form->_entityTagValues = CRM_Utils_Array::crmArrayMerge( $entityTags, $form->_entityTagValues );
+                    } else {
+                        $form->_entityTagValues = $entityTags;
+                    }                        
                 }
             }
         }

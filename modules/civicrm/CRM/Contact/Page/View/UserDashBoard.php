@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -209,7 +209,7 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page
      * @return array (reference) of action links
      * @static
      */
-    static function &links()
+    static function &links( )
     {
         if (!(self::$_links)) {
             $deleteExtra = ts('Are you sure you want to delete this relationship?');
@@ -229,15 +229,25 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page
                                                                     'qs'    => 'reset=1&id=%%cbid%%',
                                                                     'title' => ts('View Relationship')
                                                                     ),
-                                  CRM_Core_Action::DISABLE => array(
+                                 );
+
+
+            if ( CRM_Core_Permission::check( 'access CiviCRM' ) ) {
+                self::$_links = array_merge( self::$_links, array(  CRM_Core_Action::DISABLE => array(
                                                                     'name'  => ts('Disable'),
                                                                     'url'   => 'civicrm/contact/view/rel',
                                                                     'qs'    => 'action=disable&reset=1&cid=%%cid%%&id=%%id%%&rtype=%%rtype%%&selectedChild=rel%%&context=dashboard',
                                                                     'extra' => 'onclick = "return confirm(\'' . $disableExtra . '\');"',
                                                                     'title' => ts('Disable Relationship')
-                                                                    ),
-                                  );
+                                                                    )
+                                                                 ) );
+            }
         }
+
+        // call the hook so we can modify it
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::links( 'view.contact.userDashBoard', 'Contact',
+                               CRM_Core_DAO::$_nullObject, self::$_links );
         return self::$_links;
     }
 }

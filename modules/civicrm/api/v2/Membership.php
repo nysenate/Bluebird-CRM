@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,7 +33,7 @@
  * @subpackage API_Membership
  *
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Membership.php 28934 2010-07-28 18:44:12Z mover $
+ * @version $Id: Membership.php 30533 2010-11-04 13:16:35Z mover $
  *
  */
 
@@ -63,6 +63,11 @@ function civicrm_membership_delete(&$membershipID)
     if (empty($membershipID)) {
         return civicrm_create_error('Membership ID cannot be empty.');
     }
+    
+    // membershipID should be numeric
+    if ( ! is_numeric( $membershipID ) ) {
+        return civicrm_create_error( 'Input parameter should be numeric' );
+    }    
     
     require_once 'CRM/Member/BAO/Membership.php';
     CRM_Member_BAO_Membership::deleteRelatedMemberships( $membershipID );

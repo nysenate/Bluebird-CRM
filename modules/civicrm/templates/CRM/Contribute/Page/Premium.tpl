@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -57,7 +57,7 @@
     </div>
     {if $products ne null }
         <div class="action-link">
-            <a href="{crmURL p='civicrm/admin/contribute' q="reset=1&action=update&id=$id&subPage=AddProductToPage"}">&raquo; {ts}Offer Another Premium on this Contribution Page{/ts}</a>
+            <a href="{crmURL p='civicrm/admin/contribute/addProductToPage' q="reset=1&action=update&id=$id"}">&raquo; {ts}Offer Another Premium on this Contribution Page{/ts}</a>
         </div>
 	{/if}
 </div>
@@ -66,7 +66,7 @@
     <div class="messages status">
 	{if $products ne null }
           <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/>
-          {capture assign=crmURL}{crmURL p='civicrm/admin/contribute' q="reset=1&action=update&id=$id&subPage=AddProductToPage"}{/capture}
+          {capture assign=crmURL}{crmURL p='civicrm/admin/contribute/addProductToPage' q="reset=1&action=update&id=$id"}{/capture}
           {ts 1=$crmURL}There are no premiums offered on this contribution page yet. You can <a href='%1'>add one</a>.{/ts}
 	{else}
 	   <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/>

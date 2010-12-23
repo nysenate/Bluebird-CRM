@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -151,6 +151,8 @@ class CRM_Event_Form_Search extends CRM_Core_Form
      */ 
     function preProcess( ) 
     { 
+        $this->set( 'searchFormName', 'Search' );
+
         /** 
          * set the button names 
          */ 
@@ -245,9 +247,9 @@ class CRM_Event_Form_Search extends CRM_Core_Form
          */ 
         $rows = $this->get( 'rows' );
         if ( is_array( $rows ) ) {
-            $lineItems = array( );
+            $lineItems = $participantIds = array( );
             require_once 'CRM/Event/BAO/Event.php';
-            
+            require_once 'CRM/Event/BAO/Participant.php';
             if ( !$this->_single ) {
                 $this->addElement( 'checkbox', 
                                    'toggleSelect', 
@@ -256,6 +258,7 @@ class CRM_Event_Form_Search extends CRM_Core_Form
                                    array( 'onclick' => "toggleTaskAction( true ); return toggleCheckboxVals('mark_x_',this);" ) ); 
             }
             foreach ( $rows as $row ) { 
+                $participantIds[] = $row['participant_id'];
                 if ( !$this->_single ) {
                     $this->addElement( 'checkbox', $row['checkbox'], 
                                        null, null, 
@@ -269,6 +272,8 @@ class CRM_Event_Form_Search extends CRM_Core_Form
                 }
             }
             
+            $participantCount = CRM_Event_BAO_Participant::totalEventSeats( $participantIds ); 
+            $this->assign( 'participantCount', $participantCount );
             $this->assign( 'lineItems', $lineItems );
 
             $total = $cancel = 0;

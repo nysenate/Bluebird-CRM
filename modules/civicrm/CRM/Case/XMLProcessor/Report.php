@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -134,14 +134,11 @@ class CRM_Case_XMLProcessor_Report extends CRM_Case_XMLProcessor {
             }
             $caseTypeIDs = explode( CRM_Core_DAO::VALUE_SEPARATOR,
                                     $dao->case_type_id );
-            $case['caseType'] = CRM_Core_OptionGroup::getLabel( 'case_type',
-                                                                $caseTypeID );
 
             require_once 'CRM/Case/BAO/Case.php';
-            $caseTypeName = CRM_Case_BAO_Case::getCaseType( $caseID, 'name' );
-            $case['caseTypeName'] = $caseTypeName;
-            $case['status'] = CRM_Core_OptionGroup::getLabel( 'case_status',
-                                                              $dao->status_id );
+            $case['caseType']     = CRM_Case_BAO_Case::getCaseType( $caseID );
+            $case['caseTypeName'] = CRM_Case_BAO_Case::getCaseType( $caseID, 'name' );
+            $case['status']       = CRM_Core_OptionGroup::getLabel( 'case_status', $dao->status_id, false );
         }
         return $case;
     }
@@ -203,6 +200,7 @@ FROM   civicrm_activity a,
        civicrm_case     c,
        civicrm_case_activity ac
 WHERE  a.is_current_revision = 1
+AND    a.is_deleted =0
 AND    a.activity_type_id IN ( $activityTypeIDs )
 AND    c.id = ac.case_id
 AND    a.id = ac.activity_id
@@ -418,7 +416,7 @@ WHERE      a.id = %1
         if ( $activityDAO->medium_id ) {
             $activity['fields'][] = array( 'label' => 'Medium',
                                            'value' => CRM_Core_OptionGroup::getLabel( 'encounter_medium',
-                                                                                      $activityDAO->medium_id ),
+                                                                                      $activityDAO->medium_id, false ),
                                            'type'  => 'String' );
         }
         

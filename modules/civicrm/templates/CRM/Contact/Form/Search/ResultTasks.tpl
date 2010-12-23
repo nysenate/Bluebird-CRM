@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -62,7 +62,7 @@
   <tr>
     <td class="font-size12pt" style="width: 30%;">
         {if $savedSearch.name}{$savedSearch.name} ({ts}smart group{/ts}) - {/if}
-        {ts count=$pager->_totalItems plural='%count Results'}%count Result{/ts}
+        {ts count=$pager->_totalItems plural='%count Contacts'}%count Contact{/ts}
     </td>
     
     {* Search criteria are passed to tpl in the $qill array *}

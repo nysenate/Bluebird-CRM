@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,22 +28,28 @@
 {* @var $blockId Contains the current address block id, and assigned in the  CRM/Contact/Form/Location.php file *}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
-<div class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">
-<div class="crm-accordion-header">
-	<div class="icon crm-accordion-pointer"></div>
+<div id = "addressBlockId" class="crm-accordion-wrapper crm-address-accordion crm-accordion-open">{*NYSS default open*}
+ <div class="crm-accordion-header">
+  <div class="icon crm-accordion-pointer"></div> 
 	{$title}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body" id="addressBlock">
 {/if}
 
  <div id="Address_Block_{$blockId}" {if $className eq 'CRM_Contact_Form_Contact'} class="boxBlock crm-edit-address-block" {/if}>
-	{if $blockId gt 1}<fieldset><legend>Additional Address</legend>{/if}
+  {if $blockId gt 1}<fieldset><legend>{ts}Additional Address{/ts}</legend>{/if}
 	{if $blockId gt 1 && $form.address.$blockId.location_type_id.value.0 != 6}
         <a href="#" title="{ts}Delete Address Block{/ts}" onClick="removeBlock( 'Address', '{$blockId}' ); return false;" class="delete_block">
         {ts}Delete this address{/ts}</a>
     {/if}
   <table class="form-layout-compressed crm-edit-address-form">
-  <tr>  <td>  <table class="form-layout-compressed">     <tr>
+     {if $masterAddress.$blockId gt 0 }
+        <tr><td><div class="message status"><div class="icon inform-icon"></div>&nbsp; {ts 1=$masterAddress.$blockId}This address is shared with %1 contact record(s). Modifying this address will automatically update the shared address for these contacts.{/ts}</div></td></tr>
+     {/if}
+     <tr>
+	<td>  
+	<table class="form-layout-compressed">
+	<tr>
 	 {if $className eq 'CRM_Contact_Form_Contact'}
         <td id='Address-Primary-html' colspan="2">
            <span class="crm-address-element location_type_id-address-element">{$form.address.$blockId.location_type_id.label}
@@ -51,20 +57,130 @@
            <span class="crm-address-element is_primary-address-element">{$form.address.$blockId.is_primary.html}</span>
            {*<span class="crm-address-element is_billing-address-element">{$form.address.$blockId.is_billing.html}</span>*}
         </td>
-	 {/if}
+	 {*/if*}
      </tr>
-     {if $form.use_household_address} 
+     <script type="text/javascript">
+     {literal}
+         function showHideSharedAddress( blockNo, showSelect ) {
+             // based on checkbox, show or hide
+             if ( cj( '#address\\[' + blockNo + '\\]\\[use_shared_address\\]' ).attr( 'checked') ) {
+                 if ( showSelect && cj( '#shared-address-display-' + blockNo ).length == 0 ) {
+                     cj( '#shared-address-' + blockNo ).show( );
+                 }
+                 
+                 cj( 'table#address_' + blockNo ).hide( );
+                 cj( '#shared-address-display-' + blockNo ).show( );
+                 cj( '#shared-address-display-cancel-' + blockNo ).hide( );
+             } else {
+                 cj( '#shared-address-' + blockNo ).hide( );
+                 cj( 'table#address_' + blockNo ).show( );
+                 cj( '#shared-address-display-' + blockNo ).hide( );
+                 cj( '#shared-address-display-cancel-' + blockNo ).hide( );
+             }
+         }
+     {/literal}
+     </script>
+     
      <tr>
         <td>
-            {$form.use_household_address.html}{$form.use_household_address.label}{help id="id-usehousehold" file="CRM/Contact/Form/Contact.hlp"}<br />
-            <div id="share_household" style="display:none">
-                {$form.shared_household.label}<br />
-                {$form.shared_household.html|crmReplace:class:huge}&nbsp;&nbsp;<span id="show_address"></span>
-				{if $mailToHouseholdID}<div id="shared_address">{$sharedHouseholdAddress}</div>{/if}
-            </div>
+            {$form.address.$blockId.use_shared_address.html}{$form.address.$blockId.use_shared_address.label}{help id="id-sharedAddress" file="CRM/Contact/Form/Contact.hlp"}<br />
+            {if $sharedAddresses.$blockId.shared_address_display}
+                <span class="shared-address-display" id="shared-address-display-name-{$blockId}">
+                    {$sharedAddresses.$blockId.shared_address_display.name}
+                </span>
+                
+                <span class="shared-address-display" id="shared-address-display-{$blockId}" onclick="cj(this).hide( );cj('#shared-address-display-name-{$blockId}').hide( );cj('#shared-address-display-cancel-{$blockId}').show( );cj('#shared-address-{$blockId}').show( );">
+                    {$sharedAddresses.$blockId.shared_address_display.address} <a href='#' onclick='return false;'>( {ts}Change current shared address{/ts} )</a>
+                </span>
+                
+                <span id="shared-address-display-cancel-{$blockId}" class="hiddenElement" onclick="cj(this).hide( );cj('#shared-address-display-name-{$blockId}').show( );cj('#shared-address-display-{$blockId}').show( );cj('#shared-address-{$blockId}').hide( );">
+                    <a href='#' onclick='return false;'>( {ts}Cancel{/ts} )</a>
+                </span>
+            {/if}
+            <table id="shared-address-{$blockId}" class="form-layout-compressed hiddenElement">
+               {include file="CRM/Contact/Form/NewContact.tpl" blockNo="$blockId"}
+            </table>
         </td>
      </tr>
-     {/if}
+     
+     <script type="text/javascript">
+     {literal}
+     cj( function( ) {
+         var blockNo = {/literal}{$blockId}{literal};
+         
+         // call this when form loads
+         showHideSharedAddress( blockNo, true );
+         
+         // handle check / uncheck of checkbox
+         cj( '#address\\[' + blockNo + '\\]\\[use_shared_address\\]' ).click( function( ) {
+             showHideSharedAddress( blockNo, true );
+         });
+         
+         // start of code to add onchange event for hidden element
+         var contactHiddenElement = 'input[name=contact_select_id[' + blockNo +']]';
+         
+         // store initial value
+         var _default  = cj( contactHiddenElement ).val();
+
+         // observe changes
+         cj( contactHiddenElement ).change(function( ) {
+            var sharedContactId = cj( this ).val( );
+            if ( !sharedContactId || isNaN( sharedContactId ) ) {
+                return;
+            }
+            
+            var addressHTML = '';
+            cj( ).crmAPI( 'location', 'get', { 'contact_id': sharedContactId, 'version': '3.0' }, {
+                  success: function( response ) {
+                      if ( response.address ) {
+                          var selected = 'checked';
+                          var addressExists = false;
+                          cj.each( response.address, function( i, val ) {
+                              if ( i > 1 ) {
+                                  selected = '';
+                              } else {
+                                  cj( 'input[name="address[' + blockNo + '][master_id]"]' ).val( val.id );
+                              }
+                              addressHTML = addressHTML + '<input type="radio" name="selected_shared_address-'+ blockNo +'" value=' + val.id + ' ' + selected +'>' + val.display + '<br/>'; 
+                              addressExists = true; 
+                          });
+
+                          if ( addressExists  ) {
+                              cj( '#shared-address-' + blockNo + ' .shared-address-list' ).remove( );
+                              cj( '#shared-address-' + blockNo ).append( '<tr class="shared-address-list"><td></td><td>' + addressHTML + '</td></tr>');
+                              cj( 'input[name^=selected_shared_address-]' ).click( function( ) {
+                                  // get the block id
+                                  var elemId = cj(this).attr( 'name' ).split('-');
+                                  cj( 'input[name="address[' + elemId[1] + '][master_id]"]' ).val( cj(this).val( ) );
+                              });
+                          } else {
+                              var helpText = {/literal}"{ts}Selected contact does not have an address. Please select a contact with address else add an address to the existing selected contact."{/ts}{literal};        
+                              cj( '#shared-address-' + blockNo + ' .shared-address-list' ).remove( );
+                              cj( '#shared-address-' + blockNo ).append( '<tr class="shared-address-list"><td></td><td>' + helpText + '</td></tr>');
+                          }
+                      }
+                  },
+                  ajaxURL: {/literal}"{crmURL p='civicrm/ajax/rest' h=0}"{literal} 
+            });            
+         });
+
+         // continuous check for changed value
+         setInterval(function( ) {
+           if ( cj( contactHiddenElement ).val( ) != _default ) {
+             // trigger native
+             cj( contactHiddenElement ).change( );
+
+             // update stored value
+             _default = cj( contactHiddenElement ).val( );
+           }  
+
+         }, 500);
+         
+         // end of code to add onchange event for hidden element
+     });
+     {/literal}
+     </script>
+ {/if}    
      <tr><td>
 
      <table id="address_{$blockId}" style="display:block" class="form-layout-compressed">
@@ -77,20 +193,20 @@
 
      </td></tr>
   </table>
-</td>
+</td>{*NYSS end left col*}
 <td>
   <div class="crm-edit-address-custom_data"> 
   {include file="CRM/Contact/Form/Edit/Address/CustomData.tpl"}
-  </div>
-</td>
-</tr>
-</table>
+  </div> 
 
-  {if $className eq 'CRM_Contact_Form_Contact'}
-      <div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
-          <a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}Another Address{/ts}</span></a>
-      </div>
-  {/if}
+</td>
+</tr></table>
+
+{if $className eq 'CRM_Contact_Form_Contact'}
+	<div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
+    	<a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}Another Address{/ts}</span></a>
+    </div>
+{/if}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
 </div>
@@ -99,77 +215,6 @@
 {/if}
 {literal}
 <script type="text/javascript">
-{/literal}
-{if $blockId eq 1}
-{literal}
-cj(document).ready( function() { 
-    //shared household default setting
-	if ( cj('#use_household_address').is(':checked') ) {
-    	cj('table#address_1').hide(); 
-        cj('#share_household').show(); 
-    }
-{/literal}
-{if $mailToHouseholdID}
-{literal}
-		var dataUrl = "{/literal}{crmURL p='civicrm/ajax/search' h=0 q="hh=1&id=$mailToHouseholdID"}{literal}";
-		cj.ajax({ 
-            url     : dataUrl,   
-            async   : false,
-            success : function(html){ 
-                        //fixme for showing address in div
-                        htmlText = html.split( '|' , 2);
-                        cj('input#shared_household').val(htmlText[0]);
-                    }
-                });
-{/literal}
-{/if}
-{literal}
-	//event handler for use_household_address check box
-	cj('#use_household_address').click( function() { 
-		cj('#share_household').toggle( );
-        if( ! cj('#use_household_address').is(':checked')) {
-            cj('table#address_1').show( );
-        } else {
-           cj('table#address_1').toggle( );
-        }
-	});	
-});
-
-var dataUrl = "{/literal}{$housholdDataURL}{literal}";
-var newContactText = "{/literal}({ts}new contact record{/ts}){literal}";
-cj('#shared_household').autocomplete( dataUrl, { width : 320, selectFirst : false, matchCase : true, matchContains: true
-}).result( function(event, data, formatted) { 
-    if( isNaN( data[1] ) ){
-        cj( "span#show_address" ).html( newContactText ); 
-        cj( "#shared_household_id" ).val( data[0] );
-        cj( 'table#address_1' ).toggle( ); 
-    } else {
-        var locationTypeId = 'address_'+{/literal}{$blockId}{literal}+'_location_type_id';
-        var isPrimary      = 'Address_'+{/literal}{$blockId}{literal}+'_IsPrimary';
-        var isBilling      = 'Address_'+{/literal}{$blockId}{literal}+'_IsBilling';
-        cj( 'table#address_1' ).hide( ); 
-        cj( "span#show_address" ).html( data[0] ); 
-        cj( "#shared_household_id" ).val( data[1] );
-        cj( "#"+locationTypeId ).val(data[2]); 
-        if( data[3] == 1 ) {
-            cj( "#"+isPrimary ).attr("checked","checked");
-        } else {
-            cj( "#"+isPrimary ).removeAttr("checked");
-        }
-        if( data[4] == 1 ) {
-            cj( "#"+isBilling ).attr("checked","checked");
-        } else {
-            cj( "#"+isBilling ).removeAttr("checked");
-        } 
-    }
-}).bind( 'change blur', function( ) {
-    if ( !parseInt( cj( "#shared_household_id" ).val( ) ) ) {
-        cj( "span#show_address" ).html( newContactText );
-    }
-});
-{/literal}
-{/if}	
-{literal}										  
 //to check if same location type is already selected.
 function checkLocation( object, noAlert ) {
     var selectedText = cj( '#' + object + ' :selected').text();

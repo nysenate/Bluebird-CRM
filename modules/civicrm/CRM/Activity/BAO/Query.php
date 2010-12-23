@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -196,6 +196,18 @@ class CRM_Activity_BAO_Query
             $query->_qill [$grouping][]  = ts('Activity Type') . ' ' . implode( ' ' . ts('or') . ' ', $clause );
             
             break;
+
+        case 'activity_survey_id':
+            if ( ! $value ) {
+                break;
+            }
+            $value = CRM_Utils_Type::escape( $value, 'Integer' );
+            $query->_where[$grouping][] = " source_record_id = $value";
+            $query->_qill[$grouping][] = 
+                ts( 'Survey' ) . 
+                ' - ' . 
+                CRM_Core_DAO::getFieldValue( 'CRM_Campaign_DAO_Survey', $value, 'title' );
+            break;
             
         case 'activity_role':
             CRM_Contact_BAO_Query::$_activityRole = $values[2];
@@ -381,7 +393,7 @@ class CRM_Activity_BAO_Query
      */  
     static function buildSearchForm( &$form ) 
     {
-        $activityOptions = CRM_Core_PseudoConstant::activityType( true, true );
+        $activityOptions = CRM_Core_PseudoConstant::activityType( true, true, false, 'label', true );
         asort( $activityOptions );
         foreach ( $activityOptions as $activityID => $activity ) {
             $form->_activityElement =& $form->addElement( 'checkbox', "activity_type_id[$activityID]", null, $activity,array('onClick' => 'showCustomData( this.id );'));
@@ -411,6 +423,10 @@ class CRM_Activity_BAO_Query
                                                         null, $tagName);         
             }
         }
+        require_once ('CRM/Campaign/BAO/Survey.php');
+        $surveys = array('' => ts('- none -')) + CRM_Campaign_BAO_Survey::getSurveyList( );
+        $form->add( 'select', 'activity_survey_id', ts('Survey'), $surveys, false );
+
         require_once 'CRM/Core/BAO/CustomGroup.php';
         $extends = array( 'Activity' );
         $groupDetails = CRM_Core_BAO_CustomGroup::getGroupDetail( null, true, $extends );

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -572,15 +572,28 @@ WHERE name = %1";
      * @static
      */
     static function add( $params ) {
+
+        // null if empty params or doesn't contain parent_id
+        if ( !CRM_Utils_Array::value( 'parent_id', $params ) ) {
+            return;
+        }
+
+        // label or name
+        if ( !CRM_Utils_Array::value( 'label', $params ) ) {
+            return;
+        }        
+
+        // parent_id
+        if ( !CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_ContactType', $params['parent_id'] ) ) {
+            return;
+        }
+        
         $contactType = new CRM_Contact_DAO_ContactType( );
         $contactType->copyValues( $params );
         $contactType->id        = CRM_Utils_Array::value( 'id', $params );
         $contactType->is_active = CRM_Utils_Array::value( 'is_active', $params, 0 );
 
-        if ( CRM_Utils_Array::value( 'parent_id', $params ) &&
-             !CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_ContactType', $params['parent_id'] ) ) {
-            return;
-        }
+
         
         $contactType->save( );
         if( $contactType->find( true ) ) {

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -40,17 +40,17 @@
                 <tr><td class="label">{ts}Current Employee?{/ts}</td><td>{ts}Yes{/ts}</td></tr>
             {/if}
             {if $row.start_date}
-                <tr><td class="label">{ts}Start Date:{/ts}</td><td>{$row.start_date|crmDate}</td></tr>
+                <tr><td class="label">{ts}Start Date{/ts}</td><td>{$row.start_date|crmDate}</td></tr>
             {/if}
             {if $row.end_date}
-                <tr><td class="label">{ts}End Date:{/ts}</td><td>{$row.end_date|crmDate}</td></tr>
+                <tr><td class="label">{ts}End Date{/ts}</td><td>{$row.end_date|crmDate}</td></tr>
             {/if}
             {if $row.description}
-                <tr><td class="label">{ts}Description:{/ts}</td><td>{$row.description}</td></tr>
+                <tr><td class="label">{ts}Description{/ts}</td><td>{$row.description}</td></tr>
             {/if}
 	        {foreach from=$viewNote item="rec"}
 		    {if $rec }
-			    <tr><td class="label">{ts}Note:{/ts}</td><td>{$rec}</td></tr>	
+			    <tr><td class="label">{ts}Note{/ts}</td><td>{$rec}</td></tr>	
 	   	    {/if}
             {/foreach}
             {if $row.is_permission_a_b}
@@ -122,6 +122,7 @@
                         var relationshipType = cj('#relationship_type_id'); 
                         relationshipType.change( function() { 
                             cj('#relationship-refresh-save').hide();
+			     cj('#saveButtons').hide();
                             cj('#rel_contact').val('');
                             cj("input[name=rel_contact_id]").val('');
                             createRelation( );
@@ -156,7 +157,7 @@
               </tr>
               </table>
                 <div class="crm-submit-buttons">
-                    <span id="relationship-refresh" class="crm-button crm-button-type-refresh crm-button_qf_Relationship_refresh.html">{$form._qf_Relationship_refresh.html}</span>
+                    <span id="relationship-refresh" class="crm-button crm-button-type-refresh crm-button_qf_Relationship_refresh">{$form._qf_Relationship_refresh.html}</span>
                     <span id="relationship-refresh-save" class="crm-button crm-button-type-save crm-button_qf_Relationship_refresh_save" style="display:none">{$form._qf_Relationship_refresh_save.html}</span>
                     <span class="crm-button crm-button-type-cancel crm-button_qf_Relationship_cancel">{$form._qf_Relationship_cancel.html}</span>
                 </div>
@@ -458,10 +459,21 @@ cj('#saveDetails').hide( );
 cj('#addCurrentEmployer').hide( );
 cj('#addCurrentEmployee').hide( );
 
-cj('#rel_contact').focus( function() {
-    cj("input[name=rel_contact_id]").val('');
-    cj('#relationship-refresh').show( );
-    cj('#relationship-refresh-save').hide( );	      
+cj(document).ready(function(){
+  if ( cj.browser.msie ) {
+       cj('#rel_contact').keyup( function(e) {
+         if( e.keyCode == 9 || e.keyCode == 13 ) {
+	     return false;
+	     }
+         cj("input[name=rel_contact_id]").val('');
+         cj('#relationship-refresh').show( );
+         cj('#relationship-refresh-save').hide( );
+    }); } else {
+         cj('#rel_contact').focus( function() {
+         cj("input[name=rel_contact_id]").val('');
+         cj('#relationship-refresh').show( );
+         cj('#relationship-refresh-save').hide( ); 
+}); }
 });
 
 {/literal}{if $searchRows || $callAjax}{literal} 

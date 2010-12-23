@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -44,6 +44,8 @@ class CRM_Report_Form_Walklist extends CRM_Report_Form {
     protected $_phoneField   = false;
 
     protected $_summary      = null;
+    
+    protected $_customGroupExtends = array( 'Contact', 'Individual', 'Household', 'Organization' );
 
     function __construct( ) {
         $this->_columns = 
@@ -131,7 +133,7 @@ class CRM_Report_Form_Walklist extends CRM_Report_Form {
                         $this->_phoneField = true;
                     }
 
-                    $select[] = "{$table['alias']}.{$fieldName} as {$tableName}_{$fieldName}";
+                    $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                     $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
                     $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = $field['type'];
                 }

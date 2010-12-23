@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -306,7 +306,14 @@ class CRM_Core_PseudoConstant
      * @static
      */
     private static $greeting = array( );
-
+    
+    /**
+     * Extensions
+     * @var array
+     * @static
+     */
+    private static $extensions = array( );
+    
     /**
      * populate the object from the database. generic populate
      * method
@@ -437,9 +444,11 @@ class CRM_Core_PseudoConstant
     public static function &activityType( $all = true, 
                                           $includeCaseActivities = false, 
                                           $reset = false,
-                                          $returnColumn = 'label' )
+                                          $returnColumn = 'label',
+                                          $includeCampaignActivities = false )
     {
-        $index        = (int) $all . '_' . $returnColumn . '_' . (int) $includeCaseActivities;
+        $index = (int) $all . '_' . $returnColumn . '_' . (int) $includeCaseActivities;
+        $index .= '_' . (int)$includeCampaignActivities;
         
         if ( ! array_key_exists( $index, self::$activityType ) || $reset ) {
             require_once 'CRM/Core/OptionGroup.php';
@@ -456,12 +465,17 @@ class CRM_Core_PseudoConstant
             // build filter for listing activity types only if their 
             // respective components are enabled
             foreach ( $compInfo as $compName => $compObj ) {
-                if ( $compName !== 'CiviCase' ) {
-                    $componentIds[] = $compObj->componentID;
-                } else if ( $includeCaseActivities ) {
+                if ( $compName == 'CiviCase' ) {
+                    if ( $includeCaseActivities ) {
+                        $componentIds[] = $compObj->componentID;
+                    }
+                } else if ( $compName == 'CiviCampaign' ) {
+                    if ( $includeCampaignActivities ) {
+                        $componentIds[] = $compObj->componentID;
+                    }
+                } else { 
                     $componentIds[] = $compObj->componentID;
                 }
-                
             }
             
             if ( count($componentIds) ) {
@@ -1481,15 +1495,28 @@ ORDER BY name";
      */
     public static function &languages( ) 
     {
-        static $_languages = null;
-
-        if ( ! $_languages ) {
-            require_once 'CRM/Core/OptionGroup.php';
-            $_languages = CRM_Core_OptionGroup::values('languages');
-        }        
-        return $_languages;
+        require_once 'CRM/Core/I18n/PseudoConstant.php';
+        return CRM_Core_I18n_PseudoConstant::languages();
     }
+    
+    /**
+     * Get all extensions 
+     *
+     * The static array extensions
+     *
+     * @access public
+     * @static
+     * @return array - array reference of all system extensions
+     */
+    public static function &getExtensions( )
+    {
+        if ( !self::$extensions ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            self::$extensions = CRM_Core_OptionGroup::values( 'system_extensions' );
+        }
 
+        return self::$extensions;
+    }
 }
 
 

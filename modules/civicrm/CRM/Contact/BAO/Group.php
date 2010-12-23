@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -383,13 +383,15 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
                 // if no parent present and the group doesn't already have any parents, 
                 // make sure site group goes as parent
                 $params['parents'] = array( $domainGroupID => 1 );
-            } else if ( !is_array($params['parents']) ) {
+            } else if ( array_key_exists( 'parents', $params ) && !is_array($params['parents']) ) {
                 $params['parents'] = array( $params['parents'] => 1 );
             }
 
-            foreach ( $params['parents'] as $parentId => $dnc ) {
-                if ( $parentId && !CRM_Contact_BAO_GroupNesting::isParentChild( $parentId, $group->id ) ) {
-                    CRM_Contact_BAO_GroupNesting::add( $parentId, $group->id );
+            if ( !empty($params['parents']) ) {
+                foreach ( $params['parents'] as $parentId => $dnc ) {
+                    if ( $parentId && !CRM_Contact_BAO_GroupNesting::isParentChild( $parentId, $group->id ) ) {
+                        CRM_Contact_BAO_GroupNesting::add( $parentId, $group->id );
+                    }
                 }
             }
 
@@ -424,6 +426,13 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
         } else {
             CRM_Utils_Hook::post( 'create', 'Group', $group->id, $group ); 
         }
+        
+        $recentOther = array( );
+        if ( CRM_Core_Permission::check('edit groups') ) {
+            $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/group', 'reset=1&action=update&id=' . $group->id );
+            // currently same permission we are using for delete a group
+            $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/group', 'reset=1&action=delete&id=' . $group->id );
+        }
 
         require_once 'CRM/Utils/Recent.php';
         // add the recently added group (unless hidden: CRM-6432)
@@ -433,7 +442,9 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
                                    $group->id,
                                    'Group',
                                    null,
-                                   null );
+                                   null,
+                                   $recentOther
+                                   );
         }
         return $group;
     }

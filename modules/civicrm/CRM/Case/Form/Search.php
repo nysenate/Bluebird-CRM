@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -145,14 +145,14 @@ class CRM_Case_Form_Search extends CRM_Core_Form
             CRM_Core_Error::fatal( ts( 'You are not authorized to access this page.' ) );
         }
         
-        // Make sure case types have been configured for the component
-        require_once 'CRM/Core/OptionGroup.php';        
-        $caseType = CRM_Core_OptionGroup::values( 'case_type', false, false, false, null, 'label', false );
-        if ( empty( $caseType ) ){
-            $this->assign('notConfigured', 1);
+        //validate case configuration.
+        require_once 'CRM/Case/BAO/Case.php';
+        $configured = CRM_Case_BAO_Case::isCaseConfigured( );
+        $this->assign( 'notConfigured', !$configured['configured'] );
+        if ( !$configured['configured'] ) {
             return;
         }
-
+        
         /** 
          * set the button names 
          */ 

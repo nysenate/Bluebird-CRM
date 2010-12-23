@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,6 +52,9 @@ class CRM_Report_Page_Instance extends CRM_Core_Page
      */
     function run() {
         $instanceId   = CRM_Report_Utils_Report::getInstanceID( );
+	 if ( ! $instanceId ) {
+	     $instanceId = CRM_Report_Utils_Report::getInstanceIDForPath( );
+	 }
         $action       = CRM_Utils_Request::retrieve( 'action', 'String', $this );
         $optionVal    = CRM_Report_Utils_Report::getValueFromUrl( $instanceId );
         $reportUrl    = CRM_Utils_System::url('civicrm/report/list', "reset=1");
@@ -78,7 +81,18 @@ class CRM_Report_Page_Instance extends CRM_Core_Page
             require_once 'CRM/Core/OptionGroup.php';
             $templateInfo = CRM_Core_OptionGroup::getRowValues( 'report_template', "{$optionVal}", 'value' );
 
-            if ( strstr($templateInfo['name'], '_Form') ) {
+            $extKey = strpos($templateInfo['name'], '.');
+
+            $reportClass = null;
+
+            if( $extKey !== FALSE ) {
+                require_once( 'CRM/Core/Extensions.php' );
+                $ext = new CRM_Core_Extensions();
+                $reportClass = $ext->keyToClass( $templateInfo['name'], 'report' );
+                $templateInfo['name'] = $reportClass;
+            }
+            
+            if ( strstr($templateInfo['name'], '_Form') || ! is_null( $reportClass )) {
                 $instanceInfo = array( );
                 CRM_Report_BAO_Instance::retrieve( array('id' => $instanceId), $instanceInfo );
                 

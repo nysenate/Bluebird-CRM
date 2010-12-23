@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,11 +28,18 @@
 {if $rows }
 {include file="CRM/common/jsortable.tpl"}
 {strip}
-<table id="mailing_event" class="display">
+<table id="mailing_event">
   <thead>
   <tr>
   {foreach from=$columnHeaders item=header}
-    <th>{$header.name}</th>
+    <th>
+    {if $header.sort}
+      {assign var='key' value=$header.sort}
+      {$sort->_response.$key.link}
+    {else}
+      {$header.name}
+    {/if}
+    </th>
   {/foreach}
   </tr>
   </thead>
@@ -58,3 +65,35 @@
         </div>
 
 {include file="CRM/common/pager.tpl" location="bottom"}
+
+{if $pager and ( $pager->_totalPages > 1 )}
+{literal}
+<script type="text/javascript">
+  var totalPages = {/literal}{$pager->_totalPages}{literal};
+  cj( function ( ) {
+    cj("#crm-container .crm-pager input.form-submit").click( function( ) {
+      submitPagerData( this );
+    }); 
+  });
+ 
+  function submitPagerData( el ) {
+      var urlParams= '';
+      var jumpTo   = cj(el).parent( ).children('input[type=text]').val( );
+      if ( parseInt(jumpTo)== "Nan" ) jumpTo = 1;
+      if ( jumpTo > totalPages ) jumpTo = totalPages;
+      {/literal} 
+      {foreach from=$pager->_linkData item=val key=k }
+      {if $k neq 'crmPID' && $k neq 'force' && $k neq 'q' } 
+      {literal}
+        urlParams += '&{/literal}{$k}={$val}{literal}';
+      {/literal}
+      {/if}
+      {/foreach}
+      {literal}
+      urlParams += '&crmPID='+parseInt(jumpTo);
+      var submitUrl = {/literal}'{crmURL p="civicrm/mailing/report/event" q="force=1" h=0 }'{literal};
+      document.location = submitUrl+urlParams;
+  }
+</script>
+{/literal}
+{/if}

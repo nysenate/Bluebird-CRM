@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -26,7 +26,7 @@
 {if $confirm}
 <div class="messages status">
       <div class="icon inform-icon"></div>&nbsp;
-      <label>{$display_name} ({$email})</label> has been successfully opted out.
+      <label>{$display_name} ({$email})</label> {ts}has been successfully opted out.{/ts}
 </div>
 {else}
 <div>

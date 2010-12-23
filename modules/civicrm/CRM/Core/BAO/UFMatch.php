@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -170,15 +170,19 @@ WHERE     openid = %1";
             require_once 'CRM/Contact/BAO/Contact.php';
             list( $displayName, $contactImage, $contactType, $contactSubtype, $contactImageUrl ) = 
                 CRM_Contact_BAO_Contact::getDisplayAndImage( $ufmatch->contact_id, true, true );
-                
+             
+            $otherRecent = array( 'imageUrl'  => $contactImageUrl,
+                                  'subtype'   => $contactSubtype,
+                                  'editUrl'   => CRM_Utils_System::url( 'civicrm/contact/add', "reset=1&action=update&cid={$ufmatch->contact_id}" ),
+                                  );
+           
             CRM_Utils_Recent::add( $displayName,
                                    CRM_Utils_System::url( 'civicrm/contact/view', "reset=1&cid={$ufmatch->contact_id}" ),
                                    $ufmatch->contact_id,
                                    $contactType,
                                    $ufmatch->contact_id,
                                    $displayName,
-                                   $contactImageUrl,
-                                   $contactSubtype );
+                                   $otherRecent );
         }
 
         if ( $update ) {
@@ -371,6 +375,7 @@ AND    domain_id    = %4
      * @static
      */
     static function updateUFName( $contactId ) {
+        if ( !$contactId ) return;
         $config = CRM_Core_Config::singleton( );
         if ( $config->userFramework == 'Standalone' ) {
             $ufName = CRM_Contact_BAO_Contact::getPrimaryOpenId( $contactId );
@@ -382,15 +387,26 @@ AND    domain_id    = %4
             return;
         }
 
+        $update = false;
+        
+        // 1.do check for contact Id.
         $ufmatch = new CRM_Core_DAO_UFMatch( );
         $ufmatch->contact_id = $contactId;
         $ufmatch->domain_id  = CRM_Core_Config::domainID( );
-        if ( ! $ufmatch->find( true ) ||
-             $ufmatch->uf_name == $ufName ) {
-            // if object does not exist or the OpenID has not changed
-            return;
-        }
+        if ( ! $ufmatch->find( true ) ) return;
+        if ( $ufmatch->uf_name != $ufName ) $update = true;
 
+        // CRM-6928
+        // 2.do check for duplicate ufName.
+        $ufDupeName = new CRM_Core_DAO_UFMatch( );
+        $ufDupeName->uf_name   = $ufName;
+        $ufDupeName->domain_id = CRM_Core_Config::domainID( );
+        if ( $ufDupeName->find( true ) && 
+             $ufDupeName->contact_id != $contactId ) {
+            $update = false;
+        }
+        
+        if ( !$update ) return; 
         // save the updated ufmatch object
         $ufmatch->uf_name = $ufName;
         $ufmatch->save( );

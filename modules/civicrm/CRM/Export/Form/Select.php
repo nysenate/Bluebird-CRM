@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -84,9 +84,9 @@ class CRM_Export_Form_Select extends CRM_Core_Form
         $customSearchID = $this->get( 'customSearchID' );
         if ( $customSearchID ) {
             require_once 'CRM/Export/BAO/Export.php';
-	    CRM_Export_BAO_Export::exportCustom( $this->get( 'customSearchClass' ),
-						 $this->get( 'formValues' ),
-						 $this->get( CRM_Utils_Sort::SORT_ORDER ) );
+            CRM_Export_BAO_Export::exportCustom( $this->get( 'customSearchClass' ),
+                                                 $this->get( 'formValues' ),
+                                                 $this->get( CRM_Utils_Sort::SORT_ORDER ) );
         }
 
         $this->_selectAll  = false;
@@ -115,6 +115,32 @@ class CRM_Export_Form_Select extends CRM_Core_Form
                 $values = $this->controller->exportValues( 'Basic' ); 
             }
         } 
+
+
+        $componentMode = $this->get( 'component_mode' );
+        switch ( $componentMode ) {
+        case 2:
+            require_once "CRM/Contribute/Form/Task.php";
+            CRM_Contribute_Form_Task::preProcessCommon( $this, true );
+            $this->_exportMode = self::CONTRIBUTE_EXPORT;
+            $componentName = array( '', 'Contribute' );
+            break;
+
+        case 3:
+            require_once "CRM/Event/Form/Task.php";
+            CRM_Event_Form_Task::preProcessCommon( $this, true );
+            $this->_exportMode = self::EVENT_EXPORT;
+            $componentName = array( '', 'Event' );
+            break;
+
+        case 4:
+            require_once "CRM/Activity/Form/Task.php";
+            CRM_Activity_Form_Task::preProcessCommon( $this, true );
+            $this->_exportMode = self::ACTIVITY_EXPORT;
+            $componentName = array( '', 'Activity' );
+            break;
+
+        }
 
         require_once 'CRM/Contact/Task.php';
         $this->_task = $values['task']; 

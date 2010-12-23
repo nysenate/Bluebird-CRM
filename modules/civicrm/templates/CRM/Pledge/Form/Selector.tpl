@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -52,7 +52,7 @@
     {counter start=0 skip=1 print=false}
     {foreach from=$rows item=row}
         {cycle values="odd-row,even-row" assign=rowClass}
-        <tr id='rowid{$row.pledge_id}' class='{$rowClass} {if $row.pledge_status_id eq 'Overdue' } disabled{/if}'>
+        <tr id='rowid{$row.pledge_id}' class='{$rowClass} {if $row.pledge_status_name eq 'Overdue' } disabled{/if}'>
             {if $context eq 'Search' }       
                 {assign var=cbName value=$row.checkbox}
                 <td>{$form.$cbName.html}</td> 

@@ -40,7 +40,11 @@ function civicrm_html_head()
         return;
     }
 
+    $head = null;
     if ( arg(0) == 'civicrm' ) {
+        require_once 'CRM/Core/Config.php';
+        $config = CRM_Core_Config::singleton();
+
         $template =& CRM_Core_Smarty::singleton( );
         $buffer = $template->fetch( 'CRM/common/jquery.files.tpl' );
         $lines  = preg_split( '/\s+/', $buffer );
@@ -55,6 +59,14 @@ function civicrm_html_head()
                 drupal_add_css( drupal_get_path('module', 'civicrm' ) . '/../' . $line );
             }
         }
+        
+        // add localized calendar js
+        $localisation     = explode( '_', $config->lcMessages );
+        $localizationFile = drupal_get_path('module', 'civicrm' ) . '/../packages/jquery/jquery-ui-1.8.5/development-bundle/ui/i18n/jquery.ui.datepicker-'. $localisation[0] . '.js';
+        
+        if ( file_exists( $localizationFile ) ) {
+            drupal_add_js( $localizationFile );
+        }
 
         // add Common.js
         drupal_add_js( drupal_get_path('module', 'civicrm' ) . '/../js/Common.js' );
@@ -63,21 +75,14 @@ function civicrm_html_head()
         drupal_add_js( 'var cj = jQuery.noConflict(); $ = cj;',
                        'inline' );
    
+        if ( isset( $config->customCSSURL ) && ! empty( $config->customCSSURL ) ) {
+            $head  = "<style type=\"text/css\">@import url({$config->customCSSURL});</style>\n";
+        } else {
+            drupal_add_css(drupal_get_path('module', 'civicrm') . '/../css/deprecate.css'); 
+            drupal_add_css(drupal_get_path('module', 'civicrm') . '/../css/civicrm.css'); 
+            drupal_add_css(drupal_get_path('module', 'civicrm') . '/../css/extras.css'); 
+        }
     }
-
-    require_once 'CRM/Core/Config.php';
-    $config = CRM_Core_Config::singleton();
-
-    $head = null;
-
-    if ( isset( $config->customCSSURL ) && ! empty( $config->customCSSURL ) ) {
-        $head  = "<style type=\"text/css\">@import url({$config->customCSSURL});</style>\n";
-    } else {
-        drupal_add_css(drupal_get_path('module', 'civicrm') . '/../css/deprecate.css'); 
-        drupal_add_css(drupal_get_path('module', 'civicrm') . '/../css/civicrm.css'); 
-        drupal_add_css(drupal_get_path('module', 'civicrm') . '/../css/extras.css'); 
-    }
-    
     return $head;
 }
 
@@ -491,12 +496,30 @@ function civicrm_categories( &$user )
         if ( $value['is_active'] ) {
             $ufGroups[] = array( 'name'   => $value['name'],
                                  'title'  => $value['name'],
-                                 'weight' => $weight );
+                                 'weight' => $weight,
+                                 'access callback' => '_civicrm_categories_access',
+                                 'access arguments' => array( "$key" ),
+                                 );
             $weight += 10;
         }
     }
 
     return $ufGroups;
+}
+
+function _civicrm_categories_access( $profile_id ) {
+    if ( ! civicrm_initialize( ) ) {
+        return FALSE;
+    }
+
+    require_once 'CRM/Core/BAO/UFGroup.php';
+    $allUFGroups =& CRM_Core_BAO_UFGroup::getModuleUFGroup( 'User Account', 0, false );
+
+    require_once 'CRM/Utils/Array.php';
+    if ( is_array( CRM_Utils_Array::value( $profile_id, $allUFGroups ) ) ) {
+        return TRUE;
+    }
+
 }
 
 function civicrm_register_data($edit, &$user, $category, $reset, $doNotProcess = false ) 
@@ -605,7 +628,8 @@ function civicrm_view_data( &$user )
             $contactURL = '<a href="' .$url. '">&raquo; ' .t("View Contact Record") . '</a>';
         }
 
-        if ( CRM_Core_Permission::check( 'access Contact Dashboard' ) ) {
+        if ( CRM_Core_Permission::check( 'access Contact Dashboard' ) &&
+             CRM_Contact_BAO_Contact_Permission::allow( $userID ) ) {
             $url = CRM_Utils_System::url( 'civicrm/user', "reset=1&id=$userID" );
             if ( ! empty( $contactURL ) ) {
                 $contactURL .= '<br/>';
@@ -821,7 +845,7 @@ function civicrm_theme_registry_alter(&$theme_registry) {
  * 
  * Strips out JS and CSS for a path. 
  */
- function civicrm_preprocess_page(&$variables) {	
+function civicrm_preprocess_page(&$variables) {	
 	// to increase it's flexibility. 
   	if ( module_exists('date_popup') && ( in_array( arg(0), array('civicrm', 'user') ) ) ) { 
 		/** 

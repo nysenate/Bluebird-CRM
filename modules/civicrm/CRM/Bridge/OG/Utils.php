@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -75,8 +75,8 @@ class CRM_Bridge_OG_Utils {
     }
 
     static function contactID( $ufID ) {
-        require_once 'api/UFGroup.php';
-        $contactID = crm_uf_get_match_id( $ufID );
+        require_once 'api/v2/UFGroup.php';
+        $contactID = civicrm_uf_match_id_get( $ufID );
         if ( $contactID ) {
             return $contactID;
         }

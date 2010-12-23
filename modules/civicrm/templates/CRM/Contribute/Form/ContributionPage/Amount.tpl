@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -43,6 +43,10 @@
             <td>{$form.is_monetary.html}<br />
             <span class="description">{ts}Uncheck this box if you are using this contribution page for free membership signup ONLY, or to solicit in-kind / non-monetary donations such as furniture, equipment.. etc.{/ts}</span></td>
         </tr>
+	<tr class="crm-contribution-contributionpage-amount-form-block-currency"><th scope="row" class="label" width="20%">{$form.currency.label}</th>
+            <td>{$form.currency.html}<br />
+            <span class="description">{ts}Select the currency to be used for contributions submitted from this contribution page.{/ts}</span></td>
+        </tr>	
         {if $paymentProcessor}
         <tr class="crm-contribution-contributionpage-amount-form-block-payment_processor_id"><th scope="row" class="label" width="20%">{$form.payment_processor_id.label}</th>
             <td>{$form.payment_processor_id.html}<br />
@@ -114,10 +118,10 @@
             </tr>
             {/if}
 
-            {if $form.is_recur}
-            <tr class="crm-contribution-form-block-is_recur"><th scope="row" class="label" width="20%">{$form.is_recur.label}</th>
+            {if $recurringPaymentProcessor}
+            <tr id="recurringContribution" class="crm-contribution-form-block-is_recur"><th scope="row" class="label" width="20%">{$form.is_recur.label}</th>
                <td>{$form.is_recur.html}<br />
-                  <span class="description">{ts}Check this box if you want to give users the option to make recurring contributions. (This feature requires that you use 'PayPal Website Standard' OR 'PayJunction' as your payment processor.){/ts}</span>
+                  <span class="description">{ts}Check this box if you want to give users the option to make recurring contributions. (This feature requires that you use a payment processor with this functionality built in - Paypal std or Pro, Pay2Cash or Payjunction at the time of writing.){/ts}</span>
                </td>
             </tr>
             <tr id="recurFields" class="crm-contribution-form-block-recurFields"><td>&nbsp;</td>
@@ -169,6 +173,17 @@
 
 {literal}
 <script type="text/javascript">
+   var paymentProcessorMapper = new Array( );
+     {/literal}
+       {if $recurringPaymentProcessor}
+           {foreach from=$recurringPaymentProcessor item="paymentProcessor" key="index"}{literal}
+               paymentProcessorMapper[{/literal}{$index}{literal}] = '{/literal}{$paymentProcessor}{literal}';
+           {/literal}{/foreach}
+       {/if}
+     {literal}
+   cj( document ).ready( function( ) { 
+       showRecurring( cj( '#payment_processor_id' ).val( ) ) 
+   });
 	var element_other_amount = document.getElementsByName('is_allow_other_amount');
   	if (! element_other_amount[0].checked) {
 	   hide('minMaxFields', 'table-row');
@@ -255,6 +270,17 @@
 		 }
 	}
 
+    function showRecurring( paymentProcessorId ) {
+        if ( cj.inArray( paymentProcessorId, paymentProcessorMapper) == -1 ) {
+            if ( cj( '#is_recur' ).attr( 'checked' ) ) {
+                cj( '#is_recur' ).removeAttr("checked");
+                cj( '#recurFields' ).hide( );
+            }
+            cj( '#recurringContribution' ).hide( );
+        } else { 
+            cj( '#recurringContribution' ).show( );
+        }  
+    }
 </script>
 {/literal}
 {if $form.is_recur}

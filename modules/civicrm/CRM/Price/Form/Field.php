@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -64,6 +64,15 @@ class CRM_Price_Form_Field extends CRM_Core_Form
      */
     protected $_fid;
     
+    
+    /**
+     * The extended component Id
+     *
+     * @var array
+     * @access protected
+     */
+    protected $_extendComponentId;
+    
     /**
      * Function to set variables up before form is built
      * 
@@ -81,6 +90,13 @@ class CRM_Price_Form_Field extends CRM_Core_Form
         $url = CRM_Utils_System::url( 'civicrm/admin/price/field', "reset=1&action=browse&sid={$this->_sid}");
         $breadCrumb     = array( array('title' => ts('Price Set Fields'),
                                        'url'   => $url) );
+
+        $this->_extendComponentId = array( );
+        $extendComponentId = CRM_Core_DAO::getFieldValue( 'CRM_Price_DAO_Set', $this->_sid, 'extends', 'id' );
+        if ( $extendComponentId ) {
+            $this->_extendComponentId = explode( CRM_Core_DAO::VALUE_SEPARATOR, $extendComponentId );
+        }
+
         CRM_Utils_System::appendBreadCrumb( $breadCrumb );        
         
     }
@@ -107,14 +123,15 @@ class CRM_Price_Form_Field extends CRM_Core_Form
 
             // if text, retrieve price
             if ( $defaults['html_type'] == 'Text' ) {
-                $optionValues = array();
+                $valueParams = array( 'price_field_id' => $this->_fid );
                 
-                require_once 'CRM/Core/OptionGroup.php';
-                CRM_Core_OptionGroup::getAssoc( "civicrm_price_field.amount.{$this->_fid}", $optionValues );
+                require_once 'CRM/Price/BAO/FieldValue.php';
+                CRM_Price_BAO_FieldValue::retrieve( $valueParams, $defaults );
                 
                 // fix the display of the monetary value, CRM-4038
                 require_once 'CRM/Utils/Money.php';
-                $defaults['price'] = CRM_Utils_Money::format( $optionValues['value'][1], null, '%a' );
+                $defaults['price'] = CRM_Utils_Money::format( $defaults['amount'], null, '%a' );
+                
             }
         } else {
             $defaults['is_active'] = 1;
@@ -161,11 +178,23 @@ class CRM_Price_Form_Field extends CRM_Core_Form
                           $htmlTypes, true, $javascript );
         
         // Text box for Participant Count for a field
-        $extendComponentId = CRM_Core_DAO::getFieldValue( 'CRM_Price_DAO_Set', $this->_sid, 'extends', 'id' );
         require_once 'CRM/Core/Component.php';
-        if( $extendComponentId == CRM_Core_Component::getComponentID( 'CiviEvent' ) ) {
-            $this->add('text', 'count', ts('Participant Count'), CRM_Core_DAO::getAttribute('CRM_Price_DAO_Field', 'count') );
+        $eventComponentId = CRM_Core_Component::getComponentID( 'CiviEvent' );
+
+        $attributes = CRM_Core_DAO::getAttribute( 'CRM_Price_DAO_FieldValue' );
+        
+        if ( in_array( $eventComponentId, $this->_extendComponentId ) ) {
+            $this->add('text', 'count', ts('Participant Count'), $attributes['count'] );
             $this->addRule('count', ts('Participant Count should be a positive number') , 'positiveInteger');
+            
+            $this->add('text', 'max_value', ts('Max Participants'), $attributes['max_value'] );
+            $this->addRule('max_value' , ts('Please enter a valid Max Participants.'), 'positiveInteger');
+            
+            $this->add('textArea', 'description', ts('Description'), $attributes['description']);
+
+            $this->assign( 'useForEvent', true );
+        } else {
+            $this->assign( 'useForEvent', false );
         }
         
         // price (for text inputs)
@@ -178,11 +207,7 @@ class CRM_Price_Form_Field extends CRM_Core_Form
         }
 
         // form fields of Custom Option rows
-        $_showHide = new CRM_Core_ShowHideBlocks('','');
-        $attributes = CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_OptionValue' );
-        $labelAttribute  = $attributes['label' ];
-        $nameAttribute   = $attributes['name'  ];
-        $weightAttribute = $attributes['weight'];
+        $_showHide  = new CRM_Core_ShowHideBlocks('','');
 
         for($i = 1; $i <= self::NUM_OPTION; $i++) {
             
@@ -196,16 +221,28 @@ class CRM_Price_Form_Field extends CRM_Core_Form
                 $_showHide->addShow($showBlocks);
             }
             // label
-            $this->add('text','option_label['.$i.']', ts('Label'), $labelAttribute);
+            $attributes['label']['size'] = 25;
+            $this->add('text','option_label['.$i.']', ts('Label'), $attributes['label']);
             
-            // name
-            $this->add('text', 'option_name['.$i.']', ts('Name'), $nameAttribute);
+            // amount
+            $this->add('text', 'option_amount['.$i.']', ts('Amount'), $attributes['amount']);
+            $this->addRule('option_amount['.$i.']' , ts('Please enter a valid amount for this field.'), 'money');
             
-            // Below rule is uncommented for CRM-1313
-            $this->addRule('option_name['.$i.']' , ts('Please enter a valid amount for this field.'), 'money');
+            if ( in_array( $eventComponentId, $this->_extendComponentId ) ) { 
+                // count
+                $this->add('text', 'option_count['.$i.']', ts('Participant Count'), $attributes['count']);
+                $this->addRule('option_count['.$i.']' , ts('Please enter a valid Participants Count.'), 'positiveInteger');
+                
+                // max_value
+                $this->add('text', 'option_max_value['.$i.']', ts('Max Participants'), $attributes['max_value']);
+                $this->addRule('option_max_value['.$i.']' , ts('Please enter a valid Max Participants.'),'positiveInteger');
+                
+                // description 
+                $this->add('textArea', 'option_description['.$i.']', ts('Description'), array('rows' => 1, 'cols' => 40 ));
+            }
             
             // weight
-            $this->add('text', 'option_weight['.$i.']', ts('Order'), $weightAttribute);
+            $this->add('text', 'option_weight['.$i.']', ts('Order'), $attributes['weight']);
 
             // is active ?
             $this->add('checkbox', 'option_status['.$i.']', ts('Active?'));
@@ -319,7 +356,10 @@ class CRM_Price_Form_Field extends CRM_Core_Form
             $errors['label'] = ts('Name already exists in Database.');
         }
         
-        if ( ( is_numeric( CRM_Utils_Array::value( 'count', $fields ) ) && CRM_Utils_Array::value( 'count', $fields ) == 0 ) ) {
+        
+        if ( ( is_numeric( CRM_Utils_Array::value( 'count', $fields ) ) && 
+               CRM_Utils_Array::value( 'count', $fields ) == 0 ) && 
+             ( CRM_Utils_Array::value( 'html_type', $fields ) == 'Text' ) ) {
             $errors['count'] = ts('Participant Count must be greater than zero.');
         }
         
@@ -327,8 +367,11 @@ class CRM_Price_Form_Field extends CRM_Core_Form
             
             if( $fields['html_type'] != 'Text' ) {
                 $countemptyrows = 0;
+                $_flagOption = $_rowError = 0;
+
+                $_showHide = new CRM_Core_ShowHideBlocks('','');
                 
-                for ( $index = ( self::NUM_OPTION ) ; $index > 0 ; $index-- ) { 
+                for( $index = 1; $index <= self::NUM_OPTION; $index++ ) {
                     
                     $noLabel = $noAmount = $noWeight = 1;
                     if ( ! empty( $fields['option_label'][$index] ) ) {
@@ -339,14 +382,15 @@ class CRM_Price_Form_Field extends CRM_Core_Form
                         
                         if( ( ! ( $duplicateIndex === false ) ) && 
                             ( ! ( $duplicateIndex == $index ) ) ) {
-                            $errors["option_label[{$index}]"] = ts( 'Duplicate label value' );      
+                            $errors["option_label[{$index}]"] = ts( 'Duplicate label value' );
+                            $_flagOption = 1; 
                         }
 
                     }
 
                     // allow for 0 value.
-                    if ( ! empty( $fields['option_name'][$index] ) ||
-                         strlen( $fields['option_name'][$index] ) > 0 ) {
+                    if ( ! empty( $fields['option_amount'][$index] ) ||
+                         strlen( $fields['option_amount'][$index] ) > 0 ) {
                         $noAmount    =  0;
                     }
                     
@@ -358,118 +402,77 @@ class CRM_Price_Form_Field extends CRM_Core_Form
                         
                         if( ( ! ( $duplicateIndex === false ) ) && 
                             ( ! ( $duplicateIndex == $index ) ) ) {
-                            $errors["option_weight[{$index}]"] = ts( 'Duplicate weight value' );      
+                            $errors["option_weight[{$index}]"] = ts( 'Duplicate weight value' );
+                            $_flagOption = 1; 
                         }
                     }
                     
                     if ( $noLabel && ! $noAmount ) {
-                        $errors["option_label[{$index}]"] = ts( 'Label cannot be empty.' );      
-                    }
+                        $errors["option_label[{$index}]"] = ts( 'Label cannot be empty.' );  
+                        $_flagOption = 1; 
+                    } 
                     
                     if ( ! $noLabel && $noAmount ) {
-                        $errors["option_name[{$index}]"] = ts( 'Amount cannot be empty.' );
+                        $errors["option_amount[{$index}]"] = ts( 'Amount cannot be empty.' );
+                        $_flagOption = 1; 
                     }
 
                     if ( $noLabel && $noAmount ) {
                         $countemptyrows++; 
+                        $_emptyRow = 1;
+                    } else if (  !empty($fields['option_max_value'][$index]) && 
+                                 !empty($fields['option_count'][$index] ) && 
+                                 ( $fields['option_count'][$index] > $fields['option_max_value'][$index] ) ) {
+                        $errors["option_max_value[{$index}]"] = ts( 'Participant count can not be greater than max participants.' );
+                        $_flagOption = 1; 
                     }
+                    
+                    $showBlocks = 'optionField_'.$index;
+                    if ( $_flagOption ) {
+                        $_showHide->addShow( $showBlocks );
+                        $_rowError = 1;
+                    } 
+                    
+                    if (!empty($_emptyRow)) {
+                        $_showHide->addHide( $showBlocks );
+                    } else {
+                        $_showHide->addShow( $showBlocks );
+                    }
+                    if ( $index == self::NUM_OPTION ) {
+                        $hideBlock = 'additionalOption';
+                        $_showHide->addHide( $hideBlock );
+                    }
+                    
+                    $_flagOption = $_emptyRow = 0;
+                   
                 }
-                
+                $_showHide->addToTemplate();    
+            
                 if ( $countemptyrows == 11 ) {
                     $errors["option_label[1]"] = 
-                        $errors["option_name[1]"] = 
-                        ts( 'Label and value cannot be empty.' );    
+                        $errors["option_amount[1]"] = 
+                        ts( 'Label and value cannot be empty.' ); 
+                    $_flagOption = 1; 
                 }
+            } else if ( !empty($fields['max_value']) && 
+                        !empty($fields['count']) && 
+                        ( $fields['count'] > $fields['max_value'] ) ) {
+                $errors["max_value"] = ts( 'Participant count can not be greater than max participants.' );
             }
-          
-            $_showHide = new CRM_Core_ShowHideBlocks('','');
-            
+                
             // do not process if no option rows were submitted
-            if ( empty( $fields['option_name'] ) && empty( $fields['option_label'] ) ) {
+            if ( empty( $fields['option_amount'] ) && empty( $fields['option_label'] ) ) {
                 return true;
             }
             
             if ( empty( $fields['option_name'] ) ) {
-                $fields['option_name'] = array( );
+                $fields['option_amount'] = array( );
             }
             
             if ( empty( $fields['option_label'] ) ) {
                 $fields['option_label'] = array( );
             }
             
-            $dupeLabels = array();
-            $count = 0;
-            for ( $idx = 1; $idx <= self::NUM_OPTION; $idx++ ) {
-                
-                $_flagOption = 0;
-                $_rowError   = 0;
-                
-                $showBlocks  = 'optionField_'.$idx;
-                
-                // both value and label are empty
-                if ( $fields['option_name'][$idx] == '' && $fields['option_label'][$idx] == '' ) {
-                    $_showHide->addHide($showBlocks);
-                    $count++;
-                    
-                    if( $count == 11 ) { 
-                        $showBlocks = 'optionField_'.'1';
-                        $_showHide->addShow($showBlocks);
-                    }
-                    
-                    continue;
-                }
-                
-                $_showHide->addShow($showBlocks);
-                
-                if ( $fields['option_name'][$idx] != '' ) {
-                    // check for empty label
-                    if ( $fields['option_label'][$idx] == '' ) {
-                        $errors['option_label]['.$idx.']'] = ts( 'Option label cannot be empty' );
-                    }
-                    // all fields are money fields
-                    if ( ! CRM_Utils_Rule::money( $fields['option_name'][$idx] ) ) {
-                        $_flagOption = 1;
-                        $errors['option_name['.$idx.']'] = ts( 'Please enter a valid money value.' );
-                        
-                    }
-                }
-                
-                if ( $fields['option_label'][$idx] != '' ) {
-                    // check for empty value
-                    if ( $fields['option_name'][$idx] == '' ) {
-                        $errors['option_name]['.$idx.']'] = ts( 'Option value cannot be empty' );
-                    }
-                    // check for duplicate labels, if not already done
-                    if ( isset( $dupeLabels[$idx] ) ) {
-                        continue;
-                    }
-                    $also_in = array_keys( $fields['option_label'], $fields['option_label'][$idx] );
-                    // first match is always the current key
-                    unset( $also_in[0] );
-                    if ( !empty( $also_in ) ) {
-                        $_flagOption = 1;
-                        $errors['option_label]['.$idx.']'] = ts( 'Duplicate Option label' );
-                        foreach ( $also_in as $also_in_key ) {
-                            $errors['option_name]['.$also_in_key.']'] = ts( 'Duplicate Option label' );
-                            $dupeValues[$also_in_key] = true;
-                        }
-                    }
-                }
-                
-                if ($_flagOption) {
-                    $_showHide->addShow($showBlocks);
-                    $_rowError = 1;
-                }
-                
-                // last row - hide "Additional Option" option
-                if ($idx == self::NUM_OPTION) {
-                    $hideBlock = 'additionalOption';
-                    $_showHide->addHide($hideBlock);
-                }
-                
-            }
-            
-            $_showHide->addToTemplate();
         }
         
         return empty($errors) ? true : $errors;
@@ -520,11 +523,13 @@ class CRM_Price_Form_Field extends CRM_Core_Form
             $params['is_enter_qty'] = 1;
             // modify params values as per the option group and option
             // value
-            $params['option_value'] = array( 1 => $params['price'] );
-            $params['option_name']  = array( 1 => $params['price'] );
-            $params['option_label'] = array( 1 => $params['label'] );
-            $params['option_weight'] = array( 1 => $params['weight'] );
-            $params['is_active']    = array( 1 => 1 );
+            $params['option_amount']       = array( 1 => $params['price'] );
+            $params['option_label']        = array( 1 => $params['label'] );
+            $params['option_count']        = array( 1 => $params['count'] );
+            $params['option_max_value']    = array( 1 => $params['max_value'] );
+            $params['option_description']  = array( 1 => $params['description'] );
+            $params['option_weight']       = array( 1 => $params['weight'] );
+            $params['is_active']           = array( 1 => 1 );
         }
         
         $ids = array( );

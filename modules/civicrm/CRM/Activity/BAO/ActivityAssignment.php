@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -115,12 +115,13 @@ class CRM_Activity_BAO_ActivityAssignment extends CRM_Activity_DAO_ActivityAssig
      * @access public
      * 
      */
-    static function getAssigneeNames( $activity_id, $isDisplayName = false, $skipDetails = true ) 
+    static function getAssigneeNames( $activityID, $isDisplayName = false, $skipDetails = true ) 
     {
-        if ( empty( $activity_id ) ) {
-            return;
+        $assigneeNames = array();
+        if ( empty( $activityID ) ) {
+            return $assigneeNames;
         }
-        $queryParam  = array();
+
         $whereClause = "";
         if ( !$skipDetails ) {
             $whereClause = "  AND ce.is_primary= 1";
@@ -132,12 +133,12 @@ class CRM_Activity_BAO_ActivityAssignment extends CRM_Activity_DAO_ActivityAssig
                          ON civicrm_activity_assignment.assignee_contact_id = contact_a.id
                   LEFT JOIN civicrm_email ce 
                          ON ce.contact_id = contact_a.id
-                  WHERE civicrm_activity_assignment.activity_id = {$activity_id} 
+                  WHERE civicrm_activity_assignment.activity_id = %1
                         AND contact_a.is_deleted = 0
                         {$whereClause}";
 
+        $queryParam = array( 1 => array( $activityID, 'Integer' ) );
         $dao = CRM_Core_DAO::executeQuery($query,$queryParam);
-        $assigneeNames = array();
         while ( $dao->fetch() ) {
             if ( !$isDisplayName ) {
                 $assigneeNames[$dao->id] = $dao->sort_name;

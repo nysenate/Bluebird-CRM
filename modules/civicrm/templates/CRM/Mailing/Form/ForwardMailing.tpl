@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -41,7 +41,7 @@
 </div><div class="spacer"></div>
 <div id="comment" style="display:none">
             <table class="form-layout">
-            <tr class="crm-mailing-forward-form-block-forward_comment"><td><a href="#" onclick="hide('comment'); show('comment_show'); return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}close section{/ts}"/></a></a>
+            <tr class="crm-mailing-forward-form-block-forward_comment"><td><a href="#" onclick="hide('comment'); show('comment_show'); return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}close section{/ts}"/></a>
                 <label>{$form.forward_comment.label}</label></td>
                 <td>{$form.forward_comment.html}<br /><br />
               &nbsp;{$form.html_comment.html}<br /></td>

@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -79,7 +79,7 @@ class CRM_Event_DAO_Event extends CRM_Core_DAO
      * @var boolean
      * @static
      */
-    static $_log = false;
+    static $_log = true;
     /**
      * Event
      *
@@ -403,6 +403,12 @@ class CRM_Event_DAO_Event extends CRM_Core_DAO
      * @var datetime
      */
     public $created_date;
+    /**
+     * 3 character string, value from config setting or input via user.
+     *
+     * @var string
+     */
+    public $currency;
     /**
      * class constructor
      *
@@ -780,6 +786,18 @@ class CRM_Event_DAO_Event extends CRM_Core_DAO
                     'name' => 'created_date',
                     'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
                     'title' => ts('Event Created Date') ,
+                ) ,
+                'currency' => array(
+                    'name' => 'currency',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Currency') ,
+                    'maxlength' => 3,
+                    'size' => CRM_Utils_Type::FOUR,
+                    'import' => true,
+                    'where' => 'civicrm_event.currency',
+                    'headerPattern' => '/cur(rency)?/i',
+                    'dataPattern' => '/^[A-Z]{3}$/i',
+                    'export' => true,
                 ) ,
             );
         }

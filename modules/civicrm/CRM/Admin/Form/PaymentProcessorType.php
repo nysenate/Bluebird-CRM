@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -185,7 +185,7 @@ class CRM_Admin_Form_PaymentProcessorType extends CRM_Admin_Form
             return;
         }
         
-        $values = $this->controller->exportValues( $this->_name );
+        $values = $this->controller->exportValues( $this->_name );        
 
         if ( CRM_Utils_Array::value( 'is_default', $values ) ) {
             $query = "

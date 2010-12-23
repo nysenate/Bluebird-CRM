@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -53,8 +53,15 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
             $this->_widget = null;
         } else {
             $this->assign( 'widget_id', $this->_widget->id );
+
+            // check of home url is set, if set then it flash widget might be in use.
+            $this->assign( 'showStatus', false );
+            if ( $this->_widget->url_homepage ) {
+                $this->assign( 'showStatus', true );
+            }
         }
-        $this->assign( 'id', $this->_id );
+        
+        $this->assign( 'cpageId', $this->_id );
 
         $config = CRM_Core_Config::singleton( );
         $title = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage',
@@ -72,50 +79,44 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
                                 'button_title'        => array( ts( 'Button Title' ),
                                                                 'text',
                                                                 false,
-                                                                ts( 'Contribute!' ) ),
-                               
-                                'url_homepage'        => array( ts( 'URL to Home Page' ),
-                                                                'text',
-                                                                false,
-                                                                $config->userFrameworkBaseURL ),
-                                );
+                                                                ts( 'Contribute!' ) ) );
         
         $this->_colorFields = array( 'color_title'   => array( ts( 'Title Text Color' ),
                                                               'text',
                                                               false,
-                                                              '0x000000' ),
-                                     'color_button'  => array( ts( 'Button Color' ),
-                                                              'text',
-                                                              false,
-                                                              '0xCC9900' ),
+                                                              '#2786C2' ),
                                      'color_bar'     => array( ts( 'Progress Bar Color' ),
                                                               'text',
                                                               false,
-                                                              '0xCC9900' ),
+                                                              '#FFFFFF' ),
                                      'color_main_text' => array( ts( 'Additional Text Color' ),
                                                               'text',
                                                               false,
-                                                              '0x000000' ),
-                                     'color_main'     => array( ts( 'Inner Background Gradient from Bottom' ),
+                                                              '#FFFFFF' ),
+                                     'color_main'     => array( ts( 'Background Color' ),
                                                               'text',
                                                               false,
-                                                              '0x96E0E0' ),
-                                     'color_main_bg'  => array( ts( 'Inner Background Top Area' ),
+                                                              '#96C0E7' ),
+                                     'color_main_bg'  => array( ts( 'Background Color Top Area' ),
                                                               'text',
                                                               false,
-                                                              '0xFFFFFF' ),
+                                                              '#B7E2FF' ),
                                      'color_bg'       => array( ts( 'Border Color' ),
                                                               'text',
                                                               false,
-                                                              '0x66CCCC' ),
-                                     'color_about_link' => array( ts( 'About Link Color' ),
+                                                              '#96C0E7' ),
+                                     'color_about_link' => array( ts( 'Button Link Color' ),
                                                               'text',
                                                               false,
-                                                              '0x336699' ),
+                                                              '#556C82' ),
+                                     'color_button'  => array( ts( 'Button Background Color' ),
+                                                              'text',
+                                                              false,
+                                                              '#FFFFFF' ),
                                      'color_homepage_link' => array( ts( 'Homepage Link Color' ),
                                                               'text',
                                                               false,
-                                                              '0x336699' ),
+                                                              '#FFFFFF' )
                                );
     }
     
@@ -201,9 +202,7 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
             if ( !CRM_Utils_Array::value( 'about', $params ) ) {
                 $errors['about'] = ts( 'About is a required field.' );
             }
-            if ( !CRM_Utils_Array::value( 'url_homepage', $params ) ) {
-                $errors['url_homepage'] = ts( 'URL to Home Page is a required field.' );
-            }
+            
             foreach( $params as $key => $val ) {
                 if ( substr( $key, 0, 6 ) == 'color_' && !CRM_Utils_Array::value( $key, $params ) ) {
                     $errors[$key] = ts( '%1 is a required field.',  array( 1 => $self->_colorFields[$key][0] ) );
@@ -228,7 +227,8 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
         }
         $params['contribution_page_id'] = $this->_id;
         $params['is_active']            = CRM_Utils_Array::value('is_active', $params, false);
-
+        $params['url_homepage']         = 'null';
+        
         require_once 'CRM/Contribute/DAO/Widget.php';
         $widget = new CRM_Contribute_DAO_Widget( );
         $widget->copyValues( $params );
