@@ -83,15 +83,22 @@ function nyss_ioimport_form_validate($form, &$form_state) {
 
 function nyss_iovalidateuploadform($form, &$form_state) {
 
-   $file = file_save_upload('csv');
+   if (!empty($form_state['values']['servercsv'])) {
 
-    if (!$file) {
-      form_set_error('upload', 'You must select a valid file to upload.');
-    } else {
-      // Manually add the uploaded file to the $form_state
-      $form_state['values']['csv']['title'] = $file->filename;
-      $form_state['values']['csv']['file'] = $file;
-    }
+	$form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
+        $form_state['values']['csv']['file']->filepath = '/tmp/'.$form_state['values']['servercsv'];
+	
+   } else {
+	   $file = file_save_upload('csv');
+
+	    if (!$file) {
+	      form_set_error('upload', 'You must select a valid file to upload.');
+	    } else {
+	      // Manually add the uploaded file to the $form_state
+	      $form_state['values']['csv']['title'] = $file->filename;
+	      $form_state['values']['csv']['file'] = $file;
+	    }
+   }
 }
 
 function nyss_ioimport_form_submit($form, &$form_state) {
@@ -118,8 +125,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	require_once(dirname(__FILE__) . '/nyss_io_definitions.inc');
 
 	$filename = $form_state['values']['csv']['file']->filepath;
-	$fo = new nyss_iofileobject($filename, "\t");
 
+	$fo = new nyss_iofileobject($filename, "\t");
 	$nyss_iototallines = $fo->countLines();
 
 	//initialize some values
@@ -158,29 +165,53 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		
 		if ($nyss_ioline%20==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
 
+		//fix the gender entries
+		if ($l['gender']=='M') $l['gender'] = 'Male';
+                if ($l['gender']=='F') $l['gender'] = 'Female';
+
+		//fix birthdate
+		$d = $l['birth_date'];
+		if (!empty($d)) {
+			$l['birth_date'] = substr($d,0,4).'-'.substr($d,4,2).'-'.substr($d,6,2);
+		}
+
+                $l['gender']=$aGender[$l['gender']];
+                $l['st'] = $aState[$l['st']];
+		$l['suffix_id'] = $aSuffix[$l['suffix_id']];
+
+		//form the street address if not included
+		if (empty($l['street_address'])) $l['street_address'] = "{$l['street_number']} {$l['street_name']}";
+
+		//find an address if we don't have an addressID already
+		if (!empty($l['id']) && empty($l['address_id'])) {
+
+			$sql = "SELECT id as address_id from civicrm_address where contact_id like '{$l['id']}' AND street_number like '{$l['street_number']}' AND street_name like '{$l['street_name']}' AND city like '{$l['city']}' AND postal_code like '{$l['postal_cod']}'";
+
+			$dao = &CRM_Core_DAO::executeQuery( $sql );
+	                if ($dao->fetch()) $l['address_id'] = $dao->address_id;
+		}
+
+		/*------NOW IMPORT THE DATA-------------------------------------*/
+
 		//import contact details
-		$l['gender']=$aGender[$l['gender']];
-		$contactID = nyss_ioimportData('civicrm_contact', $l, $dryrun, $logFile);
-//echo $l['id'].' '.$contactID;
+		nyss_ioimportData('civicrm_contact', $l, $dryrun, $logFile);
+
 		//import address details
 		//set key correctly for ref
-		$l['contact_id']=$contactID;
-		$l['st'] = $aState[$l['st']];
+		$l['contact_id']=$l['id'];
 		nyss_ioimportData('civicrm_address', $l, $dryrun, $logFile);
 		
 		//import phone details
 		//set key correctly for ref
-		$l['contact_id']=$contactID;
 		nyss_ioimportData('civicrm_phone', $l, $dryrun, $logFile);
 		
 		//import email details
 		//set key correctly for ref
-		$l['contact_id']=$contactID;
-		$addressID = nyss_ioimportData('civicrm_email', $l, $dryrun, $logFile);
+		nyss_ioimportData('civicrm_email', $l, $dryrun, $logFile);
 
                 //import district details
                 //set key correctly for ref (DI is for addresses)
-                $l['entity_id']=$addressID;
+                $l['entity_id']=$l['address_id'];
                 nyss_ioimportData('civicrm_value_district_information_7', $l, $dryrun, $logFile);
 	}
 
@@ -205,15 +236,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 }
 
-function nyss_ioimportData($tbl, $l, $dryrun, $logFile) {
+function nyss_ioimportData($tbl, &$l, $dryrun, $logFile) {
 
         global $nyss_iofields;
 	global $nyss_select;
 	global $nyss_ioline;
-	
-        civicrm_initialize( );
-        require_once 'CRM/Core/Config.php';
-        $config =& CRM_Core_Config::singleton();
 
 	//build the select array once and store global for efficiency
 	if (empty($nyss_select)) {
@@ -237,17 +264,19 @@ function nyss_ioimportData($tbl, $l, $dryrun, $logFile) {
 		
 	}
 	
+        $pkCivi = $nyss_select[$tbl]['PK']['civiField'];
+        $pkImport = $nyss_select[$tbl]['PK']['importField'];
+
 	//if we are being passed a key, this is going to be an update
 	//otherwise it's an insert
 
 	if (!empty($l[$nyss_select[$tbl]['PK']['importField']])) {
 
-		$pkCivi = $nyss_select[$tbl]['PK']['civiField'];
-		$pkImport = $nyss_select[$tbl]['PK']['importField'];
-
+//nyss_out('status',1,true);
 		//get the existing data
 		$sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
-		$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+		$dao = &CRM_Core_DAO::executeQuery( $sql );
 
 		if (!$dao->fetch()) nyss_out('error','no civirecord found. not importing.',true);
 
@@ -255,6 +284,9 @@ function nyss_ioimportData($tbl, $l, $dryrun, $logFile) {
 	
 		//compare the fields
 		foreach($l as $key=>$data) {
+
+                        //apply handler if set
+			if(isset($nyss_iofields[$tbl][$key]['handler'])) $data = $nyss_iofields[$tbl][$key]['handler']($data, true);
 
 			//if the import data doesn't match civi data, update it
 			if (isset($dao->$key) && $dao->$key<>$data) {
@@ -267,16 +299,19 @@ function nyss_ioimportData($tbl, $l, $dryrun, $logFile) {
 			}
 		}
 
+		CRM_Core_DAO::freeResult( );
+
 		//if there is something to update, do it!
 		if (!empty($up)) {
 		
 			$sqlUP = "UPDATE {$tbl} SET ".implode(',',$up). " WHERE {$pkCivi}={$l[$pkImport]}";
-print_r($sqlUP."<br>");
+//print_r($sqlUP."<br>");
 
 			if (!$dryrun) {
-				$dao=&CRM_Core_DAO::executeQuery( $sqlUP, CRM_Core_DAO::$_nullArray );
+				$dao=&CRM_Core_DAO::executeQuery( $sqlUP );
+		                CRM_Core_DAO::freeResult( );
 			}
-			fwrite($logFile, "line {$nyss_ioline}: updated record. " . $sqlUPDATE. "\n");
+			fwrite($logFile, "line {$nyss_ioline}: updated record. " . $sqlUP. "\n");
 		} else {
 		
 			fwrite($logFile, "line {$nyss_ioline}: nothing to update for $tbl record: " . implode(',',$l). "\n");
@@ -290,34 +325,46 @@ print_r($sqlUP."<br>");
 		//set up the insert
 		foreach($l as $key=>$data) {
 
+			//apply handler if set
+                        if(isset($nyss_iofields[$tbl][$key]['handler'])) $data = $nyss_iofields[$tbl][$key]['handler']($data, true);
+
+                        //make sure we're only processing the records for that table
+                        if (!isset($nyss_iofields[$tbl][$key])) continue;
+
 			$up = array();
 
-			//skip if no data		
+                        //skip if required values not found
+                        if (empty($data) && $nyss_iofields[$tbl][$key]['required']) {
+                                $skip=true;
+                                break;
+                        }
+
+  			//skip if no data
 			if (empty($data)) continue;
 
-			//make sure we're only processing the records for that table
-			if (!isset($nyss_iofields[$tbl][$key])) continue;
-	
  			$data = str_replace("'","\'",$data);
 
 			$insertKeys[] = "`{$nyss_iofields[$tbl][$key]['fld']}`";
 			$insertData[] = "'{$data}'";
 		}
 
+		if ($skip) return;
+
 		$sqlINSERT = "INSERT INTO {$tbl} (".implode(',',$insertKeys). ") VALUES(".implode(',',$insertData).")";
-print_r($sqlINSERT."<br>");
+//print_r($sqlINSERT."<br>");
 		if (!$dryrun) {
+
 			$dao = & CRM_Core_DAO::executeQuery( $sqlINSERT, CRM_Core_DAO::$_nullArray );
-//print_r($dao);
+	                CRM_Core_DAO::freeResult( );
+
                         $dao = & CRM_Core_DAO::executeQuery( "SELECT LAST_INSERT_ID() as lastid", CRM_Core_DAO::$_nullArray );
 			$dao->fetch();
-//print_r($dao);
 			$l[$pkImport]=$dao->lastid;
+
+	                CRM_Core_DAO::freeResult( );
 		}
 		fwrite($logFile, "line {$nyss_ioline}: inserted record. " . $sqlINSERT . "\n");
 	}
-	
-	return $l[$pkImport];
 }
 
 function getOptions($strGroup)
@@ -354,4 +401,40 @@ function getStates()
 
   return $options;
 } // getStates()
+
+function convertProperCase( $string, $skipMixed = false ) {
+
+     //if mixed case, don't do anything
+     if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
+
+     // list of words we want to force
+     $forceWords = array('of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
+                    'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to',
+                    'into', 'with', 'II', 'IV', 'A-Level', "'s", 'UK', 'VI', '<i>', 'III', 'VII');
+
+    	 // punctuation used to determine that the following letter
+     	// should be capitalised
+     	$punctuation = array('.', '-', ':', '!', '\'', '-', '?');
+
+	$string = ucwords(strtolower($string));
+
+	$words = explode(' ', $string);
+
+	foreach ($words as $word) {
+	
+		$replace = array();
+	
+		//trim any non-word chars and replace with nothing for easier matching
+		$cleanWord = preg_replace("/[^\w]/", '', $word);
+		if (!empty($cleanWord)) $replace = preg_grep( "/$cleanWord/i", $forceWords);
+
+		if (isset($replace[0])) $word=str_replace($cleanWord,$replace[0],$word);
+
+		$fixedWords[] = $word;
+	}
+
+	$string = implode(' ',$fixedWords);
+
+     	return $string;
+}
 
