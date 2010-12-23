@@ -444,3 +444,9 @@ function convertProperCase( $string ) {
      }
  
      return $titleString;
+<<<<<<< HEAD
+
+}
+=======
+}
+>>>>>>> b70a97b739daff40c5aa70a179aaeed63e8e538a
