@@ -35,5 +35,8 @@ chmod -R ug+rw,o-w $webdir/sites
 chown -R $owner_user:$owner_group $appdir/civicrm
 find $appdir/civicrm/. -type f -exec chmod 664 {} \;
 find $appdir/civicrm/. -type d -exec chmod 775 {} \;
+chown -R $owner_user:$owner_group $appdir/modules
+find $appdir/modules/. -type f -exec chmod 664 {} \;
+find $appdir/modules/. -type d -exec chmod 775 {} \;
 
 exit 0

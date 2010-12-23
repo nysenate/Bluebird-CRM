@@ -370,7 +370,7 @@ function convertProperCase( $string ) {
      $punctuation = array('.', '-', ':', '!', '\'', '-', '?');
  
      // replacements
-     $replacements = array( array(''', '\'') );
+     $replacements = array( array("'", "\'") );
  
      // replace any non-letters or numbers with spaces so we 
      // know what the actual words are
@@ -443,7 +443,5 @@ function convertProperCase( $string ) {
      }
  
      return $titleString;
-}
-
 
 }
