@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -93,49 +93,4 @@ class CRM_Contact_Form_Edit_Household
         return empty( $errors ) ? true : $errors;
     }
     
-    /**
-     * This function synchronizes (updates) the address of individuals,
-     * sharing the address of the passed household-contact-ID.
-     * @param integer $householdContactID  the household contact id.
-     *
-     * @return void
-     * @access public
-     * @static
-     */
-    static function synchronizeIndividualAddresses( $householdContactID ) 
-    {
-        require_once 'api/v2/Location.php';
-        require_once 'CRM/Core/BAO/Location.php';
-        $locValues =& _civicrm_location_get( array( 'version'    => '3.0',
-                                                    'contact_id' => $householdContactID ) );
-        $query = "
-SELECT cc.id as id,ca.id address_id 
-FROM civicrm_contact cc LEFT JOIN civicrm_address ca ON cc.id = ca.contact_id 
-WHERE mail_to_household_id = $householdContactID;";
-
-        $contact = CRM_Core_DAO::executeQuery( $query );
-
-        $query = "UPDATE civicrm_address ca, civicrm_contact cc
-SET is_primary = 0 
-WHERE ca.contact_id = cc.id AND mail_to_household_id = $householdContactID;";
-
-        $update = CRM_Core_DAO::singleValueQuery( $query );
-        
-        if ( CRM_Utils_Array::value( 'address', $locValues ) && count( $locValues['address'] ) ) {
-            while ( $contact->fetch( ) ) {
-                $locParams = array( 'contact_id' => $contact->id,
-                                    'address'    => array( 1 => $locValues['address'][1] ) );
-
-                // removing unwanted ids from the params array
-                foreach ( array( 'timezone', 'contact_id' ) as $fld ) {
-                    if ( isset( $locParams['address'][1][$fld] ) ) unset( $locParams['address'][1][$fld] );
-                }
-                
-                $locParams['address'][1]['id'] = $contact->address_id;
-                CRM_Core_BAO_Location::create( $locParams );
-            }
-        }
-    }
 }
-    
-

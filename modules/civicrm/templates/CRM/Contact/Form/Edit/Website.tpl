@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,7 +30,8 @@
 {if !$addBlock}
 <tr>
     <td>{ts}Website{/ts}
-         &nbsp;&nbsp;<a href="#" title={ts}Add{/ts} onClick="buildAdditionalBlocks( 'Website', '{$className}');return false;">{ts}add{/ts}</a>
+        &nbsp;&nbsp;{help id="id-website" file="CRM/Contact/Form/Contact.hlp"}
+        &nbsp;&nbsp;<a href="#" title={ts}Add{/ts} onClick="buildAdditionalBlocks( 'Website', '{$className}');return false;">{ts}add{/ts}</a>
     </td>
     <td colspan="2"></td>
     <td id="Website-Primary" class="hiddenElement"></td>

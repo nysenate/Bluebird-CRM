@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -71,7 +71,7 @@
             <td colspan="3">{$groupTitle}</td>
         </tr>
         {foreach from=$customGroup item=customField name=fields}
-            
+            <tr{if ! $smarty.foreach.fields.last} style="border-bottom: 1px solid #F6F6F6;"{/if}>
 	       <td class="label">{$customField.label}</td>
 	       <td>{$customField.value}</td>
             </tr>

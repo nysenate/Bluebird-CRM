@@ -19,7 +19,7 @@
      <page_type>1</page_type>
      <component>CiviContribute</component>
   </item>
- <item>
+  <item>
      <path>civicrm/contribute/chart</path>
      <title>Contribution Summary - Chart View</title>
      <page_callback>CRM_Contribute_Form_ContributionCharts</page_callback>
@@ -45,9 +45,69 @@
      <weight>360</weight>
   </item>
   <item>
+     <path>civicrm/admin/contribute/settings</path>
+     <title>Title and Settings</title>
+     <page_callback>CRM_Contribute_Form_ContributionPage_Settings</page_callback>
+     <weight>400</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/amount</path>
+     <title>Contribution Amounts</title>
+     <page_callback>CRM_Contribute_Form_ContributionPage_Amount</page_callback>
+     <weight>410</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/membership</path>
+     <title>Membership Section</title>
+     <page_callback>CRM_Member_Form_MembershipBlock</page_callback>
+     <weight>420</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/custom</path>
+     <title>Include Profiles</title>
+     <page_callback>CRM_Contribute_Form_ContributionPage_Custom</page_callback>
+     <weight>430</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/thankYou</path>
+     <title>Thank-you and Receipting</title>
+     <page_callback>CRM_Contribute_Form_ContributionPage_ThankYou</page_callback>
+     <weight>430</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/friend</path>
+     <title>Tell a Friend</title>
+     <page_callback>CRM_Friend_Form_Contribute</page_callback>
+     <weight>440</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/pcp</path>
+     <title>Personal Campaign Page Settings</title>
+     <page_callback>CRM_Contribute_Form_ContributionPage_PCP</page_callback>
+     <weight>450</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/widget</path>
+     <title>Configure Widget</title>
+     <page_callback>CRM_Contribute_Form_ContributionPage_Widget</page_callback>
+     <weight>460</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/premium</path>
+     <title>Premiums</title>
+     <page_callback>CRM_Contribute_Page_Premium</page_callback>
+     <weight>470</weight>
+  </item>
+  <item>
+     <path>civicrm/admin/contribute/addProductToPage</path>
+     <title>Add Products to This Page</title>
+     <page_callback>CRM_Contribute_Form_ContributionPage_AddProduct</page_callback>
+     <weight>480</weight>
+  </item>
+  <item>
      <path>civicrm/admin/contribute/add</path>
      <title>New Contribution Page</title>
-     <page_callback>CRM_Contribute_Page_ContributionPage</page_callback>
+     <page_callback>CRM_Contribute_Controller_ContributionPage</page_callback>
      <path_arguments>action=add</path_arguments>
   </item>
   <item>

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,6 +30,7 @@
     if (cj(event.target).is('.btn-slide')) {
       cj('.panel').css('display', 'none');
       cj(event.target).children().show();
+      cj('.btn-slide-active').removeClass('btn-slide-active');	
       cj(event.target).addClass('btn-slide-active');
     } else {
     	cj('.btn-slide .panel').hide();

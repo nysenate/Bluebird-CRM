@@ -2,7 +2,7 @@
 
 /*
  +----------------------------------------------------------------------------+
- | Elavon (Nova) Virtual Merchant Core Payment Module for CiviCRM version 3.2 |
+ | Elavon (Nova) Virtual Merchant Core Payment Module for CiviCRM version 3.3 |
  +----------------------------------------------------------------------------+
  | Licensed to CiviCRM under the Academic Free License version 3.0            |
  |                                                                            |
@@ -55,6 +55,23 @@ class CRM_Core_Payment_Elavon extends CRM_Core_Payment
         $this->_mode             = $mode;   // live or test
         $this->_paymentProcessor = $paymentProcessor;
         $this->_processorName    = ts('Elavon');
+    }
+
+    /** 
+     * singleton function used to manage this object 
+     * 
+     * @param string $mode the mode of operation: live or test
+     *
+     * @return object 
+     * @static 
+     * 
+     */ 
+    static function &singleton( $mode, &$paymentProcessor ) {
+        $processorName = $paymentProcessor['name'];
+        if (self::$_singleton[$processorName] === null ) {
+            self::$_singleton[$processorName] = new CRM_Core_Payment_Elavon( $mode, $paymentProcessor );
+        }
+        return self::$_singleton[$processorName];
     }
 
     /**********************************************************

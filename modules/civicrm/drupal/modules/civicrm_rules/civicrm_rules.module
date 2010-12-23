@@ -1,0 +1,102 @@
+<?php
+
+/*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.3                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007.                                       |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*/
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2010
+ * $Id$
+ *
+ */
+
+/**
+* Implement the post hook and fire the corresponding rules event
+*/
+function civicrm_rules_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
+	if ( ! module_exists( 'rules' ) ) {
+		return;
+	}
+
+	// process only contacts for now
+	$validObjects = array( 'Contact',
+												 'Individual',
+												 'Household',
+												 'Organization'
+											 );
+
+	if ( ! in_array( $objectName, $validObjects ) ) {
+		return;
+	}
+
+	$eventName = null;
+	switch ( $op ) {
+	case 'create':
+		$eventName = 'contact_insert';
+		break;
+
+	case 'edit':
+		$eventName = 'contact_update';
+		break;
+
+	case 'delete':
+		$eventName = 'contact_delete';
+		break;
+	}
+
+	if ( $eventName ) {
+		rules_invoke_event( $eventName, $objectRef );
+	}
+}
+
+/**
+ * Implement civicrm pageRun hook
+ */
+function civicrm_rules_civicrm_pageRun( &$page ) {
+	if ( ! module_exists( 'rules' ) ) {
+		return;
+	}
+
+	// process only contacts for now
+	$validObjects = array( 	'CRM_Contact_Page_View_Summary' );
+
+	$className = get_class( $page );
+	if ( !in_array( $className , $validObjects ) ) {
+		return;
+	}
+
+	$eventName = null;
+	switch ( $className ) {
+	case 'CRM_Contact_Page_View_Summary':
+		$eventName = 'contact_view';
+		break;
+	}
+
+	if ( $eventName ) {
+		rules_invoke_event( $eventName, $page );
+	}
+}

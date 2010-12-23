@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,7 +32,7 @@
  * @subpackage API_Relationship
  * 
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Relationship.php 29520 2010-09-02 13:28:55Z mover $
+ * @version $Id: Relationship.php 30462 2010-11-02 06:56:52Z yashodha $
  *
  */
 
@@ -61,40 +61,38 @@ function civicrm_relationship_create( &$params ) {
     if ( civicrm_error( $error ) ) {
         return $error;
     }
-   
     $values = array( );
     require_once 'CRM/Contact/BAO/Relationship.php';
     $error = _civicrm_relationship_format_params( $params, $values );
-    
+
     if ( civicrm_error( $error ) ) {
         return $error;
     }
-    
+
     $ids = array( );
     require_once 'CRM/Utils/Array.php';
-    
+
     if( CRM_Utils_Array::value( 'id', $params ) ) {
         $ids['relationship']  = $params['id'];
         $ids['contactTarget'] = $params['contact_id_b'];
     }
-       
+
     $values['relationship_type_id'] = $params['relationship_type_id'].'_a_b';
     $values['contact_check']        = array ( $params['contact_id_b'] => $params['contact_id_b'] );
     $ids   ['contact'      ]        = $params['contact_id_a'];
-    
+
     $relationshipBAO = CRM_Contact_BAO_Relationship::create( $values, $ids );
 
     if ( is_a( $relationshipBAO, 'CRM_Core_Error' ) ) {
-        return civicrm_create_error( "Relationship can not be created" );
+        return civicrm_create_error( 'Relationship can not be created' );
     } else if ( $relationshipBAO[1] ) {
-        return civicrm_create_error( "Relationship is not valid" );
+        return civicrm_create_error( 'Relationship is not valid' );
     } else if ( $relationshipBAO[2] ) {
-        return civicrm_create_error( "Relationship already exist" );
+        return civicrm_create_error( 'Relationship already exists' );
     }
 
-    return civicrm_create_success( array( 'id' => implode( ",", $relationshipBAO[4] ) ) );
+    return civicrm_create_success( array( 'id' => implode( ',', $relationshipBAO[4] ) ) );
 }
-
 
 /**
  * Delete a relationship 
@@ -146,7 +144,42 @@ function civicrm_relationship_delete( &$params ) {
  *
  */
 function civicrm_relationship_update( $params ) {
-    return civicrm_relationship_create( $params );
+    try {
+       _civicrm_initialize(true);
+
+       /*
+        * Erik Hommel, 5 Oct 2010 : fix for CRM-6895
+        * check if required field relationship_id is in the parms. As the
+        * CRM_Contact_BAO_Relationship::getRelatonship throws up some issues
+        * (CRM-6905) the relationship is retrieved with a direct query
+        */
+       civicrm_verify_mandatory($params, 'CRM_Contact_DAO_Relationship', array('relationship_id'));
+
+       $names = array('id', 'contact_id_a', 'contact_id_b',
+                      'relationship_type_id', 'start_date', 'end_date', 'is_active',
+                      'description', 'is_permission_a_b', 'is_permission_b_a', 'case_id');
+       
+       $relationship_id = (int) $params['relationship_id'];
+       $query = "SELECT * FROM civicrm_relationship WHERE id = $relationship_id";
+       $daoRelations = & CRM_Core_DAO::executeQuery( $query );
+       while ($daoRelations->fetch()) {
+           foreach ($names as $name) {
+               $current_values[$name] = $daoRelations->$name;
+           }
+       }
+       $params = array_merge($current_values, $params);
+       $params['start_date'] = date("Ymd", strtotime($params['start_date']));
+       $params['end_date'] = date("Ymd", strtotime($params['end_date']));
+       
+       return civicrm_relationship_create( $params );
+
+  } catch (PEAR_Exception $e) {
+    return civicrm_create_error( $e->getMessage() );
+  } catch (Exception $e) {
+    return civicrm_create_error( $e->getMessage() );
+  }
+
+
 }
 
 
@@ -405,7 +438,7 @@ function _civicrm_relationship_check_params( &$params ) {
     }
     
     if ( ! $valid ) {
-        return civicrm_create_error( "Required fields not found" . $error );
+        return civicrm_create_error( 'Required fields not found' . $error );
     }
     
     return array();

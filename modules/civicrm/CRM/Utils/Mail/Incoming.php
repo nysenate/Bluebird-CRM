@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -217,7 +217,8 @@ class CRM_Utils_Mail_Incoming {
         // since we only have one fileset
         $mail = $mail[0];
         
-        return self::parseMailingObject( $mail );
+        $mailParams = self::parseMailingObject( $mail );
+        return $mailParams;
     } 
 
     function parseMailingObject( &$mail ) {

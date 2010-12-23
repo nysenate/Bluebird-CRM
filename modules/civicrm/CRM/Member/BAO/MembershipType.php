@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -296,12 +296,12 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
         }
         
         $fixed_period_rollover = false;
-        if ( $membershipTypeDetails['period_type'] == 'rolling' ) {
+        if ( CRM_Utils_Array::value( 'period_type', $membershipTypeDetails)  == 'rolling' ) {
             if ( !$startDate ) {
                 $startDate = $joinDate;
             }
             $actualStartDate = $startDate;
-        } else if ( $membershipTypeDetails['period_type'] == 'fixed' ) {
+        } else if ( CRM_Utils_Array::value( 'period_type', $membershipTypeDetails ) == 'fixed' ) {
             //calculate start date
 
             // today is always join date, in case of Online join date
@@ -334,29 +334,28 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
                 // check if rollover date is less than fixed start date,
                 // if yes increment, another edge case handling 
                 if ( $fixedRolloverDate <= $fixedStartDate  ) {
-                    $fixedRolloverDate = date('Y-m-d', mktime( 0, 0, 0, $rolloverMonth, $rolloverDay, $year + 1 ) );
+                    $year = $year + 1;
+                    $actualRolloverDate = date( 'Y-m-d', mktime( 0, 0, 0, $rolloverMonth, $rolloverDay, $year ) );
                 }
                 
-                // we need to minus year if join date is less than equal
-                // to fixed start date also check we should check if
-                // joining date doesnot come in rollover "window". Bit
-                // complicated but it works !!
+                // if join date is less than start date as well as rollover date
+                // then decrement the year by 1
                 if ( ( $joinDate < $fixedStartDate ) && ( $joinDate < $actualRolloverDate ) ) {
                     $year = $year - 1;
+                    $actualRolloverDate = date( 'Y-m-d', mktime( 0, 0, 0, $rolloverMonth, $rolloverDay, $year ) );
                 }
                 
-                //this is the actual start date that should be used for
-                //end date calculation
-                $actualStartDate = $year.'-'.$startMonth.'-'.$startDay;
-                
-                //calculate start date if join date is in rollover window
-                if ( $fixedRolloverDate <= $joinDate ) {
+                // calculate start date if join date is in rollover window
+                // if join date is greater than the rollover date,
+                // then consider the following year as the start date
+                if ( $actualRolloverDate <= $joinDate ) {
                     $fixed_period_rollover = true;
                     $year = $year + 1;
                 } 
                 
+                $actualStartDate = date( 'Y-m-d', mktime( 0, 0, 0, $startMonth, $startDay, $year ) );
                 if ( !$startDate ) {
-                    $startDate = $year.'-'.$startMonth.'-'.$startDay;
+                    $startDate = $actualStartDate;
                 }
             } else if ( $membershipTypeDetails['duration_unit'] == 'month' ) {
                 //here start date is always from start of the joining
@@ -381,10 +380,6 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
                 
             case 'year' :
                 $year  = $year + $membershipTypeDetails['duration_interval'];
-                
-                if ( $fixed_period_rollover ) {
-                    $year  = $year  + 1;
-                } 
                 
                 break;
             case 'month':
@@ -510,9 +505,9 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
             
             $rollover = false;
                         
-            if ( $membershipTypeDetails['period_type'] == 'rolling' ) {
+            if ( CRM_Utils_Array::value( 'period_type', $membershipTypeDetails ) == 'rolling' ) {
                 $startDate = $logStartDate = CRM_Utils_Date::mysqlToIso( $today );
-            } else if ( $membershipTypeDetails['period_type'] == 'fixed' ) {
+            } else if ( CRM_Utils_Array::value( 'period_type', $membershipTypeDetails ) == 'fixed' ) {
                 // Renewing expired membership is two step process. 
                 // 1. Renew the start date
                 // 2. Renew the end date

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -110,8 +110,8 @@
             <td scope="row" class="label" width="20%">{$form.custom_pre_id.label}</td>
             <td>{$form.custom_pre_id.html}<br />
             <span class="description">{ts}Include additional fields on this registration form by configuring and selecting a CiviCRM Profile to be included at the top of the page (immediately after the introductory message).{/ts}{help id="event-profile"}</span></td>
+	 </tr>
          <tr class="crm-event-manage-registration-form-block-custom_post_id">
-         </tr>
             <td scope="row" class="label" width="20%">{$form.custom_post_id.label}</td>
             <td>{$form.custom_post_id.html}<br />
             <span class="description">{ts}Include additional fields on this registration form by configuring and selecting a CiviCRM Profile to be included at the bottom of the page.{/ts}</span></td>
@@ -239,10 +239,11 @@
                </td>
              </tr>
            </table>
+	  </div>
         </fieldset>
         </div>
-    </div>
     </div> {*end of div registration_blocks*}
+    </div>
  <div class="crm-submit-buttons">
       {include file="CRM/common/formButtons.tpl" location="bottom"}
  </div>

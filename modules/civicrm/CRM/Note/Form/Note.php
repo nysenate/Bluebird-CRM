@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -67,10 +67,26 @@ class CRM_Note_Form_Note extends CRM_Core_Form
      */
     protected $_id;
 
+    /**
+     * The parent note id, used when adding a comment to a note
+     *
+     * @var int
+     */
+    protected $_parentId;
+
     function preProcess( ) {
         $this->_entityTable = $this->get( 'entityTable' );
         $this->_entityId    = $this->get( 'entityId'   );
         $this->_id          = $this->get( 'id'    );
+        $this->_parentId    = CRM_Utils_Array::value( 'parentId', $_GET, 0 );
+        if ( $this->_parentId ) {
+            $this->assign( 'parentId', $this->_parentId );
+        }
+
+        if ( $this->_id && CRM_Core_BAO_Note::getNotePrivacyHidden( $this->_id ) ) {
+            CRM_Core_Error::statusBounce( ts( 'You do not have access to this note.' ) );
+        }
+
 		// set title to "Note - "+Contact Name    
     	$displayName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $this->_entityId, 'display_name' );
     	$pageTitle = 'Note - '.$displayName;
@@ -89,11 +105,16 @@ class CRM_Note_Form_Note extends CRM_Core_Form
 
         if ( $this->_action & CRM_Core_Action::UPDATE ) {
             if ( isset( $this->_id ) ) {
-                $defaults['note'] = CRM_Core_BAO_Note::getNoteText( $this->_id );
-                $defaults['subject'] = CRM_Core_BAO_Note::getNoteSubject( $this->_id );
+                $params['id'] = $this->_id;
+                CRM_Core_DAO::commonRetrieve( 'CRM_Core_DAO_Note', $params, $defaults );
             }
+            if ( $defaults['entity_table'] == 'civicrm_note' ) {
+                $defaults['parent_id'] = $defaults['entity_id'];
+            }
+        } elseif ( $this->_action & CRM_Core_Action::ADD && $this->_parentId ) {
+            $defaults['parent_id'] = $this->_parentId;
+            $defaults['subject'] = 'Re: '. CRM_Core_BAO_Note::getNoteSubject( $this->_parentId );
         }
-
         return $defaults;
     }
 
@@ -118,7 +139,10 @@ class CRM_Note_Form_Note extends CRM_Core_Form
         }
 
         $this->add('text', 'subject' , ts('Subject:') , array('size' => 20));
-        $this->add('textarea', 'note', ts('Notes'), CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Note', 'note' ),true );
+        $this->add('textarea', 'note', ts('Note:'), CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Note', 'note' ),true );
+        $this->add('select', 'privacy', ts('Privacy:'), CRM_Core_OptionGroup::values('note_privacy') );
+
+        $this->add('hidden', 'parent_id');
         
         $this->addButtons( array(
                                  array ( 'type'      => 'next',
@@ -141,11 +165,17 @@ class CRM_Note_Form_Note extends CRM_Core_Form
     {
         // store the submitted values in an array
         $params = $this->exportValues();
-        
+
         $session = CRM_Core_Session::singleton( );
         $params['contact_id'  ] = $session->get( 'userID' );
-        $params['entity_table'] = $this->_entityTable;
-        $params['entity_id'   ] = $this->_entityId;
+
+        if ( $params['parent_id'] ) {
+            $params['entity_table'] = 'civicrm_note';
+            $params['entity_id'   ] = $params['parent_id'];
+        } else {
+            $params['entity_table'] = $this->_entityTable;
+            $params['entity_id'   ] = $this->_entityId;
+        }
         
         if ( $this->_action & CRM_Core_Action::DELETE ) {
             CRM_Core_BAO_Note::del( $this->_id );

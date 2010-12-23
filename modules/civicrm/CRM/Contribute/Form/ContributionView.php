@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -163,12 +163,23 @@ class CRM_Contribute_Form_ContributionView extends CRM_Core_Form
             ' - (' . CRM_Utils_Money::format( $values['total_amount'] ) . ' ' . 
             ' - ' . $values['contribution_type'] . ')';
         
+        $recentOther = array( );
+        if ( CRM_Core_Permission::checkActionPermission('CiviContribute', CRM_Core_Action::UPDATE) ) {
+            $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/contribution', 
+                                                             "action=update&reset=1&id={$values['id']}&cid={$values['contact_id']}&context=home" );
+        }
+        if ( CRM_Core_Permission::checkActionPermission('CiviContribute', CRM_Core_Action::DELETE) ) {
+            $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/contribution', 
+                                                               "action=delete&reset=1&id={$values['id']}&cid={$values['contact_id']}&context=home" );
+        }
         CRM_Utils_Recent::add( $title,
                                $url,
                                $values['id'],
                                'Contribution',
                                $values['contact_id'],
-                               null );
+                               null,
+                               $recentOther
+                               );
     }
 
     /**

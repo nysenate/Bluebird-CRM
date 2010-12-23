@@ -75,5 +75,5 @@ dbdrupprefix=`$readConfig --ig $instance db.drupal.prefix` || dbdrupprefix="$DEF
 dbbasename=`$readConfig -i $instance db.basename` || dbbasename="$instance"
 dbname=$dbdrupprefix$dbbasename
 
-php $script_dir/manageLdapConfig.php $cmd $dbhost $dbuser $dbpass $dbname $param
+php $script_dir/manageLdapConfig.php $cmd $dbhost $dbuser $dbpass $dbname "$param"
 exit $?

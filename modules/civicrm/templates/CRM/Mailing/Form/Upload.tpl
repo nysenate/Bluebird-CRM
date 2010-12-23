@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,6 +35,10 @@
 <table class="form-layout-compressed">
     <tr class="crm-mailing-upload-form-block-from_email_address"><td class="label">{$form.from_email_address.label}</td>
         <td>{$form.from_email_address.html} {help id ="id-from_email"}</td>
+    </tr>
+    <tr class="crm-mailing-upload-form-block-template">
+    	<td class="label">{$form.template.label}</td>
+	<td>{$form.template.html}</td>
     </tr>
     <tr class="crm-mailing-upload-form-block-subject"><td class="label">{$form.subject.label}</td>
         <td colspan="2">{$form.subject.html|crmReplace:class:huge}
@@ -103,9 +107,11 @@
     { 
 	if (document.getElementsByName("upload_type")[0].checked) {
             hide('compose_id');
+	    cj('.crm-mailing-upload-form-block-template').hide();
 	    show('upload_id');	
         } else {
             show('compose_id');
+	    cj('.crm-mailing-upload-form-block-template').show();
 	    hide('upload_id');
             verify( );
         }

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -78,6 +78,13 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
      */
     protected $_skipPermission;
 
+     /**
+     * Store profile ids if multiple profile ids are passed using comma separated.
+     * Currently lets implement this functionality only for dialog mode
+     */
+    protected $_profileIds = array( );
+
+   
     /**
      * class constructor
      *
@@ -87,12 +94,16 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
      * @return void
      * @access public
      */
-    function __construct( $id, $gid, $restrict, $skipPermission = false ) {
+    function __construct( $id, $gid, $restrict, $skipPermission = false, $profileIds = null ) {
         $this->_id       = $id;
         $this->_gid      = $gid;
         $this->_restrict = $restrict;
         $this->_skipPermission = $skipPermission;
-
+        if ( $profileIds ) {
+            $this->_profileIds = $profileIds;
+        } else {
+            $this->_profileIds = array( $gid );
+        }
         parent::__construct( );
     }
 
@@ -138,11 +149,10 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
             }
             
             require_once 'CRM/Core/BAO/UFGroup.php';
-
             $values = array( );
-            $fields = CRM_Core_BAO_UFGroup::getFields( $this->_gid, false, CRM_Core_Action::VIEW,
-                                                       null, null, false, $this->_restrict, $this->_skipPermission,
-                                                       null,
+            $fields = CRM_Core_BAO_UFGroup::getFields( $this->_profileIds, false, CRM_Core_Action::VIEW,
+                                                       null, null, false, $this->_restrict,
+                                                       $this->_skipPermission, null,
                                                        CRM_Core_Permission::VIEW );
 
 
@@ -188,7 +198,7 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
         
         $name = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', $this->_gid, 'name' );
         
-        if ( $name == 'summary_overlay' ) {
+        if ( strtolower( $name ) == 'summary_overlay' ) {
         	$template->assign( 'overlayProfile', true );
         }
 
@@ -227,6 +237,15 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
             $template     =& CRM_Core_Page::getTemplate( );
             if ( $template->template_exists( $templateFile ) ) {
                 return $templateFile;
+            }
+
+            // lets see if we have customized by name
+            $ufGroupName = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', $this->_gid, 'name' );
+            if ( $ufGroupName ) {
+                $templateFile = "CRM/Profile/Page/{$ufGroupName}/Dynamic.tpl";
+                if ( $template->template_exists( $templateFile ) ) {
+                    return $templateFile;
+                }
             }
         }
         return parent::getTemplateFileName( );

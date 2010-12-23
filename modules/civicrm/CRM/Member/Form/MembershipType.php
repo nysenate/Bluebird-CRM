@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -66,7 +66,13 @@ class CRM_Member_Form_MembershipType extends CRM_Member_Form
         //setting default relationshipType
         if ( isset ( $defaults['relationship_type_id'] ) ) {
             //$defaults['relationship_type_id'] = $defaults['relationship_type_id'].'_a_b';
-            $defaults['relationship_type_id'] = $defaults['relationship_type_id'].'_'.$defaults['relationship_direction'];
+            // Set values for relation type select box
+            $relTypeIds    = explode( CRM_Core_DAO::VALUE_SEPARATOR, $defaults['relationship_type_id'] );
+            $relDirections = explode( CRM_Core_DAO::VALUE_SEPARATOR, $defaults['relationship_direction'] );
+            $defaults['relationship_type_id'] = array( );
+            foreach( $relTypeIds as $key => $value ) {
+                $defaults['relationship_type_id'][] = $value.'_'.$relDirections[$key];
+            }
         }
         
         $config = CRM_Core_Config::singleton( );
@@ -140,6 +146,7 @@ class CRM_Member_Form_MembershipType extends CRM_Member_Form
             asort($relTypeInd);
         }
         $memberRel =& $this->add('select', 'relationship_type_id', ts('Relationship Type'),  array('' => ts('- select -')) + $relTypeInd);
+        $memberRel->setMultiple( true ); 
 
         $this->add( 'select', 'visibility', ts('Visibility'), CRM_Core_SelectValues::memberVisibility( ) );
         $this->add('text', 'weight', ts('Order'), 
@@ -347,9 +354,16 @@ class CRM_Member_Form_MembershipType extends CRM_Member_Form
            
             $params['minimum_fee'] = CRM_Utils_Rule::cleanMoney( $params['minimum_fee'] );
             if ( CRM_Utils_Array::value( 'relationship_type_id', $params ) ) {
-                $relationId = explode( '_', $params['relationship_type_id'] );
-                $params['relationship_type_id'  ] = $relationId[0];
-                $params['relationship_direction'] = $relationId[1].'_'.$relationId[2];
+                // To insert relation ids and directions with value separator
+                $relTypeDirs = $params['relationship_type_id'];
+                foreach( $relTypeDirs as $key => $value ) {
+                    $relationId = explode( '_', $value );
+                    $relIds[] = $relationId[0];
+                    $relDirection[] = $relationId[1].'_'.$relationId[2];
+                } 
+                require_once 'CRM/Core/DAO.php';
+                $params['relationship_type_id'  ] = implode( CRM_Core_DAO::VALUE_SEPARATOR, $relIds );
+                $params['relationship_direction'] = implode( CRM_Core_DAO::VALUE_SEPARATOR, $relDirection );
             } 
             if ($this->_action & CRM_Core_Action::UPDATE ) {
                 $ids['membershipType'] = $this->_id;

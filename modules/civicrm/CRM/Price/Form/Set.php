@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -62,23 +62,23 @@ class CRM_Price_Form_Set extends CRM_Core_Form
     {
         // current set id
         $this->_sid = $this->get( 'sid' );
-             
+        
         // setting title for html page
-        if ( $this->_action == CRM_Core_Action::UPDATE ) {
+        $title = ts('New Price Set'); 
+        if ( $this->_sid ) {
             $title = CRM_Price_BAO_Set::getTitle( $this->_sid );
-            CRM_Utils_System::setTitle( ts('Edit %1', array( 1 => $title ) ) );
-        } else if ( $this->_action == CRM_Core_Action::VIEW ) {
-            $title = CRM_Price_BAO_Set::getTitle( $this->_sid );
-            CRM_Utils_System::setTitle( ts('Preview %1', array( 1 => $title ) ) );
-        } else {
-            CRM_Utils_System::setTitle( ts('New Price Set') );
         }
-
+        if ( $this->_action & CRM_Core_Action::UPDATE ) {
+            $title = ts('Edit %1', array( 1 => $title ) );
+        } else if ( $this->_action & CRM_Core_Action::VIEW ) {
+            $title = ts('Preview %1', array( 1 => $title ) ) ;
+        }
+        CRM_Utils_System::setTitle( $title );
+        
         $url = CRM_Utils_System::url( 'civicrm/admin/price', 'reset=1' );
         $breadCrumb     = array( array('title' => ts('Price Sets'),
                                        'url'   => $url) );
         CRM_Utils_System::appendBreadCrumb( $breadCrumb );
-
     }
      
     /**
@@ -103,21 +103,6 @@ class CRM_Price_Form_Set extends CRM_Core_Form
             $errors['title'] = ts("Set's Name should not start with digit");
         } 
         return empty( $errors ) ? true : $errors;
-    }
-
-    /**
-     * This function is used to add the rules (mainly global rules) for form.
-     * All local rules are added near the element
-     *
-     * @param null
-     * 
-     * @return void
-     * @access public
-     * @see valid_date
-     */
-    function addRules( )
-    {
-        $this->addFormRule( array( 'CRM_Price_Form_Set', 'formRule' ) );
     }
     
     /**
@@ -201,6 +186,8 @@ class CRM_Price_Form_Set extends CRM_Core_Form
                                  )
                            );
         
+        $this->addFormRule( array( 'CRM_Price_Form_Set', 'formRule' ) );
+        
         // views are implemented as frozen form
         if ( $this->_action & CRM_Core_Action::VIEW ) {
             $this->freeze();
@@ -219,16 +206,14 @@ class CRM_Price_Form_Set extends CRM_Core_Form
      */
     function setDefaultValues( )
     {
-        $defaults = array( );
-        if ( isset( $this->_sid ) ) {
+        $defaults = array( 'is_active' => true );
+        if ( $this->_sid ) {
             $params = array( 'id' => $this->_sid );
             CRM_Price_BAO_Set::retrieve( $params, $defaults );
             $extends = explode( CRM_Core_DAO::VALUE_SEPARATOR, $defaults['extends'] );
             unset( $defaults['extends'] );
             foreach ( $extends as $compId ) $defaults['extends'][$compId] = 1;
-        } else {
-            $defaults['is_active'] = 1;
-        }
+        } 
         
         return $defaults;
     }
@@ -245,7 +230,8 @@ class CRM_Price_Form_Set extends CRM_Core_Form
     {
         // get the submitted form values.
         $params              = $this->controller->exportValues( 'Set' );
-        $params['name']      = CRM_Utils_String::titleToVar( $params['title'] );
+        $nameLength          = CRM_Core_DAO::getAttribute( 'CRM_Price_DAO_Set', 'name' );
+        $params['name']      = CRM_Utils_String::titleToVar( $params['title'], CRM_Utils_Array::value( 'maxlength' , $nameLength ) );
         $params['is_active'] = CRM_Utils_Array::value( 'is_active', $params, false );
         
         $compIds = array( );

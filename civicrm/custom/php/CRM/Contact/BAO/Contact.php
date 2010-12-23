@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -195,16 +195,19 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact
         }
 
         if ( $contact->contact_type == 'Individual' &&
-             array_key_exists( 'current_employer', $params ) ) {
+             (array_key_exists( 'current_employer', $params ) || 
+              array_key_exists( 'employer_id', $params )) ) {
             // create current employer
-            if ( $params['current_employer'] ) {
-                require_once 'CRM/Contact/BAO/Contact/Utils.php';
+            require_once 'CRM/Contact/BAO/Contact/Utils.php';
+            if ( $params['employer_id']  ) {
+                CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $contact->id, 
+                                                                                  $params['employer_id'] );
+            } elseif ( $params['current_employer'] ) {
                 CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $contact->id, 
                                                                                   $params['current_employer'] );
             } else {
                 //unset if employer id exits
                 if ( $employerId = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $contact->id, 'employer_id' ) ) {
-                    require_once 'CRM/Contact/BAO/Contact/Utils.php';
                     CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer( $contact->id, $employerId );
                 }
             }
@@ -253,6 +256,13 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact
             }
         }
 
+        $config =& CRM_Core_Config::singleton();
+
+        // CRM-6942: set preferred language to the current language if it’s unset (and we’re creating a contact)
+        if ((!isset($params['id']) or !$params['id']) and (!isset($params['preferred_language']) or !$params['preferred_language'])) {
+            $params['preferred_language'] = $config->lcMessages;
+        }
+
         require_once 'CRM/Core/Transaction.php';
         $transaction = new CRM_Core_Transaction( );
 
@@ -289,7 +299,6 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact
             }
         }
 
-        $config = CRM_Core_Config::singleton( );
         if ( ! $config->doNotResetCache ) {
             // Note: doNotResetCache flag is currently set by import contact process, since resetting and 
             // rebuilding cache could be expensive (for many contacts). We might come out with better 
@@ -749,16 +758,26 @@ WHERE id={$id}; ";
         $relativePath = null;
         $config = CRM_Core_Config::singleton( );
         if ( $config->userFramework == 'Joomla' ) {
-            $userFrameworkBaseURL = trim( str_replace( "/administrator/", "", $config->userFrameworkBaseURL ) );
-            $customFileUploadDirectory = strstr( $absolutePath, '/media' );
-            $relativePath = $userFrameworkBaseURL . $customFileUploadDirectory;     
+            $userFrameworkBaseURL = trim( str_replace( '/administrator/', '', $config->userFrameworkBaseURL ) );
+            $customFileUploadDirectory = strstr( str_replace('\\', '/', $absolutePath), '/media' );
+            $relativePath = $userFrameworkBaseURL . $customFileUploadDirectory;
         } else if ( $config->userFramework == 'Drupal' ) {   
-            $absolutePathStr = strstr( $absolutePath, 'sites');
-            $relativePath =  $config->userFrameworkBaseURL . $absolutePathStr;
+            require_once 'CRM/Utils/System/Drupal.php';
+            $rootPath = CRM_Utils_System_Drupal::cmsRootPath( );
+            $baseUrl = $config->userFrameworkBaseURL;
+            if ( module_exists('locale') && $mode = variable_get( 'language_negotiation', LANGUAGE_NEGOTIATION_NONE ) ) {
+                global $language;
+                if( isset( $language->prefix ) ) {
+                    $baseUrl=  str_replace( $language->prefix.'/', '', $config->userFrameworkBaseURL );
+                }
+            }  
+            
+            $relativePath = str_replace( "$rootPath/", $baseUrl, str_replace('\\', '/', $absolutePath ) );
         } else if ( $config->userFramework == 'Standalone' ) {
             $absolutePathStr = strstr( $absolutePath, 'files');
-            $relativePath = $config->userFrameworkBaseURL . $absolutePathStr;
+            $relativePath = $config->userFrameworkBaseURL . str_replace('\\', '/', $absolutePathStr );
         }
+        
         return $relativePath;
     }
  	
@@ -864,13 +883,17 @@ WHERE id={$id}; ";
      *  @return void
      */
     function contactTrashRestore( $contactId, $restore = false ) {
+        $params   = array( 1 => array( $contactId, 'Integer' ) );
         $isDelete = ' is_deleted = 1 ';
         if ( $restore ) {
             $isDelete = ' is_deleted = 0 ';
+        } else {
+            $query = "DELETE FROM civicrm_uf_match WHERE contact_id = %1";
+            CRM_Core_DAO::executeQuery( $query, $params );
         }
         
-        $query = "UPDATE civicrm_contact SET {$isDelete} WHERE id = {$contactId}";
-        CRM_Core_DAO::executeQuery( $query );
+        $query = "UPDATE civicrm_contact SET {$isDelete} WHERE id = %1";
+        CRM_Core_DAO::executeQuery( $query, $params );
     }
     
     /**
@@ -1091,11 +1114,17 @@ WHERE id={$id}; ";
             // check if we can retrieve from database cache
             require_once 'CRM/Core/BAO/Cache.php'; 
             $fields =& CRM_Core_BAO_Cache::getItem( 'contact fields', $cacheKeyString );
-
+            
+            $masterAddress['master_address_belongs_to'] = array ( 'name'  => 'master_id',
+                                                                  'title' => ts('Master Address Belongs To')
+                                                                  ) ;
+            
             if ( ! $fields ) {
                 $fields = array( );
                 $fields = array_merge($fields, CRM_Contact_DAO_Contact::export( ));
-            
+                
+                // add master address display name for individual
+                $fields = array_merge( $fields, $masterAddress );
                 // the fields are meant for contact types
                 if ( in_array( $contactType, array('Individual', 'Household', 'Organization', 'All' ) ) ) {
                     require_once 'CRM/Core/OptionValue.php';
@@ -2033,7 +2062,7 @@ UNION
             // get preferred languages
             if ( ! empty( $contact->preferred_language ) ) {
                 $languages =& CRM_Core_PseudoConstant::languages( );
-                $values['preferred_language'] = $languages[$contact->preferred_language];
+                $values['preferred_language'] = CRM_Utils_Array::value( $contact->preferred_language, $languages );
             }
 
             // Calculating Year difference            
@@ -2165,13 +2194,14 @@ UNION
                  
                  $emailGreeting = CRM_Core_PseudoConstant::greeting( $filter );
                  $emailGreetingString = $emailGreeting[ $contact->email_greeting_id ];
+                 $updateQueryString[] = " email_greeting_custom = NULL ";
              } else if( $contact->email_greeting_custom ) {     
                  $updateQueryString[] = " email_greeting_display = NULL ";
              }
                   
              if ( $emailGreetingString ) {
                  CRM_Activity_BAO_Activity::replaceGreetingTokens($emailGreetingString, $contactDetails, $contact->id );
-                 $emailGreetingString = CRM_Core_DAO::escapeString( $emailGreetingString );
+                 $emailGreetingString = CRM_Core_DAO::escapeString( CRM_Utils_String::stripSpaces($emailGreetingString) );
                  $updateQueryString[] = " email_greeting_display = '{$emailGreetingString}'";
              } 
 
@@ -2183,13 +2213,14 @@ UNION
                                   'greeting_type' => 'postal_greeting' );
                 $postalGreeting = CRM_Core_PseudoConstant::greeting( $filter);    
                 $postalGreetingString = $postalGreeting[ $contact->postal_greeting_id ];
+                $updateQueryString[]  = " postal_greeting_custom = NULL ";
              } elseif ( $contact->postal_greeting_custom ) {
                 $updateQueryString[] = " postal_greeting_display = NULL ";
              }
 
              if ( $postalGreetingString ) {
                  CRM_Activity_BAO_Activity::replaceGreetingTokens($postalGreetingString, $contactDetails, $contact->id );
-                 $postalGreetingString = CRM_Core_DAO::escapeString( $postalGreetingString );
+                 $postalGreetingString = CRM_Core_DAO::escapeString( CRM_Utils_String::stripSpaces($postalGreetingString) );
                  $updateQueryString[]  = " postal_greeting_display = '{$postalGreetingString}'";
              }         
         }
@@ -2202,14 +2233,15 @@ UNION
                              'greeting_type' => 'addressee' );
 
             $addressee = CRM_Core_PseudoConstant::greeting( $filter ); 
-            $addresseeString = $addressee[ $contact->addressee_id ];
+            $addresseeString     = $addressee[ $contact->addressee_id ];
+            $updateQueryString[] = " addressee_custom = NULL ";
          } else if( $contact->addressee_custom ){
             $updateQueryString[] = " addressee_display = NULL ";
          }
 
          if ( $addresseeString ) {
              CRM_Activity_BAO_Activity::replaceGreetingTokens($addresseeString, $contactDetails, $contact->id );
-             $addresseeString     = CRM_Core_DAO::escapeString( $addresseeString );
+             $addresseeString     = CRM_Core_DAO::escapeString( CRM_Utils_String::stripSpaces($addresseeString) );
              $updateQueryString[] = " addressee_display = '{$addresseeString}'";
          }
 
@@ -2296,6 +2328,7 @@ UNION
                                                 ),
                        'delete'       => array( 'title'        =>  ts( 'Delete Contact' ),
                                                 'weight'	   => 1, 
+                       							'weight'	   => 0, 
                                                 'ref'          =>  'delete-contact',
                                                 'key'          =>  'delete',
                                                 'permissions'  =>  array( 'delete contacts', 'edit all contacts' ) 
@@ -2473,6 +2506,37 @@ UNION
          ksort( $contextMenu['moreActions'] );
 
          return $contextMenu;
+     }
+     
+     /**
+      * Function to retrieve display name of contact that address is shared 
+      * based on $masterAddressId or $contactId .
+      * @param  int    $masterAddressId    master id.
+      * @param  int    $contactId   contact id.
+      * @return display name |null the found display name or null.
+      * @access public
+      * @static
+      */
+     static function getMasterDisplayName( $masterAddressId = null , $contactId = null ) 
+     {
+         $masterDisplayName = null;
+         $sql = null;
+         if ( !$masterAddressId && !$contactId ) return $masterDisplayName;
+         
+         if ( $masterAddressId ) {
+             $sql = "
+   SELECT display_name from civicrm_contact
+LEFT JOIN civicrm_address ON ( civicrm_address.contact_id = civicrm_contact.id )
+    WHERE civicrm_address.id = " . $masterAddressId;
+         } else if ( $contactId ) {
+             $sql = "
+   SELECT display_name from civicrm_contact cc, civicrm_address add1
+LEFT JOIN civicrm_address add2 ON ( add1.master_id = add2.id )
+    WHERE cc.id = add2.contact_id AND add1.contact_id = " . $contactId;
+         }
+         
+         $masterDisplayName  =  CRM_Core_DAO::singleValueQuery( $sql );
+         return $masterDisplayName;
      }
 
 }

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -137,6 +137,13 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
     protected $_linkToUF;
 
     /**
+     * Store profile ids if multiple profile ids are passed using comma separated.
+     * Currently lets implement this functionality only for dialog mode
+     */
+    protected $_profileIds = array( );
+
+
+    /**
      * Class constructor
      *
      * @param string params the params for the where clause
@@ -144,20 +151,27 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
      * @return CRM_Contact_Selector_Profile
      * @access public
      */
-    function __construct( &$params, &$customFields, $ufGroupId = null, $map = false, 
+    function __construct( &$params, &$customFields, $ufGroupIds = null, $map = false, 
                           $editLink = false, $linkToUF = false )
     {
         $this->_params   = $params;
-        
-        $this->_gid      = $ufGroupId;
+
+        if ( is_array( $ufGroupIds ) ) {
+            $this->_profileIds = $ufGroupIds;
+            $this->_gid        = $ufGroupIds[0];
+        } else {
+            $this->_profileIds = array( $ufGroupIds );
+            $this->_gid        = $ufGroupIds;
+        }
+
         $this->_map      = $map;
         $this->_editLink = $editLink;
         $this->_linkToUF = $linkToUF;
 
         //get the details of the uf group 
-        if ( $ufGroupId ) {
+        if ( $this->_gid ) {
             $groupId = CRM_Core_DAO::getFieldValue( 'CRM_Core_BAO_UFGroup', 
-                                                    $ufGroupId, 'limit_listings_group_id' );
+                                                    $this->_gid, 'limit_listings_group_id' );
         }
 
         // add group id to params if a uf group belong to a any group
@@ -172,7 +186,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         $this->_fields = CRM_Core_BAO_UFGroup::getListingFields( CRM_Core_Action::VIEW,
                                                                  CRM_Core_BAO_UFGroup::PUBLIC_VISIBILITY |
                                                                  CRM_Core_BAO_UFGroup::LISTINGS_VISIBILITY,
-                                                                 false, $this->_gid );
+                                                                 false, $this->_profileIds );
         $this->_customFields =& $customFields;
         
         $returnProperties =& CRM_Contact_BAO_Contact::makeHierReturnProperties( $this->_fields );        
@@ -193,14 +207,21 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
      * @access public
      *
      */
-    static function &links( $map = false, $editLink = false, $ufLink = false, $gid = null )
+    static function &links( $map = false, $editLink = false, $ufLink = false, $gids = null )
     {
         if ( ! self::$_links ) {
             self::$_links = array( );
             
             $viewPermission = true;
-            if ( $gid ) {
-                $viewPermission = CRM_Core_Permission::ufGroupValid( $gid, CRM_Core_Permission::VIEW );
+            if ( $gids ) {
+                // check view permission for each profile id, in case multiple profile ids are rendered
+                // then view action is disabled if any profile returns false
+                foreach( $gids as $profileId ) {
+                    $viewPermission = CRM_Core_Permission::ufGroupValid( $profileId, CRM_Core_Permission::VIEW );
+                    if ( !$viewPermission ) {
+                        break;
+                    }
+                }
             }
              
             if ( $viewPermission ) {
@@ -421,7 +442,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
                 $this->_editLink = true;
             }
         }
-        $links =& self::links( $this->_map, $this->_editLink, $this->_linkToUF, $this->_gid );
+        $links =& self::links( $this->_map, $this->_editLink, $this->_linkToUF, $this->_profileIds );
         
         require_once 'CRM/Core/PseudoConstant.php';
         $locationTypes = CRM_Core_PseudoConstant::locationType( );
@@ -481,7 +502,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         }
 
         if ( $this->_linkToUF ) {
-            require_once 'api/UFGroup.php';
+            require_once 'api/v2/UFGroup.php';
         }
         
         $imProviders  = CRM_Core_PseudoConstant::IMProvider( );
@@ -564,10 +585,10 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
 
             $newLinks = $links;
             $params   = array( 'id'  => $result->contact_id,
-                               'gid' => $this->_gid );
+                               'gid' => implode( ',', $this->_profileIds ) );
 
             if ( $this->_linkToUF ) {
-                $ufID = crm_uf_get_uf_id( $result->contact_id );
+                $ufID = civicrm_uf_id_get( $result->contact_id );
                 if ( ! $ufID ) {
                     unset( $newLinks[CRM_Core_Action::PROFILE] );
                 } else {

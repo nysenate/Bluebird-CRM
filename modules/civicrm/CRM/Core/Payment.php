@@ -1,7 +1,7 @@
 <?php  
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -88,15 +88,23 @@ abstract class CRM_Core_Payment {
      * @static  
      *  
      */  
-    static function &singleton( $mode = 'test', $component, &$paymentProcessor, &$paymentForm = null ) {
+    static function &singleton( $mode = 'test', &$paymentProcessor, &$paymentForm = null ) {        
         if ( self::$_singleton === null ) {
             $config       = CRM_Core_Config::singleton( );
-            $paymentClass = "CRM_{$component}_" . $paymentProcessor['class_name'];
-            
-            $classPath = str_replace( '_', '/', $paymentClass ) . '.php';
-            require_once($classPath);
-            self::$_singleton = eval( 'return ' . $paymentClass . '::singleton( $mode, $paymentProcessor );' );
 
+            require_once 'CRM/Core/Extensions.php';
+            $ext = new CRM_Core_Extensions();
+            
+            if ( $ext->isExtensionKey( $paymentProcessor['class_name'] ) ) {
+                $paymentClass = $ext->keyToClass( $paymentProcessor['class_name'], 'payment' );
+                require_once( $ext->classToPath( $paymentClass ) );
+            } else {                
+                $paymentClass = "CRM_Core_" . $paymentProcessor['class_name'];
+                require_once( str_replace( '_', DIRECTORY_SEPARATOR , $paymentClass ) . '.php' );
+            }
+
+            self::$_singleton = eval( 'return ' . $paymentClass . '::singleton( $mode, $paymentProcessor );' );
+            
             if ( $paymentForm !== null ) {
                 self::$_singleton->setForm( $paymentForm );
             }

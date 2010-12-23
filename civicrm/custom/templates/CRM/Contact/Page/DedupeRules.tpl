@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -26,7 +26,7 @@
 {if $action eq 1 or $action eq 2}
   {include file="CRM/Contact/Form/DedupeRules.tpl"}
 {elseif $action eq 4}
-  {include file="CRM/Contact/Form/DedupeFind.tpl"}
+{include file="CRM/Contact/Form/DedupeFind.tpl"}
 {else}
     <div id="help">
         {ts}Manage the rules used to identify potentially duplicate contact records. Scan for duplicates using a selected rule and merge duplicate contact data as needed.{/ts} {help id="id-dedupe-intro"}
@@ -55,8 +55,8 @@
                     {else}
                         <td></td>
                     {/if}
-                    <td>{*$row.action|replace:'xx':$row.id*}{*Limit dedupe actions to run rule only.*}
-                    	<a href="/civicrm/contact/dedupefind?reset=1&rgid={$row.id}&action=preview">Run Dedupe Rule</a>
+                    <td>{$row.action|replace:'xx':$row.id}{*NYSS Limit dedupe actions to run rule only.*}
+                    	{*<a href="/civicrm/contact/dedupefind?reset=1&rgid={$row.id}&action=preview">Run Dedupe Rule</a>*}{*reverted*}
                     </td>
                   </tr>
                 {/foreach}
@@ -64,6 +64,13 @@
             {/strip}
         </div>
     {/if}
-	    {* Dedupe rules creation removed *}
-
+	    {* Dedupe rules creation removed - reverted*}
+    {if $hasperm_administer_dedupe_rules}
+	    <div class="action-link">
+    	<a href="{crmURL q="action=add&contact_type=Individual&reset=1"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Dedupe Rule for Individuals{/ts}</span></a>
+    	<a href="{crmURL q="action=add&contact_type=Household&reset=1"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Dedupe Rule for Households{/ts}</span></a>
+    	<a href="{crmURL q="action=add&contact_type=Organization&reset=1"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Dedupe Rule for Organizations{/ts}</span></a>
+	<a href="{crmURL p='civicrm/dedupe/exception' q='reset=1'}" class="button"><span><div class="icon add-icon"></div>{ts}Dedupe Exceptions{/ts}</span></a>
+        </div>
+    {/if}
 {/if}

@@ -12,7 +12,7 @@
  *
  * @package CRM
  * @author Marshal Newrock <marshal@idealso.com>
- * $Id: Dummy.php 24552 2009-10-27 08:46:17Z shot $
+ * $Id: Dummy.php 30063 2010-10-06 10:33:02Z ashwini $
  */
 
 /* NOTE:
@@ -29,6 +29,15 @@ class CRM_Core_Payment_Dummy extends CRM_Core_Payment {
     static protected $_mode = null;
 
     static protected $_params = array();
+
+    /**
+     * We only need one instance of this object. So we use the singleton
+     * pattern and cache the instance in this variable
+     *
+     * @var object
+     * @static
+     */
+    static private $_singleton = null;
     
     /**
      * Constructor
@@ -41,6 +50,23 @@ class CRM_Core_Payment_Dummy extends CRM_Core_Payment {
         $this->_mode             = $mode;
         $this->_paymentProcessor = $paymentProcessor;
         $this->_processorName    = ts('Dummy Processor');
+    }
+
+    /** 
+     * singleton function used to manage this object 
+     * 
+     * @param string $mode the mode of operation: live or test
+     *
+     * @return object 
+     * @static 
+     * 
+     */ 
+    static function &singleton( $mode, &$paymentProcessor ) {
+        $processorName = $paymentProcessor['name'];
+        if (self::$_singleton[$processorName] === null ) {
+            self::$_singleton[$processorName] = new CRM_Core_Payment_Dummy( $mode, $paymentProcessor );
+        }
+        return self::$_singleton[$processorName];
     }
 
     /**

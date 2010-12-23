@@ -1,15 +1,11 @@
-{include file="CRM/Report/Form/Fields.tpl"}
- 
 {if !$printOnly}  
-{*Statistics at the Top of the page*}
-{include file="CRM/Report/Form/Statistics.tpl" top=true}
+{include file="CRM/Report/Form.tpl"}
 {else}
-    <h1>{$reportTitle}</h1>
-    {if $statistics }
+<h1>{$reportTitle}</h1>
+{if $statistics }
     {foreach from=$statistics.filters item=row}
         <h2>{$row.title} &nbsp:{$row.value}</h2>
     {/foreach}
-    {/if}
 {/if}
     
 {*include the graph*}
@@ -165,3 +161,4 @@
 {include file="CRM/Report/Form/Statistics.tpl" bottom=true}    
 {/if}    
 {include file="CRM/Report/Form/ErrorMessage.tpl"}
+{/if}

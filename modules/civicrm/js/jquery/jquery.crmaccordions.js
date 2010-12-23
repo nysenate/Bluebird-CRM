@@ -1,6 +1,6 @@
 /*
 * +--------------------------------------------------------------------+
-* | CiviCRM version 3.2                                                |
+* | CiviCRM version 3.3                                                |
 * +--------------------------------------------------------------------+
 * | Copyright CiviCRM LLC (c) 2004-2010                                |
 * +--------------------------------------------------------------------+
@@ -25,11 +25,13 @@
 */ 
 (function($){ $.fn.crmaccordions = function(){
 	if ($('.crm-accordion-processed').length == 0){
-	$('.crm-accordion-header').live('mouseover',
+	  var crmAccordionHeader = $('.crm-accordion-header');  
+	  crmAccordionHeader.live('mouseover',
 		function() {$(this).addClass('crm-accordion-header-hover')});
-	$('.crm-accordion-header').live('mouseout',	
+	  crmAccordionHeader.live('mouseout',	
 		function() {$(this).removeClass('crm-accordion-header-hover')});
-	$('.crm-accordion-header').live('click', function () {
+	  crmAccordionHeader.die('click');
+	  crmAccordionHeader.live('click', function () {
 		$(this).parent().toggleClass('crm-accordion-open');
 		$(this).parent().toggleClass('crm-accordion-closed');
 		//return false to prevent wiring of click event

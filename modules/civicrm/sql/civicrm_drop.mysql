@@ -1,5 +1,5 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -46,6 +46,7 @@ DROP TABLE IF EXISTS civicrm_uf_field;
 DROP TABLE IF EXISTS civicrm_uf_group;
 DROP TABLE IF EXISTS civicrm_county;
 DROP TABLE IF EXISTS civicrm_line_item;
+DROP TABLE IF EXISTS civicrm_price_field_value;
 DROP TABLE IF EXISTS civicrm_price_field;
 DROP TABLE IF EXISTS civicrm_pledge;
 DROP TABLE IF EXISTS civicrm_case_activity;
@@ -92,12 +93,14 @@ DROP TABLE IF EXISTS civicrm_im;
 DROP TABLE IF EXISTS civicrm_entity_tag;
 DROP TABLE IF EXISTS civicrm_entity_financial_trxn;
 DROP TABLE IF EXISTS civicrm_entity_file;
+DROP TABLE IF EXISTS civicrm_entity_batch;
 DROP TABLE IF EXISTS civicrm_email;
 DROP TABLE IF EXISTS civicrm_dashboard;
 DROP TABLE IF EXISTS civicrm_custom_field;
 DROP TABLE IF EXISTS civicrm_custom_group;
 DROP TABLE IF EXISTS civicrm_country;
 DROP TABLE IF EXISTS civicrm_cache;
+DROP TABLE IF EXISTS civicrm_batch;
 DROP TABLE IF EXISTS civicrm_price_set_entity;
 DROP TABLE IF EXISTS civicrm_price_set;
 DROP TABLE IF EXISTS civicrm_report_instance;
@@ -108,9 +111,13 @@ DROP TABLE IF EXISTS civicrm_tell_friend;
 DROP TABLE IF EXISTS civicrm_grant;
 DROP TABLE IF EXISTS civicrm_case_contact;
 DROP TABLE IF EXISTS civicrm_case;
+DROP TABLE IF EXISTS civicrm_dedupe_exception;
 DROP TABLE IF EXISTS civicrm_dedupe_rule;
 DROP TABLE IF EXISTS civicrm_dedupe_rule_group;
 DROP TABLE IF EXISTS civicrm_participant_status_type;
+DROP TABLE IF EXISTS civicrm_survey;
+DROP TABLE IF EXISTS civicrm_campaign_group;
+DROP TABLE IF EXISTS civicrm_campaign;
 DROP TABLE IF EXISTS civicrm_membership_status;
 DROP TABLE IF EXISTS civicrm_membership_type;
 DROP TABLE IF EXISTS civicrm_task_status;

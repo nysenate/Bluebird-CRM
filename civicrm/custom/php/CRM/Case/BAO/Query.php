@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -255,8 +255,8 @@ class CRM_Case_BAO_Query
             return;
             
         case 'case_type_id':
-            require_once "CRM/Case/PseudoConstant.php";
-            $caseTypes = CRM_Case_PseudoConstant::caseType( );
+            require_once 'CRM/Case/PseudoConstant.php';
+            $caseTypes = CRM_Case_PseudoConstant::caseType( 'label', false );
             
             $names = array( );
             $val   = array( );
@@ -612,17 +612,19 @@ case_relation_type.id = case_relationship.relationship_type_id )";
     static function buildSearchForm( &$form ) 
     {
         $config = CRM_Core_Config::singleton( );
-
+        
+        //validate case configuration.
+        require_once 'CRM/Case/BAO/Case.php';
+        $configured = CRM_Case_BAO_Case::isCaseConfigured( );
+        $form->assign('notConfigured', !$configured['configured'] );
+        
         require_once "CRM/Case/PseudoConstant.php";
-        $caseTypes = CRM_Core_OptionGroup::values( 'case_type', false, false, false, null, 'label', false );
-        if ( empty( $caseTypes ) ){
-            $form->assign('notConfigured', 1);
-        }
+        $caseTypes = CRM_Case_PseudoConstant::caseType( 'label', false );
         foreach ( $caseTypes as $id => $Name) {
             $form->addElement('checkbox', "case_type_id[$id]", null,$Name);
         }
-      
-        $statuses  = CRM_Case_PseudoConstant::caseStatus( );
+        
+        $statuses  = CRM_Case_PseudoConstant::caseStatus( 'label', false );
         $form->add('select', 'case_status_id',  ts( 'Case Status' ),  
                    array( '' => ts( '- any status -' ) ) + $statuses );
         

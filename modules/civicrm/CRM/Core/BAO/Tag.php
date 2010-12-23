@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -36,12 +36,13 @@
 
 require_once 'CRM/Core/DAO/Tag.php';
 
-class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
-
+class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
+{
     /**
      * class constructor
      */
-    function __construct( ) {
+    function __construct( )
+    {
         parent::__construct( );
     }
 
@@ -59,7 +60,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
      * @access public
      * @static
      */
-    static function retrieve( &$params, &$defaults ) {
+    static function retrieve( &$params, &$defaults )
+    {
         $tag = new CRM_Core_DAO_Tag( );
         $tag->copyValues( $params );
         if ( $tag->find( true ) ) {
@@ -69,14 +71,16 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
         return null;
     }
 
-    function getTree ( $usedFor = null, $excludeHidden = false  ) {
-        if (!isset ($this->tree)) {
-            $this->buildTree($usedFor, $excludeHidden);
+    function getTree ( $usedFor = null, $excludeHidden = false )
+    {
+        if ( !isset ( $this->tree ) ) {
+            $this->buildTree( $usedFor, $excludeHidden );
         }
         return $this->tree;
     }
 	
-    function buildTree( $usedFor = null, $excludeHidden = false ) {
+    function buildTree( $usedFor = null, $excludeHidden = false )
+    {
         $sql = "SELECT civicrm_tag.id, civicrm_tag.parent_id,civicrm_tag.name FROM civicrm_tag ";
         
         $whereClause = array( );
@@ -97,18 +101,18 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
 
         $orphan = array();
         while ( $dao->fetch( ) ) {
-            if (!$dao->parent_id) {
+            if ( !$dao->parent_id ) {
                 $this->tree[$dao->id]['name'] = $dao->name;
             } else {
-                if (array_key_exists($dao->parent_id,$this->tree)) {
+                if ( array_key_exists( $dao->parent_id, $this->tree ) ) {
                     $parent =& $this->tree[$dao->parent_id];
-                    if (!isset ($this->tree[$dao->parent_id]['children']) ) {
+                    if ( !isset ($this->tree[$dao->parent_id]['children'] ) ) {
                         $this->tree[$dao->parent_id]['children'] = array();
                     }
                 }
                 else {
                     //3rd level tag
-                    if (!array_key_exists($dao->parent_id,$orphan)) {
+                    if ( !array_key_exists($dao->parent_id, $orphan ) ) {
                         $orphan[$dao->parent_id]=array('children'=> array());
                     }
                     $parent=& $orphan[$dao->parent_id];
@@ -116,23 +120,27 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
                 $parent['children'][$dao->id] = array ('name'=>$dao->name);
             }
         }
-        if (sizeof($orphan)) {
+        if ( sizeof( $orphan ) ) {
             //hang the 3rd level lists at the right place
-            foreach ($this->tree as &$level1) {
+            foreach ( $this->tree as &$level1 ) {
                 if ( ! isset ( $level1['children'] ) ) {
                     continue;
                 }
 
                 foreach ( $level1['children'] as $key => &$level2 ) {
                     if ( array_key_exists( $key,$orphan ) ) {
-                        $level2['children']= $orphan[$key]['children'];
+                        $level2['children'] = $orphan[$key]['children'];
                     }
                 }
             }
         }
     }
 
-    function getTagsUsedFor( $usedFor = array( 'civicrm_contact' ), $buildSelect = true, $all = false ) {       
+    function getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
+                             $buildSelect = true,
+                             $all = false,
+                             $parentId = NULL )
+    {       
         $tags = array( );
 
         if ( empty($usedFor) ) {
@@ -142,12 +150,18 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
             $usedFor = array( $usedFor );  
         }
 
+        if ( $parentId === NULL ) {
+            $parentClause = " parent_id IS NULL AND ";
+        } else {
+            $parentClause = " parent_id = {$parentId} AND ";
+        }
+
         foreach( $usedFor as $entityTable ) { 
             $tag = new CRM_Core_DAO_Tag( );
             $tag->fields( );
             $tag->orderBy( 'parent_id' );
             if ( $buildSelect ) {
-                $tag->whereAdd( "is_tagset = 0 AND parent_id IS NULL AND used_for LIKE '%{$entityTable}%'");
+                $tag->whereAdd( "is_tagset = 0 AND {$parentClause} used_for LIKE '%{$entityTable}%'");
             } else {
                 $tag->whereAdd( "used_for LIKE '%{$entityTable}%'");
             }
@@ -172,7 +186,12 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
         return $tags;
     }
 
-    static function getTags( $usedFor = 'civicrm_contact', &$tags = array( ), $parentId = null, $separator = '&nbsp;&nbsp;', $flatlist = true ) {
+    static function getTags( $usedFor = 'civicrm_contact', 
+                             &$tags = array( ), 
+                             $parentId = null, 
+                             $separator = '&nbsp;&nbsp;', 
+                             $flatlist = true )
+    {
         $parentClause = '';
         if ( $parentId ) {
             $separator .= '&nbsp;&nbsp;';
@@ -206,7 +225,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
      * @static
      *
      */
-    static function del ( $id ) {
+    static function del ( $id )
+    {
         // delete all crm_entity_tag records with the selected tag id
         require_once 'CRM/Core/DAO/EntityTag.php';
         $entityTag = new CRM_Core_DAO_EntityTag( );
@@ -222,10 +242,10 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
         $tag->id = $id;
 
         require_once 'CRM/Utils/Hook.php';
-        CRM_Utils_Hook::pre( 'delete', 'Tag', $id, $tag);
+        CRM_Utils_Hook::pre( 'delete', 'Tag', $id, $tag );
 
         if ( $tag->delete( ) ) {
-            CRM_Utils_Hook::post( 'delete', 'Tag', $id, $tag);
+            CRM_Utils_Hook::post( 'delete', 'Tag', $id, $tag );
             CRM_Core_Session::setStatus( ts('Selected Tag has been Deleted Successfuly.') );
             return true;
         }
@@ -246,7 +266,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
      * @access public
      * @static
      */
-    static function add( &$params, &$ids ) {
+    static function add( &$params, &$ids )
+    {
         if ( ! self::dataExists( $params ) ) {
             return null;
         }
@@ -297,8 +318,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
      * @access public
      * @static
      */
-    static function dataExists( &$params ) {
-        
+    static function dataExists( &$params )
+    {
         if ( !empty( $params['name'] ) ) {
             return true;
         }
@@ -315,7 +336,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
      * @access public
      * @static
      */
-    static function getTagSet( $entityTable ) {
+    static function getTagSet( $entityTable )
+    {
         $tagSets = array( );
         $query = "SELECT name FROM civicrm_tag WHERE is_tagset=1 AND parent_id IS NULL and used_for LIKE '%{$entityTable}%'";
         $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray, true, null, false, false );
@@ -332,7 +354,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag {
      * @access public
      * @static
      */
-    static function getTagsNotInTagset( ) {
+    static function getTagsNotInTagset( )
+    {
         $tags = $tagSets = array( );
         // first get all the tag sets
         $query = "SELECT id FROM civicrm_tag WHERE is_tagset=1 AND parent_id IS NULL";

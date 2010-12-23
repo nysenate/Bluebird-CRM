@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -112,9 +112,9 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
      * @param bool $includeDelivered  Whether to include the recipients who already got the mailing
      * @return object                 A DAO loaded with results of the form (email_id, contact_id)
      */
-    function &getRecipientsObject($job_id, $includeDelivered = false) 
+    function &getRecipientsObject($job_id, $includeDelivered = false, $offset = NULL, $limit = NULL) 
     {
-        $eq = self::getRecipients($job_id, $includeDelivered, $this->id);
+        $eq = self::getRecipients($job_id, $includeDelivered, $this->id, $offset, $limit);
         return $eq;
     }
     
@@ -124,7 +124,8 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
         return $eq->N;
     }
     
-    function &getRecipients($job_id, $includeDelivered = false, $mailing_id = null) 
+    function &getRecipients($job_id, $includeDelivered = false, $mailing_id = null,
+                            $offset = NULL, $limit = NULL) 
     {
         $mailingGroup = new CRM_Mailing_DAO_Group();
         
@@ -413,12 +414,18 @@ AND    $mg.mailing_id = {$mailing_id}
         require_once 'CRM/Contact/BAO/Contact/Permission.php';
         list( $aclFrom, $aclWhere ) = CRM_Contact_BAO_Contact_Permission::cacheClause( );
         $aclWhere = $aclWhere ? "WHERE {$aclWhere}" : '';
+        $limitString = null;
+        if ( $limit && $offset !== null) {
+            $limitString = "LIMIT $offset, $limit";
+        }
+
         $eq->query("SELECT i.contact_id, i.email_id 
                     FROM  civicrm_contact contact_a
                     INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
                     {$aclFrom}
                     {$aclWhere}
-                    ORDER BY i.contact_id, i.email_id");
+                    ORDER BY i.contact_id, i.email_id
+                    $limitString");
 
         /* Delete the temp table */
         $mailingGroup->reset();
@@ -530,6 +537,10 @@ AND    $mg.mailing_id = {$mailing_id}
                     $token = $list[1];
                     $funcStruct['token'][] = $this->getDataFunc($match);
                 }
+                // fixed truncated url, CRM-7113
+                if ( $token ) {
+                    $funcStruct['embed_parts'][] = $token;
+                }
             } else {
                 $funcStruct['type'] = 'url';
             }
@@ -638,8 +649,8 @@ AND    $mg.mailing_id = {$mailing_id}
               
               $this->templates['html'] = join("\n",$template);
     
-              // this is where we create a text tepalte from the html template if the texttempalte did not exist
-              // this way we ensure that every recipient will receive n email even if the pref is set to text and the
+              // this is where we create a text template from the html template if the text template did not exist
+              // this way we ensure that every recipient will receive an email even if the pref is set to text and the
               // user uploads an html email only
               if ( !$this->body_text ) {
                   $this->templates['text'] = CRM_Utils_String::htmlToText( $this->templates['html'] );
@@ -1388,7 +1399,6 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
         
         $report = array();
                 
-        /* FIXME: put some permissioning in here */
         /* Get the mailing info */
         $mailing->query("
             SELECT          {$t['mailing']}.*
@@ -1520,13 +1530,12 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
         $report['jobs'] = array();
         $report['event_totals'] = array();
         $elements = array(  'queue', 'delivered', 'url', 'forward',
-                            'reply', 'unsubscribe', 'bounce', 'spool' );
+                            'reply', 'unsubscribe', 'opened', 'bounce', 'spool' );
 
         // initialize various counters
         foreach ( $elements as $field ) {
             $report['event_totals'][$field] = 0;
         }
-        $report['event_totals']['opened'] = $report['event_totals']['unsubscribe'] = 0;
 
         while ($mailing->fetch()) {
             $row = array();
@@ -1546,7 +1555,8 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
             // CRM-1783
             $row['unsubscribe'] = CRM_Mailing_Event_BAO_Unsubscribe::getTotalCount( $mailing_id, $mailing->id, true );
             $report['event_totals']['unsubscribe'] += $row['unsubscribe'];
-            
+
+
             foreach ( array_keys(CRM_Mailing_BAO_Job::fields( ) ) as $field ) {
                 $row[$field] = $mailing->$field;
             }
@@ -1599,11 +1609,12 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
                 ),
             );
 
-        foreach (array('scheduled_date', 'start_date', 'end_date') as $key) {
+            foreach (array('scheduled_date', 'start_date', 'end_date') as $key) {
                 $row[$key] = CRM_Utils_Date::customFormat($row[$key]);
             }
             $report['jobs'][] = $row;
         }
+        $report['event_totals']['queue'] = self::getRecipientsCount( $mailing_id, false, $mailing_id );
 
         if (CRM_Utils_Array::value('queue',$report['event_totals'] )) {
             $report['event_totals']['delivered_rate'] = (100.0 * $report['event_totals']['delivered']) / $report['event_totals']['queue'];

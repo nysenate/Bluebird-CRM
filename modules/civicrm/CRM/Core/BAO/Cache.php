@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -133,9 +133,8 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
                 $value = self::getItem( 'CiviCRM Session',
                                         "{$sessionName[0]}_{$sessionName[1]}" );
                 if ( $value ) {
-                    // CRM_Core_Error::debug_var( "session value for: {$sessionName[0]}_{$sessionName[1]}",
-                    // $value ); 
-                   $_SESSION[$sessionName[0]][$sessionName[1]] = $value;
+                    // CRM_Core_Error::debug( "session value for: {$sessionName[0]}_{$sessionName[1]}", $value ); 
+                    $_SESSION[$sessionName[0]][$sessionName[1]] = $value;
                 } else {
                     // CRM_Core_Error::debug_var( "session value for: {$sessionName[0]}_{$sessionName[1]} is null", $value );
                 }
@@ -143,8 +142,7 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
                 $value = self::getItem( 'CiviCRM Session',
                                         $sessionName );
                 if ( $value ) {
-                    // CRM_Core_Error::debug_var( "session value for: {$sessionName}",
-                    // $value );
+                    // CRM_Core_Error::debug( "session value for: {$sessionName}", $value );
                     $_SESSION[$sessionName] = $value;
                 } else {
                     // CRM_Core_Error::debug_var( "session value for: {$sessionName} is null", $value );

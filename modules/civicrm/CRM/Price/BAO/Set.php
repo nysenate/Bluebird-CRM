@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -321,13 +321,11 @@ WHERE     ct.id = cp.contribution_type_id AND
         
         require_once 'CRM/Utils/Array.php';
         if ( $oid = CRM_Utils_Array::value( 'oid', $params ) ) {
-            require_once 'CRM/Core/DAO/OptionGroup.php';
-            $optionGroup     = new CRM_Core_DAO_OptionGroup( );
-            $optionGroup->id = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionValue', 
-                                                            $oid, 'option_group_id' );
-            if ( $optionGroup->find( true ) ) {
-                $groupName   = explode( ".", $optionGroup->name );
-                $fid         = $groupName[2];
+            require_once 'CRM/Price/DAO/FieldValue.php';
+            $fieldValue     = new CRM_Price_DAO_FieldValue( );
+            $fieldValue->id = $oid;
+            if ( $fieldValue->find( true ) ) {
+                $fid = $fieldValue->price_field_id;
             }
         } else {
             $fid = CRM_Utils_Array::value( 'fid', $params ) ;
@@ -411,14 +409,17 @@ WHERE     ct.id = cp.contribution_type_id AND
         if ( $required == true ) {
             $priceFields[] = 'is_required';   
         }
+
         // create select
         $select = 'SELECT ' . implode( ',', $priceFields );
         $from = ' FROM civicrm_price_field';
         
         $params = array( );
         $params[1] = array( $setID, 'Integer' );
-        $where = ' WHERE price_set_id = %1';
-        $where .= ' AND is_active = 1';
+        $where = '
+WHERE price_set_id = %1
+AND is_active = 1
+';
 
         $orderBy = ' ORDER BY weight';
 
@@ -487,18 +488,54 @@ WHERE  id = %1";
                 
                 if ( $entityId && $entity ) {
                     require_once 'CRM/Price/BAO/LineItem.php';
-                    $form->_values['line_items'] = CRM_Price_BAO_LineItem::getLineItems( $entityId, $entity );
+                    $form->_values['line_items'] = 
+                        CRM_Price_BAO_LineItem::getLineItems( $entityId, $entity );
                 }
                 $required = false;
             } else {
                 $required = true;
             }
+
             $form->_priceSetId    = $priceSetId;
             $priceSet             = self::getSetDetail($priceSetId, $required);
             $form->_priceSet      = CRM_Utils_Array::value($priceSetId,$priceSet);
-            $form->_values['fee'] = CRM_Utils_Array::value($priceSetId,$priceSet);
+            $form->_values['fee'] = CRM_Utils_Array::value( 'fields', $form->_priceSet );
+            
+            //get the price set fields participant count.
+            if ( $entityTable == 'civicrm_event' ) {
+                require_once "CRM/Price/BAO/Set.php";
+                
+                //get option count info.
+                $form->_priceSet['optionsCountTotal'] = self::getPricesetCount( $priceSetId );
+                if ( $form->_priceSet['optionsCountTotal'] ) {
+                    $optionsCountDeails = array( );
+                    foreach ( $form->_priceSet['fields'] as $field ) {
+                        foreach ( $field['options'] as $option ){
+                            $count = CRM_Utils_Array::value( 'count', $option, 0 );
+                            $optionsCountDeails['fields'][$field['id']]['options'][$option['id']] = $count;
+                        }
+                    }
+                    $form->_priceSet['optionsCountDetails'] = $optionsCountDeails;
+                }
+                
+                //get option max value info.
+                $optionsMaxValueTotal   = 0;
+                $optionsMaxValueDetails = array( );
+                foreach ( $form->_priceSet['fields'] as $field ) {
+                    foreach ( $field['options'] as $option ){
+                        $maxVal = CRM_Utils_Array::value( 'max_value', $option, 0 );
+                        $optionsMaxValueDetails['fields'][$field['id']]['options'][$option['id']] = $maxVal;
+                        $optionsMaxValueTotal += $maxVal; 
+                    }
+                }
+                $form->_priceSet['optionsMaxValueTotal'] = $optionsMaxValueTotal;
+                if ( $optionsMaxValueTotal ) {
+                    $form->_priceSet['optionsMaxValueDetails'] = $optionsMaxValueDetails; 
+                }
+            }
             $form->set('priceSetId', $form->_priceSetId);
-            $form->set('priceSet', $form->_priceSet);
+            $form->set('priceSet', $form->_priceSet );
+            
             return $priceSetId;
         }
         return false;
@@ -582,7 +619,7 @@ WHERE  id = %1";
                 break;
             }
         }
-        
+ 
         $amount_level = array( );
         $totalParticipant = 0;
         if ( is_array( $lineItem ) ) {
@@ -618,7 +655,8 @@ WHERE  id = %1";
      */ 
     static function buildPriceSet( &$form )  
     {
-        $priceSetId = $form->get( 'priceSetId' ); 
+        $priceSetId = $form->get( 'priceSetId' );
+        
         if ( !$priceSetId ) return;
         
         $priceSet = self::getSetDetail( $priceSetId, true );
@@ -626,10 +664,31 @@ WHERE  id = %1";
         $form->assign( 'priceSet',  $form->_priceSet );
         require_once 'CRM/Core/PseudoConstant.php';
         $className = CRM_Utils_System::getClassName( $form );
-        foreach ( $form->_priceSet['fields'] as $field ) {
-            if ( CRM_Utils_Array::value( 'visibility', $field ) == 'public' || $className == 'CRM_Contribute_Form_Contribution' ) {
-                CRM_Price_BAO_Field::addQuickFormElement( $form, 'price_'.$field['id'], $field['id'], false, 
-                                                          CRM_Utils_Array::value( 'is_required', $field, false ) );
+        
+        if ( $className == 'CRM_Contribute_Form_Contribution_Main' ) {
+            $feeBlock =& $form->_values['fee'];
+        } else {
+            $feeBlock =& $form->_priceSet['fields'];
+        }
+        
+        // call the hook.
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::buildAmount( 'contribution', $form, $feeBlock );
+        
+        foreach ( $feeBlock as $field ) {
+            if ( CRM_Utils_Array::value( 'visibility', $field ) == 'public' || 
+                 $className == 'CRM_Contribute_Form_Contribution' ) {
+                
+                $options = CRM_Utils_Array::value( 'options', $field );
+                if ( !is_array( $options ) ) continue; 
+                
+                CRM_Price_BAO_Field::addQuickFormElement( $form, 
+                                                          'price_'.$field['id'], 
+                                                          $field['id'], 
+                                                          false, 
+                                                          CRM_Utils_Array::value( 'is_required', $field, false ),
+                                                          null,
+                                                          $options );
             }
         }
     }
@@ -688,9 +747,10 @@ WHERE  id = %1";
             $price = array_combine( self::getFieldIds( $id ), self::getFieldIds( $copy->id ) );
         
             //copy option group and values 
-            require_once "CRM/Core/BAO/OptionGroup.php";
             foreach ($price as $originalId => $copyId)  {
-                CRM_Core_BAO_OptionGroup::copyValue( 'price', $originalId, $copyId );
+                CRM_Core_DAO::copyGeneric( 'CRM_Price_DAO_FieldValue', 
+                                           array( 'price_field_id' => $originalId ),
+                                           array( 'price_field_id' =>  $copyId ) );  
             }
         }
         $copy->save( );
@@ -700,6 +760,10 @@ WHERE  id = %1";
         return $copy;
     }
     
+    /**
+     * This function is to check price set permission
+     * @param int $sid the price set id 
+     */
     function checkPermission( $sid ) {
         if ( $sid && defined( 'CIVICRM_EVENT_PRICE_SET_DOMAIN_ID' ) && CIVICRM_EVENT_PRICE_SET_DOMAIN_ID ) {
             $domain_id = CRM_Core_DAO::getFieldValue( 'CRM_Price_DAO_Set', $sid, 'domain_id',  'id' ) ;
@@ -708,6 +772,40 @@ WHERE  id = %1";
             }
         } 
         return true;
+    }
+    
+    /**
+     * Get the sum of participant count 
+     * for all fields of given price set.
+     *
+     * @param int $sid the price set id
+     *
+     * @access public
+     * @static
+     */ 
+    public static function getPricesetCount( $sid, $onlyActive = true ) 
+    {
+        $count = 0;
+        if ( !$sid ) return $count;
+        
+        $where = null;
+        if ( $onlyActive ) $where = 'AND  value.is_active = 1 AND field.is_active = 1';
+        
+        static $pricesetFieldCount;
+        if ( !isset( $pricesetFieldCount[$sid] ) ) {
+            $sql = "
+    SELECT  sum(value.count) as totalCount
+      FROM  civicrm_price_field_value  value
+INNER JOIN  civicrm_price_field field ON ( field.id = value.price_field_id )
+INNER JOIN  civicrm_price_set pset    ON ( pset.id = field.price_set_id ) 
+     WHERE  pset.id = %1
+            $where";
+            
+            $count = CRM_Core_DAO::singleValueQuery( $sql, array( 1 => array( $sid, 'Positive' ) ) );
+            $pricesetFieldCount[$sid] = ( $count ) ? $count : 0;
+        }
+        
+        return $pricesetFieldCount[$sid];
     }
 }
 

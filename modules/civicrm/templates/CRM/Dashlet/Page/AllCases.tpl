@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,6 +30,6 @@
 {else}
     <div class="messages status">
      {capture assign="findCasesURL"}{crmURL p='civicrm/case/search' q='reset=1'}{/capture}
-     {ts 1=$findCasesURL}There are no Cases. Use <a href="%1">Find Case</a> to expand your search.{/ts}
+     {ts 1=$findCasesURL}There are no Cases. Use <a href="%1">Find Cases</a> to expand your search.{/ts}
     </div>
 {/if}

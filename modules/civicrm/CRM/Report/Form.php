@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -205,6 +205,12 @@ class CRM_Report_Form extends CRM_Core_Form {
         if ( $this->_tagFilter ) {
             $this->buildTagFilter( );
         }
+        
+        // do not allow custom data for reports if user don't have
+        // permission to access custom data.
+        if ( !empty( $this->_customGroupExtends ) && !CRM_Core_Permission::check( 'access all custom data' ) ) {
+            $this->_customGroupExtends = array( );
+        }
 
         // merge custom data columns to _columns list, if any
         $this->addCustomDataToColumns( );
@@ -222,6 +228,9 @@ class CRM_Report_Form extends CRM_Core_Form {
         $this->_id = $this->get( 'instanceId' );
         if ( !$this->_id ) {
             $this->_id  = CRM_Report_Utils_Report::getInstanceID( );
+	     if ( !$this->_id ) {
+	         $this->_id  = CRM_Report_Utils_Report::getInstanceIDForPath( );
+	     }
         }
 
         // set qfkey so that pager picks it up and use it in the "Next > Last >>" links, 
@@ -728,7 +737,7 @@ class CRM_Report_Form extends CRM_Core_Form {
         $errors = array( );
         if( !empty($this->_customGroupExtends) && $this->_customGroupGroupBy && !empty($fields['group_bys']) ) {
             foreach( $this->_columns as $tableName => $table ) {
-                if( substr($tableName, 0, 13) == 'civicrm_value' && !empty( $this->_columns[$tableName]['fields']) ) {
+                if( (substr($tableName, 0, 13) == 'civicrm_value' || substr($tableName, 0, 12) == 'custom_value') && !empty( $this->_columns[$tableName]['fields']) ) {
                     foreach( $this->_columns[$tableName]['fields'] as $fieldName => $field ) {
                         if ( array_key_exists( $fieldName, $fields['group_bys'] ) && 
                              !array_key_exists( $fieldName, $fields['fields'] ) ) {
@@ -1304,6 +1313,138 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
         // override this method for building charts.
     }
 
+    // select() method below has been added recently (v3.3), and many of the report templates might 
+    // still be having their own select() method. We should fix them as and when encountered and move 
+    // towards generalizing the select() method below. 
+    function select( ) {
+        $select = array( );
+
+        $this->_columnHeaders = array( );
+        foreach ( $this->_columns as $tableName => $table ) {
+            if ( array_key_exists('fields', $table) ) {
+                foreach ( $table['fields'] as $fieldName => $field ) {
+                    if ( CRM_Utils_Array::value( 'required', $field ) ||
+                         CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
+
+                        // 1. In many cases we want select clause to be built in slightly different way 
+                        //    for a particular field of a particular type.
+                        // 2. This method when used should receive params by reference and modify $this->_columnHeaders
+                        //    as needed.
+                        $selectClause = $this->selectClause( $tableName, 'fields', $fieldName, $field );
+                        if ( $selectClause ) {
+                            $select[] = $selectClause;
+                            continue;
+                        }
+
+                        // include statistics columns only if set
+                        if ( CRM_Utils_Array::value('statistics', $field) ) {
+                            foreach ( $field['statistics'] as $stat => $label ) {
+                                switch (strtolower($stat)) {
+                                case 'sum':
+                                    $select[] = "SUM({$field['dbAlias']}) as {$tableName}_{$fieldName}_{$stat}";
+                                    $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+                                    $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type']  = 
+                                        $field['type'];
+                                    $this->_statFields[] = "{$tableName}_{$fieldName}_{$stat}";
+                                    break;
+                                case 'count':
+                                    $select[] = "COUNT({$field['dbAlias']}) as {$tableName}_{$fieldName}_{$stat}";
+                                    $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+                                    $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type']  = 
+                                        CRM_Utils_Type::T_INT;
+                                    $this->_statFields[] = "{$tableName}_{$fieldName}_{$stat}";
+                                    break;
+                                case 'avg':
+                                    $select[] = "ROUND(AVG({$field['dbAlias']}),2) as {$tableName}_{$fieldName}_{$stat}";
+                                    $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['title'] = $label;
+                                    $this->_columnHeaders["{$tableName}_{$fieldName}_{$stat}"]['type']  =  
+                                        $field['type'];
+                                    $this->_statFields[] = "{$tableName}_{$fieldName}_{$stat}";
+                                    break;
+                                }
+                            }   
+                        } else {
+                            $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
+                            $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
+                            $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
+                        }
+                    }
+                }
+            }
+
+            // select for group bys
+            if ( array_key_exists('group_bys', $table) ) {
+                foreach ( $table['group_bys'] as $fieldName => $field ) {
+
+                    // 1. In many cases we want select clause to be built in slightly different way 
+                    //    for a particular field of a particular type.
+                    // 2. This method when used should receive params by reference and modify $this->_columnHeaders
+                    //    as needed.
+                    $selectClause = $this->selectClause( $tableName, 'group_bys', $fieldName, $field );
+                    if ( $selectClause ) {
+                        $select[] = $selectClause;
+                        continue;
+                    }
+
+                    if ( CRM_Utils_Array::value( $fieldName, $this->_params['group_bys'] ) ) {
+                        switch ( CRM_Utils_Array::value( $fieldName, $this->_params['group_bys_freq'] ) ) {
+                        case 'YEARWEEK' :
+                            $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL WEEKDAY({$field['dbAlias']}) DAY) AS {$tableName}_{$fieldName}_start";
+                            $select[] = "YEARWEEK({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                            $select[] = "WEEKOFYEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                            $field['title'] = 'Week';
+                            break;
+                            
+                        case 'YEAR' :
+                            $select[] = "MAKEDATE(YEAR({$field['dbAlias']}), 1)  AS {$tableName}_{$fieldName}_start";
+                            $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                            $select[] = "YEAR({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                            $field['title'] = 'Year';
+                            break;
+                            
+                        case 'MONTH':
+                            $select[] = "DATE_SUB({$field['dbAlias']}, INTERVAL (DAYOFMONTH({$field['dbAlias']})-1) DAY) as {$tableName}_{$fieldName}_start";
+                            $select[] = "MONTH({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                            $select[] = "MONTHNAME({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                            $field['title'] = 'Month';
+                            break;
+                            
+                        case 'QUARTER':
+                            $select[] = "STR_TO_DATE(CONCAT( 3 * QUARTER( {$field['dbAlias']} ) -2 , '/', '1', '/', YEAR( {$field['dbAlias']} ) ), '%m/%d/%Y') AS {$tableName}_{$fieldName}_start";
+                            $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_subtotal";
+                            $select[] = "QUARTER({$field['dbAlias']}) AS {$tableName}_{$fieldName}_interval";
+                            $field['title'] = 'Quarter';
+                            break;
+                            
+                        }
+                        // for graphs and charts -
+                        if ( CRM_Utils_Array::value( $fieldName, $this->_params['group_bys_freq'] ) ) {
+                            $this->_interval = $field['title'];
+                            $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['title'] = 
+                                $field['title'] . ' Beginning';
+                            $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['type']  = 
+                                $field['type'];
+                            $this->_columnHeaders["{$tableName}_{$fieldName}_start"]['group_by'] = 
+                                $this->_params['group_bys_freq'][$fieldName];
+
+                            // just to make sure these values are transfered to rows.
+                            // since we 'll need them for calculation purpose, 
+                            // e.g making subtotals look nicer or graphs
+                            $this->_columnHeaders["{$tableName}_{$fieldName}_interval"] = array('no_display' => true);
+                            $this->_columnHeaders["{$tableName}_{$fieldName}_subtotal"] = array('no_display' => true);
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->_select = "SELECT " . implode( ', ', $select ) . " ";
+    }
+
+    function selectClause( &$tableName, $tableKey, &$fieldName, &$field ) {
+        return false;
+    }
+
     function where( ) {
         $whereClauses = $havingClauses = array( );
         foreach ( $this->_columns as $tableName => $table ) {
@@ -1570,7 +1711,7 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                         }
                         if ( $value ) {
                             $statistics['filters'][] = 
-                                array( 'title' => $field['title'],
+                                array( 'title' => CRM_Utils_Array::value( 'title', $field ),
                                        'value' => $value );
                         }
                     }
@@ -1606,8 +1747,8 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
             } else if ( $this->_outputMode == 'print' ) {
                 echo $content;
             } else {
-                if( $chartType = CRM_Utils_Array::value( 'charts', $this->_params ) ) {
-                    $config    = CRM_Core_Config::Singleton();
+                if( $chartType =  CRM_Utils_Array::value( 'charts', $this->_params ) ) {
+                    $config    =& CRM_Core_Config::singleton();
                     //get chart image name
                     $chartImg  = $chartType . '_' . $this->_id . '.png';
                     //get image url path
@@ -1762,14 +1903,14 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
 
         $sql       = "
 SELECT cg.table_name, cg.title, cg.extends, cf.id as cf_id, cf.label, 
-       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id 
+       cf.column_name, cf.data_type, cf.html_type, cf.option_group_id, cf.time_format
 FROM   civicrm_custom_group cg 
 INNER  JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
 WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND 
       cg.is_active = 1 AND 
       cf.is_active = 1 AND 
       cf.is_searchable = 1
-ORDER BY cg.table_name";
+ORDER BY cg.weight";
         $customDAO =& CRM_Core_DAO::executeQuery( $sql );
         
         $curTable  = null;
@@ -1805,6 +1946,10 @@ ORDER BY cg.table_name";
                 // filters
                 $curFilters[$fieldName]['operatorType'] = CRM_Report_Form::OP_DATE;
                 $curFilters[$fieldName]['type']         = CRM_Utils_Type::T_DATE;
+                // CRM-6946, show time part for datetime date fields
+                if ( $customDAO->time_format ) {
+                    $curFields[$fieldName]['type'] = CRM_Utils_Type::T_TIMESTAMP;
+                }
                 break;
 
             case 'Boolean':
@@ -1905,7 +2050,7 @@ ORDER BY cg.table_name";
         $mapper = CRM_Core_BAO_CustomQuery::$extendsMap;
 
         foreach( $this->_columns as $table => $prop ) {
-            if (substr($table, 0, 13) == 'civicrm_value') {
+            if (substr($table, 0, 13) == 'civicrm_value' || substr($table, 0, 12) == 'custom_value') {
                 $extendsTable = $mapper[$prop['extends']];
                 
                 // check field is in params

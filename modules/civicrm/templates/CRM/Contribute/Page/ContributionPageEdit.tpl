@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,14 +30,14 @@
         <a href="{crmURL p='civicrm/contribute/transact' q="reset=1&id=`$id`" fe='true'}" target="_blank">&raquo; {ts}Go to this LIVE Online Contribution page{/ts}</a>
         {if $config->userFramework EQ 'Drupal'}
             <p>{ts}Create links to this contribution page by copying and pasting the following URL into any web page.{/ts}:<br />
-            <a href="{crmURL p='civicrm/contribute/transact' q="reset=1&id=`$id`"}">{crmURL a=true p='civicrm/contribute/transact' q="reset=1&id=`$id`"}</a>
+            <a id="contributionLiveUrl" href="{crmURL p='civicrm/contribute/transact' q="reset=1&id=`$id`"}">{crmURL a=true p='civicrm/contribute/transact' q="reset=1&id=`$id`"}</a>
         {elseif $config->userFramework EQ 'Joomla'}
             {ts 1=$id}Create front-end links to this contribution page using the Menu Manager. Select <strong>Online Contribution</strong> and choose your desired contribution page from the parameters section.{/ts}
         {/if}
     {else}
         <img src="{$config->resourceBase}i/traffic_red.gif" alt="{ts}status{/ts}"/>
         <p>{ts}This page is currently <strong>inactive</strong> (not accessible to visitors).{/ts}</p>
-        {capture assign=crmURL}{crmURL q="reset=1&action=update&id=`$id`&subPage=Settings"}{/capture}
+        {capture assign=crmURL}{crmURL p='civicrm/admin/contribute/settings' q="reset=1&action=update&id=`$id`"}{/capture}
         <p>{ts 1=$crmURL}When you are ready to make this page live, click <a href='%1'>Title and Settings</a> and update the <strong>Active?</strong> checkbox.{/ts}</p>
     {/if}
 </div>
@@ -48,11 +48,11 @@
 </div>
 <table class="report"> 
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=Settings"}" id="idTitleAndSettings">&raquo; {ts}Title and Settings{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/settings' q="reset=1&action=update&id=`$id`"}" id="idTitleAndSettings">&raquo; {ts}Title and Settings{/ts}</a></td>
     <td>{ts}Set page title and describe your cause or campaign. Select contribution type (donation, campaign contribution, etc.), and set optional fund-raising goal and campaign start and end dates. Enable honoree features and allow individuals to contribute on behalf of an organization. Enable or disable this page.{/ts}</td>
 </tr>
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=Amount"}" id="idContributionAmounts">&raquo; {ts}Contribution Amounts{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/amount' q="reset=1&action=update&id=`$id`"}" id="idContributionAmounts">&raquo; {ts}Contribution Amounts{/ts}</a></td>
     <td>
         {ts}Select the payment processor to be used for this contribution page.{/ts}
         {ts}Configure contribution amount options and labels, minimum and maximum amounts.{/ts}
@@ -62,33 +62,33 @@
 </tr>
 {if $CiviMember}
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=Membership"}" id="idMembershipSettings">&raquo; {ts}Membership Settings{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/membership' q="reset=1&action=update&id=`$id`"}" id="idMembershipSettings">&raquo; {ts}Membership Settings{/ts}</a></td>
     <td>{ts}Configure membership sign-up and renewal options.{/ts}</td>
 </tr>
 {/if}
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=Custom"}" id="idCustomPageElements">&raquo; {ts}Include Profiles{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/custom' q="reset=1&action=update&id=`$id`"}" id="idCustomPageElements">&raquo; {ts}Include Profiles{/ts}</a></td>
     <td>{ts}Collect additional information from contributors by selecting CiviCRM Profile(s) to include in this contribution page.{/ts}</td>
 </tr>
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=ThankYou"}" id="idThank-youandReceipting">&raquo; {ts}Thank-you and Receipting{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/thankYou' q="reset=1&action=update&id=`$id`"}" id="idThank-youandReceipting">&raquo; {ts}Thank-you and Receipting{/ts}</a></td>
     <td>{ts}Edit thank-you page contents and receipting features.{/ts}</td>
 </tr>
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=Friend"}" id="idFriend">&raquo; {ts}Tell a Friend{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/friend' q="reset=1&action=update&id=`$id`"}" id="idFriend">&raquo; {ts}Tell a Friend{/ts}</a></td>
     <td>{ts}Make it easy for contributors to spread the word to friends and colleagues.{/ts}</td>
 </tr>
 {capture assign=pcpAdminURL}{crmURL p="civicrm/admin/pcp" q="reset=1"}{/capture}
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=PCP"}" id="idPcp">&raquo; {ts}Personal Campaign Pages{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/pcp' q="reset=1&action=update&id=`$id`"}" id="idPcp">&raquo; {ts}Personal Campaign Pages{/ts}</a></td>
     <td>{ts 1=$pcpAdminURL}Allow constituents to create their own personal fundraising pages and drive traffic to this contribution page. (<a href="%1">Or you can view and manage existing Personal Campaign Pages.</a>){/ts}</td>
 </tr>
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=Widget"}" id="idWidget">&raquo; {ts}Contribution Widget{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/widget' q="reset=1&action=update&id=`$id`"}" id="idWidget">&raquo; {ts}Contribution Widget{/ts}</a></td>
     <td>{ts}Create a contribution widget which you and your supporters can embed in websites and blogs.{/ts}</td>
 </tr>
 <tr>
-    <td class="nowrap"><a href="{crmURL q="reset=1&action=update&id=`$id`&subPage=Premium"}" id="idPremiums">&raquo; {ts}Premiums{/ts}</a></td>
+    <td class="nowrap"><a href="{crmURL p='civicrm/admin/contribute/premium' q="reset=1&action=update&id=`$id`"}" id="idPremiums">&raquo; {ts}Premiums{/ts}</a></td>
     <td>{ts}Enable a Premiums section (incentives / thank-you gifts) for this page, and configure premiums offered to contributors.{/ts}</td>
 </tr>
 <tr>

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -476,6 +476,28 @@ function civicrm_views_data() {
                                                                    ),
                                                    );
 
+    //BOOLEAN : Is Deleted
+    $data['civicrm_contact']['is_deleted'] = array(
+                                                   'title' => t('Is Deleted'),
+                                                   'help' => t('Has this contact been deleted?'),
+                                                   'field' => array(
+                                                                    'handler' => 'views_handler_field_boolean',
+                                                                    'click sortable' => TRUE,
+                                                                    ),
+
+                                                   'argument' => array(
+                                                                       'handler' => 'views_handler_argument',
+                                                                       ),
+
+                                                   'filter' => array(
+                                                                     'handler' => 'views_handler_filter_boolean_operator',
+                                                                     ),
+
+                                                   'sort' => array(
+                                                                   'handler' => 'views_handler_sort',
+                                                                   ),
+                                                   );
+
     // Organization Name
     $data['civicrm_contact']['organization_name'] = array(
                                              'title' => t('Organization Name'), // The item it appears as on the UI,
@@ -545,7 +567,7 @@ function civicrm_views_data() {
                          'do_not_trade'      => 1,
                          'is_opt_out'        => 1,
                          'contact_type'      => 1,
-                         'organization_name' => 1,
+                         'organization_name' => 1
                          );
     civicrm_views_add_fields( $fields, $data['civicrm_contact'], $skipFields, 'civicrm_contact' );
 
@@ -1486,7 +1508,7 @@ function civicrm_views_data() {
                                               'title' => t('Summary'),
                                               'help' => t('The Event\'s Summary'),
                                               'field' => array(
-                                                               'handler' => 'views_handler_field',
+                                                               'handler' => 'civicrm_handler_field_markup',
                                                                'click sortable' => TRUE,
                                                                ),
                                               );
@@ -1496,7 +1518,7 @@ function civicrm_views_data() {
                                                   'title' => t('Description'),
                                                   'help' => t('The Event\'s Full Description'),
                                                   'field' => array(
-                                                                   'handler' => 'views_handler_field',
+                                                                   'handler' => 'civicrm_handler_field_markup',
                                                                    'click sortable' => TRUE,
                                                                    ),
                                                   );
@@ -2511,8 +2533,8 @@ function civicrm_views_data() {
     //TABLE JOINS FOR CIVICRM CONTRIBUTIONS GO HERE!
      $data['civicrm_contribution_recur']['table']['join']['civicrm_contribution'] = array(
                                                                                   'left_table' => 'civicrm_contribution',
-                                                                                  'left_field' => 'contact_id',
-                                                                                  'field' => 'contact_id',
+                                                                                  'left_field' => 'contribution_recur_id',
+                                                                                  'field' => 'id',
                                                                                   );
 
     //CiviCRM Soft Credits - FIELDS
@@ -4088,6 +4110,7 @@ function civicrm_views_data() {
                                                            'title' => t('CiviCRM Mailings'),
                                                            'help' => t("View displays CiviCRM Mailing Results."),
                                                            );
+
    $data['civicrm_mailing_event_queue']['table']['join'] = array(
                                                            // Directly links to contact table - link A
                                                            'civicrm_mailing' => array(
@@ -4100,6 +4123,18 @@ function civicrm_views_data() {
 
 
     //CiviCRM Mailing - FIELDS
+    // expose the ID to Views to allow users to drill down to a specific mailing.
+    $data['civicrm_mailing']['id'] = array(
+        'title'     => t('ID'),
+        'help'      => t('The mailing\'s ID in the database.'),
+        'argument'  => array(
+            'handler'   => 'views_handler_argument_numeric'
+        ),
+        'field'     => array(
+            'handler'   => 'views_handler_field'
+        )
+    );
+
     //Mailing Name
     $data['civicrm_mailing']['name'] = array(
                                                          'title' => t('Name'),
@@ -4145,6 +4180,53 @@ function civicrm_views_data() {
                                                                          'handler' => 'views_handler_sort',
                                                                          ),
                                                             );
+
+    //Mailing Body plaintext
+    $data['civicrm_mailing']['body_text'] = array(
+                                                         'title' => t('Body - Text'),
+                                                         'help' =>  t('Plaintext mailing message'),
+                                                         'field' => array(
+                                                                          'handler' => 'views_handler_field',
+                                                                          'click sortable' => TRUE,
+                                                                          ),
+
+                                                         'argument' => array(
+                                                                             'handler' => 'views_handler_argument',
+                                                                             ),
+
+                                                         'filter' => array(
+                                                                           'handler' => 'views_handler_filter_string',
+                                                                           'allow empty' => TRUE,
+                                                                           ),
+
+                                                         'sort' => array(
+                                                                         'handler' => 'views_handler_sort',
+                                                                         ),
+                                                            );
+
+    //Mailing Body HTML
+    $data['civicrm_mailing']['body_html'] = array(
+                                                         'title' => t('Body - HTML'),
+                                                         'help' =>  t('HTML mailing message'),
+                                                         'field' => array(
+                                                                          'handler' => 'civicrm_handler_field_markup',
+                                                                          'click sortable' => TRUE,
+                                                                          ),
+
+                                                         'argument' => array(
+                                                                             'handler' => 'views_handler_argument',
+                                                                             ),
+
+                                                         'filter' => array(
+                                                                           'handler' => 'views_handler_filter_string',
+                                                                           'allow empty' => TRUE,
+                                                                           ),
+
+                                                         'sort' => array(
+                                                                         'handler' => 'views_handler_sort',
+                                                                         ),
+                                                            );
+
     //Mailing From e-mail
     $data['civicrm_mailing']['from_email'] = array(
                                                          'title' => t('From Email'),
@@ -4252,7 +4334,70 @@ function civicrm_views_data() {
                                                                        'handler' => 'views_handler_sort',
                                                                        ),
                                                        );
-    //Mialing Job table
+
+    // mailing_component table aliased as mailing_header
+     $data['civicrm_mailing_header']['table']['group'] = ts('CiviCRM Mailings');
+
+     $data['civicrm_mailing_header']['table']['join'] = array(
+                                                           // link to civicrm_mailing
+                                                           'civicrm_mailing' => array(
+                                                                                      'left_field' => 'header_id',
+                                                                                      'table' => 'civicrm_mailing_component',
+                                                                                      'field'      => 'id'
+                                                                                      )
+     );
+
+     $data['civicrm_mailing_header']['body_html'] = array(
+                                                      'title' => t('Mailing Header - HTML'),
+                                                      'help'  => t('The HTML header for this mailing.'),
+                                                      'field' => array(
+                                                                       'handler' => 'civicrm_handler_field_markup',
+                                                                       'click sortable' => FALSE
+                                                                       )
+     );
+
+     $data['civicrm_mailing_header']['body_text'] = array(
+                                                      'title' => t('Mailing Header - Plaintext'),
+                                                      'help'  => t('The plaintext header for this mailing.'),
+                                                      'field' => array(
+                                                                       'handler' => 'views_handler_field',
+                                                                       'click sortable' => FALSE
+                                                                       )
+     );
+
+
+    // mailing_component table aliased as mailing_footer
+     $data['civicrm_mailing_footer']['table']['group'] = ts('CiviCRM Mailings');
+
+     $data['civicrm_mailing_footer']['table']['join'] = array(
+                                                           // link to civicrm_mailing
+                                                           'civicrm_mailing' => array(
+                                                                                      'left_field' => 'footer_id',
+                                                                                      'table' => 'civicrm_mailing_component',
+                                                                                      'field'      => 'id'
+                                                                                      )
+     );
+
+     $data['civicrm_mailing_footer']['body_html'] = array(
+                                                      'title' => t('Mailing Footer - HTML'),
+                                                      'help'  => t('The HTML footer for this mailing.'),
+                                                      'field' => array(
+                                                                       'handler' => 'civicrm_handler_field_markup',
+                                                                       'click sortable' => FALSE
+                                                                       )
+     );
+
+     $data['civicrm_mailing_footer']['body_text'] = array(
+                                                      'title' => t('Mailing Footer - Plaintext'),
+                                                      'help'  => t('The plaintext footer for this mailing.'),
+                                                      'field' => array(
+                                                                       'handler' => 'views_handler_field',
+                                                                       'click sortable' => FALSE
+                                                                       )
+     );
+
+
+    //Mailing Job table
     $data['civicrm_mailing_job']['table']['group'] = ts('CiviCRM Mailing Job');
 
     $data['civicrm_mailing_job']['table']['join'] = array(
@@ -4262,6 +4407,7 @@ function civicrm_views_data() {
                                                                                       'field' => 'mailing_id',
                                                                                       )
                                                                                       );
+
     //When is the mailing sceduled to go out
     $data['civicrm_mailing_job']['scheduled_date'] = array(
                                                       'title' => t('Scheduled Date'),
@@ -4965,7 +5111,7 @@ function civicrm_views_custom_data_cache($data, $entity_type, $groupID, $subType
                   );
         $currentgroupfields = $currentgroup['fields'];
         $customHTMLTypes = array( 'Select', 'Multi-Select', 'AdvMulti-Select', 'Radio', 'CheckBox', 
-                                  'Select Date', 'Select State/Province', 'Select Country', 'Multi-Select Country',
+                                  'Select State/Province', 'Select Country', 'Multi-Select Country',
                                   'Multi-Select State/Province', 'Autocomplete-Select' );
         foreach ($currentgroupfields as $key => $currentfield) {
             if ($currentfield['help_post'] == '' || $currentfield['help_post'] == null) { 
@@ -5027,7 +5173,7 @@ function civicrm_get_field_handler($type) {
     switch ($type) {
     case "String":
     case "Memo":
-        return 'views_handler_field';   
+        return 'civicrm_handler_field_markup';
 
     case "Float":
     case "Int":
@@ -5296,6 +5442,9 @@ function civicrm_views_handlers() {
                                                                           ),
                        'civicrm_handler_relationship_contact2users' => array(
                                                             'parent' => 'views_handler_relationship',
+                                                           ),
+                       'civicrm_handler_field_markup' => array(
+                                                            'parent' => 'views_handler_field',
                                                            ),
                        'civicrm_handler_field_custom' => array(
                                                                'parent' => 'views_handler_field',

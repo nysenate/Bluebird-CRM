@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -88,7 +88,17 @@ class CRM_Core_BAO_Setting
         foreach ( $skipVars as $var ) {
             unset( $params[$var] );
         }
-                           
+
+        require_once 'CRM/Core/BAO/Preferences.php';
+        CRM_Core_BAO_Preferences::fixAndStoreDirAndURL( $params );
+
+        // also skip all Dir Params, we dont need to store those in the DB!
+        foreach ( $params as $name => $val ) {
+            if ( substr( $name, -3 ) == 'Dir' ) {
+                unset( $params[$name] );
+            }
+        }
+
         $domain->config_backend = serialize($params);
         $domain->save();
     }
@@ -176,6 +186,7 @@ class CRM_Core_BAO_Setting
                                'userFrameworkDSN', 
                                'userFrameworkBaseURL', 'userFrameworkClass', 'userHookClass',
                                'userPermissionClass', 'userFrameworkURLVar',
+                               'newBaseURL', 'newBaseDir', 'newSiteName',
                                'qfKey', 'gettextResourceDir', 'cleanURL',
                                'locale_custom_strings', 'localeCustomStrings' );
             foreach ( $skipVars as $skip ) {
@@ -183,7 +194,7 @@ class CRM_Core_BAO_Setting
                     unset( $defaults[$skip] );
                 }
             }
-            
+
             // since language field won't be present before upgrade.
             if ( CRM_Utils_Array::value( 'q', $_GET ) == 'civicrm/upgrade' ) {
                 return;
@@ -204,6 +215,11 @@ class CRM_Core_BAO_Setting
             $lcMessages = null;
 
             $session = CRM_Core_Session::singleton();
+
+            // for logging purposes, pass the userID to the db
+            if ($session->get('userID')) {
+                CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1', array(1 => array($session->get('userID'), 'Integer')));
+            }
 
             // on multi-lang sites based on request and civicrm_uf_match
             if ($multiLang) {
@@ -281,6 +297,13 @@ class CRM_Core_BAO_Setting
             // FIXME: as bad aplace as any to fix CRM-5428 
             // (to be moved to a sane location along with the above)
             if (function_exists('mb_internal_encoding')) mb_internal_encoding('UTF-8');
+        }
+
+        // dont add if its empty
+        if ( ! empty( $defaults ) ) {
+            // retrieve directory and url preferences also
+            require_once 'CRM/Core/BAO/Preferences.php';
+            CRM_Core_BAO_Preferences::retrieveDirectoryAndURLPreferences( $defaults );
         }
     }
 

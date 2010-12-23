@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -48,7 +48,9 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     protected $_phoneField   = false;
     
     protected $_addressField = false;
-    
+
+    protected $_customGroupExtends = array( 'Contact', 'Individual', 'Household', 'Organization' );
+
     function __construct( ) {
         $this->_columns = 
             array( 'civicrm_contact' =>
@@ -115,7 +117,8 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  'trxn_id'                => null,
                                  'receive_date'           => array( 'default' => true ),
                                  'receipt_date'           => null,
-                                 'contribution_status_id' => array( 'default' => true),
+                                 'contribution_status_id' => array('title'   => ts('Contribution Status'), 
+                                                                   'default' => true),
                                  'contribution_source'    => null,*/
                                  ), 
                           ),
@@ -132,13 +135,16 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                         'default'    => true 
                                         ),
                                  
-                                 'membership_type_id'    => array( 'default' => true ),
+                                 'membership_type_id'    => array('title'   => ts('Membership Type'), 
+                                                                  'default' => true ),
                                  'join_date'             => null,
                                  'membership_start_date' => array( 'title'   => ts('Start Date'),
                                                                    'default' => true ),
                                  'membership_end_date'   => array( 'title'   => ts('End Date'),
                                                                    'default' => true ),
-                                 'status_id'             => null,
+                                 'membership_status_id'  => array( 'name'    => 'status_id',
+                                                                   'title'   => ts('Membership Status'),
+                                                                   'default' => true ),
                                  'source'                => array( 'title'   => 'Membership Source'),*/
                                  ),
                           ),
@@ -155,7 +161,8 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                         'default'    => true 
                                         ),
                                  'event_id'                  => array( 'default' => true),
-                                 'participant_status_id'     => array( 'title'   => ts('Status'),
+                                 'participant_status_id'     => array( 'name'       => 'status_id',
+                                                                       'title'   => ts('Participant Status'),
                                                                        'default' => true ),
                                  'role_id'                   => array( 'title'   => ts('Role'),
                                                                        'default' => true ),
@@ -770,8 +777,13 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                 CRM_Event_PseudoConstant::participantStatus( $val, false );
                         }
                         if ( $val = CRM_Utils_Array::value('civicrm_participant_role_id', $row ) ) {
+                            $roles = explode( CRM_Core_DAO::VALUE_SEPARATOR, $val ); 
+                            $value = array( );
+                            foreach( $roles as $role) {
+                                $value[$role] = CRM_Event_PseudoConstant::participantRole( $role, false );
+                            }
                             $componentRows[$contactID][$component][$rowNum]['civicrm_participant_role_id'] = 
-                                CRM_Event_PseudoConstant::participantRole( $val, false );
+                                implode( ', ', $value );
                         }
                         
                         $entryFound = true;
@@ -785,6 +797,13 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                             $componentRows[$contactID][$component][$rowNum]['civicrm_activity_activity_status_id'] = $activityStatus[$val];     
                         }
                         
+                        $entryFound = true;
+                    }
+                    if ( $component == 'membership_civireport' ) {
+                        if ( $val = CRM_Utils_Array::value('civicrm_membership_membership_status_id', $row ) ) {
+                            $componentRows[$contactID][$component][$rowNum]['civicrm_membership_membership_status_id'] =
+                                CRM_Member_PseudoConstant::membershipStatus( $val );
+                        }
                         $entryFound = true;
                     }
                     
