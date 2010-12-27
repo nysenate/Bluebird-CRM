@@ -1519,7 +1519,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (0,'','','',0,0,0,'','',0,0,0,0,0,NULL,'','','',NULL),(1,'senateroot','29269fbe47b581385cb1578094b7a152','bluebird.admin@nysenate.gov',0,0,0,'','',0,1262186593,1293125040,1293122980,1,'-18000','','','zalewski@nysenate.gov','a:1:{s:13:\"form_build_id\";s:37:\"form-076e62d74d27b984ffd51b68c34c44db\";}');
+INSERT INTO `users` VALUES (0,'','','',0,0,0,'','',0,0,0,0,0,NULL,'','','',NULL),(1,'senateroot','29269fbe47b581385cb1578094b7a152','bluebird.admin@nysenate.gov',0,0,0,'','',0,1262186593,1293472585,1293472585,1,'-18000','','','zalewski@nysenate.gov','a:1:{s:13:\"form_build_id\";s:37:\"form-076e62d74d27b984ffd51b68c34c44db\";}');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1671,4 +1671,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-12-23 12:33:38
+-- Dump completed on 2010-12-27 13:56:14
