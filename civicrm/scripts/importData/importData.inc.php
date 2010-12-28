@@ -1158,10 +1158,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params = create_civi_address(++$addressID, $contactID, $aRel['ctRow'], LOC_TYPE_HOME);
     if (!writeToFile($fout['address'], $params)) break;
 
-    $rcode = $aRel['ctRow']['RCD'];
+    $rcode = trim($aRel['ctRow']['RCD']);
     if (empty($rcode)) {
       $rcode = 'W';  // default to Wife
     }
+
     //create the spousal relationship
     $params = array(
       'contact_id_a' => $aRel['contactIDa'],
