@@ -6,13 +6,13 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-01
-# Revised: 2010-12-23
+# Revised: 2010-12-27
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
-script_dir=`cd $script_dir; echo $PWD`
-readConfig=$script_dir/readConfig.sh
+script_dir=`cd "$script_dir"; echo $PWD`
+readConfig="$script_dir/readConfig.sh"
 app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --global data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 import_rootdir=`$readConfig --global import.rootdir` || data_rootdir="$DEFAULT_IMPORT_ROOTDIR"
@@ -72,18 +72,18 @@ import_data() {
   instance="$1"
   dataset="$2"
   srcdesc="$3"
-  unzipdir=$tempdir/$dataset
+  unzipdir="$tempdir/$dataset"
+  [ "$OSTYPE" = "cygwin" ] && unzipdir=`cygpath --mixed $unzipdir`
   (
-    cd $iscript_dir
+    cd "$iscript_dir"
     set -x
-    php importData.inc.php $instance $dataset -d $unzipdir -s $srcdesc
+    php importData.inc.php $instance $dataset -d "$unzipdir" -s $srcdesc
   )
 
   # Clean up converted import data left over by importData.inc.php
   if [ $keep_tempdir -eq 0 ]; then
     ( set -x
-      rm -f /tmp/$dataset-*.tsv
-      rm -rf $unzipdir/
+      rm -rf "$unzipdir/"
     )
   fi
 }
@@ -93,7 +93,7 @@ clear_cache() {
   instance="$1"
   (
     set -x
-    $script_dir/clearCache.sh $instance
+    $script_dir/clearCache.sh --all $instance
   )
 }
 
