@@ -91,11 +91,11 @@ switch ($task) {
     updateStates();
     break;
   case "loaddbonly":
-    loadDB($importSet);
+    loadDB($importSet, $importDir);
     break;
   case "import":
     if (parseData($importSet, $importDir, $startID, $sourceDesc)) {
-      loadDB($importSet);
+      loadDB($importSet, $importDir);
     }
     break;
   case "showfields":
@@ -132,7 +132,7 @@ function showExportableFields()
 
 
 
-function loadDB($importSet)
+function loadDB($importSet, $importDir)
 {
   global $bluebird_db_info;
 
@@ -146,12 +146,15 @@ function loadDB($importSet)
     $abbrev = $db_info['abbrev'];
     $table = $db_info['table'];
     $colstr = implode(',', $db_info['cols']);
-    $fname = RAYTMP.$importSet.'-'.$abbrev.'.tsv';
-    cLog(0, 'info', "importing $name records from $fname into database table $table");
-
-    cLog(0,'info',"LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});");
-
-    $dao = &CRM_Core_DAO::executeQuery("LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});", CRM_Core_DAO::$_nullArray);
+    $fname = $importDir.'/'.$importSet.'-'.$abbrev.'.tsv';
+    if (file_exists($fname) == false) {
+      cLog(0, 'error', "Unable to import data into table '$table'; file '$fname' not found");
+    }
+    else {
+      cLog(0, 'info', "importing $name records from '$fname' into database table '$table'");
+      cLog(0,'info', "LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE '$table' $opts ({$colstr});");
+      $dao = &CRM_Core_DAO::executeQuery("LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});", CRM_Core_DAO::$_nullArray);
+    }
   }
 } // loadDB()
 
@@ -185,9 +188,15 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
   foreach ($bluebird_db_info as $name => $db_info) {
     $abbrev = $db_info['abbrev'];
-    $fname = RAYTMP.$importSet.'-'.$abbrev.'.tsv';
+    $fname = $importDir.'/'.$importSet.'-'.$abbrev.'.tsv';
     unlink($fname);
-    $fout[$name] = fopen($fname, 'w');
+    $fp = fopen($fname, 'w');
+    if ($fp === false) {
+      cLog(0, 'error', "Unable to open '$fname' for writing");
+    }
+    else {
+      $fout[$name] = $fp;
+    }
   }
 
   //initialize the arrays, skipping header lines
@@ -254,17 +263,17 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_contact;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $contactID = $dao->maxid;
-  cLog(0,'info',"starting contactID will be ".($contactID+1));
+  cLog(0, 'info', "starting contactID will be ".($contactID+1));
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_address;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $addressID = $dao->maxid;
-  cLog(0,'info',"starting addressID will be ".($addressID+1));
+  cLog(0, 'info', "starting addressID will be ".($addressID+1));
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_activity;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $activityID = $dao->maxid;
-  cLog(0,'info',"starting activityID will be ".($activityID+1));
+  cLog(0, 'info', "starting activityID will be ".($activityID+1));
 
   // Array that maps tag name to tagID.
   $aTagsByName = array();
@@ -275,7 +284,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
   // load all tags, and get max tag ID
   $tagID = getAllTags($aTagsByName, $aTagsByID);
-  cLog(0,'info',"starting tagID will be ".($tagID+1));
+  cLog(0, 'info', "starting tagID will be ".($tagID+1));
 
   $cCounter = 0;
 
@@ -612,7 +621,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['school_district_54'] = cleanData($ctRow['SCD']);
     $params['new_york_city_council_55'] = DBNULL;
     $params['neighborhood_56'] = DBNULL;
-    $params['last_import_57'] = date("Y-m-d H:i:s T");
+    $params['last_import_57'] = date("Y-m-d H:i:s");
 
     if (!writeToFile($fout['district'], $params)) {
       exit("Error: I/O failure: district");
@@ -830,7 +839,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     while ($csRow && $csRow['KEY'] == $importID) {
       //set params
       $params = array();
-      $params['id'] = $activityID;
+      $params['id'] = ++$activityID;
       $params['source_contact_id'] = $session->get('userID');; //who inserted
       $params['subject'] = "OMIS CASE ACTIVITY ".intval($csRow['CASENUM']).": ".$csRow['CSUBJECT'];
 
@@ -916,26 +925,28 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       }
 
       //set contact target
-      $targParams = array();
-      $targParams['activity_id'] = $activityID;
-      $targParams['contact_id'] = $contactID;
+      $targParams = array(
+          'activity_id' => $activityID,
+          'contact_id' => $contactID
+      );
 
       //following needs to be set in custom fields
-      $custParams = array();
-      $custParams['entity_id'] = $activityID;
       switch ($csRow['CPLACE']) {
         case 'AO':
-          $custParams['place_of_inquiry_43'] = 'albany_office';
+          $poi = 'albany_office';
           break;
-
         case 'DO':
-          $custParams['place_of_inquiry_43'] = 'district_office';
+          $poi = 'district_office';
           break;
-
         case 'OT':
-          $custParams['place_of_inquiry_43'] = 'other';
+          $poi = 'other';
           break;
       }
+
+      $custParams = array(
+          'entity_id' => $activityID,
+          'place_of_inquiry_43' => $poi
+      );
 
       if (!writeToFile($fout['activity'], $params))
         exit("Error: I/O failure: activity");
@@ -945,12 +956,12 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         exit("Error: I/O failure: activitycustom");
       unset($params);
       unset($custParams);
+      unset($targParams);
 
       //get another case
       $csRow = getLineAsAssocArray($infiles['cases'], DELIM, $omis_cs_fields);
       if (!$csRow) break;
       $csRow['KEY'] = intval($csRow['KEY']);
-      ++$activityID;
     }
 
 
@@ -1034,7 +1045,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
       $note .= "Issue Code $issCode: $issDesc".'\n';
 
-      //get another issues 
+      //get another issue
       $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
       if (!$isRow) break;
       $isRow['KEY'] = intval($isRow['KEY']);
@@ -1388,7 +1399,7 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = LOC_TYPE
     'contact_id'             => $ctID,
     'location_type_id'       => $loc_type_id,
     'is_primary'             => 1,
-    'street_number'          => $omis_flds['HOUSE'],
+    'street_number'          => intval($omis_flds['HOUSE']),
     'street_unit'            => DBNULL,
     'street_name'            => $omis_flds['STREET'],
     'street_address'         => $omis_flds['HOUSE'].' '.$omis_flds['STREET'],
