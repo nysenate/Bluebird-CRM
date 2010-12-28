@@ -849,9 +849,10 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       if (strlen($actDate) == 5) $actDate = '0'.$actDate; 
       $actDate = substr($actDate,2,2).substr($actDate,4,2).substr($actDate,0,2);
       $actDate = formatDate($actDate);
+      $actTime = formatTime($csRow['COPENTIME']);
 
       //format date for db and add time
-      $params['activity_date_time'] = $actDate.' '.$csRow['COPENTIME'];
+      $params['activity_date_time'] = $actDate.' '.$actTime;
       //if there's a close date, mark as closed
       if (strlen(trim($csRow['CCLOSEDATE']))>0) {
         $params['status_id'] = 2;
@@ -862,67 +863,71 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $params['status_id'] = 1;
       }
       
-      $params['details'] = '';
+      $actdetails = '';
       if (strlen($csRow['CCLOSEDATE']) > 0)
-        $params['details'] .= '\nCASE CLOSED ON '.formatDate($csRow['CCLOSEDATE']);
+        $actdetails .= '\nCASE CLOSED ON '.formatDate($csRow['CCLOSEDATE']);
       if (strlen($csRow['CNOTE1']) > 0)
-        $params['details'] .= '\nNote 1: '.$csRow['CNOTE1'];
+        $actdetails .= '\nNote 1: '.$csRow['CNOTE1'];
       if (strlen($csRow['CNOTE2']) > 0)
-        $params['details'] .= '\nNote 2: '.$csRow['CNOTE2'];
+        $actdetails .= '\nNote 2: '.$csRow['CNOTE2'];
       if (strlen($csRow['CNOTE3']) > 0)
-        $params['details'] .= '\nNote 3: '.$csRow['CNOTE3'];
+        $actdetails .= '\nNote 3: '.$csRow['CNOTE3'];
       if (strlen($csRow['CHOMEPH']) > 0)
-        $params['details'] .= '\nHome Phone: '.$csRow['CHOMEPH'];
+        $actdetails .= '\nHome Phone: '.$csRow['CHOMEPH'];
       if (strlen($csRow['CWORKPH']) > 0)
-        $params['details'] .= '\nWork Phone: '.$csRow['CWORKPH'];
+        $actdetails .= '\nWork Phone: '.$csRow['CWORKPH'];
       if (strlen($csRow['CFAXPH']) > 0)
-        $params['details'] .= '\nFax: '.$csRow['CFAXPH'].'\n';
+        $actdetails .= '\nFax: '.$csRow['CFAXPH'];
       if (strlen($csRow['CSTAFF']) > 0)
-        $params['details'] .= '\nStaff: '.$csRow['CSTAFF'].'\n';
+        $actdetails .= '\nStaff: '.$csRow['CSTAFF'];
       if (strlen($csRow['CSNUM']) > 0)
-        $params['details'] .= '\nSSN: '.$csRow['CSNUM'].'\n';
+        $actdetails .= '\nSSN: '.$csRow['CSNUM'];
       if (strlen($csRow['CLAB1']) > 0)
-        $params['details'] .= '\nCLAB1: '.$csRow['CLAB1'].'\n';
+        $actdetails .= '\nCLAB1: '.$csRow['CLAB1'];
       if (strlen($csRow['CID1']) > 0)
-        $params['details'] .= '\nCID1: '.$csRow['CID1'].'\n';
+        $actdetails .= '\nCID1: '.$csRow['CID1'];
       if (strlen($csRow['CLAB2']) > 0)
-        $params['details'] .= '\nCLAB2: '.$csRow['CLAB2'].'\n';
+        $actdetails .= '\nCLAB2: '.$csRow['CLAB2'];
       if (strlen($csRow['CID2']) > 0)
-        $params['details'] .= '\nCID2: '.$csRow['CID2'].'\n';
+        $actdetails .= '\nCID2: '.$csRow['CID2'];
       if (strlen($csRow['CISSUE']) > 0)
-        $params['details'] .= '\nIssue: '.$csRow['CISSUE'].'\n';
+        $actdetails .= '\nIssue: '.$csRow['CISSUE'];
       if (trim($csRow['LEGISLATION']) != "|")
-        $params['details'] .= '\nLegislation: '.$csRow['LEGISLATION'];
+        $actdetails .= '\nLegislation: '.$csRow['LEGISLATION'];
+
+      $params['details'] = $actdetails;
 
       //activity type
       switch ($csRow['CFORM']) {
         case 'E':
-          $params['activity_type_id'] = 39; //email received
+          $acttypeid = 39; //email received
           break;
         case 'F':
-          $params['activity_type_id'] = 41; //fax received
+          $acttypeid = 41; //fax received
           break;
         case 'I':
-          $params['activity_type_id'] = 42; //in person
+          $acttypeid = 42; //in person
           break;
         case 'L':
-          $params['activity_type_id'] = 37; //letter received
+          $acttypeid = 37; //letter received
           break;
         case 'M':
-          $params['activity_type_id'] = 1; //meeting
+          $acttypeid = 1; //meeting
           break;
         case 'O':
-          $params['activity_type_id'] = 43; //other
+          $acttypeid = 43; //other
           break;
         case 'P':
-          $params['activity_type_id'] = 35; //phone received
+          $acttypeid = 35; //phone received
           break;
         case 'W':
-          $params['activity_type_id'] = 43; //website mapped to other
+          $acttypeid = 43; //website mapped to other
           break;
         default:
-          $params['activity_type_id'] = 43; //other
+          $acttypeid = 43; //other
       }
+
+      $params['activity_type_id'] = $acttypeid;
 
       //set contact target
       $targParams = array(
