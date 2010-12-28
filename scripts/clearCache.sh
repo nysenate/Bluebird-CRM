@@ -13,15 +13,27 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
+clear_all=0
 
 . $script_dir/defaults.sh
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $prog instanceName" >&2
+usage() {
+  echo "Usage: $prog [--all] instanceName" >&2
+}
+
+if [ $# -lt 1 ]; then
+  usage
   exit 1
 fi
 
-instance="$1"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --all) clear_all=1 ;;
+    -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
+    *) instance="$1" ;;
+  esac
+  shift
+done
 
 if ! $readConfig --instance $instance --quiet; then
   echo "$prog: $instance: Instance not found in config file" >&2
@@ -33,6 +45,7 @@ base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BA
 
 echo "Clearing CiviCRM database caches"
 sql="truncate civicrm_acl_cache; truncate civicrm_acl_contact_cache; truncate civicrm_cache; truncate civicrm_group_contact_cache; truncate civicrm_menu; truncate civicrm_uf_match;"
+[ $clear_all -eq 1 ] && sql="truncate civicrm_log; $sql"
 ( set -x
   $execSql -i $instance -c "$sql"
 )
@@ -46,6 +59,7 @@ echo "Clearing CiviCRM filesystem caches"
 
 echo "Clearing Drupal database caches"
 sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_update; truncate cache_menu; truncate cache_block; truncate cache_filter; truncate sessions;"
+[ $clear_all -eq 1 ] && sql="truncate watchdog; $sql"
 ( set -x
   $execSql -i $instance -c "$sql" --drupal
 )
