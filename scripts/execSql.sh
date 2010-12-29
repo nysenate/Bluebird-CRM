@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2010-09-30
+# Revised: 2010-12-29
 #
 
 prog=`basename $0`
@@ -93,5 +93,5 @@ elif [ "$sqlfile" ]; then
   cat $sqlfile | mysql -h $dbhost -u $dbuser -p$dbpass $dbname
 else
   set -x
-  mysql -h $dbhost -u $dbuser -p$dbpass -e "$sqlcmd" --batch $dbname
+  mysql -h $dbhost -u $dbuser -p$dbpass -e "$sqlcmd" --batch --skip-column-names $dbname
 fi
