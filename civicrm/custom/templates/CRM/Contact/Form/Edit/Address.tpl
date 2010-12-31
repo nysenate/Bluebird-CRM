@@ -80,7 +80,8 @@
          }
      {/literal}
      </script>
-     
+
+{if $form.address.$blockId.location_type_id.value.0 neq 6} {*NYSS hide shared option if BOE type*}    
      <tr>
         <td>
             {$form.address.$blockId.use_shared_address.html}{$form.address.$blockId.use_shared_address.label}{help id="id-sharedAddress" file="CRM/Contact/Form/Contact.hlp"}<br />
@@ -102,6 +103,7 @@
             </table>
         </td>
      </tr>
+{/if}{*NYSS end*}
      
      <script type="text/javascript">
      {literal}
