@@ -63,6 +63,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     function buildQuickForm( ) {
 		
 		CRM_Utils_System::setTitle( ts('Print Production Export') );
+		
+		require_once 'CRM/Core/Permission.php';
+        if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+			$this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
+        }
+		
         $this->addDefaultButtons( 'Export Print Production' );
 		
     }
@@ -86,12 +92,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
      * @return None
      */
     public function postProcess() {
+	
+	//get form values (avanti job id)
+	$params = $this->controller->exportValues( $this->_name );
+	$avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+	
+	//get instance name (strip first element from url)
+	$instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
 
-	//get the list of genders
+	//get option
 	$aGender = getOptions("gender");
 	$aSuffix = getOptions("individual_suffix");
-        $aPrefix = getOptions("individual_prefix");
-
+    $aPrefix = getOptions("individual_prefix");
 	$aStates = getStates();
 	
 	//generate random number for export and tables
@@ -102,7 +114,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
 
-        $this->_contactIds = array_unique($this->_contactIds);
+    $this->_contactIds = array_unique($this->_contactIds);
 
 	$ids = implode("),(",$this->_contactIds);
 	$ids = "($ids)";
@@ -111,7 +123,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "SELECT c.id, c.contact_type, c.first_name, c.last_name, c.middle_name, c.job_title, c.birth_date, c.organization_name, c.postal_greeting_display, c.addressee_display, c.gender_id, c.prefix_id, c.suffix_id, cr.relationship_type_id, ch.household_name as household_name, ch.nick_name as household_nickname, ch.postal_greeting_display as household_postal_greeting_display, ch.addressee_display as household_Addressee_display, ";
 	$sql .= "congressional_district_46, ny_senate_district_47, ny_assembly_district_48, election_district_49, county_50, county_legislative_district_51, town_52, ward_53, school_district_54, new_york_city_council_55, neighborhood_56, ";
@@ -149,7 +161,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	}
 	
 	//set filename, environment, and full path
-    $filename = 'printExport'.$rnd.'.tsv'; 
+    $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
+	
 	//strip /data/ and everything after environment value
 	$env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
     $fname = $path.'/'.$filename;
@@ -173,7 +186,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	 }
 	}
 
-        $aHeader=array();
+    $aHeader=array();
 	$firstLine = true;
         while ($dao->fetch()) {
 
@@ -196,7 +209,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 			$firstLine=false;
 		}
 
-	        $aOut = array();
+	    $aOut = array();
 		foreach($dao as $name=>$val) {
 			if (!isset($skipVars[$name])) {
 
@@ -221,12 +234,24 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	        fputcsv2($fhout, $aOut,"\t",'',false,false);
 	}
 //exit;
-	//get rid of helper table
+		//get rid of helper table
         $sql = "DROP TABLE tmpExport$rnd;";
         $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-
-		$href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode( "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename) );
-		$status[] = "Task $rnd exported ". sizeof($this->_contactIds). " Contact(s). &nbsp;&nbsp;<a href=\"$href\">Click here</a> to email the link.";
+		
+		$url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
+		$urlclean = urlencode( $url );
+		$href = "mailto:?subject=print export: $filename&body=".$urlclean;
+		
+		$status = array();
+		$status[] = "Print Production Export";
+		$status[] = "District: $instance (task $rnd).";
+		$status[] = sizeof($this->_contactIds). " contact(s) were exported.";
+		$status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
+		
+		require_once 'CRM/Core/Permission.php';
+        if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+			$status[] = "Download the file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
+        }
         
         CRM_Core_Session::setStatus( $status );
     }//end of function

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,6 +30,7 @@
 </legend>
 <dl>
 <dt></dt><dd>{include file="CRM/Contact/Form/Task.tpl"}</dd>
+{if $form.avanti_job_id}<dt>Avanti Job ID</dt><dd>{$form.avanti_job_id.html}</dd>{/if}
 <dt></dt><dd>{$form.buttons.html}</dd>
 </dl>
 </fieldset>
