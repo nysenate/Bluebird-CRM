@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2009                                |
  +--------------------------------------------------------------------+
@@ -111,8 +111,9 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
                     _civicrm_processElement( $form, "address[$blockId][$key]", $freezeElement );
                 }
                 //hide 'Use Household Address' if location type is 'Board Of Election'
+				//c3.3 update for shared address element
                 if ( $blockId == 1 && $freezeElement ) {
-                    $form->removeElement( "use_household_address" );
+					$form->removeElement( 'address[1][use_shared_address]' );
                 }
             } else {
                 $dataElementName = "{$name}[$blockId][$name]";
