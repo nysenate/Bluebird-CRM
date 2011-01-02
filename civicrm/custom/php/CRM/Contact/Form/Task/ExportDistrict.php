@@ -120,22 +120,26 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	$sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
 	$sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
-	$sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 ELSE 999 END, CASE WHEN c.birth_date=null THEN '2010-12-23' ELSE c.birth_date END;";
+	
+	$sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
+	$sql .= " IFNULL(c.birth_date, '9999-01-01');";
+	//order export by oldest male, then oldest female
+	//ensure empty values fall last
 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$skipVars['_DB_DataObject_version'] = 1;
-        $skipVars['__table'] = 1;
-        $skipVars['N'] = 1;
-        $skipVars['_database_dsn'] = 1;
-        $skipVars['_query'] = 1;
-        $skipVars['_DB_resultid'] = 1;
-        $skipVars['_resultFields'] = 1;
-        $skipVars['_link_loaded'] = 1;
-        $skipVars['_join'] = 1;
-        $skipVars['_lastError'] = 1;
-        $skipVars['_database_dsn_md5'] = 1;
-        $skipVars['_database'] = 1;
+	$skipVars['__table'] = 1;
+	$skipVars['N'] = 1;
+	$skipVars['_database_dsn'] = 1;
+	$skipVars['_query'] = 1;
+	$skipVars['_DB_resultid'] = 1;
+	$skipVars['_resultFields'] = 1;
+	$skipVars['_link_loaded'] = 1;
+	$skipVars['_join'] = 1;
+	$skipVars['_lastError'] = 1;
+	$skipVars['_database_dsn_md5'] = 1;
+	$skipVars['_database'] = 1;
 
 	$config =& CRM_Core_Config::singleton();
 
@@ -177,19 +181,16 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 			if (!isset($skipVars[$name])) {
 
 				if ($name=="gender_id") $val = $aGender[$val];
-                                if ($name=="suffix_id") $val = $aSuffix[$val];
-                                if ($name=="prefix_id") $val = $aPrefix[$val];
-
-                                if ($name=="state_province_id") $val = $aStates[$val];
+                if ($name=="suffix_id") $val = $aSuffix[$val];
+                if ($name=="prefix_id") $val = $aPrefix[$val];
+				if ($name=="state_province_id") $val = $aStates[$val];
 
 				if ($name=="birth_date") {
 					if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
-					else $val = "0"; //per Don, set null value to 0
-//print $val."\n";
 				}
 					
-		                $val = str_replace("'","",$val);
-                		$val = str_replace("\"","",$val);
+		        $val = str_replace("'","",$val);
+                $val = str_replace("\"","",$val);
 				$aOut[] =  $val;
 			}
 		}
