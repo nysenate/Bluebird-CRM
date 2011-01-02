@@ -1,6 +1,8 @@
 ; $Id: nyss_io.info,v 1.0 2010/03/23  Exp $
 name = NYSS Import 
 description = NYSS Import module.
-version="6.x-1.0"
+dependencies[] = civicrm
+package = CiviCRM
+version="3.3"
 core="6.x"
 project="epx"

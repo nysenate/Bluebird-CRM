@@ -8,13 +8,15 @@ function nyss_out($type,$v,$toscreen=false) {
 
 		$v = print_r($v,true);
 
-		error_log($v. " (line: $nyss_ioline)");
+		if ($type=='error') error_log($v. " (line: $nyss_ioline)");
 		if ($toscreen) {
 
-			echo "<pre>$v (line: $nyss_ioline of $nyss_iototallines)</pre>";
+			echo "<pre>$v (line: $nyss_ioline of $nyss_iototallines memory: ".(round(memory_get_usage()/1048576,4))." MB".")</pre>";
 			flush();
 			ob_flush();
 		}
+
+		unset($v);
 	}
 }
 
@@ -43,7 +45,7 @@ class nyss_iofileobject {
  if (!is_array($line)) {
 
          //set error message and exit
-         drupal_set_message('bad file. Either the file is not a cvs or has the wrong number of headers.','error');
+         drupal_set_message('Bad file. Either the file is not a csv or has the wrong number of headers.','error');
          return false;
   }
 
