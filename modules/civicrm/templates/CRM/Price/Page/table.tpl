@@ -25,8 +25,12 @@
 *}
 {foreach from=$contexts item=context}
 {if $context EQ "Event"}
-{ts}If you no longer want to use this price set, click the event title below, and modify the fees for that event.{/ts}
-
+    {if $action eq 8}
+        {ts}If you no longer want to use this price set, click the event title below, and modify the fees for that event.{/ts}
+    {else}
+        {ts}This price set is used by the event(s) listed below. Click the event title to change or remove the price set.{/ts}
+    {/if}
+    <br /><br />
 <table class="report">
       <thead class="sticky">
        	   <th scope="col">{ts}Event{/ts}</th>
@@ -37,7 +41,7 @@
 
       {foreach from=$usedBy.civicrm_event item=event key=id}
            <tr>
-               <td><a href="{crmURL p="civicrm/event/manage/fee" q="action=update&reset=1&id=`$id`"}">{$event.title}</a></td>
+               <td><a href="{crmURL p="civicrm/event/manage/fee" q="action=update&reset=1&id=`$id`"}" title="{ts}Change or remove the price set used for this event.{/ts}">{$event.title}</a></td>
                <td>{$event.eventType}</td>
                <td>{if $event.isPublic}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}</td>
                <td>{$event.startDate|crmDate}{if $event.endDate}&nbsp;to&nbsp;{$event.endDate|crmDate}{/if}</td>
@@ -46,8 +50,12 @@
 </table>
 {/if}
 {if $context EQ "Contribution"}
-{ts}If you no longer want to use this price set, click the contribution page title below, and modify the amount for that contribution page.{/ts}
-
+    {if $action eq 8}
+        {ts}If you no longer want to use this price set, click the contribution page title below, and modify the contribution amounts configuration.{/ts}
+    {else}
+        {ts}This price set is used by the contribution page(s) listed below. Click the contribution page title to change or remove the price set.{/ts}
+    {/if}
+    <br /><br />
 <table class="report">
       <thead class="sticky">
        	   <th scope="col">{ts}Contribution Page{/ts}</th>
@@ -57,9 +65,9 @@
 
       {foreach from=$usedBy.civicrm_contribution_page item=contributionPage key=id}
            <tr>
-               <td><a href="{crmURL p="civicrm/admin/contribute/amount" q="action=update&reset=1&id=`$id`"}">{$contributionPage.title}</a></td>
+               <td><a href="{crmURL p="civicrm/admin/contribute/amount" q="action=update&reset=1&id=`$id`"}" title="{ts}Change or remove the price set used for this contribution page.{/ts}">{$contributionPage.title}</a></td>
                <td>{$contributionPage.type}</td>
-               <td>{$contributionPage.startDate|crmDate}{if $contributionPage.endDate}&nbsp;to&nbsp;{$contributionPage.endDate|crmDate}{/if}</td>
+               <td>{$contributionPage.startDate|truncate:10:''|crmDate}{if $contributionPage.endDate}&nbsp;to&nbsp;{$contributionPage.endDate|truncate:10:''|crmDate}{/if}</td>
            </tr>
       {/foreach}
 </table>

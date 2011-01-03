@@ -338,14 +338,12 @@ class CRM_Case_Form_Search extends CRM_Core_Form
         if ( ! $this->_force ) {
             if ( array_key_exists('case_owner', $this->_formValues ) && ! $this->_formValues['case_owner'] ) {
                 $this->_formValues['case_owner']  = 0;
-            } else if ( array_key_exists('case_owner', $this->_formValues ) ) {
-                $this->_formValues['case_owner'] = 1;
-            } 
+            }
         }
         
         //only fetch own cases.
         if ( !CRM_Core_Permission::check( 'access all cases and activities' ) ) {
-            $this->_formValues['case_owner'] = 0;
+            $this->_formValues['case_owner'] = 2;
         }
  
         if ( ! CRM_Utils_Array::value( 'case_deleted', $this->_formValues ) ) {
@@ -517,8 +515,8 @@ class CRM_Case_Form_Search extends CRM_Core_Form
             $caseOwner = CRM_Utils_Request::retrieve( 'case_owner', 'Boolean',
                                                       CRM_Core_DAO::$_nullObject );
             if ( $caseOwner ) {
-                $this->_formValues['case_owner'] = 0;
-                $this->_defaults['case_owner'] = 0;
+                $this->_formValues['case_owner'] = 2;
+                $this->_defaults['case_owner'] = 2;
             }
         }
     }

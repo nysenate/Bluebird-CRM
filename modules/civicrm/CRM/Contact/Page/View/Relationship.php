@@ -158,7 +158,7 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page
                                                                               CRM_Contact_BAO_Relationship::CURRENT  ,
                                                                               0, 0, 0,
                                                                               $links, $mask );
-        
+
         $inactiveRelationships = CRM_Contact_BAO_Relationship::getRelationship( $this->_contactId,
                                                                                 CRM_Contact_BAO_Relationship::INACTIVE ,        
                                                                                 0, 0, 0,
@@ -346,6 +346,14 @@ class CRM_Contact_Page_View_Relationship extends CRM_Core_Page
                                                                     'qs'    => 'action=delete&reset=1&cid=%%cid%%&id=%%id%%&rtype=%%rtype%%',
                                                                     'extra' => 'onclick = "if (confirm(\'' . $deleteExtra . '\') ) this.href+=\'&amp;confirmed=1\'; else return false;"',
                                                                     'title' => ts('Delete Relationship')
+                                                                    ),
+// FIXME: Not sure what to put as the key.
+// We want to use it differently later anyway (see CRM_Contact_BAO_Relationship::getRelationship). NONE should make it hidden by default.
+                                  CRM_Core_Action::NONE  => array(
+                                                                    'name'  => ts('Manage Case'),
+                                                                    'url'   => 'civicrm/contact/view/case',
+                                                                    'qs'    => 'action=view&reset=1&cid=%%clientid%%&id=%%caseid%%',
+                                                                    'title' => ts('Manage Case')
                                                                     ),
                                   );
         }

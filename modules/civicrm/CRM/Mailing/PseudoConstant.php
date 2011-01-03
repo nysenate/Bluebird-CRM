@@ -38,7 +38,14 @@
  * This class holds all the Pseudo constants that are specific to Mass mailing. This avoids
  * polluting the core class and isolates the mass mailer class
  */
-class CRM_Mailing_PseudoConstant extends CRM_Core_PseudoConstant {
+class CRM_Mailing_PseudoConstant extends CRM_Core_PseudoConstant
+{
+    /**
+     * mailing approval status
+     * @var array
+     * @static
+     */
+    private static $approvalStatus;
 
     /**
      * mailing templates
@@ -169,6 +176,25 @@ class CRM_Mailing_PseudoConstant extends CRM_Core_PseudoConstant {
         return self::$completed;
     }
 
+    /**
+     * Get all mail approval status.
+     *
+     * The static array approvalStatus is returned
+     *
+     * @access public
+     * @static
+     *
+     * @return array - array reference of all mail approval statuses
+     *
+     */
+    public static function &approvalStatus( )
+    {
+        if ( ! self::$approvalStatus ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            self::$approvalStatus = CRM_Core_OptionGroup::values('mail_approval_status');
+        }
+        return self::$approvalStatus;
+    }
 
 }
 

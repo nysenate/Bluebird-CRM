@@ -55,6 +55,7 @@
         <tr><td class="label">{ts}Join date{/ts}</td><td>{$join_date|crmDate}</td></tr>
         <tr><td class="label">{ts}Start date{/ts}</td><td>{$start_date|crmDate}</td></tr>
         <tr><td class="label">{ts}End date{/ts}</td><td>{$end_date|crmDate}</td></tr>
+        <tr><td class="label">{ts}Auto-renew{/ts}</td><td>{$auto_renew}</td></tr>
         <tr><td class="label">{ts}Reminder date{/ts}</td><td>{$reminder_date|crmDate}</td></tr>
     </table>
 

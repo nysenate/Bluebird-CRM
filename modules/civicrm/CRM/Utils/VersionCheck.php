@@ -211,7 +211,7 @@ class CRM_Utils_VersionCheck
     /**
      * A dummy function required for suppressing download errors
      */
-    function downloadError($errorNumber, $errorString)
+    static function downloadError($errorNumber, $errorString)
     {
         return;
     }

@@ -327,11 +327,16 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
                 unset( $caseRoles[$value['relation_type']] );
             }
         }
-        
-        // activity type filter for case activity search, need to add Email Sent activity type
-        $emailSentID = CRM_Core_OptionGroup::getValue('activity_type', 'Email', 'name' );
-        $aTypesFilter = array( $emailSentID => 'Email' ) + $aTypes;
-        asort($aTypesFilter);
+
+        // take all case activity types for search filter, CRM-7187
+        $aTypesFilter    = array( );
+        $allCaseActTypes = CRM_Case_PseudoConstant::activityType( );
+        foreach ( $allCaseActTypes as $typeDetails ) {
+            if ( !in_array( $typeDetails['name'] , array( 'Open Case' ) ) ) {
+                $aTypesFilter[$typeDetails['id']] = CRM_Utils_Array::value( 'label', $typeDetails );
+            }
+        }
+        asort( $aTypesFilter );
         $this->add('select', 'activity_type_filter_id',  ts( 'Activity Type' ), array( '' => ts( '- select activity type -' ) ) + $aTypesFilter );
         
         $this->assign('caseRelationships', $caseRelationships);

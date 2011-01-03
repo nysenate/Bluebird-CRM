@@ -1173,17 +1173,14 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
             //lets check w/ other contact params.
             if ( $self->_values['event']['allow_same_participant_emails'] ) {
                 $params = $fields;
+                $level  = ( $isAdditional ) ? 'Fuzzy' : 'Strict';
 
-                // unset email from dedupe params for 'additional participant wizard' case only
-                if ( isset( $params["email-{$self->_bltID}"] ) && $isAdditional ) {
-                    unset( $params["email-{$self->_bltID}"] );
-                }
                 require_once 'CRM/Dedupe/Finder.php';                
                 $dedupeParams = CRM_Dedupe_Finder::formatParams( $params, 'Individual' );
                 
                 // disable permission based on cache since event registration is public page/feature.
                 $dedupeParams['check_permission'] = false;
-                $ids = CRM_Dedupe_Finder::dupesByParams( $dedupeParams, 'Individual' );
+                $ids       = CRM_Dedupe_Finder::dupesByParams( $dedupeParams, 'Individual', $level );
                 $contactID = CRM_Utils_Array::value( 0, $ids );
             } else if ( isset( $fields["email-{$self->_bltID}"] ) ) {
                 $emailString = trim( $fields["email-{$self->_bltID}"] );

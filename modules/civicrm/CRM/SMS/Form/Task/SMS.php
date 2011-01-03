@@ -76,7 +76,7 @@ class CRM_SMS_Form_Task_SMS extends CRM_Contact_Form_Task {
 
             $this->_contactIds = array( $cid );
             $this->_single     = true;
-            $smsNumbers        = CRM_Contact_BAO_Contact::allPhones( $cid, 'Mobile' );
+            $smsNumbers        = CRM_Contact_BAO_Contact::allPhones( $cid, false, 'Mobile' );
             $this->_emails     = array( );
             $toName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact',
                                                    $cid,

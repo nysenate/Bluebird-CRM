@@ -99,8 +99,22 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         require_once 'CRM/Mailing/BAO/Mailing.php';
         CRM_Mailing_BAO_Mailing::checkPermission( $this->_mailingId );
 
-        $this->_action    = CRM_Utils_Request::retrieve('action', 'String', $this);
+        $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this);
         $this->assign('action', $this->_action);
+
+        $showLinks = true;
+        require_once 'CRM/Mailing/Info.php';
+        if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+            if ( ! CRM_Core_Permission::check( 'access CiviMail' ) && 
+                 ! CRM_Core_Permission::check( 'create mailings' ) ) {
+                $showLinks = false;
+            }
+        }
+        $this->assign('showLinks', $showLinks); 
+        if ( CRM_Core_Permission::check( 'access CiviMail' ) ) {
+            $archiveLinks = true;
+            $this->assign( 'archiveLinks', $archiveLinks );
+        }
     }
 
     /** 

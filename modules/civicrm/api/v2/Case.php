@@ -565,7 +565,8 @@ function _civicrm_case_check_params( &$params, $mode = NULL ) {
     // check for valid status id
     $caseStatusIds = CRM_Case_PseudoConstant::caseStatus( );
     if ( CRM_Utils_Array::value( 'status_id', $params ) && 
-         !array_key_exists( $params['status_id'], $caseStatusIds ) ) {
+         !array_key_exists( $params['status_id'], $caseStatusIds ) &&
+         $mode != 'activity' ) {
         return civicrm_create_error( ts( 'Invalid Case Status Id' ) );
     }
     

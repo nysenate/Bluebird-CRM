@@ -36,6 +36,7 @@
 
 require_once 'CRM/Contribute/Form/ContributionPage.php';
 require_once 'CRM/Contribute/PseudoConstant.php';
+require_once 'CRM/Member/BAO/Membership.php';
 
 /**
  * form to process actions on Membership
@@ -53,13 +54,8 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
     {
         //parent::setDefaultValues();
         $defaults = array();
-        if ( isset($this->_id ) ) {
-            require_once 'CRM/Member/DAO/MembershipBlock.php';
-            $dao = new CRM_Member_DAO_MembershipBlock();
-            $dao->entity_table = 'civicrm_contribution_page';
-            $dao->entity_id = $this->_id; 
-            $dao->find(true);
-            CRM_Core_DAO::storeValues( $dao, $defaults );
+        if ( isset( $this->_id ) ) {
+            $defaults = CRM_Member_BAO_Membership::getMembershipBlock( $this->_id );
         }
 
         // for membership_types
@@ -68,6 +64,7 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             $newMembershipType = array();  
             foreach( $membershipType as $k => $v ) {
                 $newMembershipType[$v] = 1;
+                $defaults["auto_renew_$v"] = $defaults['auto_renew'][$v];
             }
             $defaults['membership_type'] = $newMembershipType;
         }
@@ -92,8 +89,8 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
     {
              
         require_once 'CRM/Member/BAO/MembershipType.php';
-        $membershipTypes = CRM_Member_BAO_MembershipType::getMembershipTypes(); 
-
+        $membershipTypes = CRM_Member_BAO_MembershipType::getMembershipTypes();
+        
         if (! empty( $membershipTypes ) ) {
             $this->addElement('checkbox', 'is_active', ts('Membership Section Enabled?') , null, array( 'onclick' => "memberBlock(this);" ));
         
@@ -109,13 +106,33 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             $this->addElement('checkbox', 'display_min_fee', ts('Display Membership Fee') );
             $this->addElement('checkbox', 'is_separate_payment', ts('Separate Membership Payment') );
             
+            $paymentProcessor = CRM_Core_PseudoConstant::paymentProcessor( false, false, 'is_recur = 1' );
+            
+            $paymentProcessorId = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage', 
+                                                               $this->_id, 'payment_processor_id' );
+            $isRecur = false;
             $membership        = array();
             $membershipDefault = array();
             foreach ( $membershipTypes as $k => $v ) {
                 $membership[]      = HTML_QuickForm::createElement('advcheckbox', $k , null, $v );
                 $membershipDefault[] = HTML_QuickForm::createElement('radio',null ,null,null, $k );
+                if ( is_array( $paymentProcessor ) && 
+                     CRM_Utils_Array::value( $paymentProcessorId, $paymentProcessor ) ) {
+                    $isRecur = true;
+                    $autoRenew = CRM_Core_DAO::getFieldValue('CRM_Member_DAO_MembershipType', $k, 'auto_renew' );
+                    $autoRenewOptions = array( );
+                    if ( $autoRenew ) {
+                        $autoRenewOptions = array( ts('Not offered'), ts('Give option'), ts('Required') );
+                        $this->addElement('select', "auto_renew_$k", ts('Auto-renew'), $autoRenewOptions );
+                        $this->_renewOption[$k] = $autoRenew;
+                    } 
+                } else {
+                    $isRecur = false;
+                }
             }
             
+            $this->assign( 'is_recur', $isRecur );
+            $this->assign( 'auto_renew',$this->_renewOption );
             $this->addGroup($membership, 'membership_type', ts('Membership Types'));
             $this->addGroup($membershipDefault, 'membership_type_default', ts('Membership Types Default'));
             
@@ -224,13 +241,13 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             if ( is_array($params['membership_type']) ) {
                 foreach( $params['membership_type'] as $k => $v) {
                     if ( $v ) {
-                        $membershipTypes[] = $k;
+                        $membershipTypes[$k] =  $params["auto_renew_$k"];
                     }
                 }
             }
             
             $params['membership_type_default']       =  CRM_Utils_Array::value( 'membership_type_default', $params, 'null' );
-            $params['membership_types']              =  implode(',', $membershipTypes);
+            $params['membership_types']              =  serialize( $membershipTypes );
             $params['is_required']                   =  CRM_Utils_Array::value( 'is_required', $params, false );
             $params['is_active']                     =  CRM_Utils_Array::value( 'is_active', $params, false );
             $params['display_min_fee']               =  CRM_Utils_Array::value( 'display_min_fee', $params, false );

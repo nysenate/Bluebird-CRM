@@ -86,8 +86,10 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership
         if ( isset( $params['start_date'] ) ) {
             $params['start_date'] = CRM_Utils_Date::isoToMysql($params['start_date']);
         }
-        if ( isset( $params['end_date'] ) ) {
+        if ( CRM_Utils_Array::value( 'end_date', $params ) ) {
             $params['end_date']   = CRM_Utils_Date::isoToMysql($params['end_date']);
+        } else {
+            $params['end_date']   = 'null';
         }
         if ( CRM_Utils_Array::value( 'reminder_date', $params ) ) { 
             $params['reminder_date']  = CRM_Utils_Date::isoToMysql($params['reminder_date']);
@@ -280,11 +282,16 @@ class CRM_Member_BAO_Membership extends CRM_Member_DAO_Membership
             $contribution =& CRM_Contribute_BAO_Contribution::create( $contributionParams, $ids );
             
             //insert payment record for this membership
-            if( !CRM_Utils_Array::value( 'contribution', $ids ) ) {
+            if( !CRM_Utils_Array::value( 'contribution', $ids ) ||
+                CRM_Utils_Array::value( 'is_recur', $params ) ) {
                 require_once 'CRM/Member/DAO/MembershipPayment.php';
                 $mpDAO = new CRM_Member_DAO_MembershipPayment();    
                 $mpDAO->membership_id   = $membership->id;
                 $mpDAO->contribution_id = $contribution->id;
+                if ( CRM_Utils_Array::value( 'is_recur', $params ) ) {
+                    $mpDAO->find( );
+                }
+                
                 CRM_Utils_Hook::pre( 'create', 'MembershipPayment', null, $mpDAO );
                 $mpDAO->save();
                 CRM_Utils_Hook::post( 'create', 'MembershipPayment', $mpDAO->id, $mpDAO );
@@ -593,13 +600,13 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
      *
      * @static
      */
-    function buildMembershipBlock( &$form,
-                                   $pageID,
-                                   $formItems = false,
-                                   $selectedMembershipTypeID = null,
-                                   $thankPage       = false,
-                                   $isTest          = null,
-                                   $memberContactId = null )
+    static function buildMembershipBlock( &$form,
+                                          $pageID,
+                                          $formItems = false,
+                                          $selectedMembershipTypeID = null,
+                                          $thankPage       = false,
+                                          $isTest          = null,
+                                          $memberContactId = null )
     {
         require_once 'CRM/Member/DAO/MembershipBlock.php';
 
@@ -620,6 +627,9 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
             $membershipTypes   = array( ); 
             $radio             = array( ); 
 
+            $allowAutoRenewMembership = false;
+            $autoRenewMembershipTypeOptions = array( );
+            
             $separateMembershipPayment = CRM_Utils_Array::value( 'is_separate_payment', $membershipBlock );
             if ( $membershipBlock['membership_types'] ) {
                 $membershipTypeIds = explode( ',', $membershipBlock['membership_types'] );
@@ -637,7 +647,7 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
                 }
                 
                 $membershipTypeValues = self::buildMembershipTypeValues( $form, $membershipTypeIds );
-
+                
                 foreach ( $membershipTypeIds as $value ) {
                     $memType = $membershipTypeValues[$value];
                     if ($selectedMembershipTypeID  != null ) {
@@ -657,7 +667,16 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
                             $membershipTypes[] = $memType;
                         }
                     } else if ( $memType['is_active'] ) {
-                        $radio[$memType['id']] = $form->createElement('radio',null, null, null, $memType['id'] , null);
+                        $javascriptMethod = null;
+                        $allowAutoRenewOpt = CRM_Utils_Array::value( $value, $form->_membershipBlock['auto_renew'] );
+                        if ( !CRM_Utils_Array::value( 'is_recur', $form->_paymentProcessor ) ) $allowAutoRenewOpt = 0;
+                        $javascriptMethod = array('onclick' => "return showHideAutoRenew( this.value );");
+                        $autoRenewMembershipTypeOptions["autoRenewMembershipType_{$value}"] = (int)$allowAutoRenewOpt;
+                        if ( $allowAutoRenewOpt ) $allowAutoRenewMembership = true;
+                        
+                        //add membership type.
+                        $radio[$memType['id']] = $form->createElement( 'radio', null, null, null, 
+                                                                       $memType['id'], $javascriptMethod );
                         if ( $cid ) {
                             $membership = new CRM_Member_DAO_Membership();
                             $membership->contact_id         = $cid;
@@ -692,17 +711,26 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
                     $form->addGroup($radio,'selectMembership',null);
                 } else if( $membershipBlock['is_required']  && count( $radio ) == 1 ) {
                     $temp = array_keys( $radio ) ;
-                    $form->addElement('hidden', "selectMembership", $temp[0]  );
+                    $form->add( 'hidden', 'selectMembership', $temp[0], array( 'id' => 'selectMembership') );
                     $form->assign('singleMembership' , true );
                     $form->assign( 'showRadio', false );
                 } else {
                     $form->addGroup($radio,'selectMembership',null);
                 }
                 $form->addRule('selectMembership',ts("Please select one of the memberships"),'required');
+                if ( $allowAutoRenewMembership ) {
+                    $form->addElement( 'checkbox', 'auto_renew', ts( 'Please renew my membership automatically' ) );
+                }
             }
             
             $form->assign( 'membershipBlock' , $membershipBlock );
             $form->assign( 'membershipTypes' , $membershipTypes );
+            $form->assign( 'allowAutoRenewMembership', $allowAutoRenewMembership );
+            $form->assign( 'autoRenewMembershipTypeOptions', json_encode( $autoRenewMembershipTypeOptions ) );
+            
+            //give preference to user submitted auto_renew value.
+            $takeUserSubmittedAutoRenew = ( !empty( $_POST ) || $form->isSubmitted( ) ) ? true : false;
+            $form->assign( 'takeUserSubmittedAutoRenew', $takeUserSubmittedAutoRenew );
         }
 
         return $separateMembershipPayment;
@@ -726,6 +754,13 @@ INNER JOIN  civicrm_membership_type type ON ( type.id = membership.membership_ty
         $dao->is_active = 1;
         if ( $dao->find(true) ) {
             CRM_Core_DAO::storeValues($dao, $membershipBlock );
+            $membershipTypes = unserialize( $membershipBlock['membership_types'] );
+            if ( !is_array( $membershipTypes ) ) return $membershipBlock; 
+            foreach ( $membershipTypes as $key => $value ) {
+                $membershipBlock["auto_renew"][$key] = $value;
+                $memTypes[$key] = $key;
+            }
+            $membershipBlock['membership_types'] = implode( ',', $memTypes );
         } else {
             return null;
         } 
@@ -1127,7 +1162,6 @@ AND civicrm_membership.is_test = %2";
         }
         
         $form->_params['membershipID'] = $membership->id;
-
         if ( $form->_contributeMode == 'notify' ) {
             if ( $form->_values['is_monetary'] && $form->_amount > 0.0 && !$form->_params['is_pay_later'] ) {
                 // this does not return
@@ -1141,6 +1175,13 @@ AND civicrm_membership.is_test = %2";
         if ( isset( $contribution[$index]->id ) ) {
             $form->_values['contribution_id'] = $contribution[$index]->id;
         }
+
+        // Do not send an email if Recurring transaction is done via Direct Mode
+        // Email will we sent when the IPN is received.
+        if ( $form->_params['is_recur'] && $form->_contributeMode == 'direct' ) {
+            return true;
+        }
+
         //finally send an email receipt
         require_once "CRM/Contribute/BAO/ContributionPage.php";
         CRM_Contribute_BAO_ContributionPage::sendMail( $contactID,
@@ -1180,11 +1221,13 @@ AND civicrm_membership.is_test = %2";
 
         // check is it pending. - CRM-4555
         $pending = false;
-        if ( ( $form->_contributeMode == 'notify' || $form->_params['is_pay_later'] ) &&
+        if ( ( $form->_contributeMode == 'notify' || 
+               $form->_params['is_pay_later']     || 
+               ( $form->_params['is_recur']  && $form->_contributeMode == 'direct' ) ) &&
              ( $form->_values['is_monetary'] && $form->_amount > 0.0 ) ) {
             $pending = true;
         }
-        
+
         //decide status here, if needed.
         $updateStatusId = null;
         
@@ -1326,7 +1369,8 @@ AND civicrm_membership.is_test = %2";
             } else {
                 $memParams['source'  ]  = ts( 'Online Contribution:' ) . ' ' . $form->_values['title'];
             }
-            
+            $memParams['contribution_recur_id'] = CRM_Utils_Array::value( 'contributionRecurID', $form->_params );
+
             $memParams['is_test']       = $is_test;
             $memParams['is_pay_later']  = $form->_params['is_pay_later'];
         }
@@ -1737,7 +1781,8 @@ FROM   civicrm_membership_type
         $dao = CRM_Core_DAO::executeQuery( $query );
         
         $membershipTypeValues = array( );
-        $membershipTypeFields = array( 'id', 'minimum_fee', 'name', 'is_active', 'description', 'contribution_type_id', );
+        $membershipTypeFields = array( 'id', 'minimum_fee', 'name', 'is_active', 
+                                       'description', 'contribution_type_id', 'auto_renew' );
         
         while ( $dao->fetch( ) ) {
             $membershipTypeValues[$dao->id] = array( );
@@ -1772,4 +1817,61 @@ FROM   civicrm_membership_type
         return CRM_Core_DAO::singleValueQuery( $query );
     }
    
+    /**
+     * Function to check whether payment processor supports 
+     * cancellation of membership subscription
+     *
+     * @param int $mid membership id
+     * 
+     * @return boolean
+     * @access public
+     * @static
+     */
+    static function isCancelSubscriptionSupported( $mid, $isNotCancelled = true ) 
+    {
+        $cacheKeyString  = "$mid";
+        $cacheKeyString .= $isNotCancelled ? "_1" : "_0";
+        
+        static $supportsCancel = array( );
+        
+        if ( !array_key_exists( $cacheKeyString, $supportsCancel ) ) {
+            $supportsCancel[$cacheKeyString] = false;
+            $isCancelled = false;
+
+            if ( $isNotCancelled ) {
+                $isCancelled = self::isSubscriptionCancelled( $mid );
+            }
+
+            require_once 'CRM/Core/BAO/PaymentProcessor.php';
+            require_once 'CRM/Core/Payment.php';
+            $paymentObject = CRM_Core_BAO_PaymentProcessor::getProcessorForEntity( $mid, 'membership', 'obj' );
+            if ( ! empty($paymentObject) ) {
+                $supportsCancel[$cacheKeyString] = CRM_Core_Payment::isCancelSupported( $paymentObject ) && !$isCancelled;
+            }
+        }
+        return $supportsCancel[$cacheKeyString];
+    }
+    
+    /**
+     * Function to check whether subscription is already cancelled  
+     *
+     * @param int $mid membership id
+     * 
+     * @return string $status contribution status 
+     * @access public
+     * @static
+     */
+    static function isSubscriptionCancelled ( $mid ) {
+        $sql = "
+   SELECT con.contribution_status_id 
+     FROM civicrm_contribution       con
+LEFT JOIN civicrm_membership_payment cmp ON ( con.id = cmp.contribution_id )
+    WHERE cmp.membership_id = %1 LIMIT 1";
+        $params = array( 1 => array( $mid, 'Integer' ) );
+        $statusId = CRM_Core_DAO::singleValueQuery( $sql, $params );
+        require_once 'CRM/Contribute/PseudoConstant.php';
+        $status = CRM_Contribute_PseudoConstant::contributionStatus( $statusId );
+        if ( $status == 'Cancelled' ) return true;
+        return false;
+    }
 }

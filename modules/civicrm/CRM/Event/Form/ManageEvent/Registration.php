@@ -37,6 +37,8 @@
 
 require_once 'CRM/Event/Form/ManageEvent.php';
 require_once 'CRM/Event/BAO/Event.php';
+require_once "CRM/Core/BAO/UFGroup.php";
+require_once "CRM/Contact/BAO/ContactType.php";
 
 /**
  * This class generates form components for processing Event  
@@ -205,7 +207,21 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
                           ts('Register multiple participants?'),
                           null,
                           array('onclick' => "return showHideByValue('is_multiple_registrations', '', 'additional_profile_pre|additional_profile_post', 'table-row', 'radio', false);"));
-        $this->addElement('checkbox', 'allow_same_participant_emails', ts('Allow multiple registrations from the same email address?'));
+
+        require_once 'CRM/Dedupe/BAO/Rule.php';
+        $params           = array( 'level'        => 'Fuzzy',
+                                   'contact_type' => 'Individual' );
+        $dedupeRuleFields = CRM_Dedupe_BAO_Rule::dedupeRuleFields( $params );
+        
+        foreach ( $dedupeRuleFields as $key => $fields ) {
+            $ruleFields[$key] = ucwords( str_replace( '_', ' ', $fields ) );
+        }
+        $this->addElement( 'checkbox',
+                           'allow_same_participant_emails', 
+                           ts('Allow multiple registrations from the same email address?'), 
+                           null,
+                           array( 'onclick' => "return showRuleFields( " . json_encode( $ruleFields ) ." );" ) );
+        $this->assign( 'ruleFields', json_encode( $ruleFields ) );
 
         require_once 'CRM/Event/PseudoConstant.php';
         $participantStatuses =& CRM_Event_PseudoConstant::participantStatus();
@@ -243,10 +259,8 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
         // explicit height and width.
         $form->addWysiwyg('footer_text',ts('Footer Text'), array( 'rows' => 2, 'cols' => 40 ));
 
-        require_once "CRM/Core/BAO/UFGroup.php";
-        require_once "CRM/Contact/BAO/ContactType.php";
         $types    = array_merge( array( 'Contact', 'Individual', 'Participant' ),
-                                CRM_Contact_BAO_ContactType::subTypes( 'Individual' ) );
+                                 CRM_Contact_BAO_ContactType::subTypes( 'Individual' ) );
               
         $profiles = CRM_Core_BAO_UFGroup::getProfiles( $types );
         
@@ -328,7 +342,7 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
      */
     static function formRule( $values ) 
     {
-        if ( $values['is_online_registration'] ) {
+        if ( CRM_Utils_Array::value( 'is_online_registration', $values ) ) {
             if ( !$values['confirm_title'] ) {
                 $errorMsg['confirm_title'] = ts('Please enter a Title for the registration Confirmation Page');
             }
@@ -342,6 +356,25 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
                 
                 if ( !$values['confirm_from_email'] ) {
                     $errorMsg['confirm_from_email'] = ts('Please enter Confirmation Email FROM Email Address.');
+                }
+            }
+
+            if ( CRM_Utils_Array::value( 'allow_same_participant_emails', $values ) &&
+                 CRM_Utils_Array::value( 'is_multiple_registrations', $values ) ) {
+                $types     = array_merge( array( 'Individual' ), CRM_Contact_BAO_ContactType::subTypes( 'Individual' ) );
+                $profiles  = CRM_Core_BAO_UFGroup::getProfiles( $types );
+
+                $profileId = 
+                    CRM_Utils_Array::value( 'custom_pre_id', $values ) ? $values['custom_pre_id'] : 
+                    CRM_Utils_Array::value( 'custom_post_id', $values );
+
+                $additionalProfileId = 
+                    CRM_Utils_Array::value( 'additional_custom_pre_id', $values ) ? $values['additional_custom_pre_id'] : 
+                    CRM_Utils_Array::value( 'additional_custom_post_id', $values );
+                
+                if ( ( !$additionalProfileId && !$profileId ) || 
+                     ( $additionalProfileId && !array_key_exists( $additionalProfileId, $profiles ) ) ) {
+                    $errorMsg['additional_custom_pre_id'] = ts("Allow multiple registrations from the same email address requires a profile of type 'Individual'");
                 }
             }
         }

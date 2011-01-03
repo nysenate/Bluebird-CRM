@@ -89,16 +89,10 @@ class CRM_Admin_Form_Setting_Localization extends  CRM_Admin_Form_Setting
             $warning = ts('WARNING: Enabling multiple languages changes the schema of your database, so make sure you know what you are doing when enabling this function; making a database backup is strongly recommended.');
             $this->assign('warning', $warning);
 
-            // test for create view and trigger permissions and if allowed, add the option to go multilingual
-            CRM_Core_Error::ignoreException();
-            $dao = new CRM_Core_DAO;
-            $dao->query('CREATE OR REPLACE VIEW civicrm_domain_view AS SELECT * FROM civicrm_domain');
-            $dao->query('CREATE TRIGGER civicrm_domain_trigger BEFORE INSERT ON civicrm_domain FOR EACH ROW BEGIN END');
-            $dao->query('DROP TRIGGER IF EXISTS civicrm_domain_trigger');
-            $dao->query('DROP VIEW IF EXISTS civicrm_domain_view');
-            CRM_Core_Error::setCallback();
+            $validTriggerPermission = CRM_Core_DAO::checkTriggerViewPermission( true );
 
-            if (!$dao->_lastError and !$config->logging) {
+            if ( $validTriggerPermission &&
+                 ! $config->logging ) {
                 $this->addElement('checkbox', 'makeMultilingual', ts('Enable Multiple Languages'),
                                   null, array('onChange' => "if (this.checked) alert('$warning')"));
             }

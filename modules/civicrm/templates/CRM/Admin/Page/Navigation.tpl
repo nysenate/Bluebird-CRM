@@ -49,7 +49,7 @@
 	     plugins : [ "themes", "json_data", "dnd","ui", "crrm","contextmenu" ],
              json_data  : {
                 ajax:{
-                   type  : "json",
+                   dataType : "json",
                    async : true, 
                    url : {/literal}"{crmURL p='civicrm/ajax/menu' h=0 }&key={crmKey name='civicrm/ajax/menu'}"{literal}
                      }
@@ -85,11 +85,11 @@
                                              var editURL = {/literal}"{crmURL p='civicrm/admin/menu' h=0 q='action=update&reset=1&id='}"{literal} + nodeID;
                                       location.href =  editURL;  
                                        },
-				   submenu : false,
-                                },       
+				   submenu : false
+                                }       
       
                 
-            }},                
+            }}                
  
  }).bind("rename.jstree", function ( e,node ) {
 

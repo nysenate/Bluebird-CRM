@@ -156,6 +156,12 @@ class CRM_Member_DAO_Membership extends CRM_Core_DAO
      */
     public $is_pay_later;
     /**
+     * Conditional foreign key to civicrm_contribution_recur id. Each membership in connection with a recurring contribution carries a foreign key to the recurring contribution record. This assumes we can track these processor initiated events.
+     *
+     * @var int unsigned
+     */
+    public $contribution_recur_id;
+    /**
      * class constructor
      *
      * @access public
@@ -179,6 +185,7 @@ class CRM_Member_DAO_Membership extends CRM_Core_DAO
                 'membership_type_id' => 'civicrm_membership_type:id',
                 'status_id' => 'civicrm_membership_status:id',
                 'owner_membership_id' => 'civicrm_membership:id',
+                'contribution_recur_id' => 'civicrm_contribution_recur:id',
             );
         }
         return self::$_links;
@@ -326,6 +333,11 @@ class CRM_Member_DAO_Membership extends CRM_Core_DAO
                     'headerPattern' => '/(is.)?(pay(.)?later)$/i',
                     'dataPattern' => '',
                     'export' => true,
+                ) ,
+                'contribution_recur_id' => array(
+                    'name' => 'contribution_recur_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'FKClassName' => 'CRM_Contribute_DAO_ContributionRecur',
                 ) ,
             );
         }

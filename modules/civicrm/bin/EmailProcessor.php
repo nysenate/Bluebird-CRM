@@ -37,15 +37,18 @@
 define( 'EMAIL_ACTIVITY_TYPE_ID', null  );
 define( 'MAIL_BATCH_SIZE'       , 50    );
 
-/**
- * if called from the cli, several options:
- * nice -19 php bin/EmailProcessor.php -u<login> -p<password> -s<sites(or default)> bounces
- * nice -19 php bin/EmailProcessor.php -u<login> -p<password> -s<sites(or default)> incomingEmails
+/** 
+ *When runing script from cli :
+ * 1. By default script is being used for civimail processing.
+ * eg : nice -19 php bin/EmailProcessor.php -u<login> -p<password> -s<sites(or default)>
  *
- */ 
+ * 2. Pass "activities" as argument to use script for 'Email To Activity Processing'.
+ * eg : nice -19 php bin/EmailProcessor.php -u<login> -p<password> -s<sites(or default)> activities 
+ *
+ */
 
 class EmailProcessor {
-
+    
     /**
      * Process the default mailbox (ie. that is used by civiMail for the bounce)
      *
@@ -276,7 +279,7 @@ if ( php_sapi_name() == "cli" ) {
         throw new Exception('Could not acquire lock, another EmailProcessor process is running');
     // check if the script is being used for civimail processing or email to 
     // activity processing.
-    if ($cli->args[0] == "activities") {
+    if ( isset( $cli->args[0] ) && $cli->args[0] == "activities" ) {
         EmailProcessor::processActivities();
     } else {
         EmailProcessor::processBounces();

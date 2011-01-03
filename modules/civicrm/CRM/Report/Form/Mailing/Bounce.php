@@ -362,7 +362,7 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
                              'xname'       => ts('Mailing'),
                              'yname'       => ts('Bounce'),
                              'xLabelAngle' => 20,
-                             'tip'         => ts("Mail Bounce: %1", array( '%1' => '#val#') ) 
+                             'tip'         => ts('Mail Bounce: %1', array(1 => '#val#')),
                              );
         foreach( $rows as $row ) {
             $chartInfo['values'][$row['civicrm_mailing_name']] = $row['civicrm_mailing_bounce_count']; 

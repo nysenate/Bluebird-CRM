@@ -35,6 +35,7 @@ require_once 'CRM/Utils/REST.php';
 $rest = new CRM_Utils_REST();
 
 $config = CRM_Core_Config::singleton();
+$rest->loadCMSBootstrap( );
 
 if ( isset( $_GET['json'] ) &&
      $_GET['json'] ) {

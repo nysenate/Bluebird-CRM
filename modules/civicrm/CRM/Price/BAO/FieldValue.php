@@ -150,6 +150,21 @@ class CRM_Price_BAO_FieldValue extends CRM_Price_DAO_FieldValue
         
         return $values;  
     }
+
+    /**
+     * Get the price field option label.
+     *
+     * @param int $id id of field option.
+     * @return string name 
+     *
+     * @access public
+     * @static
+     *
+     */
+    public static function getOptionLabel( $id )
+    {
+        return CRM_Core_DAO::getFieldValue( 'CRM_Price_DAO_FieldValue', $id, 'label' );
+    }
     
     /**
      * update the is_active flag in the db

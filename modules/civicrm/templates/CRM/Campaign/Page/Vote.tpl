@@ -24,15 +24,15 @@
  +--------------------------------------------------------------------+
 *}
 {* Voting Tab Interface - Easy way to get the voter Interview. *}
-{if $subPageType eq 'reserve'}
+{if $subPageType eq 'interview'}
    {* build the voter interview grid here *}
    {include file='CRM/Campaign/Form/Task/Interview.tpl'}
-{elseif $subPageType eq 'interview'}
+{elseif $subPageType eq 'reserve'}
    {* build the ajax search and voters reserve interface here *}
    {include file='CRM/Campaign/Form/Gotv.tpl'}
 {elseif $allTabs}
  {* build normal page *}
- <div id='votingTabs' class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+ <div id="mainTabContainer" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
      <ul class="crm-vote-tabs-list">
            {foreach from=$allTabs key=tabName item=tabValue}
            <li id="tab_{$tabValue.id}" class="crm-tab-button ui-corner-bottom">
@@ -57,7 +57,7 @@ cj(document).ready( function( ) {
      {literal} 
      
      var selectedTabIndex = {/literal}{$selectedTabIndex}{literal};
-     cj("#votingTabs").tabs( { 
+     cj("#mainTabContainer").tabs( { 
                              selected: selectedTabIndex, 
                              spinner: spinnerImage, 
 		             cache: false, 

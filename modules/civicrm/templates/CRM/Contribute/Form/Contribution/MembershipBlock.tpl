@@ -74,6 +74,8 @@
             {if $showRadio }
                 {assign var="pid" value=$row.id}
                 <td style="width: 1em;">{$form.selectMembership.$pid.html}</td>
+            {else}
+                <td>&nbsp;</td>                
             {/if}
            <td style="width: auto;">
                 <span class="bold">{$row.name} &nbsp;
@@ -101,8 +103,15 @@
               {/if}
            </td> 
         </tr>
-        
+	
         {/foreach}
+	<tr id="allow_auto_renew">    
+	     <td style="width: auto;">{$form.auto_renew.html}</td>
+	     <td style="width: auto;">
+	        {$form.auto_renew.label}
+            <div class="description crm-auto-renew-cancel-info">({ts}Your initial membership fee will be processed once you complete the confirmation step. You will be able to cancel automatic renewals at any time by logging in to your account or contacting us.{/ts})</div>
+	     </td>
+	</tr>
         {if $showRadio}
             {if $showRadioNoThanks } {* Provide no-thanks option when Membership signup is not required - per membership block configuration. *}
             <tr class="odd-row">
@@ -118,3 +127,69 @@
     {/if}
 </div>
 {/if}
+
+{literal}
+<script type="text/javascript">
+cj(function(){
+   showHideAutoRenew( null );	
+});
+function showHideAutoRenew( memTypeId ) 
+{
+  var considerUserInput = {/literal}'{$takeUserSubmittedAutoRenew}'{literal};	    
+  if ( memTypeId ) considerUserInput = false;
+  if ( !memTypeId ) memTypeId = cj('input:radio[name=selectMembership]:checked').val();
+  
+  //does this page has only one membership type.
+  var singleMembership = {/literal}'{$singleMembership}'{literal};
+  if ( !memTypeId && singleMembership ) memTypeId = cj("#selectMembership").val( ); 
+  
+  var renewOptions  = {/literal}{$autoRenewMembershipTypeOptions}{literal};	 
+  var currentOption = eval( "renewOptions." + 'autoRenewMembershipType_' + memTypeId );
+  
+  funName = 'hide();';
+  var readOnly = false;
+  var isChecked  = false; 
+  if ( currentOption == 1 ) {
+     funName = 'show();';
+     
+     //uncomment me, if we'd like 
+     //to load auto_renew checked.
+     //isChecked = true;
+  
+  } else if ( currentOption == 2 ) {
+     funName = 'show();';
+     isChecked = readOnly = true;
+  }
+  
+  var autoRenew = cj("#auto_renew");	
+  if ( considerUserInput ) isChecked = autoRenew.attr( 'checked' ); 
+
+  //its a normal recur contribution.
+  if ( cj( "is_recur" ) && 
+      ( cj( 'input:radio[name=is_recur]:checked').val() == 1 ) ) {
+     isChecked = false;
+     funName   = 'hide();';
+  }
+ 
+  //when we do show auto_renew read only 
+  //which implies it should be checked.	 
+  if ( readOnly && funName == 'show();' ) isChecked = true; 
+
+  autoRenew.attr( 'readonly', readOnly );
+  autoRenew.attr( 'checked',  isChecked );
+  eval( "cj('#allow_auto_renew')." + funName );
+}
+
+{/literal}{if $allowAutoRenewMembership}{literal}
+  cj( function( ) {
+     //keep read only always checked.
+     cj( "#auto_renew" ).click(function( ) {
+        if ( cj(this).attr( 'readonly' ) ) { 
+            cj(this).attr( 'checked', true );
+        }
+     });
+  }); 
+{/literal}{/if}{literal}
+</script>
+{/literal}
+

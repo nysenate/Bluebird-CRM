@@ -647,7 +647,8 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
         // make sure we have edit permission for this contact
         // before we delete
         require_once 'CRM/Contact/BAO/Contact/Permission.php';
-        if ( !CRM_Core_Permission::check( 'delete contacts' ) ) {
+        if ( ( $skipUndelete && !CRM_Core_Permission::check( 'delete contacts' ) ) || 
+             ( $restore && !CRM_Core_Permission::check( 'access deleted contacts' ) ) ) {
             return false;
         }
 
@@ -2331,7 +2332,7 @@ UNION
                        							'weight'	   => 0, 
                                                 'ref'          =>  'delete-contact',
                                                 'key'          =>  'delete',
-                                                'permissions'  =>  array( 'delete contacts', 'edit all contacts' ) 
+                                                'permissions'  =>  array( 'access deleted contacts', 'delete contacts' ) 
                                                 ),
                        'contribution' => array( 'title'        =>  ts( 'Add Contribution' ),
                                                 'weight'	   => 5, 

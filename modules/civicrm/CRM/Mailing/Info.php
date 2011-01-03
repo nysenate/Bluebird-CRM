@@ -57,12 +57,32 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info
     }
 
 
+    static function workflowEnabled( ) {
+        $config =& CRM_Core_Config::singleton( );
+
+        $enableWorkflow = defined( 'CIVICRM_CIVIMAIL_WORKFLOW' ) ? (bool) CIVICRM_CIVIMAIL_WORKFLOW : false;
+
+        return ( $enableWorkflow &&
+                 $config->userFramework == 'Drupal' &&
+                 module_exists( 'rules' ) ) ?
+            true :
+            false;
+             
+    }
     // docs inherited from interface
     public function getPermissions()
     {
-        return array( 'access CiviMail', 
-                      'access CiviMail subscribe/unsubscribe pages',
-                      'delete in CiviMail' );
+        $permissions = array( 'access CiviMail', 
+                              'access CiviMail subscribe/unsubscribe pages',
+                              'delete in CiviMail' );
+
+        if ( self::workflowEnabled( ) ) {
+            $permissions[] = 'create mailings';
+            $permissions[] = 'schedule mailings';
+            $permissions[] = 'approve mailings';
+        }
+
+        return $permissions;
     }
 
 

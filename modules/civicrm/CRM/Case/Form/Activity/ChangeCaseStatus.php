@@ -119,8 +119,34 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
         if ( CRM_Utils_Array::value( $params['case_status_id'], $groupingValues ) == 'Closed' 
              && CRM_Utils_Array::value( 'activity_date_time', $params ) ) {
             $params['end_date'] = $params['activity_date_time'];
+            
+            // End case-specific relationships (roles)
+            foreach( $params['target_contact_id'] as $cid ) {
+                $rels = CRM_Case_BAO_Case::getCaseRoles( $cid, $params['case_id'] );
+                // FIXME: Is there an existing function to close a relationship?
+                $query = 'UPDATE civicrm_relationship SET end_date=%2 WHERE id=%1';
+                foreach ( $rels as $relId => $relData ) {
+                    $relParams = array( 1 => array( $relId, 'Integer' ),
+                                        2 => array( $params['end_date'], 'Timestamp' ),
+                                      );
+                    CRM_Core_DAO::executeQuery( $query, $relParams );
+                }
+            }
+            
         } else if ( CRM_Utils_Array::value( $params['case_status_id'], $groupingValues ) == 'Opened' ) {
             $params['end_date'] = "null";
+            
+           // Reopen case-specific relationships (roles)
+            foreach( $params['target_contact_id'] as $cid ) {
+                $rels = CRM_Case_BAO_Case::getCaseRoles( $cid, $params['case_id'] );
+                // FIXME: Is there an existing function?
+                $query = 'UPDATE civicrm_relationship SET end_date=NULL WHERE id=%1';
+                foreach ( $rels as $relId => $relData ) {
+                    $relParams = array( 1 => array( $relId, 'Integer' ),
+                                      );
+                    CRM_Core_DAO::executeQuery( $query, $relParams );
+                }
+            }
         }
 
         if ($activity->subject == 'null'){
@@ -130,7 +156,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
                                    );
             $activity->save();            
         }
-        
+                
         // FIXME: does this do anything ?
         $params['statusMsg'] = ts('Case Status changed successfully.');
     }

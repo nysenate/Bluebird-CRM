@@ -297,7 +297,7 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
                              'xname'       => ts('Mailing'),
                              'yname'       => ts('Clicks'),
                              'xLabelAngle' => 20,
-                             'tip'         => ts("Clicks: %1", array( '%1' => '#val#') ) 
+                             'tip'         => ts('Clicks: %1', array(1 => '#val#')),
                              );
         foreach( $rows as $row ) {
             $chartInfo['values'][$row['civicrm_mailing_name']] = $row['civicrm_mailing_click_count']; 

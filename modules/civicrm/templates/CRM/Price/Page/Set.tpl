@@ -37,15 +37,14 @@
     {if $usedBy}
     <div class='spacer'></div>
     <div id="price_set_used_by" class="messages status">
-       <div class="icon inform-icon"></div> 
-       {if $action eq 8}
+       <div class="icon inform-icon"></div>
+        {if $action eq 8}
             {ts 1=$usedPriceSetTitle}Unable to delete the '%1' price set - it is currently in use by one or more active events or contribution pages or contributions.{/ts}
-        {/if}<br />
+        {/if}
         
-	{if $usedBy.civicrm_event or $usedBy.civicrm_contribution_page} 
+	    {if $usedBy.civicrm_event or $usedBy.civicrm_contribution_page} 
             {include file="CRM/Price/Page/table.tpl"} 
         {/if}
-
     </div>
     {/if}
 

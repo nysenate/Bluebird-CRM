@@ -50,6 +50,8 @@ class CRM_Contact_Form_Task_Print extends CRM_Contact_Form_Task {
      */
     function preProcess()
     {
+        parent::preprocess( );
+
         // set print view, so that print templates are called
         $this->controller->setPrint( 1 );
         $this->assign( 'id', $this->get( 'id' ) );

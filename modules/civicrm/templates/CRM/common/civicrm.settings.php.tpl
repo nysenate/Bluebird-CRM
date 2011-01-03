@@ -180,8 +180,8 @@ define( 'CIVICRM_IDS_ENABLE', 1);
  * Multi org / Multi site settings:
  *
  */
-//define( 'CIVICRM_MULTISITE'           , null );
-//define( 'CIVICRM_UNIQ_EMAIL_PER_SITE' , null );
+// define( 'CIVICRM_MULTISITE'           , null );
+// define( 'CIVICRM_UNIQ_EMAIL_PER_SITE' , null );
 define( 'CIVICRM_DOMAIN_ID'      , 1 );
 define( 'CIVICRM_DOMAIN_GROUP_ID', null );
 define( 'CIVICRM_DOMAIN_ORG_ID'  , null );
@@ -229,6 +229,12 @@ define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
  * Do not unset - required for email verification. Group will be created if it does not exist.
  */
 define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
+
+/**
+ * Enables or disables workflow support for CiviMail. Also requires
+ * Drupal AND rules module being enabled
+ */
+define('CIVICRM_CIVIMAIL_WORKFLOW', 0 );
 
 /**
  * 

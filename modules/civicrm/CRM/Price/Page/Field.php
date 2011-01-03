@@ -232,12 +232,22 @@ class CRM_Price_Page_Field extends CRM_Core_Page {
                                               $this, false, 'browse'); // default to 'browse'
         
         if ( $this->_sid ) {
-            require_once 'CRM/Price/BAO/Set.php';
-            CRM_Price_BAO_Set::checkPermission( $this->_sid );
-        }
-        if ($action & ( CRM_Core_Action::DELETE)) {
-            require_once 'CRM/Price/BAO/Set.php';
             $usedBy =& CRM_Price_BAO_Set::getUsedBy( $this->_sid );
+            
+            $this->assign( 'usedBy', $usedBy );
+            CRM_Price_BAO_Set::checkPermission( $this->_sid );
+            $comps = array( "Event"        => "civicrm_event", 
+                            "Contribution" => "civicrm_contribution_page" );
+            $priceSetContexts = array( );
+            foreach ( $comps as $name => $table ) {
+                if ( array_key_exists( $table, $usedBy ) ) {
+                    $priceSetContexts[] = $name;
+                }
+            }
+            $this->assign( 'contexts', $priceSetContexts );
+        }
+
+        if ($action & ( CRM_Core_Action::DELETE)) {
             if ( empty( $usedBy ) ) {
                 // prompt to delete
                 $session = & CRM_Core_Session::singleton();
@@ -255,16 +265,6 @@ class CRM_Price_Page_Field extends CRM_Core_Page {
                 CRM_Utils_System::appendBreadCrumb( ts('Price'),
                                                     $url );
                 $this->assign( 'usedPriceSetTitle', CRM_Price_BAO_Field::getTitle( $fid ) );
-                $this->assign( 'usedBy', $usedBy );
-                $comps = array( "Event"        => "civicrm_event", 
-                                "Contribution" => "civicrm_contribution_page" );
-                $priceSetContexts = array( );
-                foreach ( $comps as $name => $table ) {
-                    if ( array_key_exists( $table, $usedBy ) ) {
-                        $priceSetContexts[] = $name;
-                    }
-                }
-                $this->assign( 'contexts', $priceSetContexts );
             }
         }
                 

@@ -1243,6 +1243,7 @@ GROUP BY cc.id';
                 $anyActivity = false; 
             }
             $tplParams['isCaseActivity'] = 1;
+            $tplParams['client_id'] = $clientId;
         } else {
             $anyActivity = true;
         }
@@ -2395,6 +2396,9 @@ WHERE id IN ('. implode( ',', $copiedActivityIds ) . ')';
             
             $tplParams['viewActURL'] = CRM_Utils_System::url( 'civicrm/case/activity/view', 
                                                               "reset=1&aid={$activityParams['source_record_id']}&cid={$activityParams['source_contact_id']}&caseID={$activityParams['case_id']}", true );
+
+            $tplParams['manageCaseURL'] = CRM_Utils_System::url( 'civicrm/contact/view/case', 
+                                                              "reset=1&id={$activityParams['case_id']}&cid={$tplParams['client_id']}&action=view&context=home", true );
         } else {   
             $tplParams['editActURL'] = CRM_Utils_System::url( 'civicrm/contact/view/activity', 
                                                               "atype=$activityTypeId&action=update&reset=1&id={$activityParams['source_record_id']}&cid={$activityParams['source_contact_id']}&context=activity", true );

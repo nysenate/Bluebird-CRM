@@ -45,14 +45,14 @@
     </table>
     <table id= "premiumFields" class="form-layout-compressed">
     <tr class="crm-contribution-contributionpage-premium-form-block-premiums_intro_title">
-       <td class="label">{$form.premiums_intro_title.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_premiums' field='premiums_intro_title' id=$id}{/if}
+       <td class="label">{$form.premiums_intro_title.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_premiums' field='premiums_intro_title' id=$contributionPageID}{/if}
        </td>
        <td class="html-adjust">{$form.premiums_intro_title.html}<br />
      	   <span class="description">{ts}Title to appear at the top of the Premiums section.{/ts}</span>
        </td>
     </tr>
     <tr class="crm-contribution-contributionpage-premium-form-block-premiums_intro_text">
-       <td class="label">{$form.premiums_intro_text.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_premiums' field='premiums_intro_text' id=$id}{/if}
+       <td class="label">{$form.premiums_intro_text.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_premiums' field='premiums_intro_text' id=$contributionPageID}{/if}
        </td>
        <td class="html-adjust">{$form.premiums_intro_text.html}<br />
        	   <span class="description">{ts}Enter content for the introductory message. This will be displayed below the Premiums section title. You may include HTML formatting tags. You can also include images, as long as they are already uploaded to a server - reference them using complete URLs.{/ts}</span>

@@ -237,4 +237,9 @@
      <page_callback>CRM_Contact_Page_AJAX::getPermissionedEmployer</page_callback>
      <access_arguments>make online contributions</access_arguments>
   </item>
-  </menu>
+  <item>
+     <path>civicrm/contribute/unsubscribe</path>
+     <page_callback>CRM_Contribute_Form_CancelSubscription</page_callback>
+     <access_arguments>make online contributions</access_arguments>
+  </item>  
+</menu>

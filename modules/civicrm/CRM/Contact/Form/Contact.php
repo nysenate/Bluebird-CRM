@@ -572,7 +572,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
      * @static
      * @access public
      */
-    static function formRule( $fields, $errors, $contactId = null )
+    static function formRule( $fields, &$errors, $contactId = null )
     {
         $config = CRM_Core_Config::singleton( );
         
@@ -631,9 +631,8 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
                     
                     if ( $name == 'openid' && CRM_Utils_Array::value( $name, $blockValues ) ) {
                         require_once 'CRM/Core/DAO/OpenID.php';
-                        require_once 'Auth/OpenID.php';
                         $oid = new CRM_Core_DAO_OpenID( );
-                        $oid->openid = $openIds[$instance] = Auth_OpenID::normalizeURL( CRM_Utils_Array::value( $name, $blockValues ) );
+                        $oid->openid = $openIds[$instance] = CRM_Utils_Array::value( $name, $blockValues );
                         $cid = isset($contactId) ? $contactId : 0;
                         if ( $oid->find(true) && ($oid->contact_id != $cid) ) {
                             $errors["{$name}[$instance][openid]"] = ts('%1 already exist.', array( 1 => $blocks['OpenID'] ) );

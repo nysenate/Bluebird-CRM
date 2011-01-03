@@ -102,7 +102,7 @@ contact_id = {$params['contact_id']}";
      * @access public
      * @static
      */
-    static function allEmails( $id ) 
+    static function allEmails( $id, $updateBlankLocInfo = false ) 
     {
         if ( ! $id ) {
             return null;
@@ -117,18 +117,25 @@ LEFT JOIN civicrm_location_type ON ( civicrm_email.location_type_id = civicrm_lo
 WHERE
   civicrm_contact.id = %1
 ORDER BY
-  civicrm_email.is_primary DESC, civicrm_email.location_type_id DESC, email_id ASC ";
+  civicrm_email.is_primary DESC, email_id ASC ";
         $params = array( 1 => array( $id, 'Integer' ) );
 
-        $emails = array( );
+        $emails = $values = array( );
         $dao =& CRM_Core_DAO::executeQuery( $query, $params );
+        $count = 1;
         while ( $dao->fetch( ) ) {
-            $emails[$dao->email_id] = array( 'locationType'   => $dao->locationType,
-                                             'is_primary'     => $dao->is_primary,
-                                             'on_hold'        => $dao->on_hold,
-                                             'id'             => $dao->email_id,
-                                             'email'          => $dao->email,
-                                             'locationTypeId' => $dao->locationTypeId );
+            $values = array( 'locationType'   => $dao->locationType,
+                             'is_primary'     => $dao->is_primary,
+                             'on_hold'        => $dao->on_hold,
+                             'id'             => $dao->email_id,
+                             'email'          => $dao->email,
+                             'locationTypeId' => $dao->locationTypeId );
+            
+            if ( $updateBlankLocInfo ) {
+                $emails[$count++] = $values; 
+            } else {
+                $emails[$dao->email_id] = $values;
+            }
         }
         return $emails;
     }

@@ -238,7 +238,8 @@ class CRM_Contact_Task {
         }
 
         // CRM-6806
-        if (!CRM_Core_Permission::check('access deleted contacts')) {
+        if ( !CRM_Core_Permission::check( 'access deleted contacts' ) || 
+             !CRM_Core_Permission::check( 'delete contacts' ) ) {
             unset($titles[self::DELETE_PERMANENTLY]);
         }
         asort( $titles );
@@ -259,11 +260,11 @@ class CRM_Contact_Task {
     {
         $tasks = array( );
         if ($deletedContacts) {
-            if (CRM_Core_Permission::check('access deleted contacts')) {
-                $tasks = array(
-                    self::RESTORE            => self::$_tasks[self::RESTORE           ]['title'],
-                    self::DELETE_PERMANENTLY => self::$_tasks[self::DELETE_PERMANENTLY]['title'],
-                );
+            if ( CRM_Core_Permission::check( 'access deleted contacts' ) ) {
+                $tasks = array( self::RESTORE => self::$_tasks[self::RESTORE]['title'] );
+                if ( CRM_Core_Permission::check( 'delete contacts' ) ) {
+                    $tasks[self::DELETE_PERMANENTLY] = self::$_tasks[self::DELETE_PERMANENTLY]['title'];
+                } 
             }
         } elseif ($permission == CRM_Core_Permission::EDIT) {
             $tasks = self::taskTitles( );

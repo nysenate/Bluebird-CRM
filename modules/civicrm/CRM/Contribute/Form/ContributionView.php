@@ -65,6 +65,11 @@ class CRM_Contribute_Form_ContributionView extends CRM_Core_Form
         } 
         CRM_Contribute_BAO_Contribution::resolveDefaults( $values );
         
+        if ( CRM_Utils_Array::value( 'contribution_page_id', $values ) ){
+            $contribPages = CRM_Contribute_PseudoConstant::contributionPage( );
+            $values["contribution_page_title"] = CRM_Utils_Array::value( CRM_Utils_Array::value( 'contribution_page_id', $values ) , $contribPages );
+        }
+        
         if ( CRM_Utils_Array::value( 'honor_contact_id', $values ) ) {
             $sql    = "SELECT display_name FROM civicrm_contact WHERE id = %1";
             $params = array( 1 => array( $values['honor_contact_id'], 'Integer' ) );

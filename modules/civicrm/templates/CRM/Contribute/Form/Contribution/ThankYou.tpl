@@ -126,25 +126,31 @@
         
             {* Recurring contribution / pledge information *}
             {if $is_recur}
-                {if $installments}
-    		<p><strong>{ts 1=$frequency_interval 2=$frequency_unit 3=$installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installments (including this initial contribution).{/ts}</strong></p>
+                {if $membershipBlock} {* Auto-renew membership confirmation *}
+                    <br />
+                    <strong>{ts 1=$frequency_interval 2=$frequency_unit}This membership will be renewed automatically every %1 %2(s).{/ts}</strong>
+                    <div class="description crm-auto-renew-cancel-info">({ts}You will be able to cancel automatic renewals at any time by logging in to your account or contacting us.{/ts})</div>
                 {else}
-                    <p><strong>{ts 1=$frequency_interval 2=$frequency_unit}This recurring contribution will be automatically processed every %1 %2(s).{/ts}</strong></p>
+                    {if $installments}
+        		        <p><strong>{ts 1=$frequency_interval 2=$frequency_unit 3=$installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installments (including this initial contribution).{/ts}</strong></p>
+                    {else}
+                        <p><strong>{ts 1=$frequency_interval 2=$frequency_unit}This recurring contribution will be automatically processed every %1 %2(s).{/ts}</strong></p>
+                    {/if}
+                    <p>
+            	    {if $contributeMode EQ 'notify'}
+            		    {ts 1=$cancelSubscriptionUrl}You can modify or cancel future contributions at any time by <a href='%1'>logging in to your account</a>.{/ts}
+            	    {/if}
+            	    {if $contributeMode EQ 'direct'}
+            		    {ts 1=$receiptFromEmail}To modify or cancel future contributions please contact us at %1.{/ts}
+            	    {/if}
+                    {if $is_email_receipt}
+                        {ts}You will receive an email receipt for each recurring contribution.{/ts}
+                    {/if}
+            	    {if $contributeMode EQ 'notify'}
+            		    {ts}The receipts will also include a link you can use if you decide to modify or cancel your future contributions.{/ts}
+            	    {/if}
+                    </p>
                 {/if}
-                <p>
-    	    {if $contributeMode EQ 'notify'}
-    		{ts 1=$cancelSubscriptionUrl}You can modify or cancel future contributions at any time by <a href='%1'>logging in to your account</a>.{/ts}
-    	    {/if}
-    	    {if $contributeMode EQ 'direct'}
-    		{ts 1=$receiptFromEmail}To modify or cancel future contributions please contact us at %1.{/ts}
-    	    {/if}
-                {if $is_email_receipt}
-                    {ts}You will receive an email receipt for each recurring contribution.{/ts}
-                {/if}
-    	    {if $contributeMode EQ 'notify'}
-    		{ts}The receipts will also include a link you can use if you decide to modify or cancel your future contributions.{/ts}
-    	    {/if}
-                </p>
             {/if}
             {if $is_pledge}
                 {if $pledge_frequency_interval GT 1}

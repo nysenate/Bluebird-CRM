@@ -187,6 +187,7 @@ class CRM_Dedupe_Finder
             if ( CRM_Utils_Array::value( $date, $fields ) ) {
                 $flat[$date] = $fields[$date];
                 if (is_array($flat[$date])) $flat[$date] = CRM_Utils_Date::format($flat[$date]);
+                $flat[$date] = CRM_Utils_Date::processDate( $flat[$date] );
             }
         }
         

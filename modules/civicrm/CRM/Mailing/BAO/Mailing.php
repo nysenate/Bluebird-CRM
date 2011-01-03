@@ -1798,10 +1798,13 @@ SELECT $selectClause
 
         $mailingACL = self::mailingACL( );
 
+        // we only care about parent jobs, since that holds all the info on
+        // the mailing
         $query = "
             SELECT      $mailing.id,
                         $mailing.name, 
-                        $job.status, 
+                        $job.status,
+                        $mailing.approval_status_id,
                         MIN($job.scheduled_date) as scheduled_date, 
                         MIN($job.start_date) as start_date,
                         MAX($job.end_date) as end_date,
@@ -1811,7 +1814,7 @@ SELECT $selectClause
                         $mailing.scheduled_id as scheduled_id,
                         $mailing.is_archived as archived
             FROM        $mailing
-            LEFT JOIN   $job ON ( $job.mailing_id = $mailing.id AND $job.is_test = 0)
+            LEFT JOIN   $job ON ( $job.mailing_id = $mailing.id AND $job.is_test = 0 AND $job.parent_id IS NULL )
             LEFT JOIN   civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
             LEFT JOIN   civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id ) 
             WHERE       $mailingACL $additionalClause  
@@ -1849,6 +1852,7 @@ SELECT $selectClause
                             'created_id'    => $dao->created_id,
                             'scheduled_id'  => $dao->scheduled_id,
                             'archived'      => $dao->archived,
+                            'approval_status_id' => $dao->approval_status_id
                             );
         }
         return $rows;

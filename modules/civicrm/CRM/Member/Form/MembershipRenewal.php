@@ -185,6 +185,9 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
                                                                               'receipt_text_renewal' );
         }
 
+        $renewalDate = CRM_Utils_Date::processDate( CRM_Utils_Array::value( 'renewal_date', $defaults ), 
+                                                    null, null, 'Y-m-d' );
+        $this->assign( 'renewalDate', $renewalDate );
         $this->assign( "member_is_test", CRM_Utils_Array::value('member_is_test',$defaults) );
 
         if ( $this->_mode ) {
@@ -282,6 +285,14 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
         require_once "CRM/Core/BAO/Preferences.php";
         $mailingInfo =& CRM_Core_BAO_Preferences::mailingPreferences();
         $this->assign( 'outBound_option', $mailingInfo['outBound_option'] );
+
+        if ( CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_Membership', $this->_id, 'contribution_recur_id' ) ) {
+            require_once 'CRM/Member/BAO/Membership.php'; 
+            if ( CRM_Member_BAO_Membership::isCancelSubscriptionSupported( $this->_id ) ) {
+                $this->assign( 'cancelAutoRenew', 
+                               CRM_Utils_System::url( 'civicrm/contribute/unsubscribe', "reset=1&mid={$this->_id}" ) );
+            }
+        }
         
         $this->addFormRule(array('CRM_Member_Form_MembershipRenewal', 'formRule'));
     }

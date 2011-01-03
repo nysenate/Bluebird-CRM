@@ -82,7 +82,7 @@ class CRM_Core_BAO_Setting
                            'userFrameworkDSN', 
                            'userFrameworkBaseURL', 'userFrameworkClass', 'userHookClass',
                            'userPermissionClass', 'userFrameworkURLVar',
-                           'newBaseURL', 'newBaseDir', 'newSiteName',
+                           'newBaseURL', 'newBaseDir', 'newSiteName', 'configAndLogDir',
                            'qfKey', 'gettextResourceDir', 'cleanURL',
                            'locale_custom_strings', 'localeCustomStrings' );
         foreach ( $skipVars as $var ) {
@@ -181,12 +181,17 @@ class CRM_Core_BAO_Setting
         $domain->find(true);
         if ($domain->config_backend) {
             $defaults = unserialize($domain->config_backend);
+            if ( $defaults === false ||
+                 ! is_array( $defaults ) ) {
+                $defaults = array( );
+                return;
+            }
 
             $skipVars = array( 'dsn', 'templateCompileDir',
                                'userFrameworkDSN', 
                                'userFrameworkBaseURL', 'userFrameworkClass', 'userHookClass',
                                'userPermissionClass', 'userFrameworkURLVar',
-                               'newBaseURL', 'newBaseDir', 'newSiteName',
+                               'newBaseURL', 'newBaseDir', 'newSiteName', 'configAndLogDir',
                                'qfKey', 'gettextResourceDir', 'cleanURL',
                                'locale_custom_strings', 'localeCustomStrings' );
             foreach ( $skipVars as $skip ) {
@@ -267,9 +272,12 @@ class CRM_Core_BAO_Setting
                     $session->set('lcMessages', $lcMessages);
                 }
             }
+            global $dbLocale;
 
             // if unset and the install is so configured, try to inherit the language from the hosting CMS
             if ($lcMessages === null and CRM_Utils_Array::value( 'inheritLocale', $defaults ) ) {
+                // FIXME: On multilanguage installs, CRM_Utils_System::getUFLocale() in many cases returns nothing if $dbLocale is not set
+                $dbLocale = $multiLang ? "_{$defaults['lcMessages']}" : '';
                 require_once 'CRM/Utils/System.php';
                 $lcMessages = CRM_Utils_System::getUFLocale();
                 require_once 'CRM/Core/BAO/CustomOption.php';
@@ -287,7 +295,6 @@ class CRM_Core_BAO_Setting
             }
             
             // set suffix for table names - use views if more than one language
-            global $dbLocale;
             $dbLocale = $multiLang ? "_{$lcMessages}" : '';
 
             // FIXME: an ugly hack to fix CRM-4041
@@ -460,8 +467,37 @@ WHERE  id = %1
 ";
         $params[2] = array( $configBackend, 'String' );
         CRM_Core_DAO::executeQuery( $sql, $params );
+
+        // Apply the changes to civicrm_option_values
+        $optionGroups = array('url_preferences', 'directory_preferences');
+        foreach ($optionGroups as $option) {
+            foreach ( $variables as $varSuffix ) {
+                $oldVar = "old{$varSuffix}";
+                $newVar = "new{$varSuffix}";
+
+                $from = $$oldVar;
+                $to   = $$newVar;
+
+                if ($from && $to && $from != $to) {
+                    $sql = '
+UPDATE civicrm_option_value 
+SET    value = REPLACE(value, %1, %2) 
+WHERE  option_group_id = ( 
+  SELECT id 
+  FROM   civicrm_option_group 
+  WHERE  name = %3 )
+';
+                    $params = array( 1 => array ( $from, 'String' ),
+                                     2 => array ($to, 'String'),
+                                     3 => array($option, 'String') );
+                    CRM_Core_DAO::executeQuery( $sql, $params );
+                }
+            }
+        }
         
-        $moveStatus .= ts('Directory and Resource URLs have been updated in the moved database to reflect current site location.') . '<br />';
+        $moveStatus .= 
+            ts('Directory and Resource URLs have been updated in the moved database to reflect current site location.') .
+            '<br />';
 
         $config =& CRM_Core_Config::singleton( );
 

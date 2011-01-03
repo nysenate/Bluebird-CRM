@@ -58,9 +58,17 @@ class CRM_Mailing_StateMachine_Send extends CRM_Core_StateMachine {
                               'CRM_Mailing_Form_Settings'=> null,
                               'CRM_Mailing_Form_Upload'  => null,
                               'CRM_Mailing_Form_Test'    => null,
-                              'CRM_Mailing_Form_Schedule'=> null,
                               );
-        
+
+        require_once 'CRM/Mailing/Info.php';
+        if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+            if ( CRM_Core_Permission::check( 'schedule mailings' ) ) {
+                $this->_pages['CRM_Mailing_Form_Schedule'] = null;
+            }
+        } else {
+            $this->_pages['CRM_Mailing_Form_Schedule'] = null;
+        }
+
         $this->addSequentialPages( $this->_pages, $action );
     }
 

@@ -154,6 +154,7 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup
             $dupeCopyJoin   = " JOIN dedupe_copy ON dedupe_copy.id1 = t1.column AND dedupe_copy.id2 = t2.column WHERE ";
         }
         $patternColumn     = '/t1.(\w+)/';
+        $exclWeightSum     = 0;
 
         // create temp table
         $dao = new CRM_Core_DAO();
@@ -164,13 +165,15 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup
         CRM_Utils_Hook::dupeQuery( $this, 'table', $tableQueries );
 
         while ( !empty($tableQueries) ) {
-            list( $isInclusive, $isDie ) = self::isQuerySetInclusive( $tableQueries, $this->threshold );
+            list( $isInclusive, $isDie ) = self::isQuerySetInclusive( $tableQueries, $this->threshold, $exclWeightSum );
 
             if ( $isInclusive ) {
                 // order queries by table count
                 self::orderByTableCount( $tableQueries );
 
-                $searchWithinDupes = 0;
+                $weightSum = $exclWeightSum;
+                $searchWithinDupes = ( $exclWeightSum > 0 ) ? 1 : 0;
+
                 while ( !empty($tableQueries) ) {
                     // extract the next query ( and weight ) to be executed
                     $fieldWeight = array_keys( $tableQueries );
@@ -206,9 +209,14 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup
                 }
             } else if ( !$isDie ) { // An exclusive situation -
                 // since queries are already sorted by weights, we can continue as is
+                $fieldWeight = array_keys( $tableQueries );
+                $fieldWeight = $fieldWeight[0];
                 $query = array_shift( $tableQueries );
                 $query = "{$insertClause} {$query} {$groupByClause} ON DUPLICATE KEY UPDATE weight = weight + VALUES(weight)";
                 $dao->query( $query );
+                if ( $dao->affectedRows( ) >= 1 ) {
+                    $exclWeightSum = substr( $fieldWeight, strrpos( $fieldWeight, '.' ) + 1 ) + $exclWeightSum;
+                }
                 $dao->free();
             } else {
                 // its a die situation
@@ -219,10 +227,15 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup
 
     // Function to determine if a given query set contains inclusive or exclusive set of weights.
     // The function assumes that the query set is already ordered by weight in desc order.
-    static function isQuerySetInclusive( $tableQueries, $threshold ) {
+    static function isQuerySetInclusive( $tableQueries, $threshold, $exclWeightSum = 0 ) {
         $input = array( );
         foreach ( $tableQueries as $key => $query ) {
             $input[] = substr( $key, strrpos( $key, '.' ) + 1 );
+        }
+
+        if ( $exclWeightSum > 0 ) {
+            $input[] = $exclWeightSum;
+            arsort($input);
         }
 
         if ( count( $input ) == 1 ) {

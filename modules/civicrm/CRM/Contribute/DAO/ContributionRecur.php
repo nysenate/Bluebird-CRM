@@ -211,6 +211,12 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
      */
     public $auto_renew;
     /**
+     * Foreign key to civicrm_payment_processor.id
+     *
+     * @var int unsigned
+     */
+    public $payment_processor_id;
+    /**
      * class constructor
      *
      * @access public
@@ -231,6 +237,7 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
         if (!(self::$_links)) {
             self::$_links = array(
                 'contact_id' => 'civicrm_contact:id',
+                'payment_processor_id' => 'civicrm_payment_processor:id',
             );
         }
         return self::$_links;
@@ -383,6 +390,11 @@ class CRM_Contribute_DAO_ContributionRecur extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_BOOLEAN,
                     'title' => ts('Auto Renew') ,
                     'required' => true,
+                ) ,
+                'payment_processor_id' => array(
+                    'name' => 'payment_processor_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'FKClassName' => 'CRM_Core_DAO_PaymentProcessor',
                 ) ,
             );
         }

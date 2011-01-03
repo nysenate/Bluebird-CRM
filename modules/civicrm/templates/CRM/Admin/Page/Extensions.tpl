@@ -27,12 +27,12 @@
 {if $action eq 1 or $action eq 2 or $action eq 8}
    {include file="CRM/Admin/Form/Extensions.tpl"}
 {else}
+    {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&destination=$returnURL"}{/capture}
     {if not $extEnabled}
       <div class="crm-content-block crm-block">
         <div class="messages status">
              <div class="icon inform-icon"></div>
              {capture assign='returnURL'}{crmURL p='civicrm/admin/extensions' q='reset=1'}{/capture}
-             {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&destination=$returnURL"}{/capture}
              {ts 1=$adminURL}Your extensions directory is not set. Click <a href='%1'>here</a> to set the extension directory.{/ts}
         </div>
       </div>
@@ -44,8 +44,8 @@
       {/if}
 
       <div class="messages help">
-        <p>{ts}CiviCRM extensions mechanism allow you to install small functional additions. They provide new functionality in three areas: Custom Searches, Report Templates and Payment Processors. In order to install the extension, you need to upload it manually to Extensions Directory, reload this page and click Install. It will also become available on Custom Reports, Report Templates and Payment Processor Types management screens.{/ts}</p>
-        <strong>{ts}Please note that extensions functionality are in testing period in 3.3 release cycle. Get in touch with CiviCRM core team on project forums if you want to provide the community with your extension.{/ts}</strong>
+        <p>{ts 1=$adminURL}CiviCRM extensions allow you to install additional features for your site. They can provide new functionality in three areas: Custom Searches, Report Templates and Payment Processors. In order to install an extension, you need to upload it manually to your <a href="%1">Extensions Directory</a>, reload this page and click Install. Once installed, extensions become available under the Custom Searches, Report Templates or Payment Processor Types administrative screens.{/ts}</p>
+        <strong>{ts 1="http://forum.civicrm.org"}Please note that extensions are in a testing period during the 3.3 release cycle. Get in touch with the CiviCRM core team on the <a href="%1">community forum</a> if you've developed an extension which you want to share with the community.{/ts}</strong>
       </div>
 
       <h3>{ts}Installed extensions{/ts}</h3>

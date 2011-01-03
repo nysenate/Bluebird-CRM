@@ -52,7 +52,8 @@
     <td>
      {$form.member_is_primary.html} {help id="id-member_is_primary" file="CRM/Member/Form/Search.hlp"}<br />
      {$form.member_pay_later.html}&nbsp;{$form.member_pay_later.label}<br />
-     {$form.member_test.html}&nbsp;{$form.member_test.label}
+     {$form.member_test.html}&nbsp;{$form.member_test.label}<br />
+     {$form.member_auto_renew.html}&nbsp;{$form.member_auto_renew.label}
     </td> 
 </tr>
 <tr> 
