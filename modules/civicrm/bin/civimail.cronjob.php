@@ -70,7 +70,9 @@ if (isset($argv)) {
   require_once ("bin/cli.php");
   $cli=new civicrm_cli ();
   //if it doesn't die, it's authenticated 
-  processQueue( );
+  require_once 'CRM/Core/Config.php';
+  $config =& CRM_Core_Config::singleton();
+  processQueue( $config->mailerJobSize);
 } else  { //from the webserver
   run( );
 }

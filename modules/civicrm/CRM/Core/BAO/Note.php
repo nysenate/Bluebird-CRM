@@ -449,7 +449,7 @@ ORDER BY modified_date desc";
      */
     private static function buildNoteTree( $parentId, $maxDepth = 0, $snippet = FALSE, &$tree = array(), $depth = 0 )
     {
-        if ( $maxDepth && $depth > $max_depth ) {
+        if ( $maxDepth && $depth > $maxDepth  ) {
             return;
         }
 

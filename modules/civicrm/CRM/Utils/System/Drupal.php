@@ -305,7 +305,7 @@ class CRM_Utils_System_Drupal {
      * @param $name string  optional username for login
      * @param $pass string  optional password for login
      */
-    static function loadBootStrap($name = null, $pass = null)
+    static function loadBootStrap($name = null, $pass = null, $uid = null )
     {
         //take the cms root path.
         $cmsPath = self::cmsRootPath( );
@@ -333,6 +333,15 @@ class CRM_Utils_System_Drupal {
             if ( empty( $user->uid ) ) {
                 echo '<br />Sorry, unrecognized username or password.';
                 exit( );
+            }
+        } else if ( $uid ) {
+            $account = user_load( array( 'uid' => $uid ) );
+            if ( empty( $account->uid ) ) {
+                echo '<br />Sorry, unrecognized user id.';
+                exit( );
+            } else {
+                global $user;
+                $user = $account;
             }
         }
         

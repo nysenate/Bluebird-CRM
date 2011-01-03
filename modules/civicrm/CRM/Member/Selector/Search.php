@@ -193,7 +193,8 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
                             $isPaymentProcessor = null, 
                             $accessContribution = null, 
                             $qfKey = null, 
-                            $context = null  )
+                            $context = null,
+                            $isCancelSupported = false )
     {
         $extraParams = null;
         if ( $context == 'search' ) $extraParams .= '&compContext=membership';
@@ -244,6 +245,17 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
             }
             
             self::$_links['all'] = self::$_links['view'] + $extraLinks;
+        }
+        
+        if ( $isCancelSupported ) {
+            self::$_links['all'][CRM_Core_Action::DISABLE] = array( 
+                                                                   'name' => ts('Cancel Subscription'),
+                                                                   'url'  => 'civicrm/contribute/unsubscribe',
+                                                                   'qs'   => 'reset=1&mid=%%id%%&context=%%cxt%%'.$extraParams,
+                                                                   'title'=> 'Cancel Auto Renew Subscription'
+                                                                    );
+        } else if ( isset( self::$_links['all'][CRM_Core_Action::DISABLE] ) ) {
+            unset( self::$_links['all'][CRM_Core_Action::DISABLE] );
         }
         
         return self::$_links[$status];
@@ -351,18 +363,21 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
              }
 
              $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->membership_id;
-            
+
              if ( ! isset( $result->owner_membership_id ) ) {
                  // unset renew and followup link for deceased membership
                  $currentMask = $mask;
                  if ( $result->membership_status == 'Deceased' ) {
                      $currentMask = $currentMask & ~CRM_Core_Action::RENEW & ~CRM_Core_Action::FOLLOWUP;
                  }
+                 
+                 $isCancelSupported = CRM_Member_BAO_Membership::isCancelSubscriptionSupported( $row['membership_id'] );
                  $row['action']   = CRM_Core_Action::formLink( self::links( 'all', 
                                                                             $this->_isPaymentProcessor, 
                                                                             $this->_accessContribution, 
                                                                             $this->_key,
-                                                                            $this->_context ), 
+                                                                            $this->_context,
+                                                                            $isCancelSupported ), 
                                                                $currentMask,
                                                                array( 'id'  => $result->membership_id,
                                                                       'cid' => $result->contact_id,
@@ -374,7 +389,10 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
                                                                       'cxt' => $this->_context ) );
              }
              
-
+             $isRecur = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_Membership' , 
+                                                     $result->membership_id, 'contribution_recur_id' );
+             $row['auto_renew'] = ( $isRecur && $isCancelSupported ) ? true : false;
+             
              require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
              $row['contact_type' ] = 
                  CRM_Contact_BAO_Contact_Utils::getImage( $result->contact_sub_type ? 
@@ -442,6 +460,11 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
                                                 'direction' => CRM_Utils_Sort::DONTCARE,
                                                 ),
                                          
+                                          array(
+                                                'name'      => ts('Auto-renew?'),
+                                                'sort'      => 'auto_renew',
+                                                'direction' => CRM_Utils_Sort::DONTCARE,
+                                                ),
                                           array('desc' => ts('Actions') ),
                                           );
 

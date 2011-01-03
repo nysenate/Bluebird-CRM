@@ -112,6 +112,7 @@ class CRM_Utils_REST
         $session->set('key', $result[2]);
         $session->set('rest_time', time());
         $session->set('PHPSESSID', session_id() );
+        $session->set('cms_user_id', $result[1] );
 
         return self::simple( array( 'api_key' => $api_key, 'PHPSESSID' => session_id(), 'key' => sha1($result[2]) ) );
     }
@@ -384,4 +385,48 @@ class CRM_Utils_REST
         CRM_Utils_System::civiExit( );
     }
 
+    function loadCMSBootstrap( ) {
+        $q = CRM_Utils_array::value( 'q', $_REQUEST );
+        $args = explode( '/', $q );
+
+        // If the function isn't in the civicrm namespace or request
+        // is for login or ping
+        if ( empty($args) || 
+             $args[0] != 'civicrm' ||
+             ( ( count( $args ) != 3 ) && ( $args[1] != 'login' ) && ( $args[1] != 'ping') ) ||
+             $args[1] == 'login' ||
+             $args[1] == 'ping' ) {
+            return;
+        }
+
+        $uid     = null;
+        $session = CRM_Core_Session::singleton( );
+
+        if ( !CRM_Utils_System::authenticateKey( false ) ) {
+            return;
+        }
+        
+        if ( $session->get('PHPSESSID') &&
+             $session->get('cms_user_id') ) {
+            $uid = $session->get('cms_user_id');
+        }
+        
+        if ( !$uid ) {
+            require_once 'CRM/Core/DAO.php';
+            require_once 'CRM/Utils/Request.php';
+
+            $store      = null;
+            $api_key    = CRM_Utils_Request::retrieve( 'api_key', 'String', $store, false, null, 'REQUEST' );
+            $contact_id = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key');
+            if ( $contact_id ) {
+                require_once 'CRM/Core/BAO/UFMatch.php';
+                $uid = CRM_Core_BAO_UFMatch::getUFId( $contact_id );
+            }
+        }
+
+        if ( $uid ) {
+            CRM_Utils_System::loadBootStrap( null, null, $uid );
+        }
+    }
+     
 }

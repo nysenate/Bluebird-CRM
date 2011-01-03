@@ -51,7 +51,9 @@
    {/if}
 
     {if $rows}
+    	{include file="CRM/common/pager.tpl" location="top"}
         {include file="CRM/Event/Form/Selector.tpl"}
+	{include file="CRM/common/pager.tpl" location="bottom"}
     {else}
        <div class="messages status">
            <table class="form-layout">

@@ -2635,6 +2635,7 @@ WHERE  id IN ( $groupIDs )
             } else {
                 $value = "'$value%'";
             }
+            $op = 'LIKE';
             $this->_where[$grouping][] = " ( LOWER(civicrm_address.street_address) $op $value )";
             $this->_qill[$grouping][]  = ts( 'Street' ) . " $op '$n'";
         } else {

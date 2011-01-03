@@ -1071,7 +1071,13 @@ CREATE TABLE civicrm_mailing (
      created_id int unsigned    COMMENT 'FK to Contact ID who first created this mailing',
      created_date datetime    COMMENT 'Date and time this mailing was created.',
      scheduled_id int unsigned    COMMENT 'FK to Contact ID who scheduled this mailing',
-     is_archived tinyint   DEFAULT 0 COMMENT 'Is this mailing archived?' 
+     scheduled_date datetime    COMMENT 'Date and time this mailing was scheduled.',
+     approver_id int unsigned    COMMENT 'FK to Contact ID who approved this mailing',
+     approval_date datetime    COMMENT 'Date and time this mailing was approved.',
+     approval_status_id int unsigned    COMMENT 'The status of this mailing. Values: none, approved, rejected',
+     approval_note longtext    COMMENT 'Note behind the decision.',
+     is_archived tinyint   DEFAULT 0 COMMENT 'Is this mailing archived?',
+     visibility enum('User and User Admin Only', 'Public Pages')   DEFAULT 'User and User Admin Only' COMMENT 'In what context(s) is the mailing contents visible (online viewing)' 
 ,
     PRIMARY KEY ( id )
  
@@ -1084,7 +1090,8 @@ CREATE TABLE civicrm_mailing (
      CONSTRAINT FK_civicrm_mailing_optout_id FOREIGN KEY (optout_id) REFERENCES civicrm_mailing_component(id) ON DELETE SET NULL,      
      CONSTRAINT FK_civicrm_mailing_msg_template_id FOREIGN KEY (msg_template_id) REFERENCES civicrm_msg_template(id) ON DELETE SET NULL,      
      CONSTRAINT FK_civicrm_mailing_created_id FOREIGN KEY (created_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
-     CONSTRAINT FK_civicrm_mailing_scheduled_id FOREIGN KEY (scheduled_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL  
+     CONSTRAINT FK_civicrm_mailing_scheduled_id FOREIGN KEY (scheduled_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_mailing_approver_id FOREIGN KEY (approver_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -1259,7 +1266,8 @@ CREATE TABLE civicrm_contribution_recur (
      next_sched_contribution datetime    COMMENT 'At Groundspring this was used by the cron job which triggered payments. If we\'re not doing that but we know about payments, it might still be useful to store for display to org andor contributors.',
      failure_count int unsigned   DEFAULT 0 COMMENT 'Number of failed charge attempts since last success. Business rule could be set to deactivate on more than x failures.',
      failure_retry_date datetime    COMMENT 'At Groundspring we set a business rule to retry failed payments every 7 days - and stored the next scheduled attempt date there.',
-     auto_renew tinyint NOT NULL  DEFAULT 0 COMMENT 'Some systems allow contributor to set a number of installments - but then auto-renew the subscription or commitment if they do not cancel.' 
+     auto_renew tinyint NOT NULL  DEFAULT 0 COMMENT 'Some systems allow contributor to set a number of installments - but then auto-renew the subscription or commitment if they do not cancel.',
+     payment_processor_id int unsigned    COMMENT 'Foreign key to civicrm_payment_processor.id' 
 ,
     PRIMARY KEY ( id )
  
@@ -1274,7 +1282,8 @@ CREATE TABLE civicrm_contribution_recur (
   )
   
 ,      
-     CONSTRAINT FK_civicrm_contribution_recur_contact_id FOREIGN KEY (contact_id) REFERENCES civicrm_contact(id) ON DELETE CASCADE  
+     CONSTRAINT FK_civicrm_contribution_recur_contact_id FOREIGN KEY (contact_id) REFERENCES civicrm_contact(id) ON DELETE CASCADE,      
+     CONSTRAINT FK_civicrm_contribution_recur_payment_processor_id FOREIGN KEY (payment_processor_id) REFERENCES civicrm_payment_processor(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************
@@ -1526,6 +1535,8 @@ CREATE TABLE civicrm_membership_type (
      renewal_reminder_day int    COMMENT 'Number of days prior to expiration to send renewal reminder',
      receipt_text_signup varchar(255)    COMMENT 'Receipt Text for membership signup',
      receipt_text_renewal varchar(255)    COMMENT 'Receipt Text for membership renewal',
+     autorenewal_msg_id int unsigned    COMMENT 'FK to civicrm_msg_template.id',
+     auto_renew tinyint   DEFAULT 0 COMMENT '0 = No auto-renew option; 1 = Give option, but not required; 2 = Auto-renew required;',
      is_active tinyint   DEFAULT 1 COMMENT 'Is this membership_type enabled' 
 ,
     PRIMARY KEY ( id )
@@ -3480,7 +3491,8 @@ CREATE TABLE civicrm_membership (
      reminder_date date    COMMENT 'When should a reminder be sent.',
      owner_membership_id int unsigned    COMMENT 'Optional FK to Parent Membership.',
      is_test tinyint   DEFAULT 0 ,
-     is_pay_later tinyint   DEFAULT 0  
+     is_pay_later tinyint   DEFAULT 0 ,
+     contribution_recur_id int unsigned    COMMENT 'Conditional foreign key to civicrm_contribution_recur id. Each membership in connection with a recurring contribution carries a foreign key to the recurring contribution record. This assumes we can track these processor initiated events.' 
 ,
     PRIMARY KEY ( id )
  
@@ -3492,7 +3504,8 @@ CREATE TABLE civicrm_membership (
      CONSTRAINT FK_civicrm_membership_contact_id FOREIGN KEY (contact_id) REFERENCES civicrm_contact(id) ON DELETE CASCADE,      
      CONSTRAINT FK_civicrm_membership_membership_type_id FOREIGN KEY (membership_type_id) REFERENCES civicrm_membership_type(id) ON DELETE CASCADE,      
      CONSTRAINT FK_civicrm_membership_status_id FOREIGN KEY (status_id) REFERENCES civicrm_membership_status(id) ON DELETE CASCADE,      
-     CONSTRAINT FK_civicrm_membership_owner_membership_id FOREIGN KEY (owner_membership_id) REFERENCES civicrm_membership(id) ON DELETE SET NULL  
+     CONSTRAINT FK_civicrm_membership_owner_membership_id FOREIGN KEY (owner_membership_id) REFERENCES civicrm_membership(id) ON DELETE SET NULL,      
+     CONSTRAINT FK_civicrm_membership_contribution_recur_id FOREIGN KEY (contribution_recur_id) REFERENCES civicrm_contribution_recur(id) ON DELETE SET NULL  
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 -- /*******************************************************

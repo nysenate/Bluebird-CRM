@@ -41,161 +41,184 @@ require_once 'utils.inc';
  */
 function civicrm_rules_event_info( ) {
     return array(
-                 'contact_insert' => array(
+                 'contact_create' => array(
                                            'label'     => t( 'Contact has been created' ),
                                            'module'    => 'CiviCRM Contact',
-                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Created contact' ) ),
+                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Created contact' ),
+                                                                                               'contact' ),
                                            ),
-                 'contact_update' => array(
-                                           'label'     => t( 'Contact has been updated' ),
-                                           'module'    => 'CiviCRM Contact',
-                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Updated contact' ) ),
-                                           ),
+                 'contact_edit' => array(
+                                         'label'     => t( 'Contact has been updated' ),
+                                         'module'    => 'CiviCRM Contact',
+                                         'arguments' => rules_events_hook_civicrm_arguments( t( 'Updated contact' ),
+                                                                                             'contact' ),
+                                         ),
                  'contact_view'   => array(
                                            'label'     => t( 'Contact has been viewed' ),
                                            'module'    => 'CiviCRM Contact',
-                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Viewed contact' ) ),
+                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Viewed contact' ),
+                                                                                               'contact' ),
                                            ),
                  'contact_delete' => array(
                                            'label'     => t( 'Contact has been deleted' ),
                                            'module'    => 'CiviCRM Contact',
-                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Deleted contact' ) ),
-                                           )
+                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Deleted contact' ),
+                                                                                               'contact' ),
+                                           ),
+                 'mailing_create' => array(
+                                           'label'     => t( 'Mailing has been created' ),
+                                           'module'    => 'CiviCRM Mailing',
+                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Created mailing' ),
+                                                                                               'mailing' ),
+                                           ),
+                 'mailing_edit' => array(
+                                         'label'     => t( 'Mailing has been updated' ),
+                                         'module'    => 'CiviCRM Mailing',
+                                         'arguments' => rules_events_hook_civicrm_arguments( t( 'Updated Mailing' ),
+                                                                                             'mailing' ),
+                                         ),
+                 'mailing_uploaded' => array(
+                                             'label'     => t( 'Mailing content has been uploaded' ),
+                                             'module'    => 'CiviCRM Mailing',
+                                             'arguments' => rules_events_hook_civicrm_arguments( t( 'Mailing content uploaded' ),
+                                                                                                 'mailing' ),
+                                              ),
+                 'mailing_scheduled' => array(
+                                              'label'     => t( 'Mailing has been scheduled' ),
+                                              'module'    => 'CiviCRM Mailing',
+                                              'arguments' => rules_events_hook_civicrm_arguments( t( 'Scheduled mailing' ),
+                                                                                                  'mailing' ),
+                                              ),
+                 'mailing_approved' => array(
+                                              'label'     => t( 'Mailing has been approved/rejected' ),
+                                              'module'    => 'CiviCRM Mailing',
+                                              'arguments' => rules_events_hook_civicrm_arguments( t( 'Approved mailing' ),
+                                                                                                  'mailing' ),
+                                              ),
+                 'mailing_inform'     => array(
+                                               'label'     => t( 'Inform scheduler about the mailing' ),
+                                               'module'    => 'CiviCRM Mailing',
+                                               'arguments' => rules_events_hook_civicrm_arguments( t( 'Inform Mailing' ),
+                                                                                                   'mailing' ),
+                                             ),
+                 'mailing_queued' => array(
+                                           'label'     => t( 'Mailing has been queued' ),
+                                           'module'    => 'CiviCRM Mailing',
+                                           'arguments' => rules_events_hook_civicrm_arguments( t( 'Queued mailing' ),
+                                                                                               'mailing' ),
+                                           ),
+                 'mailing_complete' => array(
+                                             'label'     => t( 'Mailing has been completed' ),
+                                             'module'    => 'CiviCRM Mailing',
+                                             'arguments' => rules_events_hook_civicrm_arguments( t( 'Completed mailing' ),
+                                                                                                 'mailing' ),
+                                             )
                  );
 }
 
 /**
  * Returns some arguments suitable for hook_civicrm
  */
-function rules_events_hook_civicrm_arguments( $label ) {
+function rules_events_hook_civicrm_arguments( $label, $type = 'contact' ) {
 	return
 		array(
-			'contact' => array( 'type'  => 'contact',
-			'label' => $label )
-		);
-	//rules_events_global_civicrm_argument( );
-}
-
-/**
- * Gets the user account of the logged in user and civicrm contact
- * FIX Me: This function is never called
- */
-function rules_events_global_civicrm_argument( ) {
-	return 
-		array(
-			'userContact' => array( 'type'    => 'contact',
-			'label'   => t( 'Logged in User' ),
-			'handler' => 'rules_events_argument_global_userContact' )
-		);
-	rules_events_global_user_argument( );
-}
-
-/*
- * FIX ME: this function is never called
- */
-function rules_events_argument_global_userContact( ) {
-    $session = CRM_Core_Session::singleton( );
-    return _civicrm_rules_load_contact( $session->get( 'userID' ) );
-}
-
-/**
- * Implementation of hook_rules_condition_info().
- * FIX ME : Here we should add sensible conditions
- */
-function civicrm_rules_condition_info() {
-	/*
-	// commenting conditions for now since it does not make sense to me
-	return array(
-    'rules_condition_civicrm_comparison' => array(
-      'label' => t('Compare two contacts'),
-      'arguments' => array(
-        'contact_1' => array('type' => 'contact', 'label' => t('Contact 1')),
-        'contact_2' => array('type' => 'contact', 'label' => t('Contact 2')),
-      ),
-      'help' => t('Evaluates to TRUE, if both given contacts are the same.'),
-      'module' => 'CiviCRM',
-    ),
-    'rules_condition_civicrm_ingroup' => array(
-      'label' => t('User is in group(s)'),
-      'arguments' => array(
-        'contact' => array('type' => 'contact', 'label' => t('Contact')),
-      ),
-      'help' => t('Whether the contact is in the selected group(s).'),
-      'module' => 'CiviCRM',
-    )
-	);
-	 */
-}
-
-/**
- * A simple contact comparison
- * FIX ME: this function is called by condition and can be removed
- */
-function rules_condition_civicrm_comparison( $contact_1, $contact_2 ) {
-  return $contact_1->id == $contact_2->id;
-}
-
-/**
- * Condition user: condition to check whether user has particular roles
- * FIX ME: this function is called by condition and can be removed
- */
-function rules_condition_civicrm_ingroup($contact, $settings) {
-  $groups = $settings['groups'];
-  $operation = $settings['operation'];
-
-  switch ($operation) {
-    case 'OR':
-      foreach ($groups as $gid) {
-          if ( _civicrm_rules_in_group( $contact, $gid ) ) {
-              return TRUE;
-          }
-      }
-      return FALSE;
-
-    case 'AND':
-      foreach ($groups as $gid) {
-          if ( ! _civicrm_rules_in_group( $contact, $gid ) ) {
-              return FALSE;
-          }
-      }
-      return TRUE;
-  }
-
+              $type   => array( 'type'  => $type,
+                                'label' => $label )
+              );
 }
 
 /**
  * Implementation of hook_rules_action_info().
  */
 function civicrm_rules_action_info() {
-	return array(
-		'rules_action_civicrm_add_to_group' => array(
-			'label' => t('Add Contact to CiviCRM Group'),
-			'arguments' => array(
-				'contact' => array('type' => 'contact', 'label' => t('Contact who should be added to the group')),
-			),
-			'module' => 'CiviCRM Contact',
-    ),
-		'rules_action_civicrm_remove_from_group' => array(
-			'label' => t('Remove Contact from CiviCRM Group'),
-			'arguments' => array(
-				'contact' => array('type' => 'contact', 'label' => t('Contact who should be removed from the group')),
-			),
-			'module' => 'CiviCRM Contact',
-    ),
+	return 
+        array(
+              'rules_action_civicrm_add_to_group' => 
+              array(
+                    'label' => t('Add Contact to CiviCRM Group'),
+                    'arguments' => array(
+                                         'contact' => array('type' => 'contact',
+                                                            'label' => t('Contact who should be added to the group')),
+                                         ),
+                    'module' => 'CiviCRM Contact',
+                    ),
 
-        'rules_action_civicrm_send_email' => array(
-            'label' => t('Send Email'),
-            'arguments' => array(
-                'contact' => array('type' => 'contact', 'label' => t('Send an email')),
-            ),
-            'module' => 'CiviCRM Contact',
-    )
-        
-	);
+              'rules_action_civicrm_remove_from_group' =>
+              array(
+                    'label' => t('Remove Contact from CiviCRM Group'),
+                    'arguments' => array(
+                                         'contact' => array('type' => 'contact',
+                                                            'label' => t('Contact who should be removed from the group')),
+                                         ),
+                    'module' => 'CiviCRM Contact',
+                    ),
+
+              'rules_action_civicrm_contact_send_email' => 
+              array(
+                    'label' => t('Send Email'),
+                    'arguments' => array(
+                                         'contact' => array('type' => 'contact',
+                                                            'label' => t('Send Email'))
+                                         ),
+                    'module' => 'CiviCRM Contact',
+                    ),
+
+              'rules_action_civicrm_mailing_send_email' =>
+              array(
+                    'label' => t('Send Email'),
+                    'arguments' => array(
+                                         'mailing' => array('type' => 'mailing',
+                                                            'label' => t('Send Email'))
+                                         ),
+                    'module' => 'CiviCRM Mailing',
+                    )
+              
+              );
 }
 
-function rules_action_civicrm_send_email($contact, $settings) {
-	if ( $contact->id ) {
+function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
+    if( $mailing->id ) {
+        $settings['toEmail'] = $settings['to'];
+        require_once 'CRM/Utils/Token.php';
+        $tokens['mailing']   = array( 'mailing.editUrl', 'mailing.scheduleUrl', 'mailing.html' );
+        $settings['html']    = CRM_Utils_Token::replaceMailingTokens( $settings['message'], $mailing, null, $tokens );
+        $settings['subject'] = CRM_Utils_Token::replaceMailingTokens( $settings['subject'], $mailing, null, $tokens );
+        
+        CRM_Utils_Mail::send( $settings );
+        return array('mailing' => $mailing );
+    }
+}
+
+function rules_action_civicrm_mailing_send_email_form( $settings = array(), &$form ) {
+    civicrm_initialize();
+    //get the default from email address.
+    require_once 'CRM/Core/OptionGroup.php';
+    $defaultAddress = CRM_Core_OptionGroup::values( 'from_email_address', null, null, null, ' AND is_default = 1' );
+    $settings['from'] = $defaultAddress[1];
+
+    if ( !CRM_Utils_Array::value('subject', $settings ) )
+    $settings['subject'] = 'New Email: {mailing.subject}';
+    
+    if ( !CRM_Utils_Array::value('message', $settings ) ) {
+    $settings['message'] = '
+Senate District ABC has scheduled a new mailing. 
+{mailing.name}
+{mailing.viewUrl}
+You can review the mail here: {mailing.editUrl}
+You can schedule the mail for print production here: {mailing.scheduleUrl}
+
+The content of the email is:
+<pre>
+{mailing.html}
+</pre>
+';
+    }
+
+    rules_action_mail_form( $settings, $form );
+}
+
+function rules_action_civicrm_contact_send_email($contact, $settings) {
+    if ( $contact->id ) {
         $params = array();
         $params['from'] = "Admin";
         $params['toEmail'] = $settings['send_email'];
@@ -207,30 +230,30 @@ function rules_action_civicrm_send_email($contact, $settings) {
         
         $params['text'] = implode("\n", $text);
         CRM_Utils_Mail::send($params);
-		return array('contact' => $contact );
-	}
+        return array('contact' => $contact );
+    }
 }
 
 /**
  * Define form for sending an email
  *
  */
-function rules_action_civicrm_send_email_form( $settings, &$form ) {
-    $settings += array('send_email' => '' );
+function rules_action_civicrm_contact_send_email_form( $settings, &$form ) {
+	$settings += array('send_email' => '' );
     $settings += array('email_subject' => '' );
 	$form['settings']['send_email'] = array(
-                                '#type' => 'textfield',
-                                '#title' => t('Send an Email'),
-                                '#description' => t('Enter e-mail address of recipient. (Use a comma to separate multiple e-mail addresses.)'),
-                                '#default_value' => $settings['send_email'],
-                               );
+                                            '#type' => 'textfield',
+                                            '#title' => t('Send an Email'),
+                                            '#description' => t('Enter e-mail address of recipient. (Use a comma to separate multiple e-mail addresses.)'),
+                                            '#default_value' => $settings['send_email'],
+                                            );
 
     $form['settings']['email_subject'] = array(
-                                '#type' => 'textfield',
-                                '#title' => t('Message Subject'),
-                                '#description' => t('Enter subject for the email'),
-                                '#default_value' => $settings['email_subject'],
-                               );
+                                               '#type' => 'textfield',
+                                               '#title' => t('Message Subject'),
+                                               '#description' => t('Enter subject for the email'),
+                                               '#default_value' => $settings['email_subject'],
+                                               );
 }
 
 /**
@@ -241,13 +264,13 @@ function rules_action_civicrm_add_to_group_form( $settings, &$form ) {
 	$settings += array('groups' => '' );
 	
 	$form['settings']['groups'] = array(
-		'#type' => 'select',
-		'#title' => t('Select the group'),
-		'#options' => _civicrm_get_groups( ),
-		'#multiple' => true,
-		'#default_value' => $settings['groups'],
-		'#description' => t('Contact will be added to selected group.'),
-	);
+                                        '#type' => 'select',
+                                        '#title' => t('Select the group'),
+                                        '#options' => _civicrm_get_groups( ),
+                                        '#multiple' => true,
+                                        '#default_value' => $settings['groups'],
+                                        '#description' => t('Contact will be added to selected group.'),
+                                        );
 }
 
 /**
@@ -258,15 +281,14 @@ function rules_action_civicrm_remove_from_group_form( $settings, &$form ) {
 	$settings += array('groups' => '' );
 	
 	$form['settings']['groups'] = array(
-		'#type' => 'select',
-		'#title' => t('Select the group'),
-		'#options' => _civicrm_get_groups( ),
-		'#multiple' => true,
-		'#default_value' => $settings['groups'],
-		'#description' => t('Contact will be removed from selected group.'),
-	);
+                                        '#type' => 'select',
+                                        '#title' => t('Select the group'),
+                                        '#options' => _civicrm_get_groups( ),
+                                        '#multiple' => true,
+                                        '#default_value' => $settings['groups'],
+                                        '#description' => t('Contact will be removed from selected group.'),
+                                        );
 }
-
 
 /**
  * Action contact: add a contact to a group
@@ -315,14 +337,20 @@ function rules_action_civicrm_contact_create($first_name, $last_name, $email) {
  * Implementation of hook_rules_data_type_info().
  */
 function civicrm_rules_data_type_info() {
-  return array(
-    'contact' => array(
-      'label' => t('contact'),
-      'class' => 'rules_data_type_contact',
-      'savable' => FALSE,
-      'identifiable' => TRUE,
-    ),
-  );
+    return array(
+                 'contact' => array(
+                                    'label' => t('Contact'),
+                                    'class' => 'rules_data_type_contact',
+                                    'savable' => FALSE,
+                                    'identifiable' => TRUE,
+                                    ),
+                 'contact' => array(
+                                    'label' => t('Mailing'),
+                                    'class' => 'rules_data_type_mailing',
+                                    'savable' => FALSE,
+                                    'identifiable' => TRUE,
+                                    ),
+                 );
 }
 
 /**
@@ -336,5 +364,16 @@ class rules_data_type_contact extends rules_data_type {
     function get_identifier() {
         $contact = $this->get();
         return $contact->id;
+    }
+}
+
+class rules_data_type_mailing extends rules_data_type {
+    function load($id) {
+        return _civicrm_rules_load_mailing( $id );
+    }
+    
+    function get_identifier() {
+        $mailing = $this->get();
+        return $mailing->id;
     }
 }

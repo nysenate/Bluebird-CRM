@@ -37,7 +37,7 @@
       <div class="icon inform-icon"></div>     
         {if $action eq 8}
             {ts 1=$usedPriceSetTitle}Unable to delete the '%1' Price Field - it is currently in use by one or more active events or contribution pages or contributions.{/ts}
-       	{/if}<br />        
+       	{/if}      
         
 	    {if $usedBy.civicrm_event or $usedBy.civicrm_contribution_page} 
             {include file="CRM/Price/Page/table.tpl"} 

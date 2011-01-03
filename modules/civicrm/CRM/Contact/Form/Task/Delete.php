@@ -66,11 +66,6 @@ class CRM_Contact_Form_Task_Delete extends CRM_Contact_Form_Task {
      */ 
     function preProcess( ) { 
         
-        //check for delete
-        if ( !CRM_Core_Permission::check( 'delete contacts' ) ) {
-            CRM_Core_Error::fatal( ts( 'You do not have permission to access this page' ) );  
-        }
-        
         $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive',
                                             $this, false ); 
 
@@ -82,6 +77,13 @@ class CRM_Contact_Form_Task_Delete extends CRM_Contact_Form_Task {
         require_once 'CRM/Contact/Task.php';
         $this->_skipUndelete = (CRM_Core_Permission::check('access deleted contacts') and (CRM_Utils_Request::retrieve('skip_undelete', 'Boolean', $this) or CRM_Utils_Array::value( 'task', $values ) == CRM_Contact_Task::DELETE_PERMANENTLY));
         $this->_restore      = (CRM_Utils_Request::retrieve('restore',       'Boolean', $this) or CRM_Utils_Array::value( 'task', $values ) == CRM_Contact_Task::RESTORE);
+
+        if ( $this->_restore && !CRM_Core_Permission::check( 'access deleted contacts' ) ) {
+            CRM_Core_Error::fatal( ts( 'You do not have permission to access this contact.' ) );
+        } else if ( $this->_skipUndelete && !CRM_Core_Permission::check( 'delete contacts' ) ) {
+            CRM_Core_Error::fatal( ts( 'You do not have permission to delete this contact.' ) );
+        }
+
         $this->assign('trash',   $config->contactUndelete and !$this->_skipUndelete);
         $this->assign('restore', $this->_restore);
 

@@ -220,7 +220,7 @@
 	       {/if}
            </tr>
          {else}
-           <tr>
+           <tr class="crm-case-caseview-clientrole">
                <td rowspan="{$relName|@count}" class="crm-case-caseview-role-label label">{ts}Client{/ts}</td>
 	   {foreach from=$relName item=client name=clientsRoles}
                {if not $smarty.foreach.clientsRoles.first}</tr>{/if}
@@ -933,6 +933,7 @@ function buildCaseActivities( filterSearch ) {
 		"sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
 	   	"bServerSide": true,
 	   	"sAjaxSource": sourceUrl,
+                "iDisplayLength": 50,
 		"fnDrawCallback": function() { setSelectorClass(); },
 		"fnServerData": function ( sSource, aoData, fnCallback ) {
 

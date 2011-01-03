@@ -47,7 +47,7 @@
     {if $votingTab}
     {ts}Click <strong>record response</strong> button to update values for each respondent as needed.{/ts}
     {else}
-    {ts}Click <strong>record response</strong> button to update values for each respondent as needed. <br />Click <strong>Release Respondents >></strong> button below to release any respondents for whon you haven't recorded a response. <br />Click <strong>Reserve More Respondents >></strong> button if you need to get more respondents to interview.{/ts}
+    {ts}Click <strong>record response</strong> button to update values for each respondent as needed. <br />Click <strong>Release Respondents >></strong> button below to release any respondents for whom you haven't recorded a response. <br />Click <strong>Reserve More Respondents >></strong> button if you need to get more respondents to interview.{/ts}
     {/if}
 </div>
 
@@ -215,6 +215,7 @@
 	       	 cj("#row_"+voterId+' td.name').attr('class', 'name disabled' );
 		 cj( '#restmsg_vote_' + voterId ).fadeIn("slow").fadeOut("slow");
 		 cj( '#interview_voter_button_' + voterId ).html(updateVote);
+		 cj( '#release_voter_button_' + voterId ).hide( );
 	       }		 
 	}, 'json' );
     }

@@ -95,6 +95,7 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
         // current contribution page id
         $this->_id = CRM_Utils_Request::retrieve('id', 'Positive',
                                                  $this, false, 0);
+        $this->assign( 'contributionPageID', $this->_id );
         
         // get the requested action
         $this->_action = CRM_Utils_Request::retrieve('action', 'String',

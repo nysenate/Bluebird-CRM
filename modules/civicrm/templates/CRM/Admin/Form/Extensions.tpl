@@ -35,7 +35,7 @@
    {if $action eq 1}
       <div class="messages status">
           <div class="icon inform-icon"></div>
-          {ts}Installing this extension will provide you with new functionality. Please make sure that the extension you're installing comes from trusted source.{/ts} {ts}Do you want to continue?{/ts}
+          {ts}Installing this extension will provide you with new functionality. Please make sure that the extension you're installing comes from a trusted source.{/ts} {ts}Do you want to continue?{/ts}
       </div>
    {/if}   
    {if $action eq 8 or $action eq 1}

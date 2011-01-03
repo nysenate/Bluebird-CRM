@@ -198,6 +198,18 @@ class CRM_Member_DAO_MembershipType extends CRM_Core_DAO
      */
     public $receipt_text_renewal;
     /**
+     * FK to civicrm_msg_template.id
+     *
+     * @var int unsigned
+     */
+    public $autorenewal_msg_id;
+    /**
+     * 0 = No auto-renew option; 1 = Give option, but not required; 2 = Auto-renew required;
+     *
+     * @var boolean
+     */
+    public $auto_renew;
+    /**
      * Is this membership_type enabled
      *
      * @var boolean
@@ -363,6 +375,15 @@ class CRM_Member_DAO_MembershipType extends CRM_Core_DAO
                     'title' => ts('Receipt Text Renewal') ,
                     'maxlength' => 255,
                     'size' => CRM_Utils_Type::HUGE,
+                ) ,
+                'autorenewal_msg_id' => array(
+                    'name' => 'autorenewal_msg_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                ) ,
+                'auto_renew' => array(
+                    'name' => 'auto_renew',
+                    'type' => CRM_Utils_Type::T_BOOLEAN,
+                    'title' => ts('Auto Renew') ,
                 ) ,
                 'is_active' => array(
                     'name' => 'is_active',

@@ -1096,11 +1096,11 @@ class CRM_Utils_System {
      * @param $name string  optional username for login
      * @param $pass string  optional password for login
      */
-    static function loadBootStrap($name = null, $pass = null)
+    static function loadBootStrap($name = null, $pass = null, $uid = null)
     {
         $config = CRM_Core_Config::singleton();
         require_once(str_replace('_', DIRECTORY_SEPARATOR, $config->userFrameworkClass) . '.php');
-        return call_user_func("{$config->userFrameworkClass}::loadBootStrap", $name, $pass);
+        return call_user_func("{$config->userFrameworkClass}::loadBootStrap", $name, $pass, $uid);
     }
     
     /**

@@ -67,6 +67,7 @@
     <td class="crm-membership-end_date">{$row.membership_end_date|truncate:10:''|crmDate}</td>
     <td class="crm-membership-source">{$row.membership_source}</td>
     <td class="crm-membership-status crm-membership-status_{$row.membership_status}">{$row.membership_status}</td>
+    <td class="crm-membership-auto_renew">{if $row.auto_renew}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Auto-renew{/ts}" /> {/if}</td>
     <td>
         {$row.action|replace:'xx':$row.membership_id}
         {if $row.owner_membership_id}

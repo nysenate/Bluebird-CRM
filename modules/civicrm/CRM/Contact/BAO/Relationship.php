@@ -400,7 +400,11 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship
             $ids = array();
             // calling relatedMemberships to delete the memberships of
             // related contacts.
-            self::relatedMemberships( $relationship->contact_id_a, $params, $ids, CRM_Core_Action::DELETE );
+            self::relatedMemberships( $relationship->contact_id_a, 
+                                      $params, 
+                                      $ids, 
+                                      CRM_Core_Action::DELETE,
+                                      false );
         }
         
         $relationship->delete();
@@ -454,10 +458,18 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship
             // calling relatedMemberships to delete/add the memberships of
             // related contacts.
             if ( $action & CRM_Core_Action::DISABLE ) {
-                CRM_Contact_BAO_Relationship::relatedMemberships( $relationship->contact_id_a, $params, $ids, CRM_Core_Action::DELETE );
+                CRM_Contact_BAO_Relationship::relatedMemberships( $relationship->contact_id_a, 
+                                                                  $params, 
+                                                                  $ids, 
+                                                                  CRM_Core_Action::DELETE,
+                                                                  false );
             } else if ( $action & CRM_Core_Action::ENABLE ) {
                 $ids['contact'] = $relationship->contact_id_a;
-                CRM_Contact_BAO_Relationship::relatedMemberships( $relationship->contact_id_a, $params, $ids, CRM_Core_Action::ADD );
+                CRM_Contact_BAO_Relationship::relatedMemberships( $relationship->contact_id_a, 
+                                                                  $params, 
+                                                                  $ids, 
+                                                                  CRM_Core_Action::ADD,
+                                                                  false );
             }     
         }
     }
@@ -725,7 +737,8 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship
                               civicrm_relationship.description as description,
                               civicrm_relationship.is_active as is_active,
                               civicrm_relationship.is_permission_a_b as is_permission_a_b,
-                              civicrm_relationship.is_permission_b_a as is_permission_b_a';
+                              civicrm_relationship.is_permission_b_a as is_permission_b_a,
+                              civicrm_relationship.case_id as case_id';
 
             if ( $direction == 'a_b' ) {
                 $select .= ', civicrm_relationship_type.label_a_b as label_a_b,
@@ -902,7 +915,8 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
                 $values[$rid]['is_active']  = $relationship->is_active;
                 $values[$rid]['is_permission_a_b']= $relationship->is_permission_a_b;
                 $values[$rid]['is_permission_b_a']= $relationship->is_permission_b_a;
-
+                $values[$rid]['case_id']    = $relationship->case_id;
+                
                 if( $status ) {
                     $values[$rid]['status'] = $status;
                 }
@@ -919,7 +933,9 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
                     $replace = array( 'id'    => $rid, 
                                       'rtype' => $values[$rid]['rtype'],
                                       'cid'   => $contactId, 
-                                      'cbid'  => $values[$rid]['cid'] );
+                                      'cbid'  => $values[$rid]['cid'],
+                                      'caseid'=> $values[$rid]['case_id'],
+                                      'clientid' => $contactId );
 
                     if ( $status == self::INACTIVE ) {
                         // setting links for inactive relationships
@@ -931,7 +947,35 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
                             $mask -= CRM_Core_Action::DISABLE ;
                         }               
                     }
+                    
+                    // Give access to manage case link by copying to MAX_ACTION index temporarily, depending on case permission of user.
+                    if ( $values[$rid]['case_id'] ) {
+                        // Borrowed logic from CRM_Case_Page_Tab
+                        $hasCaseAccess = false;
+                        if ( CRM_Core_Permission::check( 'access all cases and activities' ) ) {
+                            $hasCaseAccess = true;
+                        } else {
+                            require_once 'CRM/Case/BAO/Case.php';
+                            $userCases = CRM_Case_BAO_Case::getCases( false );
+                            if ( array_key_exists( $values[$rid]['case_id'], $userCases ) ) {
+                                $hasCaseAccess = true;
+                            }
+                        }
+
+                    	if ( $hasCaseAccess ) {
+                            // give access by copying to MAX_ACTION temporarily, otherwise leave at NONE which won't display
+                            $links[CRM_Core_Action::MAX_ACTION] = $links[CRM_Core_Action::NONE];
+                            $links[CRM_Core_Action::MAX_ACTION]['name'] = ts( 'Manage Case #%1', array('%1' => $values[$rid]['case_id']) );
+
+                            // Also make sure we have the right client cid since can get here from multiple relationship tabs.
+                            if ( $values[$rid]['rtype'] == 'b_a' ) {
+                                $replace['clientid'] = $values[$rid]['cid'];
+                            }
+                        }
+                    }
+
                     $values[$rid]['action'] = CRM_Core_Action::formLink( $links, $mask, $replace );
+                    unset($links[CRM_Core_Action::MAX_ACTION]);
                 }
             }
             

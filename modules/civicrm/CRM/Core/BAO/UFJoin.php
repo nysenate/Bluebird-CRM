@@ -68,7 +68,7 @@ class CRM_Core_BAO_UFJoin extends CRM_Core_DAO_UFJoin {
         return $dao; 
     } 
 
-    public static function &deleteAll( &$params ) {
+    public static function deleteAll( &$params ) {
         $module      = CRM_Utils_Array::value( 'module'     , $params);
         $entityTable = CRM_Utils_Array::value( 'entity_table', $params);
         $entityID    = CRM_Utils_Array::value( 'entity_id'   , $params);

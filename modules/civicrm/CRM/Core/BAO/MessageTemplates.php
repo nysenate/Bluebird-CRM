@@ -263,7 +263,7 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
             
             $messageSubject = CRM_Utils_Token::replaceContactTokens($body_subject, $contact, false, $subjectToken);
             $messageSubject = CRM_Utils_Token::replaceDomainTokens($messageSubject, $domain, true, $tokens[$value] );
-            $messageSubject = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens[$value], true );
+            $messageSubject = CRM_Utils_Token::replaceComponentTokens($messageSubject, $contact, $tokens[$value], true );
             $messageSubject = CRM_Utils_Token::replaceHookTokens ( $messageSubject,$contactId , $categories, true );
           
             $messageSubject = $smarty->fetch("string:{$messageSubject}");
@@ -357,7 +357,7 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
             'PDFFilename' => null,    // filename of optional PDF version to add as attachment (do not include path)
         );
         $params = array_merge($defaults, $params);
-
+                
         if (!$params['groupName'] or !$params['valueName']) {
             CRM_Core_Error::fatal(ts("Message template's option group and/or option value missing."));
         }
@@ -468,7 +468,7 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
         $params['subject'] = $subject;
         $params['text'   ] = $text;
         $params['html'   ] = $html;
-
+        
         if ($params['toEmail']) {
             $contactParams = array('email' => $params['toEmail']);
             $contact =& civicrm_contact_get($contactParams);

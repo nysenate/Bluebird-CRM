@@ -33,7 +33,7 @@
     <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>				    
     <table class="form-layout-compressed">
     <tr class="crm-contribution-contributionpage-thankyou-form-block-thankyou_title">
-       <td class="label">{$form.thankyou_title.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='thankyou_title' id=$id}{/if}</td>
+       <td class="label">{$form.thankyou_title.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='thankyou_title' id=$contributionPageID}{/if}</td>
        <td class="html-adjust">{$form.thankyou_title.html}<br />
            <span class="description">{ts}This title will be displayed at the top of the thank-you / transaction confirmation page.{/ts}</span>
        </td>
@@ -59,7 +59,7 @@
     </table>
     <table id="receiptDetails" class="form-layout-compressed">
     <tr class="crm-contribution-contributionpage-thankyou-form-block-receipt_from_name">
-	<td class="label">{$form.receipt_from_name.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='receipt_from_name' id=$id}{/if}
+	<td class="label">{$form.receipt_from_name.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='receipt_from_name' id=$contributionPageID}{/if}
     	</td>
     	<td class="html-adjust">{$form.receipt_from_name.html}<br />
     	    <span class="description">{ts}Enter the FROM name to be used when receipts are emailed to contributors.{/ts}</span>
@@ -73,7 +73,7 @@
 	</td>
     </tr>
     <tr class="crm-contribution-contributionpage-thankyou-form-block-receipt_text">
-	<td class="label">{$form.receipt_text.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='receipt_text' id=$id}{/if}
+	<td class="label">{$form.receipt_text.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='receipt_text' id=$contributionPageID}{/if}
 	</td>
 	<td class="html-adjust">{$form.receipt_text.html}<br />
 	    <span class="description">{ts}Enter a message you want included at the beginning of emailed receipts. NOTE: This text will be included in both TEXT and HTML versions of receipt emails so we do not recommend including HTML tags / formatting here.{/ts}<br /></span>

@@ -88,3 +88,18 @@ function _civicrm_rules_in_group( $contact, $group ) {
     return true;
 }
 
+/**
+ * Loads a mailing into a version suitable for the rules actions
+ */
+function _civicrm_rules_load_mailing( $mailingID ) {
+    require_once 'CRM/Mailing/DAO/Mailing.php';
+    $mailing = new CRM_Mailing_DAO_Mailing( );
+    $mailing->id = $mailingID;
+
+    if ( $mailing->id ) {
+        // load the mailing data here
+        $mailing->find( true );
+    }
+    
+    return $mailing;
+}

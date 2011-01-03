@@ -49,7 +49,38 @@
   </tbody>
 </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
+
+{if $preview}
+<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-closed">
+    <div class="crm-accordion-header">
+        <div class="icon crm-accordion-pointer"></div> 
+        {ts}Preview Mailing{/ts}
+    </div><!-- /.crm-accordion-header -->
+    <div class="crm-accordion-body">
+        <table class="form-layout">
+          <tr class="crm-mailing-test-form-block-subject"><td class="label">{ts}Subject:{/ts}</td><td>{$preview.subject}</td></tr>
+    {if $preview.attachment}
+          <tr class="crm-mailing-test-form-block-attachment"><td class="label">{ts}Attachment(s):{/ts}</td><td>{$preview.attachment}</td></tr>
+    {/if}
+          {if $preview.viewURL}
+	  <tr><td class="label">{if $preview.type eq 'html'}{ts}Mailing HTML:{/ts}{else}{ts}Mailing Text:{/ts}{/if}</td><td><iframe height="300" src="{$preview.viewURL}" width="80%"><a href="{$preview.viewURL}" onclick="window.open(this.href); return false;">{ts}Mailing Text:{/ts}</a></iframe></td></tr>
+          {/if}
+        </table>
+    </div><!-- /.crm-accordion-body -->
+</div><!-- /.crm-accordion-wrapper -->    
+{/if}
+
 {* include jscript to warn if unsaved form field changes *}
 {include file="CRM/common/formNavigate.tpl"}
 
 </div>
+
+{if $preview}
+{literal}
+<script type="text/javascript">
+cj(function() {
+   cj().crmaccordions(); 
+});
+</script>
+{/literal}
+{/if}

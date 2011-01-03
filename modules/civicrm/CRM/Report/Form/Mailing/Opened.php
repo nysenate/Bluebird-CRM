@@ -288,7 +288,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
                              'xname'       => ts('Mailing'),
                              'yname'       => ts('Opened'),
                              'xLabelAngle' => 20,
-                             'tip'         => ts("Mail Opened: %1", array( '%1' => '#val#') ) 
+                             'tip'         => ts('Mail Opened: %1', array(1 => '#val#')),
                              );
         foreach( $rows as $row ) {
             $chartInfo['values'][$row['civicrm_mailing_name']] = $row['civicrm_mailing_opened_count']; 

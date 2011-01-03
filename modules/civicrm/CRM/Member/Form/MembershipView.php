@@ -152,12 +152,19 @@ END AS 'relType'
             
             $groupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Membership',$this, $id,0,$memType);
 			CRM_Core_BAO_CustomGroup::buildCustomDataView( $this, $groupTree );
+            
+            $isRecur = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_Membership' , $id, 'contribution_recur_id' );
+            
+            $autoRenew = $isRecur ? true : false;
         }
         
         if ( $values['is_test'] ) {
             $values['membership_type'] .= ' (test) ';
         }
 
+        $subscriptionCancelled = CRM_Member_BAO_Membership::isSubscriptionCancelled( $id );
+        $values['auto_renew'] = ( $autoRenew && !$subscriptionCancelled ) ? 'Yes' : 'No';
+                        
         $this->assign( $values ); 
     }
 

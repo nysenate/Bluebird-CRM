@@ -142,8 +142,7 @@ class CRM_Case_Form_Activity_OpenCase
         // calling this field activity_location to prevent conflict with contact location fields
         $form->add('text', 'activity_location', ts('Location'), CRM_Core_DAO::getAttribute( 'CRM_Activity_DAO_Activity', 'location' ) );
         
-        $form->add('textarea', 'activity_details', ts('Details'), 
-                   CRM_Core_DAO::getAttribute( 'CRM_Activity_DAO_Activity', 'details' ) );
+	$form->addWysiwyg( 'activity_details', ts('Details'), array( 'rows' => 4, 'cols' => 60 ), false );
         
         $form->addButtons(array( 
                                 array ( 'type'      => 'upload', 

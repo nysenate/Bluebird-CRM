@@ -172,7 +172,7 @@ class HTML_QuickForm_TinyMCE extends HTML_QuickForm_textarea
                 ed.onKeyUp.add(function(ed, l) {
                     global_formNavigate = false;
                 });
-        }
+        }'.$this->getConfigString().'
         }];
  
         tinyMCE.settings = configArray[0];
@@ -200,6 +200,22 @@ class HTML_QuickForm_TinyMCE extends HTML_QuickForm_textarea
     function getFrozenHtml()
     {
         return $this->getValue();
+    }
+    
+    /**
+     * Returns the config variables for TinyMCE as a string
+     * 
+     * @access public
+     * @return string
+     */
+    function getConfigString()
+    {
+        $append = ",\n";
+        $configString = $append;
+        foreach ( $this->Config as $k => $v ) {
+            $configString .= $k . ' : ' . $v . $append;
+        }
+        return rtrim( $configString, $append );
     }
 }
 

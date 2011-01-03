@@ -991,31 +991,7 @@ class CRM_Event_Form_Registration_Confirm extends CRM_Event_Form_Registration
                                                                          null,
                                                                          $ctype );
         } else {
-            // when we have allow_same_participant_emails = 1
-            // don't take email address in dedupe params - CRM-4886
-            // here we are making dedupe weak - so to make dedupe
-            // more effective please update individual 'Strict' rule.
-            $allowSameEmailAddress = CRM_Utils_Array::value( 'allow_same_participant_emails', $this->_values['event'] );
-            require_once 'CRM/Dedupe/Finder.php';
-            //suppress "email-Primary" when allow_same_participant_emails = 1
-            if ( $allowSameEmailAddress && 
-                 ( $email = CRM_Utils_Array::value( 'email-Primary', $params ) ) &&
-                 ( CRM_Utils_Array::value( 'registered_by_id', $params ) ) ) {
-                //skip dedupe check only for additional participants
-                unset($params['email-Primary']);
-            }
-            $dedupeParams = CRM_Dedupe_Finder::formatParams($params, 'Individual');
-            // disable permission based on cache since event registration is public page/feature.
-            $dedupeParams['check_permission'] = false;
-            $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, 'Individual');
-            
-            // if we find more than one contact, use the first one
-            $contact_id  = $ids[0];
-            if ( isset( $email ) ) {
-                $params['email-Primary'] = $email;
-            }
-            
-            $contactID =& CRM_Contact_BAO_Contact::createProfileContact( $params, $fields, $contact_id, $addToGroups );
+            $contactID = CRM_Contact_BAO_Contact::createProfileContact( $params, $fields, null, $addToGroups );
             $this->set( 'contactID', $contactID );
         }
 

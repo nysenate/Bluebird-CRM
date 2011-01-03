@@ -393,7 +393,7 @@ $.Autocompleter.defaults = {
 	minChars: 3, //NYSS
 	delay: 400,
 	matchCase: false,
-	matchSubset: true,
+	matchSubset: false,
 	matchContains: false,
 	cacheLength: 10,
 	max: 100,
@@ -410,7 +410,7 @@ $.Autocompleter.defaults = {
 		return value.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + term.replace(/([\^\$\(\)\[\]\{\}\*\.\+\?\|\\])/gi, "\\$1") + ")(?![^<>]*>)(?![^&;]+;)", "gi"), "<strong>$1</strong>");
 	},
     scroll: true,
-    scrollHeight: 180
+    scrollHeight: 300
 };
 
 $.Autocompleter.Cache = function(options) {

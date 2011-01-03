@@ -172,6 +172,22 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
                 }
             }
         }
+
+        // if auto renew checkbox is set, initiate a open-ended recurring membership 
+        if ( CRM_Utils_Array::value( 'selectMembership', $this->_params )           &&
+             CRM_utils_Array::value( 'is_recur',         $this->_paymentProcessor ) &&
+             CRM_Utils_Array::value( 'auto_renew',       $this->_params )           &&
+             !CRM_utils_Array::value( 'is_recur',        $this->_params )           &&
+             !CRM_Utils_Array::value( 'frequency_interval', $this->_params ) ) {
+            // FIXME: set interval and unit based on selected membership type
+            $this->_params['is_recur']           = $this->_values['is_recur'] = 1;
+            $this->_params['frequency_interval'] = 
+                CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType',
+                                             $this->_params['selectMembership'], 'duration_interval' );
+            $this->_params['frequency_unit']     = 
+                CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType',
+                                             $this->_params['selectMembership'], 'duration_unit' );
+        }
         
         if ( $this->_pcpId ) { 
             $this->_params['pcp_made_through_id'] = $this-> _pcpInfo['pcp_id'];
@@ -385,6 +401,15 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $this->_params['currencyID'] = $config->defaultCurrency;
 
         $premiumParams = $membershipParams = $tempParams = $params = $this->_params;
+        
+        //carry payment processor id.
+        if ( $paymentProcessorId = CRM_Utils_Array::value( 'id', $this->_paymentProcessor ) ) {
+            $this->_params['payment_processor_id'] = $paymentProcessorId;
+            foreach ( array( 'premiumParams', 'membershipParams', 'tempParams', 'params' ) as $p ) {
+                ${$p}['payment_processor_id'] = $paymentProcessorId;
+            }
+        }
+        
         $now = date( 'YmdHis' );
         $fields = array( );
         
@@ -683,21 +708,27 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
      * @return void
      * @access public
      */
-    static function processContribution( &$form, $params, $result, $contactID, $contributionType,
-                                         $deductibleMode = true, $pending = false,
+    static function processContribution( &$form, 
+                                         $params, 
+                                         $result, 
+                                         $contactID, 
+                                         $contributionType,
+                                         $deductibleMode = true, 
+                                         $pending = false,
                                          $online = true ) 
     {
         require_once 'CRM/Core/Transaction.php';
         $transaction = new CRM_Core_Transaction( );
         
+        $className = get_class( $form );
         $honorCId = $recurringContributionID = null;
-        if ( $online ) {
-            if ( $form->get( 'honor_block_is_active' ) ) {
-                $honorCId = $form->createHonorContact( );
-            }
-            
-            $recurringContributionID = $form->processRecurringContribution( $params, $contactID );
-        } else if ( ! $online && isset($params['honor_contact_id'] ) ) {
+
+        if ( $online && $form->get( 'honor_block_is_active' ) ) {
+            $honorCId = $form->createHonorContact( );
+        }
+        $recurringContributionID = self::processRecurringContribution( $form, $params, $contactID, $online );
+        
+        if ( ! $online && isset($params['honor_contact_id'] ) ) {
             $honorCId = $params['honor_contact_id'];
         }
         
@@ -730,13 +761,21 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         if ( CRM_Utils_Array::value( 'is_email_receipt', $form->_values ) ) {
             $receiptDate = $now;
         }
-
-        // check contribution Type
+        
+        //get the contrib page id.
+        $contributionPageId = null;
+        if ( $online ) {
+            $contributionPageId = $form->_id;
+        } else {
+            //also for offline we do support - CRM-7290
+            $contributionPageId = CRM_Utils_Array::value( 'contribution_page_id', $params );
+        }
+        
         // first create the contribution record
         $contribParams = array(
                                'contact_id'            => $contactID,
                                'contribution_type_id'  => $contributionType->id,
-                               'contribution_page_id'  => $online ? $form->_id : null,
+                               'contribution_page_id'  => $contributionPageId,
                                'receive_date'          => $now,
                                'non_deductible_amount' => $nonDeductibleAmount,
                                'total_amount'          => $params['amount'],
@@ -785,8 +824,9 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
 
         $contribParams["contribution_status_id"] = $pending ? 2 : 1;
 
+        $contribParams['is_test'] = 0;
         if ( $form->_mode == 'test' ) {
-            $contribParams["is_test"] = 1;
+            $contribParams['is_test'] = 1;
         }
         
         $ids = array( );
@@ -957,7 +997,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         if ( $pending ) {
             return $contribution;
         }
- 
+        
         // next create the transaction record
         if ( ( ! $online || $form->_values['is_monetary'] ) && $result['trxn_id'] ) {
             $trxnParams = array(
@@ -998,48 +1038,59 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
      * Create the recurring contribution record
      *
      */
-    function processRecurringContribution( &$params, $contactID ) {
+    function processRecurringContribution( &$form, &$params, $contactID, $online = true ) {
         // return if this page is not set for recurring
         // or the user has not chosen the recurring option
-        if ( ! CRM_Utils_Array::value( 'is_recur', $this->_values ) ||
+        
+        //this is online case validation.
+        if ( ( !CRM_Utils_Array::value( 'is_recur', $form->_values ) && $online ) ||
              ! CRM_Utils_Array::value( 'is_recur', $params ) ) {
             return null;
         }
-
+        
         $recurParams = array( );
-
         $config = CRM_Core_Config::singleton( );
         $recurParams['contact_id']         = $contactID;
         $recurParams['amount']             = $params['amount'];
         $recurParams['frequency_unit']     = $params['frequency_unit'];
         $recurParams['frequency_interval'] = $params['frequency_interval'];
         $recurParams['installments']       = $params['installments'];
-
-        if( $this->_action & CRM_Core_Action::PREVIEW ) {
-            $recurParams["is_test"] = 1;
+        
+        $recurParams['is_test'] = 0;
+        if ( ( $form->_action & CRM_Core_Action::PREVIEW ) || 
+             ( isset( $form->_mode ) && ( $form->_mode == 'test' ) ) ) {
+            $recurParams['is_test'] = 1;
         }
         
         $now = date( 'YmdHis' );
         $recurParams['start_date'] = $recurParams['create_date'] = $recurParams['modified_date'] = $now;
         $recurParams['invoice_id'] = $params['invoiceID'];
         $recurParams['contribution_status_id'] = 2;
-
+        $recurParams['payment_processor_id']   = $params['payment_processor_id'];
+        
         // we need to add a unique trxn_id to avoid a unique key error
         // in paypal IPN we reset this when paypal sends us the real trxn id, CRM-2991
         $recurParams['trxn_id'] = CRM_Utils_Array::value( 'trxn_id', $params, $params['invoiceID'] );
-
-
+        
         $ids = array( ); 
-
+        
         require_once 'CRM/Contribute/BAO/ContributionRecur.php';
         $recurring =& CRM_Contribute_BAO_ContributionRecur::add( $recurParams, $ids );
         if ( is_a( $recurring, 'CRM_Core_Error' ) ) {
-                CRM_Core_Error::displaySessionError( $result );
-                CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/contribute/transact', '_qf_Main_display=true' ) );
+            CRM_Core_Error::displaySessionError( $result );
+            $urlString = 'civicrm/contribute/transact';
+            $urlParams = '_qf_Main_display=true'; 
+            if ( $className == 'CRM_Contributet_Form_Contribution' ) {
+                $urlString = 'civicrm/contact/view/contribution';
+                $urlParams = "action=add&cid={$form->_contactID}";
+                if ( $form->_mode ) $urlParams .= "&mode={$form->_mode}"; 
+            }
+            CRM_Utils_System::redirect( CRM_Utils_System::url( $urlString, $urlParams ) );
         }
+        
         return $recurring->id;
     }
-
+    
 
     /**
      * Create the Honor contact

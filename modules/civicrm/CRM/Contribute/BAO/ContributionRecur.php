@@ -172,7 +172,65 @@ SELECT p.payment_processor_id
         }
         return $totalCount;
     }
+    
+    
+    /**                                                           
+     * Delete Recurring contribution.
+     * 
+     * @return true / false.
+     * @access public 
+     * @static 
+     */ 
+    static function deleteRecurContribution( $recurId ) 
+    {
+        $result = false;
+        if ( !$recurId ) return $result;
+        
+        $recur = new CRM_Contribute_DAO_ContributionRecur( );
+        $recur->id = $recurId;
+        $result = $recur->delete( );
+        
+        return $result;
+    }
 
+    /**                                                           
+     * Cancel Recurring contribution.
+     * 
+     * @param integer  $recurId recur contribution id. 
+     * @param array    $objects an array of objects that is to be cancelled like 
+     *                          contribution, membership, event. At least contribution object is a must.
+     *
+     * @return true / false.
+     * @access public 
+     * @static 
+     */ 
+    static function cancelRecurContribution( $recurId, $objects ) 
+    {
+        if ( !$recurId ) return false;
+        
+        require_once 'CRM/Contribute/PseudoConstant.php';
+        $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
+        $canceledId         = array_search( 'Cancelled', $contributionStatus );
+        $recur     = new CRM_Contribute_DAO_ContributionRecur( );
+        $recur->id = $recurId;
+        $recur->whereAdd ("contribution_status_id != $canceledId");
+        if ( $recur->find(true) ) {
+            require_once 'CRM/Core/Transaction.php';
+            $transaction = new CRM_Core_Transaction( );
+            $recur->contribution_status_id = $canceledId;
+            $recur->start_date             = CRM_Utils_Date::isoToMysql( $recur->start_date );
+            $recur->create_date            = CRM_Utils_Date::isoToMysql( $recur->create_date );
+            $recur->modified_date          = CRM_Utils_Date::isoToMysql( $recur->modified_date );
+            $recur->cancel_date            = date( 'YmdHis' );
+            $recur->save( );
+
+            require_once 'CRM/Core/Payment/BaseIPN.php';
+            $baseIPN = new CRM_Core_Payment_BaseIPN( );
+            return $baseIPN->cancelled( $objects, $transaction );
+        }
+
+        return false;
+    }
 }
 
 

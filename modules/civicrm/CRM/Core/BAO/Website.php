@@ -153,7 +153,7 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website
      * @access public
      * @static
      */
-    static function allWebsites( $id ) 
+    static function allWebsites( $id, $updateBlankLocInfo = false ) 
     {
         if ( !$id ) {
             return null;
@@ -165,11 +165,18 @@ SELECT  id, website_type_id
  WHERE  civicrm_website.contact_id = %1';
         $params = array( 1 => array( $id, 'Integer' ) );
 
-        $websites = array( );
+        $websites = $values = array( );
         $dao = CRM_Core_DAO::executeQuery( $query, $params );
+        $count = 1;
         while ( $dao->fetch( ) ) {
-            $websites[$dao->id] = array( 'id'              => $dao->id,
-                                         'website_type_id' => $dao->website_type_id );
+            $values = array( 'id'              => $dao->id,
+                             'website_type_id' => $dao->website_type_id );
+            
+            if ( $updateBlankLocInfo ) {
+                $websites[$count++] = $values;
+            } else {
+                $websites[$dao->id] = $values;
+            }
         }
         return $websites;
     }

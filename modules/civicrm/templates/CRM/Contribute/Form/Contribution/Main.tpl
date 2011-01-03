@@ -331,12 +331,26 @@ function enablePeriod ( ) {
 	}
 	document.getElementById('installments').disabled   = true;
 	document.getElementById('frequency_unit').disabled = true;
+
+	//get back to auto renew settings. 
+	var allowAutoRenew = {/literal}'{$allowAutoRenewMembership}'{literal};
+	if ( allowAutoRenew && cj("#auto_renew") ) {
+	   showHideAutoRenew( null );
+	}	
     } else {
 	if ( frqInt ) {
 	    document.getElementById('frequency_interval').disabled = false;
 	}
 	document.getElementById('installments').disabled   = false;
 	document.getElementById('frequency_unit').disabled = false;
+	
+	//disabled auto renew settings.
+	var allowAutoRenew = {/literal}'{$allowAutoRenewMembership}'{literal};
+	if ( allowAutoRenew && cj("#auto_renew") ) {
+	    cj("#auto_renew").attr( 'checked', false );
+	    cj('#allow_auto_renew').hide( );
+	} 
+	
     }
 }
 

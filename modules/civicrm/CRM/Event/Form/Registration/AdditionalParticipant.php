@@ -389,13 +389,24 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
             //take the participant instance.
             $addParticipantNum = substr( $self->_name, 12 );
             
-            if ( is_array( $params ) &&
-                 $self->_values['event']['allow_same_participant_emails'] != 1 ) {
+            if ( is_array( $params ) ) {
                 foreach ( $params as $key => $value ) {
-                    if ( ( $value["email-{$self->_bltID}"] == $fields["email-{$self->_bltID}"] ) &&
-                         $key != $addParticipantNum  ) {
-                        $errors["email-{$self->_bltID}"] = ts( 'The email address must be unique for each participant.' );
-                        break;
+                    if ( $key != $addParticipantNum ) {
+                        if ( !$self->_values['event']['allow_same_participant_emails'] ) {
+                            if ( $value["email-{$self->_bltID}"] == $fields["email-{$self->_bltID}"] ) {
+                                $errors["email-{$self->_bltID}"] =
+                                    ts( 'The email address must be unique for each participant.' );
+                                break;
+                            }
+                        } else {
+                            // check with first_name and last_name for additional participants
+                            if ( ( $value['first_name'] == $fields['first_name'] ) && 
+                                 ( $value['last_name']  == $fields['last_name'] ) ) {
+                                $errors['first_name'] = 
+                                    ts( 'The first name and last name must be unique for each participant.' );
+                                break;
+                            }
+                        }
                     }
                 }
             }

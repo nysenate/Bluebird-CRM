@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,7 +32,7 @@
     <li>{ts}Navigate to a report instance and verify the report filters and display type (Tabular, Bar or Pie Chart). OR create a new report instance from the Reports menu » Create Reports from Templates.{/ts}</li>
     <li>{ts}Expand the 'Report Settings' section, and click 'Include Report on Dashboard'.{/ts}</li>
     <li>{ts}Click 'Update Report'.{/ts}</li>
-    <li>{ts}Repeat for each report your want to include on your dashboard.{/ts}</li>
+    <li>{ts}Repeat for each report you want to include on your dashboard.{/ts}</li>
     <li>{ts}Navigate back to the 'Home' dashboard and click 'Configure Dashboard' again.{/ts}</li>
     <li>{ts}You can now drag the reports onto the right or left columns and click 'Done' to save your layout.{/ts}</li>
   </ul>

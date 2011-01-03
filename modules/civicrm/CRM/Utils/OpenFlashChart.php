@@ -304,7 +304,14 @@ class CRM_Utils_OpenFlashChart
         if ( $mod = $yMax%(str_pad( 5, strlen($yMax)-1, 0))) { 
             $yMax += str_pad( 5, strlen($yMax)-1, 0)-$mod;
         }
-        $ySteps = $yMax/5;
+        
+        // if max value of y-axis <= 0, then set default values 
+        if ( $yMax <= 0 ) {
+            $ySteps = 1;
+            $yMax   = 5;
+        } else {
+            $ySteps = $yMax/5;
+        }
 
         // create x axis label obj.
         $xLabels = new x_axis_labels( );

@@ -208,7 +208,8 @@ class CRM_Price_Page_Option extends CRM_Core_Page
             $url = CRM_Utils_System::url( 'civicrm/admin/price/field/option', 'reset=1' );
             CRM_Utils_System::appendBreadCrumb( ts('Price Option'),
                                                 $url );
-            $this->assign( 'usedPriceSetTitle', CRM_Core_BAO_OptionValue::getTitle($oid) );
+            require_once 'CRM/Price/BAO/FieldValue.php';
+            $this->assign( 'usedPriceSetTitle', CRM_Price_BAO_FieldValue::getOptionLabel($oid) );
             $this->assign( 'usedBy', $usedBy );
             $comps = array( "Event"        => "civicrm_event", 
                             "Contribution" => "civicrm_contribution_page" );

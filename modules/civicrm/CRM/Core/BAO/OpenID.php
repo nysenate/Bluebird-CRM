@@ -54,11 +54,6 @@ class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID
     static function add( &$params ) 
     {
         $openId = new CRM_Core_DAO_OpenID();
-        
-        // normalize the OpenID URL
-        require_once 'Auth/OpenID.php';
-        $params['openid'] = Auth_OpenID::normalizeURL($params['openid']);
-        
         $openId->copyValues($params);
 
         return $openId->save( );
@@ -106,7 +101,7 @@ class CRM_Core_BAO_OpenID extends CRM_Core_DAO_OpenID
      * @access public
      * @static
      */
-    static function allOpenIDs( $id ) 
+    static function allOpenIDs( $id, $updateBlankLocInfo = false ) 
     {
         if ( ! $id ) {
             return null;
@@ -122,18 +117,25 @@ LEFT JOIN civicrm_location_type ON ( civicrm_openid.location_type_id = civicrm_l
 WHERE
   civicrm_contact.id = %1
 ORDER BY
-  civicrm_openid.is_primary DESC, civicrm_openid.location_type_id DESC, openid_id ASC ";
+  civicrm_openid.is_primary DESC,  openid_id ASC ";
         $params = array( 1 => array( $id, 'Integer' ) );
 
-        $openids = array( );
+        $openids = $values = array( );
         $dao =& CRM_Core_DAO::executeQuery( $query, $params );
+        $count = 1;
         while ( $dao->fetch( ) ) {
-            $openids[$dao->openid_id] = array( 'locationType'     => $dao->locationType,
-                                               'is_primary'       => $dao->is_primary,
-                                               'id'               => $dao->openid_id,
-                                               'openid'           => $dao->openid,
-                                               'locationTypeId'   => $dao->locationTypeId,
-                                               'allowed_to_login' => $dao->allowed_to_login );
+            $values = array( 'locationType'     => $dao->locationType,
+                             'is_primary'       => $dao->is_primary,
+                             'id'               => $dao->openid_id,
+                             'openid'           => $dao->openid,
+                             'locationTypeId'   => $dao->locationTypeId,
+                             'allowed_to_login' => $dao->allowed_to_login );
+            
+            if ( $updateBlankLocInfo ) {
+                $openids[$count++] = $values;
+            } else {
+                $openids[$dao->openid_id] = $values;
+            }
         }
         return $openids;
     }

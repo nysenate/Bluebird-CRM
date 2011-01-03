@@ -247,7 +247,7 @@
                 {/if}
             </td>
             <td class="crm-note-note">
-                {$note.note|nl2br|mb_truncate:80:"...":true}
+                {$note.note|mb_truncate:80:"...":false|nl2br}
                 {* Include '(more)' link to view entire note if it has been truncated *}
                 {assign var="noteSize" value=$note.note|count_characters:true}
                 {if $noteSize GT 80}

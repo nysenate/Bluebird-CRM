@@ -62,15 +62,16 @@ class HTML_QuickForm_CKeditor extends HTML_QuickForm_textarea
         if ($this->_flagFrozen) {
             return $this->getFrozenHtml();
         } else {
-            $name = $this->getAttribute('name');
+            $elementId = $this->getAttribute('id');
             $html = parent::toHtml() . "<script type='text/javascript'>
                 cj( function( ) {
-                    cj('#{$name}').removeClass();
-                    if ( CKEDITOR.instances['{$name}'] ) {
-                        CKEDITOR.remove(CKEDITOR.instances['{$name}']);
+                    cj('#{$elementId}').removeClass();
+                    if ( CKEDITOR.instances['{$elementId}'] ) {
+                        CKEDITOR.remove(CKEDITOR.instances['{$elementId}']);
                     }
-                    CKEDITOR.replace( '{$name}' );
-                    var editor = CKEDITOR.instances['{$name}'];
+                    if ( cj('#{$elementId}').val( ) == '' ) cj('#{$elementId}').val('&nbsp;');
+                    CKEDITOR.replace( '{$elementId}' );
+                    var editor = CKEDITOR.instances['{$elementId}'];
                     if ( editor ) {
                         editor.on( 'key', function( evt ){
                             global_formNavigate = false;

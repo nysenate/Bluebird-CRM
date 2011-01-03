@@ -50,6 +50,7 @@
                 {/if}
                 <br /><br />
             </div>
+	    <div class='clear'> </div>
         {/if}
 
 

@@ -351,7 +351,7 @@ class CRM_Utils_System_Joomla {
      * @param $name string  optional username for login
      * @param $pass string  optional password for login
      */
-    static function loadBootStrap($user = null, $pass = null)
+    static function loadBootStrap($user = null, $pass = null, $uid = null )
     {
         return true;
     }

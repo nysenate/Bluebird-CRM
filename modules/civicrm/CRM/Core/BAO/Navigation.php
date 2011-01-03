@@ -372,9 +372,12 @@ ORDER BY parent_id, weight";
             }
 
             if ( !empty( $value['child'] ) ) {
-                $appendComma = false;
+                $appendComma = true;    
+                $count = 1;
                 foreach($value['child'] as $k => $val ) {
-                    $appendComma = true; 
+                    if( $count == count( $value['child'] ) ) {
+                        $appendComma = false;
+                    }  
                     $data = $val['attributes']['label'];
                     $class = '';
                     if ( !$val['attributes']['active'] ) {
@@ -382,12 +385,11 @@ ORDER BY parent_id, weight";
                     }                      
                     $navigationString .= ' { "attr": { "id" : "node_'.$k.'"}, "data": { "title":"'. $data. '"' .$class.'}';
                     self::recurseNavigation($val, $navigationString, $json, $skipMenuItems );
-                    if ( $appendComma ) {
-                        $navigationString .= ' },';
-                    }
+                    $navigationString .= $appendComma ? ' },' : ' }';
+                    $count++;
                 }
             }
-
+            
             if ( !empty( $value['child'] ) ) {
                 $navigationString .= ' ]';
             }

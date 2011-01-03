@@ -191,7 +191,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         //set default membership for membershipship block
         require_once 'CRM/Member/BAO/Membership.php';
         if ( $this->_membershipBlock ) {
-            $this->_defaults['selectMembership'] = 
+            $this->_defaults['selectMembership'] = $defaultMemType =
                 $this->_defaultMemTypeId ? $this->_defaultMemTypeId : 
                 CRM_Utils_Array::value( 'membership_type_default', $this->_membershipBlock );
         }
@@ -341,7 +341,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
             if ( $this->_values['is_monetary'] &&
                  $this->_values['is_recur']    &&
                  $this->_paymentProcessor['is_recur'] ) {
-                $this->buildRecur( );
+                self::buildRecur( $this );
             }
         }
 
@@ -611,35 +611,49 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
      *
      * @access public
      */
-    function buildRecur( ) {
+    function buildRecur( $form ) {
         $attributes = CRM_Core_DAO::getAttribute( 'CRM_Contribute_DAO_ContributionRecur' );
         $extraOption = array('onclick' =>"enablePeriod();");
         $elements = array( );
-      	$elements[] =& $this->createElement('radio', null, '', ts( 'I want to make a one-time contribution.'), 0, $extraOption );
-      	$elements[] =& $this->createElement('radio', null, '', ts( 'I want to contribute this amount'), 1, $extraOption );
-        $this->addGroup( $elements, 'is_recur', null, '<br />' );
-        $this->_defaults['is_recur'] = 0;
+      	$elements[] =& $form->createElement('radio', null, '', ts( 'I want to make a one-time contribution.'), 0, $extraOption );
+      	$elements[] =& $form->createElement('radio', null, '', ts( 'I want to contribute this amount'), 1, $extraOption );
+        $form->addGroup( $elements, 'is_recur', null, '<br />' );
+        $form->_defaults['is_recur'] = 0;
+        $className = get_class( $form ); 
         
-        if ( $this->_values['is_recur_interval'] ) {
-            $this->add( 'text', 'frequency_interval', ts( 'Every' ),
+        if ( CRM_Utils_Array::value( 'is_recur_interval', $form->_values ) ||
+             $className == 'CRM_Contribute_Form_Contribution' ) {
+            $form->add( 'text', 'frequency_interval', ts( 'Every' ),
                         $attributes['frequency_interval'] );
-            $this->addRule( 'frequency_interval', ts( 'Frequency must be a whole number (EXAMPLE: Every 3 months).' ), 'integer' );
+            $form->addRule( 'frequency_interval', 
+                            ts( 'Frequency must be a whole number (EXAMPLE: Every 3 months).' ), 'integer' );
         } else {
             // make sure frequency_interval is submitted as 1 if given
             // no choice to user.
-            $this->add( 'hidden', 'frequency_interval', 1 );
+            $form->add( 'hidden', 'frequency_interval', 1 );
+        }
+        
+        $frUnits = CRM_Utils_Array::value( 'recur_frequency_unit', $form->_values );
+        if ( empty( $frUnits ) && 
+             $className == 'CRM_Contribute_Form_Contribution' ) {
+            $frUnits = implode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+                                CRM_Core_OptionGroup::values(  'recur_frequency_units' ) );
         }
         
         $units    = array( );
-        $unitVals = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $this->_values['recur_frequency_unit'] );
+        $unitVals = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $frUnits );
         $frequencyUnits = CRM_Core_OptionGroup::values( 'recur_frequency_units' );
         foreach ( $unitVals as $key => $val ) {
             if ( array_key_exists( $val, $frequencyUnits ) ) {
-                $units[$val] = $this->_values['is_recur_interval'] ? "{$frequencyUnits[$val]}(s)" : $frequencyUnits[$val];
+                $units[$val] = $frequencyUnits[$val];
+                if ( CRM_Utils_Array::value( 'is_recur_interval', $form->_values ) ||
+                     $className == 'CRM_Contribute_Form_Contribution' ) {
+                    $units[$val] = "{$frequencyUnits[$val]}(s)";
+                }
             }
         }
 
-        $frequencyUnit =& $this->add( 'select', 'frequency_unit', null, $units );
+        $frequencyUnit =& $form->add( 'select', 'frequency_unit', null, $units );
         
         // FIXME: Ideally we should freeze select box if there is only
         // one option but looks there is some problem /w QF freeze.
@@ -647,9 +661,9 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         //$frequencyUnit->freeze( );
         //}
         
-        $this->add( 'text', 'installments', ts( 'installments' ),
+        $form->add( 'text', 'installments', ts( 'installments' ),
                     $attributes['installments'] );
-        $this->addRule( 'installments', ts( 'Number of installments must be a whole number.' ), 'integer' );
+        $form->addRule( 'installments', ts( 'Number of installments must be a whole number.' ), 'integer' );
     }
   
    
@@ -940,7 +954,7 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
 
         // get the submitted form values. 
         $params = $this->controller->exportValues( $this->_name );
-
+        
         if ( CRM_Utils_Array::value( 'onbehalfof_id', $params ) ) {
             $params['organization_id'] = $params['onbehalfof_id'];
         }

@@ -59,13 +59,18 @@ class CRM_Contribute_Form_PCP_PCPAccount extends CRM_Core_Form
     public function preProcess()  
     {
         $session = CRM_Core_Session::singleton( );
+        $config = CRM_Core_Config::singleton( );
         $this->_action = CRM_Utils_Request::retrieve( 'action', 'String', $this, false );
         $this->_pageId = CRM_Utils_Request::retrieve( 'pageId', 'Positive', $this );
         $this->_id     = CRM_Utils_Request::retrieve( 'id', 'Positive', $this );
+        if( !$this->_pageId && $config->userFramework == 'Joomla' && $config->userFrameworkFrontend ) {
+            $this->_pageId = $this->_id;
+        }
+        
         if ( $this->_id ){
             $contactID = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_PCP', $this->_id, 'contact_id' );   
         }
-
+        
         $this->_contactID = isset( $contactID ) ? $contactID : $session->get( 'userID' );     
         if ( ! $this->_pageId ) {
             if ( ! $this->_id ) {
@@ -75,7 +80,6 @@ class CRM_Contribute_Form_PCP_PCPAccount extends CRM_Core_Form
                 $this->_pageId = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_PCP', $this->_id, 'contribution_page_id' );
             }
         }
-        $config = CRM_Core_Config::singleton( );
         //redirect back to online Contribution page, we allow only logged in
         //user to configure the PCP account and Page in standalone installation.
         if ( $config->userFramework == 'Standalone' && !$this->_contactID ) {

@@ -86,7 +86,8 @@
  {literal}
  cj( function( ) { 
     //collapse the search form.
-    cj( '#search_form_' + {/literal}'{$searchVoterFor}'{literal} ).addClass( 'crm-accordion-closed' );	      	  
+    var searchFormName = '#search_form_' + {/literal}'{$searchVoterFor}'{literal};
+    cj( searchFormName ).removeClass( 'crm-accordion-open' ).addClass( 'crm-accordion-closed' );	      	  
     searchVoters( {/literal}'{$qfKey}'{literal} );
  }); 	
      	
@@ -112,7 +113,8 @@ function searchVoters( qfKey )
 	      cj( '#voterList' ).html( voterList );
 
 	      //collapse the search form.
-	      cj( '#search_form_' + {/literal}'{$searchVoterFor}'{literal} ).addClass( 'crm-accordion-closed' );
+	      var searchFormName = '#search_form_' + {/literal}'{$searchVoterFor}'{literal};
+	      cj( searchFormName ).removeClass( 'crm-accordion-open' ).addClass( 'crm-accordion-closed' );
       }, 'html' );
 }
 

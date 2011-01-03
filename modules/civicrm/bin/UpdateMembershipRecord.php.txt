@@ -31,8 +31,12 @@
  * update_contact_membership APIs.
  * It takes the first argument as the domain-id if specified, otherwise takes the domain-id as 1.
  *
- * IMPORTANT: You must set a valid FROM email address on line 218 before and then save the file as
- * UpdateMembershipRecord.php prior to running this script.
+ * IMPORTANT: 
+ * We are using the default Domain FROM Name and FROM Email Address as the From email address for emails sent by this script.  
+ * Verify that this value has been properly set from Administer > Configure > Domain Information
+ * If you want to use some other FROM email address, modify line 125 and set your valid email address.
+ *
+ * Save the file as UpdateMembershipRecord.php prior to running this script.
  */
 
 class CRM_UpdateMembershipRecord {
@@ -81,29 +85,32 @@ class CRM_UpdateMembershipRecord {
         require_once 'CRM/Member/PseudoConstant.php';
         require_once 'CRM/Contact/BAO/Contact.php';
         require_once 'CRM/Activity/BAO/Activity.php';
+        require_once 'CRM/Contribute/PseudoConstant.php';
 
         //get all active statuses of membership, CRM-3984
-        $allStatus    = CRM_Member_PseudoConstant::membershipStatus( );
-        $statusLabels = CRM_Member_PseudoConstant::membershipStatus( null, null, 'label' );
-        $allTypes     = CRM_Member_PseudoConstant::membershipType( );
+        $allStatus     = CRM_Member_PseudoConstant::membershipStatus( );
+        $statusLabels  = CRM_Member_PseudoConstant::membershipStatus( null, null, 'label' );
+        $allTypes      = CRM_Member_PseudoConstant::membershipType( );
+        $contribStatus = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
         
         $query = "
-SELECT civicrm_membership.id                 as membership_id,
-       civicrm_membership.is_override        as is_override,
-       civicrm_membership.reminder_date      as reminder_date,
-       civicrm_membership.membership_type_id as membership_type_id,
-       civicrm_membership.status_id          as status_id,
-       civicrm_membership.join_date          as join_date,
-       civicrm_membership.start_date         as start_date,
-       civicrm_membership.end_date           as end_date,
-       civicrm_membership.source             as source,
-       civicrm_contact.id                    as contact_id,
-       civicrm_contact.is_deceased           as is_deceased,
-       civicrm_membership.owner_membership_id as owner_membership_id
-FROM   civicrm_membership, civicrm_contact
-WHERE  civicrm_membership.contact_id = civicrm_contact.id
-AND    civicrm_membership.is_test = 0
-";
+SELECT     civicrm_membership.id                    as membership_id,
+           civicrm_membership.is_override           as is_override,
+           civicrm_membership.reminder_date         as reminder_date,
+           civicrm_membership.membership_type_id    as membership_type_id,
+           civicrm_membership.status_id             as status_id,
+           civicrm_membership.join_date             as join_date,
+           civicrm_membership.start_date            as start_date,
+           civicrm_membership.end_date              as end_date,
+           civicrm_membership.source                as source,
+           civicrm_contact.id                       as contact_id,
+           civicrm_contact.is_deceased              as is_deceased,
+           civicrm_membership.owner_membership_id   as owner_membership_id,
+           civicrm_membership.contribution_recur_id as recur_id
+FROM       civicrm_membership
+INNER JOIN civicrm_contact ON ( civicrm_membership.contact_id = civicrm_contact.id )
+WHERE      civicrm_membership.is_test = 0";
+
         $params = array( );
         $dao =& CRM_Core_DAO::executeQuery( $query, $params );
         
@@ -115,8 +122,11 @@ AND    civicrm_membership.is_test = 0
         
         require_once 'CRM/Core/BAO/Domain.php';
         $domainValues     = CRM_Core_BAO_Domain::getNameAndEmail( );
-        $fromEmailAddress = "$domainValues[0] <$domainValues[1]>";
-
+        $domainFromEmail  = "$domainValues[0] <$domainValues[1]>";
+        
+        //use domain email address as a default From email.
+        $fromEmailAddress = $domainFromEmail;
+        
         while ( $dao->fetch( ) ) {
             echo ".";
             
@@ -187,8 +197,9 @@ AND    civicrm_membership.is_test = 0
                                                     array_search( 'Cancelled', $allStatus ),
                                                     array_search( 'Expired', $allStatus ) ) ) ) {
                 
+                // CRM-7248: added excludeIsAdmin param to the following fn call to prevent moving to admin statuses
                 //get the membership status as per id.
-                $newStatus = civicrm_membership_status_calc( array( 'membership_id' => $dao->membership_id ) );
+                $newStatus = civicrm_membership_status_calc( array( 'membership_id' => $dao->membership_id ), true );
                 $statusId  = CRM_Utils_Array::value( 'id', $newStatus );
                 
                 //process only when status change.
@@ -219,14 +230,23 @@ AND    civicrm_membership.is_test = 0
                 $memType = new CRM_Member_BAO_MembershipType( );
                 
                 $memType->id = $dao->membership_type_id;
-                if ( $memType->find( true ) &&
-                     $memType->renewal_msg_id ) {
+                $memType->find( true );
+                $renewalMsgId = $memType->renewal_msg_id;
+
+                if ( $memType->autorenewal_msg_id && $dao->recur_id ) {
+                    $contribStatusId = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionRecur',
+                                                                    $dao->recur_id, 'contribution_status_id' );
+                    if ( $contribStatusId != array_search( 'Cancelled', $contribStatus ) ) {
+                        $renewalMsgId = $memType->autorenewal_msg_id;
+                    }
+                }
+                if ( $renewalMsgId ) {
                     $toEmail  = CRM_Contact_BAO_Contact::getPrimaryEmail( $dao->contact_id );
-                    
+                                        
                     if ( $toEmail ) {
                         $result = CRM_Core_BAO_MessageTemplates::sendReminder( $dao->contact_id,
                                                                                $toEmail,
-                                                                               $memType->renewal_msg_id,
+                                                                               $renewalMsgId,
                                                                                $fromEmailAddress );
                         if ( ! $result ||
                              is_a( $result, 'PEAR_Error' ) ) {

@@ -53,10 +53,15 @@ class CRM_Admin_Form_Setting_Miscellaneous extends  CRM_Admin_Form_Setting
 
         $this->addYesNo('contactUndelete', ts('Contact Trash & Undelete'));
 
-        // FIXME: for now, disable logging for multilingual sites
+        // also check if we can enable triggers
+        $validTriggerPermission = CRM_Core_DAO::checkTriggerViewPermission( false );
+
+        // FIXME: for now, disable logging for multilingual sites OR if triggers are not permittted
         $domain = new CRM_Core_DAO_Domain;
         $domain->find(true);
-        $attribs = $domain->locales ? array('disabled' => 'disabled') : null;
+        $attribs = $domain->locales || ! $validTriggerPermission ? array('disabled' => 'disabled') : null;
+
+        $this->assign( 'validTriggerPermission', $validTriggerPermission );
         $this->addYesNo('logging', ts('Logging'), null, null, $attribs);
 
         $this->addYesNo( 'versionCheck'           , ts( 'Version Check & Statistics Reporting' ));

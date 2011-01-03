@@ -40,7 +40,15 @@
     {ts 1=$displayName 2=$registerMode}Use this form to Renew Membership Record on behalf of %1. <strong>A %2 transaction will be submitted</strong> using the selected payment processor.{/ts}
 </div>
 {/if}
-<h3>{if $action eq 32768}{ts}Renew Membership{/ts}{/if}</h3>
+{if $action eq 32768}
+{if $cancelAutoRenew}
+<div class="messages status">
+    <div class="icon inform-icon"></div>
+       <p>{ts 1=$cancelAutoRenew}This membership is set to renew automatically {if $renewalDate}on {$renewalDate|crmDate}{/if}. You will need to cancel the auto-renew option if you want to modify the Membership Type, End Date or Membership Status. <a href="%1">Click here</a> if you want to cancel the automatic renewal option.{/ts}</p>
+    </div>
+{/if}
+<h3>{ts}Renew Membership{/ts}</h3>
+{/if}
 <div class="crm-block crm-form-block crm-member-membershiprenew-form-block">
     <div id="help" class="description">
         {ts}Renewing will add the normal membership period to the End Date of the previous period for members whose status is Current or Grace. For Expired memberships, renewing will create a membership period commencing from the 'Date Renewal Entered'. This date can be adjusted including being set to the day after the previous End Date - if continuous membership is required.{/ts}

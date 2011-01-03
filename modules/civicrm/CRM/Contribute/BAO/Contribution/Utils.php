@@ -198,9 +198,18 @@ class CRM_Contribute_BAO_Contribution_Utils {
         
         if ( $component == 'membership' ) {
             $membershipResult = array( );
-        }       
+        } 
         
         if ( is_a( $result, 'CRM_Core_Error' ) ) {
+            
+            //make sure to cleanup db for recurring case.
+            if ( CRM_Utils_Array::value( 'contributionID', $paymentParams ) ) {
+                CRM_Contribute_BAO_Contribution::deleteContribution( $paymentParams['contributionID'] );
+            }
+            if ( CRM_Utils_Array::value( 'contributionRecurID', $paymentParams ) ) {
+                CRM_Contribute_BAO_ContributionRecur::deleteRecurContribution( $paymentParams['contributionRecurID'] );
+            }
+            
             if ( $component !== 'membership' ) {
                 CRM_Core_Error::displaySessionError( $result );
                 CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/contribute/transact', 

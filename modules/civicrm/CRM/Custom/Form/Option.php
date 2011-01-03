@@ -390,6 +390,7 @@ SELECT count(*)
             return;
         }
 
+        $oldWeight = null;
         if ($this->_id) {
             $customOption->id = $this->_id;
             CRM_Core_BAO_CustomOption::updateCustomValues($params);
