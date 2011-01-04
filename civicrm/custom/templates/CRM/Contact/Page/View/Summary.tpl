@@ -37,29 +37,26 @@
                     <ul id="actions">
                     	{* CRM-4418 *}
                         {* user should have edit permission to delete contact *}
-                        {if (call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and 
-                        $is_deleted)}
-
+                        {if (call_user_func(array('CRM_Core_Permission','check'), 'delete contacts') and $permission == 'edit') or (call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and $is_deleted)}
+                        {if call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and $is_deleted}
                         <li class="crm-delete-action crm-contact-restore">
                         <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&cid=$contactId&restore=1"}" class="delete button" title="{ts}Restore{/ts}">
                         <span><div class="icon restore-icon"></div>{ts}Restore from Trash{/ts}</span>
                         </a>
                         </li>
                         
-                        {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')} 
                         <li class="crm-delete-action crm-contact-permanently-delete">
                         <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1"}" class="delete button" title="{ts}Delete Permanently{/ts}">
                         <span><div class="icon delete-icon"></div>{ts}Delete Contact Permanently{/ts}</span>{*NYSS*}
                         </a>
                         </li>
-                        {/if}
-
-                        {elseif call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
+                        {else}
                         <li class="crm-delete-action crm-contact-delete">
                         <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId"}" class="delete button" title="{ts}Delete{/ts}">
                         <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
                         </a>
                         </li>
+                        {/if}
                         {/if}
                     
                     	{* Include the Actions button with dropdown if session has 'edit' permission *}

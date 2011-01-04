@@ -220,7 +220,7 @@
 	       {/if}
            </tr>
          {else}
-           <tr class="crm-case-caseview-clientrole">
+           <tr>
                <td rowspan="{$relName|@count}" class="crm-case-caseview-role-label label">{ts}Client{/ts}</td>
 	   {foreach from=$relName item=client name=clientsRoles}
                {if not $smarty.foreach.clientsRoles.first}</tr>{/if}
@@ -493,13 +493,13 @@ cj(document).ready(function(){
     <table class="report-layout globalrelationship">
     	<tr class="columnheader">
     		<th>{$globalGroupInfo.title}</th>
-            <th>Organization</th> {*NYSS*}
+            <th>Organization</th>
     		<th>{ts}Phone{/ts}</th>
     		<th>{ts}Email{/ts}</th>
     	</tr>
         {foreach from=$globalRelationships item=row key=relId}
 
-		{*NYSS retrieve current employer for resources and display in table*}
+		{*LCD retrieve current employer for resources and display in table*}
 		{assign var='contact_id' value=$row.contact_id}
 		{crmAPI entity='contact' action="search" var="organization" contact_id=$contact_id return="current_employer,current_employer_id"}
 
@@ -941,7 +941,6 @@ function buildCaseActivities( filterSearch ) {
 		"sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
 	   	"bServerSide": true,
 	   	"sAjaxSource": sourceUrl,
-                "iDisplayLength": 50,
 		"fnDrawCallback": function() { setSelectorClass(); },
 		"fnServerData": function ( sSource, aoData, fnCallback ) {
 
