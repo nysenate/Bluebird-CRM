@@ -1,6 +1,7 @@
 <?php
 
-function nyss_out($type,$v,$toscreen=false) {
+/*already defined
+function nyss_ioout($type,$v,$toscreen=false) {
 
 	global $nyss_ioline,$nyss_iototallines;
 
@@ -19,6 +20,7 @@ function nyss_out($type,$v,$toscreen=false) {
 		unset($v);
 	}
 }
+*/
 
 class nyss_iofileobject {
 

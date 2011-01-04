@@ -5,4 +5,3 @@ dependencies[] = civicrm
 package = CiviCRM
 version="3.3"
 core="6.x"
-project="epx"

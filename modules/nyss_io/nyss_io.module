@@ -107,7 +107,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	global $nyss_ioline;
 	global $nyss_iototallines;
 
-//nyss_out("debug",$form_state,true);
+//nyss_ioout("debug",$form_state,true);
 
 	civicrm_initialize( );
 	require_once 'CRM/Core/Config.php';
@@ -137,18 +137,18 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	if (!$dryrun) $dryrun=false;
 
 	//get some civicrm values and flip so we can easily lookup values
-    $aStates = array_flip(getStates());
-    $aGender = array_flip(getOptions("gender"));
-    $aSuffix = array_flip(getOptions("individual_suffix"));
+    $aStates = array_flip(nyss_ioGetStates());
+    $aGender = array_flip(nyss_ioGetOptions("gender"));
+    $aSuffix = array_flip(nyss_ioGetOptions("individual_suffix"));
 	//echo '<pre>'; print_r($aStates); echo '</pre>'; exit();
 	//echo '<pre>'; print_r($aGender); echo '</pre>'; exit();
 	//echo '<pre>'; print_r($aSuffix); echo '</pre>'; exit();
 
-	nyss_out('status',"importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",true);
+	nyss_ioout('status',"importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",true);
 
   	while ($l = $fo->getLine()) {
 
-		//nyss_out('debug', $l,true);
+		//nyss_ioout('debug', $l,true);
 
 		//seconds to process each row
 		set_time_limit (30);
@@ -159,12 +159,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		if(is_numeric($runnum)) {
 
 			if($form_state['values']['runnum']<=$nyss_ioline) {
-				nyss_out('debug',"Stopping at {$nyss_ioline} lines.", true);
+				nyss_ioout('debug',"Stopping at {$nyss_ioline} lines.", true);
 				break;
 			}
 		}
 		
-		if ($nyss_ioline%20==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
+		if ($nyss_ioline%20==0) nyss_ioout('status', "processed {$nyss_ioline} lines", true);
 
 		//fix the gender entries
 		$l['gender'] = ( $l['gender'] ) ? $l['gender'] : $l['gender_id'];
@@ -224,7 +224,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			CRM_Core_DAO::freeResult( );
 		}
 		
-		//nyss_out('debug', $l,true);
+		//nyss_ioout('debug', $l,true);
 
 		/*------NOW IMPORT THE DATA-------------------------------------*/
 
@@ -268,9 +268,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
    		drupal_mail_send($message);
   	}
 
-  	nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
+  	nyss_ioout('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
 
-  	nyss_out('status','<a href="">click here</a> to continue to return to the import page.',true);
+  	nyss_ioout('status','<a href="">click here</a> to continue to return to the import page.',true);
 
   	exit();
 
@@ -278,8 +278,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 
-	//nyss_out('debug', $tbl,true);
-	//nyss_out('debug', $l,true);
+	//nyss_ioout('debug', $tbl,true);
+	//nyss_ioout('debug', $l,true);
 
     global $nyss_iofields;
 	global $nyss_select;
@@ -314,17 +314,17 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 	//otherwise it's an insert
 	if ( !empty($l[$pkImport]) ) {
 
-//nyss_out('status', 1, true);
-//nyss_out('debug', $pkCivi, true);
-//nyss_out('debug', $pkImport, true);
+//nyss_ioout('status', 1, true);
+//nyss_ioout('debug', $pkCivi, true);
+//nyss_ioout('debug', $pkImport, true);
 
 		//get the existing data
 		$sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
-//nyss_out('debug', $sql, true);
+//nyss_ioout('debug', $sql, true);
 
 		$dao = &CRM_Core_DAO::executeQuery( $sql );
 
-		if ( !$dao->fetch() ) nyss_out('error','no civirecord found. not importing.',true);
+		if ( !$dao->fetch() ) nyss_ioout('error','no civirecord found. not importing.',true);
 
         $up = array();
 	
@@ -378,7 +378,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 		
 		$l['contact_type'] = 'Individual';
 		$l['country_id'] = 1228; //assume US
-		$suffixes = getOptions("individual_suffix");
+		$suffixes = nyss_ioGetOptions("individual_suffix");
 		$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
 		$l['mid'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
 		$l['display_name'] = CRM_Utils_String::stripSpaces( $l['first_name'].' '.$l['mid'].' '.$l['last_name'].$suffix );
@@ -444,7 +444,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 	}
 }
 
-function getOptions($strGroup)
+function nyss_ioGetOptions($strGroup)
 {
   $session =& CRM_Core_Session::singleton();
 
@@ -462,9 +462,9 @@ function getOptions($strGroup)
   }
 
   return $options;
-} // getOptions()
+} // nyss_ioGetOptions()
 
-function getStates()
+function nyss_ioGetStates()
 {
   $session =& CRM_Core_Session::singleton();
 
@@ -477,9 +477,9 @@ function getStates()
   }
 
   return $options;
-} // getStates()
+} // nyss_ioGetStates()
 
-function convertProperCase( $string, $skipMixed = false ) {
+function nyss_ioConvertProperCase( $string, $skipMixed = false ) {
 
 	//if mixed case, don't do anything
     if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
