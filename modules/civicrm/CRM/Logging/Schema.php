@@ -238,7 +238,7 @@ COLS;
     /**
      * Create triggers populating the relevant log table every time the given table changes.
      */
-    private function createTriggersFor($table)
+    function createTriggersFor($table)
     {
         $columns = $this->columnsOf($table);
 

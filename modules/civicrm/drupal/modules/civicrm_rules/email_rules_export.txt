@@ -5,7 +5,7 @@ array (
     array (
       '#type' => 'rule',
       '#set' => 'event_mailing_test',
-      '#label' => 'Send Mail to Conference Services',
+      '#label' => 'Send Mail to Scheduling Services',
       '#active' => 1,
       '#weight' => '0',
       '#categories' => 
@@ -25,11 +25,11 @@ array (
           array (
             'to' => 'conference.services@example.com',
             'from' => '',
-            'subject' => 'New Conference Services Email: {mailing.subject}',
-            'message' => 'Senate District ABC has scheduled a new mailing. 
-{mailing.name}
+            'subject' => 'New Scheduling Services Email: {mailing.subject}',
+            'message' => 'A new mailing has been scheduled: {mailing.name}
+
 You can review the mail here: {mailing.editURL}
-You can schedule the mail for print production here: {mailing.scheduleURL}
+You can schedule the mail here: {mailing.scheduleURL}
 
 The content of the email is:
 <pre>
@@ -93,10 +93,10 @@ The content of the email is:
             'to' => print.production@example.com',
             'from' => '',
             'subject' => 'New Email to Print Production: {mailing.subject}',
-            'message' => 'Senate District ABC has scheduled a new mailing. 
-{mailing.name}
+            'message' => 'A new mailing has been scheduled: {mailing.name}
+
 You can review the mail here: {mailing.viewURL}
-You can approve the mail for dispatch here: {mailing.approveURL}
+You can approve the mail here: {mailing.approveURL}
 
 The content of the email is:
 <pre>

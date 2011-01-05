@@ -5675,6 +5675,9 @@ INSERT INTO civicrm_msg_template
 ===========================================================
 {if $isCaseActivity}
 {ts}Your Case Role(s){/ts} : {$contact.role}
+{if $manageCaseURL}
+{ts}Manage Case{/ts} : {$manageCaseURL}
+{/if}
 {/if}
 
 {if $editActURL}
@@ -5743,6 +5746,13 @@ INSERT INTO civicrm_msg_template
         {$contact.role}
        </td>
       </tr>
+      {if $manageCaseURL}
+       <tr>
+       <td colspan="2" {$valueStyle}>
+	   <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
+       </td>
+       </tr>
+      {/if}
      {/if}
      {if $editActURL} 
      <tr>
@@ -5809,6 +5819,9 @@ INSERT INTO civicrm_msg_template
 ===========================================================
 {if $isCaseActivity}
 {ts}Your Case Role(s){/ts} : {$contact.role}
+{if $manageCaseURL}
+{ts}Manage Case{/ts} : {$manageCaseURL}
+{/if}
 {/if}
 
 {if $editActURL}
@@ -5877,6 +5890,13 @@ INSERT INTO civicrm_msg_template
         {$contact.role}
        </td>
       </tr>
+      {if $manageCaseURL}
+       <tr>
+       <td colspan="2" {$valueStyle}>
+	   <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
+       </td>
+       </tr>
+      {/if}
      {/if}
      {if $editActURL} 
      <tr>
@@ -8021,7 +8041,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {ts}Thanks for your recurring contribution sign-up.{/ts}
 
 
-{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}
+{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}
 
 
 {ts}Start Date{/ts}:  {$recur_start_date|crmDate}
@@ -8038,7 +8058,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 
 
 ==================================================
-{ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+{ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
 
 ==================================================
 {ts}Start Date{/ts}: {$recur_start_date|crmDate}
@@ -8075,7 +8095,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
     {if $recur_txnType eq \'START\'}
 
      <p>{ts}Thanks for your recurring contribution sign-up.{/ts}</p>
-     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}</p>
+     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}</p>
      <p>{ts}Start Date{/ts}: {$recur_start_date|crmDate}</p>
      <p>{ts 1=$receipt_from_name 2=$receipt_from_email}You have pledged to make this recurring donation. You will be charged periodically (per frequency listed above), and you will receive an email receipt from %1 following each charge. These recurring donations will continue until you explicitly cancel the donation. You may change or cancel your recurring donation at anytime by logging into your account. If you have questions about recurring donations please contact us at %2.{/ts}</p>
 
@@ -8086,7 +8106,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
      <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
       <tr>
        <th {$headerStyle}>
-        {ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+        {ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
        </th>
       </tr>
       <tr>
@@ -8126,7 +8146,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {ts}Thanks for your recurring contribution sign-up.{/ts}
 
 
-{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}
+{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}
 
 
 {ts}Start Date{/ts}:  {$recur_start_date|crmDate}
@@ -8143,7 +8163,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 
 
 ==================================================
-{ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+{ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
 
 ==================================================
 {ts}Start Date{/ts}: {$recur_start_date|crmDate}
@@ -8180,7 +8200,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
     {if $recur_txnType eq \'START\'}
 
      <p>{ts}Thanks for your recurring contribution sign-up.{/ts}</p>
-     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}</p>
+     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}</p>
      <p>{ts}Start Date{/ts}: {$recur_start_date|crmDate}</p>
      <p>{ts 1=$receipt_from_name 2=$receipt_from_email}You have pledged to make this recurring donation. You will be charged periodically (per frequency listed above), and you will receive an email receipt from %1 following each charge. These recurring donations will continue until you explicitly cancel the donation. You may change or cancel your recurring donation at anytime by logging into your account. If you have questions about recurring donations please contact us at %2.{/ts}</p>
 
@@ -8191,7 +8211,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
      <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
       <tr>
        <th {$headerStyle}>
-        {ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+        {ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
        </th>
       </tr>
       <tr>
@@ -16473,8 +16493,8 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
     ( @domainID, 'civicrm/mailing/send&reset=1',                            'New Mailing', 'New Mailing',                                          'access CiviMail,create mailings', 'OR', @mailinglastID, '1', NULL, 1 ), 
-    ( @domainID, 'civicrm/mailing/browse/unscheduled&reset=1&scheduled=false', 'Draft and Unscheduled Mailings', 'Draft and Unscheduled Mailings', 'access CiviMail,create mailings', 'OR', @mailinglastID, '1', NULL, 2 ), 
-    ( @domainID, 'civicrm/mailing/browse/scheduled&reset=1&scheduled=true', 'Scheduled and Sent Mailings', 'Scheduled and Sent Mailings',          'access CiviMail,approve mailings', 'OR', @mailinglastID, '1', NULL, 3 ), 
+    ( @domainID, 'civicrm/mailing/browse/unscheduled&reset=1&scheduled=false', 'Draft and Unscheduled Mailings', 'Draft and Unscheduled Mailings', 'access CiviMail,create mailings,schedule mailings', 'OR', @mailinglastID, '1', NULL, 2 ), 
+    ( @domainID, 'civicrm/mailing/browse/scheduled&reset=1&scheduled=true', 'Scheduled and Sent Mailings', 'Scheduled and Sent Mailings',          'access CiviMail,approve mailings,create mailings,schedule mailings', 'OR', @mailinglastID, '1', NULL, 3 ), 
     ( @domainID, 'civicrm/mailing/browse/archived&reset=1',                 'Archived Mailings', 'Archived Mailings',                              'access CiviMail', '', @mailinglastID, '1', 1,    4 ), 
     ( @domainID, 'civicrm/admin/component&reset=1',                         'Headers, Footers, and Automated Messages', 'Headers, Footers, and Automated Messages', 'access CiviMail,administer CiviCRM', 'AND', @mailinglastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/messageTemplates&reset=1',                  'Message Templates', 'Message Templates',                 'administer CiviCRM', '', @mailinglastID, '1', NULL, 6 ),

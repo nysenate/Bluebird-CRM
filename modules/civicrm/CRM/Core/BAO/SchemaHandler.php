@@ -295,6 +295,11 @@ ALTER TABLE {$tableName}
             require_once 'CRM/Logging/Schema.php';
             $logging = new CRM_Logging_Schema;
             $logging->fixSchemaDifferencesFor($params['table_name'], array($params['name']));
+        // CRM-7293: if we’re dropping a column – rebuild triggers
+        } elseif ($params['operation'] == 'delete') {
+            require_once 'CRM/Logging/Schema.php';
+            $logging = new CRM_Logging_Schema;
+            $logging->createTriggersFor($params['table_name']);
         }
         
         return true;

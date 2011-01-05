@@ -132,8 +132,8 @@ INNER JOIN civicrm_contribution       con ON ( con.id = mp.contribution_id )
                 $contribution = new CRM_Contribute_DAO_Contribution();
                 $contribution->id = $contributionId;
                 $contribution->find(true);
-                $contribution->receive_date = CRM_Utils_Date::isoToMysql( $recur->receive_date );
-                $contribution->receipt_date = CRM_Utils_Date::isoToMysql( $recur->receipt_date );
+                $contribution->receive_date = CRM_Utils_Date::isoToMysql( $contribution->receive_date );
+                $contribution->receipt_date = CRM_Utils_Date::isoToMysql( $contribution->receipt_date );
                 
                 $this->_objects['contribution'] = $contribution;
                 

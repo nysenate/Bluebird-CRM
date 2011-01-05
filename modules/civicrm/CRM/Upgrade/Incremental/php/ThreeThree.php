@@ -309,7 +309,15 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id )
     }
 
     function upgrade_3_3_2( $rev ) 
-    {        
+    {    
+        $dropMailingIndex = false;
+        $indexes = CRM_Core_DAO::executeQuery( 'SHOW INDEXES FROM civicrm_mailing_job' );
+        while ( $indexes->fetch( ) ) {
+            if( $indexes->Key_name == 'parent_id' ){
+                $dropMailingIndex = true;
+                break;
+            }
+        }
         //CRM-7137
         require_once 'CRM/Member/DAO/MembershipBlock.php';
         // get membership type for each membership block.
@@ -337,6 +345,7 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id )
         }
 
         $upgrade =& new CRM_Upgrade_Form( );
+        $upgrade->assign( 'dropMailingIndex', $dropMailingIndex );
         $upgrade->processSQL( $rev );
     }
     

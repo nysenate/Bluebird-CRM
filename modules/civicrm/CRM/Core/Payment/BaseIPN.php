@@ -327,14 +327,25 @@ class CRM_Core_Payment_BaseIPN {
         $participant  =& $objects['participant'] ;
         $event        =& $objects['event']       ;
         $changeToday  =  CRM_Utils_Array::value( 'trxn_date', $input, self::$_now );
-
+        $recurContrib =& $objects['contributionRecur'];
+        
         $values = array( );
         if ( $input['component'] == 'contribute' ) {
-            require_once 'CRM/Contribute/BAO/ContributionPage.php';
-            CRM_Contribute_BAO_ContributionPage::setValues( $contribution->contribution_page_id, $values );
-            $contribution->source                  = ts( 'Online Contribution' ) . ': ' . $values['title'];
-            
-            if ( $values['is_email_receipt'] ) {
+            $isOfflineRecur = false;
+            if ( $contribution->contribution_page_id ) {
+                require_once 'CRM/Contribute/BAO/ContributionPage.php';
+                CRM_Contribute_BAO_ContributionPage::setValues( $contribution->contribution_page_id, $values ); 
+                $source = ts( 'Online Contribution' ) . ': ' . $values['title'];
+            } else if ( $recurContrib->id ) {
+                $isOfflineRecur = true;
+                $contribution->contribution_page_id = null;
+                $values['amount'] = $recurContrib->amount;
+                $values['contribution_type_id'] = $objects['contributionType']->id;
+                $values['title'] = $source = ts( 'Offline Recurring Contribution Payment' );
+            }
+            $contribution->source = $source;  
+            if ( $isOfflineRecur || 
+                 CRM_Utils_Array::value( 'is_email_receipt', $values ) ) {
                 $contribution->receipt_date = self::$_now;
             }
             
@@ -852,6 +863,7 @@ class CRM_Core_Payment_BaseIPN {
             }
             // CRM_Core_Error::debug('val',$values);
 
+            require_once 'CRM/Contribute/BAO/ContributionPage.php';
             return CRM_Contribute_BAO_ContributionPage::sendMail( $ids['contact'], $values, $isTest, $returnMessageText );
         }
     }

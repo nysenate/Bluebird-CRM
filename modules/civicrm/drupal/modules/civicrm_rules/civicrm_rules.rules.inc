@@ -201,11 +201,11 @@ function rules_action_civicrm_mailing_send_email_form( $settings = array(), &$fo
     
     if ( !CRM_Utils_Array::value('message', $settings ) ) {
     $settings['message'] = '
-Senate District ABC has scheduled a new mailing. 
-{mailing.name}
+A new mailing has been scheduled: {mailing.name}
+
 {mailing.viewUrl}
 You can review the mail here: {mailing.editUrl}
-You can schedule the mail for print production here: {mailing.scheduleUrl}
+You can schedule the mail for here: {mailing.scheduleUrl}
 
 The content of the email is:
 <pre>

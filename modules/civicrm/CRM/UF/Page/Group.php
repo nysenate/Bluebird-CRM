@@ -151,6 +151,9 @@ class CRM_UF_Page_Group extends CRM_Core_Page
         $id = CRM_Utils_Request::retrieve('id', 'Positive',
                                           $this, false, 0);
         
+        //set the context and then start w/ action.
+        $this->setContext( $id, $action );
+        
         // what action to take ?
         if ( $action & ( CRM_Core_Action::UPDATE | CRM_Core_Action::ADD | CRM_Core_Action::DELETE |CRM_Core_Action::DISABLE ) ) {
             $this->edit($id, $action) ;
@@ -338,7 +341,6 @@ class CRM_UF_Page_Group extends CRM_Core_Page
     function preview( $id, $action ) 
     {
       $controller = new CRM_Core_Controller_Simple('CRM_UF_Form_Preview', ts('CiviCRM Profile Group Preview'),null);   
-      $this->setContext( $id, $action );
       $controller->set('id', $id);
       $controller->setEmbedded(true);
       $controller->process();
