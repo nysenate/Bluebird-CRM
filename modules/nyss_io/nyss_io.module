@@ -380,14 +380,16 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 
 		//first set a few additional values required for insert action
 		require_once 'CRM/Utils/String.php';
-		
+	
 		$l['contact_type'] = 'Individual';
 		$l['country_id'] = 1228; //assume US
 		$suffixes = ioGetOptions("individual_suffix");
 		$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
-		$l['mid'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
-		$l['display_name'] = CRM_Utils_String::stripSpaces( $l['first_name'].' '.$l['mid'].' '.$l['last_name'].$suffix );
-		$l['sort_name'] = $l['last_name'].', '.$l['first_name'].' '.$l['mid'];
+		$l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
+		$display_name = $l['first_name'].' '.$l['middle_name'].' '.$l['last_name'].$suffix; 
+		//$l['display_name'] = CRM_Utils_String::stripSpaces( $display_name );
+		$l['display_name'] = nyss_stripSpaces( $display_name );
+		$l['sort_name'] = $l['last_name'].', '.$l['first_name'].' '.$l['middle_name'];
 		$l['location_type_id'] = 6; //set address type to BOE
 		$l['address_is_primary'] = 1; //set to primary
 		$l['phone_type_id'] = 1; //set to phone
@@ -395,7 +397,8 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 		$l['phone_is_primary'] = 1; //set to primary
 		$l['email_location_type_id'] = 1; //set to home
 		$l['email_is_primary'] = 1; //set to primary
-		//echo '<pre>'; print_r($l); echo '</pre>';
+		
+		//nyss_out('debug', $l, true);
 		
 		//set up the insert
 		foreach($l as $key=>$data) {

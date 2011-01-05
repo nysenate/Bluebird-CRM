@@ -55,3 +55,19 @@ function nyss_ioaddMsg($type,$msg) {
 	drupal_set_message($msg,$status, false);
 
 }
+
+//replicated from CRM_Utils_String::stripSpaces
+//in order to process off c3.2.x core base
+function nyss_stripSpaces( $string ) {
+    if ( empty($string) ) return $string;
+        
+    $pat = array( 0 => "/^\s+/",
+                  1 =>  "/\s{2,}/", 
+                  2 => "/\s+\$/" );
+        
+    $rep = array( 0 => "",
+                  1 => " ",
+                  2 => "" );
+        
+	return preg_replace( $pat, $rep, $string );
+}
