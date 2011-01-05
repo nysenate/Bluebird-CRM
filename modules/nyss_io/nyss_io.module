@@ -39,8 +39,8 @@ function nyss_ioimport_form() {
 
    $form['servercsv'] = array(
      '#type' => 'textfield',
-     '#title' => t('OR specify a filename on the server in the \'/tmp\' dir'),
-     '#size' => 20,
+     '#title' => t('OR specify a filename on the server in the \'/data/importData\' dir'),
+     '#size' => 40,
    );
 
    $form['sendemail'] = array(
@@ -83,22 +83,27 @@ function nyss_ioimport_form_validate($form, &$form_state) {
 
 function nyss_iovalidateuploadform($form, &$form_state) {
 
-   if (!empty($form_state['values']['servercsv'])) {
+	if (!empty($form_state['values']['servercsv'])) {
 
-	$form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
-    $form_state['values']['csv']['file']->filepath = '/tmp/'.$form_state['values']['servercsv'];
+		$form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
+    	$form_state['values']['csv']['file']->filepath = '/data/importData/'.$form_state['values']['servercsv'];
+		if ( !file_exists($form_state['values']['csv']['file']->filepath ) ) {
+			form_set_error('servercsv', 'No file by that name was found.');
+		}
 	
-   } else {
-	   $file = file_save_upload('csv');
+   	} else {
+	
+	   	$file = file_save_upload('csv');
 
 	    if (!$file) {
-	      form_set_error('upload', 'You must select a valid file to upload.');
+	      	form_set_error('csv', 'You must select a valid file to upload.');
 	    } else {
-	      // Manually add the uploaded file to the $form_state
-	      $form_state['values']['csv']['title'] = $file->filename;
-	      $form_state['values']['csv']['file'] = $file;
+	      	// Manually add the uploaded file to the $form_state
+	      	$form_state['values']['csv']['title'] = $file->filename;
+	      	$form_state['values']['csv']['file'] = $file;
 	    }
-   }
+		
+   	}
 }
 
 function nyss_ioimport_form_submit($form, &$form_state) {
@@ -137,9 +142,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	if (!$dryrun) $dryrun=false;
 
 	//get some civicrm values and flip so we can easily lookup values
-    $aStates = array_flip(getStates());
-    $aGender = array_flip(getOptions("gender"));
-    $aSuffix = array_flip(getOptions("individual_suffix"));
+    $aStates = array_flip(ioGetStates());
+    $aGender = array_flip(ioGetOptions("gender"));
+    $aSuffix = array_flip(ioGetOptions("individual_suffix"));
 	//echo '<pre>'; print_r($aStates); echo '</pre>'; exit();
 	//echo '<pre>'; print_r($aGender); echo '</pre>'; exit();
 	//echo '<pre>'; print_r($aSuffix); echo '</pre>'; exit();
@@ -378,7 +383,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 		
 		$l['contact_type'] = 'Individual';
 		$l['country_id'] = 1228; //assume US
-		$suffixes = getOptions("individual_suffix");
+		$suffixes = ioGetOptions("individual_suffix");
 		$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
 		$l['mid'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
 		$l['display_name'] = CRM_Utils_String::stripSpaces( $l['first_name'].' '.$l['mid'].' '.$l['last_name'].$suffix );
@@ -444,7 +449,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 	}
 }
 
-function getOptions($strGroup)
+function ioGetOptions($strGroup)
 {
   $session =& CRM_Core_Session::singleton();
 
@@ -462,9 +467,9 @@ function getOptions($strGroup)
   }
 
   return $options;
-} // getOptions()
+} // ioGetOptions()
 
-function getStates()
+function ioGetStates()
 {
   $session =& CRM_Core_Session::singleton();
 
@@ -477,7 +482,7 @@ function getStates()
   }
 
   return $options;
-} // getStates()
+} // ioGetStates()
 
 function convertProperCase( $string, $skipMixed = false ) {
 

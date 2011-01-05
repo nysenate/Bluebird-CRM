@@ -1,6 +1,5 @@
 <?php
 
-
 function nyss_iodbDateFromStr($str) {
 
 	return nyss_iodbDate(nyss_iotimeFromStr($str));
@@ -56,4 +55,3 @@ function nyss_ioaddMsg($type,$msg) {
 	drupal_set_message($msg,$status, false);
 
 }
-?>
