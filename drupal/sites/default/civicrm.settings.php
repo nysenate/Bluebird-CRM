@@ -23,6 +23,15 @@ define('CIVICRM_DOMAIN_GROUP_ID', null);
 define('CIVICRM_DOMAIN_ORG_ID', null);
 define('CIVICRM_EVENT_PRICE_SET_DOMAIN_ID', 0 );
 
+define('CIVICRM_ACTIVITY_ASSIGNEE_MAIL' , 1 );
+define('CIVICRM_CONTACT_AJAX_CHECK_SIMILAR' , 1 );
+define('CIVICRM_PROFILE_DOUBLE_OPTIN', 1 );
+define('CIVICRM_TRACK_CIVIMAIL_REPLIES', false);
+// define( 'CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log' );
+define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
+define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
+define('CIVICRM_CIVIMAIL_WORKFLOW', 1 );
+
 /**
  * 
  * Do not change anything below this line. Keep as is

@@ -9,20 +9,28 @@ CKEDITOR.editorConfig = function( config )
 	// config.language = 'fr';
 	//config.uiColor = '#AADC6E';
     
+    // NYSS vvvvvvvv -  begin modifications to make IMCE module work with civicrm - kyle
+    config.filebrowserBrowseUrl = '/index.php?q=imce&app=ckeditor|url@txtUrl|width@txtWidth|height@txtHeight';
+    config.filebrowserImageBrowseUrl = '/index.php?q=imce&app=ckeditor|url@txtUrl|width@txtWidth|height@txtHeight';
+    config.filebrowserFlashBrowseUrl = '/index.php?q=imce&app=ckeditor|url@txtUrl|width@txtWidth|height@txtHeight';
+    // NYSS ^^^^^^^  -  end modifications to make IMCE woork with civicrm - kyle
+    
     // disable auto spell check
     config.scayt_autoStartup = false;
     
     // This is actually the default value.
     config.toolbar_Full =
     [
+    // NYSS vvvvvvvv -  begin modifications: fix editor options buttons - kyle
         ['Bold','Italic','Underline'],
         ['Font','FontSize'],
-        ['TextColor','BGColor'],   
+        //['TextColor','BGColor'],   
         ['Link','Unlink'],
-        ['Image','HorizontalRule','Smiley'],
-        ['NumberedList','BulletedList','Outdent','Indent','Blockquote'],     
-        ['PasteText','PasteFromWord','SpellChecker'],
+        ['Image'],
+        ['NumberedList','BulletedList'],     
+        ['PasteText','PasteFromWord'],
         ['RemoveFormat'],
-        ['Source','-','Preview','-','About'],
+        ['Source'],
+    // NYSS ^^^^^^^  -  end modifications: fix editor options buttons - kyle
     ];
 };
