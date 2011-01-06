@@ -3,7 +3,7 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2010-12-02
-// Revised: 2010-12-14
+// Revised: 2011-01-05
 //
 
 function listLdapauth($dbcon, $colname = '*')
@@ -124,9 +124,12 @@ function deleteFromList($dbcon, $fldname, $fldval)
     return false;
   }
 
+  // If a "|" is part of the new value, then break it into key/value, and
+  // match on the key.  Otherwise, match on the value itself.
   $fldval_parts = explode("|", $fldval);
 
   if (count($fldval_parts) == 1) {
+    // Search the array for the matching value.
     $key = array_search($fldval, $fldlist);
     if ($key !== false) {
       unset($fldlist[$key]);
@@ -136,6 +139,7 @@ function deleteFromList($dbcon, $fldname, $fldval)
     }
   }
   else {
+    // Search the array for the matching key.
     $key = $fldval_parts[0];
     if (isset($fldlist[$key])) {
       unset($fldlist[$key]);
