@@ -1,9 +1,9 @@
 #
 # common_funcs.awk - Shared AWK functions for CRM data conversions
 #
+# Project: BluebirdCRM
 # Author: Ken Zalewski
 # Organization: New York State Senate
-# Version: 1.1
 # Created: 2010-05-11
 # Revised: 2010-08-10
 #
