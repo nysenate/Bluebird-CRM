@@ -1,13 +1,18 @@
-./convert_issue_codes.sh /data/importData/SD99/SD99ISS.TXT > /data/importData/SD99/SD99ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD07/SD07ISS.TXT > /data/importData/SD07/SD07ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD14/SD14ISS.TXT > /data/importData/SD14/SD14ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD15/SD15ISS.TXT > /data/importData/SD15/SD15ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD23/SD23ISS.TXT > /data/importData/SD23/SD23ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD26/SD26ISS.TXT > /data/importData/SD26/SD26ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD26EXT/SD26EXTISS.TXT > /data/importData/SD26EXT/SD26EXTISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD37/SD37ISS.TXT > /data/importData/SD37/SD37ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD37EXT/SD37EXTISS.TXT > /data/importData/SD37EXT/SD37EXTISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD26EXT/SD26EXTISS.TXT > /data/importData/SD26EXT/SD26EXTISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD43/SD43ISS.TXT > /data/importData/SD43/SD43ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD49/SD49ISS.TXT > /data/importData/SD49/SD49ISSCONV.TXT
-./convert_issue_codes.sh /data/importData/SD51/SD51ISS.TXT > /data/importData/SD51/SD51ISSCONV.TXT
+#!/bin/sh
+#
+
+script_dir=`dirname $0`
+script_dir=`cd $script_dir; echo $PWD`
+conv=$script_dir/convert_issue_codes.sh
+import_dir=/data/importData
+
+cd $import_dir
+
+for d in sd?? sd??ext; do
+  du=`echo $d | tr [:lower:] [:upper:]`
+  (
+    cd $d
+    $conv ${du}ISS.TXT > ${du}ISSCONV.TXT
+  )
+done
+
