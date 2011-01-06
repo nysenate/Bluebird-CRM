@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-01
-# Revised: 2010-12-27
+# Revised: 2011-01-05
 #
 
 prog=`basename $0`
@@ -21,7 +21,7 @@ tempdir=/tmp/bluebird_imports
 
 
 usage() {
-  echo "Usage: $prog [--no-init] [--no-unzip] [--no-import] [--no-cc] [--no-fixperms] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name" >&2
+  echo "Usage: $prog [--no-init] [--no-unzip] [--no-import] [--no-ldapconfig] [--no-cc] [--no-fixperms] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name" >&2
 }
 
 create_instance() {
@@ -89,6 +89,16 @@ import_data() {
 }
 
 
+add_ldap_group() {
+  instance="$1"
+  group="$2"
+  (
+    set -x
+    $script_dir/manageLdapConfig.sh --add-entry "$group" $instance
+    $script_dir/manageLdapConfig.sh --add-group "$group" $instance
+  )
+}
+
 clear_cache() {
   instance="$1"
   (
@@ -110,6 +120,7 @@ stage=$default_stage
 no_init=0
 no_unzip=0
 no_import=0
+no_ldapcfg=0
 no_clearcache=0
 no_fixperms=0
 force_unzip=0
@@ -121,6 +132,7 @@ while [ $# -gt 0 ]; do
     --no-init|--no-create) no_init=1 ;;
     --no-unzip|--no-unarchive) no_unzip=1 ;;
     --no-import) no_import=1 ;;
+    --no-ldap*) no_ldapcfg=1 ;;
     --no-clear-cache|--no-cc) no_clearcache=1 ;;
     --no-fixperm*) no_fixperms=1 ;;
     --force-unzip) force_unzip=1 ;;
@@ -152,9 +164,8 @@ fi
 
 db_name=`$readConfig --instance $instance db.name`
 datasets=`$readConfig --instance $instance datasets`
-# Not using is_majority, ldap_group, imap_user, imap_pass yet...
-is_majority=`$readConfig --instance $instance majority`
-ldap_group=`$readConfig --instance $instance ldap.group`
+ldap_groups=`$readConfig --instance $instance ldap.groups`
+# Not using imap_user, imap_pass yet...
 imap_user=`$readConfig --instance $instance imap.user`
 imap_pass=`$readConfig --instance $instance imap.pass`
 
@@ -166,6 +177,7 @@ else
 fi
 
 datasets=`echo $datasets | tr , " "`
+ldap_groups=`echo $ldap_groups | tr , " "`
 sourcedesc=omis
 
 for ds in $datasets; do
@@ -184,6 +196,15 @@ for ds in $datasets; do
 
   sourcedesc=ext
 done
+
+if [ $no_ldapcfg -eq 1 ]; then
+  echo "==> Skipping LDAP config for instance [$instance]"
+else
+  echo "==> About to configure LDAP groups for CRM instance [$instance]"
+  for ldap_group in $ldap_groups; do
+    add_ldap_group $instance $ldap_group
+  done
+fi
 
 if [ $no_clearcache -eq 1 ]; then
   echo "==> Skipping cache clear for instance [$instance]"
