@@ -253,6 +253,7 @@ hr.space {background:#fff;color:#fff;}
 .clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
 .clearfix, .container {display:block;}
 .clear {clear:both;}
+.clear_left {clear:left;}
 
 
 /* @group blueprint overrides */
@@ -399,8 +400,8 @@ textarea, input {
 }
 
 div.form-item {
-  margin-bottom: 1.5em;
-  margin-top: 1.5em;
+  margin-bottom: 1em;
+  margin-top: 1em;
 }
 
 div.error, tr.error, span.form-required, span.marker {
@@ -857,7 +858,7 @@ textarea, input {
     }
     #tag-refresh-button span {color: #FFF;}	
 
-ul.token-input-list-facebook { width:300px;}
+ul.token-input-list-facebook { width:265px;}
 
 .custom_22_-1-row input[type="checkbox"],
 .custom_22_-1-row label {
@@ -882,33 +883,39 @@ ul.token-input-list-facebook { width:300px;}
     margin: 0px;
     }
 
-#mainTabContainer div#Tag {position: relative;}
-
-#mainTabContainer div#Tag .tag-292-section,
-#mainTabContainer div#Tag .tag-296-section,
-#mainTabContainer div#Tag .tag-297-section {
-    position: absolute;
+/* Contact Tags Tab*/
+#mainTabContainer div#Tag .tag-section {
+	float: left;
     width: 410px;
-    }
-#mainTabContainer div#Tag .tag-292-section .label,
-#mainTabContainer div#Tag .tag-296-section .label,
-#mainTabContainer div#Tag .tag-297-section .label {
-    float: none;
-    }
-#mainTabContainer div#Tag .tag-292-section .content,
-#mainTabContainer div#Tag .tag-296-section .content,
-#mainTabContainer div#Tag .tag-297-section .content {
-    margin-left: 0px;
-    }
-#mainTabContainer div#Tag .tag-296-section {
-    top:42px;    
-    left:16px;
-    }
-#mainTabContainer div#Tag .tag-292-section,
-#mainTabContainer div#Tag .tag-297-section {
-    top:120px;
-    left:16px;
-    }
+	margin-left: 16px;
+}
+#mainTabContainer div#Tag .tag-section .label {
+	font-size: 120%;
+	margin: 4px 0 -10px;
+	float: none;
+}
+#mainTabContainer div#Tag .tag-section .content {
+	margin-left: 0;
+}
+#mainTabContainer .contactTagsList {
+	font-size: 11px;
+	margin: 0 16px 6px;
+}
+#mainTabContainer ul.token-input-list-facebook {
+	width: 410px;
+}
+#mainTabContainer .legpositions {
+	font-size: 11px;
+	margin: 0 16px 6px;
+	width: 398px;
+	padding: 6px;
+}
+#mainTabContainer .legpositions ul {
+	margin: .5em 0 0 1.5em;
+}
+#mainTabContainer .legpositions .label {
+	font-size: 14px;
+}
 
 /* PDF printing fixes */
 
@@ -1055,9 +1062,21 @@ ul.token-input-list-facebook { width:300px;}
 #crm-container #demographics .form-item span.labels {
 	width: 23%;
 }
-#crm-container #District_Information_7_1 .crm-accordion-open > .crm-accordion-body {
+#crm-container .crm-edit-address-custom_data .crm-accordion-open > .crm-accordion-body {
 	border: none;
 }
-#crm-container #District_Information_7_1 .crm-accordion-header {
+#crm-container .crm-edit-address-custom_data .crm-accordion-header {
+	width: 300px;
+}
+#crm-container .delete_block {
+	display: block;
+	margin-left: 5px;
+}
+#advanced-search-form div.accordion_wrapper {
+	border: none;
+	padding: 0;
+	
+}
+#crm-container .tag-292-section div.token-input-dropdown-facebook {
 	width: 300px;
 }
