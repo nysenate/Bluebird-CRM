@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -243,8 +243,9 @@ class CRM_Grant_Form_Grant extends CRM_Core_Form
     static function formRule( $fields, $files, $self ) {  
         $errors = array( ); 
         
-        if ( isset( $fields['contact_select_id'] ) && !$fields['contact_select_id'] ) {
-            $errors['contact'] = ts('Please select a contact or create new contact');
+        //check if contact is selected in standalone mode
+        if ( isset( $fields['contact_select_id'][1] ) && !$fields['contact_select_id'][1] ) {
+            $errors['contact[1]'] = ts('Please select a contact or create new contact');
         }
         
         return $errors;
@@ -275,9 +276,10 @@ class CRM_Grant_Form_Grant extends CRM_Core_Form
         if (!$params['grant_report_received']) {
             $params['grant_report_received'] = "null";
         } 
+        
         // set the contact, when contact is selected
         if ( CRM_Utils_Array::value('contact_select_id', $params ) ) {
-            $this->_contactID = CRM_Utils_Array::value('contact_select_id', $params);
+            $this->_contactID = $params['contact_select_id'][1];
         }
         
         $params['contact_id'] = $this->_contactID;

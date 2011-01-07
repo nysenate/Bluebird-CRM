@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -79,7 +79,7 @@ class CRM_Contribute_DAO_PremiumsProduct extends CRM_Core_DAO
      * @var boolean
      * @static
      */
-    static $_log = false;
+    static $_log = true;
     /**
      * Contribution ID
      *

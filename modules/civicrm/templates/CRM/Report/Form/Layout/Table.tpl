@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -29,7 +29,8 @@
             {include file="CRM/common/pager.tpl" location="top" noForm=0}
         </div>
     {/if}
-    <table class="report-layout">
+    {include file="CRM/common/jsortable.tpl"}
+    <table class="report-layout display">
         <thead class="sticky">
         <tr> 
             {foreach from=$columnHeaders item=header key=field}
@@ -69,14 +70,18 @@
                         
                         {if $row.$field eq 'Subtotal'}
                             {$row.$field}
-                        {elseif $header.type & 4}
+                        {elseif $header.type & 4 OR $header.type & 256}   
                             {if $header.group_by eq 'MONTH' or $header.group_by eq 'QUARTER'}
                                 {$row.$field|crmDate:$config->dateformatPartial}
                             {elseif $header.group_by eq 'YEAR'}	
                                 {$row.$field|crmDate:$config->dateformatYear}
-                            {else}		
-                                {$row.$field|truncate:10:''|crmDate}
-                            {/if}	
+                            {else}	
+                                {if $header.type & 4}	
+                                   {$row.$field|truncate:10:''|crmDate}
+                                {else}
+                                   {$row.$field|crmDate}
+                                {/if}
+                            {/if} 
                         {elseif $header.type eq 1024}
                             <span class="nowrap">{$row.$field|crmMoney}</span>
                         {else}

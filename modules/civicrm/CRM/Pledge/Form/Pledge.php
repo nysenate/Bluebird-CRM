@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -238,16 +238,24 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form
             $defaults['contribution_type_id']    = array_search( 'Donation', CRM_Contribute_PseudoConstant::contributionType() );
         }
         
+        $pledgeStatus      = CRM_Contribute_PseudoConstant::contributionStatus( );
+        $pledgeStatusNames = CRM_Core_OptionGroup::values( 'contribution_status', 
+                                                           false, false, false, null, 'name', true );
+        // get default status label (pending)
+        $defaultPledgeStatus = CRM_Utils_Array::value( array_search( 'Pending', $pledgeStatusNames ),
+                                                       $pledgeStatus );
+
         //assign status.
         $this->assign( 'status', CRM_Utils_Array::value( CRM_Utils_Array::value( 'status_id', $this->_values ),
-                                                         CRM_Contribute_PseudoConstant::contributionStatus( ),
-                                                         'Pending' ) );
+                                                         $pledgeStatus,
+                                                         $defaultPledgeStatus ) );
+        
         //honoree contact.
         if ( $this->_honorID ) {
             require_once 'CRM/Contact/BAO/Contact.php';
             $honorDefault = array();
             $idParams = array( 'contact_id' => $this->_honorID );
-            CRM_Contact_BAO_Contact::retrieve( $idParams, $honorDefault, $ids );
+            CRM_Contact_BAO_Contact::retrieve( $idParams, $honorDefault );
             $honorType = CRM_Core_PseudoConstant::honor( );   
             $defaults["honor_prefix_id"]  = $honorDefault["prefix_id"];
             $defaults["honor_first_name"] = CRM_Utils_Array::value( "first_name", $honorDefault );
@@ -364,7 +372,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form
         // Fix frequency unit display for use with frequency_interval
         $freqUnitsDisplay = array( );
         foreach ($this->_freqUnits as $val => $label) {
-            $freqUnitsDisplay[$val] = ts( '%1(s)', array( 1 => $val ) );
+            $freqUnitsDisplay[$val] = ts('%1(s)', array(1 => $label));
         }
         $element =& $this->add( 'select', 'frequency_unit', 
                                 ts( 'Frequency' ), 
@@ -467,8 +475,8 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form
         $errors = array( );
 
         //check if contact is selected in standalone mode
-        if ( isset( $fields['contact_select_id'] ) && !$fields['contact_select_id'] ) {
-            $errors['contact'] = ts('Please select a valid contact or create new contact');
+        if ( isset( $fields['contact_select_id'][1] ) && !$fields['contact_select_id'][1] ) {
+            $errors['contact[1]'] = ts('Please select a contact or create new contact');
         }
         
         if ( isset( $fields["honor_type_id"] ) ) {
@@ -517,7 +525,7 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form
         
         // set the contact, when contact is selected
         if ( CRM_Utils_Array::value('contact_select_id', $formValues ) ) {
-            $this->_contactID = CRM_Utils_Array::value('contact_select_id', $formValues);
+            $this->_contactID = $formValues['contact_select_id'][1];
         }
         
         $config  = CRM_Core_Config::singleton( );

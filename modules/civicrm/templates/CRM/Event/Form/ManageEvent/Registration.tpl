@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,6 +28,7 @@
 {ts}If you want to provide an Online Registration page for this event, check the first box below and then complete the fields on this form.{/ts} 
 {help id="id-event-reg"}
 </div>
+<span id="restmsg" class="msgok" style="display:none"></span>
 <div class="crm-block crm-form-block crm-event-manage-registration-form-block">
 <div class="crm-submit-buttons">
    {include file="CRM/common/formButtons.tpl" location="top"}
@@ -110,8 +111,8 @@
             <td scope="row" class="label" width="20%">{$form.custom_pre_id.label}</td>
             <td>{$form.custom_pre_id.html}<br />
             <span class="description">{ts}Include additional fields on this registration form by configuring and selecting a CiviCRM Profile to be included at the top of the page (immediately after the introductory message).{/ts}{help id="event-profile"}</span></td>
+	 </tr>
          <tr class="crm-event-manage-registration-form-block-custom_post_id">
-         </tr>
             <td scope="row" class="label" width="20%">{$form.custom_post_id.label}</td>
             <td>{$form.custom_post_id.html}<br />
             <span class="description">{ts}Include additional fields on this registration form by configuring and selecting a CiviCRM Profile to be included at the bottom of the page.{/ts}</span></td>
@@ -239,10 +240,11 @@
                </td>
              </tr>
            </table>
+	  </div>
         </fieldset>
         </div>
-    </div>
     </div> {*end of div registration_blocks*}
+    </div>
  <div class="crm-submit-buttons">
       {include file="CRM/common/formButtons.tpl" location="bottom"}
  </div>
@@ -264,6 +266,14 @@ target_element_type ="block"
 field_type          ="radio"
 invert              = 0
 }
+{include file="CRM/common/showHideByFieldValue.tpl" 
+trigger_field_id    ="is_multiple_registrations"
+trigger_value       =""
+target_element_id   ="additional_profile_pre|additional_profile_post" 
+target_element_type ="table-row"
+field_type          ="radio"
+invert              = 0
+}
 {if $form.requires_approval}
 {include file="CRM/common/showHideByFieldValue.tpl" 
     trigger_field_id    ="requires_approval"
@@ -282,6 +292,22 @@ invert              = 0
             cj("#additional_custom_post_id").val('');
         }
     });
+    
+    showRuleFields( {/literal}{$ruleFields}{literal} );
+
+    function showRuleFields( ruleFields ) 
+    {	   
+        var errorMsg = '{/literal}{ts 1="' + ruleFields + '"}In order to allow multiple registrations with the same email address, the default "Fuzzy" Dedupe Rule will be used to check for matching contact records and prevent duplicate registrations. This rule currently uses the following fields: %1. First and Last Name will be used to check for matches among the multiple participants being registered.{/ts}{literal}';
+
+        //display error message.
+        var imageIcon = "<a href='#' onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="ui-icon ui-icon-close" style="float:left"></div>' + '</a>';
+
+        if ( cj("#allow_same_participant_emails").attr( 'checked' ) ) {
+            cj( '#restmsg' ).html( imageIcon + errorMsg  ).show( );
+        } else {
+            cj( '#restmsg' ).html( imageIcon + errorMsg  ).hide( );
+        }
+    }
     {/literal}
 </script>
 {include file="CRM/common/formNavigate.tpl"}

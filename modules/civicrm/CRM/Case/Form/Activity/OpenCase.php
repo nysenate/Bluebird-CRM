@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -115,18 +115,19 @@ class CRM_Case_Form_Activity_OpenCase
             require_once 'CRM/Contact/Form/NewContact.php';
             CRM_Contact_Form_NewContact::buildQuickForm( $form );
         }
-        require_once 'CRM/Core/OptionGroup.php';        
-        $caseType = CRM_Core_OptionGroup::values('case_type');
+        
+        require_once 'CRM/Case/PseudoConstant.php';
+        $caseType = CRM_Case_PseudoConstant::caseType( );
         $form->add('select', 'case_type_id',  ts( 'Case Type' ),  
                    $caseType , true);
         
-        $caseStatus  = CRM_Core_OptionGroup::values('case_status');
+        $caseStatus  = CRM_Case_PseudoConstant::caseStatus( );
         $form->add('select', 'status_id',  ts( 'Case Status' ),  
                    $caseStatus , true  );
-
+        
         $form->add( 'text', 'duration', ts('Duration'),array( 'size'=> 4,'maxlength' => 8 ) );
         $form->addRule('duration', ts('Please enter the duration as number of minutes (integers only).'), 'positiveInteger');  
-
+        
         require_once "CRM/Contact/BAO/Contact.php";
         if ( $form->_currentlyViewedContactId ) {
             list( $displayName ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $form->_currentlyViewedContactId );
@@ -136,13 +137,12 @@ class CRM_Case_Form_Activity_OpenCase
         $form->addDate( 'start_date', ts('Case Start Date'), true, array( 'formatType' => 'activityDate') );
         
         $form->add('select', 'medium_id',  ts( 'Medium' ), 
-                   CRM_Core_OptionGroup::values('encounter_medium'), true);
+                   CRM_Case_PseudoConstant::encounterMedium( ), true );
 
         // calling this field activity_location to prevent conflict with contact location fields
         $form->add('text', 'activity_location', ts('Location'), CRM_Core_DAO::getAttribute( 'CRM_Activity_DAO_Activity', 'location' ) );
         
-        $form->add('textarea', 'activity_details', ts('Details'), 
-                   CRM_Core_DAO::getAttribute( 'CRM_Activity_DAO_Activity', 'details' ) );
+	$form->addWysiwyg( 'activity_details', ts('Details'), array( 'rows' => 4, 'cols' => 60 ), false );
         
         $form->addButtons(array( 
                                 array ( 'type'      => 'upload', 
@@ -170,20 +170,20 @@ class CRM_Case_Form_Activity_OpenCase
         }
 
         // set the contact, when contact is selected
-        if ( CRM_Utils_Array::value( 'contact_select_id', $params ) ) {
-            $params['contact_id'] = CRM_Utils_Array::value( 'contact_select_id', $params );
+        if ( $params['contact_select_id'][1] ) {
+            $params['contact_id'] = $params['contact_select_id'][1];
             $form->_currentlyViewedContactId = $params['contact_id'];
         } elseif( $form->_allowMultiClient && $form->_context != 'case' ) {
-            $clients = explode( ',', $params['contact'] );
+            $clients = explode( ',', $params['contact'][1] );
             $form->_currentlyViewedContactId = $clients[0];
         }
 
         // for open case start date should be set to current date
         $params['start_date'] = CRM_Utils_Date::processDate( $params['start_date'], date('Hi') );
         require_once 'CRM/Case/PseudoConstant.php';
-        $caseStatus = CRM_Case_PseudoConstant::caseStatus( );
+        $caseStatus = CRM_Case_PseudoConstant::caseStatus( 'name' );
         // for resolved case the end date should set to now    
-        if ( $params['status_id'] == array_search( 'Resolved', $caseStatus ) ) {
+        if ( $params['status_id'] == array_search( 'Closed', $caseStatus ) ) {
             $params['end_date']   = $params['now'];
         }
         
@@ -207,13 +207,13 @@ class CRM_Case_Form_Activity_OpenCase
         }
 
         $errors = array( );
-        //check if contact is selected in standalone mode for single client option
-        if ( isset( $values[contact_select_id] ) && !$values[contact_select_id]  && !$form->_allowMultiClient ) {
-            $errors['contact'] = ts('Please select a valid contact or create new contact');
+        //check if contact is selected in standalone mode
+        if ( isset( $fields['contact_select_id'][1] ) && !$fields['contact_select_id'][1] ) {
+            $errors['contact[1]'] = ts('Please select a contact or create new contact');
         }
         //check selected contact for multi client option
-        if ( $form->_allowMultiClient && isset( $values[contact] ) && !$values[contact] ) {
-            $errors['contact'] = ts('Please select a valid contact or create new contact');
+        if ( $form->_allowMultiClient && isset( $values[contact][1] ) && !$values[contact][1] ) {
+            $errors['contact[1]'] = ts('Please select a valid contact or create new contact');
         }
         
         return $errors;
@@ -249,7 +249,7 @@ class CRM_Case_Form_Activity_OpenCase
 
         // 1. create case-contact
         if( $isMultiClient && $this->_context != 'case' ) {
-            $client = explode( ',', $params['contact'] );
+            $client = explode( ',', $params['contact'][1] );
             foreach ($client as $key => $cliId ) {
                 if ( empty($cliId) ) {
                     CRM_Core_Error::fatal( 'contact_id cannot be empty' );

@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -46,13 +46,14 @@
   {/if}
   {/if}
  </div>
- <div class="crm-accordion-body">{*NYSS 2649 LCD improve consistency between AdvSearch popup and full screen*}
+ <div class="crm-accordion-body accordion_wrapper">{*NYSS 2649 LCD improve consistency between AdvSearch popup and full screen*}
   {include file="CRM/Contact/Form/Search/AdvancedCriteria.tpl"}
  </div>
 </div>  
 </div>
 
 {if $rowsEmpty}
+{*LCD*}
 {literal}
 <script type="text/javascript">
 cj(function() { cj().crmaccordions(); });
@@ -72,20 +73,65 @@ cj(function() { cj().crmaccordions(); });
     
        {* This section handles form elements for action task select and submit *}
        <div class="crm-search-tasks">
-       {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
-		</div>
-       {* This section displays the rows along and includes the paging controls *}
-	   <div class="crm-search-results">
-       {include file="CRM/Contact/Form/Selector.tpl"}
+       {if $taskFile}
+          {if $taskContext}
+            {include file=$taskFile context=$taskContext}
+          {else}
+            {include file=$taskFile}
+          {/if}
+       {else}
+         {include file="CRM/Contact/Form/Search/ResultTasks.tpl"}
+       {/if}
        </div>
 
-    {* END Actions/Results section *}
-	</div>
+       {* This section displays the rows along and includes the paging controls *}
+       <div class="crm-search-results">
+       {if $resultFile}
+          {if $resultContext}
+             {include file=$resultFile context=$resultContext}
+          {else}
+             {include file=$resultFile}
+          {/if}
+       {else}
+         {include file="CRM/Contact/Form/Selector.tpl"}
+       {/if}
+       </div>
+
+       {* END Actions/Results section *}
+       </div>
 </div>
 {/if}
 {literal}
 <script type="text/javascript">
-cj(function() { cj().crmaccordions(); });
+cj(function() { 
+    cj().crmaccordions(); 
+
+    cj('#component_mode').change( function( ) {
+        // reset task dropdown if user changes component mode and it exists
+	    if ($("#task").length > 0) {
+	        cj('#task').val( '' );
+	    }
+        var selectedValue = cj(this).val( );
+        switch ( selectedValue ) {
+            case '2':
+            cj('.crm-CiviContribute-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            loadPanes('CiviContribute');
+            break;
+
+            case '3':
+            cj('.crm-CiviEvent-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            loadPanes('CiviEvent');
+            break;
+
+            case '4':
+            cj('.crm-activity-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            loadPanes('activity');
+            break;
+
+            default:
+        } 
+    });
+});
 </script>
 {/literal}
 

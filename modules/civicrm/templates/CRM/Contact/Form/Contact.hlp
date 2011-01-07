@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -47,8 +47,8 @@
 {ts}Select the preferred method for Privacy.{/ts}
 {/htxt}
 
-{htxt id="id-usehousehold"}
-{ts}Check this option if you want to use a shared household address for this individual. You can either select an existing household.<br /> To create a new one just enter the name of desired household, select the same from drop down and press enter.{/ts}
+{htxt id="id-sharedAddress"}
+{ts}Check this option if you want to use a shared address for this contact. For example, you might want to share a "Work" address for an individual with the address of their employer. Or, you might want to share a household address with household members. You can select an existing contact to share an address with, or create a new contact and share that address.{/ts}
 {/htxt}
 
 {htxt id="id-greeting"}
@@ -63,4 +63,20 @@
 
 {htxt id="id-edit-complete-street"}
 <p>{ts}Click here to return to editing the street address as a single field. Addresses which don't fit the expected format for address elements can still be saved by entering them in the single 'Street Address' field.{/ts}
+{/htxt}
+
+{htxt id="id-current-employer"}
+<p>{ts}You can select an existing organization record here, OR type in the name of a new organization if this person's employer is not already in your database. However, if you want this person to share their work address with their employer AND that organization doesn't exist yet - leave this field blank and use the Shared Address feature in the Address pane below to create the employer record AND enter the employer address. The 'current employer' relationship will be automatically created for you.{/ts}</p>
+{/htxt}
+
+{htxt id="id-website"}
+<p>{ts}Record one or more web addresses (URLs) associated with this contact. Examples include personal web addresses like a Facebook or Twitter page, as well as links to a company or organization web site or page.{/ts}</p>
+{/htxt}
+
+{htxt id="id-upload-image"}
+<p>{ts}Upload a photo or icon that you want to be displayed when viewing this contact.{/ts}</p>
+{/htxt}
+
+{htxt id="id-external-id"}
+<p>{ts}Use this field to store a unique identifier. This is generally used to link contacts with records in a related or legacy application. When migrating data from another system, import the unique contact identifier from the old system to this field. You can then use it to match imported contributions and other transactional data to the corresponding contact record.{/ts}</p>
 {/htxt}

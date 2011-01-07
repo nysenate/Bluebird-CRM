@@ -339,6 +339,20 @@
         <is_multiple>0</is_multiple>
         <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
+    <CustomGroup>
+        <name>Survey_Activity_Details</name>
+        <title>Survey Activity Details</title>
+        <extends>Activity</extends>
+        <style>Inline</style>
+        <collapse_display>0</collapse_display>
+        <help_pre></help_pre>
+        <help_post></help_post>
+        <weight>23</weight>
+        <is_active>1</is_active>
+        <table_name>civicrm_value_survey_activity_details</table_name>
+        <is_multiple>0</is_multiple>
+        <collapse_adv_display>0</collapse_adv_display>
+    </CustomGroup>  
   </CustomGroups>
   <CustomFields>
     <CustomField>
@@ -1896,6 +1910,157 @@ D - Declined</help_post>
 		<option_group_name>campaign_method_20090909215244</option_group_name>
         <custom_group_name>Membership_Source_Details</custom_group_name>
     </CustomField>
+    <CustomField>
+        <label>Ward</label>
+        <data_type>String</data_type>
+        <html_type>Text</html_type>
+        <is_required>0</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>94</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>255</text_length>
+        <date_format>M:;:;:;d:;:;:;Y</date_format>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>ward</column_name>
+        <custom_group_name>Voter_Info</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Survey</label>
+        <data_type>Int</data_type>
+        <html_type>Text</html_type>
+        <is_required>1</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>1</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>255</text_length>
+        <date_format>M:;:;:;d:;:;:;Y</date_format>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>survey_id</column_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Status</label>
+        <data_type>String</data_type>
+        <html_type>Select</html_type>
+        <is_required>1</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>2</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>16</text_length>
+        <date_format>M:;:;:;d:;:;:;Y</date_format>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>status_id</column_name>
+        <option_group_name>survey_status_201011040411</option_group_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Interviewer Id</label>
+        <data_type>ContactReference</data_type>
+        <html_type>Autocomplete-Select</html_type>
+        <is_required>1</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>3</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>255</text_length>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>interviewer_id</column_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Interviewer Name</label>
+        <data_type>String</data_type>
+        <html_type>Text</html_type>
+        <is_required>0</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>4</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>255</text_length>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>interviewer_display_name</column_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Interviewer Email</label>
+        <data_type>String</data_type>
+        <html_type>Text</html_type>
+        <is_required>0</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>5</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>255</text_length>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>interviewer_email</column_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Interviewer Ip</label>
+        <data_type>String</data_type>
+        <html_type>Text</html_type>
+        <is_required>0</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>6</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>255</text_length>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>interviewer_ip</column_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Subject</label>
+        <data_type>String</data_type>
+        <html_type>Text</html_type>
+        <is_required>0</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>7</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>255</text_length>
+        <date_format>M:;:;:;d:;:;:;Y</date_format>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>subject_display_name</column_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
+    <CustomField>
+        <label>Result</label>
+        <data_type>String</data_type>
+        <html_type>Select</html_type>
+        <is_required>0</is_required>
+        <is_searchable>1</is_searchable>
+        <is_search_range>0</is_search_range>
+        <weight>8</weight>
+        <is_active>1</is_active>
+        <is_view>0</is_view>
+        <text_length>64</text_length>
+        <date_format>M:;:;:;d:;:;:;Y</date_format>
+        <note_columns>60</note_columns>
+        <note_rows>4</note_rows>
+        <column_name>result_id</column_name>
+        <option_group_name>survey_result_201011040411</option_group_name>
+        <custom_group_name>Survey_Activity_Details</custom_group_name>
+    </CustomField>
   </CustomFields>
   <OptionGroups>
     <OptionGroup>
@@ -2066,6 +2231,16 @@ D - Declined</help_post>
         <label>Role</label>
         <is_active>1</is_active>
     </OptionGroup>
+    <OptionGroup>
+        <name>survey_status_201011040411</name>
+        <label>Survey Status</label>
+        <is_active>1</is_active>
+    </OptionGroup>
+    <OptionGroup>
+        <name>survey_result_201011040411</name>
+        <label>Survey Result</label>
+        <is_active>1</is_active>
+    </OptionGroup>  
   </OptionGroups>
   <OptionValues>
     <OptionValue>
@@ -3584,7 +3759,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>role_20100408173746</option_group_name>
+	<option_group_name>role_20100408173746</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Lower Level Staff</label>
@@ -3595,7 +3770,106 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>role_20100408173746</option_group_name>
+	<option_group_name>role_20100408173746</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Complete</label>
+        <value>C</value>
+        <name>survey_status_complete</name>
+        <is_default>1</is_default>
+        <weight>1</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_status_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Held Pending</label>
+        <value>H</value>
+        <name>survey_status_held_pending</name>
+        <is_default>0</is_default>
+        <weight>2</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_status_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Released</label>
+        <value>R</value>
+        <name>survey_status_released</name>
+        <is_default>0</is_default>
+        <weight>3</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_status_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Expired</label>
+        <value>X</value>
+        <name>survey_status_expired</name>
+        <is_default>0</is_default>
+        <weight>4</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_status_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Available</label>
+        <value>A</value>
+        <name>survey_result_available</name>
+        <is_default>1</is_default>
+        <weight>1</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_result_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Committed</label>
+        <value>C</value>
+        <name>survey_result_committed</name>
+        <is_default>0</is_default>
+        <weight>2</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_result_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Favorable</label>
+        <value>F</value>
+        <name>survey_result_favorable</name>
+        <is_default>0</is_default>
+        <weight>3</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_result_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Unsure</label>
+        <value>M</value>
+        <name>survey_result_unsure</name>
+        <is_default>0</is_default>
+        <weight>4</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_result_201011040411</option_group_name>
+    </OptionValue>
+    <OptionValue>
+        <label>Unfavorable</label>
+        <value>U</value>
+        <name>survey_result_unfavorable</name>
+        <is_default>0</is_default>
+        <weight>5</weight>
+        <is_optgroup>0</is_optgroup>
+        <is_reserved>0</is_reserved>
+        <is_active>1</is_active>
+        <option_group_name>survey_result_201011040411</option_group_name>
     </OptionValue>
   </OptionValues>
   <ProfileGroups>

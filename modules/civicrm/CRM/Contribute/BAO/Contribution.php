@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -299,13 +299,26 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution
                 ' - (' . CRM_Utils_Money::format( $contribution->total_amount, $contribution->currency ) . ' ' . 
                 ' - ' . $contributionTypes[$contribution->contribution_type_id] . ')';
             
+            $recentOther = array( );
+            if ( CRM_Core_Permission::checkActionPermission('CiviContribute', CRM_Core_Action::UPDATE) ) {
+                $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/contribution', 
+                                                                 "action=update&reset=1&id={$contribution->id}&cid={$contribution->contact_id}&context=home" );
+            }
+            
+            if ( CRM_Core_Permission::checkActionPermission('CiviContribute', CRM_Core_Action::DELETE) ) {
+                $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/contribution', 
+                                                                   "action=delete&reset=1&id={$contribution->id}&cid={$contribution->contact_id}&context=home" );
+            }
+
             // add the recently created Contribution
             CRM_Utils_Recent::add( $title,
                                    $url,
                                    $contribution->id,
                                    'Contribution',
                                    $contribution->contact_id,
-                                   null );
+                                   null,
+                                   $recentOther
+                                   );
         }
         
         return $contribution;
@@ -470,12 +483,23 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution
             $expFieldsContrib   = CRM_Contribute_DAO_ContributionProduct::export( );
             $typeField          = CRM_Contribute_DAO_ContributionType::export( );
             $optionField        = CRM_Core_OptionValue::getFields($mode ='contribute' );
-            $contributionStatus = array( 'contribution_status' => array( 'title' => 'Contribution Status',
-                                                                         'name'  => 'contribution_status' ) );
-                                       
+            $contributionStatus = array( 'contribution_status' => array( 'title'     => 'Contribution Status',
+                                                                         'name'      => 'contribution_status',
+                                                                         'data_type' => CRM_Utils_Type::T_STRING ) );
+            
+            $contributionNote   = array( 'contribution_note' => array( 'title'     => ts('Contribution Note'),
+                                                                       'name'      => 'contribution_note',
+                                                                       'data_type' => CRM_Utils_Type::T_TEXT ) );
+            
+            $contributionRecurId = array( 'contribution_recur_id' => array ( 'title' => ts('Recurring Contributions ID'),
+                                                                             'name'  => 'contribution_recur_id',
+                                                                             'where' => 'civicrm_contribution.contribution_recur_id',
+                                                                             'data_type' => CRM_Utils_Type::T_INT ) );
+            
             $fields = array_merge( $impFields, $typeField, $contributionStatus, $optionField, $expFieldProduct,
-                                   $expFieldsContrib, CRM_Core_BAO_CustomField::getFieldsForImport('Contribution') );
-                            
+                                   $expFieldsContrib, $contributionNote, $contributionRecurId, 
+                                   CRM_Core_BAO_CustomField::getFieldsForImport('Contribution') );
+            
             self::$_exportableFields = $fields;
         }
         return self::$_exportableFields;
@@ -505,10 +529,15 @@ class CRM_Contribute_BAO_Contribution extends CRM_Contribute_DAO_Contribution
         $whereCond = implode( ' AND ', $where );
 
         $query = "
-SELECT sum( total_amount ) as total_amount, count( id ) as total_count, currency
-FROM   civicrm_contribution
-WHERE  $whereCond AND is_test=0
-GROUP BY currency
+    SELECT  sum( total_amount ) as total_amount, 
+            count( civicrm_contribution.id ) as total_count, 
+            currency
+      FROM  civicrm_contribution
+INNER JOIN  civicrm_contact contact ON ( contact.id = civicrm_contribution.contact_id ) 
+     WHERE  $whereCond 
+       AND  ( is_test = 0 OR is_test IS NULL )
+       AND  contact.is_deleted = 0
+  GROUP BY  currency
 ";
 
         $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
@@ -739,16 +768,19 @@ GROUP BY p.id
         if ( !$honorId ) {
             require_once "CRM/Core/BAO/UFGroup.php";
             $honorParams['email'] = $params["honor_email"];
-            $honorParams['check_permission'] = false;
-            $ids = CRM_Core_BAO_UFGroup::findContact( $honorParams, null, 'Individual' );
-            $contactsIds = explode( ',', $ids );
-            
-            if ( is_numeric( $contactsIds[0] ) && count ( $contactsIds ) ==  1 ) {
-                $honorId = $contactsIds[0];
-            }
+
+            require_once 'CRM/Dedupe/Finder.php';
+            $dedupeParams = CRM_Dedupe_Finder::formatParams($honorParams, 'Individual');
+            $dedupeParams['check_permission'] = false;
+            $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, 'Individual');
+
+            // if we find more than one contact, use the first one
+            $honorId  = CRM_Utils_Array::value( 0, $ids );
         }
-        
-        $contact =& CRM_Contact_BAO_Contact::createProfileContact( $honorParams, CRM_Core_DAO::$_nullArray, $honorId );
+         
+        $contact =& CRM_Contact_BAO_Contact::createProfileContact( $honorParams,
+                                                                   CRM_Core_DAO::$_nullArray,
+                                                                   $honorId );
         return $contact;
     }
     
@@ -947,7 +979,7 @@ AND civicrm_pledge_payment.pledge_id {$componentClause} )
 ";
         }
         
-        $query = " SELECT total_amount, contribution_status.name as status_id, payment_instrument.name as payment_instrument, receive_date,
+        $query = " SELECT total_amount, contribution_status.name as status_id, contribution_status.label as status, payment_instrument.name as payment_instrument, receive_date,
                           trxn_id, {$componentSelect}
 FROM civicrm_contribution 
 LEFT JOIN civicrm_option_group option_group_payment_instrument ON ( option_group_payment_instrument.name = 'payment_instrument')
@@ -963,7 +995,7 @@ LEFT JOIN civicrm_option_value contribution_status ON (civicrm_contribution.cont
 
         while ( $dao->fetch() ) {
             $paymentDetails[$dao->id] = array ( 'total_amount'        => $dao->total_amount,
-                                                'contribution_status' => $dao->status_id,
+                                                'contribution_status' => $dao->status,
                                                 'receive_date'        => $dao->receive_date,
                                                 'pay_instru'          => $dao->payment_instrument,
                                                 'trxn_id'             => $dao->trxn_id );
@@ -1640,5 +1672,31 @@ SELECT source_contact_id
         
         return $ids;
     }
-    
+
+    function getContributionDates( ) 
+    {
+        $config = CRM_Core_Config::singleton( );
+        $currentMonth = date('m');
+        $currentDay   = date('d');
+        if ( (int ) $config->fiscalYearStart['M']  > $currentMonth ||
+             ( (int ) $config->fiscalYearStart['M'] == $currentMonth &&
+               (int ) $config->fiscalYearStart['d'] > $currentDay ) ) {
+            $year     = date( 'Y' ) - 1;
+        } else {
+            $year     = date( 'Y' );
+        }
+        $year  = array('Y' => $year );
+        $yearDate = $config->fiscalYearStart;
+        $yearDate = array_merge( $year, $yearDate);
+        $yearDate = CRM_Utils_Date::format( $yearDate );
+        
+        $monthDate = date('Ym') . '01';
+        
+        $now = date( 'Ymd' );
+        
+        return array( 'now'       => $now,
+                      'yearDate'  => $yearDate,
+                      'monthDate' => $monthDate );
+    }
+
 }

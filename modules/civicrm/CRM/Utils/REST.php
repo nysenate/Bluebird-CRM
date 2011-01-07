@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -112,6 +112,7 @@ class CRM_Utils_REST
         $session->set('key', $result[2]);
         $session->set('rest_time', time());
         $session->set('PHPSESSID', session_id() );
+        $session->set('cms_user_id', $result[1] );
 
         return self::simple( array( 'api_key' => $api_key, 'PHPSESSID' => session_id(), 'key' => sha1($result[2]) ) );
     }
@@ -204,8 +205,8 @@ class CRM_Utils_REST
 
         $store = null;
         if ( $args[1] == 'login' ) {
-            $name = CRM_Utils_Request::retrieve( 'name', 'String', $store, false, 'REQUEST' );
-            $pass = CRM_Utils_Request::retrieve( 'pass', 'String', $store, false, 'REQUEST' );
+            $name = CRM_Utils_Request::retrieve( 'name', 'String', $store, false, null, 'REQUEST' );
+            $pass = CRM_Utils_Request::retrieve( 'pass', 'String', $store, false, null, 'REQUEST' );
             if ( empty( $name ) ||
                  empty( $pass ) ) {
                 return self::error( 'Invalid name / password.' );
@@ -238,7 +239,7 @@ class CRM_Utils_REST
         // secret key.
         if ( !$valid_user ) {
             require_once 'CRM/Core/DAO.php';
-            $api_key = CRM_Utils_Request::retrieve( 'api_key', 'String', $store, false, 'REQUEST' );
+            $api_key = CRM_Utils_Request::retrieve( 'api_key', 'String', $store, false, null, 'REQUEST' );
             $valid_user = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key');
         }
 	
@@ -252,20 +253,39 @@ class CRM_Utils_REST
 
     function process( &$args, $restInterface = true ) {
         $params =& self::buildParamList( );
-        $fnName = null;
+        $params['check_permissions'] = true;
+        $fnName = $apiFile = null;
+
+        require_once 'CRM/Utils/String.php';
+        // clean up all function / class names. they should be alphanumeric and _ only
+        for ( $i = 1 ; $i <= 3; $i++ ) {
+            if ( ! empty( $args[$i] ) ) {
+                $args[$i] = CRM_Utils_String::munge( $args[$i] );
+            }
+        }
         
         // incase of ajax functions className is passed in url
         if ( isset( $params['className'] ) ) {
+            $params['className'] = CRM_Utils_String::munge( $params['className'] );
+
             // functions that are defined only in AJAX.php can be called via
             // rest interface
             $class = explode( '_', $params['className'] );
-            if ( $class[ count($class) - 1 ] != 'AJAX' ) {
+            if ( $class[ 0 ] != 'CRM' ||
+                 count($class) < 4    ||
+                 $class[ count($class) - 1 ] != 'AJAX' ) {
                 return self::error( 'Unknown function invocation.' );
             } 
-            
+
+            $params['fnName'] = CRM_Utils_String::munge( $params['fnName'] );
+
             // evaluate and call the AJAX function
 	        require_once( str_replace('_', DIRECTORY_SEPARATOR, $params['className'] ) . ".php");
-            return eval( $params['className'] . '::' . $params['fnName'] . '( $params );' );
+            if ( ! method_exists( $params['className'], $params['fnName'] ) ) {
+                return self::error( 'Unknown function invocation.' );
+            }
+
+            return call_user_func( array( $params['className'], $params['fnName'] ), $params );
 	    } else {
             $fnGroup = ucfirst($args[1]);
             if ( strpos( $fnGroup, '_' ) ) {
@@ -365,4 +385,48 @@ class CRM_Utils_REST
         CRM_Utils_System::civiExit( );
     }
 
+    function loadCMSBootstrap( ) {
+        $q = CRM_Utils_array::value( 'q', $_REQUEST );
+        $args = explode( '/', $q );
+
+        // If the function isn't in the civicrm namespace or request
+        // is for login or ping
+        if ( empty($args) || 
+             $args[0] != 'civicrm' ||
+             ( ( count( $args ) != 3 ) && ( $args[1] != 'login' ) && ( $args[1] != 'ping') ) ||
+             $args[1] == 'login' ||
+             $args[1] == 'ping' ) {
+            return;
+        }
+
+        $uid     = null;
+        $session = CRM_Core_Session::singleton( );
+
+        if ( !CRM_Utils_System::authenticateKey( false ) ) {
+            return;
+        }
+        
+        if ( $session->get('PHPSESSID') &&
+             $session->get('cms_user_id') ) {
+            $uid = $session->get('cms_user_id');
+        }
+        
+        if ( !$uid ) {
+            require_once 'CRM/Core/DAO.php';
+            require_once 'CRM/Utils/Request.php';
+
+            $store      = null;
+            $api_key    = CRM_Utils_Request::retrieve( 'api_key', 'String', $store, false, null, 'REQUEST' );
+            $contact_id = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $api_key, 'id', 'api_key');
+            if ( $contact_id ) {
+                require_once 'CRM/Core/BAO/UFMatch.php';
+                $uid = CRM_Core_BAO_UFMatch::getUFId( $contact_id );
+            }
+        }
+
+        if ( $uid ) {
+            CRM_Utils_System::loadBootStrap( null, null, $uid );
+        }
+    }
+     
 }

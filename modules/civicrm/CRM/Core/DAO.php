@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -249,7 +249,8 @@ class CRM_Core_DAO extends DB_DataObject
      */
     function &fields( ) 
     {
-        return null;
+        $result = null;
+        return $result;
     }
 
     function table() 
@@ -876,7 +877,7 @@ FROM   civicrm_domain
     }
 
     /**
-     * execute a query and get the singleton result
+     * execute a query and get the single result
      *
      * @param string $query query to be executed 
      * 
@@ -1304,6 +1305,44 @@ SELECT contact_id
             $tableName .="_" . md5( uniqid( '', true ) );
         }
         return $tableName;
+    }
+
+    static function checkTriggerViewPermission( $view = true ) {
+        // test for create view and trigger permissions and if allowed, add the option to go multilingual
+        // and logging
+        CRM_Core_Error::ignoreException();
+        $dao = new CRM_Core_DAO;
+        if ( $view ) {
+            $dao->query('CREATE OR REPLACE VIEW civicrm_domain_view AS SELECT * FROM civicrm_domain');
+            if ( PEAR::getStaticProperty('DB_DataObject','lastError') ) {
+                CRM_Core_Error::setCallback();
+                return false;
+            }
+        }
+
+        $dao->query('CREATE TRIGGER civicrm_domain_trigger BEFORE INSERT ON civicrm_domain FOR EACH ROW BEGIN END');
+
+        if ( PEAR::getStaticProperty('DB_DataObject','lastError') ) {
+            CRM_Core_Error::setCallback();
+            return false;
+        }
+
+        $dao->query('DROP TRIGGER IF EXISTS civicrm_domain_trigger');
+        if ( PEAR::getStaticProperty('DB_DataObject','lastError') ) {
+            CRM_Core_Error::setCallback();
+            return false;
+        }
+
+        if ( $view ) {
+            $dao->query('DROP VIEW IF EXISTS civicrm_domain_view');
+            if ( PEAR::getStaticProperty('DB_DataObject','lastError') ) {
+                CRM_Core_Error::setCallback();
+                return false;
+            }
+        }
+        CRM_Core_Error::setCallback();
+
+        return true;
     }
 
 }

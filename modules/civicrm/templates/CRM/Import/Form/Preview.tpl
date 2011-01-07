@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,11 +30,15 @@
 function setIntermediate( ) {
 	var dataUrl = "{/literal}{$statusUrl}{literal}";
 	cj.getJSON( dataUrl, function( response ) {
+	
 	   var dataStr = response.toString();
 	   var result  = dataStr.split(",");
 	   cj("#intermediate").html( result[1] );
-	   cj("#importProgressBar").progressBar( result[0] );
-	});
+           if( result[0] < 100 ){ 
+	        cj("#importProgressBar .ui-progressbar-value").animate({width: result[0]+"%"}, 500);
+		cj("#status").text( result[0]+"% Completed");
+             }
+ 	});
 }
 
 function pollLoop( ){
@@ -60,17 +64,8 @@ function verify( ) {
 		    cj("#id-processing").dialog().parents(".ui-dialog").find(".ui-dialog-titlebar").remove();
 		}
 	});
-	
-	var imageBase = "{/literal}{$config->resourceBase}{literal}packages/jquery/plugins/images/";
-    cj("#importProgressBar").progressBar({
-        boxImage:       imageBase + 'progressbar.gif',
-        barImage: { 0 : imageBase + 'progressbg_red.gif',
-                    20: imageBase + 'progressbg_orange.gif',
-                    50: imageBase + 'progressbg_yellow.gif',
-                    70: imageBase + 'progressbg_green.gif'
-                  }
-	}); 
-	cj("#importProgressBar").show( );
+	cj("#importProgressBar" ).progressbar({value:0});
+    	cj("#importProgressBar").show( );
 	pollLoop( );
 }
 </script>
@@ -104,7 +99,8 @@ function verify( ) {
 {* Import Progress Bar and Info *}
 <div id="id-processing" class="hiddenElement">
 	<h3>Importing records...</h3><br />
-	<div class="progressBar" id="importProgressBar" style="margin-left:45px;display:none;"></div>
+       <div id="status" style="margin-left:6px;"></div>
+	<div class="progressBar" id="importProgressBar" style="margin-left:6px;display:none;"></div>
 	<div id="intermediate"></div>
 	<div id="error_status"></div>
 </div>

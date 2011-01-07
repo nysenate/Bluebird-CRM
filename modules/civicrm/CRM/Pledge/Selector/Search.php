@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -285,6 +285,10 @@ class CRM_Pledge_Selector_Search extends CRM_Core_Selector_Base
                                                $this->_additionalClause );
          // process the result of the query
          $rows = array( );
+
+         // get all pledge status
+         $pledgeStatuses = CRM_Core_OptionGroup::values( 'contribution_status', 
+                                                       false, false, false, null, 'name', false );
          
          //4418 check for view, edit and delete
          $permissions = array( CRM_Core_Permission::VIEW );
@@ -304,9 +308,13 @@ class CRM_Pledge_Selector_Search extends CRM_Core_Selector_Base
                      $row[$property] = $result->$property;
                  }
              }
-             
+
+             // add pledge status name
+             $row['pledge_status_name'] = CRM_Utils_Array::value( $row['pledge_status_id'],
+                                                                  $pledgeStatuses );
+             // append (test) to status label
              if ( CRM_Utils_Array::value( 'pledge_is_test', $row ) ) {
-                 $row['pledge_status_id'] .= ' (test)';
+                 $row['pledge_status'] .= ' (test)';
              }
              
              $hideOption = array();

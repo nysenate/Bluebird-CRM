@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -99,8 +99,22 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         require_once 'CRM/Mailing/BAO/Mailing.php';
         CRM_Mailing_BAO_Mailing::checkPermission( $this->_mailingId );
 
-        $this->_action    = CRM_Utils_Request::retrieve('action', 'String', $this);
+        $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this);
         $this->assign('action', $this->_action);
+
+        $showLinks = true;
+        require_once 'CRM/Mailing/Info.php';
+        if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+            if ( ! CRM_Core_Permission::check( 'access CiviMail' ) && 
+                 ! CRM_Core_Permission::check( 'create mailings' ) ) {
+                $showLinks = false;
+            }
+        }
+        $this->assign('showLinks', $showLinks); 
+        if ( CRM_Core_Permission::check( 'access CiviMail' ) ) {
+            $archiveLinks = true;
+            $this->assign( 'archiveLinks', $archiveLinks );
+        }
     }
 
     /** 
@@ -113,7 +127,10 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         $this->preProcess();
         if ( isset( $_GET['runJobs'] ) || CRM_Utils_Array::value( '2', $newArgs ) == 'queue' ) {
             require_once 'CRM/Mailing/BAO/Job.php';
+            $config =& CRM_Core_Config::singleton();
+            CRM_Mailing_BAO_Job::runJobs_pre($config->mailerJobSize);
             CRM_Mailing_BAO_Job::runJobs();
+            CRM_Mailing_BAO_Job::runJobs_post();
         }
 
         $this->_sortByCharacter = CRM_Utils_Request::retrieve( 'sortByCharacter',
@@ -146,9 +163,7 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         if ( $this->_createdId ) {
             $this->set( 'createdId', $this->_createdId );
         }
-        
-        $this->search( );
-        
+       
         $session = CRM_Core_Session::singleton();
         $context = $session->readUserContext( );
         
@@ -250,6 +265,10 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         $session = CRM_Core_Session::singleton( );
         $url = CRM_Utils_System::url( $urlString, $urlParams );
         $session->pushUserContext( $url );
+        
+        //CRM-6862 -run form cotroller after
+        //selector, since it erase $_POST  
+        $this->search( );
         
         return parent::run( );
     }

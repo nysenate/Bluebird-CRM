@@ -1,0 +1,168 @@
+<?php
+
+/*
+ +--------------------------------------------------------------------+
+ | CiviCRM version 3.3                                                |
+ +--------------------------------------------------------------------+
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
+ +--------------------------------------------------------------------+
+ | This file is a part of CiviCRM.                                    |
+ |                                                                    |
+ | CiviCRM is free software; you can copy, modify, and distribute it  |
+ | under the terms of the GNU Affero General Public License           |
+ | Version 3, 19 November 2007.                                       |
+ |                                                                    |
+ | CiviCRM is distributed in the hope that it will be useful, but     |
+ | WITHOUT ANY WARRANTY; without even the implied warranty of         |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
+ | See the GNU Affero General Public License for more details.        |
+ |                                                                    |
+ | You should have received a copy of the GNU Affero General Public   |
+ | License and the CiviCRM Licensing Exception along                  |
+ | with this program; if not, contact CiviCRM LLC                     |
+ | at info[AT]civicrm[DOT]org. If you have questions about the        |
+ | GNU Affero General Public License or the licensing of CiviCRM,     |
+ | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
+ +--------------------------------------------------------------------+
+*/
+
+/**
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2010
+ * $Id$
+ *
+ */
+
+/**
+* Implement the post hook and fire the corresponding rules event
+*/
+function civicrm_rules_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
+	if ( ! module_exists( 'rules' ) ) {
+		return;
+	}
+	
+    if ( in_array( $objectName,
+                   array( 'Individual', 'Household', 'Organization' ) ) ) {
+        $objectName = 'Contact';
+    }
+
+	// process only contacts for now
+	$validObjects = array( 'Contact',
+                           );
+
+	if ( ! in_array( $objectName, $validObjects ) ) {
+		return;
+	}
+
+    $eventObject = strtolower( $objectName );
+	$eventName = null;
+	switch ( $op ) {
+    case 'create':
+	case 'edit':
+	case 'delete':
+        $eventName = "{$eventObject}_{$op}";
+        break;
+
+    default:
+        break;
+    }
+
+	if ( $eventName ) {
+		rules_invoke_event( $eventName, $objectRef );
+	}
+}
+
+/**
+ * Implement civicrm pageRun hook and fire the corresponding rules event
+ */
+function civicrm_rules_civicrm_pageRun( &$page ) {
+	if ( ! module_exists( 'rules' ) ) {
+		return;
+	}
+
+	// process only contacts for now
+	$validObjects = array( 	'CRM_Contact_Page_View_Summary' );
+
+	$className = get_class( $page );
+	if ( !in_array( $className , $validObjects ) ) {
+		return;
+	}
+
+	$eventName = null;
+	switch ( $className ) {
+	case 'CRM_Contact_Page_View_Summary':
+		$eventName = 'contact_view';
+		break;
+
+    default:
+        break;
+	}
+
+	if ( $eventName ) {
+		rules_invoke_event( $eventName, $page );
+	}
+}
+
+/**
+ * Implement the postProcess hook and fire the corresponding rules event
+ * We'll do this for specific forms only (for now)
+ */
+function civicrm_rules_civicrm_postProcess( $formName, &$form ) {
+    require_once 'CRM/Mailing/Info.php';
+    if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+        $eventName = $eventParams  = null;
+
+        switch ( $formName ) {
+        case 'CRM_Mailing_Form_Group':
+            if (  $form->get( 'continue' ) == true ) {
+                $eventName = 'mailing_edit';
+                $mailingId = $form->get( 'mid' );
+            } else {
+                $query = "
+SELECT max(id)
+FROM   civicrm_mailing
+";
+                $mailingId = CRM_Core_DAO::singleValueQuery( $query );
+                $eventName = 'mailing_create';
+            }    
+            break;
+            
+        case 'CRM_Mailing_Form_Schedule':
+            if ( $form->get( 'mid' ) ) {
+                $mailingId = $form->get( 'mid' );
+            } else {
+                $mailingId = $form->_mailingID; 
+            }
+            $eventName = 'mailing_scheduled';
+            break;
+            
+        case 'CRM_Mailing_Form_Approve':
+            $mailingId = $form->get( 'mid' );
+            $eventName = 'mailing_approved';
+            break;
+            
+        case 'CRM_Mailing_Form_Upload':
+            $eventName = 'mailing_uploaded';
+            $mailingId = $form->_mailingID;
+            break;
+            
+        case 'CRM_Mailing_Form_Test':
+            $eventName = 'mailing_inform';
+            $mailingId = $form->get( 'mailing_id' ) ? $form->get( 'mailing_id' ) : $form->get( 'mid' );
+            break;
+            
+        default:
+            break;
+        }
+        
+        if ( $eventName ) {
+            require_once 'CRM/Mailing/DAO/Mailing.php';
+            $eventParams = new CRM_Mailing_DAO_Mailing( );
+            $eventParams->id = $mailingId;
+            $eventParams->find( true );
+            rules_invoke_event( $eventName, $eventParams );
+        }
+    }
+}
+

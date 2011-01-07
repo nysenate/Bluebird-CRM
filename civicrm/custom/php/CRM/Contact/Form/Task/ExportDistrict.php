@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -63,7 +63,13 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     function buildQuickForm( ) {
 		
 		CRM_Utils_System::setTitle( ts('Export District for Merge/Purge') );
-        $this->addDefaultButtons( 'Export District' );
+		
+		require_once 'CRM/Core/Permission.php';
+        if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+			$this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
+        }
+        
+		$this->addDefaultButtons( 'Export District' );
 		
     }
 
@@ -75,11 +81,17 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
      */
     public function postProcess() {
 
-	//get the list of genders
+	//get form values (avanti job id)
+	$params = $this->controller->exportValues( $this->_name );
+	$avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+	
+	//get instance name (strip first element from url)
+	$instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
+
+	//get option lists
 	$aGender = getOptions("gender");
 	$aSuffix = getOptions("individual_suffix");
-        $aPrefix = getOptions("individual_prefix");
-
+    $aPrefix = getOptions("individual_prefix");
 	$aStates = getStates();
 	
 	//generate random number for export and tables
@@ -90,7 +102,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	$ids = implode("),(",$this->_contactIds);
 	$ids = "($ids)";
 
-	$sql = "CREATE TEMPORARY TABLE tmpExport$rnd(id int not null primary key);";
+	$sql = "CREATE TABLE tmpExport$rnd(id int not null primary key);";
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
@@ -107,24 +119,27 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	$sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND a.is_primary=1 ";
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	$sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
-	$sql .= " LEFT JOIN civicrm_email e on e.contact_id=e.id AND e.is_primary=1 ";
+	$sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
 	
-	$sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 ELSE 999 END, c.birth_date;";
+	$sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
+	$sql .= " IFNULL(c.birth_date, '9999-01-01');";
+	//order export by oldest male, then oldest female
+	//ensure empty values fall last
 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$skipVars['_DB_DataObject_version'] = 1;
-        $skipVars['__table'] = 1;
-        $skipVars['N'] = 1;
-        $skipVars['_database_dsn'] = 1;
-        $skipVars['_query'] = 1;
-        $skipVars['_DB_resultid'] = 1;
-        $skipVars['_resultFields'] = 1;
-        $skipVars['_link_loaded'] = 1;
-        $skipVars['_join'] = 1;
-        $skipVars['_lastError'] = 1;
-        $skipVars['_database_dsn_md5'] = 1;
-        $skipVars['_database'] = 1;
+	$skipVars['__table'] = 1;
+	$skipVars['N'] = 1;
+	$skipVars['_database_dsn'] = 1;
+	$skipVars['_query'] = 1;
+	$skipVars['_DB_resultid'] = 1;
+	$skipVars['_resultFields'] = 1;
+	$skipVars['_link_loaded'] = 1;
+	$skipVars['_join'] = 1;
+	$skipVars['_lastError'] = 1;
+	$skipVars['_database_dsn_md5'] = 1;
+	$skipVars['_database'] = 1;
 
 	$config =& CRM_Core_Config::singleton();
 
@@ -136,7 +151,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	}
 	
 	//set filename, environment, and full path
-    $filename = 'districtExport'.$rnd.'.tsv'; 
+    $filename = 'districtExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
+	
 	//strip /data/ and everything after environment value
 	$env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
     $fname = $path.'/'.$filename;
@@ -165,19 +181,16 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 			if (!isset($skipVars[$name])) {
 
 				if ($name=="gender_id") $val = $aGender[$val];
-                                if ($name=="suffix_id") $val = $aSuffix[$val];
-                                if ($name=="prefix_id") $val = $aPrefix[$val];
-
-                                if ($name=="state_province_id") $val = $aStates[$val];
+                if ($name=="suffix_id") $val = $aSuffix[$val];
+                if ($name=="prefix_id") $val = $aPrefix[$val];
+				if ($name=="state_province_id") $val = $aStates[$val];
 
 				if ($name=="birth_date") {
 					if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
-					else $val = "";
-//print $val."\n";
 				}
 					
-		                $val = str_replace("'","",$val);
-                		$val = str_replace("\"","",$val);
+		        $val = str_replace("'","",$val);
+                $val = str_replace("\"","",$val);
 				$aOut[] =  $val;
 			}
 		}
@@ -189,8 +202,20 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $sql = "DROP TABLE tmpExport$rnd;";
         $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-		$href = "mailto:?subject=print export task: districtExport$rnd.tsv&body=".urlencode( "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename) );
-		$status[] = "Task $rnd exported ". sizeof($this->_contactIds). " Contact(s). &nbsp;&nbsp;<a href=\"$href\">Click here</a> to email the link.";
+		$url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
+		$urlclean = urlencode( $url );
+		$href = "mailto:?subject=district export: $filename&body=".$urlclean;
+		
+		$status = array();
+		$status[] = "District Merge/Purge Export";
+		$status[] = "District: $instance (task $rnd).";
+		$status[] = sizeof($this->_contactIds). " contact(s) were exported.";
+		$status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
+		
+		require_once 'CRM/Core/Permission.php';
+        if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+			$status[] = "Download the file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
+        }
         
         CRM_Core_Session::setStatus( $status );
     } //end of function

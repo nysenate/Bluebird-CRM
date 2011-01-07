@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -176,6 +176,8 @@ class CRM_Contact_Form_Search_Basic extends CRM_Contact_Form_Search {
      * @access public
      */
     function preProcess( ) {
+        $this->set( 'searchFormName', 'Basic' );
+
         parent::preProcess( );
     }
 

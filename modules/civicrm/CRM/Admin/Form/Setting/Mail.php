@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -50,10 +50,9 @@ class CRM_Admin_Form_Setting_Mail extends CRM_Admin_Form_Setting
     public function buildQuickForm( ) 
     {
         CRM_Utils_System::setTitle(ts('Settings - CiviMail'));
-        $this->addElement('text','mailerPeriod', ts('Mailer Spool Period'));
         $this->addElement('text','verpSeparator', ts('VERP Separator'));
         $this->addElement('text','mailerBatchLimit', ts('Mailer Batch Limit'));
-        $this->addElement('text','mailerSpoolLimit', ts('Mailer Spool Limit'));
+        $this->addElement('text','mailerJobSize', ts('Mailer Job Size'));
         $check = true;
         
         // redirect to Administer Section After hitting either Save or Cancel button.

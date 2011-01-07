@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -68,6 +68,10 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task
      */
     protected $_userContext;
 
+    /**
+     * when not to reset sort_name
+     */
+    protected $_preserveDefault = true;
 
     /**
      * build all the data structures needed to build the form
@@ -129,10 +133,20 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task
         
         $this->assign( 'profileTitle', $this->_title );
         $this->assign( 'componentIds', $this->_contactIds );
-        
+
+        // if below fields are missing we should not reset sort name / display name
+        // CRM-6794
+        $preserveDefaultsArray = array( 'first_name', 'last_name', 'middle_name',
+                                        'organization_name',
+                                        'household_name');
+
         foreach ($this->_contactIds as $contactId) {
             foreach ($this->_fields as $name => $field ) {
                 CRM_Core_BAO_UFGroup::buildProfile($this, $field, null, $contactId );
+
+                if ( in_array($field['name'], $preserveDefaultsArray ) ) {
+                    $this->_preserveDefault = false;
+                }
             }
         }
         
@@ -228,7 +242,8 @@ class CRM_Contact_Form_Task_Batch extends CRM_Contact_Form_Task
                 unset($value['contact_sub_type']);
                 $inValidSubtypeCnt++;
             }
-            
+
+            $value['preserveDBName'] = $this->_preserveDefault;
             CRM_Contact_BAO_Contact::createProfileContact($value, $this->_fields, $key, null, $ufGroupId );
             if ( $notify ) {
                 $values = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues( $ufGroupId, $key, null );      

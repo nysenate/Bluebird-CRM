@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -219,6 +219,18 @@ class CRM_Member_BAO_Query
             $query->_tables['civicrm_membership'] = $query->_whereTables['civicrm_membership'] = 1;
             return;
             
+        case 'member_auto_renew':
+            $op = "!=";
+            if ( $value ) {
+                 $query->_where[$grouping][] = " civicrm_membership.contribution_recur_id IS NOT NULL";
+                 $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( "ccr.contribution_status_id", 
+                                                                                   $op,
+                                                                                   CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionValue', 'Cancelled', 'value', 'label'),
+                                                                                   "Integer" );
+                 $query->_qill[$grouping][] = ts( "Find Auto-renew Memberships" );
+            }
+            $query->_tables['civicrm_membership'] = $query->_whereTables['civicrm_membership'] = 1;
+            return;
         case 'member_pay_later':
             $query->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( "civicrm_membership.is_pay_later", 
                                                                               $op,
@@ -285,7 +297,8 @@ class CRM_Member_BAO_Query
         switch ( $name ) {
         
         case 'civicrm_membership':
-            $from = " $side JOIN civicrm_membership ON civicrm_membership.contact_id = contact_a.id ";
+            $from  = " $side JOIN civicrm_membership ON civicrm_membership.contact_id = contact_a.id ";
+            $from .= " $side JOIN civicrm_contribution_recur ccr ON ( civicrm_membership.contribution_recur_id = ccr.id )";
             break;
     
         case 'civicrm_membership_type':
@@ -374,6 +387,7 @@ class CRM_Member_BAO_Query
 
         $form->addElement( 'checkbox', 'member_test' , ts( 'Find Test Memberships?' ) );
         $form->addElement( 'checkbox', 'member_pay_later', ts( 'Find Pay Later Memberships?' ) );
+        $form->addElement( 'checkbox', 'member_auto_renew', ts( 'Find Auto-renew Memberships?' ) );
 
         // add all the custom  searchable fields
         require_once 'CRM/Custom/Form/CustomData.php';
@@ -409,7 +423,7 @@ class CRM_Member_BAO_Query
     static function tableNames( &$tables ) 
     {
         //add membership table
-        if ( CRM_Utils_Array::value( 'civicrm_membership_log', $tables ) ) {
+        if ( CRM_Utils_Array::value( 'civicrm_membership_log', $tables ) || CRM_Utils_Array::value( 'civicrm_membership_status', $tables ) || CRM_Utils_Array::value( 'civicrm_membership_type', $tables ) ) {
             $tables = array_merge( array( 'civicrm_membership' => 1), $tables );
         }
 

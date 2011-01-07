@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2009                                |
+ | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
   /**
    *
    * @package CRM
-   * @copyright CiviCRM LLC (c) 2004-2009
+   * @copyright CiviCRM LLC (c) 2004-2010
    * $Id$
    *
    */
@@ -48,6 +48,8 @@ class CRM_Report_Form_Event_IncomeCountSummary extends CRM_Report_Form {
     
     protected $_add2groupSupported = false;
     
+    protected $_customGroupExtends = array( 'Event' );
+
     function __construct( ) {
         
         $this->_columns = 

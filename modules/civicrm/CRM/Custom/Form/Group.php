@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -125,7 +125,18 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
     static function formRule( $fields, $files, $self) 
     {
         $errors = array();
-
+        
+        //validate group title as well as name.
+        $title  = $fields['title'];
+        $name   = CRM_Utils_String::munge( $title, '_', 64 );
+        $query  = 'select count(*) from civicrm_custom_group where ( name like %1 OR title like %2 ) and id != %3';
+        $grpCnt = CRM_Core_DAO::singleValueQuery( $query, array( 1 => array( $name,           'String'  ),
+                                                                 2 => array( $title,          'String'  ),
+                                                                 3 => array( (int)$self->_id, 'Integer' ) ) );
+        if ( $grpCnt ) {
+            $errors['title'] = ts( 'Custom group \'%1\' already exists in Database.', array( 1 => $title ) );
+        }
+        
         if ( CRM_Utils_Array::value(1, $fields['extends']) ) {
             if ( !$self->_isGroupEmpty ) {
                 $updates = array_diff($self->_subtypes, array_intersect($self->_subtypes, $fields['extends'][1]));
@@ -204,10 +215,6 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
         
         //title
         $this->add('text', 'title', ts('Set Name'), $attributes['title'], true);
-        $this->addRule( 'title',
-                        ts( 'Name already exists in Database.' ),
-                        'objectExists',
-                        array( 'CRM_Core_DAO_CustomGroup', $this->_id, 'title' ) );   
         
         //Fix for code alignment, CRM-3058
         require_once "CRM/Contribute/PseudoConstant.php";
@@ -221,7 +228,8 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
               
         $sel1 = array( "" => "- select -" ) + CRM_Core_SelectValues::customGroupExtends( );
         $sel2 = array( );
-        $activityType    = CRM_Core_PseudoConstant::activityType( false, true );
+        $activityType = CRM_Core_PseudoConstant::activityType( false, true, false, 'label', true );
+        
         $eventType       = CRM_Core_OptionGroup::values( 'event_type' );
         $membershipType  = CRM_Member_BAO_MembershipType::getMembershipTypes( false );
         $participantRole = CRM_Core_OptionGroup::values( 'participant_role' );
@@ -480,11 +488,31 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
         if ($this->_action & CRM_Core_Action::UPDATE) {
             CRM_Core_Session::setStatus(ts('Your custom field set \'%1 \' has been saved.', array(1 => $group->title)));
         } else {
-            $url = CRM_Utils_System::url( 'civicrm/admin/custom/group/field', 'reset=1&action=add&gid=' . $group->id);
+            $url = CRM_Utils_System::url( 'civicrm/admin/custom/group/field/add', 'reset=1&action=add&gid=' . $group->id);
             CRM_Core_Session::setStatus(ts('Your custom field set \'%1\' has been added. You can add it custom fields now.',
                                            array(1 => $group->title)));
             $session = CRM_Core_Session::singleton( );
             $session->replaceUserContext($url);
+        }
+        
+        // prompt Drupal Views users to update $db_prefix in settings.php, if necessary
+        global $db_prefix;
+        if ( is_array($db_prefix) && CIVICRM_UF == 'Drupal' && module_exists('views') ) {
+            // get table_name for each custom group
+            $tables = array( );
+            $sql = "SELECT table_name FROM civicrm_custom_group WHERE is_active = 1";
+            $result = CRM_Core_DAO::executeQuery( $sql );
+            while ( $result->fetch( ) ) {
+                $tables[$result->table_name] = $result->table_name;
+            }
+            
+            // find out which tables are missing from the $db_prefix array
+            $missingTableNames = array_diff_key( $tables, $db_prefix );
+            
+            if ( !empty( $missingTableNames ) ) {
+                CRM_Core_Session::setStatus( '<br />' . ts('Note:To ensure that all of your custom data groups are available to Views, you may need to add the following key(s) to the $db_prefix array in your settings.php file: \'%1\'.',
+                                                           array( 1 => implode(', ', $missingTableNames ) ) ) );
+            }
         }
     }
 

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -84,10 +84,10 @@ class CRM_Member_Form_Task_Delete extends CRM_Member_Form_Task {
      */
     public function postProcess( ) 
     {
-        $deletedMemberss = 0;
+        $deletedMembers = 0;
         foreach ($this->_memberIds as $memberId) {
             if (CRM_Member_BAO_Membership::deleteMembership($memberId)) {
-                $deletedMemberss++;
+                $deletedMembers++;
             }
         }
 

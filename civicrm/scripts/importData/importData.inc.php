@@ -91,11 +91,11 @@ switch ($task) {
     updateStates();
     break;
   case "loaddbonly":
-    loadDB($importSet);
+    loadDB($importSet, $importDir);
     break;
   case "import":
     if (parseData($importSet, $importDir, $startID, $sourceDesc)) {
-      loadDB($importSet);
+      loadDB($importSet, $importDir);
     }
     break;
   case "showfields":
@@ -132,7 +132,7 @@ function showExportableFields()
 
 
 
-function loadDB($importSet)
+function loadDB($importSet, $importDir)
 {
   global $bluebird_db_info;
 
@@ -146,12 +146,15 @@ function loadDB($importSet)
     $abbrev = $db_info['abbrev'];
     $table = $db_info['table'];
     $colstr = implode(',', $db_info['cols']);
-    $fname = RAYTMP.$importSet.'-'.$abbrev.'.tsv';
-    cLog(0, 'info', "importing $name records from $fname into database table $table");
-
-    cLog(0,'info',"LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});");
-
-    $dao = &CRM_Core_DAO::executeQuery("LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});", CRM_Core_DAO::$_nullArray);
+    $fname = $importDir.'/'.$importSet.'-'.$abbrev.'.tsv';
+    if (file_exists($fname) == false) {
+      cLog(0, 'error', "Unable to import data into table '$table'; file '$fname' not found");
+    }
+    else {
+      cLog(0, 'info', "importing $name records from '$fname' into database table '$table'");
+      cLog(0,'info', "LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE '$table' $opts ({$colstr});");
+      $dao = &CRM_Core_DAO::executeQuery("LOAD DATA LOCAL INFILE '$fname' REPLACE INTO TABLE $table $opts ({$colstr});", CRM_Core_DAO::$_nullArray);
+    }
   }
 } // loadDB()
 
@@ -185,9 +188,15 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
   foreach ($bluebird_db_info as $name => $db_info) {
     $abbrev = $db_info['abbrev'];
-    $fname = RAYTMP.$importSet.'-'.$abbrev.'.tsv';
+    $fname = $importDir.'/'.$importSet.'-'.$abbrev.'.tsv';
     unlink($fname);
-    $fout[$name] = fopen($fname, 'w');
+    $fp = fopen($fname, 'w');
+    if ($fp === false) {
+      cLog(0, 'error', "Unable to open '$fname' for writing");
+    }
+    else {
+      $fout[$name] = $fp;
+    }
   }
 
   //initialize the arrays, skipping header lines
@@ -254,17 +263,17 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
   $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_contact;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $contactID = $dao->maxid;
-  cLog(0,'info',"starting contactID will be ".($contactID+1));
+  cLog(0, 'info', "starting contactID will be ".($contactID+1));
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_address;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $addressID = $dao->maxid;
-  cLog(0,'info',"starting addressID will be ".($addressID+1));
+  cLog(0, 'info', "starting addressID will be ".($addressID+1));
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT max(id) as maxid from civicrm_activity;", CRM_Core_DAO::$_nullArray);
   $dao->fetch();
   $activityID = $dao->maxid;
-  cLog(0,'info',"starting activityID will be ".($activityID+1));
+  cLog(0, 'info', "starting activityID will be ".($activityID+1));
 
   // Array that maps tag name to tagID.
   $aTagsByName = array();
@@ -275,7 +284,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
   // load all tags, and get max tag ID
   $tagID = getAllTags($aTagsByName, $aTagsByID);
-  cLog(0,'info',"starting tagID will be ".($tagID+1));
+  cLog(0, 'info', "starting tagID will be ".($tagID+1));
 
   $cCounter = 0;
 
@@ -586,7 +595,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
     //add the constituent information
     $params = array();
-    $params['entity_id'] = $importID;
+    $params['entity_id'] = $contactID;
     $params['record_type_61'] = $ctRow['RT'];
     if (!writeToFile($fout['constituentinformation'], $params)) {
       exit("Error: I/O failure: constituentinformation");
@@ -612,7 +621,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['school_district_54'] = cleanData($ctRow['SCD']);
     $params['new_york_city_council_55'] = DBNULL;
     $params['neighborhood_56'] = DBNULL;
-    $params['last_import_57'] = date("Y-m-d H:i:s T");
+    $params['last_import_57'] = date("Y-m-d H:i:s");
 
     if (!writeToFile($fout['district'], $params)) {
       exit("Error: I/O failure: district");
@@ -830,7 +839,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     while ($csRow && $csRow['KEY'] == $importID) {
       //set params
       $params = array();
-      $params['id'] = $activityID;
+      $params['id'] = ++$activityID;
       $params['source_contact_id'] = $session->get('userID');; //who inserted
       $params['subject'] = "OMIS CASE ACTIVITY ".intval($csRow['CASENUM']).": ".$csRow['CSUBJECT'];
 
@@ -840,9 +849,10 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       if (strlen($actDate) == 5) $actDate = '0'.$actDate; 
       $actDate = substr($actDate,2,2).substr($actDate,4,2).substr($actDate,0,2);
       $actDate = formatDate($actDate);
+      $actTime = formatTime($csRow['COPENTIME']);
 
       //format date for db and add time
-      $params['activity_date_time'] = $actDate.' '.$csRow['COPENTIME'];
+      $params['activity_date_time'] = $actDate.' '.$actTime;
       //if there's a close date, mark as closed
       if (strlen(trim($csRow['CCLOSEDATE']))>0) {
         $params['status_id'] = 2;
@@ -853,89 +863,95 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         $params['status_id'] = 1;
       }
       
-      $params['details'] = '';
+      $actdetails = '';
       if (strlen($csRow['CCLOSEDATE']) > 0)
-        $params['details'] .= '\nCASE CLOSED ON '.formatDate($csRow['CCLOSEDATE']);
+        $actdetails .= '\nCASE CLOSED ON '.formatDate($csRow['CCLOSEDATE']);
       if (strlen($csRow['CNOTE1']) > 0)
-        $params['details'] .= '\nNote 1: '.$csRow['CNOTE1'];
+        $actdetails .= '\nNote 1: '.$csRow['CNOTE1'];
       if (strlen($csRow['CNOTE2']) > 0)
-        $params['details'] .= '\nNote 2: '.$csRow['CNOTE2'];
+        $actdetails .= '\nNote 2: '.$csRow['CNOTE2'];
       if (strlen($csRow['CNOTE3']) > 0)
-        $params['details'] .= '\nNote 3: '.$csRow['CNOTE3'];
+        $actdetails .= '\nNote 3: '.$csRow['CNOTE3'];
       if (strlen($csRow['CHOMEPH']) > 0)
-        $params['details'] .= '\nHome Phone: '.$csRow['CHOMEPH'];
+        $actdetails .= '\nHome Phone: '.$csRow['CHOMEPH'];
       if (strlen($csRow['CWORKPH']) > 0)
-        $params['details'] .= '\nWork Phone: '.$csRow['CWORKPH'];
+        $actdetails .= '\nWork Phone: '.$csRow['CWORKPH'];
       if (strlen($csRow['CFAXPH']) > 0)
-        $params['details'] .= '\nFax: '.$csRow['CFAXPH'].'\n';
+        $actdetails .= '\nFax: '.$csRow['CFAXPH'];
       if (strlen($csRow['CSTAFF']) > 0)
-        $params['details'] .= '\nStaff: '.$csRow['CSTAFF'].'\n';
+        $actdetails .= '\nStaff: '.$csRow['CSTAFF'];
       if (strlen($csRow['CSNUM']) > 0)
-        $params['details'] .= '\nSSN: '.$csRow['CSNUM'].'\n';
+        $actdetails .= '\nSSN: '.$csRow['CSNUM'];
       if (strlen($csRow['CLAB1']) > 0)
-        $params['details'] .= '\nCLAB1: '.$csRow['CLAB1'].'\n';
+        $actdetails .= '\nCLAB1: '.$csRow['CLAB1'];
       if (strlen($csRow['CID1']) > 0)
-        $params['details'] .= '\nCID1: '.$csRow['CID1'].'\n';
+        $actdetails .= '\nCID1: '.$csRow['CID1'];
       if (strlen($csRow['CLAB2']) > 0)
-        $params['details'] .= '\nCLAB2: '.$csRow['CLAB2'].'\n';
+        $actdetails .= '\nCLAB2: '.$csRow['CLAB2'];
       if (strlen($csRow['CID2']) > 0)
-        $params['details'] .= '\nCID2: '.$csRow['CID2'].'\n';
+        $actdetails .= '\nCID2: '.$csRow['CID2'];
       if (strlen($csRow['CISSUE']) > 0)
-        $params['details'] .= '\nIssue: '.$csRow['CISSUE'].'\n';
+        $actdetails .= '\nIssue: '.$csRow['CISSUE'];
       if (trim($csRow['LEGISLATION']) != "|")
-        $params['details'] .= '\nLegislation: '.$csRow['LEGISLATION'];
+        $actdetails .= '\nLegislation: '.$csRow['LEGISLATION'];
+
+      $params['details'] = $actdetails;
 
       //activity type
       switch ($csRow['CFORM']) {
         case 'E':
-          $params['activity_type_id'] = 39; //email received
+          $acttypeid = 39; //email received
           break;
         case 'F':
-          $params['activity_type_id'] = 41; //fax received
+          $acttypeid = 41; //fax received
           break;
         case 'I':
-          $params['activity_type_id'] = 42; //in person
+          $acttypeid = 42; //in person
           break;
         case 'L':
-          $params['activity_type_id'] = 37; //letter received
+          $acttypeid = 37; //letter received
           break;
         case 'M':
-          $params['activity_type_id'] = 1; //meeting
+          $acttypeid = 1; //meeting
           break;
         case 'O':
-          $params['activity_type_id'] = 43; //other
+          $acttypeid = 43; //other
           break;
         case 'P':
-          $params['activity_type_id'] = 35; //phone received
+          $acttypeid = 35; //phone received
           break;
         case 'W':
-          $params['activity_type_id'] = 43; //website mapped to other
+          $acttypeid = 43; //website mapped to other
           break;
         default:
-          $params['activity_type_id'] = 43; //other
+          $acttypeid = 43; //other
       }
+
+      $params['activity_type_id'] = $acttypeid;
 
       //set contact target
-      $targParams = array();
-      $targParams['activity_id'] = $activityID;
-      $targParams['contact_id'] = $contactID;
+      $targParams = array(
+          'activity_id' => $activityID,
+          'contact_id' => $contactID
+      );
 
       //following needs to be set in custom fields
-      $custParams = array();
-      $custParams['entity_id'] = $activityID;
       switch ($csRow['CPLACE']) {
         case 'AO':
-          $custParams['place_of_inquiry_43'] = 'albany_office';
+          $poi = 'albany_office';
           break;
-
         case 'DO':
-          $custParams['place_of_inquiry_43'] = 'district_office';
+          $poi = 'district_office';
           break;
-
         case 'OT':
-          $custParams['place_of_inquiry_43'] = 'other';
+          $poi = 'other';
           break;
       }
+
+      $custParams = array(
+          'entity_id' => $activityID,
+          'place_of_inquiry_43' => $poi
+      );
 
       if (!writeToFile($fout['activity'], $params))
         exit("Error: I/O failure: activity");
@@ -945,12 +961,12 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         exit("Error: I/O failure: activitycustom");
       unset($params);
       unset($custParams);
+      unset($targParams);
 
       //get another case
       $csRow = getLineAsAssocArray($infiles['cases'], DELIM, $omis_cs_fields);
       if (!$csRow) break;
       $csRow['KEY'] = intval($csRow['KEY']);
-      ++$activityID;
     }
 
 
@@ -1034,7 +1050,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
       $note .= "Issue Code $issCode: $issDesc".'\n';
 
-      //get another issues 
+      //get another issue
       $isRow = getLineAsAssocArray($infiles['issues'], DELIM, $omis_is_fields);
       if (!$isRow) break;
       $isRow['KEY'] = intval($isRow['KEY']);
@@ -1147,10 +1163,11 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params = create_civi_address(++$addressID, $contactID, $aRel['ctRow'], LOC_TYPE_HOME);
     if (!writeToFile($fout['address'], $params)) break;
 
-    $rcode = $aRel['ctRow']['RCD'];
+    $rcode = trim($aRel['ctRow']['RCD']);
     if (empty($rcode)) {
       $rcode = 'W';  // default to Wife
     }
+
     //create the spousal relationship
     $params = array(
       'contact_id_a' => $aRel['contactIDa'],
@@ -1388,7 +1405,7 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = LOC_TYPE
     'contact_id'             => $ctID,
     'location_type_id'       => $loc_type_id,
     'is_primary'             => 1,
-    'street_number'          => $omis_flds['HOUSE'],
+    'street_number'          => intval($omis_flds['HOUSE']),
     'street_unit'            => DBNULL,
     'street_name'            => $omis_flds['STREET'],
     'street_address'         => $omis_flds['HOUSE'].' '.$omis_flds['STREET'],

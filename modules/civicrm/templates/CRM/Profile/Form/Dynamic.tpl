@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -58,6 +58,7 @@
                       <div class="messages help">{$groupHelpPost}</div>
                    {/if}
                    {if $mode neq 8 && $mode neq 4}
+                        </div><!-- end form-layout-compressed-div -->
                       </fieldset>
                       </div>
                    {/if}
@@ -164,7 +165,7 @@
             {/if}
         {/if}{* end of main if field name if *}        
     {/foreach}
-    </div> {* closing main form layout div when all the fields are built*}
+    </div><!-- end form-layout-compressed for last profile --> {* closing main form layout div when all the fields are built*}
     
     
     {if $isCaptcha && ( $mode eq 8 || $mode eq 4 || $mode eq 1 ) }
@@ -243,6 +244,7 @@ cj(document).ready(function(){
         var queryString = cj.param(formData); 
         queryString = queryString + '&snippet=5&gid=' + {/literal}"{$profileID}"{literal};
         var postUrl = {/literal}"{crmURL p='civicrm/profile/create' h=0 }"{literal}; 
+        var blockNo = {/literal}{$blockNo}{literal};
         var response = cj.ajax({
            type: "POST",
            url: postUrl,
@@ -251,22 +253,23 @@ cj(document).ready(function(){
            dataType: "json",
            success: function( response ) {
                if ( response.newContactSuccess ) {
-                   cj("#contact").val( response.sortName ).focus( );
-		   if ( typeof(allowMultiClient) != "undefined" ) {
-		      if ( allowMultiClient ) {
-	              	 var newToken = '{"name":"'+response.sortName+'","id":"'+response.contactID+'"},';
-		      	 cj('ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).remove();
-		      	 addMultiClientOption(newToken);
-		      }
-		   }
-                   cj("input[name=contact_select_id]").val( response.contactID );
-                   cj("#contact-success").show( );
-                   cj("#contact-dialog").dialog("close");
+                   cj('#contact_' + blockNo ).val( response.sortName ).focus( );
+                   if ( typeof(allowMultiClient) != "undefined" ) {
+                       if ( allowMultiClient ) {
+                           var newToken = '{"name":"'+response.sortName+'","id":"'+response.contactID+'"},';
+                           cj('ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).remove();
+			   	//we are having multiple instances, CRM-6932
+				eval( 'addMultiClientOption' + blockNo + "( newToken,  blockNo )" );
+                       }
+                   }
+                   cj('input[name=contact_select_id[' + blockNo +']]').val( response.contactID );
+                   cj('#contact-success-' + blockNo ).show( );
+                   cj('#contact-dialog-' + blockNo ).dialog('close');
                }
            }
          }).responseText;
 
-         cj("#contact-dialog").html( response );
+         cj('#contact-dialog-' + blockNo).html( response );
 
         // here we could return false to prevent the form from being submitted; 
         // returning anything other than false will allow the form submit to continue 

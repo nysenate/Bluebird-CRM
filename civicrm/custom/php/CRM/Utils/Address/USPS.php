@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -53,9 +53,8 @@ class CRM_Utils_Address_USPS {
         $userID = CRM_Core_BAO_Preferences::value( 'address_standardization_userid' );
         $url    = CRM_Core_BAO_Preferences::value( 'address_standardization_url'    );
 
-        // $url = "http://production.shippingapis.com/shippingapi.dll";
-
-        if ( empty( $userID ) || empty( $url ) ) {
+        if ( empty( $userID ) ||
+             empty( $url ) ) {
             return false;
         }
 

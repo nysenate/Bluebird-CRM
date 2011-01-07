@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -167,9 +167,13 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
         }
         $this->_scope = $this->_scope . '_' . $this->_key;
 
-        require_once 'CRM/Core/BAO/Cache.php';
-        CRM_Core_Session::registerAndRetrieveSessionObjects( array( "_{$name}_container",
-                                                                    array( 'CiviCRM', $this->_scope ) ) );
+        // only use the civicrm cache if we have a valid key
+        // else we clash with other users CRM-7059
+        if ( ! empty( $this->_key ) ) {
+            require_once 'CRM/Core/BAO/Cache.php';
+            CRM_Core_Session::registerAndRetrieveSessionObjects( array( "_{$name}_container",
+                                                                        array( 'CiviCRM', $this->_scope ) ) );
+        }
         
         $this->HTML_QuickForm_Controller( $name, $modal );
 
@@ -212,6 +216,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
     }
 
     function fini( ) {
+        require_once 'CRM/Core/BAO/Cache.php';
         CRM_Core_BAO_Cache::storeSessionToCache( array( "_{$this->_name}_container",
                                                         array( 'CiviCRM', $this->_scope ) ),
                                                  true );
@@ -379,7 +384,14 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
             } else {
                 $formName = CRM_Utils_String::getClassName( $name );
             }
-            require_once(str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php');
+            
+            require_once 'CRM/Core/Extensions.php';
+            $ext = new CRM_Core_Extensions( );
+            if ( $ext->isExtensionClass( $className) ) {
+                require_once( $ext->classToPath( $className ) );
+            } else {
+                require_once(str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php');
+            }
             $$stateName = new $className( $stateMachine->find( $className ), $action, 'post', $formName );
             if ( $title ) {
                 $$stateName->setTitle( $title );

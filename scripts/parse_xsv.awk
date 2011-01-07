@@ -4,8 +4,11 @@
 # parse_xsv - Parse a file of values that are separated by a delimiter,
 #             typically a comma.
 #
-# Written by Ken Zalewski on 2010-04-12
-# Last revision on 2010-04-30
+# Project: BluebirdCRM
+# Author: Ken Zalewski
+# Organization: New York State Senate
+# Date: 2010-04-12
+# Revised: 2010-04-30
 #
 # Parameters:
 #   string  = The string to parse.

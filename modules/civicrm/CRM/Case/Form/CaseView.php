@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -125,7 +125,8 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
         $values['case_type_id'] = explode( CRM_Case_BAO_Case::VALUE_SEPERATOR, 
                                            CRM_Utils_Array::value( 'case_type_id' , $values ) );
 
-        $statuses      = CRM_Case_PseudoConstant::caseStatus( );
+        require_once 'CRM/Case/PseudoConstant.php';
+        $statuses      = CRM_Case_PseudoConstant::caseStatus( 'label', false );
         $caseTypeName  = CRM_Case_BAO_Case::getCaseType( $this->_caseID, 'name' );
         $caseType      = CRM_Case_BAO_Case::getCaseType( $this->_caseID );
         
@@ -168,13 +169,20 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
         
         $title = $displayName . ' - ' . $caseType;
         
+        $recentOther = array( );
+        if ( CRM_Core_Permission::checkActionPermission('CiviCase', CRM_Core_Action::DELETE ) ) {
+            $recentOther['deleteUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/case', 
+                                                               "action=delete&reset=1&id={$this->_caseID}&cid={$this->_contactID}&context=home" ); 
+        }
+
         // add the recently created case
         CRM_Utils_Recent::add( $displayName . ' - ' . $caseType,
                                $url,
                                $this->_caseID,
                                'Case',
                                $this->_contactID,
-                               null
+                               null,
+                               $recentOther
                                );
         
 
@@ -319,11 +327,16 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
                 unset( $caseRoles[$value['relation_type']] );
             }
         }
-        
-        // activity type filter for case activity search, need to add Email Sent activity type
-        $emailSentID = CRM_Core_OptionGroup::getValue('activity_type', 'Email', 'name' );
-        $aTypesFilter = array( $emailSentID => 'Email' ) + $aTypes;
-        asort($aTypesFilter);
+
+        // take all case activity types for search filter, CRM-7187
+        $aTypesFilter    = array( );
+        $allCaseActTypes = CRM_Case_PseudoConstant::activityType( );
+        foreach ( $allCaseActTypes as $typeDetails ) {
+            if ( !in_array( $typeDetails['name'] , array( 'Open Case' ) ) ) {
+                $aTypesFilter[$typeDetails['id']] = CRM_Utils_Array::value( 'label', $typeDetails );
+            }
+        }
+        asort( $aTypesFilter );
         $this->add('select', 'activity_type_filter_id',  ts( 'Activity Type' ), array( '' => ts( '- select activity type -' ) ) + $aTypesFilter );
         
         $this->assign('caseRelationships', $caseRelationships);
@@ -366,12 +379,6 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
 		}
 		$this->add('select', 'role_type',  ts( 'Relationship Type' ), array( '' => ts( '- select type -' ) ) + $roleTypes );
 
-        require_once('CRM/Utils/Hook.php');
-        $hookCaseSummary = CRM_Utils_Hook::caseSummary( $this->_caseID );
-        if (is_array($hookCaseSummary)) {
-            $this->assign('hookCaseSummary', $hookCaseSummary);
-        }
-        
         require_once('CRM/Utils/Hook.php');
         $hookCaseSummary = CRM_Utils_Hook::caseSummary( $this->_caseID );
         if (is_array($hookCaseSummary)) {

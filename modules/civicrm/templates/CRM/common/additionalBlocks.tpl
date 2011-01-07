@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -122,28 +122,75 @@ function singleSelect( object ) {
 }
 
 function removeBlock( blockName, blockId ) {
-    // check if is_primary is checked, if yes set is primary to first block
-    if ( cj( "#"+ blockName + "_" + blockId + "_IsPrimary").attr('checked') ) {
-        cj( "#"+ blockName + "_1_IsPrimary").attr('checked', true);
+    var element = cj("#addressBlock > div").size();
+    if ( ( blockName == 'Address' ) && element == 1 ) {
+      return clearFirstBlock(blockName , blockId);
     }
 
+    if ( cj( "#"+ blockName + "_" + blockId + "_IsPrimary").attr('checked') ) {
+       	var primaryBlockId = 1;
+        // consider next block as a primary,
+        // when user delete first block 
+        if ( blockId >= 1 ) {
+           var blockIds = getAddressBlock('next');
+           for ( var i = 0; i <= blockIds.length; i++) {
+               var curBlockId = blockIds[i];
+	           if ( curBlockId != blockId ) {
+	               primaryBlockId = curBlockId;
+	               break;
+	           }
+            }  
+        } 
+    
+        // finally sets the primary address
+        cj( '#'+ blockName + '_' + primaryBlockId + '_IsPrimary').attr('checked', true);
+    }
+    
     //remove the spacer for address block only.
-    if( blockName == 'Address' && cj( "#"+ blockName + "_Block_" + blockId ).prev().attr('class') == 'spacer' ){
+    if ( blockName == 'Address' && cj( "#"+ blockName + "_Block_" + blockId ).prev().attr('class') == 'spacer' ){
         cj( "#"+ blockName + "_Block_" + blockId ).prev().remove();
     }
 
     //unset block from html
-    cj( "#"+ blockName + "_Block_" + blockId ).remove();
+    cj( "#"+ blockName + "_Block_" + blockId ).empty().remove();
 
     //show the link 'add address' to last element of Address Block
     if ( blockName == 'Address' ) {
-        bID = cj( "#addressBlock div:last" ).attr('id').split( '_', 3);
-        if ( bID['2'] ) {
-            cj( '#addMoreAddress' + bID['2'] ).show();
-        } else {
-            cj( '#addMoreAddress1' ).show();
-        }
+        var lastAddressBlock = cj('div[id^=Address_Block_]').last().attr('id');
+        var lastBlockId = lastAddressBlock.split( '_' );
+        if ( lastBlockId[2] ) {
+            cj( '#addMoreAddress' + lastBlockId[2] ).show();
+        } 
     }
+}
+
+function clearFirstBlock( blockName , blockId ) {
+    var element =  blockName + '_Block_' + blockId;
+    cj("#" + element +" input, " + "#" + element + " select").each(function () {
+        cj(this).val(''); 
+    });
+    cj("#addressBlockId").removeClass('crm-accordion-open').addClass('crm-accordion-closed');
+}
+
+function getAddressBlock( position ) {
+   var addressBlockIds = new Array();
+   var i = 0;
+   switch ( position ) {
+        case 'last':
+              var lastBlockInfo = cj("#addressBlockId > div").children(':last').attr('id').split( '_', 3);
+              addressBlockIds[i] = lastBlockInfo['2'];
+              break;
+        case 'next':
+              cj("#addressBlockId > div").children().each( function() {
+                  if ( cj(this).attr('id') ) {    
+                     var blockInfo = cj(this).attr('id').split( '_', 3);
+                     addressBlockIds[i] = blockInfo['2'];
+                     i++;
+                  }
+              });
+              break;
+   }
+   return addressBlockIds;
 }
 </script>
 {/literal}

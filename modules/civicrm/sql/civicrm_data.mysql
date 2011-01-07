@@ -1,5 +1,5 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -285,7 +285,7 @@ INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated
 INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated) VALUES("1245", "Guernsey", "GG", "99", "0");
 INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated) VALUES("1246", "Isle of Man", "IM", "99", "0");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -2629,7 +2629,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (3862, 1148, "ER", "Erongo"),
 (3863, 1148, "HA", "Hardap"),
 (3864, 1148, "KA", "Karas"),
-(3865, 1148, "KH", "Khomae"),
+(3865, 1148, "KH", "Khomas"),
 (3866, 1148, "KU", "Kunene"),
 (3867, 1148, "OW", "Ohangwena"),
 (3868, 1148, "OK", "Okavango"),
@@ -4081,7 +4081,7 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (NULL, 1050, "19", "Haut-Katanga"),
 (NULL, 1050, "20", "Tanganyika");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -4291,7 +4291,7 @@ INSERT INTO civicrm_currency (id, name, symbol, numeric_code, full_name) VALUES
 (184, "ZMK", NULL, "894", "Zambian Kwacha"),
 (185, "ZWD", "Z$", "716", "Zimbabwe Dollar");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -4327,6 +4327,7 @@ INSERT INTO civicrm_component (name, namespace) VALUES ('CiviGrant'     , 'CRM_G
 INSERT INTO civicrm_component (name, namespace) VALUES ('CiviPledge'    , 'CRM_Pledge' );
 INSERT INTO civicrm_component (name, namespace) VALUES ('CiviCase'      , 'CRM_Case' );
 INSERT INTO civicrm_component (name, namespace) VALUES ('CiviReport'    , 'CRM_Report' );
+INSERT INTO civicrm_component (name, namespace) VALUES ('CiviCampaign'  , 'CRM_Campaign' );
 
 INSERT INTO civicrm_address ( contact_id, location_type_id, is_primary, is_billing, street_address, street_number, street_number_suffix, street_number_predirectional, street_name, street_type, street_number_postdirectional, street_unit, supplemental_address_1, supplemental_address_2, supplemental_address_3, city, county_id, state_province_id, postal_code_suffix, postal_code, usps_adc, country_id, geo_code_1, geo_code_2, timezone)
       VALUES
@@ -4413,7 +4414,7 @@ VALUES
   ( 'Member Dues'          , 0, 1, 1 ), 
   ( 'Campaign Contribution', 0, 1, 0 ),
   ( 'Event Fee'            , 0, 1, 0 );
-
+  
 -- option groups and values for 'preferred communication methods' , 'activity types', 'gender', etc.
 
 INSERT INTO 
@@ -4467,7 +4468,14 @@ VALUES
    ('website_type'                  , 'Website Type'                       , 0, 1),
    ('tag_used_for'                  , 'Tag Used For'                       , 0, 1),
    ('currencies_enabled'            , 'List of currencies enabled for this site', 0, 1),
-   ('event_badge'                   , 'Event Name Badge'                   , 0, 1);
+   ('event_badge'                   , 'Event Name Badge'                   , 0, 1),
+   ('note_privacy'                  , 'Privacy levels for notes'           , 0, 1),
+   ('campaign_type'                 , 'Campaign Type'                      , 0, 1),
+   ('campaign_status'               , 'Campaign Status'                    , 0, 1),
+   ('system_extensions'             , 'CiviCRM Extensions'                 , 0, 1),
+   ('directory_preferences'         , 'Directory Preferences'              , 0, 1),
+   ('url_preferences'               , 'URL Preferences'                    , 0, 1),
+   ('mail_approval_status'          , 'CiviMail Approval Status'           , 0, 1);
 
    
 SELECT @option_group_id_pcm            := max(id) from civicrm_option_group where name = 'preferred_communication_method';
@@ -4519,6 +4527,13 @@ SELECT @option_group_id_website        := max(id) from civicrm_option_group wher
 SELECT @option_group_id_tuf            := max(id) from civicrm_option_group where name = 'tag_used_for';
 SELECT @option_group_id_currency       := max(id) from civicrm_option_group where name = 'currencies_enabled';
 SELECT @option_group_id_eventBadge     := max(id) from civicrm_option_group where name = 'event_badge';
+SELECT @option_group_id_notePrivacy    := max(id) from civicrm_option_group where name = 'note_privacy';
+SELECT @option_group_id_campaignType   := max(id) from civicrm_option_group where name = 'campaign_type';
+SELECT @option_group_id_campaignStatus := max(id) from civicrm_option_group where name = 'campaign_status';
+SELECT @option_group_id_extensions     := max(id) from civicrm_option_group where name = 'system_extensions';
+SELECT @option_group_id_directory_pref := max(id) from civicrm_option_group where name = 'directory_preferences';
+SELECT @option_group_id_url_pref       := max(id) from civicrm_option_group where name = 'url_preferences';
+SELECT @option_group_id_mail_approval_status := max(id) from civicrm_option_group where name = 'mail_approval_status';
 
 SELECT @contributeCompId := max(id) FROM civicrm_component where name = 'CiviContribute';
 SELECT @eventCompId      := max(id) FROM civicrm_component where name = 'CiviEvent';
@@ -4526,6 +4541,8 @@ SELECT @memberCompId     := max(id) FROM civicrm_component where name = 'CiviMem
 SELECT @pledgeCompId     := max(id) FROM civicrm_component where name = 'CiviPledge';
 SELECT @caseCompId       := max(id) FROM civicrm_component where name = 'CiviCase';
 SELECT @grantCompId      := max(id) FROM civicrm_component where name = 'CiviGrant';
+SELECT @campaignCompId   := max(id) FROM civicrm_component where name = 'CiviCampaign';
+SELECT @mailCompId       := max(id) FROM civicrm_component where name = 'CiviMail';
 
 INSERT INTO 
    `civicrm_option_value` (`option_group_id`, `label`, `value`, `name`, `grouping`, `filter`, `is_default`, `weight`, `description`, `is_optgroup`, `is_reserved`, `is_active`, `component_id`, `visibility_id`) 
@@ -4565,6 +4582,11 @@ VALUES
    (@option_group_id_act, 'Reassigned Case',                    24, 'Reassigned Case', NULL, 0,  NULL, 24, '', 0, 1, 1, @caseCompId, NULL ),
    (@option_group_id_act, 'Link Cases',                         25, 'Link Cases', NULL, 0,  NULL, 25, '', 0, 1, 1, @caseCompId, NULL ),
    (@option_group_id_act, 'Change Case Tags',                   26, 'Change Case Tags', NULL,0, 0, 26, '', 0, 1, 1, @caseCompId, NULL),
+   (@option_group_id_act, 'Survey',                             27, 'Survey', NULL,0, 0, 27, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'Canvass',                            28, 'Canvass', NULL,0, 0, 28, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'PhoneBank',                          29, 'PhoneBank', NULL,0, 0, 29, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'WalkList',                           30, 'WalkList', NULL,0, 0, 30, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'Petition',                           31, 'Petition', NULL,0, 0, 31, '', 0, 1, 1, @campaignCompId, NULL),
 
    (@option_group_id_gender, 'Female',      1, 'Female',      NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
    (@option_group_id_gender, 'Male',        2, 'Male',        NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL),
@@ -4763,6 +4785,13 @@ VALUES
   (@option_group_id_report , 'Grant Report', 'grant', 'CRM_Report_Form_Grant', NULL, 0, 0, 30,  'Grant Report', 0, 0, 1, @grantCompId, NULL),
   (@option_group_id_report, 'Participant list Count Report', 'event/participantlist', 'CRM_Report_Form_Event_ParticipantListCount', NULL, 0, 0, 31, 'Shows the Participant list with Participant Count.', 0, 0, 1, @eventCompId, NULL),
   (@option_group_id_report, 'Income Count Summary Report', 'event/incomesummary', 'CRM_Report_Form_Event_IncomeCountSummary', NULL, 0, 0, 32, 'Shows the Income Summary of events with Count.', 0, 0, 1, @eventCompId, NULL),
+  (@option_group_id_report, 'Case Detail Report', 'case/detail', 'CRM_Report_Form_Case_Detail', NULL, 0, 0, 33, 'Case Details', 0, 0, 1, @caseCompId, NULL),
+  (@option_group_id_report, 'Mail Bounce Report', 'Mailing/bounce', 'CRM_Report_Form_Mailing_Bounce', NULL, 0, NULL, 34, 'Bounce Report for mailings', 0, 0, 1, @mailCompId, NULL),
+  (@option_group_id_report, 'Mail Summary Report', 'Mailing/summary', 'CRM_Report_Form_Mailing_Summary', NULL, 0, NULL, 35, 'Summary statistics for mailings', 0, 0, 1, @mailCompId, NULL),
+  (@option_group_id_report, 'Mail Opened Report', 'Mailing/opened', 'CRM_Report_Form_Mailing_Opened', NULL, 0, NULL, 36, 'Display contacts who opened emails from a mailing', 0, 0, 1, @mailCompId, NULL),
+  (@option_group_id_report, 'Mail Clickthrough Report', 'Mailing/clicks', 'CRM_Report_Form_Mailing_Clicks', NULL, 0, NULL, 37, 'Display clicks from each mailing', 0, 0, 1, @mailCompId, NULL),
+  (@option_group_id_report, 'Contact Logging Report (Summary)', 'logging/contact/summary', 'CRM_Report_Form_Contact_LoggingSummary', NULL, 0, NULL, 38, 'Contact modification report for the logging infrastructure (summary).', 0, 0, 0, NULL, NULL),
+  (@option_group_id_report, 'Contact Logging Report (Detail)', 'logging/contact/detail', 'CRM_Report_Form_Contact_LoggingDetail', NULL, 0, NULL, 39, 'Contact modification report for the logging infrastructure (detail).', 0, 0, 0, NULL, NULL),
   
   (@option_group_id_acs, 'Scheduled',  1, 'Scheduled',  NULL, 0, 1,    1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Completed',  2, 'Completed',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
@@ -4795,7 +4824,8 @@ VALUES
 
  
   (@option_group_id_we, 'TinyMCE'    , 1, NULL, NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL),
-  (@option_group_id_we, 'CKEditor'  , 2, NULL, NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_we, 'CKEditor'  , 2, NULL, NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_we, 'Joomla Default Editor'  , 3, NULL, NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL), 
 
   (@option_group_id_mt, 'Search Builder',      1, 'Search Builder',      NULL, 0, 0,    1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_mt, 'Import Contact',      2, 'Import Contact',      NULL, 0, 0,    2, NULL, 0, 1, 1, NULL, NULL),
@@ -4845,8 +4875,8 @@ VALUES
   (@option_group_id_priority, 'Low',    3, 'Low',    NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL),
 
 -- redaction rule
-  (@option_group_id_rr, 'Vancouver', 'city_', NULL, NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
-  (@option_group_id_rr, '/(19|20)(\\d{2})-(\\d{1,2})-(\\d{1,2})/', 'date_', NULL, NULL, 1, NULL, 2, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_rr, 'Vancouver', 'city_', NULL, NULL, 0, NULL, 1, NULL, 0, 0, 0, NULL, NULL),
+  (@option_group_id_rr, '/(19|20)(\\d{2})-(\\d{1,2})-(\\d{1,2})/', 'date_', NULL, NULL, 1, NULL, 2, NULL, 0, 0, 0, NULL, NULL),
 
 -- email greeting.
   (@option_group_id_emailGreeting, 'Dear {contact.first_name}',                                                 1, 'Dear {contact.first_name}',                                                 NULL,    1, 1, 1, NULL, 0, 0, 1, NULL, NULL),
@@ -4879,6 +4909,7 @@ VALUES
    (@option_group_id_website, 'Facebook', 3, 'Facebook', NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL),
    (@option_group_id_website, 'Twitter',  4, 'Twitter',  NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL),
    (@option_group_id_website, 'MySpace',  5, 'MySpace',  NULL, 0, NULL, 5, NULL, 0, 0, 1, NULL, NULL),
+   (@option_group_id_website, 'Main',     6, 'Main',     NULL, 0, NULL, 6, NULL, 0, 0, 1, NULL, NULL),
 
 -- Tag used for
    (@option_group_id_tuf, 'Contacts',   'civicrm_contact',  'Contacts',    NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
@@ -4890,8 +4921,23 @@ VALUES
 -- event name badges
   (@option_group_id_eventBadge, 'Name Only'     , 1, 'CRM_Event_Badge_Simple',  NULL, 0, 0, 1, 'Simple Event Name Badge', 0, 1, 1, NULL, NULL),
   (@option_group_id_eventBadge, 'Name Tent'     , 2, 'CRM_Event_Badge_NameTent',  NULL, 0, 0, 2, 'Name Tent', 0, 1, 1, NULL, NULL),
-  (@option_group_id_eventBadge , 'With Logo'    , 3, 'CRM_Event_Badge_Logo', NULL, 0, 0, 3, 'You can set your own background image',  0, 1, 1, NULL, NULL );
-    
+  (@option_group_id_eventBadge , 'With Logo'    , 3, 'CRM_Event_Badge_Logo', NULL, 0, 0, 3, 'You can set your own background image',  0, 1, 1, NULL, NULL ),
+
+-- note privacy levels
+  (@option_group_id_notePrivacy, 'None'           , 0, '',  NULL, 0, 1, 1, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_notePrivacy, 'Author Only'    , 1, '',  NULL, 0, 0, 2, NULL, 0, 1, 1, NULL, NULL),
+
+-- Compaign Types
+  (@option_group_id_campaignType, 'Direct Mail', 1, 'Direct Mail',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_campaignType, 'Referral Program', 2, 'Referral Program',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_campaignType, 'Constituent Engagement', 3, 'Constituent Engagement',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
+
+-- Campaign Status
+  (@option_group_id_campaignStatus, 'Planned', 1, 'Planned',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL), 
+  (@option_group_id_campaignStatus, 'In Progress', 2, 'In Progress',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_campaignStatus, 'Completed', 3, 'Completed',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_campaignStatus, 'Cancelled', 4, 'Cancelled',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL);
+
 -- Now insert option values which require domainID
 --
 
@@ -4899,13 +4945,32 @@ INSERT INTO
    `civicrm_option_value` (`option_group_id`, `label`, `value`, `name`, `grouping`, `filter`, `is_default`, `weight`, `description`, `is_optgroup`, `is_reserved`, `is_active`, `component_id`, `domain_id`, `visibility_id`) 
 VALUES
 -- from email address.
-  (@option_group_id_fma, '"FIXME"<info@FIXME.ORG>', '1', '"FIXME"<info@FIXME.ORG>', NULL, 0, 1, 1, 'Default domain email address and from name.', 0, 0, 1, NULL, @domainID, NULL ),
+  (@option_group_id_fma, '"FIXME" <info@FIXME.ORG>', '1', '"FIXME" <info@FIXME.ORG>', NULL, 0, 1, 1, 'Default domain email address and from name.', 0, 0, 1, NULL, @domainID, NULL ),
 
 -- grant types
   (@option_group_id_grantTyp, 'Emergency'          , 1, 'Emergency'         , NULL, 0, 1,    1, NULL, 0, 0, 1, NULL, @domainID, NULL),    
   (@option_group_id_grantTyp, 'Family Support'     , 2, 'Family Support'    , NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, @domainID, NULL),
   (@option_group_id_grantTyp, 'General Protection' , 3, 'General Protection', NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, @domainID, NULL),
-  (@option_group_id_grantTyp, 'Impunity'           , 4, 'Impunity'          , NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, @domainID, NULL);
+  (@option_group_id_grantTyp, 'Impunity'           , 4, 'Impunity'          , NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, @domainID, NULL),
+
+-- Directory preferences
+  (@option_group_id_directory_pref, 'Temporary Files' , '', 'uploadDir', NULL, 0, 0, 1, 'File system path where temporary CiviCRM files - such as import data files - are uploaded.', 0, 1, 1, NULL, @domainID, NULL),
+  (@option_group_id_directory_pref, 'Images' , '', 'imageUploadDir', NULL, 0, 0, 2, 'File system path where image files are uploaded. Currently, this path is used for images associated with premiums (CiviContribute thank-you gifts).', 0, 1, 1, NULL, @domainID, NULL),
+  (@option_group_id_directory_pref, 'Custom Files' , '', 'customFileUploadDir', NULL, 0, 0, 3, 'Path where documents and images which are attachments to contact records are stored (e.g. contact photos, resumes, contracts, etc.). These attachments are defined using \'file\' type custom fields.', 0, 1, 1, NULL, @domainID, NULL),
+  (@option_group_id_directory_pref, 'Custom Templates' , '', 'customTemplateDir', NULL, 0, 0, 4, 'Path where site specific templates are stored if any. This directory is searched first if set. CiviCase configuration files can also be stored in this custom path.', 0, 1, 1, NULL, @domainID, NULL),
+  (@option_group_id_directory_pref, 'Custom PHP' , '', 'customPHPPathDir', NULL, 0, 0, 5, 'Path where site specific PHP code files are stored if any. This directory is searched first if set.', 0, 1, 1, NULL, @domainID, NULL),
+  (@option_group_id_directory_pref, 'Custom Extensions' , '', 'extensionsDir', NULL, 0, 0, 6, 'Path where Custom extensions are stored.', 0, 1, 1, NULL, @domainID, NULL),
+
+-- URL preferences
+  (@option_group_id_url_pref, 'CiviCRM Resource URL' , '', 'userFrameworkResourceURL', NULL, 0, 0, 1, NULL, 0, 1, 1, NULL, @domainID, NULL),
+  (@option_group_id_url_pref, 'Image Upload URL' , '', 'imageUploadURL', NULL, 0, 0, 2, NULL, 0, 1, 1, NULL, @domainID, NULL),
+  (@option_group_id_url_pref, 'Custom CiviCRM CSS URL' , '', 'customCSSURL', NULL, 0, 0, 3, NULL, 0, 1, 1, NULL, @domainID, NULL),
+
+-- Mail Approval Status Preferences
+  (@option_group_id_mail_approval_status, 'Approved' , 1, 'Approved', NULL, 0, 1, 1, NULL, 0, 1, 1, @mailCompId, @domainID, NULL),
+  (@option_group_id_mail_approval_status, 'Rejected' , 2, 'Rejected', NULL, 0, 0, 2, NULL, 0, 1, 1, @mailCompId, @domainID, NULL),
+  (@option_group_id_mail_approval_status, 'None' , 3, 'None', NULL, 0, 0, 3, NULL, 0, 1, 1, @mailCompId, @domainID, NULL);
+
 
 -- CRM-6138
 -- CRM-6138
@@ -4923,197 +4988,204 @@ SELECT @counter := 0;
 INSERT INTO civicrm_option_value
   (option_group_id, is_default, is_active, name, value, label, weight)
 VALUES
-  (@option_group_id_languages, 0, 0, '', 'ab', 'Abkhaz', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'aa', 'Afar', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'af', 'Afrikaans', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ak', 'Akan', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sq', 'Albanian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'am', 'Amharic', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ar', 'Arabic', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'an', 'Aragonese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'hy', 'Armenian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'as', 'Assamese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'av', 'Avaric', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ae', 'Avestan', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ay', 'Aymara', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'az', 'Azerbaijani', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'bm', 'Bambara', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ba', 'Bashkir', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'eu', 'Basque', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'be', 'Belarusian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'bn', 'Bengali', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'bh', 'Bihari', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'bi', 'Bislama', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'bs', 'Bosnian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'br', 'Breton', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'bg', 'Bulgarian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'my', 'Burmese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ca', 'Catalan; Valencian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ch', 'Chamorro', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ce', 'Chechen', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ny', 'Chichewa; Chewa; Nyanja', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'zh', 'Chinese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'cv', 'Chuvash', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kw', 'Cornish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'co', 'Corsican', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'cr', 'Cree', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'hr', 'Croatian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'cs', 'Czech', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'da', 'Danish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'dv', 'Divehi; Dhivehi; Maldivian;', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'nl', 'Dutch', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'dz', 'Dzongkha', @counter := @counter + 1),
-  (@option_group_id_languages, 1, 1, '', 'en', 'English', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'eo', 'Esperanto', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'et', 'Estonian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ee', 'Ewe', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'fo', 'Faroese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'fj', 'Fijian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'fi', 'Finnish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'fr', 'French', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ff', 'Fula; Fulah; Pulaar; Pular', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'gl', 'Galician', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ka', 'Georgian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'de', 'German', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'el', 'Greek, Modern', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'gn', 'Guaraní', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'gu', 'Gujarati', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ht', 'Haitian; Haitian Creole', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ha', 'Hausa', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'he', 'Hebrew (modern)', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'hz', 'Herero', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'hi', 'Hindi', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ho', 'Hiri Motu', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'hu', 'Hungarian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ia', 'Interlingua', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'id', 'Indonesian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ie', 'Interlingue', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ga', 'Irish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ig', 'Igbo', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ik', 'Inupiaq', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'io', 'Ido', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'is', 'Icelandic', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'it', 'Italian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'iu', 'Inuktitut', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ja', 'Japanese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'jv', 'Javanese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kl', 'Kalaallisut, Greenlandic', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kn', 'Kannada', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kr', 'Kanuri', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ks', 'Kashmiri', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kk', 'Kazakh', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'km', 'Khmer', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ki', 'Kikuyu, Gikuyu', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'rw', 'Kinyarwanda', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ky', 'Kirghiz, Kyrgyz', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kv', 'Komi', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kg', 'Kongo', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ko', 'Korean', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ku', 'Kurdish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'kj', 'Kwanyama, Kuanyama', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'la', 'Latin', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'lb', 'Luxembourgish, Letzeburgesch', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'lg', 'Luganda', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'li', 'Limburgish, Limburgan, Limburger', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ln', 'Lingala', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'lo', 'Lao', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'lt', 'Lithuanian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'lu', 'Luba-Katanga', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'lv', 'Latvian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'gv', 'Manx', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'mk', 'Macedonian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'mg', 'Malagasy', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ms', 'Malay', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ml', 'Malayalam', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'mt', 'Maltese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'mi', 'Māori', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'mr', 'Marathi', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'mh', 'Marshallese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'mn', 'Mongolian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'na', 'Nauru', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'nv', 'Navajo, Navaho', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'nb', 'Norwegian Bokmål', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'nd', 'North Ndebele', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ne', 'Nepali', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ng', 'Ndonga', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'nn', 'Norwegian Nynorsk', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'no', 'Norwegian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ii', 'Nuosu', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'nr', 'South Ndebele', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'oc', 'Occitan (after 1500)', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'oj', 'Ojibwa', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'cu', 'Old Church Slavonic, Church Slavic, Church Slavonic, Old Bulgarian, Old Slavonic', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'om', 'Oromo', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'or', 'Oriya', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'os', 'Ossetian, Ossetic', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'pa', 'Panjabi, Punjabi', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'pi', 'Pāli', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'fa', 'Persian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'pl', 'Polish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ps', 'Pashto, Pushto', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'pt', 'Portuguese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'qu', 'Quechua', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'rm', 'Romansh', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'rn', 'Kirundi', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ro', 'Romanian, Moldavian, Moldovan', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'ru', 'Russian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sa', 'Sanskrit', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sc', 'Sardinian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sd', 'Sindhi', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'se', 'Northern Sami', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sm', 'Samoan', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sg', 'Sango', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sr', 'Serbian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'gd', 'Scottish Gaelic; Gaelic', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sn', 'Shona', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'si', 'Sinhala, Sinhalese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sk', 'Slovak', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sl', 'Slovene', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'so', 'Somali', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'st', 'Southern Sotho', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'es', 'Spanish; Castilian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'su', 'Sundanese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'sw', 'Swahili', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ss', 'Swati', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 1, '', 'sv', 'Swedish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ta', 'Tamil', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'te', 'Telugu', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'tg', 'Tajik', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'th', 'Thai', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ti', 'Tigrinya', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'bo', 'Tibetan Standard, Tibetan, Central', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'tk', 'Turkmen', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'tl', 'Tagalog', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'tn', 'Tswana', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'to', 'Tonga (Tonga Islands)', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'tr', 'Turkish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ts', 'Tsonga', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'tt', 'Tatar', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'tw', 'Twi', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ty', 'Tahitian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ug', 'Uighur, Uyghur', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'uk', 'Ukrainian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'ur', 'Urdu', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'uz', 'Uzbek', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 've', 'Venda', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'vi', 'Vietnamese', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'vo', 'Volapük', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'wa', 'Walloon', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'cy', 'Welsh', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'wo', 'Wolof', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'fy', 'Western Frisian', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'xh', 'Xhosa', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'yi', 'Yiddish', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'yo', 'Yoruba', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'za', 'Zhuang, Chuang', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, '', 'zu', 'Zulu', @counter := @counter + 1);
+  (@option_group_id_languages, 0, 0, 'ab_GE', 'ab', 'Abkhaz', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'aa_ET', 'aa', 'Afar', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'af_ZA', 'af', 'Afrikaans', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ak_GH', 'ak', 'Akan', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'sq_AL', 'sq', 'Albanian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'am_ET', 'am', 'Amharic', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'ar_EG', 'ar', 'Arabic', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'an_ES', 'an', 'Aragonese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'hy_AM', 'hy', 'Armenian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'as_IN', 'as', 'Assamese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'av_RU', 'av', 'Avaric', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ae_XX', 'ae', 'Avestan', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ay_BO', 'ay', 'Aymara', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'az_AZ', 'az', 'Azerbaijani', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'bm_ML', 'bm', 'Bambara', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ba_RU', 'ba', 'Bashkir', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'eu_ES', 'eu', 'Basque', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'be_BY', 'be', 'Belarusian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'bn_BD', 'bn', 'Bengali', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'bh_IN', 'bh', 'Bihari', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'bi_VU', 'bi', 'Bislama', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'bs_BA', 'bs', 'Bosnian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'br_FR', 'br', 'Breton', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'bg_BG', 'bg', 'Bulgarian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'my_MM', 'my', 'Burmese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'ca_ES', 'ca', 'Catalan; Valencian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ch_GU', 'ch', 'Chamorro', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ce_RU', 'ce', 'Chechen', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ny_MW', 'ny', 'Chichewa; Chewa; Nyanja', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'zh_CN', 'zh', 'Chinese (China)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'zh_TW', 'zh', 'Chinese (Taiwan)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'cv_RU', 'cv', 'Chuvash', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kw_GB', 'kw', 'Cornish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'co_FR', 'co', 'Corsican', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'cr_CA', 'cr', 'Cree', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'hr_HR', 'hr', 'Croatian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'cs_CZ', 'cs', 'Czech', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'da_DK', 'da', 'Danish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'dv_MV', 'dv', 'Divehi; Dhivehi; Maldivian;', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'nl_NL', 'nl', 'Dutch', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'dz_BT', 'dz', 'Dzongkha', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'en_AU', 'en', 'English (Australia)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'en_CA', 'en', 'English (Canada)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'en_GB', 'en', 'English (United Kingdom)', @counter := @counter + 1),
+  (@option_group_id_languages, 1, 1, 'en_US', 'en', 'English (United States)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'eo_XX', 'eo', 'Esperanto', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'et_EE', 'et', 'Estonian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ee_GH', 'ee', 'Ewe', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'fo_FO', 'fo', 'Faroese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'fj_FJ', 'fj', 'Fijian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'fi_FI', 'fi', 'Finnish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'fr_CA', 'fr', 'French (Canada)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'fr_FR', 'fr', 'French (France)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ff_SN', 'ff', 'Fula; Fulah; Pulaar; Pular', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'gl_ES', 'gl', 'Galician', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ka_GE', 'ka', 'Georgian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'de_DE', 'de', 'German', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'el_GR', 'el', 'Greek, Modern', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'gn_PY', 'gn', 'Guaraní', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'gu_IN', 'gu', 'Gujarati', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ht_HT', 'ht', 'Haitian; Haitian Creole', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ha_NG', 'ha', 'Hausa', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'he_IL', 'he', 'Hebrew (modern)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'hz_NA', 'hz', 'Herero', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'hi_IN', 'hi', 'Hindi', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ho_PG', 'ho', 'Hiri Motu', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'hu_HU', 'hu', 'Hungarian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ia_XX', 'ia', 'Interlingua', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'id_ID', 'id', 'Indonesian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ie_XX', 'ie', 'Interlingue', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ga_IE', 'ga', 'Irish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ig_NG', 'ig', 'Igbo', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ik_US', 'ik', 'Inupiaq', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'io_XX', 'io', 'Ido', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'is_IS', 'is', 'Icelandic', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'it_IT', 'it', 'Italian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'iu_CA', 'iu', 'Inuktitut', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'ja_JP', 'ja', 'Japanese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'jv_ID', 'jv', 'Javanese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kl_GL', 'kl', 'Kalaallisut, Greenlandic', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kn_IN', 'kn', 'Kannada', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kr_NE', 'kr', 'Kanuri', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ks_IN', 'ks', 'Kashmiri', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kk_KZ', 'kk', 'Kazakh', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'km_KH', 'km', 'Khmer', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ki_KE', 'ki', 'Kikuyu, Gikuyu', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'rw_RW', 'rw', 'Kinyarwanda', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ky_KG', 'ky', 'Kirghiz, Kyrgyz', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kv_RU', 'kv', 'Komi', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kg_CD', 'kg', 'Kongo', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ko_KR', 'ko', 'Korean', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ku_IQ', 'ku', 'Kurdish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'kj_NA', 'kj', 'Kwanyama, Kuanyama', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'la_VA', 'la', 'Latin', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'lb_LU', 'lb', 'Luxembourgish, Letzeburgesch', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'lg_UG', 'lg', 'Luganda', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'li_NL', 'li', 'Limburgish, Limburgan, Limburger', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ln_CD', 'ln', 'Lingala', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'lo_LA', 'lo', 'Lao', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'lt_LT', 'lt', 'Lithuanian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'lu_CD', 'lu', 'Luba-Katanga', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'lv_LV', 'lv', 'Latvian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'gv_IM', 'gv', 'Manx', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'mk_MK', 'mk', 'Macedonian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'mg_MG', 'mg', 'Malagasy', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ms_MY', 'ms', 'Malay', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ml_IN', 'ml', 'Malayalam', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'mt_MT', 'mt', 'Maltese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'mi_NZ', 'mi', 'Māori', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'mr_IN', 'mr', 'Marathi', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'mh_MH', 'mh', 'Marshallese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'mn_MN', 'mn', 'Mongolian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'na_NR', 'na', 'Nauru', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'nv_US', 'nv', 'Navajo, Navaho', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'nb_NO', 'nb', 'Norwegian Bokmål', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'nd_ZW', 'nd', 'North Ndebele', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ne_NP', 'ne', 'Nepali', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ng_NA', 'ng', 'Ndonga', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'nn_NO', 'nn', 'Norwegian Nynorsk', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'no_NO', 'no', 'Norwegian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ii_CN', 'ii', 'Nuosu', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'nr_ZA', 'nr', 'South Ndebele', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'oc_FR', 'oc', 'Occitan (after 1500)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'oj_CA', 'oj', 'Ojibwa', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'cu_BG', 'cu', 'Old Church Slavonic, Church Slavic, Church Slavonic, Old Bulgarian, Old Slavonic', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'om_ET', 'om', 'Oromo', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'or_IN', 'or', 'Oriya', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'os_GE', 'os', 'Ossetian, Ossetic', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'pa_IN', 'pa', 'Panjabi, Punjabi', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'pi_KH', 'pi', 'Pāli', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'fa_IR', 'fa', 'Persian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'pl_PL', 'pl', 'Polish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ps_AF', 'ps', 'Pashto, Pushto', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'pt_BR', 'pt', 'Portuguese (Brazil)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'pt_PT', 'pt', 'Portuguese (Portugal)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'qu_PE', 'qu', 'Quechua', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'rm_CH', 'rm', 'Romansh', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'rn_BI', 'rn', 'Kirundi', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'ro_RO', 'ro', 'Romanian, Moldavian, Moldovan', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'ru_RU', 'ru', 'Russian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sa_IN', 'sa', 'Sanskrit', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sc_IT', 'sc', 'Sardinian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sd_IN', 'sd', 'Sindhi', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'se_NO', 'se', 'Northern Sami', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sm_WS', 'sm', 'Samoan', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sg_CF', 'sg', 'Sango', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sr_RS', 'sr', 'Serbian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'gd_GB', 'gd', 'Scottish Gaelic; Gaelic', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sn_ZW', 'sn', 'Shona', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'si_LK', 'si', 'Sinhala, Sinhalese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'sk_SK', 'sk', 'Slovak', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'sl_SI', 'sl', 'Slovene', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'so_SO', 'so', 'Somali', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'st_ZA', 'st', 'Southern Sotho', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'es_ES', 'es', 'Spanish; Castilian (Spain)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'es_MX', 'es', 'Spanish; Castilian (Mexico)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'su_ID', 'su', 'Sundanese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'sw_TZ', 'sw', 'Swahili', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ss_ZA', 'ss', 'Swati', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'sv_SE', 'sv', 'Swedish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ta_IN', 'ta', 'Tamil', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'te_IN', 'te', 'Telugu', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'tg_TJ', 'tg', 'Tajik', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'th_TH', 'th', 'Thai', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ti_ET', 'ti', 'Tigrinya', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'bo_CN', 'bo', 'Tibetan Standard, Tibetan, Central', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'tk_TM', 'tk', 'Turkmen', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'tl_PH', 'tl', 'Tagalog', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'tn_ZA', 'tn', 'Tswana', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'to_TO', 'to', 'Tonga (Tonga Islands)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'tr_TR', 'tr', 'Turkish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ts_ZA', 'ts', 'Tsonga', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'tt_RU', 'tt', 'Tatar', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'tw_GH', 'tw', 'Twi', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ty_PF', 'ty', 'Tahitian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ug_CN', 'ug', 'Uighur, Uyghur', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'uk_UA', 'uk', 'Ukrainian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'ur_PK', 'ur', 'Urdu', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'uz_UZ', 'uz', 'Uzbek', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 've_ZA', 've', 'Venda', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'vi_VN', 'vi', 'Vietnamese', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'vo_XX', 'vo', 'Volapük', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'wa_BE', 'wa', 'Walloon', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'cy_GB', 'cy', 'Welsh', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'wo_SN', 'wo', 'Wolof', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'fy_NL', 'fy', 'Western Frisian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'xh_ZA', 'xh', 'Xhosa', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'yi_US', 'yi', 'Yiddish', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'yo_NG', 'yo', 'Yoruba', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'za_CN', 'za', 'Zhuang, Chuang', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'zu_ZA', 'zu', 'Zulu', @counter := @counter + 1);
 -- /*******************************************************
 -- *
 -- * Encounter Medium Option Values (for case activities)
 -- *
 -- *******************************************************/
 INSERT INTO `civicrm_option_group` (name, label, description, is_reserved, is_active)
-    VALUES  ('encounter_medium', 'Encounter Medium', 'Encounter medium for case activities (e.g. In Person, By Phone, etc.)', 1, 1);
+    VALUES  ('encounter_medium', 'Encounter Medium', 'Encounter medium for case activities (e.g. In Person, By Phone, etc.)', 0, 1);
 SELECT @option_group_id_medium        := max(id) from civicrm_option_group where name = 'encounter_medium';
 INSERT INTO
    `civicrm_option_value` (`option_group_id`, `label`, `value`, `name`, `grouping`, `filter`, `is_default`, `weight`, `description`, `is_optgroup`, `is_reserved`, `is_active`)
@@ -5162,7 +5234,7 @@ VALUES
  ('PayPal_Express',     'PayPal - Express',       NULL,1,0,'User Name','Password','Signature',NULL,'Payment_PayPalImpl','https://www.paypal.com/','https://api-3t.paypal.com/',NULL,'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif','https://www.sandbox.paypal.com/','https://api-3t.sandbox.paypal.com/',NULL,'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif',2,NULL),
  ('Google_Checkout',    'Google Checkout',        NULL,1,0,'Merchant ID','Key',NULL,NULL,'Payment_Google','https://checkout.google.com/',NULL,NULL,'https://checkout.google.com/buttons/checkout.gif?merchant_id=YOURMERCHANTIDHERE&w=160&h=43&style=white&variant=text&loc=en_US','https://sandbox.google.com/checkout/',NULL,NULL,'https://sandbox.google.com/checkout/buttons/checkout.gif?merchant_id=YOURMERCHANTIDHERE&w=160&h=43&style=white&variant=text&loc=en_US',4,NULL),
  ('Moneris',            'Moneris',                NULL,1,0,'User Name','Password','Store ID',NULL,'Payment_Moneris','https://www3.moneris.com/',NULL,NULL,NULL,'https://esqa.moneris.com/',NULL,NULL,NULL,1,1),
- ('AuthNet_AIM',        'Authorize.Net - AIM',    NULL,1,0,'API Login','Payment Key','MD5 Hash',NULL,'Payment_AuthorizeNet','https://secure.authorize.net/gateway/transact.dll',NULL,'https://api.authorize.net/xml/v1/request.api',NULL,'https://test.authorize.net/gateway/transact.dll',NULL,'https://apitest.authorize.net/xml/v1/request.api',NULL,1,NULL),
+ ('AuthNet',            'Authorize.Net',          NULL,1,0,'API Login','Payment Key','MD5 Hash',NULL,'Payment_AuthorizeNet','https://secure.authorize.net/gateway/transact.dll',NULL,'https://api.authorize.net/xml/v1/request.api',NULL,'https://test.authorize.net/gateway/transact.dll',NULL,'https://apitest.authorize.net/xml/v1/request.api',NULL,1,1),
  ('PayJunction',        'PayJunction',            NULL,1,0,'User Name','Password',NULL,NULL,'Payment_PayJunction','https://payjunction.com/quick_link',NULL,NULL,NULL,'https://www.payjunctionlabs.com/quick_link',NULL,NULL,NULL,1,1),
  ('eWAY',               'eWAY (Single Currency)', NULL,1,0,'Customer ID',NULL,NULL,NULL,'Payment_eWAY','https://www.eway.com.au/gateway_cvn/xmlpayment.asp',NULL,NULL,NULL,'https://www.eway.com.au/gateway_cvn/xmltest/testpage.asp',NULL,NULL,NULL,1,0),
  ('Payment_Express',    'DPS Payment Express',    NULL,1,0,'User ID','Key','Mac Key - pxaccess only',NULL,'Payment_PaymentExpress','https://www.paymentexpress.com/pleaseenteraurl',NULL,NULL,NULL,'https://www.paymentexpress.com/pleaseenteratesturl',NULL,NULL,NULL,4,0),
@@ -5172,6 +5244,7 @@ VALUES
  ('Realex',             'Realex Payment',         NULL,1,0,'Merchant ID', 'Password', NULL, 'Account', 'Payment_Realex', 'https://epage.payandshop.com/epage.cgi', NULL, NULL, NULL, 'https://epage.payandshop.com/epage-remote.cgi', NULL, NULL, NULL, 1, 0 ),
  ('PayflowPro',         'PayflowPro',             NULL,1,0,'Vendor ID', 'Password', 'Partner (merchant)', 'User', 'Payment_PayflowPro', 'https://Payflowpro.paypal.com', NULL, NULL, NULL, 'https://pilot-Payflowpro.paypal.com', NULL, NULL, NULL, 1, 0 ),
  ('FirstData',          'FirstData (aka linkpoint)', 'FirstData (aka linkpoint)', 1, 0, 'Store name', 'certificate path', NULL, NULL, 'Payment_FirstData', 'https://secure.linkpt.net', NULL, NULL, NULL, 'https://staging.linkpt.net', NULL, NULL, NULL, 1, NULL);
+
 
 -- the fuzzy default dedupe rules
 INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default) VALUES ('Individual', 20, 'Fuzzy', true);
@@ -5453,7 +5526,8 @@ INSERT INTO civicrm_uf_group
     (4,  'new_individual',     'Individual,Contact',  'New Individual'    , 0,           1,           NULL),
     (5,  'new_organization',   'Organization,Contact','New Organization'  , 0,           1,           NULL),
     (6,  'new_household',      'Household,Contact',   'New Household'     , 0,           1,           NULL),
-    (7,  'summary_overlay',    'Contact',   		  'Summary Overlay'   , 0,           1,           NULL);
+    (7,  'summary_overlay',    'Contact',   		  'Summary Overlay'   , 0,           1,           NULL),
+    (8,  'shared_address',     'Contact',   		  'Shared Address'    , 0,           1,           NULL);
 
 INSERT INTO civicrm_uf_join
    (is_active,module,entity_table,entity_id,weight,uf_group_id)
@@ -5465,7 +5539,8 @@ VALUES
    (1, 'Profile', NULL, NULL, 3, 4),
    (1, 'Profile', NULL, NULL, 4, 5),
    (1, 'Profile', NULL, NULL, 5, 6),
-   (1, 'Profile', NULL, NULL, 6, 7);
+   (1, 'Profile', NULL, NULL, 6, 7),
+   (1, 'Profile', NULL, NULL, 7, 8);
    
 INSERT INTO civicrm_uf_field
        (id, uf_group_id, field_name,              is_required, is_reserved, weight, visibility,                  in_selector, is_searchable, location_type_id, label,                                         		field_type,    help_post, phone_type_id ) VALUES
@@ -5497,7 +5572,12 @@ INSERT INTO civicrm_uf_field
 	   (26, 7, 			 'group', 				  1, 		   0, 			8, 	  	'User and User Admin Only',  0, 		  0, 			 NULL, 			   'Groups',  					'Contact', 	   NULL,  NULL),
 	   (27, 7, 			 'tag', 				  1, 		   0, 			9, 	  	'User and User Admin Only',  0, 	      0, 		     NULL, 			   'Tags', 						'Contact', 	   NULL,  NULL),
 	   (28  ,7  	    ,'gender'  				 ,1  	      ,0  			,10  	,'User and User Admin Only' ,0  		 ,0  			,NULL,  			 'Gender'  						,'Individual' ,NULL,  NULL),
-	   (29 	,7 		    ,'birth_date' 			 ,1  	      ,0 			,11 	,'User and User Admin Only' ,0 		 	 ,0 			,NULL, 			  'Date of Birth' 			    ,'Individual' ,NULL,  NULL);
+	   (29 	,7 		    ,'birth_date' 			 ,1  	      ,0 			,11 	,'User and User Admin Only' ,0 		 	 ,0 			,NULL, 			  'Date of Birth' 			    ,'Individual' ,NULL,  NULL),
+	   (30,  8,           'street_address',        1,           1,           1,      'User and User Admin Only',  0,           0,             1,                'Street Address (Home)', 		'Contact',     NULL,  NULL),
+       (31,  8,           'city',                  1,           1,           2,      'User and User Admin Only',  0,           0,             1,                'City (Home)',           		'Contact',     NULL,  NULL),
+       (32,  8,           'postal_code',           0,           0,           3,      'User and User Admin Only',  0,           0,             1,                'Postal Code (Home)',    		'Contact',     NULL,  NULL),
+       (33,  8,           'country',               0,           0,           4,      'Public Pages and Listings', 0,           1,             1,                'Country (Home)',        		'Contact',     NULL,  NULL),
+       (34,  8,           'state_province',        0,           0,           5,      'Public Pages and Listings', 1,           1,             1,                'State (Home)',          		'Contact',     NULL,  NULL);
 
 INSERT INTO civicrm_participant_status_type
   (id, name,                                  label,                                                       class,      is_reserved, is_active, is_counted, weight, visibility_id) VALUES
@@ -5522,7 +5602,7 @@ INSERT INTO `civicrm_contact_type`
   ( 3, 'Organization', 'Organization', NULL, NULL, 1, 1);
 
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -5547,7 +5627,7 @@ INSERT INTO `civicrm_contact_type`
 
 INSERT INTO civicrm_option_group
   (name,                         label,            description,      is_reserved, is_active) VALUES
-    ('msg_tpl_workflow_case', 'Message Template Workflow for Cases',               'Message Template Workflow for Cases',                     0,           1) ,    ('msg_tpl_workflow_contribution', 'Message Template Workflow for Contributions',               'Message Template Workflow for Contributions',                     0,           1) ,    ('msg_tpl_workflow_event', 'Message Template Workflow for Events',               'Message Template Workflow for Events',                     0,           1) ,    ('msg_tpl_workflow_friend', 'Message Template Workflow for Tell-a-Friend',               'Message Template Workflow for Tell-a-Friend',                     0,           1) ,    ('msg_tpl_workflow_membership', 'Message Template Workflow for Memberships',               'Message Template Workflow for Memberships',                     0,           1) ,    ('msg_tpl_workflow_meta', 'Message Template Workflow for Meta Templates',               'Message Template Workflow for Meta Templates',                     0,           1) ,    ('msg_tpl_workflow_pledge', 'Message Template Workflow for Pledges',               'Message Template Workflow for Pledges',                     0,           1) ,    ('msg_tpl_workflow_uf', 'Message Template Workflow for Profiles',               'Message Template Workflow for Profiles',                     0,           1) ;
+    ('msg_tpl_workflow_case', 'Message Template Workflow for Cases',               'Message Template Workflow for Cases',                     0,           1) ,    ('msg_tpl_workflow_contribution', 'Message Template Workflow for Contributions',               'Message Template Workflow for Contributions',                     0,           1) ,    ('msg_tpl_workflow_event', 'Message Template Workflow for Events',               'Message Template Workflow for Events',                     0,           1) ,    ('msg_tpl_workflow_friend', 'Message Template Workflow for Tell-a-Friend',               'Message Template Workflow for Tell-a-Friend',                     0,           1) ,    ('msg_tpl_workflow_membership', 'Message Template Workflow for Memberships',               'Message Template Workflow for Memberships',                     0,           1) ,    ('msg_tpl_workflow_meta', 'Message Template Workflow for Meta Templates',               'Message Template Workflow for Meta Templates',                     0,           1) ,    ('msg_tpl_workflow_pledge', 'Message Template Workflow for Pledges',               'Message Template Workflow for Pledges',                     0,           1) ,    ('msg_tpl_workflow_uf', 'Message Template Workflow for Profiles',               'Message Template Workflow for Profiles',                     0,           1) ,    ('msg_tpl_workflow_petition', 'Message Template Workflow for Petition',               'Message Template Workflow for Petition',                     0,           1) ;
   SELECT @tpl_ogid_case := MAX(id) FROM civicrm_option_group WHERE name = 'msg_tpl_workflow_case';
   SELECT @tpl_ogid_contribution := MAX(id) FROM civicrm_option_group WHERE name = 'msg_tpl_workflow_contribution';
   SELECT @tpl_ogid_event := MAX(id) FROM civicrm_option_group WHERE name = 'msg_tpl_workflow_event';
@@ -5556,10 +5636,11 @@ INSERT INTO civicrm_option_group
   SELECT @tpl_ogid_meta := MAX(id) FROM civicrm_option_group WHERE name = 'msg_tpl_workflow_meta';
   SELECT @tpl_ogid_pledge := MAX(id) FROM civicrm_option_group WHERE name = 'msg_tpl_workflow_pledge';
   SELECT @tpl_ogid_uf := MAX(id) FROM civicrm_option_group WHERE name = 'msg_tpl_workflow_uf';
+  SELECT @tpl_ogid_petition := MAX(id) FROM civicrm_option_group WHERE name = 'msg_tpl_workflow_petition';
 
 INSERT INTO civicrm_option_value
   (option_group_id,        name,       label,   value,                                  weight) VALUES
-      (@tpl_ogid_case, 'case_activity', 'Cases - Send Copy of an Activity',            1, 1) ,      (@tpl_ogid_contribution, 'contribution_dupalert', 'Contributions - Duplicate Organization Alert',            1, 1) ,      (@tpl_ogid_contribution, 'contribution_offline_receipt', 'Contributions - Receipt (off-line)',            2, 2) ,      (@tpl_ogid_contribution, 'contribution_online_receipt', 'Contributions - Receipt (on-line)',            3, 3) ,      (@tpl_ogid_contribution, 'contribution_recurring_notify', 'Contributions - Recurring Start and End Notification',            4, 4) ,      (@tpl_ogid_contribution, 'pcp_notify', 'Personal Campaign Pages - Admin Notification',            5, 5) ,      (@tpl_ogid_contribution, 'pcp_status_change', 'Personal Campaign Pages - Supporter Status Change Notification',            6, 6) ,      (@tpl_ogid_contribution, 'pcp_supporter_notify', 'Personal Campaign Pages - Supporter Welcome',            7, 7) ,      (@tpl_ogid_event, 'event_offline_receipt', 'Events - Registration Confirmation and Receipt (off-line)',            1, 1) ,      (@tpl_ogid_event, 'event_online_receipt', 'Events - Registration Confirmation and Receipt (on-line)',            2, 2) ,      (@tpl_ogid_event, 'participant_cancelled', 'Events - Registration Cancellation Notice',            3, 3) ,      (@tpl_ogid_event, 'participant_confirm', 'Events - Registration Confirmation Invite',            4, 4) ,      (@tpl_ogid_event, 'participant_expired', 'Events - Pending Registration Expiration Notice',            5, 5) ,      (@tpl_ogid_friend, 'friend', 'Tell-a-Friend Email',            1, 1) ,      (@tpl_ogid_membership, 'membership_offline_receipt', 'Memberships - Signup and Renewal Receipts (off-line)',            1, 1) ,      (@tpl_ogid_membership, 'membership_online_receipt', 'Memberships - Receipt (on-line)',            2, 2) ,      (@tpl_ogid_meta, 'test_preview', 'Test-drive - Receipt Header',            1, 1) ,      (@tpl_ogid_pledge, 'pledge_acknowledge', 'Pledges - Acknowledgement',            1, 1) ,      (@tpl_ogid_pledge, 'pledge_reminder', 'Pledges - Payment Reminder',            2, 2) ,      (@tpl_ogid_uf, 'uf_notify', 'Profiles - Admin Notification',            1, 1) ;
+      (@tpl_ogid_case, 'case_activity', 'Cases - Send Copy of an Activity',            1, 1) ,      (@tpl_ogid_contribution, 'contribution_dupalert', 'Contributions - Duplicate Organization Alert',            1, 1) ,      (@tpl_ogid_contribution, 'contribution_offline_receipt', 'Contributions - Receipt (off-line)',            2, 2) ,      (@tpl_ogid_contribution, 'contribution_online_receipt', 'Contributions - Receipt (on-line)',            3, 3) ,      (@tpl_ogid_contribution, 'contribution_recurring_notify', 'Contributions - Recurring Start and End Notification',            4, 4) ,      (@tpl_ogid_contribution, 'pcp_notify', 'Personal Campaign Pages - Admin Notification',            5, 5) ,      (@tpl_ogid_contribution, 'pcp_status_change', 'Personal Campaign Pages - Supporter Status Change Notification',            6, 6) ,      (@tpl_ogid_contribution, 'pcp_supporter_notify', 'Personal Campaign Pages - Supporter Welcome',            7, 7) ,      (@tpl_ogid_event, 'event_offline_receipt', 'Events - Registration Confirmation and Receipt (off-line)',            1, 1) ,      (@tpl_ogid_event, 'event_online_receipt', 'Events - Registration Confirmation and Receipt (on-line)',            2, 2) ,      (@tpl_ogid_event, 'participant_cancelled', 'Events - Registration Cancellation Notice',            3, 3) ,      (@tpl_ogid_event, 'participant_confirm', 'Events - Registration Confirmation Invite',            4, 4) ,      (@tpl_ogid_event, 'participant_expired', 'Events - Pending Registration Expiration Notice',            5, 5) ,      (@tpl_ogid_friend, 'friend', 'Tell-a-Friend Email',            1, 1) ,      (@tpl_ogid_membership, 'membership_offline_receipt', 'Memberships - Signup and Renewal Receipts (off-line)',            1, 1) ,      (@tpl_ogid_membership, 'membership_online_receipt', 'Memberships - Receipt (on-line)',            2, 2) ,      (@tpl_ogid_meta, 'test_preview', 'Test-drive - Receipt Header',            1, 1) ,      (@tpl_ogid_pledge, 'pledge_acknowledge', 'Pledges - Acknowledgement',            1, 1) ,      (@tpl_ogid_pledge, 'pledge_reminder', 'Pledges - Payment Reminder',            2, 2) ,      (@tpl_ogid_uf, 'uf_notify', 'Profiles - Admin Notification',            1, 1) ,      (@tpl_ogid_petition, 'petition_sign', 'Petition - signature added',            1, 1) ,      (@tpl_ogid_petition, 'petition_confirmation_needed', 'Petition - need verification',            2, 2) ;
     SELECT @tpl_ovid_case_activity := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_case AND name = 'case_activity';
     SELECT @tpl_ovid_contribution_dupalert := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_contribution AND name = 'contribution_dupalert';
     SELECT @tpl_ovid_contribution_offline_receipt := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_contribution AND name = 'contribution_offline_receipt';
@@ -5580,6 +5661,8 @@ INSERT INTO civicrm_option_value
     SELECT @tpl_ovid_pledge_acknowledge := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_pledge AND name = 'pledge_acknowledge';
     SELECT @tpl_ovid_pledge_reminder := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_pledge AND name = 'pledge_reminder';
     SELECT @tpl_ovid_uf_notify := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_uf AND name = 'uf_notify';
+    SELECT @tpl_ovid_petition_sign := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_petition AND name = 'petition_sign';
+    SELECT @tpl_ovid_petition_confirmation_needed := MAX(id) FROM civicrm_option_value WHERE option_group_id = @tpl_ogid_petition AND name = 'petition_confirmation_needed';
 
 INSERT INTO civicrm_msg_template
   (msg_title,      msg_subject,                  msg_text,                  msg_html,                  workflow_id,        is_default, is_reserved) VALUES
@@ -5592,6 +5675,9 @@ INSERT INTO civicrm_msg_template
 ===========================================================
 {if $isCaseActivity}
 {ts}Your Case Role(s){/ts} : {$contact.role}
+{if $manageCaseURL}
+{ts}Manage Case{/ts} : {$manageCaseURL}
+{/if}
 {/if}
 
 {if $editActURL}
@@ -5660,6 +5746,13 @@ INSERT INTO civicrm_msg_template
         {$contact.role}
        </td>
       </tr>
+      {if $manageCaseURL}
+       <tr>
+       <td colspan="2" {$valueStyle}>
+	   <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
+       </td>
+       </tr>
+      {/if}
      {/if}
      {if $editActURL} 
      <tr>
@@ -5726,6 +5819,9 @@ INSERT INTO civicrm_msg_template
 ===========================================================
 {if $isCaseActivity}
 {ts}Your Case Role(s){/ts} : {$contact.role}
+{if $manageCaseURL}
+{ts}Manage Case{/ts} : {$manageCaseURL}
+{/if}
 {/if}
 
 {if $editActURL}
@@ -5794,6 +5890,13 @@ INSERT INTO civicrm_msg_template
         {$contact.role}
        </td>
       </tr>
+      {if $manageCaseURL}
+       <tr>
+       <td colspan="2" {$valueStyle}>
+	   <a href="{$manageCaseURL}" title="{ts}Manage Case{/ts}">{ts}Manage Case{/ts}</a>
+       </td>
+       </tr>
+      {/if}
      {/if}
      {if $editActURL} 
      <tr>
@@ -6103,7 +6206,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 {/if}
@@ -6243,7 +6346,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
           {foreach from=$value item=line}
            <tr>
             <td>
-             {$line.description|truncate:30:"..."}
+            {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
             </td>
             <td>
              {$line.qty}
@@ -6463,7 +6566,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 {/if}
@@ -6603,7 +6706,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
           {foreach from=$value item=line}
            <tr>
             <td>
-             {$line.description|truncate:30:"..."}
+            {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
             </td>
             <td>
              {$line.qty}
@@ -6831,7 +6934,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 
@@ -7044,7 +7147,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
            {foreach from=$value item=line}
             <tr>
              <td>
-              {$line.description|truncate:30:"..."}
+             {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
              </td>
              <td>
               {$line.qty}
@@ -7394,7 +7497,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"}
 ----------------------------------------------------------
 {foreach from=$value item=line}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney:$currency|string_format:"%10s"} {$line.line_total|crmMoney:$currency|string_format:"%10s"}
 {/foreach}
 {/foreach}
 
@@ -7607,7 +7710,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
            {foreach from=$value item=line}
             <tr>
              <td>
-              {$line.description|truncate:30:"..."}
+             {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
              </td>
              <td>
               {$line.qty}
@@ -7938,7 +8041,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {ts}Thanks for your recurring contribution sign-up.{/ts}
 
 
-{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}
+{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}
 
 
 {ts}Start Date{/ts}:  {$recur_start_date|crmDate}
@@ -7955,7 +8058,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 
 
 ==================================================
-{ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+{ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
 
 ==================================================
 {ts}Start Date{/ts}: {$recur_start_date|crmDate}
@@ -7992,7 +8095,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
     {if $recur_txnType eq \'START\'}
 
      <p>{ts}Thanks for your recurring contribution sign-up.{/ts}</p>
-     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}</p>
+     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}</p>
      <p>{ts}Start Date{/ts}: {$recur_start_date|crmDate}</p>
      <p>{ts 1=$receipt_from_name 2=$receipt_from_email}You have pledged to make this recurring donation. You will be charged periodically (per frequency listed above), and you will receive an email receipt from %1 following each charge. These recurring donations will continue until you explicitly cancel the donation. You may change or cancel your recurring donation at anytime by logging into your account. If you have questions about recurring donations please contact us at %2.{/ts}</p>
 
@@ -8003,7 +8106,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
      <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
       <tr>
        <th {$headerStyle}>
-        {ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+        {ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
        </th>
       </tr>
       <tr>
@@ -8043,7 +8146,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {ts}Thanks for your recurring contribution sign-up.{/ts}
 
 
-{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}
+{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}
 
 
 {ts}Start Date{/ts}:  {$recur_start_date|crmDate}
@@ -8060,7 +8163,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 
 
 ==================================================
-{ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+{ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
 
 ==================================================
 {ts}Start Date{/ts}: {$recur_start_date|crmDate}
@@ -8097,7 +8200,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
     {if $recur_txnType eq \'START\'}
 
      <p>{ts}Thanks for your recurring contribution sign-up.{/ts}</p>
-     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment.{/ts}</p>
+     <p>{ts 1=$recur_frequency_interval 2=$recur_frequency_unit 3=$recur_installments}This recurring contribution will be automatically processed every %1 %2(s) for a total %3 installment(s).{/ts}</p>
      <p>{ts}Start Date{/ts}: {$recur_start_date|crmDate}</p>
      <p>{ts 1=$receipt_from_name 2=$receipt_from_email}You have pledged to make this recurring donation. You will be charged periodically (per frequency listed above), and you will receive an email receipt from %1 following each charge. These recurring donations will continue until you explicitly cancel the donation. You may change or cancel your recurring donation at anytime by logging into your account. If you have questions about recurring donations please contact us at %2.{/ts}</p>
 
@@ -8108,7 +8211,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
      <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
       <tr>
        <th {$headerStyle}>
-        {ts 1=$recur_installments}Interval of Subscription for %1 installments{/ts}
+        {ts 1=$recur_installments}Interval of Subscription for %1 installment(s){/ts}
        </th>
       </tr>
       <tr>
@@ -8922,7 +9025,7 @@ your page, tell friends, and update your contact info.{/ts}</p>
 {/if}
 
 {if $isOnWaitlist}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}You have been added to the WAIT LIST for this event.{/ts}
 
@@ -8931,10 +9034,10 @@ your page, tell friends, and update your contact info.{/ts}</p>
 a link to a web page where you can complete your registration.{/ts}
 
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $isRequireApproval}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Your registration has been submitted.{/ts}
 
@@ -8944,14 +9047,14 @@ an email with a link to a web page where you can complete the
 registration process.{/ts}
 
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $is_pay_later}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {else}
 
@@ -8959,11 +9062,11 @@ registration process.{/ts}
 {/if}
 
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Event Information and Location{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.event_title}
 {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
@@ -9006,20 +9109,20 @@ registration process.{/ts}
 {ts}Download iCalendar File:{/ts} {$icalFeed}
 {if $email}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Registered Email{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$email}
 {/if}
 {if $event.is_monetary} {* This section for Paid events only.*}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.fee_label}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {if $lineItem}{foreach from=$lineItem item=value key=priceset}
 
@@ -9029,19 +9132,19 @@ registration process.{/ts}
 {ts 1=$priceset+1}Participant %1{/ts}
 {/if}
 {/if}
----------------------------------------------------------{if $participantCount }--------------------{/if}
+---------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {capture assign=ts_item}{ts}Item{/ts}{/capture}
 {capture assign=ts_qty}{ts}Qty{/ts}{/capture}
 {capture assign=ts_each}{ts}Each{/ts}{/capture}
 {capture assign=ts_total}{ts}Total{/ts}{/capture}
-{capture assign=ts_participant_total}{if $participantCount }{ts}Total Participants{/ts}{/if}{/capture}
+{capture assign=ts_participant_total}{if $pricesetFieldsCount }{ts}Total Participants{/ts}{/if}{/capture}
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_participant_total|string_format:"%10s"}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {foreach from=$value item=line}
-{if $participantCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$ts_participant_count|string_format:"%10s"}
+{if $pricesetFieldsCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$ts_participant_count|string_format:"%10s"}
 {/foreach}
 {/if}
 {/foreach}
@@ -9054,12 +9157,19 @@ registration process.{/ts}
 
 {ts}Total Amount{/ts}: {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
 
-{if $participantCount }
+{if $pricesetFieldsCount }
       {assign var="count" value= 0}
       {foreach from=$lineItem item=pcount}
-      {foreach from=$pcount item=p_count}
-      {assign var="count" value=$count+$p_count.participant_count}
-      {/foreach}
+      {assign var="lineItemCount" value=0}
+      {if $pcount neq \'skip\'}
+        {foreach from=$pcount item=p_count}
+        {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+        {/foreach}
+        {if $lineItemCount < 1 }
+        {assign var="lineItemCount" value=1}
+        {/if}	
+      {assign var="count" value=$count+$lineItemCount}
+      {/if}
       {/foreach}
 
 {ts}Total Participants{/ts}: {$count}
@@ -9067,10 +9177,10 @@ registration process.{/ts}
    
 {if $is_pay_later }
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {/if}
 
@@ -9094,11 +9204,11 @@ registration process.{/ts}
 {/if}
 {if $contributeMode ne \'notify\' and !$isAmountzero and !$is_pay_later and !$isOnWaitlist and !$isRequireApproval}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Billing Name and Address{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$billingName}
 {$address}
@@ -9108,7 +9218,7 @@ registration process.{/ts}
 ===========================================================
 {ts}Credit Card Information{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$credit_card_type}
 {$credit_card_number}
@@ -9118,10 +9228,10 @@ registration process.{/ts}
 {/if} {* End of conditional section for Paid events *}
 
 {if $customPre}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPre_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPre item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -9131,10 +9241,10 @@ registration process.{/ts}
 {/if}
 
 {if $customPost}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPost_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPost item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -9145,25 +9255,25 @@ registration process.{/ts}
 {if $customProfile}
 
 {foreach from=$customProfile item=value key=customName}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts 1=$customName+1}Participant Information - Participant %1{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=val key=field}
 {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\' }
 {if $field eq \'additionalCustomPre\' }
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPre_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {else}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPost_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {/if}
 {foreach from=$val item=v key=f}
@@ -9175,10 +9285,10 @@ registration process.{/ts}
 {/if}
 {if $customGroup}
 {foreach from=$customGroup item=value key=customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=v key=n}
 {$n}: {$v}
@@ -9367,12 +9477,12 @@ registration process.{/ts}</p>
              <th>{ts}Qty{/ts}</th>
              <th>{ts}Each{/ts}</th>
              <th>{ts}Total{/ts}</th>
-	     {if  $participantCount }<th>{ts}Total Participants{/ts}</th>{/if}
+	     {if $pricesetFieldsCount }<th>{ts}Total Participants{/ts}</th>{/if}
             </tr>
             {foreach from=$value item=line}
              <tr>
               <td>
-               {$line.description|truncate:30:"..."}
+	      {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}	
               </td>
               <td>
                {$line.qty}
@@ -9383,7 +9493,7 @@ registration process.{/ts}</p>
               <td>
                {$line.line_total|crmMoney}
               </td>
-	      {if  $participantCount }
+	      {if  $pricesetFieldsCount }
 	      <td>
 		{$line.participant_count}
               </td>
@@ -9416,17 +9526,24 @@ registration process.{/ts}</p>
          {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
         </td>
        </tr>
-       {if $participantCount }
+       {if $pricesetFieldsCount }
      <tr>
        <td {$labelStyle}> 
 	 {ts}Total Participants{/ts}</td>   
        <td {$valueStyle}>
 	 {assign var="count" value= 0}
-	 {foreach from=$lineItem item=pcount}
-	 {foreach from=$pcount item=p_count}
-	 {assign var="count" value=$count+$p_count.participant_count}
-	 {/foreach}
-	 {/foreach}
+         {foreach from=$lineItem item=pcount}
+         {assign var="lineItemCount" value=0}
+         {if $pcount neq \'skip\'}
+           {foreach from=$pcount item=p_count}
+           {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+           {/foreach}
+           {if $lineItemCount < 1 }
+           assign var="lineItemCount" value=1}
+           {/if}	
+           {assign var="count" value=$count+$lineItemCount}
+         {/if}
+         {/foreach}
 	 {$count}
        </td>
      </tr>
@@ -9584,7 +9701,7 @@ registration process.{/ts}</p>
         <th {$headerStyle}>
          {ts 1=$customName+1}Participant Information - Participant %1{/ts}
         </th>
-       <tr>
+       </tr>
        {foreach from=$value item=val key=field}
         {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\'}
          <tr>
@@ -9647,7 +9764,7 @@ registration process.{/ts}</p>
 {/if}
 
 {if $isOnWaitlist}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}You have been added to the WAIT LIST for this event.{/ts}
 
@@ -9656,10 +9773,10 @@ registration process.{/ts}</p>
 a link to a web page where you can complete your registration.{/ts}
 
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $isRequireApproval}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Your registration has been submitted.{/ts}
 
@@ -9669,14 +9786,14 @@ an email with a link to a web page where you can complete the
 registration process.{/ts}
 
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $is_pay_later}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {else}
 
@@ -9684,11 +9801,11 @@ registration process.{/ts}
 {/if}
 
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Event Information and Location{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.event_title}
 {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
@@ -9731,20 +9848,20 @@ registration process.{/ts}
 {ts}Download iCalendar File:{/ts} {$icalFeed}
 {if $email}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Registered Email{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$email}
 {/if}
 {if $event.is_monetary} {* This section for Paid events only.*}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.fee_label}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {if $lineItem}{foreach from=$lineItem item=value key=priceset}
 
@@ -9754,19 +9871,19 @@ registration process.{/ts}
 {ts 1=$priceset+1}Participant %1{/ts}
 {/if}
 {/if}
----------------------------------------------------------{if $participantCount }--------------------{/if}
+---------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {capture assign=ts_item}{ts}Item{/ts}{/capture}
 {capture assign=ts_qty}{ts}Qty{/ts}{/capture}
 {capture assign=ts_each}{ts}Each{/ts}{/capture}
 {capture assign=ts_total}{ts}Total{/ts}{/capture}
-{capture assign=ts_participant_total}{if $participantCount }{ts}Total Participants{/ts}{/if}{/capture}
+{capture assign=ts_participant_total}{if $pricesetFieldsCount }{ts}Total Participants{/ts}{/if}{/capture}
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_participant_total|string_format:"%10s"}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {foreach from=$value item=line}
-{if $participantCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$ts_participant_count|string_format:"%10s"}
+{if $pricesetFieldsCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$ts_participant_count|string_format:"%10s"}
 {/foreach}
 {/if}
 {/foreach}
@@ -9779,12 +9896,19 @@ registration process.{/ts}
 
 {ts}Total Amount{/ts}: {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
 
-{if $participantCount }
+{if $pricesetFieldsCount }
       {assign var="count" value= 0}
       {foreach from=$lineItem item=pcount}
-      {foreach from=$pcount item=p_count}
-      {assign var="count" value=$count+$p_count.participant_count}
-      {/foreach}
+      {assign var="lineItemCount" value=0}
+      {if $pcount neq \'skip\'}
+        {foreach from=$pcount item=p_count}
+        {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+        {/foreach}
+        {if $lineItemCount < 1 }
+        {assign var="lineItemCount" value=1}
+        {/if}	
+      {assign var="count" value=$count+$lineItemCount}
+      {/if}
       {/foreach}
 
 {ts}Total Participants{/ts}: {$count}
@@ -9792,10 +9916,10 @@ registration process.{/ts}
    
 {if $is_pay_later }
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {/if}
 
@@ -9819,11 +9943,11 @@ registration process.{/ts}
 {/if}
 {if $contributeMode ne \'notify\' and !$isAmountzero and !$is_pay_later and !$isOnWaitlist and !$isRequireApproval}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Billing Name and Address{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$billingName}
 {$address}
@@ -9833,7 +9957,7 @@ registration process.{/ts}
 ===========================================================
 {ts}Credit Card Information{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$credit_card_type}
 {$credit_card_number}
@@ -9843,10 +9967,10 @@ registration process.{/ts}
 {/if} {* End of conditional section for Paid events *}
 
 {if $customPre}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPre_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPre item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -9856,10 +9980,10 @@ registration process.{/ts}
 {/if}
 
 {if $customPost}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPost_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPost item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -9870,25 +9994,25 @@ registration process.{/ts}
 {if $customProfile}
 
 {foreach from=$customProfile item=value key=customName}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts 1=$customName+1}Participant Information - Participant %1{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=val key=field}
 {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\' }
 {if $field eq \'additionalCustomPre\' }
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPre_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {else}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPost_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {/if}
 {foreach from=$val item=v key=f}
@@ -9900,10 +10024,10 @@ registration process.{/ts}
 {/if}
 {if $customGroup}
 {foreach from=$customGroup item=value key=customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=v key=n}
 {$n}: {$v}
@@ -10092,12 +10216,12 @@ registration process.{/ts}</p>
              <th>{ts}Qty{/ts}</th>
              <th>{ts}Each{/ts}</th>
              <th>{ts}Total{/ts}</th>
-	     {if  $participantCount }<th>{ts}Total Participants{/ts}</th>{/if}
+	     {if $pricesetFieldsCount }<th>{ts}Total Participants{/ts}</th>{/if}
             </tr>
             {foreach from=$value item=line}
              <tr>
               <td>
-               {$line.description|truncate:30:"..."}
+	      {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}	
               </td>
               <td>
                {$line.qty}
@@ -10108,7 +10232,7 @@ registration process.{/ts}</p>
               <td>
                {$line.line_total|crmMoney}
               </td>
-	      {if  $participantCount }
+	      {if  $pricesetFieldsCount }
 	      <td>
 		{$line.participant_count}
               </td>
@@ -10141,17 +10265,24 @@ registration process.{/ts}</p>
          {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
         </td>
        </tr>
-       {if $participantCount }
+       {if $pricesetFieldsCount }
      <tr>
        <td {$labelStyle}> 
 	 {ts}Total Participants{/ts}</td>   
        <td {$valueStyle}>
 	 {assign var="count" value= 0}
-	 {foreach from=$lineItem item=pcount}
-	 {foreach from=$pcount item=p_count}
-	 {assign var="count" value=$count+$p_count.participant_count}
-	 {/foreach}
-	 {/foreach}
+         {foreach from=$lineItem item=pcount}
+         {assign var="lineItemCount" value=0}
+         {if $pcount neq \'skip\'}
+           {foreach from=$pcount item=p_count}
+           {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+           {/foreach}
+           {if $lineItemCount < 1 }
+           assign var="lineItemCount" value=1}
+           {/if}	
+           {assign var="count" value=$count+$lineItemCount}
+         {/if}
+         {/foreach}
 	 {$count}
        </td>
      </tr>
@@ -10309,7 +10440,7 @@ registration process.{/ts}</p>
         <th {$headerStyle}>
          {ts 1=$customName+1}Participant Information - Participant %1{/ts}
         </th>
-       <tr>
+       </tr>
        {foreach from=$value item=val key=field}
         {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\'}
          <tr>
@@ -10374,7 +10505,7 @@ registration process.{/ts}</p>
 {/if}
 
 {if $isOnWaitlist}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}You have been added to the WAIT LIST for this event.{/ts}
 
@@ -10382,10 +10513,10 @@ registration process.{/ts}</p>
 {ts}If space becomes available you will receive an email with
 a link to a web page where you can complete your registration.{/ts}
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $isRequireApproval}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Your registration has been submitted.{/ts}
 
@@ -10395,14 +10526,14 @@ an email with a link to a web page where you can complete the
 registration process.{/ts}
 
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $is_pay_later}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {else}
 
@@ -10410,11 +10541,11 @@ registration process.{/ts}
 {/if}
 
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Event Information and Location{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.event_title}
 {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
@@ -10457,20 +10588,20 @@ registration process.{/ts}
 {ts}Download iCalendar File:{/ts} {$icalFeed}
 {if $email}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Registered Email{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$email}
 {/if}
 {if $event.is_monetary} {* This section for Paid events only.*}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.fee_label}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {if $lineItem}{foreach from=$lineItem item=value key=priceset}
 
@@ -10481,19 +10612,19 @@ registration process.{/ts}
 
 {/if}
 {/if}
------------------------------------------------------------{if $participantCount }--------------------{/if}
+-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {capture assign=ts_item}{ts}Item{/ts}{/capture}
 {capture assign=ts_qty}{ts}Qty{/ts}{/capture}
 {capture assign=ts_each}{ts}Each{/ts}{/capture}
 {capture assign=ts_total}{ts}Total{/ts}{/capture}
-{if $participantCount }{capture assign=ts_participant_total}{ts}Total Participants{/ts}{/capture}{/if}
+{if $pricesetFieldsCount }{capture assign=ts_participant_total}{ts}Total Participants{/ts}{/capture}{/if}
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_participant_total|string_format:"%10s"}
------------------------------------------------------------{if $participantCount }--------------------{/if}
+-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {foreach from=$value item=line}
-{if $participantCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}{$ts_participant_count|string_format:"%10s"}
+{if $pricesetFieldsCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}{$ts_participant_count|string_format:"%10s"}
 {/foreach}
 {/if}
 {/foreach}
@@ -10506,12 +10637,19 @@ registration process.{/ts}
 
 {ts}Total Amount{/ts}: {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
 
-{if $participantCount }
+{if $pricesetFieldsCount }
       {assign var="count" value= 0}
       {foreach from=$lineItem item=pcount}
-      {foreach from=$pcount item=p_count}
-      {assign var="count" value=$count+$p_count.participant_count}
-      {/foreach}
+      {assign var="lineItemCount" value=0}
+      {if $pcount neq \'skip\'}
+        {foreach from=$pcount item=p_count}
+        {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+        {/foreach}
+      {if $lineItemCount < 1 }
+        {assign var="lineItemCount" value=1}
+      {/if}	
+      {assign var="count" value=$count+$lineItemCount}
+      {/if}
       {/foreach}
 
 {ts}Total Participants{/ts}: {$count}
@@ -10519,10 +10657,10 @@ registration process.{/ts}
   
 {if $is_pay_later }
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {/if}
 
@@ -10546,22 +10684,22 @@ registration process.{/ts}
 {/if}
 {if $contributeMode ne \'notify\' and !$isAmountzero and !$is_pay_later and !$isOnWaitlist and !$isRequireApproval}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Billing Name and Address{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$billingName}
 {$address}
 {/if}
 
 {if $contributeMode eq \'direct\' and !$isAmountzero and !$is_pay_later and !$isOnWaitlist and !$isRequireApproval}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Credit Card Information{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$credit_card_type}
 {$credit_card_number}
@@ -10571,10 +10709,10 @@ registration process.{/ts}
 {/if} {* End of conditional section for Paid events *}
 
 {if $customPre}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPre_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPre item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -10584,10 +10722,10 @@ registration process.{/ts}
 {/if}
 
 {if $customPost}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPost_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPost item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -10598,25 +10736,25 @@ registration process.{/ts}
 {if $customProfile}
 
 {foreach from=$customProfile item=value key=customName}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts 1=$customName+1}Participant Information - Participant %1{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=val key=field}
 {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\' }
 {if $field eq \'additionalCustomPre\' }
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPre_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {else}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPost_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {/if}
 {foreach from=$val item=v key=f}
@@ -10628,10 +10766,10 @@ registration process.{/ts}
 {/if}
 {if $customGroup}
 {foreach from=$customGroup item=value key=customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=v key=n}
 {$n}: {$v}
@@ -10818,12 +10956,12 @@ registration process.{/ts}</p>
              <th>{ts}Qty{/ts}</th>
              <th>{ts}Each{/ts}</th>
              <th>{ts}Total{/ts}</th>
-	     {if  $participantCount }<th>{ts}Total Participants{/ts}</th>{/if}
+	     {if  $pricesetFieldsCount }<th>{ts}Total Participants{/ts}</th>{/if}
             </tr>
             {foreach from=$value item=line}
              <tr>
               <td>
-               {$line.description|truncate:30:"..."}
+              {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
               </td>
               <td>
                {$line.qty}
@@ -10834,7 +10972,7 @@ registration process.{/ts}</p>
               <td>
                {$line.line_total|crmMoney}
               </td>
-	      {if  $participantCount }<td>{$line.participant_count}</td> {/if}
+	      {if $pricesetFieldsCount }<td>{$line.participant_count}</td> {/if}
              </tr>
             {/foreach}
            </table>
@@ -10863,16 +11001,23 @@ registration process.{/ts}</p>
          {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
         </td>
        </tr>
-       {if $participantCount }
+       {if $pricesetFieldsCount }
      <tr>
        <td {$labelStyle}> 
       {ts}Total Participants{/ts}</td>   
-       <td {$valueStyle}>
+      <td {$valueStyle}>
       {assign var="count" value= 0}	 
       {foreach from=$lineItem item=pcount}
-      {foreach from=$pcount item=p_count}
-      {assign var="count" value=$count+$p_count.participant_count}
-      {/foreach}
+      {assign var="lineItemCount" value=0}
+      {if $pcount neq \'skip\'}
+        {foreach from=$pcount item=p_count}
+        {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+        {/foreach}
+      {if $lineItemCount < 1 }
+        {assign var="lineItemCount" value=1}
+      {/if}	
+      {assign var="count" value=$count+$lineItemCount}
+      {/if}
       {/foreach}
      {$count}
      </td> </tr>
@@ -11030,7 +11175,7 @@ registration process.{/ts}</p>
         <th {$headerStyle}>
          {ts 1=$customName+1}Participant Information - Participant %1{/ts}
         </th>
-       <tr>
+       </tr>
        {foreach from=$value item=val key=field}
         {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\'}
          <tr>
@@ -11093,7 +11238,7 @@ registration process.{/ts}</p>
 {/if}
 
 {if $isOnWaitlist}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}You have been added to the WAIT LIST for this event.{/ts}
 
@@ -11101,10 +11246,10 @@ registration process.{/ts}</p>
 {ts}If space becomes available you will receive an email with
 a link to a web page where you can complete your registration.{/ts}
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $isRequireApproval}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Your registration has been submitted.{/ts}
 
@@ -11114,14 +11259,14 @@ an email with a link to a web page where you can complete the
 registration process.{/ts}
 
 {/if}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {elseif $is_pay_later}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {else}
 
@@ -11129,11 +11274,11 @@ registration process.{/ts}
 {/if}
 
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Event Information and Location{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.event_title}
 {$event.event_start_date|crmDate}{if $event.event_end_date}-{if $event.event_end_date|date_format:"%Y%m%d" == $event.event_start_date|date_format:"%Y%m%d"}{$event.event_end_date|crmDate:0:1}{else}{$event.event_end_date|crmDate}{/if}{/if}
@@ -11176,20 +11321,20 @@ registration process.{/ts}
 {ts}Download iCalendar File:{/ts} {$icalFeed}
 {if $email}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Registered Email{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$email}
 {/if}
 {if $event.is_monetary} {* This section for Paid events only.*}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$event.fee_label}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {if $lineItem}{foreach from=$lineItem item=value key=priceset}
 
@@ -11200,19 +11345,19 @@ registration process.{/ts}
 
 {/if}
 {/if}
------------------------------------------------------------{if $participantCount }--------------------{/if}
+-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {capture assign=ts_item}{ts}Item{/ts}{/capture}
 {capture assign=ts_qty}{ts}Qty{/ts}{/capture}
 {capture assign=ts_each}{ts}Each{/ts}{/capture}
 {capture assign=ts_total}{ts}Total{/ts}{/capture}
-{if $participantCount }{capture assign=ts_participant_total}{ts}Total Participants{/ts}{/capture}{/if}
+{if $pricesetFieldsCount }{capture assign=ts_participant_total}{ts}Total Participants{/ts}{/capture}{/if}
 {$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_participant_total|string_format:"%10s"}
------------------------------------------------------------{if $participantCount }--------------------{/if}
+-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {foreach from=$value item=line}
-{if $participantCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
-{$line.description|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}{$ts_participant_count|string_format:"%10s"}
+{if $pricesetFieldsCount }{capture assign=ts_participant_count}{$line.participant_count}{/capture}{/if}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"}{$ts_participant_count|string_format:"%10s"}
 {/foreach}
 {/if}
 {/foreach}
@@ -11225,12 +11370,19 @@ registration process.{/ts}
 
 {ts}Total Amount{/ts}: {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
 
-{if $participantCount }
+{if $pricesetFieldsCount }
       {assign var="count" value= 0}
       {foreach from=$lineItem item=pcount}
-      {foreach from=$pcount item=p_count}
-      {assign var="count" value=$count+$p_count.participant_count}
-      {/foreach}
+      {assign var="lineItemCount" value=0}
+      {if $pcount neq \'skip\'}
+        {foreach from=$pcount item=p_count}
+        {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+        {/foreach}
+      {if $lineItemCount < 1 }
+        {assign var="lineItemCount" value=1}
+      {/if}	
+      {assign var="count" value=$count+$lineItemCount}
+      {/if}
       {/foreach}
 
 {ts}Total Participants{/ts}: {$count}
@@ -11238,10 +11390,10 @@ registration process.{/ts}
   
 {if $is_pay_later }
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$pay_later_receipt}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {/if}
 
@@ -11265,22 +11417,22 @@ registration process.{/ts}
 {/if}
 {if $contributeMode ne \'notify\' and !$isAmountzero and !$is_pay_later and !$isOnWaitlist and !$isRequireApproval}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Billing Name and Address{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$billingName}
 {$address}
 {/if}
 
 {if $contributeMode eq \'direct\' and !$isAmountzero and !$is_pay_later and !$isOnWaitlist and !$isRequireApproval}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts}Credit Card Information{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$credit_card_type}
 {$credit_card_number}
@@ -11290,10 +11442,10 @@ registration process.{/ts}
 {/if} {* End of conditional section for Paid events *}
 
 {if $customPre}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPre_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPre item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -11303,10 +11455,10 @@ registration process.{/ts}
 {/if}
 
 {if $customPost}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customPost_grouptitle}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$customPost item=value key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
@@ -11317,25 +11469,25 @@ registration process.{/ts}
 {if $customProfile}
 
 {foreach from=$customProfile item=value key=customName}
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {ts 1=$customName+1}Participant Information - Participant %1{/ts}
 
-==========================================================={if $participantCount }===================={/if}
+==========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=val key=field}
 {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\' }
 {if $field eq \'additionalCustomPre\' }
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPre_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {else}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {$additionalCustomPost_grouptitle}
-----------------------------------------------------------{if $participantCount }--------------------{/if}
+----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
 {/if}
 {foreach from=$val item=v key=f}
@@ -11347,10 +11499,10 @@ registration process.{/ts}
 {/if}
 {if $customGroup}
 {foreach from=$customGroup item=value key=customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {$customName}
-=========================================================={if $participantCount }===================={/if}
+=========================================================={if $pricesetFieldsCount }===================={/if}
 
 {foreach from=$value item=v key=n}
 {$n}: {$v}
@@ -11537,12 +11689,12 @@ registration process.{/ts}</p>
              <th>{ts}Qty{/ts}</th>
              <th>{ts}Each{/ts}</th>
              <th>{ts}Total{/ts}</th>
-	     {if  $participantCount }<th>{ts}Total Participants{/ts}</th>{/if}
+	     {if  $pricesetFieldsCount }<th>{ts}Total Participants{/ts}</th>{/if}
             </tr>
             {foreach from=$value item=line}
              <tr>
               <td>
-               {$line.description|truncate:30:"..."}
+              {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
               </td>
               <td>
                {$line.qty}
@@ -11553,7 +11705,7 @@ registration process.{/ts}</p>
               <td>
                {$line.line_total|crmMoney}
               </td>
-	      {if  $participantCount }<td>{$line.participant_count}</td> {/if}
+	      {if $pricesetFieldsCount }<td>{$line.participant_count}</td> {/if}
              </tr>
             {/foreach}
            </table>
@@ -11582,16 +11734,23 @@ registration process.{/ts}</p>
          {$totalAmount|crmMoney} {if $hookDiscount.message}({$hookDiscount.message}){/if}
         </td>
        </tr>
-       {if $participantCount }
+       {if $pricesetFieldsCount }
      <tr>
        <td {$labelStyle}> 
       {ts}Total Participants{/ts}</td>   
-       <td {$valueStyle}>
+      <td {$valueStyle}>
       {assign var="count" value= 0}	 
       {foreach from=$lineItem item=pcount}
-      {foreach from=$pcount item=p_count}
-      {assign var="count" value=$count+$p_count.participant_count}
-      {/foreach}
+      {assign var="lineItemCount" value=0}
+      {if $pcount neq \'skip\'}
+        {foreach from=$pcount item=p_count}
+        {assign var="lineItemCount" value=$lineItemCount+$p_count.participant_count}
+        {/foreach}
+      {if $lineItemCount < 1 }
+        {assign var="lineItemCount" value=1}
+      {/if}	
+      {assign var="count" value=$count+$lineItemCount}
+      {/if}
       {/foreach}
      {$count}
      </td> </tr>
@@ -11749,7 +11908,7 @@ registration process.{/ts}</p>
         <th {$headerStyle}>
          {ts 1=$customName+1}Participant Information - Participant %1{/ts}
         </th>
-       <tr>
+       </tr>
        {foreach from=$value item=val key=field}
         {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\'}
          <tr>
@@ -13911,19 +14070,15 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {/if}
 {if $is_monetary and $trxn_id}
 {ts}Transaction #{/ts}: {$trxn_id}
+
 {/if}
 {if $membership_trx_id}
 {ts}Membership Transaction #{/ts}: {$membership_trx_id}
 
 {/if}
 {if $is_recur}
-{if $contributeMode eq \'notify\'}
-{ts}This is a recurring contribution. You can modify or cancel future contributions by logging in to your account at:{/ts}
-
-{$cancelSubscriptionUrl}
-{elseif $contributeMode eq \'directIPN\' and $receiptFromEmail}
-{ts 1=$receiptFromEmail}This is a recurring contribution. To modify or cancel future contributions please contact us at %1.{/ts}
-
+{if $contributeMode eq \'notify\' or $contributeMode eq \'directIPN\'}
+{ts 1=$cancelSubscriptionUrl}This membership will be renewed automatically. You can modify or cancel the auto-renewal option by visiting this web page: %1.{/ts}
 {/if}
 {/if}
 
@@ -14282,18 +14437,11 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        </td>
       </tr>
      {/if}
-
      {if $is_recur}
-      {if $contributeMode eq \'notify\'}
+      {if $contributeMode eq \'notify\' or $contributeMode eq \'directIPN\'}
        <tr>
         <td {$labelStyle}>
-         {ts 1=$cancelSubscriptionUrl}This is a recurring contribution. You can modify or cancel future contributions by <a href="%1">logging in to your account</a>.{/ts}
-        </td>
-       </tr>
-      {elseif $contributeMode eq \'directIPN\' and $receiptFromEmail}
-       <tr>
-        <td {$labelStyle}>
-         {ts 1=$receiptFromEmail}This is a recurring contribution. To modify or cancel future contributions please contact us at %1.{/ts}
+         {ts 1=$cancelSubscriptionUrl}This membership will be renewed automatically. You can modify or cancel the auto-renewal option by <a href="%1">visiting this web page</a>.{/ts}
         </td>
        </tr>
       {/if}
@@ -14532,7 +14680,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     </table>
    </td>
   </tr>
-
+  
  </table>
 </center>
 
@@ -14612,19 +14760,15 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {/if}
 {if $is_monetary and $trxn_id}
 {ts}Transaction #{/ts}: {$trxn_id}
+
 {/if}
 {if $membership_trx_id}
 {ts}Membership Transaction #{/ts}: {$membership_trx_id}
 
 {/if}
 {if $is_recur}
-{if $contributeMode eq \'notify\'}
-{ts}This is a recurring contribution. You can modify or cancel future contributions by logging in to your account at:{/ts}
-
-{$cancelSubscriptionUrl}
-{elseif $contributeMode eq \'directIPN\' and $receiptFromEmail}
-{ts 1=$receiptFromEmail}This is a recurring contribution. To modify or cancel future contributions please contact us at %1.{/ts}
-
+{if $contributeMode eq \'notify\' or $contributeMode eq \'directIPN\'}
+{ts 1=$cancelSubscriptionUrl}This membership will be renewed automatically. You can modify or cancel the auto-renewal option by visiting this web page: %1.{/ts}
 {/if}
 {/if}
 
@@ -14983,18 +15127,11 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        </td>
       </tr>
      {/if}
-
      {if $is_recur}
-      {if $contributeMode eq \'notify\'}
+      {if $contributeMode eq \'notify\' or $contributeMode eq \'directIPN\'}
        <tr>
         <td {$labelStyle}>
-         {ts 1=$cancelSubscriptionUrl}This is a recurring contribution. You can modify or cancel future contributions by <a href="%1">logging in to your account</a>.{/ts}
-        </td>
-       </tr>
-      {elseif $contributeMode eq \'directIPN\' and $receiptFromEmail}
-       <tr>
-        <td {$labelStyle}>
-         {ts 1=$receiptFromEmail}This is a recurring contribution. To modify or cancel future contributions please contact us at %1.{/ts}
+         {ts 1=$cancelSubscriptionUrl}This membership will be renewed automatically. You can modify or cancel the auto-renewal option by <a href="%1">visiting this web page</a>.{/ts}
         </td>
        </tr>
       {/if}
@@ -15233,7 +15370,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
     </table>
    </td>
   </tr>
-
+  
  </table>
 </center>
 
@@ -16121,9 +16258,63 @@ or need to modify your payment schedule.{/ts}</p>
 
 </body>
 </html>
-', @tpl_ovid_uf_notify, 0,          1) ;
+', @tpl_ovid_uf_notify, 0,          1) ,      
+      
+      
+      ('Petition - signature added', 'Thank you for signing {$petition.title}', 'Thank you for signing {$petition.title}.
+', '<p>Thank you for signing {$petition.title}.</p>
+
+{include file="CRM/Campaign/Page/Petition/SocialNetwork.tpl" petition_id=$survey_id noscript=true email=true}
+', @tpl_ovid_petition_sign, 1,          0),
+      ('Petition - signature added', 'Thank you for signing {$petition.title}', 'Thank you for signing {$petition.title}.
+', '<p>Thank you for signing {$petition.title}.</p>
+
+{include file="CRM/Campaign/Page/Petition/SocialNetwork.tpl" petition_id=$survey_id noscript=true email=true}
+', @tpl_ovid_petition_sign, 0,          1) ,      
+      
+      
+      ('Petition - need verification', 'Confirmation of signature needed for {$petition.title}
+', 'Thank you for signing {$petition.title}.
+
+In order to complete your signature, we must confirm your e-mail. 
+Please do so by visiting the following email confirmation web page:
+
+{$petition.confirmUrlPlainText} 
+
+If you did not sign this petition, please ignore this message.
+', '<p>Thank you for signing {$petition.title}.</p>
+
+<p>In order to <b>complete your signature</b>, we must confirm your e-mail. 
+<br />
+Please do so by visiting the following web page by clicking
+on the link below or pasting the link into your browser.
+<br /><br />
+Email confirmation page: <a href="{$petition.confirmUrl} ">{$petition.confirmUrl}</a></p>
+
+<p>If you did not sign this petition, please ignore this message.</p>
+', @tpl_ovid_petition_confirmation_needed, 1,          0),
+      ('Petition - need verification', 'Confirmation of signature needed for {$petition.title}
+', 'Thank you for signing {$petition.title}.
+
+In order to complete your signature, we must confirm your e-mail. 
+Please do so by visiting the following email confirmation web page:
+
+{$petition.confirmUrlPlainText} 
+
+If you did not sign this petition, please ignore this message.
+', '<p>Thank you for signing {$petition.title}.</p>
+
+<p>In order to <b>complete your signature</b>, we must confirm your e-mail. 
+<br />
+Please do so by visiting the following web page by clicking
+on the link below or pasting the link into your browser.
+<br /><br />
+Email confirmation page: <a href="{$petition.confirmUrl} ">{$petition.confirmUrl}</a></p>
+
+<p>If you did not sign this petition, please ignore this message.</p>
+', @tpl_ovid_petition_confirmation_needed, 0,          1) ;
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.2                                                |
+-- | CiviCRM version 3.3                                                |
 -- +--------------------------------------------------------------------+
 -- | Copyright CiviCRM LLC (c) 2004-2010                                |
 -- +--------------------------------------------------------------------+
@@ -16266,7 +16457,7 @@ VALUES
     ( @domainID, 'civicrm/pledge&reset=1',                                  'Dashboard',                  'Dashboard',                 'access CiviPledge',  '',  @pledgelastID,       '1', NULL, 1 ), 
     ( @domainID, 'civicrm/pledge/add&reset=1&action=add&context=standalone', 'New Pledge',                'New Pledge',                'access CiviPledge,edit pledges',  'AND',  @pledgelastID,       '1', NULL, 2 ),
     ( @domainID, 'civicrm/pledge/search&reset=1',                           'Find Pledges',               'Find Pledges',              'access CiviPledge',  '',  @pledgelastID,       '1', NULL, 3 ), 
-    ( @domainID, 'civicrm/admin/contribute&reset=1&action=add',             'New Contribution Page',      'New Contribution Page',     'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', NULL, 6 ), 
+    ( @domainID, 'civicrm/admin/contribute/add&reset=1&action=add',             'New Contribution Page',      'New Contribution Page',     'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', NULL, 6 ), 
     ( @domainID, 'civicrm/admin/contribute&reset=1',                        'Manage Contribution Pages',  'Manage Contribution Pages', 'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', '1',  7 ), 
     ( @domainID, 'civicrm/admin/pcp&reset=1',                               'Personal Campaign Pages',    'Personal Campaign Pages',   'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', NULL, 8 ), 
     ( @domainID, 'civicrm/admin/contribute/managePremiums&reset=1',         'Premiums (Thank-you Gifts)', 'Premiums',                  'access CiviContribute,administer CiviCRM', 'AND',  @contributionlastID, '1', 1,    9 ),
@@ -16295,15 +16486,15 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES 
-    ( @domainID, NULL, 'Mailings', 'Mailings', 'access CiviMail', '', NULL, '1', NULL, 6 );
+    ( @domainID, NULL, 'Mailings', 'Mailings', 'access CiviMail,create mailings,approve mailings,schedule mailings', 'OR', NULL, '1', NULL, 6 );
 
 SET @mailinglastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, 'civicrm/mailing/send&reset=1',                            'New Mailing', 'New Mailing',                                          'access CiviMail', '', @mailinglastID, '1', NULL, 1 ), 
-    ( @domainID, 'civicrm/mailing/browse/unscheduled&reset=1&scheduled=false', 'Draft and Unscheduled Mailings', 'Draft and Unscheduled Mailings', 'access CiviMail', '', @mailinglastID, '1', NULL, 2 ), 
-    ( @domainID, 'civicrm/mailing/browse/scheduled&reset=1&scheduled=true', 'Scheduled and Sent Mailings', 'Scheduled and Sent Mailings',          'access CiviMail', '', @mailinglastID, '1', NULL, 3 ), 
+    ( @domainID, 'civicrm/mailing/send&reset=1',                            'New Mailing', 'New Mailing',                                          'access CiviMail,create mailings', 'OR', @mailinglastID, '1', NULL, 1 ), 
+    ( @domainID, 'civicrm/mailing/browse/unscheduled&reset=1&scheduled=false', 'Draft and Unscheduled Mailings', 'Draft and Unscheduled Mailings', 'access CiviMail,create mailings,schedule mailings', 'OR', @mailinglastID, '1', NULL, 2 ), 
+    ( @domainID, 'civicrm/mailing/browse/scheduled&reset=1&scheduled=true', 'Scheduled and Sent Mailings', 'Scheduled and Sent Mailings',          'access CiviMail,approve mailings,create mailings,schedule mailings', 'OR', @mailinglastID, '1', NULL, 3 ), 
     ( @domainID, 'civicrm/mailing/browse/archived&reset=1',                 'Archived Mailings', 'Archived Mailings',                              'access CiviMail', '', @mailinglastID, '1', 1,    4 ), 
     ( @domainID, 'civicrm/admin/component&reset=1',                         'Headers, Footers, and Automated Messages', 'Headers, Footers, and Automated Messages', 'access CiviMail,administer CiviCRM', 'AND', @mailinglastID, '1', NULL, 5 ),
     ( @domainID, 'civicrm/admin/messageTemplates&reset=1',                  'Message Templates', 'Message Templates',                 'administer CiviCRM', '', @mailinglastID, '1', NULL, 6 ),
@@ -16326,7 +16517,7 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, NULL, 'Other', 'Other', 'access CiviGrant,administer CiviCase,access my cases and activities,access all cases and activities', 'OR', NULL, '1', NULL, 9 );
+    ( @domainID, NULL, 'Other', 'Other', 'access CiviGrant,administer CiviCase,access my cases and activities,access all cases and activities,administer CiviCampaign,manage campaign,reserve campaign contacts,release campaign contacts,interview campaign contacts,gotv campaign contacts', 'OR', NULL, '1', NULL, 9 );
     
 SET @otherlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16354,6 +16545,34 @@ VALUES
     ( @domainID, 'civicrm/grant&reset=1',           'Dashboard', 'Dashboard', 'access CiviGrant', '',       @grantlastID, '1', NULL, 1 ), 
     ( @domainID, 'civicrm/grant/add&reset=1&action=add&context=standalone', 'New Grant', 'New Grant', 'access CiviGrant,edit grants', 'AND', @grantlastID, '1', NULL, 2 ), 
     ( @domainID, 'civicrm/grant/search&reset=1',    'Find Grants', 'Find Grants', 'access CiviGrant', '',   @grantlastID, '1', 1, 3 );
+
+
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, NULL, 'Campaigns', 'Campaigns', 'interview campaign contacts,release campaign contacts,reserve campaign contacts,manage campaign,administer CiviCampaign,gotv campaign contacts', 'OR', @otherlastID, '1', NULL, 3 );
+
+SET @campaignlastID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, 'civicrm/campaign&reset=1',        'Dashboard', 'Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 1 );
+SET @campaigndashboardlastID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, 'civicrm/campaign&reset=1&subPage=survey',        'Surveys', 'Survey Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 1 ), 
+    ( @domainID, 'civicrm/campaign&reset=1&subPage=petition',        'Petitions', 'Petition Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 2 ), 
+    ( @domainID, 'civicrm/campaign&reset=1&subPage=campaign',        'Campaigns', 'Campaign Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 3 ), 
+    ( @domainID, 'civicrm/campaign/add&reset=1',        'New Campaign', 'New Campaign', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 2 ), 
+    ( @domainID, 'civicrm/survey/add&reset=1',        'New Survey', 'New Survey', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/petition/add&reset=1',        'New Petition', 'New Petition', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 4 ),
+    ( @domainID, 'civicrm/survey/search&reset=1&op=reserve', 'Reserve Respondents', 'Reserve Respondents', 'administer CiviCampaign,manage campaign,reserve campaign contacts', 'OR', @campaignlastID, '1', NULL, 5 ),
+    ( @domainID, 'civicrm/survey/search&reset=1&op=interview', 'Interview Respondents', 'Interview Respondents', 'administer CiviCampaign,manage campaign,interview campaign contacts', 'OR', @campaignlastID, '1', NULL, 6 ),
+    ( @domainID, 'civicrm/survey/search&reset=1&op=release', 'Release Respondents', 'Release Respondents', 'administer CiviCampaign,manage campaign,release campaign contacts', 'OR', @campaignlastID, '1', NULL, 7 ),
+    ( @domainID, 'civicrm/campaign/gotv&reset=1', 'GOTV (Voter Tracking)', 'Voter Listing', 'administer CiviCampaign,manage campaign,release campaign contacts,gotv campaign contacts', 'OR', @campaignlastID, '1', NULL, 8 ),
+    ( @domainID, 'civicrm/campaign/vote&reset=1', 'Conduct Survey', 'Conduct Survey', 'administer CiviCampaign,manage campaign,reserve campaign contacts,interview campaign contacts', 'OR', @campaignlastID, '1', NULL, 9 );
+
     
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16379,7 +16598,8 @@ VALUES
     ( @domainID, 'civicrm/admin/uf/group&reset=1',          'CiviCRM Profile', 'CiviCRM Profile', 'administer CiviCRM', '', @CustomizelastID, '1', NULL, 2 ), 
     ( @domainID, 'civicrm/admin/menu&reset=1',              'Navigation Menu', 'Navigation Menu', 'administer CiviCRM', '', @CustomizelastID, '1', NULL, 3 ), 
     ( @domainID, 'civicrm/admin/options/custom_search&reset=1&group=custom_search', 'Manage Custom Searches', 'Manage Custom Searches', 'administer CiviCRM', '', @CustomizelastID, '1', NULL, 4 ),
-    ( @domainID, 'civicrm/admin/price&reset=1',             'Price Sets',      'Price Sets',      'administer CiviCRM', '', @CustomizelastID, '1', NULL, 5 );
+    ( @domainID, 'civicrm/admin/price&reset=1',             'Price Sets',        'Price Sets',        'administer CiviCRM', '', @CustomizelastID, '1', NULL, 5 ),
+    ( @domainID, 'civicrm/admin/extensions&reset=1',        'Manage CiviCRM Extensions', 'Manage CiviCRM Extensions', 'administer CiviCRM', '', @CustomizelastID, '1', NULL, 6 );
     
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16422,6 +16642,7 @@ VALUES
     ( @domainID, 'civicrm/admin/domain&action=update&reset=1',         'Domain Information',     'Domain Information',       'administer CiviCRM', '', @configurelastID, '1', NULL, 5 ), 
     ( @domainID, 'civicrm/admin/options/from_email_address&group=from_email_address&reset=1', 'FROM Email Addresses', 'FROM Email Addresses',    'administer CiviCRM', '', @configurelastID, '1', NULL, 6 ), 
     ( @domainID, 'civicrm/admin/setting/updateConfigBackend&reset=1',  'Update Directory Path and URL', 'Update Directory Path and URL',         'administer CiviCRM', '', @configurelastID, '1', NULL, 7 );
+
     
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16508,7 +16729,7 @@ VALUES
     ( @domainID, 'civicrm/admin/eventTemplate&reset=1',                    'Event Templates',    'Event Templates',                  'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', 1,    3 ), 
     ( @domainID, 'civicrm/admin/price&reset=1&action=add',                 'New Price Set',      'New Price Set',                    'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 4 ), 
     ( @domainID, 'civicrm/admin/price&reset=1',                            'Manage Price Sets',  'Manage Price Sets',                'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', 1,    5 ),
-    ( @domainID, 'civicrm/admin/options/participant_listing&group=participant_listing&reset=1', 'Participant Listing Templates', 'Participant Listing Templates', 'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 6 ), 
+    ( @domainID, 'civicrm/admin/options/participant_listing&group=participant_listing&reset=1', 'Participant Listing Options', 'Participant Listing Options', 'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 6 ), 
     ( @domainID, 'civicrm/admin/options/event_type&group=event_type&reset=1',  'Event Types',    'Event Types',                      'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 7 ), 
     ( @domainID, 'civicrm/admin/participant_status&reset=1',                   'Participant Statuses', 'Participant Statuses',       'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 8 ), 
     ( @domainID, 'civicrm/admin/options/participant_role&group=participant_role&reset=1', 'Participant Roles', 'Participant Roles',  'access CiviEvent,administer CiviCRM', 'AND', @adminEventlastID, '1', NULL, 9 );
@@ -16536,7 +16757,8 @@ VALUES
     ( @domainID, 'civicrm/admin/component&reset=1',            'Headers, Footers, and Automated Messages', 'Headers, Footers, and Automated Messages', 'access CiviMail,administer CiviCRM', 'AND', @adminMailinglastID, '1', NULL, 1 ), 
     ( @domainID, 'civicrm/admin/messageTemplates&reset=1',     'Message Templates', 'Message Templates', 'administer CiviCRM', '',   @adminMailinglastID, '1', NULL, 2 ), 
     ( @domainID, 'civicrm/admin/options/from_email&group=from_email_address&reset=1', 'From Email Addresses', 'From Email Addresses', 'administer CiviCRM', '', @adminMailinglastID, '1', NULL, 3 ), 
-    ( @domainID, 'civicrm/admin/mailSettings&reset=1',         'Mail Accounts', 'Mail Accounts', 'access CiviMail,administer CiviCRM', 'AND',           @adminMailinglastID, '1', NULL, 4 );
+    ( @domainID, 'civicrm/admin/mailSettings&reset=1',         'Mail Accounts', 'Mail Accounts', 'access CiviMail,administer CiviCRM', 'AND',           @adminMailinglastID, '1', NULL, 4 ),
+    ( @domainID, 'civicrm/admin/mail&reset=1',                 'Mailer Settings', 'Mailer Settings', 'access CiviMail,administer CiviCRM', 'AND',           @adminMailinglastID, '1', NULL, 5 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16563,6 +16785,19 @@ VALUES
     ( @domainID, 'civicrm/admin/report/template/list&reset=1',             'Create Reports from Templates', 'Create Reports from Templates', 'administer Reports', '', @adminReportlastID, '1', NULL, 2 ), 
     ( @domainID, 'civicrm/admin/report/options/report_template&reset=1',   'Manage Templates', 'Manage Templates', 'administer Reports',  '', @adminReportlastID, '1', NULL, 3 ),
     ( @domainID, 'civicrm/admin/report/register&reset=1',                  'Register Report',  'Register Report',  'administer Reports',  '', @adminReportlastID, '1', NULL, 4 );
+
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES     
+    ( @domainID, NULL,                                             'CiviCampaign',              'CiviCampaign',              'administer CiviCampaign,administer CiviCRM', 'AND', @adminlastID, '1', NULL, 13 );
+
+SET @adminCampaignlastID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES     
+    ( @domainID, 'civicrm/admin/campaign/surveyType&reset=1',                            'Survey Types',  'Survey Types', 'administer CiviCampaign',    '', @adminCampaignlastID, '1', NULL, 1 ),
+    ( @domainID, 'civicrm/admin/options/campaign_type&group=campaign_type&reset=1',      'Campaign Types',  'Campaign Types', 'administer CiviCampaign',    '', @adminCampaignlastID, '1', NULL, 2 ),
+    ( @domainID, 'civicrm/admin/options/campaign_status&group=campaign_status&reset=1',      'Campaign Status',  'Campaign Status', 'administer CiviCampaign',    '', @adminCampaignlastID, '1', NULL, 3 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16611,7 +16846,7 @@ UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
-    ( @domainID, 'Constituent Report (Detail)', 'contact/detail', 'Provides contact-related information on contributions, memberships, events and activities.', 'administer CiviCRM', 'a:15:{s:6:"fields";a:18:{s:12:"display_name";s:1:"1";s:10:"country_id";s:1:"1";s:15:"contribution_id";s:1:"1";s:12:"total_amount";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:12:"receive_date";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:13:"membership_id";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:14:"participant_id";s:1:"1";s:8:"event_id";s:1:"1";s:21:"participant_status_id";s:1:"1";s:7:"role_id";s:1:"1";s:25:"participant_register_date";s:1:"1";s:9:"fee_level";s:1:"1";s:10:"fee_amount";s:1:"1";}s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"display_name_op";s:3:"has";s:18:"display_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:90:"Provides contact-related information on contributions, memberships, events and activities.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";}');
+    ( @domainID, 'Constituent Report (Detail)', 'contact/detail', 'Provides contact-related information on contributions, memberships, events and activities.', 'administer CiviCRM', 'a:19:{s:6:"fields";a:30:{s:12:"display_name";s:1:"1";s:10:"country_id";s:1:"1";s:15:"contribution_id";s:1:"1";s:12:"total_amount";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:12:"receive_date";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:13:"membership_id";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:20:"membership_status_id";s:1:"1";s:14:"participant_id";s:1:"1";s:8:"event_id";s:1:"1";s:21:"participant_status_id";s:1:"1";s:7:"role_id";s:1:"1";s:25:"participant_register_date";s:1:"1";s:9:"fee_level";s:1:"1";s:10:"fee_amount";s:1:"1";s:15:"relationship_id";s:1:"1";s:20:"relationship_type_id";s:1:"1";s:12:"contact_id_b";s:1:"1";s:2:"id";s:1:"1";s:16:"activity_type_id";s:1:"1";s:7:"subject";s:1:"1";s:17:"source_contact_id";s:1:"1";s:18:"activity_date_time";s:1:"1";s:18:"activity_status_id";s:1:"1";s:17:"target_contact_id";s:1:"1";s:19:"assignee_contact_id";s:1:"1";}s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"display_name_op";s:3:"has";s:18:"display_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:90:"Provides contact-related information on contributions, memberships, events and activities.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16882,4 +17117,56 @@ VALUES
     ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Grant Report', 'Grant Report', 'access CiviGrant', '',@reportlastID, '1', NULL, 26 );
 
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
- UPDATE civicrm_domain SET version = '3.2.3';
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Mail Bounce Report', 'Mailing/bounce', 'Bounce Report for mailings', 'access CiviMail', 'a:39:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:11:"bounce_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:19:"bounce_type_name_op";s:2:"eq";s:22:"bounce_type_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:26:"Bounce Report for mailings";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+
+SET @instanceID:=LAST_INSERT_ID( );
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Bounce Report', 'Mail Bounce Report', 'access CiviMail', '',@reportlastID, '1', NULL, 27 );
+
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Mail Summary Report', 'Mailing/summary','Summary statistics for mailings','access CiviMail','a:25:{s:6:"fields";a:5:{s:4:"name";s:1:"1";s:11:"queue_count";s:1:"1";s:15:"delivered_count";s:1:"1";s:12:"bounce_count";s:1:"1";s:10:"open_count";s:1:"1";}s:15:"is_completed_op";s:2:"eq";s:18:"is_completed_value";s:1:"1";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:9:"status_op";s:3:"has";s:12:"status_value";s:8:"Complete";s:11:"is_test_min";s:0:"";s:11:"is_test_max";s:0:"";s:10:"is_test_op";s:3:"lte";s:13:"is_test_value";s:1:"0";s:19:"start_date_relative";s:9:"this.year";s:15:"start_date_from";s:0:"";s:13:"start_date_to";s:0:"";s:17:"end_date_relative";s:9:"this.year";s:13:"end_date_from";s:0:"";s:11:"end_date_to";s:0:"";s:11:"description";s:31:"Summary statistics for mailings";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+
+SET @instanceID:=LAST_INSERT_ID( );
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Summary Report', 'Mail Summary Report', 'access CiviMail', '',@reportlastID, '1', NULL, 28 );
+
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Mail Opened Report', 'Mailing/opened', 'Display contacts who opened emails from a mailing', 'access CiviMail', 'a:37:{s:6:"fields";a:4:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:49:"Display contacts who opened emails from a mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+
+SET @instanceID:=LAST_INSERT_ID( );
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Opened Report', 'Mail Opened Report', 'access CiviMail', '',@reportlastID, '1', NULL, 28 );
+
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Mail Clickthrough Report', 'Mailing/clicks', 'Display clicks from each mailing', 'access CiviMail', 'a:37:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:5:"email";s:1:"1";s:3:"url";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:32:"Display clicks from each mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+
+SET @instanceID:=LAST_INSERT_ID( );
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Clickthrough Report', 'Mail Clickthrough Report', 'access CiviMail', '',@reportlastID, '1', NULL, 29 );
+
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+ UPDATE civicrm_domain SET version = '3.3.2';

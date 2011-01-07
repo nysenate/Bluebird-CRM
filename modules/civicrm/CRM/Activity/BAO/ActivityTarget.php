@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -111,16 +111,22 @@ class CRM_Activity_BAO_ActivityTarget extends CRM_Activity_DAO_ActivityTarget
      * @access public
      * 
      */
-    static function getTargetNames( $activity_id ) 
+    static function getTargetNames( $activityID ) 
     {
-        $queryParam = array();
+        $targetNames = array();
+
+        if ( empty( $activityID ) ) {
+            return $targetNames;
+        }
+
         $query = "SELECT contact_a.id, contact_a.sort_name 
                   FROM civicrm_contact contact_a 
                   LEFT JOIN civicrm_activity_target 
                          ON civicrm_activity_target.target_contact_id = contact_a.id
-                  WHERE civicrm_activity_target.activity_id = {$activity_id} AND contact_a.is_deleted = 0";
+                  WHERE civicrm_activity_target.activity_id = %1 AND contact_a.is_deleted = 0";
+        $queryParam = array( 1 => array( $activityID, 'Integer' ) );
+
         $dao = CRM_Core_DAO::executeQuery($query,$queryParam);
-        $targetNames = array();
         while ( $dao->fetch() ) {
             $targetNames[$dao->id] =  $dao->sort_name;
         }

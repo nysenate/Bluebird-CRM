@@ -111,13 +111,13 @@ function getLineAsAssocArray($inFile, $delim = ',', $fld_names)
         break;
       }
       $len = $didx - $lidx;
-      $res[$fld_names[$fidx++]] = substr($line, $lidx, $len);
+      $res[$fld_names[$fidx++]] = fix_value(substr($line, $lidx, $len));
       $lidx = $didx + 1;
       $didx = strpos($line, $delim, $lidx);
     }
     // Handle the last field.
     if ($fidx < count($fld_names)) {
-      $res[$fld_names[$fidx++]] = substr($line, $lidx);
+      $res[$fld_names[$fidx++]] = fix_value(substr($line, $lidx));
     }
     return $res;
   }
@@ -138,7 +138,25 @@ function remove_omis_line_terminator(&$str)
 
 
 
-function confirmCheck($fn,$description = '')
+// Handle backslashes within field values.
+function fix_value($str)
+{
+  if (strpos($str, '\\') !== false) {
+    // Remove trailing backslashes.
+    while (substr($str, -1) == '\\') {
+      $str = substr($str, 0, -1);
+    }
+    // Replace any remaining backslashes with double-backslashes.
+    return str_replace('\\', '\\\\', $str);
+  }
+  else {
+    return $str;
+  }
+} // fix_value()
+
+
+
+function confirmCheck($fn, $description = '')
 {
   if (file_exists(RAYTMP.$fn)) {
     unlink(RAYTMP.$fn);
@@ -276,6 +294,19 @@ function formatDate($str, $forceMillenium = null)
     return date('Y-m-d', $time);
   }
 } // formatDate()
+
+
+
+function formatTime($str)
+{
+  $str = trim($str);
+  if (preg_match('/^([01]?[0-9]|2[0-3])(:[0-5][0-9]){2}$/', $str)) {
+    return $str;
+  }
+  else {
+    return "00:00:00";
+  }
+} // formatTime()
 
 
 

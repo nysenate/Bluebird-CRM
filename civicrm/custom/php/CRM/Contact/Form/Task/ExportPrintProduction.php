@@ -63,6 +63,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     function buildQuickForm( ) {
 		
 		CRM_Utils_System::setTitle( ts('Print Production Export') );
+		
+		require_once 'CRM/Core/Permission.php';
+        if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+			$this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
+        }
+		
         $this->addDefaultButtons( 'Export Print Production' );
 		
     }
@@ -86,12 +92,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
      * @return None
      */
     public function postProcess() {
+	
+	//get form values (avanti job id)
+	$params = $this->controller->exportValues( $this->_name );
+	$avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+	
+	//get instance name (strip first element from url)
+	$instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
 
-	//get the list of genders
+	//get option
 	$aGender = getOptions("gender");
 	$aSuffix = getOptions("individual_suffix");
-        $aPrefix = getOptions("individual_prefix");
-
+    $aPrefix = getOptions("individual_prefix");
 	$aStates = getStates();
 	
 	//generate random number for export and tables
@@ -102,7 +114,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
 
-        $this->_contactIds = array_unique($this->_contactIds);
+    $this->_contactIds = array_unique($this->_contactIds);
 
 	$ids = implode("),(",$this->_contactIds);
 	$ids = "($ids)";
@@ -111,33 +123,39 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "SELECT c.id, c.contact_type, c.first_name, c.last_name, c.middle_name, c.job_title, c.birth_date, c.organization_name, c.postal_greeting_display, c.addressee_display, c.gender_id, c.prefix_id, c.suffix_id, cr.relationship_type_id, ch.household_name as household_name, ch.nick_name as household_nickname, ch.postal_greeting_display as household_postal_greeting_display, ch.addressee_display as household_Addressee_display, ";
 	$sql .= "congressional_district_46, ny_senate_district_47, ny_assembly_district_48, election_district_49, county_50, county_legislative_district_51, town_52, ward_53, school_district_54, new_york_city_council_55, neighborhood_56, ";
 	$sql .= "street_address, supplemental_address_1, supplemental_address_2, street_number, street_number_suffix, street_name, street_unit, city, postal_code, postal_code_suffix, state_province_id, county_id ";
+	
 	$sql .= " FROM civicrm_contact c ";
 	$sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND a.is_primary=1 ";
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	$sql .= " LEFT  JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7)";
-        $sql .= " LEFT  JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
+    $sql .= " LEFT  JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
 	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
-	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ORDER BY CASE WHEN c.gender_id=2 THEN 1 ELSE 999 END, c.birth_date;";
+	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ";
+	
+	$sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
+	$sql .= " IFNULL(c.birth_date, '9999-01-01');";
+	//order export by oldest male, then oldest female
+	//ensure empty values fall last
 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$skipVars['_DB_DataObject_version'] = 1;
-        $skipVars['__table'] = 1;
-        $skipVars['N'] = 1;
-        $skipVars['_database_dsn'] = 1;
-        $skipVars['_query'] = 1;
-        $skipVars['_DB_resultid'] = 1;
-        $skipVars['_resultFields'] = 1;
-        $skipVars['_link_loaded'] = 1;
-        $skipVars['_join'] = 1;
-        $skipVars['_lastError'] = 1;
-        $skipVars['_database_dsn_md5'] = 1;
-        $skipVars['_database'] = 1;
+	$skipVars['__table'] = 1;
+	$skipVars['N'] = 1;
+	$skipVars['_database_dsn'] = 1;
+	$skipVars['_query'] = 1;
+	$skipVars['_DB_resultid'] = 1;
+	$skipVars['_resultFields'] = 1;
+	$skipVars['_link_loaded'] = 1;
+	$skipVars['_join'] = 1;
+	$skipVars['_lastError'] = 1;
+	$skipVars['_database_dsn_md5'] = 1;
+	$skipVars['_database'] = 1;
 
 	$config =& CRM_Core_Config::singleton();
 
@@ -149,7 +167,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	}
 	
 	//set filename, environment, and full path
-    $filename = 'printExport'.$rnd.'.tsv'; 
+    $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
+	
 	//strip /data/ and everything after environment value
 	$env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
     $fname = $path.'/'.$filename;
@@ -165,15 +184,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         $iss = array();
 
         while ($issdao->fetch()) {
+	 		$ic = $issueCodes[$issdao->tag_id];
+         	if (!empty($ic)) {
+           		$iss[$issdao->id][] = $ic;
+	 		}
+		}
 
-	 $ic = $issueCodes[$issdao->tag_id];
-         if (!empty($ic)) {
-
-           $iss[$issdao->id][] = $ic;
-	 }
-	}
-
-        $aHeader=array();
+    $aHeader=array();
 	$firstLine = true;
         while ($dao->fetch()) {
 
@@ -183,57 +200,61 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 		//write out the header rowv2($fhout, $aOut,"\t",'',false,false);
 		if ($firstLine) {
 
-	                foreach($dao as $name=>$val) {
-
-	                        if (!isset($skipVars[$name])) {
+	        foreach($dao as $name=>$val) {
+	            if (!isset($skipVars[$name])) {
 					$aHeader[] = $name;
 				}
 			}
 
-                        $aHeader[] = "Tags";
+            $aHeader[] = "Tags";
 
 			fputcsv2($fhout, $aHeader,"\t",'',false,false);
 			$firstLine=false;
 		}
 
-	        $aOut = array();
+	    $aOut = array();
 		foreach($dao as $name=>$val) {
 			if (!isset($skipVars[$name])) {
 
 				if ($name=="gender_id") $val = $aGender[$val];
-                                if ($name=="suffix_id") $val = $aSuffix[$val];
-                                if ($name=="prefix_id") $val = $aPrefix[$val];
-
-                                if ($name=="state_province_id") $val = $aStates[$val];
+                if ($name=="suffix_id") $val = $aSuffix[$val];
+                if ($name=="prefix_id") $val = $aPrefix[$val];
+				if ($name=="state_province_id") $val = $aStates[$val];
 
 				if ($name=="birth_date") {
 					if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
-					else $val = "";
-//print $val."\n";
 				}
 					
-		                $val = str_replace("'","",$val);
-                		$val = str_replace("\"","",$val);
+		        $val = str_replace("'","",$val);
+                $val = str_replace("\"","",$val);
 				$aOut[] =  $val;
 			}
 		}
 
-	        fputcsv2($fhout, $aOut,"\t",'',false,false);
+	    fputcsv2($fhout, $aOut,"\t",'',false,false);
 	}
 //exit;
-	//get rid of helper table
+		//get rid of helper table
         $sql = "DROP TABLE tmpExport$rnd;";
         $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-
-		//$href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST'].str_replace('/data/www/nyss/','/',$config->uploadDir).$fname);
-        //$href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode("http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($fname));
-		$href = "mailto:?subject=print export task: printExport$rnd.tsv&body=".urlencode( "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename) );
-		$status[] = "Task $rnd exported ". sizeof($this->_contactIds). " Contact(s). &nbsp;&nbsp;<a href=\"$href\">Click here</a> to email the link.";
+		
+		$url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
+		$urlclean = urlencode( $url );
+		$href = "mailto:?subject=print export: $filename&body=".$urlclean;
+		
+		$status = array();
+		$status[] = "Print Production Export";
+		$status[] = "District: $instance (task $rnd).";
+		$status[] = sizeof($this->_contactIds). " contact(s) were exported.";
+		$status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
+		
+		require_once 'CRM/Core/Permission.php';
+        if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+			$status[] = "Download the file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
+        }
         
         CRM_Core_Session::setStatus( $status );
     }//end of function
-
-
 }
 
 function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {

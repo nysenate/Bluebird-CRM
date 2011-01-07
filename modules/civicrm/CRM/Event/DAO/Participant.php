@@ -1,7 +1,7 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.2                                                |
+| CiviCRM version 3.3                                                |
 +--------------------------------------------------------------------+
 | Copyright CiviCRM LLC (c) 2004-2010                                |
 +--------------------------------------------------------------------+
@@ -79,7 +79,7 @@ class CRM_Event_DAO_Participant extends CRM_Core_DAO
      * @var boolean
      * @static
      */
-    static $_log = false;
+    static $_log = true;
     /**
      * Participant Id
      *
@@ -107,7 +107,7 @@ class CRM_Event_DAO_Participant extends CRM_Core_DAO
     /**
      * Participant role ID. Implicit FK to civicrm_option_value where option_group = participant_role.
      *
-     * @var int unsigned
+     * @var string
      */
     public $role_id;
     /**
@@ -249,8 +249,10 @@ class CRM_Event_DAO_Participant extends CRM_Core_DAO
                 ) ,
                 'participant_role_id' => array(
                     'name' => 'role_id',
-                    'type' => CRM_Utils_Type::T_INT,
+                    'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Participant Role Id') ,
+                    'maxlength' => 128,
+                    'size' => CRM_Utils_Type::HUGE,
                     'import' => true,
                     'where' => 'civicrm_participant.role_id',
                     'headerPattern' => '/(participant.)?(role)$/i',
@@ -324,10 +326,11 @@ class CRM_Event_DAO_Participant extends CRM_Core_DAO
                     'name' => 'registered_by_id',
                     'type' => CRM_Utils_Type::T_INT,
                     'title' => ts('Registered By ID') ,
-                    'export' => true,
+                    'import' => true,
                     'where' => 'civicrm_participant.registered_by_id',
                     'headerPattern' => '',
                     'dataPattern' => '',
+                    'export' => true,
                     'default' => 'UL',
                     'FKClassName' => 'CRM_Event_DAO_Participant',
                 ) ,
@@ -342,7 +345,6 @@ class CRM_Event_DAO_Participant extends CRM_Core_DAO
                     'name' => 'fee_currency',
                     'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Fee Currency') ,
-                    'required' => true,
                     'maxlength' => 3,
                     'size' => CRM_Utils_Type::FOUR,
                     'import' => true,
@@ -350,6 +352,7 @@ class CRM_Event_DAO_Participant extends CRM_Core_DAO
                     'headerPattern' => '/(fee)?.?cur(rency)?/i',
                     'dataPattern' => '/^[A-Z]{3}$/i',
                     'export' => true,
+                    'default' => 'UL',
                 ) ,
             );
         }

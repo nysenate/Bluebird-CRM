@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -79,7 +79,7 @@ class CRM_Activity_Page_Tab extends CRM_Core_Page
         }
         
         $this->assign( 'enableCase', $enableCase);
-        $this->assign( 'context',      'activity');        
+        $this->assign( 'context'   , 'activity');        
     }
 
     function edit( )

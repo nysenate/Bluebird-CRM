@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -76,7 +76,7 @@ class CRM_UF_Page_Group extends CRM_Core_Page
                                                                           ),
                                         CRM_Core_Action::UPDATE  => array(
                                                                           'name'  => ts('Settings'),
-                                                                          'url'   => 'civicrm/admin/uf/group',
+                                                                          'url'   => 'civicrm/admin/uf/group/update',
                                                                           'qs'    => 'action=update&id=%%id%%&context=group',
                                                                           'title' => ts('Edit CiviCRM Profile Group') 
                                                                           ),
@@ -150,6 +150,9 @@ class CRM_UF_Page_Group extends CRM_Core_Page
         $this->assign('action', $action);
         $id = CRM_Utils_Request::retrieve('id', 'Positive',
                                           $this, false, 0);
+        
+        //set the context and then start w/ action.
+        $this->setContext( $id, $action );
         
         // what action to take ?
         if ( $action & ( CRM_Core_Action::UPDATE | CRM_Core_Action::ADD | CRM_Core_Action::DELETE |CRM_Core_Action::DISABLE ) ) {
@@ -233,7 +236,7 @@ class CRM_UF_Page_Group extends CRM_Core_Page
         // add jquery files
         $profile = CRM_Utils_String::addJqueryFiles( $profile );
         
-        $this->assign( 'profile', htmlentities( $profile ) );
+        $this->assign('profile', htmlentities($profile, ENT_NOQUOTES, 'UTF-8'));
         //get the title of uf group
         if ($gid) {
             $title = CRM_Core_BAO_UFGroup::getTitle($gid);
@@ -313,8 +316,8 @@ class CRM_UF_Page_Group extends CRM_Core_Page
                 $action -= CRM_Core_Action::DELETE;
             }
             
-            // drop Create, Edit and View mode links if profile group_type is Contribution, Membership, or Participant
-            if ( $value['group_type'] == 'Contribution' || $value['group_type'] == 'Membership' || $value['group_type'] == 'Participant' ) {
+            // drop Create, Edit and View mode links if profile group_type is Contribution, Membership, Activities or Participant
+            if ( $value['group_type'] == 'Contribution' || $value['group_type'] == 'Membership' || $value['group_type'] == 'Activity' || $value['group_type'] == 'Participant' ) {
                 $action -= CRM_Core_Action::ADD;
             }
             
@@ -338,7 +341,6 @@ class CRM_UF_Page_Group extends CRM_Core_Page
     function preview( $id, $action ) 
     {
       $controller = new CRM_Core_Controller_Simple('CRM_UF_Form_Preview', ts('CiviCRM Profile Group Preview'),null);   
-      $this->setContext( $id, $action );
       $controller->set('id', $id);
       $controller->setEmbedded(true);
       $controller->process();

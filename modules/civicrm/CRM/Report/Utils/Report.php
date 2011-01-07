@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -81,6 +81,23 @@ WHERE  report_id = %1";
             $valId[$optionVal] = CRM_Core_DAO::singleValueQuery( $sql, $params );
         }
         return $valId[$optionVal];
+    }
+
+    static function getInstanceIDForPath( $path = null ) {
+        static $valId = array();
+
+ 	 // if $path is null, try to get it from url
+	 $path = self::getInstancePath();
+
+	 if ( $path && ! array_key_exists($path, $valId) ) {
+	     $sql = "
+SELECT MAX(id) FROM civicrm_report_instance
+WHERE  TRIM(BOTH '/' FROM CONCAT(report_id, '/', name)) = %1";
+
+	     $params = array( 1 => array( $path, 'String' ) );
+	     $valId[$path] = CRM_Core_DAO::singleValueQuery( $sql, $params );
+	 }
+     return CRM_Utils_Array::value( $path, $valId );
     }
 
     static function getNextUrl( $urlValue, $query = 'reset=1', $absolute = false, $instanceID = null ) {
@@ -231,6 +248,19 @@ WHERE  inst.report_id = %1";
             }
         }
     }
+
+    static function getInstancePath() {
+        $config    = CRM_Core_Config::singleton( );
+        $arg       = explode( '/', $_GET[$config->userFrameworkURLVar] );
+        
+        if ( $arg[1] == 'report' &&
+             CRM_Utils_Array::value( 2, $arg ) == 'instance' ) {
+	     unset($arg[0], $arg[1], $arg[2]);
+	     $path = trim( CRM_Utils_Type::escape( implode( '/', $arg ), 'String' ), '/' );
+	     return $path;
+        }
+    }
+
     static function isInstancePermissioned( $instanceId ) {
         if ( ! $instanceId ) {
             return true;

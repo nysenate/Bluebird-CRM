@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -93,7 +93,7 @@ class CRM_Activity_Form_Task extends CRM_Core_Form
     {
         $form->_activityHolderIds = array();
 
-        $values = $form->controller->exportValues( 'Search' );
+        $values = $form->controller->exportValues( $form->get( 'searchFormName' ) );
         
         $form->_task = $values['task'];
         $activityTasks = CRM_Activity_Task::tasks();
@@ -133,7 +133,13 @@ class CRM_Activity_Form_Task extends CRM_Core_Form
         if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams .= "&qfKey=$qfKey";
         
         $session = CRM_Core_Session::singleton( );
-        $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/activity/search', $urlParams ) );
+        $searchFormName = strtolower( $form->get( 'searchFormName' ) );
+        if ( $searchFormName == 'search' ) {
+            $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/activity/search', $urlParams ) );
+        } else {
+            $session->replaceUserContext( CRM_Utils_System::url( "civicrm/contact/search/$searchFormName",
+                                                                 $urlParams ) );
+        }
     }
 
     /**

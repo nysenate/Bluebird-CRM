@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -48,7 +48,6 @@ require_once "CRM/Custom/Form/CustomData.php";
  */
 class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
 {
-
     /**
      * The id of the object being edited / created
      *
@@ -82,6 +81,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
     protected $_single;
     
     public $_context;
+    public $_compContext;
     public $_action;
     public $_activityTypeFile;
 
@@ -106,6 +106,13 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
      */
     protected $_crmDir = 'Activity';
 
+    /*
+     * Survey activity
+     *
+     * @var boolean
+     */
+    protected $_isSurveyActivity;
+
     /**
      * The _fields var can be used by sub class to set/unset/edit the 
      * form fields based on their requirement  
@@ -117,8 +124,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             array(
                   'subject'                  =>  array( 'type'        => 'text',
                                                         'label'       => ts('Subject'),
-                                                        'attributes'  => CRM_Core_DAO::getAttribute('CRM_Activity_DAO_Activity', 
-                                                                                                    'subject' ),
+                                                        'attributes'  => CRM_Core_DAO::getAttribute( 'CRM_Activity_DAO_Activity', 
+                                                                                                     'subject' ),
                                                         ),
                   'duration'                 =>  array( 'type'        => 'text',
                                                         'label'       => ts('Duration'),
@@ -128,8 +135,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
                   'location'                 =>  array( 'type'       => 'text',
                                                         'label'      => ts('Location'),
                                                         'attributes' => 
-                                                        CRM_Core_DAO::getAttribute('CRM_Activity_DAO_Activity', 
-                                                                                   'location' ),
+                                                        CRM_Core_DAO::getAttribute( 'CRM_Activity_DAO_Activity', 
+                                                                                    'location' ),
                                                         'required'   => false,
                                                         ),
                   'details'                  => array(  'type'       => 'wysiwyg',
@@ -166,15 +173,15 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
                   'interval_unit'             =>  array( 'type'       => 'select',
                                                          'label'      =>  null,
                                                          'attributes' => 
-                                                         CRM_Core_OptionGroup::values('recur_frequency_units', 
-                                                                                      false, false, false, 
-                                                                                      null, 'name'),
+                                                         CRM_Core_OptionGroup::values( 'recur_frequency_units', 
+                                                                                       false, false, false, 
+                                                                                       null, 'name' ),
                                                          ),
                   // Add optional 'Subject' field for the Follow-up Activiity, CRM-4491
                   'followup_activity_subject' =>  array( 'type'       => 'text',
                                                          'label'      => ts('Subject'),
-                                                         'attributes' => CRM_Core_DAO::getAttribute('CRM_Activity_DAO_Activity', 
-                                                                                                    'subject' ),
+                                                         'attributes' => CRM_Core_DAO::getAttribute( 'CRM_Activity_DAO_Activity', 
+                                                                                                     'subject' ),
                                                          ),
                   
                   );
@@ -182,6 +189,11 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         // append (s) for interval_unit attribute list
         foreach ( $this->_fields['interval_unit']['attributes'] as $name => $label ) {
             $this->_fields['interval_unit']['attributes'][$name] = $label . '(s)';
+        }
+        
+        if ( ( $this->_context == 'standalone' ) &&
+             ( $printPDF = CRM_Utils_Array::key( 'Print PDF Letter', $this->_fields['followup_activity_type_id']['attributes'] ) ) ) {
+            unset( $this->_fields['followup_activity_type_id']['attributes'][$printPDF] );
         }
     }
 
@@ -228,6 +240,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             if ( CRM_Contact_Form_Search::isSearchContext( $this->_context ) ) {
                 $this->_context = 'search';
             }
+            $this->_compContext = CRM_Utils_Request::retrieve( 'compContext', 'String', $this );
         }
         $this->assign( 'context', $this->_context );
         
@@ -239,9 +252,14 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             }
         }
         
+        //CRM-6957
+        //when we come from contact search, activity id never comes.
+        //so don't try to get from object, it might gives you wrong one.
+        
         // if we're not adding new one, there must be an id to
         // an activity we're trying to work on.
-        if ( $this->_action != CRM_Core_Action::ADD ) {
+        if ( $this->_action != CRM_Core_Action::ADD && 
+             get_class( $this->controller ) != 'CRM_Contact_Controller_Search' ) {
             $this->_activityId = CRM_Utils_Request::retrieve( 'id', 'Positive', $this );
         }
         
@@ -327,8 +345,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         
         if ( $this->_action & CRM_Core_Action::VIEW ) {
             // get the tree of custom fields
-            $this->_groupTree =& CRM_Core_BAO_CustomGroup::getTree("Activity", $this,
-                                                                   $this->_activityId, 0, $this->_activityTypeId );
+            $this->_groupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Activity', $this,
+                                                                    $this->_activityId, 0, $this->_activityTypeId );
         }
 
         if ( $this->_activityTypeId ) {
@@ -365,7 +383,9 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         } else if ( $this->_context == 'search' ) {
             $urlParams = 'force=1';
             if ( $qfKey ) $urlParams .= "&qfKey=$qfKey"; 
-            $urlString = 'civicrm/activity/search';
+            if ( $this->_compContext == 'advanced' ) {
+                $urlString = 'civicrm/contact/search/advanced';
+            }
             $this->assign( 'searchKey',  $qfKey );
         } else if ( $this->_context != 'caseActivity' ) {
             $urlParams = "action=browse&reset=1&cid={$this->_currentlyViewedContactId}&selectedChild=activity";
@@ -381,7 +401,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         }
 
         // when custom data is included in this page
-        if ( CRM_Utils_Array::value( "hidden_custom", $_POST ) ) {
+        if ( CRM_Utils_Array::value( 'hidden_custom', $_POST ) ) {
             // we need to set it in the session for the below code to work
             // CRM-3014
             //need to assign custom data subtype to the template
@@ -500,7 +520,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         }
 
         if (  $this->_activityTypeId ) {
-            $defaults["activity_type_id"] =  $this->_activityTypeId;
+            $defaults['activity_type_id'] =  $this->_activityTypeId;
         }
         
         if ( $this->_action & ( CRM_Core_Action::DELETE | CRM_Core_Action::RENEW ) ) {
@@ -556,7 +576,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         }
 
         //build other activity links
-        require_once "CRM/Activity/Form/ActivityLinks.php";
+        require_once 'CRM/Activity/Form/ActivityLinks.php';
         CRM_Activity_Form_ActivityLinks::buildQuickForm( );
 
         //enable form element (ActivityLinks sets this true)
@@ -660,13 +680,36 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         require_once 'CRM/Core/Form/Tag.php';
         $parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_activity' );
         CRM_Core_Form_Tag::buildQuickForm( $this, $parentNames, 'civicrm_activity', $this->_activityId, false, true );
-            
+        
+        // check for survey activity
+        $this->_isSurveyActivity = false;
+        if ( $this->_activityId ) {
+            require_once 'CRM/Campaign/BAO/Survey.php';
+            $this->_isSurveyActivity = CRM_Campaign_BAO_Survey::isSurveyActivity( $this->_activityId );
+            if ( $this->_isSurveyActivity ) {
+                $surveyId = CRM_Core_DAO::getFieldValue( 'CRM_Activity_DAO_Activity', 
+                                                         $this->_activityId, 
+                                                         'source_record_id' );
+                $responseOptions = CRM_Campaign_BAO_Survey::getResponsesOptions( $surveyId );
+                if ( $responseOptions ) {
+                    $this->add( 'select', 'result', ts('Result'),
+                                array( '' => ts('- select -') ) + array_combine( $responseOptions, $responseOptions ) );
+                }
+                $surveyTitle = null;
+                if ( $surveyId ) {
+                    $surveyTitle = CRM_Core_DAO::getFieldValue( 'CRM_Campaign_DAO_Survey', $surveyId, 'title' );
+                }
+                $this->assign( 'surveyTitle', $surveyTitle );
+            }
+        }
+        $this->assign( 'surveyActivity', $this->_isSurveyActivity );
+        
         // if we're viewing, we're assigning different buttons than for adding/editing
         if ( $this->_action & CRM_Core_Action::VIEW ) { 
             if ( isset( $this->_groupTree ) ) {
 				CRM_Core_BAO_CustomGroup::buildCustomDataView( $this, $this->_groupTree );
             }
-            
+
 			$buttons  = array( );
             // do check for permissions 
             require_once 'CRM/Case/BAO/Case.php';
@@ -961,7 +1004,6 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         
         return array( 'activity' => $activity );
     }
-    
 
     /**
      * Shorthand for getting id by display name (makes code more readable)

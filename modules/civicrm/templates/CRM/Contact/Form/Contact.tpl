@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -28,6 +28,9 @@
 {include file="CRM/Contact/Form/Edit/$blockName.tpl"}
 {else}
 <div class="crm-form-block crm-search-form-block">
+{if call_user_func(array('CRM_Core_Permission','check'), 'administer CiviCRM') }
+    <a href='{crmURL p="civicrm/admin/setting/preferences/display" q="reset=1"}' title="{ts}Click here to configure the panes.{/ts}"><span class="icon settings-icon"></span></a>
+{/if}
 <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
 <div class="crm-submit-buttons">
    {include file="CRM/common/formButtons.tpl"}
@@ -53,7 +56,7 @@
               <td>{$form.contact_source.label}<br />
                   {$form.contact_source.html|crmReplace:class:twenty}
               </td>
-              <td>{$form.external_identifier.label}<br />
+              <td>{$form.external_identifier.label}{help id="id-external-id" file="CRM/Contact/Form/Contact.hlp"}&nbsp;<br />
                   {$form.external_identifier.html|crmReplace:class:six}
               </td>
               {if $contactId}
@@ -64,7 +67,7 @@
 	   <table class="image_URL-section form-layout-compressed">
 	    <tr>
 	        <td>
-    	        {$form.image_URL.label}<br />
+    	        {$form.image_URL.label}&nbsp;&nbsp;{help id="id-upload-image" file="CRM/Contact/Form/Contact.hlp"}<br />
     	        {$form.image_URL.html|crmReplace:class:twenty}
      	        {if $imageURL}
      	            {include file="CRM/Contact/Page/ContactImage.tpl"}
@@ -102,6 +105,7 @@ var action = "{/literal}{$action}{literal}";
 var removeCustomData = true;
 showTab[0] = {"spanShow":"span#contact","divShow":"div#contactDetails"};
 cj(function( ) {
+    cj().crmaccordions( ); 
 	cj(showTab).each( function(){ 
         if( this.spanShow ) {
             cj(this.spanShow).removeClass( ).addClass('crm-accordion-open');
@@ -118,8 +122,8 @@ cj(function( ) {
 			cj( prevEle).remove();
 		}
 		//open tab if form rule throws error
-		if ( cj(this).children().find('span.crm-error').text() ) {
-			cj(this).show().prev().children('span:first').removeClass( 'crm-accordion-closed' ).addClass('crm-accordion-open');
+		if ( cj(this).children( ).find('span.crm-error').text( ).length > 0 ) {
+			cj(this).parent( ).removeClass( 'crm-accordion-closed' ).addClass('crm-accordion-open');
 		}
 	});
 
@@ -197,12 +201,6 @@ function removeDefaultCustomFields( ) {
 }
  
 </script>
-<script type="text/javascript">
-cj(function() {
-   cj().crmaccordions(); 
-});
-</script>
-
 {/literal}
 
 {* include common additional blocks tpl *}

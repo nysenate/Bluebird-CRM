@@ -1,8 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env /bin/bash
 
-DBNAME='civicrm'
+# define your database name here
+DBNAME='crm_33'
 
-cd ../sql
+# define the root of your svn directory here
+SVNROOT='/Users/lobo/svn/crm_33'
+
+pushd .
+cd $SVNROOT
+svn up .
+cd $SVNROOT/bin
+./setup.sh
+cd $SVNROOT/sql
 mysqladmin -f drop $DBNAME
 mysqladmin create $DBNAME
 mysql $DBNAME < civicrm.mysql
@@ -16,4 +25,8 @@ mysqldump -cent $DBNAME > civicrm_generated.mysql
 cat civicrm_sample_custom_data.mysql >> civicrm_generated.mysql
 #cat civicrm_devel_config.mysql >> civicrm_generated.mysql
 cat ../CRM/Case/xml/configuration.sample/SampleConfig.mysql >> civicrm_generated.mysql
-cd -
+mysqladmin -f drop $DBNAME
+mysqladmin create $DBNAME
+mysql $DBNAME < civicrm.mysql
+mysql $DBNAME < civicrm_generated.mysql
+popd

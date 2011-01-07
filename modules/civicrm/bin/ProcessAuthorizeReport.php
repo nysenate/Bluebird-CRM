@@ -101,7 +101,7 @@ define('_CRM_PROCESS_AUTHORIZE_REPORT_DEBUG', false);
 
 require_once '../civicrm.config.php';
 require_once 'CRM/Core/Config.php';
-require_once 'api/utils.php';
+require_once 'api/v2/utils.php';
 require_once 'CRM/Core/Payment/AuthorizeNet.php';
 
 require_once 'CRM/Core/DAO.php';
@@ -148,9 +148,9 @@ class CRM_ProcessAuthorizeReport {
     var $email_conn = false;
 
     var $_debug = false;
-
+    
     function CRM_ProcessAuthorizeReport( ) {
-        _crm_initialize( );
+        _civicrm_initialize( );
 
         $config = CRM_Core_Config::singleton( );
         

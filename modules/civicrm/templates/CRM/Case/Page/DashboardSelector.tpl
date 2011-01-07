@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -33,7 +33,7 @@
     <th>{ts}Type{/ts}</th>
     <th>{ts}My Role{/ts}</th>
     <th>{ts}Case Manager{/ts}</th>      
-    <th>{if $list EQ 'upcoming'}{ts}Next Sched.{/ts}{else}{ts}Most Recent{/ts}{/if}</th>
+    <th>{if $list EQ 'upcoming'}{ts}Next Sched.{/ts}{elseif $list EQ 'recent'}{ts}Most Recent{/ts}{/if}</th>
 
     <th></th>
   </tr>
@@ -45,19 +45,13 @@
 	<td>
         {* &nbsp;{$row.contact_type_icon}<br /> *}
         <span id="{$list}{$row.case_id}_show">
-	    <a href="#" onclick="show('{$list}CaseDetails{$row.case_id}', 'table-row');
-                             {$list}CaseDetails('{$row.case_id}','{$row.contact_id}'); 
-                             hide('{$list}{$row.case_id}_show');
-                             show('minus{$list}{$row.case_id}_hide');
-                             show('{$list}{$row.case_id}_hide','table-row');
+	    <a href="#" onclick="{$list}CaseDetails('{$row.case_id}','{$row.contact_id}', '{$list}'); 
+	       			 showCaseActivities('{$row.case_id}','{$list}');
                              return false;"><img src="{$config->resourceBase}i/TreePlus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
 	</span>
 	<span id="minus{$list}{$row.case_id}_hide">
-	    <a href="#" onclick="hide('{$list}CaseDetails{$row.case_id}');
-                             show('{$list}{$row.case_id}_show', 'table-row');
-                             hide('{$list}{$row.case_id}_hide');
-                             hide('minus{$list}{$row.case_id}_hide');
-                             return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}"/></a>
+	    <a href="#" onclick="hideCaseActivities('{$row.case_id}','{$list}');
+                             return false;"><img src="{$config->resourceBase}i/TreeMinus.gif" class="action-icon" alt="{ts}open section{/ts}" onload="hideOnload('{$row.case_id}','{$list}');return false;"/></a>
 	</td>
 
     <td class="crm-case-phone"><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name}</a>{if $row.phone}<br /><span class="description">{$row.phone}</span>{/if}<br /><span class="description">{ts}Case ID{/ts}: {$row.case_id}</span></td>
@@ -68,7 +62,7 @@
     {if $list eq 'upcoming'}
     	 <td class="crm-case-case_scheduled_activity">
 	   {if $row.case_upcoming_activity_viewable}
-	      <a href="javascript:viewActivity({$row.case_scheduled_activity_id}, {$row.contact_id});" title="{ts}View this activity.{/ts}">{$row.case_scheduled_activity_type}</a>
+	      <a href="javascript:{$list}viewActivity({$row.case_scheduled_activity_id}, {$row.contact_id}, '{$list}');" title="{ts}View this activity.{/ts}">{$row.case_scheduled_activity_type}</a>
 	   {else}
 	      {$row.case_scheduled_activity_type}	
 	   {/if}    
@@ -83,7 +77,7 @@
     {elseif $list eq 'recent'}
     	 <td class="crm-case-case_recent_activity">
 	 {if $row.case_recent_activity_viewable}	
-	     <a href="javascript:viewActivity({$row.case_recent_activity_id}, {$row.contact_id});" title="{ts}View this activity.{/ts}">{$row.case_recent_activity_type}</a>
+	     <a href="javascript:{$list}viewActivity({$row.case_recent_activity_id}, {$row.contact_id}, '{$list}');" title="{ts}View this activity.{/ts}">{$row.case_recent_activity_type}</a>
 	  {else}
 	     {$row.case_recent_activity_type}
 	  {/if}   
@@ -116,27 +110,95 @@
     {/if}
 
 </table>
+
+{*include activity view js file*}
+{include file="CRM/common/activityView.tpl" list=$list}
+<div id="view-activity-{$list}">
+    <div id="activity-content-{$list}"></div>
+</div>
 {/strip}
 
 {* Build case details*}
 {literal}
 <script type="text/javascript">
+var widgetId = '';
+var fullscrn = '';
+cj(document).ready( function( ) {
 
-function {/literal}{$list}{literal}CaseDetails( caseId, contactId )
+cj(window).bind("ajaxComplete", function() { 
+  cj('div.widget-controls').children('a.fullscreen-icon').each(function(){
+     cj(this).click(function(){
+        widgetId = cj(this).parents('li').attr('id'); 
+     });
+  });
+});
+
+});
+
+function {/literal}{$list}{literal}CaseDetails( caseId, contactId, type )
 {
 
-  var dataUrl = {/literal}"{crmURL p='civicrm/case/details' h=0 q='snippet=4&caseId='}{literal}" + caseId +'&cid=' + contactId;
+  var dataUrl = {/literal}"{crmURL p='civicrm/case/details' h=0 q='snippet=4&caseId='}{literal}" + caseId +'&cid=' + contactId + '&type=' + type;
   cj.ajax({
             url     : dataUrl,
             dataType: "html",
             timeout : 5000, //Time in milliseconds
             success : function( data ){
-                           cj( '#{/literal}{$list}{literal}CaseDetails' + caseId ).html( data );
+	    	      	  if (cj('#full-screen-header').css('display') == 'block') {
+			      fullscrn = cj('#'+widgetId+'-full-screen');
+			      cj( '#'+ type +'CaseDetails' + caseId , fullscrn ).html( data );
+			  } else {
+			      cj( '#'+ type +'CaseDetails' + caseId ).html( data );
+			  }
                       },
             error   : function( XMLHttpRequest, textStatus, errorThrown ) {
                               console.error( 'Error: '+ textStatus );
                     }
          });
 }
+
+function showCaseActivities( caseId, type ) {
+
+  if (cj('#full-screen-header').css('display') == 'block') {
+    fullscrn = cj('#'+widgetId+'-full-screen');
+    cj('#'+type+'CaseDetails'+caseId, fullscrn).css("display","block");
+    cj('#'+type+caseId+'_show', fullscrn).hide();
+    cj('#minus'+type+caseId+'_hide', fullscrn).css("display","block");
+    cj('#'+type+caseId+'_hide', fullscrn).css("display","table-row");
+
+  } else {
+    show( type+'CaseDetails'+caseId , 'table-row' );
+    hide( type+caseId+'_show' );
+    show( 'minus'+type+caseId+'_hide' );
+    show( type+caseId+'_hide','table-row' );
+  }
+
+}
+
+function hideCaseActivities( caseId , type ) {
+
+  if (cj('#full-screen-header').css('display') == 'block') {
+    fullscrn = cj('#'+widgetId+'-full-screen');
+    cj('#'+type+'CaseDetails' + caseId, fullscrn).hide();
+    cj('#'+type+caseId+'_show', fullscrn).css("display","block");
+    cj('#minus'+type+caseId +'_hide', fullscrn).hide();
+    cj('#'+type+caseId+'_hide', fullscrn).hide();
+  
+  } else {
+    hide( type+'CaseDetails'+caseId );
+    show( type+caseId+'_show', 'table-row' );
+    hide( type+caseId+'_hide' );
+    hide( 'minus'+type+caseId+'_hide' );
+  }
+}
+
+function hideOnload( caseId, type ) {
+  if (cj('#full-screen-header').css('display') == 'block') {
+    fullscrn = cj('#'+widgetId+'-full-screen');
+    cj('#minus'+type+caseId +'_hide', fullscrn).hide();
+    cj('#'+type+caseId+'_hide', fullscrn).hide();
+  }
+}
+
 </script>
 {/literal}

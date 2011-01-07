@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -58,12 +58,13 @@
 
 {else}
         <td>{$row.sort_name}</td>
-        <td>{assign var='street_address' value='1-street_address'}{$row.$street_address}</td>
-        <td>{assign var='city' value='1-city'}{$row.$city}</td>
-        <td>{assign var='state_province' value='1-state_province'}{$row.$state_province}</td>
-        <td>{assign var='postal_code' value='1-postal_code'}{$row.$postal_code}</td>
-        <td>{assign var='email' value='1-email'}{$row.$email}</td>
-        <td>{assign var='phone' value='1-phone-1'}{$row.$phone}</td>
+        <td>{$row.street_address}</td>
+        <td>{$row.city}</td>
+        <td>{$row.state_province}</td>
+        <td>{$row.postal_code}</td>
+        {*<td>{$row.country}</td>*}{*NYSS*}
+        <td>{$row.email}</td>
+        <td>{$row.phone}</td>
 {/if}
     </tr>
 {/foreach}

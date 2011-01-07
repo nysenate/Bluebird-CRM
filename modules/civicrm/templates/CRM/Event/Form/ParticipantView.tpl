@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -46,36 +46,52 @@
         </div>
     </div>
     <table class="crm-info-panel">
-        <tr class="crm-event-participantview-form-block-displayName">
-	    <td class="label">{ts}Name{/ts}</td>
+    <tr class="crm-event-participantview-form-block-displayName">
+	    <td class="label">{ts}Participant Name{/ts}</td>
 	    <td class="bold">
-	    	<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contact_id"}">{$displayName}</a>
+	    	<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$contact_id"}" title="view contact record">{$displayName}</a>
 	    	<div class="crm-submit-buttons">
 	    	    <a class="button" href="{crmURL p='civicrm/event/badge' q="reset=1&context=view&id=$id&cid=$contact_id"}" title="{ts}Print Event Name Badge{/ts}"><span><div class="icon print-icon"></div> {ts}Print Name Badge{/ts}</span></a>
 	    	</div>
 	    </td>
 	</tr>
-        <tr class="crm-event-participantview-form-block-event">
+	{if $participant_registered_by_id} {* Display primary participant *}
+	    <tr class="crm-event-participantview-form-block-registeredBy">
+	        <td class="label">{ts}Registered By{/ts}</td>
+	        <td><a href="{crmURL p='civicrm/contact/view/participant' q="reset=1&id=$participant_registered_by_id&cid=$registered_by_contact_id&action=view"}" title="{ts}view primary participant{/ts}">{$registered_by_display_name}</a></td>
+	    </tr>
+	{/if}
+	{if $additionalParticipants} {* Display others registered by this participant *}
+        <tr class="crm-event-participantview-form-block-additionalParticipants">
+            <td class="label">{ts}Also Registered by this Participant{/ts}</td>
+            <td>
+                {foreach from=$additionalParticipants key=apName item=apURL}
+                    <a href="{$apURL}" title="{ts}view additional participant{/ts}">{$apName}</a><br />
+                {/foreach}
+            </td>
+        </tr>
+	{/if}
+    <tr class="crm-event-participantview-form-block-event">
 	    <td class="label">{ts}Event{/ts}</td><td>
-	    	<a href="{crmURL p='civicrm/admin/event' q="action=update&reset=1&id=$event_id"}" title="{ts}Configure this event{/ts}">{$event}</a>&nbsp;
+	    	<a href="{crmURL p='civicrm/event/manage/eventInfo' q="action=update&reset=1&id=$event_id"}" title="{ts}Configure this event{/ts}">{$event}</a>
 	    </td>
 	</tr>
-        <tr class="crm-event-participantview-form-block-role">
+    <tr class="crm-event-participantview-form-block-role">
 	    <td class="label">{ts}Participant Role{/ts}</td>
-	    <td>{$role}&nbsp;</td></tr>
+	    <td>{$role}</td></tr>
         <tr class="crm-event-participantview-form-block-register_date">
 	    <td class="label">{ts}Registration Date and Time{/ts}</td>
 	    <td>{$register_date|crmDate}&nbsp;</td>
 	</tr>
-        <tr class="crm-event-participantview-form-block-status">
+    <tr class="crm-event-participantview-form-block-status">
 	    <td class="label">{ts}Status{/ts}</td><td>{$status}&nbsp;</td>
 	</tr>
-        {if $source}
-            <tr class="crm-event-participantview-form-block-event_source">
+    {if $source}
+        <tr class="crm-event-participantview-form-block-event_source">
 	    	<td class="label">{ts}Event Source{/ts}</td><td>{$source}&nbsp;</td>
 	    </tr>
-        {/if}
-        {if $fee_level}
+    {/if}
+    {if $fee_level}
         <tr class="crm-event-participantview-form-block-fee_amount">
             {if $lineItem}
                 <td class="label">{ts}Event Fees{/ts}</td>
@@ -85,12 +101,12 @@
                 <td>{$fee_level}&nbsp;{if $fee_amount}- {$fee_amount|crmMoney:$fee_currency}{/if}</td>
             {/if}
         </tr>
-        {/if}
-        {foreach from=$note item="rec"}
+    {/if}
+    {foreach from=$note item="rec"}
 	    {if $rec }
             <tr><td class="label">{ts}Note{/ts}</td><td>{$rec}</td></tr>
 	    {/if}
-        {/foreach}
+    {/foreach}
     </table>         
     {include file="CRM/Custom/Page/CustomDataView.tpl"}
     {if $accessContribution and $rows.0.contribution_id}

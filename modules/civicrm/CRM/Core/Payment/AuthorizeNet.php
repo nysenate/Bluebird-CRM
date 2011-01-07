@@ -12,7 +12,7 @@
  *
  * @package CRM
  * @author Marshal Newrock <marshal@idealso.com>
- * $Id: AuthorizeNet.php 26018 2010-01-25 09:00:59Z deepak $
+ * $Id: AuthorizeNet.php 31477 2010-12-29 07:25:05Z deepak $
  */
 
 /* NOTE:
@@ -33,6 +33,15 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     static protected $_mode = null;
 
     static protected $_params = array();
+
+    /**
+     * We only need one instance of this object. So we use the singleton
+     * pattern and cache the instance in this variable
+     *
+     * @var object
+     * @static
+     */
+    static private $_singleton = null;
     
     /**
      * Constructor
@@ -58,6 +67,23 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         $this->_setParam( 'sequence', rand( 1, 1000 ) );
     }
 
+    /** 
+     * singleton function used to manage this object 
+     * 
+     * @param string $mode the mode of operation: live or test
+     *
+     * @return object 
+     * @static 
+     * 
+     */ 
+    static function &singleton( $mode, &$paymentProcessor ) {
+        $processorName = $paymentProcessor['name'];
+        if (self::$_singleton[$processorName] === null ) {
+            self::$_singleton[$processorName] = new CRM_Core_Payment_AuthorizeNet( $mode, $paymentProcessor );
+        }
+        return self::$_singleton[$processorName];
+    }
+
     /**
      * Submit a payment using Advanced Integration Method
      *
@@ -74,7 +100,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
             $this->_setParam( $field, $value );
         }
 
-        if ( $params['is_recur'] && $params['installments'] > 1 ) {
+        if ( $params['is_recur'] && $params['contributionRecurID'] ) {
             return $this->doRecurPayment( $params );
         }
 
@@ -148,6 +174,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         }
         $params['gross_amount'] = $response_fields[9];
         // TODO: include authorization code?
+
         return $params;
     }
     
@@ -196,10 +223,15 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         $template->assign( 'apiLogin', $this->_getParam( 'apiLogin' ) );
         $template->assign( 'paymentKey', $this->_getParam( 'paymentKey' ) );
         $template->assign( 'refId', substr( $this->_getParam( 'invoiceID' ), 0, 20 ) );
-        // insert page title as name
-
+        
+        //for recurring, carry first contribution id  
+        $template->assign( 'invoiceNumber', $this->_getParam( 'contributionID' ) );
+        
         $template->assign( 'startDate', date('Y-m-d') );
-        $template->assign( 'totalOccurrences', $this->_getParam('installments') );
+        
+        // for open ended subscription totalOccurrences has to be 9999
+        $installments = $this->_getParam('installments');
+        $template->assign( 'totalOccurrences', $installments ? $installments : 9999 );
 
         $template->assign( 'amount', $this->_getParam('amount') );
 
@@ -211,6 +243,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         $template->assign( 'description', $this->_getParam('description') );
 
         $template->assign( 'email', $this->_getParam('email') );
+        $template->assign( 'contactID', $this->_getParam('contactID') );
         $template->assign( 'billingFirstName', $this->_getParam('billing_first_name') );
         $template->assign( 'billingLastName', $this->_getParam('billing_last_name') );
         $template->assign( 'billingAddress', $this->_getParam('street_address') );
@@ -218,9 +251,9 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         $template->assign( 'billingState', $this->_getParam('state_province') );
         $template->assign( 'billingZip', $this->_getParam('postal_code') );
         $template->assign( 'billingCountry', $this->_getParam('country') );
-
+        
         $arbXML = $template->fetch( 'CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl' );
-
+        
         // submit to authorize.net
         $submit = curl_init( $this->_paymentProcessor['url_recur'] );
         if ( !$submit ) {
@@ -248,8 +281,12 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
             return self::error( $responseFields['code'], $responseFields['text'] );
         }
 
-        $params['trxn_id'] = $responseFields['subscriptionId'];
-        
+        // log request
+        CRM_Core_Error::debug_var( 'Create Subscription Request', $arbXML );
+
+        // update recur processor_id with subscriptionId
+        CRM_Core_DAO::setFieldValue( 'CRM_Contribute_DAO_ContributionRecur', $params['contributionRecurID'], 
+                                     'processor_id', $responseFields['subscriptionId'] );
         return $params;
     }
 
@@ -345,14 +382,17 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
      *
      * @return bool
      */
-    function checkMD5( $responseMD5, $transaction_id, $amount ) {
+    function checkMD5( $responseMD5, $transaction_id, $amount, $ipn = false ) {
         // cannot check if no MD5 hash
         $md5Hash = $this->_getParam( 'md5Hash' );
         if ( $md5Hash == '' ) {
             return true;
         }
-        $loginid = $this->_getParam( 'apiLogin' );
-        $result  = strtoupper ( md5( $md5Hash . $loginid . $transaction_id . $amount ) );
+        $loginid    = $this->_getParam( 'apiLogin' );
+        $hashString = $ipn ? ( $md5Hash . $transaction_id . $amount ) : 
+            ( $md5Hash . $loginid . $transaction_id . $amount );
+        $result     = strtoupper ( md5( $hashString ) );
+
         if ( $result == $responseMD5 ) {
             return true;
         } else {
@@ -508,9 +548,61 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         }
     }
 
-    function cancelSubscriptionURL( ) {
+    function cancelSubscriptionURL( $entityID = null, $entity = null ) {
+        if ( $entityID && $entity == 'membership' ) {
+            require_once 'CRM/Contact/BAO/Contact/Utils.php';
+            $contactID = CRM_Core_DAO::getFieldValue( "CRM_Member_DAO_Membership", $entityID, "contact_id" );
+            $checksumValue = CRM_Contact_BAO_Contact_Utils::generateChecksum( $contactID, null, 'inf' );
+
+            return CRM_Utils_System::url( 'civicrm/contribute/unsubscribe', 
+                                          "reset=1&mid={$entityID}&cs={$checksumValue}", true, null, false, false );
+        }
         return ( $this->_mode == 'test' ) ?
             'https://test.authorize.net' : 'https://authorize.net';
     }
 
+    function cancelSubscription( ) {
+        $template = CRM_Core_Smarty::singleton( );
+
+        $template->assign( 'subscriptionType', 'cancel' );
+
+        $template->assign( 'apiLogin', $this->_getParam( 'apiLogin' ) );
+        $template->assign( 'paymentKey', $this->_getParam( 'paymentKey' ) );
+        $template->assign( 'subscriptionId', $this->_getParam( 'subscriptionId' ) );
+
+        $arbXML = $template->fetch( 'CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl' );
+        
+        // submit to authorize.net
+        $submit = curl_init( $this->_paymentProcessor['url_recur'] );
+        if ( !$submit ) {
+            return self::error(9002, 'Could not initiate connection to payment gateway');
+        }
+
+        curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($submit, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml"));
+        curl_setopt($submit, CURLOPT_HEADER, 1);
+        curl_setopt($submit, CURLOPT_POSTFIELDS, $arbXML);
+        curl_setopt($submit, CURLOPT_POST, 1);
+        curl_setopt($submit, CURLOPT_SSL_VERIFYPEER, 0);
+        
+        $response = curl_exec($submit);
+
+        if ( !$response ) {
+            return self::error( curl_errno($submit), curl_error($submit) );
+        }
+
+        curl_close( $submit );
+
+        $responseFields = $this->_ParseArbReturn( $response );
+
+        if ( $responseFields['resultCode'] == 'Error' ) {
+            return self::error( $responseFields['code'], $responseFields['text'] );
+        }
+
+        // log request
+        CRM_Core_Error::debug_var( 'Cancel Subscription Request', $arbXML );
+
+        // carry on cancelation procedure
+        return true;
+    }
 }         

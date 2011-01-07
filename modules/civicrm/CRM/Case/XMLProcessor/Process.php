@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -162,7 +162,7 @@ class CRM_Case_XMLProcessor_Process extends CRM_Case_XMLProcessor {
                 if ( $relationshipTypeID === false ) {
                     continue;
                 }
-              
+                
                 if ( !$isCaseManager ) {    
                     $result[$relationshipTypeID] = $relationshipTypeName;
                 } else if ( $relationshipTypeXML->manager ) {

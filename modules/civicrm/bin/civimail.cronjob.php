@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,9 +35,12 @@
  * this script using a web url or from the command line
  */
 
-function processQueue( ) {
+function processQueue($batch_size) {
     require_once 'CRM/Mailing/BAO/Job.php';
-    CRM_Mailing_BAO_Job::runJobs();
+	// Split up the parent jobs into multiple child jobs
+	CRM_Mailing_BAO_Job::runJobs_pre($batch_size);
+	CRM_Mailing_BAO_Job::runJobs();
+	CRM_Mailing_BAO_Job::runJobs_post();
 }
 
 function run( ) {
@@ -46,7 +49,7 @@ function run( ) {
     require_once '../civicrm.config.php'; 
     require_once 'CRM/Core/Config.php'; 
     
-    $config = CRM_Core_Config::singleton(); 
+    $config =& CRM_Core_Config::singleton(); 
 
     // this does not return on failure
     CRM_Utils_System::authenticateScript( true );
@@ -59,15 +62,17 @@ function run( ) {
     CRM_Utils_System::loadBootStrap(  );
 
     // we now use DB locks on a per job basis
-    processQueue( );
+    processQueue($config->mailerJobSize);
 }
 
 // you can run this program either from an apache command, or from the cli
-if ( php_sapi_name() == "cli" ) {
+if (isset($argv)) {
   require_once ("bin/cli.php");
   $cli=new civicrm_cli ();
   //if it doesn't die, it's authenticated 
-  processQueue( );
+  require_once 'CRM/Core/Config.php';
+  $config =& CRM_Core_Config::singleton();
+  processQueue( $config->mailerJobSize);
 } else  { //from the webserver
   run( );
 }

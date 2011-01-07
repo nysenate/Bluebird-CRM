@@ -6,6 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
+# Revised: 2010-12-10
 #
 # Note: When backing up to a non-local directory, SSH is used to make the
 #       connection.  The account under which this script is running should
@@ -44,6 +45,8 @@ if [ ! "$backup_dir" ]; then
   echo "$prog: Backup directory must be set using backup.rootdir in the Bluebird config file, or the -d command line option." >&2
   exit 1
 fi
+
+echo "CRM BACKUP STARTED on `date`"
 
 if [ "$backup_host" ]; then
   if ssh $backup_host "test -d $backup_dir"; then
@@ -105,4 +108,6 @@ echo "Backing up source code"
 [ -d $data_rootdir ] && rsync $rsync_opts $data_rootdir/* $rsync_host_prefix$data_backup_dir/
 [ -d $import_rootdir ] && rsync $rsync_opts $import_rootdir $rsync_host_prefix$data_backup_dir/
 
-exit $?
+echo "CRM BACKUP COMPLETED on `date`"
+
+exit 0

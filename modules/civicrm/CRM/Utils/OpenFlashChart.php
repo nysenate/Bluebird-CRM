@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -226,6 +226,147 @@ class CRM_Utils_OpenFlashChart
         return $chart;
     }
     
+
+    /**
+     * Build The 3-D Bar Gharph.
+     *
+     * @param  array  $params  assoc array of name/value pairs          
+     *
+     * @return object $chart   object of open flash chart.
+     * @static
+     */
+    static function &bar_3dChart( &$params )
+    {
+        $chart = null;
+        if ( empty( $params ) ) {
+            return $chart;
+        }
+       
+        // $params['values'] should contains the values for each
+        // criteria defined in $params['criteria']
+        $values    = CRM_Utils_Array::value( 'values', $params );
+        $criterias = CRM_Utils_Array::value( 'criteria', $params );
+        if ( !is_array( $values ) || empty( $values ) || !is_array( $criterias ) || empty($criterias ) ) return $chart; 
+        
+        // get the required data.
+        $xReferences = $xValueLabels = $xValues = $yValues = array( );
+       
+        foreach ( $values as $xVal => $yVal ) {
+            if ( !is_array($yVal) || empty($yVal) ) continue;
+
+            $xValueLabels[] = (string)$xVal;
+            foreach( $criterias as $criteria ) {
+                $xReferences[$criteria][$xVal] = (double)CRM_Utils_Array::value($criteria, $yVal, 0 );
+                $yValues[]  = (double)CRM_Utils_Array::value($criteria, $yVal, 0 );
+                
+            } 
+        }
+        
+        if ( empty($xReferences) ) return $chart; 
+        
+        // get the currency.
+        require_once 'CRM/Utils/Money.php';
+        $config   = CRM_Core_Config::singleton();
+        $symbol   = $config->defaultCurrencySymbol;
+                        
+        // set the tooltip.
+        $tooltip = CRM_Utils_Array::value( 'tip', $params, "$symbol #val#" );  
+
+        $count = 0;
+        foreach( $xReferences as $criteria => $values ) {
+            $toolTipVal = $tooltip;
+            // for seperate tooltip for each criteria
+            if ( is_array($tooltip) ) {
+                $toolTipVal = CRM_Utils_Array::value($criteria, $tooltip, "$symbol #val#" ); 
+            }
+            
+            // create bar_3d object
+            $xValues[$count] = new bar_3d( );
+            // set colour pattel 
+            $xValues[$count]->set_colour( self::$_colours[$count] );
+            // define colur pattel with bar criterias
+            $xValues[$count]->key( (string)$criteria , 12 );
+            // define bar chart values
+            $xValues[$count]->set_values(array_values($values));
+
+            // set tooltip
+            $xValues[$count]->set_tooltip( $toolTipVal );
+            $count++;  
+        }
+
+        $chartTitle = CRM_Utils_Array::value( 'legend', $params ) ? $params['legend'] : ts( 'Bar Chart' );
+        
+        //set y axis parameters.
+        $yMin = 0;
+ 
+        // calculate max scale for graph.
+        $yMax = ceil( max($yValues) );
+        if ( $mod = $yMax%(str_pad( 5, strlen($yMax)-1, 0))) { 
+            $yMax += str_pad( 5, strlen($yMax)-1, 0)-$mod;
+        }
+        
+        // if max value of y-axis <= 0, then set default values 
+        if ( $yMax <= 0 ) {
+            $ySteps = 1;
+            $yMax   = 5;
+        } else {
+            $ySteps = $yMax/5;
+        }
+
+        // create x axis label obj.
+        $xLabels = new x_axis_labels( );
+        $xLabels->set_labels( $xValueLabels );
+
+        // set angle for labels.
+        if ( $xLabelAngle = CRM_Utils_Array::value( 'xLabelAngle', $params ) ) {
+            $xLabels->rotate( $xLabelAngle );
+        }
+        
+        // create x axis obj.
+        $xAxis = new x_axis( );
+        $xAxis->set_labels( $xLabels );
+        
+        //create y axis and set range. 
+        $yAxis = new y_axis( );
+        $yAxis->set_range( $yMin, $yMax, $ySteps );
+        
+        // create chart title obj.
+        $title = new title( $chartTitle );
+        
+        // create chart.
+        $chart = new open_flash_chart();
+        
+        // add x axis w/ labels to chart.
+        $chart->set_x_axis( $xAxis );
+        
+        // add y axis values to chart.
+        $chart->add_y_axis( $yAxis );
+        
+        // set title to chart.
+        $chart->set_title( $title );
+        
+        foreach( $xValues as $bar ) {
+            // add bar element to chart.
+            $chart->add_element( $bar );
+        }
+
+        // add x axis legend.
+        if ( $xName = CRM_Utils_Array::value('xname', $params ) ) {
+            $xLegend = new x_legend( $xName );
+            $xLegend->set_style( "{font-size: 13px; color:#000000; font-family: Verdana; text-align: center;}" );
+            $chart->set_x_legend( $xLegend );
+        }
+        
+        // add y axis legend.
+        if ( $yName = CRM_Utils_Array::value( 'yname', $params ) ) {
+            $yLegend = new y_legend( $yName );
+            $yLegend->set_style( "{font-size: 13px; color:#000000; font-family: Verdana; text-align: center;}" );
+            $chart->set_y_legend( $yLegend );
+        }
+        
+        return $chart;
+    }
+
     static function chart( $rows, $chart, $interval ) 
     {
         $chartData = array( );

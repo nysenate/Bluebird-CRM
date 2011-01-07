@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -35,6 +35,7 @@ require_once 'CRM/Utils/REST.php';
 $rest = new CRM_Utils_REST();
 
 $config = CRM_Core_Config::singleton();
+$rest->loadCMSBootstrap( );
 
 if ( isset( $_GET['json'] ) &&
      $_GET['json'] ) {

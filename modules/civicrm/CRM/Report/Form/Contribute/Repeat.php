@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -385,7 +385,7 @@ LEFT  JOIN (
         }
     }
 
-    function formRule ( &$fields, &$files, $self ) {
+    function formRule ( &$fields, &$files, &$self ) {
         require_once 'CRM/Utils/Date.php';
         
         $errors = $checkDate = $errorCount = array( );

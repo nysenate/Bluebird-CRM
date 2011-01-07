@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -31,7 +31,7 @@
     <div id="available-dashlets" class="dash-column">
         {foreach from=$availableDashlets item=row key=dashID}
     	<div class="portlet">
-    		<div class="portlet-header" id="{$dashID}">{$row.label}{if $admin and !$row.is_reserved}&nbsp;<a class="close-icon delete-dashlet"></a>{/if}</div>
+    		<div class="portlet-header" id="{$dashID}">{$row.label}{if $admin and !$row.is_reserved}&nbsp;<a class="ui-icon ui-icon-close delete-dashlet"></a>{/if}</div>
     	</div>
         {/foreach}
     </div>
@@ -42,7 +42,7 @@
     <div id="existing-dashlets-col-0" class="dash-column">
         {foreach from=$contactDashlets.0 item=row key=dashID}
     	<div class="portlet">
-    		<div class="portlet-header" id="{$dashID}">{$row.label}{if $admin and !$row.is_reserved}&nbsp;<a class="close-icon delete-dashlet"></a>{/if}</div>
+    		<div class="portlet-header" id="{$dashID}">{$row.label}{if $admin and !$row.is_reserved}&nbsp;<a class="ui-icon ui-icon-close delete-dashlet"></a>{/if}</div>
     	</div>
         {/foreach}
     </div>
@@ -50,7 +50,7 @@
     <div id="existing-dashlets-col-1" class="dash-column">
         {foreach from=$contactDashlets.1 item=row key=dashID}
     	<div class="portlet">
-    		<div class="portlet-header" id="{$dashID}">{$row.label}{if $admin and !$row.is_reserved}&nbsp;<a class="close-icon delete-dashlet"></a>{/if}</div>
+    		<div class="portlet-header" id="{$dashID}">{$row.label}{if $admin and !$row.is_reserved}&nbsp;<a class="ui-icon ui-icon-close delete-dashlet"></a>{/if}</div>
     	</div>
         {/foreach}
     </div>
@@ -105,7 +105,7 @@
         }
         
         cj('.delete-dashlet').click( function( ) {
-            var message = {/literal}"{ts}Do you want to remove this dashlet as an 'Available Dashlet', AND delete it from all users' dashboards?{/ts}"{literal};
+            var message = {/literal}'{ts}Do you want to remove this dashlet as an "Available Dashlet", AND delete it from all user dashboards?{/ts}'{literal};
             if ( confirm( message) ) {
                 var dashletID = cj(this).parent().attr('id');
                 var idState = dashletID.split('-')

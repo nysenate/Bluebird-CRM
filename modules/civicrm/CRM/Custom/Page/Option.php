@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -214,14 +214,14 @@ ORDER BY weight, label
         }
         
         // Add order changing widget to selector
-        $returnURL = CRM_Utils_System::url( 'civicrm/admin/custom/group/field/option', "reset=1&action=browse&gid={$this->_gid}&fid={$this->_fid}" );
+        $returnURL = CRM_Utils_System::url( 'civicrm/admin/custom/group/field/option', 
+                                            "reset=1&action=browse&gid={$this->_gid}&fid={$this->_fid}" );
         $filter    = "option_group_id = {$optionGroupID}";
         require_once 'CRM/Utils/Weight.php';
         CRM_Utils_Weight::addOrder( $customOption, 'CRM_Core_DAO_OptionValue',
                                     'id', $returnURL, $filter );
         $this->assign('customOption', $customOption);
     }
-
 
     /**
      * edit custom Option.
@@ -240,13 +240,13 @@ ORDER BY weight, label
 
         // set the userContext stack
         $session = CRM_Core_Session::singleton();
-        $session->pushUserContext(CRM_Utils_System::url('civicrm/admin/custom/group/field/option', "reset=1&action=browse&fid={$this->_fid}&gid={$this->_gid}"));
+        $session->pushUserContext(CRM_Utils_System::url( 'civicrm/admin/custom/group/field/option', 
+                                                         "reset=1&action=browse&fid={$this->_fid}&gid={$this->_gid}"));
         $controller->setEmbedded(true);
         $controller->process();
         $controller->run();
         $this->browse();
     }
-
 
     /**
      * Run the page.

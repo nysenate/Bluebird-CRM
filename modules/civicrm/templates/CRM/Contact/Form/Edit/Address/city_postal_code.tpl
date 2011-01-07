@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -37,7 +37,7 @@
           {$form.address.$blockId.postal_code.label}<br />
           {$form.address.$blockId.postal_code.html}
           {$form.address.$blockId.postal_code_suffix.html}<br />
-          <span class="description font-italic" style="white-space:nowrap;">Enter optional 'add-on' code after the dash ('plus 4' code for U.S. addresses).</span>
+          <span class="description font-italic" style="white-space:nowrap;">{ts}Enter optional 'add-on' code after the dash ('plus 4' code for U.S. addresses).{/ts}</span>
        </td>
     {/if}
     <td colspan="2">&nbsp;&nbsp;</td>

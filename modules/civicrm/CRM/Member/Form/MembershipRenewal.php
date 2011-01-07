@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -101,7 +101,7 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
                 } else if ( $paymentProcessor['payment_processor_type'] == 'Dummy' && $this->_mode == 'live' ) {
                     continue;
                 } else {
-                    $paymentObject =& CRM_Core_Payment::singleton( $this->_mode, 'Contribute', $paymentProcessor, $this );
+                    $paymentObject =& CRM_Core_Payment::singleton( $this->_mode, $paymentProcessor, $this );
                     $error = $paymentObject->checkConfig( );
                     if ( empty( $error ) ) {
                         $validProcessors[$ppID] = $label;
@@ -185,6 +185,9 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
                                                                               'receipt_text_renewal' );
         }
 
+        $renewalDate = CRM_Utils_Date::processDate( CRM_Utils_Array::value( 'renewal_date', $defaults ), 
+                                                    null, null, 'Y-m-d' );
+        $this->assign( 'renewalDate', $renewalDate );
         $this->assign( "member_is_test", CRM_Utils_Array::value('member_is_test',$defaults) );
 
         if ( $this->_mode ) {
@@ -282,6 +285,14 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
         require_once "CRM/Core/BAO/Preferences.php";
         $mailingInfo =& CRM_Core_BAO_Preferences::mailingPreferences();
         $this->assign( 'outBound_option', $mailingInfo['outBound_option'] );
+
+        if ( CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_Membership', $this->_id, 'contribution_recur_id' ) ) {
+            require_once 'CRM/Member/BAO/Membership.php'; 
+            if ( CRM_Member_BAO_Membership::isCancelSubscriptionSupported( $this->_id ) ) {
+                $this->assign( 'cancelAutoRenew', 
+                               CRM_Utils_System::url( 'civicrm/contribute/unsubscribe', "reset=1&mid={$this->_id}" ) );
+            }
+        }
         
         $this->addFormRule(array('CRM_Member_Form_MembershipRenewal', 'formRule'));
     }
@@ -404,7 +415,7 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
             require_once 'CRM/Core/Payment/Form.php';
             CRM_Core_Payment_Form::mapParams( $this->_bltID, $this->_params, $paymentParams, true );
             
-            $payment =& CRM_Core_Payment::singleton( $this->_mode, 'Contribute', $this->_paymentProcessor, $this );
+            $payment =& CRM_Core_Payment::singleton( $this->_mode, $this->_paymentProcessor, $this );
             
             $result =& $payment->doDirectPayment( $paymentParams );
             

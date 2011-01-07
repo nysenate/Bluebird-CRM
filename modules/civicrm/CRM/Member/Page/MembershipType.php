@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -164,9 +164,18 @@ class CRM_Member_Page_MembershipType extends CRM_Core_Page_Basic
             }
             //adding column for relationship type label. CRM-4178.
             if ( $dao->relationship_type_id ) {
-                $relationshipName = 'label_'.$dao->relationship_direction;
-                $membershipType[$dao->id]['relationshipTypeName'] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_RelationshipType', 
-                                                                                                $dao->relationship_type_id, $relationshipName );
+                //If membership associated with 2 or more relationship then display all relationship with comma separated
+                $relTypeIds   = explode( CRM_Core_DAO::VALUE_SEPARATOR, $dao->relationship_type_id );
+                $relTypeNames = explode( CRM_Core_DAO::VALUE_SEPARATOR, $dao->relationship_direction );
+                $membershipType[$dao->id]['relationshipTypeName'] = null;
+                foreach( $relTypeIds as $key => $value ) {
+                    $relationshipName = 'label_'.$relTypeNames[$key];
+                    if ( $membershipType[$dao->id]['relationshipTypeName'] ) {
+                        $membershipType[$dao->id]['relationshipTypeName'] .= ", ";
+                    }
+                    $membershipType[$dao->id]['relationshipTypeName'] .= CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_RelationshipType', 
+                                                                                                      $value, $relationshipName );
+                }
             }
             // form all action links
             $action = array_sum(array_keys($this->links()));

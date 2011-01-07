@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -49,6 +49,8 @@ class CRM_Contact_Form_Search_Custom_Proximity
 
         // unset search profile if set
         unset( $this->_formValues['uf_group_id'] );
+        unset( $this->_formValues['component_mode'] );
+
 
         if ( ! empty( $this->_formValues ) ) {
             // add the country and state

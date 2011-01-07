@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -220,7 +220,7 @@
 	       {/if}
            </tr>
          {else}
-           <tr>
+           <tr class="crm-case-caseview-clientrole">
                <td rowspan="{$relName|@count}" class="crm-case-caseview-role-label label">{ts}Client{/ts}</td>
 	   {foreach from=$relName item=client name=clientsRoles}
                {if not $smarty.foreach.clientsRoles.first}</tr>{/if}
@@ -262,6 +262,7 @@ function addClient( ) {
         title: "Add Client to the Case",
         modal: true,
 		bgiframe: true,
+		close  : function(event, ui) { cj("#rel_contact").unautocomplete( ); },
 		overlay: { opacity: 0.5, background: "black" },
 		beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
 
@@ -294,14 +295,12 @@ function createRelationship( relType, contactID, relID, rowNumber, relTypeName )
 		title: "Assign Case Role",
 		modal: true, 
 		bgiframe: true,
+		close: function(event, ui) { cj("#rel_contact").unautocomplete( ); },
 		overlay: { 
 			opacity: 0.5, 
 			background: "black" 
 		},
-		beforeclose: function(event, ui) {
-            cj(this).dialog("destroy");
-        },
-
+		
 		open:function() {
 			/* set defaults if editing */
 			cj("#rel_contact").val( "" );
@@ -360,10 +359,10 @@ function createRelationship( relType, contactID, relID, rowNumber, relTypeName )
 			} else {
 			   html = '<img src="' +resourceBase+'i/edit.png" title="edit case role" onclick="createRelationship( ' + relType +','+ data.cid +', ' + data.rel_id +', ' + rowNumber +', \''+ relTypeName +'\' );">&nbsp;&nbsp;';
 			   var relTypeAdminLink = {/literal}"{crmURL p='civicrm/admin/reltype' q='reset=1' h=0 }"{literal};
-			   var errorMsg = '{/literal}{ts escape="js"}The relationship type definition for the  {literal}' + relTypeName + '{/literal} case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="{literal}' + relTypeAdminLink + '{/literal}">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
+			   var errorMsg = '{/literal}{ts 1="' + relTypeName + '" 2="' + relTypeAdminLink + '" }The relationship type definition for the %1 case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="%2">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
 
 			   //display error message.
-			   var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="icon close-icon"></div>' + '</a>';
+			   var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="ui-icon ui-icon-close" style="float:left"></div>' + '</a>';
 			   cj( '#restmsg' ).html( imageIcon + errorMsg  ).show( );
 			}
 
@@ -488,19 +487,19 @@ cj(document).ready(function(){
   {if $globalRelationships}
     <div class="crm-submit-buttons">
         <a class="button" href="#"  onClick="window.location='{crmURL p='civicrm/group/search' q="reset=1&context=amtg&amtgID=`$globalGroupInfo.id`"}'; return false;">
-        <span><div class="icon add-icon"></div>{ts 1=$globalGroupInfo.title}Add members to %1{/ts}</span></a>
+        <span><div class="icon add-icon"></div>{ts 1=$globalGroupInfo.title}Add members to %1{/ts}</a></span>
     </div>
 	
     <table class="report-layout globalrelationship">
     	<tr class="columnheader">
     		<th>{$globalGroupInfo.title}</th>
-            <th>Organization</th>
+            <th>Organization</th> {*NYSS*}
     		<th>{ts}Phone{/ts}</th>
     		<th>{ts}Email{/ts}</th>
     	</tr>
         {foreach from=$globalRelationships item=row key=relId}
 
-		{*LCD retrieve current employer for resources and display in table*}
+		{*NYSS retrieve current employer for resources and display in table*}
 		{assign var='contact_id' value=$row.contact_id}
 		{crmAPI entity='contact' action="search" var="organization" contact_id=$contact_id return="current_employer,current_employer_id"}
 
@@ -546,15 +545,13 @@ function addRole() {
 		title: "Add Role",
 		modal: true,
 		bgiframe: true, 
+		close: function(event, ui) { cj("#role_contact").unautocomplete( ); },
 		overlay: { 
 			opacity: 0.5, 
 			background: "black" 
 		},
 
-        beforeclose: function(event, ui) {
-            cj(this).dialog("destroy");
-        },
-
+        
 		open:function() {
 			/* set defaults if editing */
 			cj("#role_contact").val( "" );
@@ -600,9 +597,7 @@ function addRole() {
 				
                /* send synchronous request so that disabling any actions for slow servers*/
 				var postUrl = {/literal}"{crmURL p='civicrm/ajax/relation' h=0 }"{literal}; 
-				cj(this).dialog("close"); 
-				cj(this).dialog("destroy");
-                		var data = 'rel_contact='+ v1 + '&rel_type='+ v2 + '&contact_id='+sourceContact + '&rel_id='+ relID + '&case_id=' + caseID + "&key={/literal}{crmKey name='civicrm/ajax/relation'}{literal}";
+				var data = 'rel_contact='+ v1 + '&rel_type='+ v2 + '&contact_id='+sourceContact + '&rel_id='+ relID + '&case_id=' + caseID + "&key={/literal}{crmKey name='civicrm/ajax/relation'}{literal}";
                 		cj.ajax({ type     : "POST", 
 					  url      : postUrl, 
 					  data     : data, 
@@ -614,14 +609,16 @@ function addRole() {
 							} else {
 							     var relTypeName = cj("#role_type :selected").text();  
 							     var relTypeAdminLink = {/literal}"{crmURL p='civicrm/admin/reltype' q='reset=1' h=0 }"{literal};
-			  				     var errorMsg = '{/literal}{ts escape="js"}The relationship type definition for the  {literal}' + relTypeName + '{/literal} case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="{literal}' + relTypeAdminLink + '{/literal}">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
+			  				     var errorMsg = '{/literal}{ts 1="' + relTypeName + '" 2="' + relTypeAdminLink + '"  }The relationship type definition for the %1 case role is not valid. Both sides of the relationship type must be an Individual or a subtype of Individual. You can review and edit relationship types at <a href="%2">Administer >> Option Lists >> Relationship Types</a>{/ts}{literal}.'; 
 
 			   				     //display error message.
-			   				     var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="icon close-icon"></div>' + '</a>';
+			   				     var imageIcon = "<a href='#'  onclick='cj( \"#restmsg\" ).hide( ); return false;'>" + '<div class="ui-icon ui-icon-close" style="float:left"></div>' + '</a>';
 			   				     cj( '#restmsg' ).html( imageIcon + errorMsg  ).show( );  
 							}
 					  	    }
 				       });
+				       cj(this).dialog("close"); 
+				       cj(this).dialog("destroy");
  			},
 
 			"Cancel": function() { 
@@ -802,7 +799,7 @@ function addTags() {
             {$form.status_id.html}
         </td>
 	<td style="vertical-align: bottom;">
-		<span class="crm-button"><input class="form-submit default" name="_qf_Basic_refresh" value="Search" type="button" onclick="search()"; /></span>
+		<span class="crm-button"><input class="form-submit default" name="_qf_Basic_refresh" value="Search" type="button" onclick="buildCaseActivities( true )"; /></span>
 	</td>
     </tr>
     <tr>
@@ -829,8 +826,19 @@ function addTags() {
   </table>
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
-
-  <table id="activities-selector"  class="nestedActivitySelector" style="display:none"></table>
+ 
+  <table id="activities-selector"  class="nestedActivitySelector">
+  <thead><tr class="columnheader">
+  <th class='crm-case-activities-date'>{ts}Date{/ts}</th>
+  <th class='crm-case-activities-subject'>{ts}Subject{/ts}</th>
+  <th class='crm-case-activities-type'>{ts}Type{/ts}</th>
+  <th class='crm-case-activities-with'>{ts}With{/ts}</th>
+  <th class='crm-case-activities-assignee'>{ts}Reporter / Assignee{/ts}</th>
+  <th class='crm-case-activities-status'>{ts}Status{/ts}</th>
+  <th class='crm-case-activities-status' id="nosort">&nbsp;</th>
+  <th class='hiddenElement'>&nbsp;</th>
+  </tr></thead>
+  </table>
 
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
@@ -839,68 +847,7 @@ function addTags() {
 
 {literal}
 <script type="text/javascript">
-cj(document).ready(function(){
-
-    var dataUrl = {/literal}"{crmURL p='civicrm/ajax/activity' h=0 q='snippet=4&caseID='}{$caseID}"{literal};
-    dataUrl = dataUrl + '&cid={/literal}{$contactID}{literal}';
-    dataUrl = dataUrl + '&userID={/literal}{$userID}{literal}'    
-
-    {/literal}{if $fulltext}{literal}
-    	dataUrl = dataUrl + '&context={/literal}{$fulltext}{literal}';
-    {/literal}{/if}{literal}
-
-    cj("#activities-selector").flexigrid
-    (
-        {
-            url: dataUrl,
-            dataType: 'json',
-            resizable: false,
-            colModel : [
-
-            {display: 'Date',               name : 'display_date',  width : 100,  sortable : true, align: 'left'},
-            {display: 'Subject',            name : 'subject',       width : 105,  sortable : true, align: 'left'},
-            {display: 'Type',               name : 'type',          width : 100,  sortable : true, align: 'left'},
-            {display: 'With',               name : 'with_contacts', width : 100,  sortable : false,align: 'left'},
-            {display: 'Reporter / Assignee',name : 'reporter',      width : 100,  sortable : true, align: 'left'},
-            {display: 'Status',             name : 'status',        width : 65,   sortable : true, align: 'left'},
-            {display: '',                   name : 'links',         width : 110,  align: 'left'},
-            {name : 'class', hide: true, width: 1}  // this col is use for applying css classes
-            ],
-            usepager: true,
-            useRp: true,
-            rp: 40,
-            width:810,
-            showToggleBtn: false,
-            height: 'auto',
-            nowrap: false,
-            onSuccess:setSelectorClass
-        }
-    );	
-}
-);
-
-function search(com)
-{   
-    var activity_date_low  = cj("#activity_date_low").val();
-    var activity_date_high = cj("#activity_date_high").val();
-
-    var activity_deleted = 0;
-    if ( cj("#activity_deleted:checked").val() == 1 ) {
-        activity_deleted = 1;
-    }
-    cj('#activities-selector').flexOptions({
-	    newp:1, 
-		params:[{name:'reporter_id', value: cj("select#reporter_id").val()},
-			{name:'status_id', value: cj("select#status_id").val()},
-			{name:'activity_type_id', value: cj("select#activity_type_filter_id").val()},
-			{name:'activity_date_low', value: activity_date_low},
-			{name:'activity_date_high', value: activity_date_high},
-			{name:'activity_deleted', value: activity_deleted }
-			]
-		});
-    
-    cj("#activities-selector").flexReload(); 
-}
+var oTable;
 
 function checkSelection( field ) {
     var validationMessage = '';
@@ -943,10 +890,10 @@ function checkSelection( field ) {
             validationMessage = '{/literal}{ts escape="js"}Please select a client for this case.{/ts}{literal}';
 	    if ( cj('#contact_id').val( ) == '{/literal}{$contactID}{literal}' ) {
 	       	forceValidation = true;
-                validationMessage = '{/literal}{ts 1="'+clientName[0]+'" escape="js"}%1 is already assigned to this case. Please select some other client for this case.{/ts}{literal}';
+                validationMessage = '{/literal}{ts 1="'+clientName[0]+'"}%1 is already assigned to this case. Please select some other client for this case.{/ts}{literal}';
             }
             validationField   = 'change_client_id';
-	    successAction     = "confirm( '{/literal}{ts 1="'+clientName[0]+'" escape="js"}Are you sure you want to reassign this case and all related activities and relationships to %1?{/ts}{literal}' )";
+	    successAction     = "confirm( '{/literal}{ts 1="'+clientName[0]+'"}Are you sure you want to reassign this case and all related activities and relationships to %1?{/ts}{literal}' )";
             break;   	    
     }	
 
@@ -958,12 +905,77 @@ function checkSelection( field ) {
     }
 }
 
+cj( function ( ) {
+   buildCaseActivities( false );
+});
+
+function buildCaseActivities( filterSearch ) {
+	if( filterSearch ) {
+	    oTable.fnDestroy();
+ 	}
+	var count   = 0; 
+	var columns = '';
+	var sourceUrl = {/literal}"{crmURL p='civicrm/ajax/activity' h=0 q='snippet=4&caseID='}{$caseID}"{literal};
+            sourceUrl = sourceUrl + '&cid={/literal}{$contactID}{literal}';
+            sourceUrl = sourceUrl + '&userID={/literal}{$userID}{literal}';   
+
+        cj('#activities-selector th').each( function( ) {
+          if ( cj(this).attr('id') != 'nosort' ) {
+	    columns += '{"sClass": "' + cj(this).attr('class') +'"},';
+	  } else {
+	    columns += '{ "bSortable": false },';
+	  }
+	  count++; 
+	});
+
+	columns    = columns.substring(0, columns.length - 1 );
+	eval('columns =[' + columns + ']');
+
+ 	oTable = cj('#activities-selector').dataTable({
+    	        "bFilter"    : false,
+		"bAutoWidth" : false,
+                "aaSorting"  : [],
+		"aoColumns"  : columns,
+	    	"bProcessing": true,
+		"sPaginationType": "full_numbers",
+		"sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
+	   	"bServerSide": true,
+	   	"sAjaxSource": sourceUrl,
+                "iDisplayLength": 50,
+		"fnDrawCallback": function() { setSelectorClass(); },
+		"fnServerData": function ( sSource, aoData, fnCallback ) {
+
+				if ( filterSearch ) {
+				var activity_deleted = 0;
+    				if ( cj("#activity_deleted:checked").val() == 1 ) {
+        			   activity_deleted = 1;
+    			        }
+				aoData.push(	     
+				{name:'status_id', value: cj("select#status_id").val()},
+				{name:'activity_type_id', value: cj("select#activity_type_filter_id").val()},
+				{name:'activity_date_low', value: cj("#activity_date_low").val()},
+				{name:'activity_date_high', value: cj("#activity_date_high").val() },
+				{name:'activity_deleted', value: activity_deleted }
+				);	
+				}		
+				cj.ajax( {
+			 	"dataType": 'json', 
+				"type": "POST", 
+				"url": sSource, 
+				"data": aoData, 
+				"success": fnCallback
+				} ); 
+				}
+     		}); 
+
+}
 
 function setSelectorClass( ) {
     cj("#activities-selector td:last-child").each( function( ) {
        cj(this).parent().addClass(cj(this).text() );
     });
 }
+
 function printCaseReport( ){
  
  	var dataUrl = {/literal}"{crmURL p='civicrm/case/report/print'}"{literal};

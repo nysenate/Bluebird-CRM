@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -83,7 +83,7 @@ class CRM_Event_Form_Task_Print extends CRM_Event_Form_Task
         // just need to add a javacript to popup the window for printing
         // 
         $this->addButtons( array(
-                                 array ( 'type'      => 'back',
+                                 array ( 'type'      => 'next',
                                          'name'      => ts('Print Participant List'),
                                          'js'        => array( 'onclick' => 'window.print()' ),
                                          'isDefault' => true   ),

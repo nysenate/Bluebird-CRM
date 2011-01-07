@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -116,25 +116,16 @@ WHERE  p.contact_id = c.id
         $sql = "
 SELECT c.id as contact_id,
        p.id as participant_id, 
-       v.id as option_value_id, 
+       l.price_field_value_id as price_field_value_id, 
        l.qty
 FROM   civicrm_contact c,
-       civicrm_contribution o,
        civicrm_participant  p,
-       civicrm_participant_payment pp,
-       civicrm_line_item    l,
-       civicrm_option_group g,
-       civicrm_option_value v
-WHERE  c.id = o.contact_id
-AND    c.id = p.contact_id
+       civicrm_line_item    l       
+WHERE  c.id = p.contact_id
 AND    p.event_id = {$this->_eventID}
-AND    pp.contribution_id = o.id
-AND    pp.participant_id  = p.id
-AND    o.id = l.entity_id
-AND    l.option_group_id = g.id
-AND    v.option_group_id = g.id
-AND    v.label = l.label
-ORDER BY c.id, v.id;
+AND    p.id = l.entity_id
+AND    l.entity_table ='civicrm_participant'
+ORDER BY c.id, l.price_field_value_id;
 ";
 
         $dao = CRM_Core_DAO::executeQuery( $sql,
@@ -149,7 +140,7 @@ ORDER BY c.id, v.id;
                 $rows[$participantID] = array( );
             }
 
-            $rows[$participantID][] = "price_field_{$dao->option_value_id} = {$dao->qty}";
+            $rows[$participantID][] = "price_field_{$dao->price_field_value_id} = {$dao->qty}";
         }
 
         foreach ( array_keys( $rows ) as $participantID ) {
@@ -244,7 +235,10 @@ AND    p.entity_id    = e.id
             foreach ( $priceSet[$dao->price_set_id]['fields'] as $key => $value ) {
                 if ( is_array( $value['options'] ) ) {
                     foreach ( $value['options'] as $oKey => $oValue ) {
-                        $this->_columns[$oValue['description']] = "price_field_{$oValue['id']}";
+                        $columnHeader = CRM_Utils_Array::value( 'label', $value );
+                        if ( CRM_Utils_Array::value( 'html_type', $value) != 'Text' ) $columnHeader .= ' - '. $oValue['label'];
+                            
+                        $this->_columns[$columnHeader] = "price_field_{$oValue['id']}";
                     }
                 }
             }

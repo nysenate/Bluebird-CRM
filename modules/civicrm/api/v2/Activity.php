@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -32,7 +32,7 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Activity
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Activity.php 29282 2010-08-18 07:33:00Z ashwini $
+ * @version $Id: Activity.php 31031 2010-12-02 10:27:45Z deepak $
  *
  */
 
@@ -114,7 +114,7 @@ function &civicrm_activity_create( &$params )
 function civicrm_activity_get( $params, $returnCustom = false ) {
     _civicrm_initialize( );
     
-    $activityId = $params['activity_id'];
+    $activityId = CRM_Utils_Array::value( 'activity_id', $params );
     if ( empty( $activityId ) ) {
         return civicrm_create_error( ts ("Required parameter not found" ) );
     }
@@ -181,8 +181,18 @@ function &civicrm_activity_update( &$params )
         return $errors;
     }
    
+    // processing for custom data
+    $values = array();
+    _civicrm_custom_format_params( $params, $values, 'Activity' );
+    if ( ! empty($values['custom']) ) {
+        $params['custom'] = $values['custom'];
+    }
+    
     $activity = CRM_Activity_BAO_Activity::create( $params );
-    return $activity;
+    $activityArray = array();
+    _civicrm_object_to_array( $activity, $activityArray );
+    
+    return $activityArray;
 }
 
 /**
@@ -257,15 +267,32 @@ function _civicrm_activity_check_params ( &$params, $addMode = false )
     if ( empty( $params ) ) {
         return civicrm_create_error( ts( 'Input Parameters empty' ) );
     }
-
+    
     $contactIds = array( 'source'   => CRM_Utils_Array::value( 'source_contact_id', $params ),
                          'assignee' => CRM_Utils_Array::value( 'assignee_contact_id', $params ),
                          'target'   => CRM_Utils_Array::value( 'target_contact_id', $params )
                          );
-
+    
     foreach ( $contactIds as $key => $value ) {
-        if ( $value &&
-             !CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $value, 'id' ) ) {
+        if ( empty( $value ) ) {
+            continue;
+        }
+        $valueIds = array( $value );
+        if ( is_array( $value ) ) {
+            $valueIds = array( );
+            foreach ( $value as $id ) {
+                if ( $id ) $valueIds[$id] = $id;
+            }
+        }
+        if ( empty( $valueIds ) ) {
+            continue;
+        }
+        
+        $sql = '
+SELECT  count(*) 
+  FROM  civicrm_contact 
+ WHERE  id IN (' . implode( ', ', $valueIds ) . ' )';
+        if ( count( $valueIds ) !=  CRM_Core_DAO::singleValueQuery( $sql ) ) {
             return civicrm_create_error( ts( 'Invalid %1 Contact Id', array( 1 => ucfirst( $key ) ) ) );
         }
     }
@@ -296,8 +323,8 @@ function _civicrm_activity_check_params ( &$params, $addMode = false )
     }
     
     require_once 'CRM/Core/PseudoConstant.php';
-    $activityTypes = CRM_Core_PseudoConstant::activityType( true, true, false, 'name' );
-        
+    $activityTypes = CRM_Core_PseudoConstant::activityType( true, true, true, 'name' );
+
     // check if activity type_id is passed in
     if ( $addMode && !isset( $params['activity_name'] )  && !isset( $params['activity_type_id'] ) ) {
         //when name AND id are both absent
@@ -320,14 +347,20 @@ function _civicrm_activity_check_params ( &$params, $addMode = false )
             return civicrm_create_error( ts('Invalid Activity Type ID') );
         }
     }
-    
+        
     // check for activity status is passed in
-    if ( isset( $params['status_id'] ) && is_numeric( $params['status_id'] ) ) {
+    if ( isset( $params['status_id'] ) ) {
         require_once "CRM/Core/PseudoConstant.php";
         $activityStatus = CRM_Core_PseudoConstant::activityStatus( );
         
-        if ( !array_key_exists( $params['status_id'], $activityStatus ) ) { 
+        if ( is_numeric( $params['status_id'] ) && !array_key_exists( $params['status_id'], $activityStatus ) ) {             
             return civicrm_create_error( ts('Invalid Activity Status') );
+        } elseif ( !is_numeric( $params['status_id'] ) ) {
+            $statusId = array_search( $params['status_id'], $activityStatus );            
+            
+            if ( !is_numeric( $statusId ) ) {
+                return civicrm_create_error( ts('Invalid Activity Status') );
+            }
         }
     }
     
@@ -343,7 +376,6 @@ function _civicrm_activity_check_params ( &$params, $addMode = false )
     // check for activity duration minutes
     if ( isset( $params['duration_minutes'] ) && !is_numeric( $params['duration_minutes'] ) ) {
         return civicrm_create_error( ts('Invalid Activity Duration (in minutes)') );
-        
     }
         
     // check for source contact id

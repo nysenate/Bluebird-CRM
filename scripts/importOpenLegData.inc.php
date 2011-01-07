@@ -11,7 +11,7 @@
 
 $script_dir = dirname(__FILE__);
 
-define('OPENLEG_ROOT', 'http://open.nysenate.gov/legislation/search/?term=otype:bill%20AND%20when:[1276128000000%20TO%202276689599000]&format=json');
+define('OPENLEG_ROOT', 'http://open.nysenate.gov:8080/legislation/search/?term=otype:bill&format=json');
 
 #hard coded, represents hidden issue code tag.
 define('TAG_PARENT_ID', 292);
@@ -45,6 +45,9 @@ $issueCodes = array();
 $done = false;
 $i = 1;
 
+// Allow 6 minutes for this script to run, then return a fatal error.
+set_time_limit(360);
+
 while (!$done) {
   $json = openleg_retrieve("&pageIdx=$i&pageSize=$batch");
   if (count($json) == 1) {
@@ -55,26 +58,16 @@ while (!$done) {
   echo "Got ".count($json)." results for page $i in batches of $batch\n";
 
   foreach ($json as $key=>$bill) {
-    // kz: need to munge some data for now, until we move to OpenLeg API 2.0
-    /*
-    ** Data munging rules:
-    **   1. Remove bill ID from the start of the title.
-    **   2. Use bill ID for name, but add spaces around the hyphen.
-    */
-    $bill_id_pat = preg_quote($bill->id);
-    $title = preg_replace("/^$bill_id_pat: */", '', $bill->title);
+    $title = $bill->title;
     $summary = "";
     if (isset($bill->summary)) {
       $summary = " - ".$bill->summary;
     }
     $size = count($issueCodes);
-    $issueCodes[$size]['name'] = cleanForDb(str_replace("-", " - ", $bill->id));
+    $issueCodes[$size]['name'] = cleanForDb($bill->billno." - ".$bill->year);
     $issueCodes[$size]['description'] = cleanForDb($title.$summary);
     $issueCodes[$size]['parent_id'] = TAG_PARENT_ID;
   }
-
-  // Allow 6 minutes for this script to run, then return a fatal error.
-  set_time_limit(360);
   ++$i;
 }
 

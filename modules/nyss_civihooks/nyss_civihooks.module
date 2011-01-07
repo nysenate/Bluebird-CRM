@@ -29,8 +29,7 @@ function nyss_civihooks_getfile() {
 	$file 	  = $_REQUEST['file'];
 	$fullpath = $config->uploadDir.'printProduction/'.$file;
 	//echo "fullpath: $fullpath file: $file";
-	//exit;	
-	
+//exit;	
 	if ( !file_exists($fullpath) || !$file ) {
 		echo "No file provided. Make sure you have entered the full URL.<br />";
 		exit();
@@ -53,18 +52,19 @@ function nyss_civihooks_getfile() {
 	//spit out the header
 	foreach ($headers as $header) header($header);
 
-	$fh = fopen($fullpath, "r");
+        $fh = fopen($fullpath, "r");
 
-	if (!$fh) {
-		echo "No file provided. File requested is: $fullpath.";
-		exit;
-	}
+        if (!$fh) {
 
-	while (!feof($fh)) {
-		echo fread($fh, 1024);
-		ob_flush();
-	}
-	fclose($fh);
+                echo "no file provided. file requested is: $fullpath";
+                exit;
+        }
+
+        while (!feof($fh)) {
+              echo fread($fh, 1024);
+              ob_flush();
+        }
+        fclose($fh);
 }
 
 function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id ) {
@@ -160,6 +160,55 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         $form->addRule('uploadFile', ts('A valid file must be uploaded.'), 'uploadedfile');
 		$form->_rules['uploadFile'][1]['message'] = 'File size should be less than 1 MBytes (1048576 bytes)';
 
+	}
+	
+	//Construct some arrays and values to be passed to the tag tab
+	if ( $formName == 'CRM_Tag_Form_Tag' ) {
+	
+		$contactId = $form->getVar( '_entityID' );
+		
+		//Construct list of tags, comma-separated
+		//CRM_Core_Error::debug($form);
+		$contactTagsList = array();
+		$contactTags = CRM_Core_BAO_EntityTag::getContactTags( $contactId );
+        if ( !empty( $contactTags ) ) {
+            $contactTagsList = implode( ', ', $contactTags );
+        }
+		$form->assign( 'contactTagsList', $contactTagsList );
+		
+		//Construct list of issue codes, comma-separated
+		$contactIssueCode_list = array();
+		$contactIssueCode_item = array();
+		$contactIssueCodes = CRM_Core_BAO_EntityTag::getChildEntityTags( 291, $contactId );
+        foreach ( $contactIssueCodes as $contactIssueCode ) {
+			$contactIssueCode_item[] = $contactIssueCode['name'];
+		}
+		$contactIssueCode_list = implode( ', ', $contactIssueCode_item );
+		$form->assign( 'contactIssueCode_list', $contactIssueCode_list );
+		
+		//Construct list of Legislative Positions
+		$legpos_list = array();
+		$legpos_description = array();
+		$legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails( 292, $contactId );
+		//CRM_Core_Error::debug($legpositions);
+		foreach ( $legpositions as $legposition ) {
+			if ( $legposition['description'] && $legposition['description'] != "No description available." ) {
+				$legpos_description[] = $legposition['description'];
+			}
+		}
+		$legpos_list = implode( ', ', $legpos_description );
+		$form->assign( 'legpositions', $legpositions );
+		$form->assign( 'legpos_description', $legpos_description );
+		$form->assign( 'legpos_list', $legpos_list );
+	
+	}
+	
+	//set English as default preferred language
+	if ( $formName == 'CRM_Contact_Form_Contact' ) {
+		
+		$defaults['preferred_language'] = 'en';
+        $form->setDefaults( $defaults );
+		
 	}
 	
 } //close buildForm

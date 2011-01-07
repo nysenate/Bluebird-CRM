@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -26,7 +26,7 @@
 {if $paid} {* We retrieve this tpl when event is selected - keep it empty if event is not paid *} 
     <table class="form-layout">
     {if $priceSet}
-    	{if $action eq 2} {* Updating *}
+    	{if $action eq 2 and $hasPayment} {* Updating *}
             {if $lineItem}	
                 <tr class="crm-event-eventfees-form-block-line_items">
                     <td class="label">{ts}Event Fees{/ts}</td>
@@ -51,12 +51,12 @@
      <tr>
      <td class ='html-adjust' colspan=2>
      	<table class="form-layout" style="width: auto;">
-        {if $discount}
+        {if $discount and $hasPayment}
             <tr class="crm-event-eventfees-form-block-discount"><td class="label">&nbsp;&nbsp;{ts}Discount Set{/ts}</td><td class="view-value">{$discount}</td></tr>
         {elseif $form.discount_id.label}
             <tr class="crm-event-eventfees-form-block-discount_id"><td class="label">&nbsp;&nbsp;{$form.discount_id.label}</td><td>{$form.discount_id.html}</td></tr>
         {/if}
-        {if $action EQ 2}
+        {if $action EQ 2 and $hasPayment}
             <tr class="crm-event-eventfees-form-block-fee_level"><td class="label">&nbsp;&nbsp;{ts}Event Level{/ts}</td><td class="view-value"><span class="bold">{$fee_level}&nbsp;{if $fee_amount}- {$fee_amount|crmMoney:$fee_currency}{/if}</span></td></tr>
         {else}
             <tr class="crm-event-eventfees-form-block-fee_amount"><td class="label">&nbsp;&nbsp;{$form.amount.label}</td><td>{$form.amount.html}
@@ -70,7 +70,7 @@
      </tr>
     {/if}
 
-    {if $accessContribution and ! $participantMode and ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId) }
+    { if $accessContribution and ! $participantMode and ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId) }
         <tr class="crm-event-eventfees-form-block-record_contribution">
             <td class="label">{$form.record_contribution.label}</td>
             <td>{$form.record_contribution.html}<br />
@@ -132,6 +132,10 @@
                 <span class="description">{ts 1=$email}Automatically email a confirmation to %1?{/ts}</span></td>
               {/if}
         </tr>
+	<tr id="from-email" class="crm-event-eventfees-form-block-from_email_address">
+            <td class="label">{$form.from_email_address.label}</td>
+            <td>{$form.from_email_address.html} {help id ="id-from_email" file="CRM/Contact/Form/Task/Email.hlp"}</td>
+    	</tr>
         <tr id='notice' class="crm-event-eventfees-form-block-receipt_text">
  			<td class="label">{$form.receipt_text.label}</td> 
             <td><span class="description">
@@ -155,6 +159,10 @@
               {/if}
             </td>
         </tr>
+	<tr id="from-email" class="crm-event-eventfees-form-block-from_email_address">
+            <td class="label">{$form.from_email_address.label}</td>
+            <td>{$form.from_email_address.html} {help id ="id-from_email" file="CRM/Contact/Form/Task/Email.hlp"}</td>
+    	</tr>
         <tr id='notice' class="crm-event-eventfees-form-block-receipt_text">
     		<td class="label">{$form.receipt_text.label}</td> 
             <td><span class="description">
@@ -175,9 +183,17 @@
     field_type          ="radio"
     invert              = 0
 }
+{include file="CRM/common/showHideByFieldValue.tpl" 
+    trigger_field_id    ="send_receipt"
+    trigger_value       =""
+    target_element_id   ="from-email" 
+    target_element_type ="table-row"
+    field_type          ="radio"
+    invert              = 0
+}
 {/if}
 
-{if $action eq 1 and !$participantMode} 
+{if ($action eq 1 or ( $action eq 2 and !$hasPayment) ) and !$participantMode} 
 {include file="CRM/common/showHideByFieldValue.tpl" 
     trigger_field_id    ="payment_instrument_id"
     trigger_value       = '4'
@@ -192,13 +208,13 @@
 <script type="text/javascript">
 {literal}
 cj( function( ) {
-    cj("#contact").blur( function( ) {
+    cj("#contact_1").blur( function( ) {
         checkEmail( );
     } );
     checkEmail( );
 });
 function checkEmail( ) {
-    var contactID = cj("input[name=contact_select_id]").val();
+    var contactID =  cj("input[name=contact_select_id[1]]").val();
     if ( contactID ) {
         var postUrl = "{/literal}{crmURL p='civicrm/ajax/checkemail' h=0}{literal}";
         cj.post( postUrl, {contact_id: contactID},

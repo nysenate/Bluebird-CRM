@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -37,11 +37,11 @@
      <tr class="crm-pledge-form-block-amount">
         <td class="label">{ts}Total Pledge Amount{/ts}</td>
         <td><span class="bold">{$amount|crmMoney}</span>
-            {if $originalPledgeAmount}<div class="messages status"><div class="icon inform-icon"></div>&nbsp;{ts 1=$originalPledgeAmount|crmMoney} Pledge total has changed due to payment adjustments. Original pledge amount was %1.{/ts}</div>{/if}
+            {if $originalPledgeAmount}<div class="messages status"><div class="icon inform-icon"></div>{ts 1=$originalPledgeAmount|crmMoney} Pledge total has changed due to payment adjustments. Original pledge amount was %1.{/ts}</div>{/if}
         </td>
      </tr>
-     <tr class="crm-pledge-form-block-installments"><td class="label">{ts}To be paid in{/ts}</td><td>{$installments}&nbsp;&nbsp;{ts}installments of{/ts} {$original_installment_amount|crmMoney}&nbsp;&nbsp;{ts}every{/ts}&nbsp;&nbsp;{$frequency_interval}&nbsp;{$frequencyUnit}</td></tr>
- 	 <tr><td class="label">{ts}Payments are due on the{/ts}</td><td>{$frequency_day}&nbsp;day of the period</td></tr>
+     <tr class="crm-pledge-form-block-installments"><td class="label">{ts}To be paid in{/ts}</td><td>{$installments}{ts} installments of {/ts}{$original_installment_amount|crmMoney}{ts} every {/ts} {$frequency_interval} {$frequencyUnit}</td></tr>
+ 	 <tr><td class="label">{ts}Payments are due on the{/ts}</td><td>{$frequency_day} day of the period</td></tr>
 
     {if $start_date}     
     	 <tr class="crm-pledge-form-block-create_date"><td class="label">{ts}Pledge Made{/ts}</td><td>{$create_date|truncate:10:''|crmDate}</td></tr>
@@ -66,7 +66,7 @@
     {/if}   
         <tr class="crm-pledge-form-block-pledge_status"><td class="label">{ts}Pledge Status{/ts}</td><td{if $status_id eq 3} class="font-red bold"{/if}>{$pledge_status} </td></tr>
     {if $honor_contact_id}
-            <tr class="crm-pledge-form-block-honor_type"><td class="label">{$honor_type}</td><td>{$honor_display}&nbsp;</td></tr>
+            <tr class="crm-pledge-form-block-honor_type"><td class="label">{$honor_type}</td><td>{$honor_display}</td></tr>
     {/if}
         <tr class="crm-pledge-form-block-initial_reminder_day"><td class="label">{ts}Initial Reminder Day{/ts}</td><td>{$initial_reminder_day}&nbsp;days prior to schedule date </td></tr>
         <tr class="crm-pledge-form-block-max_reminders"><td class="label">{ts}Maximum Reminders Send{/ts}</td><td>{$max_reminders}&nbsp;</td></tr>

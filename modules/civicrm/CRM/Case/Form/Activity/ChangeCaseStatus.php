@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -61,17 +61,21 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
     {
         $defaults = array();
         // Retrieve current case status
-        $defaults['case_status_id'] = CRM_Core_DAO::getFieldValue( 'CRM_Case_DAO_Case',
-                                                                  $this->_caseId,
-                                                                  'status_id', 'id' );
+        $defaults['case_status_id'] = $form->_defaultCaseStatus;
         return $defaults;
     }
 
     static function buildQuickForm( &$form ) 
     { 
-        require_once 'CRM/Core/OptionGroup.php';        
-       
-        $form->_caseStatus  = CRM_Core_OptionGroup::values('case_status');
+        require_once 'CRM/Case/PseudoConstant.php';
+        $form->_caseStatus        = CRM_Case_PseudoConstant::caseStatus( );
+        $form->_defaultCaseStatus = CRM_Core_DAO::getFieldValue( 'CRM_Case_DAO_Case', $form->_caseId, 'status_id' );
+
+        if ( !array_key_exists( $form->_defaultCaseStatus, $form->_caseStatus ) ) {
+            $form->_caseStatus[$form->_defaultCaseStatus] = CRM_Core_OptionGroup::getLabel( 'case_status', 
+                                                                                            $form->_defaultCaseStatus, 
+                                                                                            false );
+        }
         $form->add('select', 'case_status_id',  ts( 'Case Status' ),  
                     $form->_caseStatus , true  );
     }
@@ -115,8 +119,34 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
         if ( CRM_Utils_Array::value( $params['case_status_id'], $groupingValues ) == 'Closed' 
              && CRM_Utils_Array::value( 'activity_date_time', $params ) ) {
             $params['end_date'] = $params['activity_date_time'];
+            
+            // End case-specific relationships (roles)
+            foreach( $params['target_contact_id'] as $cid ) {
+                $rels = CRM_Case_BAO_Case::getCaseRoles( $cid, $params['case_id'] );
+                // FIXME: Is there an existing function to close a relationship?
+                $query = 'UPDATE civicrm_relationship SET end_date=%2 WHERE id=%1';
+                foreach ( $rels as $relId => $relData ) {
+                    $relParams = array( 1 => array( $relId, 'Integer' ),
+                                        2 => array( $params['end_date'], 'Timestamp' ),
+                                      );
+                    CRM_Core_DAO::executeQuery( $query, $relParams );
+                }
+            }
+            
         } else if ( CRM_Utils_Array::value( $params['case_status_id'], $groupingValues ) == 'Opened' ) {
             $params['end_date'] = "null";
+            
+           // Reopen case-specific relationships (roles)
+            foreach( $params['target_contact_id'] as $cid ) {
+                $rels = CRM_Case_BAO_Case::getCaseRoles( $cid, $params['case_id'] );
+                // FIXME: Is there an existing function?
+                $query = 'UPDATE civicrm_relationship SET end_date=NULL WHERE id=%1';
+                foreach ( $rels as $relId => $relData ) {
+                    $relParams = array( 1 => array( $relId, 'Integer' ),
+                                      );
+                    CRM_Core_DAO::executeQuery( $query, $relParams );
+                }
+            }
         }
 
         if ($activity->subject == 'null'){
@@ -126,7 +156,7 @@ class CRM_Case_Form_Activity_ChangeCaseStatus
                                    );
             $activity->save();            
         }
-        
+                
         // FIXME: does this do anything ?
         $params['statusMsg'] = ts('Case Status changed successfully.');
     }

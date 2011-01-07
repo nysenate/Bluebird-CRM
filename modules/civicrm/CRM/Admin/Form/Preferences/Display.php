@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,7 +30,7 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2010
- * $Id: Display.php 28934 2010-07-28 18:44:12Z mover $
+ * $Id: Display.php 30467 2010-11-02 07:43:49Z sushant $
  *
  */
 
@@ -83,10 +83,28 @@ class CRM_Admin_Form_Preferences_Display extends CRM_Admin_Form_Preferences
      */
     public function buildQuickForm( ) 
     {
-        $this->addElement( 'select', 'wysiwyg_editor', ts('WYSIWYG Editor'), 
-                           array( '' => ts( 'Textarea' ) ) + CRM_Core_PseudoConstant::wysiwygEditor( ),null );
+        $wysiwyg_options = array( '' => ts( 'Textarea' ) ) + CRM_Core_PseudoConstant::wysiwygEditor( );
+
+        $config =& CRM_Core_Config::singleton();
+        
+		//if not using Joomla, remove Joomla default editor option
+		if ( $config->userFramework != 'Joomla' ) {
+			unset( $wysiwyg_options[3] );
+		}
+        $this->addElement( 'select', 'wysiwyg_editor', ts('WYSIWYG Editor'), $wysiwyg_options, null );
+
         $this->addElement('textarea','display_name_format', ts('Individual Display Name Format'));  
-        $this->addElement('textarea','sort_name_format',    ts('Individual Sort Name Format'));  
+        $this->addElement('textarea','sort_name_format',    ts('Individual Sort Name Format'));
+                
+        require_once 'CRM/Core/OptionGroup.php';
+        $editOptions = CRM_Core_OptionGroup::values( 'contact_edit_options', false, false, false, 'AND v.filter = 0' );
+        $this->assign( 'editOptions', $editOptions );
+        
+        $contactBlocks = CRM_Core_OptionGroup::values( 'contact_edit_options', false, false, false, 'AND v.filter = 1' );
+        $this->assign( 'contactBlocks', $contactBlocks );
+
+        $this->addElement('hidden','contact_edit_prefences', null, array('id'=> 'contact_edit_prefences') );
+
         parent::buildQuickForm( );
     }
 
@@ -104,6 +122,19 @@ class CRM_Admin_Form_Preferences_Display extends CRM_Admin_Form_Preferences
         }
 
         $this->_params = $this->controller->exportValues( $this->_name );
+        
+        if ( CRM_Utils_Array::value( 'contact_edit_prefences', $this->_params ) ) {
+            $preferenceWeights = explode( ',' , $this->_params['contact_edit_prefences'] );
+            foreach( $preferenceWeights as $key => $val ) {
+                if ( !$val ) {
+                    unset($preferenceWeights[$key]);
+                }
+            }
+            require_once 'CRM/Core/BAO/OptionValue.php';
+            $opGroupId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionGroup' , 'contact_edit_options', 'id', 'name' );
+            CRM_Core_BAO_OptionValue::updateOptionWeights( $opGroupId, array_flip($preferenceWeights) );
+        }
+        
         $this->_config->editor_id = $this->_params['wysiwyg_editor'];
         $this->_config->display_name_format = $this->_params['display_name_format'];
         $this->_config->sort_name_format    = $this->_params['sort_name_format'];

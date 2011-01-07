@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -505,8 +505,14 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             //if relationship type change and previously it was
             //employer / emplyee relationship with current employer
             //than clear the current employer. CRM-3235.
-            if ( CRM_Utils_Array::value( 'current_employee_id', $this->_values ) &&
-                 $relationshipTypeId != $this->_values['relationship_type_id'] ) {
+            
+            //make sure we has to have employer id before firing queries, CRM-7306
+            $employerId = CRM_Utils_Array::value( 'current_employee_id', $this->_values );
+            $isDisabled = true;
+            if ( CRM_Utils_Array::value( 'is_active', $params ) ) $isDisabled = false;
+            $relChanged = true;
+            if ( $relationshipTypeId == $this->_values['relationship_type_id'] ) $relChanged = false;  
+            if ( $employerId && ( $isDisabled || $relChanged ) ) {
                 require_once 'CRM/Contact/BAO/Contact/Utils.php';
                 CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer( $this->_values['current_employee_id'] );
             }
@@ -576,7 +582,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
         
         
         // Membership for related contacts CRM-1657
-        if ( CRM_Core_Permission::access( 'CiviMember' ) ) {
+        if ( CRM_Core_Permission::access( 'CiviMember' ) && ( !$duplicate ) ) {
             CRM_Contact_BAO_Relationship::relatedMemberships( $this->_contactId, 
                                                               $params, $ids, 
                                                               $this->_action );
@@ -588,7 +594,8 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             if ( CRM_Utils_Array::value( 'employee_of', $params ) ) { 
                 $orgId = $params['employee_of'];
             } else if ( $this->_action & CRM_Core_Action::UPDATE ) {
-                if ( CRM_Utils_Array::value( 'is_current_employer', $params ) ) {
+                if ( CRM_Utils_Array::value( 'is_current_employer', $params ) &&
+                     CRM_Utils_Array::value( 'is_active', $params ) ) {
                     if ( CRM_Utils_Array::value( 'contactTarget', $ids ) != 
                          CRM_Utils_Array::value( 'current_employer_id', $this->_values ) )  {
                         $orgId = CRM_Utils_Array::value( 'contactTarget', $ids );

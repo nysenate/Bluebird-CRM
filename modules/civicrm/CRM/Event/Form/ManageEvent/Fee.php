@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -250,6 +250,9 @@ class CRM_Event_Form_ManageEvent_Fee extends CRM_Event_Form_ManageEvent
                          null, 
                          null,
                          array( 'onclick' => "return showHideByValue('is_monetary','0','event-fees','block','radio',false);" ) );
+        
+        //add currency element.
+        $this->addCurrency( 'currency', ts( 'Currency' ), false );
         
         require_once 'CRM/Contribute/PseudoConstant.php';
         $paymentProcessor =& CRM_Core_PseudoConstant::paymentProcessor( );
@@ -569,7 +572,7 @@ class CRM_Event_Form_ManageEvent_Fee extends CRM_Event_Form_ManageEvent
         }
                 
         if ( $params['is_monetary'] ) {
-            if ( $params['price_set_id'] ) {
+            if ( CRM_Utils_Array::value( 'price_set_id',  $params ) ) {
                 CRM_Price_BAO_Set::addTo( 'civicrm_event', $this->_id, $params['price_set_id'] );
             } else {
                 // if there are label / values, create custom options for them

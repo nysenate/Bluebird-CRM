@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -42,6 +42,18 @@
           <td>
             {$form.contactUndelete.html}<br />
             <p class="description">{ts}If enabled, deleted contacts will be moved to trash (instead of being destroyed). Users with the proper permission are able to search for the deleted contacts and restore them (or delete permanently).{/ts}</p>
+          </td>
+        </tr>
+        <tr class="crm-miscellaneous-form-block-logging">
+          <td class="label">{$form.logging.label}</td>
+          <td>
+            {$form.logging.html}<br />
+          {if $validTriggerPermission}
+            <p class="description">{ts}If enabled, all actions performed on non-cache tables will be logged (in the respective log_* tables).{/ts}</p>
+            <div class="status message">{ts}Logging functionality is currently in beta. Please test this feature on a copy of your database prior to using it on a production site.{/ts}</div>
+          {else}
+            <p class="description">{ts}In order to use this functionality, the installation's database user must have privileges to create triggers (in MySQL 5.0 – and in MySQL 5.1 if binary logging is enabled – this means the SUPER privilege). This install either does not seem to have the required privilege enabled.{/ts}&nbsp;{ts}This functionality cannot be enabled on multilingual installations.{/ts}</p>
+           {/if}
           </td>
         </tr>
         <tr class="crm-miscellaneous-form-block-versionCheck">

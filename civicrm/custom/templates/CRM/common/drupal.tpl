@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -27,10 +27,9 @@
 {include file="CRM/common/debug.tpl"}
 {/if}
 
-
+{*NYSS*}
 {include file="Custom/header.tpl"}
 <div class="clear"></div>
-
 
 <div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
 
@@ -54,6 +53,7 @@
 {/if*}
 
 {include file="CRM/common/action.tpl"}
+{*NYSS remove nav*}
 
 {* temporary hack to fix wysiysg editor failure if js compression is on *}
 {if $defaultWysiwygEditor eq 1}

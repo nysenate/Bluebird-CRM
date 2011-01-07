@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -86,7 +86,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
         
         if ( $form->_values['is_monetary'] && $form->_amount > 0.0 && is_array( $form->_paymentProcessor ) ) {
             require_once 'CRM/Core/Payment.php';
-            $payment =& CRM_Core_Payment::singleton( $form->_mode, 'Contribute', $form->_paymentProcessor, $form );
+            $payment =& CRM_Core_Payment::singleton( $form->_mode, $form->_paymentProcessor, $form );
         }
         
         //fix for CRM-2062
@@ -128,7 +128,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
                     return $membershipResult;
                 } else {
                     if ( ! $form->_params['is_pay_later'] ) {
-                        $result =& $payment->doTransferCheckout( $form->_params );
+                        $result =& $payment->doTransferCheckout( $form->_params, 'contribute' );
                     } else {
                         // follow similar flow as IPN
                         // send the receipt mail
@@ -198,9 +198,18 @@ class CRM_Contribute_BAO_Contribution_Utils {
         
         if ( $component == 'membership' ) {
             $membershipResult = array( );
-        }       
+        } 
         
         if ( is_a( $result, 'CRM_Core_Error' ) ) {
+            
+            //make sure to cleanup db for recurring case.
+            if ( CRM_Utils_Array::value( 'contributionID', $paymentParams ) ) {
+                CRM_Contribute_BAO_Contribution::deleteContribution( $paymentParams['contributionID'] );
+            }
+            if ( CRM_Utils_Array::value( 'contributionRecurID', $paymentParams ) ) {
+                CRM_Contribute_BAO_ContributionRecur::deleteRecurContribution( $paymentParams['contributionRecurID'] );
+            }
+            
             if ( $component !== 'membership' ) {
                 CRM_Core_Error::displaySessionError( $result );
                 CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/contribute/transact', 
@@ -286,17 +295,18 @@ class CRM_Contribute_BAO_Contribution_Utils {
             $param = array( 1 => array( $param, 'Integer' ) );
         }
         
-        $query = 
-        "SELECT sum(contrib.total_amount) AS ctAmt,
-                MONTH( contrib.receive_date) AS contribMonth
-        FROM civicrm_contribution AS contrib,
-             civicrm_contact AS contact
-        WHERE contrib.contact_id = contact.id
-              AND contrib.is_test = 0
-              AND contrib.contribution_status_id = 1
-              AND date_format(contrib.receive_date,'%Y') = %1 
-        GROUP BY contribMonth
-        ORDER BY month(contrib.receive_date)";
+        $query = "
+    SELECT   sum(contrib.total_amount) AS ctAmt,
+             MONTH( contrib.receive_date) AS contribMonth
+      FROM   civicrm_contribution AS contrib
+INNER JOIN   civicrm_contact AS contact ON ( contact.id = contrib.contact_id ) 
+     WHERE   contrib.contact_id = contact.id
+       AND   ( contrib.is_test = 0 OR contrib.is_test IS NULL )
+       AND   contrib.contribution_status_id = 1
+       AND   date_format(contrib.receive_date,'%Y') = %1 
+       AND   contact.is_deleted = 0 
+  GROUP BY   contribMonth
+  ORDER BY   month(contrib.receive_date)";
         
         $dao = CRM_Core_DAO::executeQuery( $query, $param );
         
@@ -320,14 +330,16 @@ class CRM_Contribute_BAO_Contribution_Utils {
      */
     static function contributionChartYearly( ) 
     {
-        $query = 
-        "SELECT sum(contrib.total_amount) AS ctAmt,
-            year(contrib.receive_date) as contribYear
-        FROM civicrm_contribution AS contrib
-        WHERE contrib.is_test = 0
-              AND contrib.contribution_status_id = 1
-        GROUP BY contribYear
-        ORDER BY contribYear";
+        $query = '
+    SELECT   sum(contrib.total_amount) AS ctAmt,
+             year(contrib.receive_date) as contribYear
+      FROM   civicrm_contribution AS contrib
+INNER JOIN   civicrm_contact contact ON ( contact.id = contrib.contact_id ) 
+     WHERE   ( contrib.is_test = 0 OR contrib.is_test IS NULL )
+       AND   contrib.contribution_status_id = 1
+       AND   contact.is_deleted = 0 
+  GROUP BY   contribYear
+  ORDER BY   contribYear';
         $dao = CRM_Core_DAO::executeQuery( $query );
         
         $params = null;

@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -146,6 +146,15 @@ class CRM_Utils_System_Joomla {
             $document->addScript( "{$config->resourceBase}js/Common.js" );
     
             $template = CRM_Core_Smarty::singleton( );
+
+            // CRM-6819 + CRM-7086
+            $lang     = substr($config->lcMessages, 0, 2);
+            $l10nFile = "{$config->smartyDir}../jquery/jquery-ui-1.8.5/development-bundle/ui/i18n/jquery.ui.datepicker-{$lang}.js";
+            $l10nURL  = "{$config->resourceBase}packages/jquery/jquery-ui-1.8.5/development-bundle/ui/i18n/jquery.ui.datepicker-{$lang}.js";
+            if (file_exists($l10nFile)) {
+                $template->assign('l10nURL', $l10nURL);
+            }
+
             $document->addCustomTag( $template->fetch( 'CRM/common/jquery.tpl' ) );
             $document->addCustomTag( $template->fetch( 'CRM/common/action.tpl' ) );
         }
@@ -338,8 +347,12 @@ class CRM_Utils_System_Joomla {
 
     /* 
      * load joomla bootstrap
+     *
+     * @param $name string  optional username for login
+     * @param $pass string  optional password for login
      */
-    static function loadBootStrap( ) {
+    static function loadBootStrap($user = null, $pass = null, $uid = null )
+    {
         return true;
     }
     

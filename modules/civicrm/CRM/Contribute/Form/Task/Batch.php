@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -153,8 +153,13 @@ class CRM_Contribute_Form_Task_Batch extends CRM_Contribute_Form_Task {
             foreach ( $this->_fields as $name => $field ) {
                 if ( $customFieldID = CRM_Core_BAO_CustomField::getKeyID( $name ) ) {
                     $customValue = CRM_Utils_Array::value( $customFieldID, $customFields );
-                    if ( ( $typeId == $customValue['extends_entity_column_value'] ) ||
-                         CRM_Utils_System::isNull( $customValue['extends_entity_column_value'] ) ) {
+                    if ( CRM_Utils_Array::value( 'extends_entity_column_value', $customValue ) ) {
+                        $entityColumnValue = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, 
+                                                      $customValue['extends_entity_column_value'] );
+                    }
+
+                    if ( CRM_Utils_Array::value( $typeId, $entityColumnValue ) ||
+                         CRM_Utils_System::isNull( $entityColumnValue[$typeId] ) ) {
                         CRM_Core_BAO_UFGroup::buildProfile( $this, $field, null, $contributionId );
                     }
                 } else {

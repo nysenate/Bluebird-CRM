@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -196,12 +196,44 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
             $this->_returnProperties['contact_type'] = 1;
             $this->_returnProperties['contact_sub_type'] = 1;
             $this->_returnProperties['sort_name'   ] = 1;
-            //$this->_returnProperties['groups'      ] = 1;
         }
-        
+
+        // rectify params to what proximity search expects if there is a value for prox_distance
+        // CRM-7021
+        if ( !empty( $this->_params ) ) { 
+            foreach ($this->_params as $param){
+                if ($param[0] == 'prox_distance'){
+                    // add prox_ prefix to these
+                    $param_alter = array('street_address', 'city', 'postal_code', 'state_province', 'country');
+
+                    foreach ($this->_params as $key => $_param){
+                        if (in_array($_param[0], $param_alter)){
+                            $this->_params[$key][0] = 'prox_' . $_param[0];
+
+                            // _id suffix where needed
+                            if ($_param[0] == 'country' || $_param[0] == 'state_province'){
+                                $this->_params[$key][0] .= '_id';
+
+                                // flatten state_province array
+                                if (is_array($this->_params[$key][2])){
+                                    $this->_params[$key][2] = $this->_params[$key][2][0];
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
         $this->_query   = new CRM_Contact_BAO_Query( $this->_params,
-                                                      $this->_returnProperties, null, $includeContactIds,
-                                                      false, 1, false, $searchDescendentGroups );
+                                                     $this->_returnProperties, 
+                                                     null, 
+                                                     $includeContactIds,
+                                                     false, 
+                                                     CRM_Contact_BAO_Query::MODE_CONTACTS, 
+                                                     false, 
+                                                     $searchDescendentGroups );
         $this->_options =& $this->_query->_options;
     }//end of constructor
 
@@ -651,28 +683,30 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
                 $row['checkbox'] = CRM_Core_Form::CB_PREFIX . $result->contact_id;
 
                 if ( CRM_Utils_Array::value( 'deleted_contacts', $this->_formValues ) 
-                     and CRM_Core_Permission::check('access deleted contacts') ) {
+                     && CRM_Core_Permission::check( 'access deleted contacts' ) ) {
                     $row['is_deleted'] = true;
                     $links = array(
-                        array(
-                            'name'  => ts('View'),
-                            'url'   => 'civicrm/contact/view',
-                            'qs'    => 'reset=1&cid=%%id%%',
-                            'title' => ts('View Contact Details'),
-                        ),
-                        array(
-                            'name'  => ts('Restore'),
-                            'url'   => 'civicrm/contact/view/delete',
-                            'qs'    => 'reset=1&cid=%%id%%&restore=1',
-                            'title' => ts('Restore Contact'),
-                        ),
-                        array(
-                            'name'  => ts('Delete Permanently'),
-                            'url'   => 'civicrm/contact/view/delete',
-                            'qs'    => 'reset=1&cid=%%id%%&skip_undelete=1',
-                            'title' => ts('Permanently Delete Contact'),
-                        ),
-                    );
+                                   array(
+                                         'name'  => ts('View'),
+                                         'url'   => 'civicrm/contact/view',
+                                         'qs'    => 'reset=1&cid=%%id%%',
+                                         'title' => ts('View Contact Details'),
+                                         ),
+                                   array(
+                                         'name'  => ts('Restore'),
+                                         'url'   => 'civicrm/contact/view/delete',
+                                         'qs'    => 'reset=1&cid=%%id%%&restore=1',
+                                         'title' => ts('Restore Contact'),
+                                         ) 
+                                   );
+                    if ( CRM_Core_Permission::check( 'delete contacts' ) ) {
+                        $links[] = array(
+                                       'name'  => ts('Delete Permanently'),
+                                       'url'   => 'civicrm/contact/view/delete',
+                                       'qs'    => 'reset=1&cid=%%id%%&skip_undelete=1',
+                                       'title' => ts('Permanently Delete Contact'),
+                                       );
+                    }
                     $row['action'] = CRM_Core_Action::formLink($links, null, array('id' => $result->contact_id));
                 } elseif ( ( is_numeric( CRM_Utils_Array::value( 'geo_code_1', $row ) ) ) ||
                      ( $config->mapGeoCoding &&

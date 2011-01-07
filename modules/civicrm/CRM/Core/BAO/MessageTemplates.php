@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -165,7 +165,8 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
 
         $domain = CRM_Core_BAO_Domain::getDomain( );
         $result = null;
-
+        $hookTokens = array();
+        
         if ( $messageTemplates->find(true) ) {
             $body_text = $messageTemplates->msg_text;
             $body_html = $messageTemplates->msg_html;
@@ -188,7 +189,10 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
             //CRM-5734
             require_once 'CRM/Utils/Hook.php';
             CRM_Utils_Hook::tokenValues( $contact, $contactId );
-
+            
+            CRM_Utils_Hook::tokens( $hookTokens );
+            $categories = array_keys( $hookTokens );
+            
             $type = array('html', 'text');
             
             foreach( $type as $key => $value ) {
@@ -202,6 +206,7 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
                     $$bodyType = CRM_Utils_Token::replaceDomainTokens($$bodyType, $domain, true, $tokens[$value], true );
                     $$bodyType = CRM_Utils_Token::replaceContactTokens($$bodyType, $contact, false, $tokens[$value], false, true );
                     $$bodyType = CRM_Utils_Token::replaceComponentTokens($$bodyType, $contact, $tokens[$value], true );
+                    $$bodyType = CRM_Utils_Token::replaceHookTokens ( $$bodyType, $contactId , $categories, true );
                 }
             }
             $html = $body_html;
@@ -257,6 +262,10 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
             }
             
             $messageSubject = CRM_Utils_Token::replaceContactTokens($body_subject, $contact, false, $subjectToken);
+            $messageSubject = CRM_Utils_Token::replaceDomainTokens($messageSubject, $domain, true, $tokens[$value] );
+            $messageSubject = CRM_Utils_Token::replaceComponentTokens($messageSubject, $contact, $tokens[$value], true );
+            $messageSubject = CRM_Utils_Token::replaceHookTokens ( $messageSubject,$contactId , $categories, true );
+          
             $messageSubject = $smarty->fetch("string:{$messageSubject}");
 
             $headers = array(
@@ -345,9 +354,10 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
             'replyTo'     => null,    // the Reply-To: header
             'attachments' => null,    // email attachments
             'isTest'      => false,   // whether this is a test email (and hence should include the test banner)
+            'PDFFilename' => null,    // filename of optional PDF version to add as attachment (do not include path)
         );
         $params = array_merge($defaults, $params);
-
+                
         if (!$params['groupName'] or !$params['valueName']) {
             CRM_Core_Error::fatal(ts("Message template's option group and/or option value missing."));
         }
@@ -394,12 +404,14 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
         require_once 'CRM/Mailing/BAO/Mailing.php';
 
         $domain = CRM_Core_BAO_Domain::getDomain();
-
+        $hookTokens = array();
         $mailing = new CRM_Mailing_BAO_Mailing;
         $mailing->body_text = $text;
         $mailing->body_html = $html;
         $tokens = $mailing->getTokens();
-
+        CRM_Utils_Hook::tokens( $hookTokens );
+        $categories = array_keys( $hookTokens );
+        
         if ($params['contactId']) {
             $contactParams = array('contact_id' => $params['contactId']);
             $returnProperties = array( );
@@ -428,6 +440,11 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
             $subject = CRM_Utils_Token::replaceContactTokens($subject, $contact, false, $tokens['text'], false, true);
             $text    = CRM_Utils_Token::replaceContactTokens($text,    $contact, false, $tokens['text'], false, true);
             $html    = CRM_Utils_Token::replaceContactTokens($html,    $contact, false, $tokens['html'], false, true);
+            CRM_Utils_Hook::tokenValues( $contact[$params['contactId']], $params['contactId']);
+            $subject = CRM_Utils_Token::replaceHookTokens ( $subject,$contact[$params['contactId']] , $categories, true );
+            $text = CRM_Utils_Token::replaceHookTokens ( $text,$contact[$params['contactId']] , $categories, true );
+            $html = CRM_Utils_Token::replaceHookTokens ( $html,$contact[$params['contactId']] , $categories, true );
+      
         }
 
         // strip whitespace from ends and turn into a single line
@@ -451,7 +468,7 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
         $params['subject'] = $subject;
         $params['text'   ] = $text;
         $params['html'   ] = $html;
-
+        
         if ($params['toEmail']) {
             $contactParams = array('email' => $params['toEmail']);
             $contact =& civicrm_contact_get($contactParams);
@@ -465,8 +482,36 @@ class CRM_Core_BAO_MessageTemplates extends CRM_Core_DAO_MessageTemplates
                 $params['html'] = null;
             }
 
+            $pdf_filename = '';
+            if ( $params['PDFFilename'] && $params['html'] ) {
+                require_once 'CRM/Utils/PDF/Utils.php';
+                require_once 'CRM/Utils/File.php';
+                $config = CRM_Core_Config::singleton();
+                $pdf_filename = $config->templateCompileDir . CRM_Utils_File::makeFileName( $params['PDFFilename'] );
+                file_put_contents( $pdf_filename, CRM_Utils_PDF_Utils::html2pdf( $params['html'],
+                                                                                 $params['PDFFilename'],
+                                                                                 null,
+                                                                                 null,
+                                                                                 true
+                                                                               )
+                                 );
+                                 
+			    if ( empty( $params['attachments'] ) ) {
+			        $params['attachments'] = array();
+			    }
+			    $params['attachments'][] = array(
+			        'fullPath' => $pdf_filename,
+			        'mime_type' => 'application/pdf',
+			        'cleanName' => $params['PDFFilename'],
+			    );
+            }
+            
             require_once 'CRM/Utils/Mail.php';
             $sent = CRM_Utils_Mail::send( $params );
+
+            if ( $pdf_filename ) {
+                unlink($pdf_filename);
+            }
         }
 
         return array($sent, $subject, $text, $html);

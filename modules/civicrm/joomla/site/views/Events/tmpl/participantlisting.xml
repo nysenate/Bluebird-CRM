@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+  <layout title="Participant Listing">
+    <message/>
+  </layout>
+  
+  <state>
+    <name>CiviCRM</name>
+    <creationDate>11/11/2010</creationDate>
+    <copyright>(C) CiviCRM LLC</copyright>
+    <author>CiviCRM LLC</author>
+    <authorEmail>info@civicrm.org</authorEmail>
+    <authorUrl>civicrm.org</authorUrl>
+    <version>3.3</version>
+    <description>
+      Participant listing page. Be sure to enable this option in your event settings and select a listing template before creating a menu item.
+    </description>
+    <name>Participant Listing</name>
+    
+    <params addpath="/administrator/components/com_civicrm/civicrm/joomla/site/elements">
+      <param name="id" type="civieventsonline" label="Select Event" description="Configured CiviCRM Event"/>
+      <param name="task" type="hidden" default="civicrm/event/participant" label=""/>
+      <param name="reset" type="hidden" size="5" default="1" label="Reset" description="Keep this set to 1. This is needed for the form to work properly."/>
+    </params>
+  </state>
+</metadata>

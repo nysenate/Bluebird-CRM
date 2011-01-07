@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -205,6 +205,10 @@ class CRM_Contribute_Import_Form_MapField extends CRM_Core_Form {
                 $highlightedFields[] = $name;
             }            
         }
+
+        // modify field title for contribution status
+        $this->_mapperFields['contribution_status_id'] = ts('Contribution Status');
+        
         $this->assign( 'highlightedFields', $highlightedFields );
     }
 

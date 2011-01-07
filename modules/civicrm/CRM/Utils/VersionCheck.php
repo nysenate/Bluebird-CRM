@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -30,7 +30,7 @@
  *
  * @package CRM
  * @copyright CiviCRM LLC (c) 2004-2010
- * $Id$
+ * $Id: $
  *
  */
 
@@ -211,7 +211,7 @@ class CRM_Utils_VersionCheck
     /**
      * A dummy function required for suppressing download errors
      */
-    function downloadError($errorNumber, $errorString)
+    static function downloadError($errorNumber, $errorString)
     {
         return;
     }

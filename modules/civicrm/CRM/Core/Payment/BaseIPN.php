@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -115,9 +115,11 @@ class CRM_Core_Payment_BaseIPN {
             return false;
         }
         $objects['contributionType'] = $contributionType;
-        $paymentProcessorID          = null;
+        
+        
+        $paymentProcessorID = null;
         if ( $input['component'] == 'contribute' ) {
-
+            
             // retrieve the other optional objects first so
             // stuff down the line can use this info and do things
             // CRM-6056
@@ -164,29 +166,32 @@ class CRM_Core_Payment_BaseIPN {
                     return false;
                 }
                 $objects['contributionRecur'] =& $recur;
-            }
-
-            // get the contribution page id from the contribution
-            // and then initialize the payment processor from it
-            if ( ! $contribution->contribution_page_id ) {
-                if ( !CRM_Utils_Array::value( 'pledge_payment', $ids ) ) {
-                    // return if we are just doing an optional validation
-                    if ( ! $required ) {
-                        return true;
-                    }
                 
-                    CRM_Core_Error::debug_log_message( "Could not find contribution page for contribution record: $contributionID" );
-                    echo "Failure: Could not find contribution page for contribution record: $contributionID<p>";
-                    return false;
-                }
+                //get payment processor id from recur object.
+                $paymentProcessorID = $recur->payment_processor_id;
             }
-
-            //for offline pledge we dont have contribution page.
-            if ( !CRM_Utils_Array::value( 'pledge_payment', $ids ) ) {
-                // get the payment processor id from contribution page
-                $paymentProcessorID = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage',
-                                                                   $contribution->contribution_page_id,
-                                                                   'payment_processor_id' );
+            
+            //for normal contribution get the payment processor id.
+            if ( !$paymentProcessorID ) {
+                if ( $contribution->contribution_page_id ) {
+                    // get the payment processor id from contribution page
+                    $paymentProcessorID = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage',
+                                                                       $contribution->contribution_page_id,
+                                                                       'payment_processor_id' );
+                }
+                
+                //fail to load payment processor id.
+                if ( !$paymentProcessorID &&
+                     !$contribution->contribution_page_id &&
+                     !CRM_Utils_Array::value( 'pledge_payment', $ids ) ) {
+                    $loadObjectSuccess = true;
+                    if ( $required ) {
+                        $loadObjectSuccess = false;
+                        CRM_Core_Error::debug_log_message( "Could not find contribution page for contribution record: $contributionID" );
+                        echo "Failure: Could not find contribution page for contribution record: $contributionID<p>";
+                    }
+                    return $loadObjectSuccess;
+                }
             }
         } else {
             // we are in event mode
@@ -216,25 +221,26 @@ class CRM_Core_Payment_BaseIPN {
 
             $objects['participant'] =& $participant;
 
-            $paymentProcessorID = $objects['event']->payment_processor_id;
-        }
-
-        if ( ! $paymentProcessorID ) {
-            if ( $required ) {
-                CRM_Core_Error::debug_log_message( "Could not find payment processor for contribution record: $contributionID" );
-                echo "Failure: Could not find payment processor for contribution record: $contributionID<p>";
-                return false;
+            if ( !$paymentProcessorID ) {
+                $paymentProcessorID = $objects['event']->payment_processor_id;
             }
-        } else {
+        }
+        
+        $loadObjectSuccess = true;
+        if ( $paymentProcessorID ) {
             require_once 'CRM/Core/BAO/PaymentProcessor.php';
             $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment( $paymentProcessorID,
                                                                            $contribution->is_test ? 'test' : 'live' );
             
             $ids['paymentProcessor']       =  $paymentProcessorID;
             $objects['paymentProcessor']   =& $paymentProcessor;
+        } else if ( $required ) {
+            $loadObjectSuccess = false;
+            CRM_Core_Error::debug_log_message("Could not find payment processor for contribution record: $contributionID");
+            echo "Failure: Could not find payment processor for contribution record: $contributionID<p>";
         }
-
-        return true;
+        
+        return $loadObjectSuccess;
     }
 
     function failed( &$objects, &$transaction ) {
@@ -242,7 +248,10 @@ class CRM_Core_Payment_BaseIPN {
         $membership   =& $objects['membership']  ;
         $participant  =& $objects['participant'] ;
 
-        $contribution->contribution_status_id = 4;
+        require_once 'CRM/Contribute/PseudoConstant.php';
+        $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' );
+        
+        $contribution->contribution_status_id = array_search( 'Failed', $contributionStatus );
         $contribution->save( );
 
         if ( $membership ) {
@@ -318,14 +327,25 @@ class CRM_Core_Payment_BaseIPN {
         $participant  =& $objects['participant'] ;
         $event        =& $objects['event']       ;
         $changeToday  =  CRM_Utils_Array::value( 'trxn_date', $input, self::$_now );
-
+        $recurContrib =& $objects['contributionRecur'];
+        
         $values = array( );
         if ( $input['component'] == 'contribute' ) {
-            require_once 'CRM/Contribute/BAO/ContributionPage.php';
-            CRM_Contribute_BAO_ContributionPage::setValues( $contribution->contribution_page_id, $values );
-            $contribution->source                  = ts( 'Online Contribution' ) . ': ' . $values['title'];
-            
-            if ( $values['is_email_receipt'] ) {
+            $isOfflineRecur = false;
+            if ( $contribution->contribution_page_id ) {
+                require_once 'CRM/Contribute/BAO/ContributionPage.php';
+                CRM_Contribute_BAO_ContributionPage::setValues( $contribution->contribution_page_id, $values ); 
+                $source = ts( 'Online Contribution' ) . ': ' . $values['title'];
+            } else if ( $recurContrib->id ) {
+                $isOfflineRecur = true;
+                $contribution->contribution_page_id = null;
+                $values['amount'] = $recurContrib->amount;
+                $values['contribution_type_id'] = $objects['contributionType']->id;
+                $values['title'] = $source = ts( 'Offline Recurring Contribution Payment' );
+            }
+            $contribution->source = $source;  
+            if ( $isOfflineRecur || 
+                 CRM_Utils_Array::value( 'is_email_receipt', $values ) ) {
                 $contribution->receipt_date = self::$_now;
             }
             
@@ -451,11 +471,15 @@ class CRM_Core_Payment_BaseIPN {
         $contribution->save( );
         
         // next create the transaction record
+        $paymentProcessor = '';
         if ( isset( $objects['paymentProcessor'] ) ) {
-            $paymentProcessor = $objects['paymentProcessor']['payment_processor_type'];
-        } else {
-            $paymentProcessor = '';
+            if ( is_array( $objects['paymentProcessor'] ) ) {
+                $paymentProcessor = $objects['paymentProcessor']['payment_processor_type'];    
+            } else {
+                $paymentProcessor = $objects['paymentProcessor']->payment_processor_type;    
+            }
         }
+        
         if ( $contribution->trxn_id ) {
             
             $trxnParams = array(
@@ -708,9 +732,13 @@ class CRM_Core_Payment_BaseIPN {
         $template->assign( 'currency', $contribution->currency );
         if ( $recur ) {
             require_once 'CRM/Core/Payment.php';
-            $paymentObject =& CRM_Core_Payment::singleton( $contribution->is_test ? 'test' : 'live', 'Contribute',
+            $paymentObject =& CRM_Core_Payment::singleton( $contribution->is_test ? 'test' : 'live', 
                                                            $objects['paymentProcessor'] );
-            $url = $paymentObject->cancelSubscriptionURL( );
+            if ( ! empty($membership) && $membership->id ) {
+                $url = $paymentObject->cancelSubscriptionURL( $membership->id, 'membership' );
+            } else {
+                $url = $paymentObject->cancelSubscriptionURL( );
+            }
             $template->assign( 'cancelSubscriptionUrl', $url );
             if ( $objects['paymentProcessor']['billing_mode'] & CRM_Core_Payment::BILLING_MODE_FORM ) {
                 //direct mode showing billing block, so use directIPN for temporary
@@ -835,6 +863,7 @@ class CRM_Core_Payment_BaseIPN {
             }
             // CRM_Core_Error::debug('val',$values);
 
+            require_once 'CRM/Contribute/BAO/ContributionPage.php';
             return CRM_Contribute_BAO_ContributionPage::sendMail( $ids['contact'], $values, $isTest, $returnMessageText );
         }
     }

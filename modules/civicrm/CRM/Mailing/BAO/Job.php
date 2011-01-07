@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -61,133 +61,325 @@ class CRM_Mailing_BAO_Job extends CRM_Mailing_DAO_Job {
     public static function runJobs($testParams = null) {
         $job = new CRM_Mailing_BAO_Job();
         
-        $mailing = new CRM_Mailing_DAO_Mailing();
+        // $mailing = new CRM_Mailing_DAO_Mailing();
         
         $config = CRM_Core_Config::singleton();
         $jobTable     = CRM_Mailing_DAO_Job::getTableName();
         $mailingTable = CRM_Mailing_DAO_Mailing::getTableName();
 
-        if ( ! empty( $testParams ) ) {
+        if (!empty($testParams)) {
             $query = "
-SELECT *
-  FROM $jobTable
- WHERE id = {$testParams['job_id']}";
+			SELECT *
+			  FROM $jobTable
+			 WHERE id = {$testParams['job_id']}";
             $job->query($query);
         } else {
             $currentTime = date( 'YmdHis' );
             $mailingACL  = CRM_Mailing_BAO_Mailing::mailingACL( 'm' );
 
-            /* FIXME: we might want to go to a progress table.. */
+			// SELECT THE First Child Job that's scheduled
+			// CRM-6835
             $query = "
-SELECT   j.*
-  FROM   $jobTable     j,
-         $mailingTable m
- WHERE   m.id = j.mailing_id
-   AND   j.is_test = 0
-   AND   ( ( j.start_date IS null
-   AND       j.scheduled_date <= $currentTime
-   AND       j.status = 'Scheduled' )
-    OR     ( j.status = 'Running'
-   AND       j.end_date IS null ) )
-   AND   {$mailingACL}
-ORDER BY j.scheduled_date,
-         j.start_date";
+			SELECT   j.*
+			  FROM   $jobTable     j,
+					 $mailingTable m
+			 WHERE   m.id = j.mailing_id
+                     $workflowClause
+			   AND   j.is_test = 0
+			   AND   ( ( j.start_date IS null
+			   AND       j.scheduled_date <= $currentTime
+			   AND       j.status = 'Scheduled' )
+                OR     ( j.status = 'Running'
+			   AND       j.end_date IS null ) )
+			   AND (j.job_type = 'child')
+			   AND   {$mailingACL}
+			ORDER BY j.mailing_id,
+					 j.id
+			";
 
             $job->query($query);
         }
 
         require_once 'CRM/Core/Lock.php';
 
-        /* TODO We should parallelize or prioritize this */
         while ($job->fetch()) {
+            // still use job level lock for each child job
             $lockName = "civimail.job.{$job->id}";
+            
+			$lock = new CRM_Core_Lock( $lockName );
+			if ( ! $lock->isAcquired( ) ) {
+				continue;
+			}
 
-            // get a lock on this job id
-            $lock = new CRM_Core_Lock( $lockName );
-            if ( ! $lock->isAcquired( ) ) {
-                continue;
-            }
+		    // for test jobs we do not change anything, since its on a short-circuit path
+		    if ( empty( $testParams ) ) {
+		        // we've got the lock, but while we were waiting and processing
+		        // other emails, this job might have changed under us
+		        // lets get the job status again and check
+		        $job->status = CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Job', 
+		                                                    $job->id,
+		                                                    'status' );
 
-            // for test jobs we do not change anything, since its on a short-circuit path
-            if ( empty( $testParams ) ) {
-                // we've got the lock, but while we were waiting and processing
-                // other emails, this job might have changed under us
-                // lets get the job status again and check
-                $job->status = CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Job', 
-                                                            $job->id,
-                                                            'status' );
+		        if ( $job->status != 'Running' &&
+		             $job->status != 'Scheduled' ) {
+		            // this includes Cancelled and other statuses, CRM-4246
+		            $lock->release( );
+		            continue;
+		        }
+		    }
 
-                if ( $job->status != 'Running' &&
-                     $job->status != 'Scheduled' ) {
-                    // this includes Cancelled and other statuses, CRM-4246
-                    $lock->release( );
-                    continue;
-                }
-            }
-          
-            /* Queue up recipients for all jobs being launched */
-            if ($job->status != 'Running') {
+			/* Queue up recipients for the child job being launched */
+			if ($job->status != 'Running') {
+				require_once 'CRM/Core/Transaction.php';
+				$transaction = new CRM_Core_Transaction( );
+
+				// have to queue it up based on the offset and limits
+				// get the parent ID, and limit and offset
+				$job->queue($testParams);
+
+				// Mark up the starting time
+				$saveJob = new CRM_Mailing_DAO_Job( );
+				$saveJob->id         = $job->id;
+				$saveJob->start_date = date('YmdHis');
+				$saveJob->status     = 'Running';
+				$saveJob->save();
+
+				$transaction->commit();
+			}
+
+			// Get the mailer
+			$mailer = $config->getMailer();
+			
+			// Compose and deliver each child job 
+			$isComplete = $job->deliver($mailer, $testParams);
+			
+			require_once 'CRM/Utils/Hook.php';
+			CRM_Utils_Hook::post( 'create', 'CRM_Mailing_DAO_Spool', $job->id, $isComplete);
+
+			// Mark the child complete
+			if ( $isComplete ) {
+				/* Finish the job */
+				require_once 'CRM/Core/Transaction.php';
+				$transaction = new CRM_Core_Transaction( );
+
+				$saveJob = new CRM_Mailing_DAO_Job( );
+				$saveJob->id   = $job->id;
+				$saveJob->end_date = date('YmdHis');
+				$saveJob->status   = 'Complete';
+				$saveJob->save();
+
+				$transaction->commit( );
+
+				// don't mark the mailing as complete
+			} 
+			
+			// Release the child joblock
+			$lock->release( );
+			
+			if ($testParams) {
+				return $isComplete;
+			}
+		}
+	}
+
+	// post process to determine if the parent job
+	// as well as the mailing is complete after the run
+	public static function runJobs_post() { 
+	
+        $job = new CRM_Mailing_BAO_Job();
+        
+        $mailing = new CRM_Mailing_BAO_Mailing();
+		
+        $config = CRM_Core_Config::singleton();
+        $jobTable     = CRM_Mailing_DAO_Job::getTableName();
+        $mailingTable = CRM_Mailing_DAO_Mailing::getTableName();
+
+		$currentTime = date( 'YmdHis' );
+		$mailingACL  = CRM_Mailing_BAO_Mailing::mailingACL( 'm' );
+
+		$query = "
+		SELECT   j.*
+		  FROM   $jobTable     j,
+				 $mailingTable m
+		 WHERE   m.id = j.mailing_id
+		   AND   j.is_test = 0
+		   AND       j.scheduled_date <= $currentTime
+		   AND       j.status = 'Running'
+		   AND       j.end_date IS null
+		   AND       (j.job_type != 'child' OR j.job_type is NULL)
+		ORDER BY j.scheduled_date,
+				 j.start_date";
+
+		$job->query($query);
+		
+		// For each parent job that is running, let's look at their child jobs
+		while($job->fetch()) {
+			
+			$child_job = new CRM_Mailing_BAO_Job();
+			
+			$child_job_sql = "
+            SELECT count(j.id) 
+			FROM civicrm_mailing_job j, civicrm_mailing m
+			WHERE m.id = j.mailing_id
+			AND j.job_type = 'child'
+			AND j.parent_id = %1
+            AND j.status <> 'Complete'";
+            $params = array( 1 => array( $job->id, 'Integer' ) );
+            
+			$anyChildLeft = CRM_Core_DAO::singleValueQuery($child_job_sql, $params);
+
+			// all of the child jobs are complete, update
+			// the parent job as well as the mailing status
+			if( ! $anyChildLeft ) {
+
                 require_once 'CRM/Core/Transaction.php';
                 $transaction = new CRM_Core_Transaction( );
 
-                $job->queue($testParams);
-
-                /* Start the job */
-                // use a seperate DAO object to protect the loop
-                // integrity. I think transactions messes it up
-                // check CRM-2469
-                $saveJob = new CRM_Mailing_DAO_Job( );
-                $saveJob->id         = $job->id;
-                $saveJob->start_date = date('YmdHis');
-                $saveJob->status     = 'Running';
-                $saveJob->save();
-
-                $transaction->commit( );
-            }
-            
-            $mailer =& $config->getMailer();
-
-            /* Compose and deliver */
-            $isComplete = $job->deliver($mailer, $testParams);
-            
-            require_once 'CRM/Utils/Hook.php';
-            CRM_Utils_Hook::post( 'create', 'CRM_Mailing_DAO_Spool', $job->id, $isComplete);
-            
-            if ( $isComplete ) {
-                /* Finish the job */
-                require_once 'CRM/Core/Transaction.php';
-                $transaction = new CRM_Core_Transaction( );
-
-                // use a seperate DAO object to protect the loop
-                // integrity. I think transactions messes it up
-                // check CRM-2469
                 $saveJob = new CRM_Mailing_DAO_Job( );
                 $saveJob->id   = $job->id;
                 $saveJob->end_date = date('YmdHis');
                 $saveJob->status   = 'Complete';
                 $saveJob->save();
-
+				
                 $mailing->reset();
                 $mailing->id = $job->mailing_id;
                 $mailing->is_completed = true;
                 $mailing->save();
                 $transaction->commit( );
-            } 
-            
-            $lock->release( );
-            
-            if ($testParams) {
-                return $isComplete;
-            } 
+			
+			}
+		}
+		
+	}
+	
+	
+   // before we run jobs, we need to split the jobs
+   public static function runJobs_pre($offset = 200) {
+        $job = new CRM_Mailing_BAO_Job();
+        
+        $config = CRM_Core_Config::singleton();
+        $jobTable     = CRM_Mailing_DAO_Job::getTableName();
+        $mailingTable = CRM_Mailing_DAO_Mailing::getTableName();
+
+		$currentTime = date( 'YmdHis' );
+		$mailingACL  = CRM_Mailing_BAO_Mailing::mailingACL( 'm' );
+
+
+        // add an additional check and only process
+        // jobs that are approved
+        $workflowClause = null;
+        require_once 'CRM/Mailing/Info.php';
+        if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            $approveOptionID = CRM_Core_OptionGroup::getValue( 'mail_approval_status',
+                                                               'Approved',
+                                                               'name' );
+            if ( $approveOptionID ) {
+                $workflowClause = " AND m.approval_status_id = $approveOptionID ";
+            }
         }
+
+		// Select all the mailing jobs that are created from 
+		// when the mailing is submitted or scheduled.
+		$query = "
+		SELECT   j.*
+		  FROM   $jobTable     j,
+				 $mailingTable m
+		 WHERE   m.id = j.mailing_id
+                 $workflowClause
+		   AND   j.is_test = 0
+		   AND   ( ( j.start_date IS null
+		   AND       j.scheduled_date <= $currentTime
+		   AND       j.status = 'Scheduled'
+		   AND       j.end_date IS null ) )
+		   AND ((j.job_type is NULL) OR (j.job_type <> 'child'))
+		ORDER BY j.scheduled_date,
+				 j.start_date";
+				 
+
+		$job->query($query);
+
+        require_once 'CRM/Core/Lock.php';
+
+		// For reach of the "Parent Jobs" we find, we split them into 
+		// X Number of child jobs
+		while ($job->fetch()) {
+            // still use job level lock for each child job
+            $lockName = "civimail.job.{$job->id}";
+            
+			$lock = new CRM_Core_Lock( $lockName );
+			if ( ! $lock->isAcquired( ) ) {
+				continue;
+			}
+
+            // refetch the job status in case things
+            // changed between the first query and now
+            // avoid race conditions
+            $job->status = CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Job', 
+                                                        $job->id,
+                                                        'status' );
+            if ( $job->status != 'Scheduled' ) {
+                $lock->release( );
+                continue;
+            }
+            
+			$job->split_job($offset);
+			
+			// update the status of the parent job
+			require_once 'CRM/Core/Transaction.php';
+			$transaction = new CRM_Core_Transaction( );
+
+			$saveJob = new CRM_Mailing_DAO_Job( );
+			$saveJob->id         = $job->id;
+			$saveJob->start_date = date('YmdHis');
+			$saveJob->status     = 'Running';
+			$saveJob->save();
+
+			$transaction->commit( );
+
+			// Release the job lock
+			$lock->release( );
+		}
     }
     
-    /**
-     * Queue recipients of a job.
-     *
-     * @return void
-     * @access public
-     */
+	// Split the parent job into n number of child job based on an offset
+	// If null or 0 , we create only one child job
+	public function split_job($offset = 200) {
+		$recipient_count = $this->getMailingSize();
+		$jobTable = CRM_Mailing_DAO_Job::getTableName();
+		
+		require_once('CRM/Core/DAO.php');
+		
+		$dao = new CRM_Core_DAO();
+
+        $sql = "
+INSERT INTO civicrm_mailing_job
+(`mailing_id`, `scheduled_date`, `status`, `job_type`, `parent_id`, `job_offset`, `job_limit`)
+VALUES (%1, %2, %3, %4, %5, %6, %7)
+";
+        $params = array( 1 => array( $this->mailing_id, 'Integer' ),
+                         2 => array( $this->scheduled_date, 'String' ),
+                         3 => array( 'Scheduled', 'String' ),
+                         4 => array( 'child', 'String' ),
+                         5 => array( $this->id, 'Integer' ),
+                         6 => array( 0, 'Integer' ),
+                         7 => array( $recipient_count, 'Integer' ) );
+
+		// create one child job if the mailing size is less than the offset
+		// probably use a CRM_Mailing_DAO_Job( );
+		if ( empty($offset) ||
+             $recipient_count <= $offset ) {
+            CRM_Core_DAO::executeQuery( $sql, $params );
+		} else {
+			// Creating 'child jobs'
+			for($i = 0; $i< $recipient_count; $i=$i+$offset) {
+                $params[6][0] = $i;
+                $params[7][0] = $offset;
+                CRM_Core_DAO::executeQuery( $sql, $params );
+            }
+		}
+	}
+
     public function queue($testParams = null) {
        
         require_once 'CRM/Mailing/BAO/Mailing.php';
@@ -196,14 +388,16 @@ ORDER BY j.scheduled_date,
         if (!empty($testParams)) {
             $mailing->getTestRecipients($testParams);
         } else {
-            $recipients =& $mailing->getRecipientsObject($this->id);
+			// We are still getting all the recipients from the parent job 
+			// (The original so we don't mess with the include/exclude) logic
+            $recipients = $mailing->getRecipientsObject($this->parent_id, false, $this->job_offset, $this->job_limit);
 
-            // since this is such a simple db operation, we could potentially optimize it a lot
-            // by doing a batch of inserts at one time
-            // INSERT INTO civicrm_..._queue ( job_id, email_id, contact_id, hash ) VALUES ( ... ),( ... ),...
-            // this will cut down the number of trips to the db quite nicely rather than doing one insert at a time
+			// Here we will use the parent jobid to fetch the receipents, except 
+			// We will introduce the limit and offset from the child job DAO object
+			// To only pick up segment of the receipents instead of the whole
             while ($recipients->fetch()) {
                 $params = array(
+                                // job_id should be the child job id
                                 'job_id'        => $this->id,
                                 'email_id'      => $recipients->email_id,
                                 'contact_id'    => $recipients->contact_id
@@ -212,6 +406,7 @@ ORDER BY j.scheduled_date,
             }
         }
     }
+    
     /**
      * Number of mailings of a job.
      *
@@ -269,7 +464,7 @@ ORDER BY j.scheduled_date,
         $eq->query($query);
 
         static $config = null;
-        $mailsProcessed = 0;
+        static $mailsProcessed = 0;
 
         if ( $config == null ) {
             $config = CRM_Core_Config::singleton();
@@ -356,7 +551,9 @@ ORDER BY j.scheduled_date,
              * engine, maybe we should dump the messages into a table */
 
             // disable error reporting on real mailings (but leave error reporting for tests), CRM-5744
-            if ($job_date) CRM_Core_Error::ignoreException();
+            if ($job_date) {
+                CRM_Core_Error::ignoreException();
+            }
 
             if ( is_object( $mailer ) ) {
                 
@@ -430,9 +627,10 @@ AND    civicrm_activity.source_record_id = %2";
             if ( $activityID ) {
                 $activity['id'] = $activityID;  
             }
-        
+            
             require_once 'api/v2/Activity.php';
-            if ( is_a( civicrm_activity_create($activity, 'Email'), 'CRM_Core_Error' ) ) {
+            $isError = civicrm_activity_create( $activity );
+            if ( civicrm_error( $isError ) ) {
                 return false;
             }
         }

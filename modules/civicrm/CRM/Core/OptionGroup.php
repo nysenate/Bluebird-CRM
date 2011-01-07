@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -77,7 +77,7 @@ class CRM_Core_OptionGroup
                              $localize = false, $condition = null,
                              $valueColumnName = 'label', $onlyActive = true ) 
     {
-        $cacheKey = "CRM_OG_{$name}_{$flip}_{$grouping}_{$localize}_{$condition}_{$valueColumnName}";
+        $cacheKey = "CRM_OG_{$name}_{$flip}_{$grouping}_{$localize}_{$condition}_{$valueColumnName}_{$onlyActive}";
         $cache =& CRM_Utils_Cache::singleton( );
         $var = $cache->get( $cacheKey );
         if ( $var ) {
@@ -218,7 +218,7 @@ WHERE  v.option_group_id = g.id
         }
     }
 
-    static function getLabel( $groupName, $value ) 
+    static function getLabel( $groupName, $value, $onlyActiveValue = true ) 
     {
         if ( empty( $groupName ) ||
              empty( $value ) ) {
@@ -231,11 +231,12 @@ FROM   civicrm_option_value v,
        civicrm_option_group g 
 WHERE  v.option_group_id = g.id 
   AND  g.name            = %1 
-  AND  v.is_active       = 1  
   AND  g.is_active       = 1  
   AND  v.value           = %2
 ";
-
+        if ( $onlyActiveValue ) {
+            $query .= " AND  v.is_active = 1 ";
+        }
         $p = array( 1 => array( $groupName , 'String' ),
                     2 => array( $value, 'Integer' ) );
         $dao =& CRM_Core_DAO::executeQuery( $query, $p );

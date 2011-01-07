@@ -1,6 +1,6 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -41,6 +41,12 @@
     </div>
 {/if}
 
+{if $priceSet && $allowGroupOnWaitlist}   
+    {include file="CRM/Price/Form/ParticipantCount.tpl"}
+    <div id="waiting-status" style="display:none;" class="messages status"></div>
+    <div class="messages status" style="width:25%"><span id="event_participant_status"></span></div> 
+{/if}
+
 <div class="crm-block crm-event-additionalparticipant-form-block">
 {if $priceSet}
      <fieldset id="priceset" class="crm-group priceset-group"><legend>{$event.fee_label}</legend>
@@ -72,3 +78,48 @@
     {include file="CRM/common/formButtons.tpl"}
 </div>
 </div>
+
+{if $priceSet && $allowGroupOnWaitlist}
+{literal} 
+<script type="text/javascript">
+
+function allowGroupOnWaitlist( participantCount, currentCount ) 
+{
+  var formId          = {/literal}'{$formId}'{literal};
+  var waitingMsg      = {/literal}'{$waitingMsg}'{literal};
+  var confirmedMsg    = {/literal}'{$confirmedMsg}'{literal};
+  var paymentBypassed = {/literal}'{$paymentBypassed}'{literal};
+
+  var availableRegistrations = {/literal}{$availableRegistrations}{literal}; 
+  if ( !participantCount ) participantCount = {/literal}'{$currentParticipantCount}'{literal};	 
+  var totalParticipants = parseInt(participantCount) + parseInt(currentCount);
+
+  var seatStatistics = '{/literal}{ts 1="' + totalParticipants + '"}Total Participants : %1{/ts}{literal}' + '<br />' + '{/literal}{ts 1="' + availableRegistrations + '"}Event Availability : %1{/ts}{literal}';
+  cj("#event_participant_status").html( seatStatistics );
+  
+  if ( !{/literal}'{$lastParticipant}'{literal} ) return; 
+
+  if ( totalParticipants > availableRegistrations ) {
+
+    cj('#waiting-status').show( ).html(waitingMsg);
+
+    if ( paymentBypassed ) {
+      cj('input[name=_qf_Participant_'+ formId +'_next]').parent( ).show( );
+      cj('input[name=_qf_Participant_'+ formId +'_next_skip]').parent( ).show( );
+    }  
+  } else {
+    if ( paymentBypassed ) {
+      confirmedMsg += '<br /> ' + paymentBypassed;
+    }	
+    cj('#waiting-status').show( ).html(confirmedMsg);
+
+    if ( paymentBypassed ) {
+      cj('input[name=_qf_Participant_'+ formId +'_next]').parent( ).hide( );
+      cj('input[name=_qf_Participant_'+ formId +'_next_skip]').parent( ).hide( );
+    }  
+  }
+}
+
+</script>
+{/literal} 	
+{/if}

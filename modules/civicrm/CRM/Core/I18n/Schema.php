@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -174,6 +174,10 @@ class CRM_Core_I18n_Schema
         // update civicrm_domain.locales
         $domain->locales = 'NULL';
         $domain->save();
+        
+        //CRM-6963 -fair assumption. 
+        global $dbLocale;
+        $dbLocale = '';
     }
 
     /**
@@ -428,7 +432,7 @@ class CRM_Core_I18n_Schema
             }
 
             if ($table == 'civicrm_contact') {
-                $trigger = array_merge($trigger, $namesTrigger);
+                $trigger = array_merge($trigger, $namesTrigger, $individualNamesTrigger);
             }
             $trigger[] = 'END';
 
