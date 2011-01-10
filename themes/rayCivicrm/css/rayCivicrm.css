@@ -400,8 +400,8 @@ textarea, input {
 }
 
 div.form-item {
-  margin-bottom: 1.5em;
-  margin-top: 1.5em;
+  margin-bottom: 1em;
+  margin-top: 1em;
 }
 
 div.error, tr.error, span.form-required, span.marker {
@@ -858,7 +858,7 @@ textarea, input {
     }
     #tag-refresh-button span {color: #FFF;}	
 
-ul.token-input-list-facebook { width:300px;}
+ul.token-input-list-facebook { width:265px;}
 
 .custom_22_-1-row input[type="checkbox"],
 .custom_22_-1-row label {

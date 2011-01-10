@@ -11,6 +11,7 @@
 # Revised: 2010-09-19 - always set IS_TAG='N' for 83xxx (merge/purge)
 #                     - convert 76xxx to "Taxes" instead of "Tax and Finance"
 #                     - skip 83xxx codes with blank descriptions
+# Revised: 2010-01-06 - ignore issue descriptions that start with "xxx"
 #
 # Note: This script assumes that the first line of each OMIS export file
 #       contains the column headers.  It trims the first line automatically.
@@ -91,7 +92,7 @@ BEGIN {
     #print "discarding (length): " desc > "/dev/stderr";
     is_tag = "N";
   }
-  else if (desc ~ /^xxx+$/) {
+  else if (desc ~ /^xxx/) {
     #print "discarding (garbage): " desc > "/dev/stderr";
     is_tag = "N";
   }

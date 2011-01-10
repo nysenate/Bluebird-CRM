@@ -21,7 +21,7 @@ usage() {
   echo "    --list-all, --list-entries, --list-groups, --list-mappings" >&2
   echo "    --set-name [name], --set-server [host], --set-port [port]" >&2
   echo "    --add-entry [entry], --add-group [group], --add-mapping [group|role]" >&2
-  echo "    --delete-entry [entry], --delete-group [group], --delete-mapping [role]" >&2
+  echo "    --delete-entry [entry], --delete-group [group], --delete-mapping [group]" >&2
   echo "    --clear-entries, --clear-groups, --clear-mappings" >&2
 }
 
@@ -43,12 +43,12 @@ while [ $# -gt 0 ]; do
     --set-name) shift; cmd=setName; param="$1" ;;
     --set-server) shift; cmd=setServer; param="$1" ;;
     --set-port) shift; cmd=setPort; param="$1" ;;
-    --add-entry) shift; cmd=addEntry; param="$1" ;;
-    --add-group) shift; cmd=addGroup; param="$1" ;;
-    --add-mapping) shift; cmd=addMapping; param="$1" ;;
-    --delete-entry) shift; cmd=delEntry; param="$1" ;;
-    --delete-group) shift; cmd=delGroup; param="$1" ;;
-    --delete-mapping) shift; cmd=delMapping; param="$1" ;;
+    --add-entry) shift; cmd=addEntry; param="cn=$1" ;;
+    --add-group) shift; cmd=addGroup; param="CN=$1" ;;
+    --add-mapping) shift; cmd=addMapping; param="cn=$1" ;;
+    --delete-entry) shift; cmd=delEntry; param="cn=$1" ;;
+    --delete-group) shift; cmd=delGroup; param="CN=$1" ;;
+    --delete-mapping) shift; cmd=delMapping; param="cn=$1|" ;;
     --clear-entries) cmd=clearEntries ;;
     --clear-groups) cmd=clearGroups ;;
     --clear-mappings) cmd=clearMappings ;;
