@@ -226,7 +226,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 	
 	unset($tasks[19]); //remove pdf letter creation task, #2284
-	unset($tasks[24]); //remove delete permanently task, #2373
+	//unset($tasks[24]); //remove delete permanently task, #2373
 	
 }
 
