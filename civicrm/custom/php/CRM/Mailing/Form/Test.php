@@ -246,6 +246,17 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
                 CRM_Utils_System::redirect( $url );
             }
         }
+		
+		//NYSS fix redirection when informing scheduler
+		require_once 'CRM/Mailing/Info.php';
+	    if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+	    	if ( ! CRM_Core_Permission::check( 'schedule mailings' ) &&
+	    		CRM_Core_Permission::check( 'create mailings' ) ) {
+	            $url = CRM_Utils_System::url( 'civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1' );
+	            CRM_Utils_System::redirect( $url );
+	        }
+	    }
+		//NYSS end
         
         if ( CRM_Utils_Array::value( '_qf_Import_refresh', $_POST ) || 
              CRM_Utils_Array::value( '_qf_Test_next', $testParams ) ||
