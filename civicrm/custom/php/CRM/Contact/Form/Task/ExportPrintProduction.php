@@ -227,11 +227,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 					
 		        $val = str_replace("'","",$val);
                 $val = str_replace("\"","",$val);
-				$aOut[] =  $val;
+				$aOut[$name] =  $val;
 			}
 		}
 
-	    fputcsv2($fhout, $aOut,"\t",'',false,false);
+	 	if (strlen(trim($aOut['prefix_id']))==0) {
+
+			if ($aOut['gender_id']=="Male") $aOut['prefix_id']="Mr.";
+			else if ($aOut['gender_id']=="Female") $aOut['prefix_id']="Ms.";
+			else $aOut['prefix_id']="M.";
+		};
+ 
+		fputcsv2($fhout, $aOut,"\t",'',false,false);
 	}
 //exit;
 		//get rid of helper table
