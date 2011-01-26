@@ -467,8 +467,12 @@ function civicrm_user( $type, &$edit, &$user, $category = NULL )
 	case 'delete':
         require_once 'CRM/Core/BAO/UFMatch.php';
         return CRM_Core_BAO_UFMatch::deleteUser( $user->uid );
+	
+	case 'after_update': //NYSS 3200 ensure preferences navigation is cleared so new role perms are reflected
+		require_once 'CRM/Core/BAO/Navigation.php';
+        CRM_Core_BAO_Navigation::resetNavigation( );
+		break;
     }
-
 }
 
 /**
