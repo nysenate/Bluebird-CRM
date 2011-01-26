@@ -22,7 +22,7 @@ usage() {
   echo "    --set-name [name], --set-server [host], --set-port [port]" >&2
   echo "    --add-entry [entry], --add-group [group], --add-mapping [group|role]" >&2
   echo "    --delete-entry [entry], --delete-group [group], --delete-mapping [group]" >&2
-  echo "    --clear-entries, --clear-groups, --clear-mappings" >&2
+  echo "    --clear-all, --clear-entries, --clear-groups, --clear-mappings" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -49,6 +49,7 @@ while [ $# -gt 0 ]; do
     --delete-entry) shift; cmd=delEntry; param="cn=$1" ;;
     --delete-group) shift; cmd=delGroup; param="CN=$1" ;;
     --delete-mapping) shift; cmd=delMapping; param="cn=$1|" ;;
+    --clear-all) cmd=clearAll ;;
     --clear-entries) cmd=clearEntries ;;
     --clear-groups) cmd=clearGroups ;;
     --clear-mappings) cmd=clearMappings ;;
