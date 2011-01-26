@@ -139,10 +139,16 @@ $now = time() + (60 * 60 * $offset);
   			</div>
   		</div>
   	</div>
-    <?php if ( $role == 'Superuser' || $role == 'SOS' || $role == 'Administrator' ) { ?>
+    <?php 
+	$job_roles = array( 'Superuser', 'SOS', 'Administrator' );
+	$jobuser = 0;
+	foreach ( $user->roles as $user_role ) {
+		if ( in_array( $user_role, $job_roles ) ) { $jobuser = 1; }
+	}
+	if ( $jobuser ) { ?>
     	<div class="sos_job">
-    	    [ <?php if ( $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
-        	<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Set Job #</a> ]
+    	    [<?php if ( $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
+        	<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Set Job#</a>]
         </div>
     <?php } ?>
     
