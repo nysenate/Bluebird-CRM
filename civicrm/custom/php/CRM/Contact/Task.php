@@ -295,6 +295,16 @@ class CRM_Contact_Task {
                 //absent, drop down shows blank space
                 unset( $tasks[12] );
             }
+			//NYSS 3205 allow print prod to work with groups
+			if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+				$tasks[1] = self::$_tasks[1]['title'];
+				$tasks[2] = self::$_tasks[2]['title'];
+				$tasks[3] = self::$_tasks[3]['title'];
+				$tasks[4] = self::$_tasks[4]['title'];
+				$tasks[13] = self::$_tasks[13]['title'];
+				$tasks[14] = self::$_tasks[14]['title'];
+			}
+			
             //user has to have edit permission to delete contact.
             //CRM-4418, lets keep delete for View and Edit so user can tweak ACL
 //             if ( CRM_Core_Permission::check( 'delete contacts' ) ) {
