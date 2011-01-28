@@ -65,7 +65,8 @@ function getList($dbcon, $fldname)
     return $valmap;
   }
   else {
-    return null;
+    // Return an empty array if the value was empty or NULL.
+    return array();
   }
 } // getList()
 
@@ -230,6 +231,11 @@ else {
   }
   elseif ($cmd == 'delMapping') {
     $rc = deleteFromList($dbcon, 'ldapgroups_mappings', $param);
+  }
+  elseif ($cmd == 'clearAll') {
+    $rc = setField($dbcon, "ldapgroups_entries", "") &&
+          setField($dbcon, "ldapgroups_groups", "") &&
+          setField($dbcon, "ldapgroups_mappings", "");
   }
   elseif ($cmd == 'clearEntries') {
     $rc = setField($dbcon, "ldapgroups_entries", "");

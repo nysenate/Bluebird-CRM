@@ -69,7 +69,7 @@ $(document).ready(function() {
 	if ($('#civicrm-menu').length >0){
 		$('#civi-admin-menu').show();
 		}
-	$("#address_1_state_province_id option[value='1031']").attr('selected', 'selected');
+	/*$("#address_1_state_province_id option[value='1031']").attr('selected', 'selected');*/
 	
 	$('.action-item[innerHTML=File On Case]').remove();
 	

@@ -16,5 +16,14 @@
      <title>All Cases Dashlet</title>
      <page_callback>CRM_Dashlet_Page_AllCases</page_callback>
      <access_arguments>access all cases and activities</access_arguments>
-  </item>  
+  </item>
+  
+  <item> <!--add so we override core perm and allow create mailings to access-->
+     <path>civicrm/mailing/browse/archived</path>
+     <title>Archived Mailings</title>
+     <page_callback>CRM_Mailing_Page_Browse</page_callback>
+     <access_arguments>access CiviMail;create mailings;schedule mailings</access_arguments>
+     <page_type>1</page_type>
+     <weight>625</weight>
+  </item>
 </menu>

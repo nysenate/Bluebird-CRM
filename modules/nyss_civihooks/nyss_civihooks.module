@@ -204,10 +204,20 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	}
 	
 	//set English as default preferred language
+	//set New York as default state
 	if ( $formName == 'CRM_Contact_Form_Contact' ) {
 		
+		//we could potentially have as many as 6 addresses, so let's set US and NY default for all
+		$i = 1;
+		while ( $i <= 6 ) {
+    		$defaults['address'][$i]['country_id'] = 1228;
+			$defaults['address'][$i]['state_province_id'] = 1031;
+			$i++;
+		}
+		
 		$defaults['preferred_language'] = 'en';
-        $form->setDefaults( $defaults );
+        
+		$form->setDefaults( $defaults );
 		
 	}
 	
@@ -216,7 +226,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 	
 	unset($tasks[19]); //remove pdf letter creation task, #2284
-	unset($tasks[24]); //remove delete permanently task, #2373
+	//unset($tasks[24]); //remove delete permanently task, #2373
 	
 }
 

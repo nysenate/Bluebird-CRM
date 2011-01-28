@@ -40,6 +40,25 @@
   </table>
 </fieldset>
 
+{*NYSS - add initials*}
+{if $form.buttons.value._qf_Test_next eq 'Inform Scheduler'}
+<fieldset>
+	<legend>Content Verification</legend>
+    <table class="form-layout">
+    	<tr class="crm-mailing-test-form-block-terms">
+        	<td class="label">Terms</td>
+        	<td><p>You are about to inform the scheduler that an email is ready for review and scheduling. Before doing so, please confirm that the e-mail meets all Senate guidelines.</p>
+            	<p>Once you have reviewed the content, enter your intials below to confirm compliance and grant authorization for scheduling and transmission. Note that both the scheduler and approver will also review the content and may reject it if they believe it does not conform with Senate guidelines and policies.</p>
+            </td>
+        </tr>
+    	<tr class="crm-mailing-test-form-block-creator_initials">
+        	<td class="label">{$form.creator_initials.label}</td>
+            <td>{$form.creator_initials.html}</td>
+        </tr> 
+	</table>
+</fieldset>
+{/if}
+
 <div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-closed">
     <div class="crm-accordion-header">
         <div class="icon crm-accordion-pointer"></div> 

@@ -216,10 +216,22 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			CRM_Core_DAO::freeResult( );
 		}
 		$l['contact_source_60'] = 'boe';
+		
+		//fix street_unit
+		//if street_unit value exists, and there is no "apt" text, prepend to value
+		if ( $l['street_unit'] ) {
+			$needle_found = 0;
+			$unit_needles = array ( 'apt', 'unit', 'super', 'sup', 'supt', 'ste', 'rm', 'pvt', 'fl', 'bsmt' );
+			foreach ( $unit_needles as $unit_needle ) {
+				$needle_search = stripos( $l['street_unit'], $unit_needle );
+				if ( $needle_search !== false ) { $needle_found = 1; }
+			}
+			if ( !$needle_found ) { $l['street_unit'] = 'Apt. '.$l['street_unit']; }
+		}
 
 		//form the street address
-		//if (empty($l['street_address'])) $l['street_address'] = "{$l['street_number']} {$l['street_name']}";
-		$l['street_address'] = "{$l['street_number']} {$l['street_name']} {$l['street_unit']}";
+		$l['street_address'] = "{$l['street_number']} {$l['street_name']}";
+		if ( $l['street_unit'] ) { $l['street_address'] = $l['street_address'].', '.$l['street_unit']; }
 
 		//find an address if we don't have an addressID already
 		if (!empty($l['id']) && empty($l['address_id'])) {

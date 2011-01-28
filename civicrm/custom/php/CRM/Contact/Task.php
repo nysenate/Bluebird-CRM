@@ -196,8 +196,8 @@ class CRM_Contact_Task {
                                            'class'  => 'CRM_Event_Form_Participant' );
             }
             
-            if ( CRM_Core_Permission::access( 'CiviMail' ) ) { 
-                self::$_tasks[20] = array( 'title'  => ts( 'Schedule/Send a Mass Mailing' ),
+            if ( CRM_Core_Permission::access( 'CiviMail' ) || CRM_Core_Permission::check( 'create mailings' ) ) { //NYSS
+                self::$_tasks[20] = array( 'title'  => ts( 'Create a Mass Mailing' ),
                                            'class'  => array( 'CRM_Mailing_Form_Group',
                                                               'CRM_Mailing_Form_Settings',
                                                               'CRM_Mailing_Form_Upload',

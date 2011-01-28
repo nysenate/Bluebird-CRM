@@ -314,7 +314,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
 
         require_once 'CRM/Core/BAO/Preferences.php';
         $asp = CRM_Core_BAO_Preferences::value( 'address_standardization_provider' );
-        // clean up the address via specified web services if enabled
+        //NYSS clean up the address via specified web services if enabled
         if ( ! empty( $asp ) ) {
             $rc = include_once "CRM/Utils/Address/$asp.php";
             if ($rc) {
