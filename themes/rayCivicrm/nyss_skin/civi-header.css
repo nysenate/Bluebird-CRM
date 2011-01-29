@@ -121,7 +121,8 @@ padding-left:2px;
 	outline:none;
 	}
 
-.civi-search-section .input-wrapper input.ac_loading {
+.civi-search-section .input-wrapper input.ac_loading,
+.civi-navigation-section .crm-loading .icon {
 	background:transparent url(images/header-search-active.gif) no-repeat center right;
 	}
 
