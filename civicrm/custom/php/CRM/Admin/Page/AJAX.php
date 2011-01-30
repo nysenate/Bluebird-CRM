@@ -368,10 +368,13 @@ class CRM_Admin_Page_AJAX
         $tagID = $_POST['tagID' ];
 		
 		//NYSS - retrieve OpenLeg ID and construct URL
-		$ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
-		if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
-		$ol_url = 'http://open.nysenate.gov/legislation/bill/'.$ol_id;
-		$bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>';
+		$bill_url = '';
+		if ( $parentId == 292 ) {
+			$ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
+			if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
+			$ol_url = 'http://open.nysenate.gov/legislation/bill/'.$ol_id;
+			$bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>';
+		}
 		        
         require_once 'CRM/Core/BAO/EntityTag.php';
         $tagInfo = array( );
