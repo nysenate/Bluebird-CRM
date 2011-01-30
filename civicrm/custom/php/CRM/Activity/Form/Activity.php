@@ -258,17 +258,28 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         
         // if we're not adding new one, there must be an id to
         // an activity we're trying to work on.
+		//NYSS 3157 patch from 3.3.3
         if ( $this->_action != CRM_Core_Action::ADD && 
              get_class( $this->controller ) != 'CRM_Contact_Controller_Search' ) {
             $this->_activityId = CRM_Utils_Request::retrieve( 'id', 'Positive', $this );
         }
-        
+		
+		//NYSS 3157
         $this->_currentlyViewedContactId = $this->get('contactId');
-        if ( ! $this->_currentlyViewedContactId ) {
-            $this->_currentlyViewedContactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this );
+        $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, false, null, 'GET' );
+        if ( ! $this->_currentlyViewedContactId ||
+			 ( $this->_currentlyViewedContactId != $cid ) ) {
+            $this->_currentlyViewedContactId = $cid;
         }
         
-        $this->_activityTypeId = CRM_Utils_Request::retrieve( 'atype', 'Positive', $this );
+		//NYSS 3157
+        $this->_activityTypeId = CRM_Utils_Request::retrieve( 'atype', 'Positive', $this, false, null, 'GET' );
+		//if activity type is not set, look at post var
+		// hack to retrieve activity type id from post variables
+        if ( ! $this->_activityTypeId ) {
+            $this->_activityTypeId = CRM_Utils_Array::value( 'activity_type_id', $_POST );
+        }
+		
         $this->assign( 'atype', $this->_activityTypeId );
         
         //check for required permissions, CRM-6264 

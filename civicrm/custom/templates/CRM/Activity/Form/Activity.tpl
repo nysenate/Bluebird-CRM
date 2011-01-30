@@ -108,7 +108,7 @@
              </tr>
                
         {elseif $action eq 1 or $action eq 2  or $action eq 4 or $context eq 'search' or $context eq 'smog'}
-            { if $activityTypeDescription }  
+            { if $activityTypeDescription && $activityTypeDescription neq '<br />' }{*NYSS hide if just linebreak*}  
                 <div id="help">{$activityTypeDescription}</div>
             {/if}
 
