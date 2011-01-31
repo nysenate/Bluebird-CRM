@@ -44,7 +44,7 @@ data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 
 echo "Clearing CiviCRM database caches"
-sql="truncate civicrm_acl_cache; truncate civicrm_acl_contact_cache; truncate civicrm_cache; truncate civicrm_group_contact_cache; truncate civicrm_menu; truncate civicrm_uf_match; UPDATE civicrm_preferences SET navigation=NULL;"
+sql="truncate civicrm_acl_cache; truncate civicrm_acl_contact_cache; truncate civicrm_cache; truncate civicrm_group_contact_cache; truncate civicrm_menu; truncate civicrm_uf_match; truncate civicrm_task_action_temp; update civicrm_preferences set navigation=null;"
 [ $clear_all -eq 1 ] && sql="truncate civicrm_log; $sql"
 ( set -x
   $execSql -i $instance -c "$sql"
