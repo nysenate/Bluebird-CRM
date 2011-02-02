@@ -196,7 +196,15 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
            </tr> 
            <tr class="crm-case-activity-form-block-activity_date_time">
               <td class="label">{$form.activity_date_time.label}</td>
-              <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=activity_date_time}</td>
+             {if $action eq 2 && $activityTypeFile eq 'OpenCase'}
+               <td class="view-value">{$current_activity_date_time|crmDate}
+               <div class="description">Use a <a href="{$changeStartURL}">Change Start Date</a> activity to change the date</div>
+               {* avoid errors about missing field *}
+               <div style="display: none;">{include file="CRM/common/jcalendar.tpl" elementName=activity_date_time}</div>
+               </td>
+             {else}
+               <td class="view-value">{include file="CRM/common/jcalendar.tpl" elementName=activity_date_time}</td>
+             {/if}
            </tr>
            <tr>
               <td colspan="2"><div id="customData"></div></td>

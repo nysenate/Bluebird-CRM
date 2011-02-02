@@ -34,7 +34,8 @@
  *
  */
 
-class CRM_Contribute_BAO_Contribution_Utils {
+class CRM_Contribute_BAO_Contribution_Utils
+{
 
     /**
      * Function to process payment after confirmation
@@ -65,13 +66,17 @@ class CRM_Contribute_BAO_Contribution_Utils {
         
         require_once 'CRM/Contribute/DAO/ContributionType.php';
         $contributionType = new CRM_Contribute_DAO_ContributionType( );
-        if( isset( $paymentParams['contribution_type'] ) ) {
+        if ( isset( $paymentParams['contribution_type'] ) ) {
             $contributionType->id = $paymentParams['contribution_type'];
+        } else if ( CRM_Utils_Array::value( 'pledge_id', $form->_values ) ) {
+            $contributionType->id = CRM_Core_DAO::getFieldValue( 'CRM_Pledge_DAO_Pledge', 
+                                                                 $form->_values['pledge_id'], 
+                                                                 'contribution_type_id' );
         } else {
             $contributionType->id = $contributionTypeId;
         }
         if ( ! $contributionType->find( true ) ) {
-            CRM_Core_Error::fatal( "Could not find a system table" );
+            CRM_Core_Error::fatal( 'Could not find a system table' );
         }
         
         // add some contribution type details to the params list
@@ -147,7 +152,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
                             $form->_values['priceSetID'] = $form->_priceSetId;
                         }
                         
-                        require_once "CRM/Contribute/BAO/ContributionPage.php";
+                        require_once 'CRM/Contribute/BAO/ContributionPage.php';
                         $form->_values['contribution_id'] = $contribution->id;
                         CRM_Contribute_BAO_ContributionPage::sendMail( $contactID,
                                                                        $form->_values,
@@ -271,7 +276,7 @@ class CRM_Contribute_BAO_Contribution_Utils {
         }
         
         // finally send an email receipt
-        require_once "CRM/Contribute/BAO/ContributionPage.php";
+        require_once 'CRM/Contribute/BAO/ContributionPage.php';
         $form->_values['contribution_id'] = $contribution->id;
         CRM_Contribute_BAO_ContributionPage::sendMail( $contactID, $form->_values, $contribution->is_test );
     }
@@ -362,7 +367,7 @@ INNER JOIN   civicrm_contact contact ON ( contact.id = contrib.contact_id )
 
         if ( CRM_Utils_Array::value( 'cms_create_account', $params ) ) {
             $params['contactID'] = $contactID;
-            require_once "CRM/Core/BAO/CMSUser.php";
+            require_once 'CRM/Core/BAO/CMSUser.php';
             if ( ! CRM_Core_BAO_CMSUser::create( $params, $mail ) ) {
                 CRM_Core_Error::statusBounce( ts('Your profile is not saved and Account is not created.') );
             }

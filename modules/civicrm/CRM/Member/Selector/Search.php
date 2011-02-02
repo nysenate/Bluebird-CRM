@@ -71,7 +71,8 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
      * @var array
      * @static
      */
-    static $_properties = array( 'contact_id', 'membership_id',
+    static $_properties = array( 'contact_id', 
+                                 'membership_id',
                                  'contact_type',
                                  'sort_name',
                                  'membership_type',
@@ -389,9 +390,9 @@ class CRM_Member_Selector_Search extends CRM_Core_Selector_Base implements CRM_C
                                                                       'cxt' => $this->_context ) );
              }
              
-             $isRecur = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_Membership' , 
-                                                     $result->membership_id, 'contribution_recur_id' );
-             $row['auto_renew'] = ( $isRecur && $isCancelSupported ) ? true : false;
+             $autoRenew = false;
+             if ( isset( $result->membership_recur_id ) && $result->membership_recur_id ) $autoRenew =  true;
+             $row['auto_renew'] = $autoRenew;
              
              require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
              $row['contact_type' ] = 

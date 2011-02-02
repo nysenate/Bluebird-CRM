@@ -139,6 +139,7 @@ class CRM_Price_BAO_FieldValue extends CRM_Price_DAO_FieldValue
     {
         $fieldValueDAO = new CRM_Price_DAO_FieldValue( );
         $fieldValueDAO->price_field_id = $fieldId;
+        $fieldValueDAO->orderBy( $orderBy, 'label' );
         if ( $isActive ) {
             $fieldValueDAO->is_active = 1;
         }

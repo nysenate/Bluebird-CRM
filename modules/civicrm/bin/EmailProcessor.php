@@ -228,7 +228,7 @@ class EmailProcessor {
                                           'event_queue_id' => $queue,
                                           'hash'           => $hash,
                                           'bodyTxt'        => null,
-                                          'replyTo'        => $rt,
+                                          'replyTo'        => $replyTo,
                                           'bodyHTML'       => null,
                                           'fullEmail'      => $mail->generate()
                                           );

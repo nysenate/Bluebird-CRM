@@ -35,10 +35,12 @@
  */
 
 require_once 'CRM/Core/Form.php';
-require_once "CRM/Custom/Form/CustomData.php";
+require_once 'CRM/Mailing/Info.php';
+require_once 'CRM/Custom/Form/CustomData.php';
 require_once 'CRM/Contact/BAO/GroupNesting.php';
 require_once 'CRM/Core/BAO/Domain.php';
-
+require_once 'CRM/Core/OptionGroup.php';
+   
 /**
  * This class is to build the form for adding Group
  */
@@ -150,7 +152,8 @@ class CRM_Group_Form_Edit extends CRM_Core_Form
      * @access public
      * @return None
      */
-    function setDefaultValues( ) {
+    function setDefaultValues( )
+    {
         $defaults = array( );
 
         if ( isset( $this->_id ) ) {
@@ -178,6 +181,16 @@ class CRM_Group_Form_Edit extends CRM_Core_Form
             }
         }
 
+        if ( !( ( CRM_Core_Permission::check( 'access CiviMail' ) ) || 
+                ( CRM_Mailing_Info::workflowEnabled( ) && CRM_Core_Permission::check( 'create mailings' ) ) ) ) {
+            $groupTypes = CRM_Core_OptionGroup::values( 'group_type', true );
+            if ( $defaults['group_type'][$groupTypes['Mailing List']] == 1 ) {
+                $this->assign( 'freezeMailignList', $groupTypes['Mailing List'] ); 
+            } else {
+                $this->assign( 'hideMailignList', $groupTypes['Mailing List'] ); 
+            }
+        }
+        
         if ( !CRM_Utils_Array::value('parents',$defaults) ) {
             $defaults['parents'] = CRM_Core_BAO_Domain::getGroupId( );
         }
@@ -215,7 +228,6 @@ class CRM_Group_Form_Edit extends CRM_Core_Form
         $this->add('textarea', 'description', ts('Description') . ' ', 
                    CRM_Core_DAO::getAttribute( 'CRM_Contact_DAO_Group', 'description' ) );
 
-        require_once 'CRM/Core/OptionGroup.php';
         $groupTypes = CRM_Core_OptionGroup::values( 'group_type', true );
         $config= CRM_Core_Config::singleton( );
         if ( (isset( $this->_id ) &&
@@ -224,10 +236,6 @@ class CRM_Group_Form_Edit extends CRM_Core_Form
             unset( $groupTypes['Access Control'] );
         }
         
-        if ( ! CRM_Core_Permission::access( 'CiviMail' ) ) {
-            unset( $groupTypes['Mailing List'] );
-        }
-
         if ( ! empty( $groupTypes ) ) {
             $this->addCheckBox( 'group_type',
                                 ts( 'Group Type' ),

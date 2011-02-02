@@ -43,15 +43,21 @@ class CRM_Campaign_Page_AJAX
     
     static function registerInterview( )
     {
-        $voterId    = CRM_Utils_Array::value( 'voter_id',    $_POST );
-        $activityId = CRM_Utils_Array::value( 'activity_id', $_POST );
-        $params     = array( 'voter_id'         => $voterId,
-                             'activity_id'      => $activityId,
-                             'details'          => CRM_Utils_Array::value( 'note',             $_POST ),
-                             'result'           => CRM_Utils_Array::value( 'result',           $_POST ),
-                             'interviewer_id'   => CRM_Utils_Array::value( 'interviewer_id',   $_POST ),
-                             'activity_type_id' => CRM_Utils_Array::value( 'activity_type_id', $_POST ),
-                             'surveyTitle'      => CRM_Utils_Array::value( 'surveyTitle',      $_POST ) );
+        $fields = array( 'result',
+                         'voter_id',
+                         'ufGroupId',
+                         'activity_id',
+                         'surveyTitle',
+                         'interviewer_id',
+                         'activity_type_id' );
+        
+        $params = array( );
+        foreach ( $fields as $fld ) {
+            $params[$fld] =  CRM_Utils_Array::value( $fld, $_POST );
+        }
+        $params['details'] = CRM_Utils_Array::value( 'note', $_POST );
+        $voterId    = $params['voter_id'];
+        $activityId = $params['activity_id'];
         
         $customKey = "field_{$voterId}_custom";
         foreach ( $_POST as $key => $value ) {
@@ -61,20 +67,32 @@ class CRM_Campaign_Page_AJAX
             }
         }
         
-        if ( isset($_POST['field']) &&
-             CRM_Utils_Array::value( $voterId, $_POST['field']) ) {
+        if ( isset( $_POST['field'] ) &&
+             CRM_Utils_Array::value( $voterId, $_POST['field'] ) && 
+             is_array( $_POST['field'][$voterId] ) ) {
             foreach( $_POST['field'][$voterId] as $fieldKey => $value ) {
-                if ( !empty($value) ) {
-                    $params[$fieldKey] = $value;
-                }
+                $params[$fieldKey] = $value;
             }
         }
-
-        require_once 'CRM/Campaign/Form/Task/Interview.php';
-        $activityId = CRM_Campaign_Form_Task_Interview::registerInterview( $params );
-        $result = array( 'status'       => ( $activityId ) ? 'success' : 'fail',
+        
+        require_once "CRM/Utils/JSON.php";
+        $result = array( 'status'       => 'fail',
                          'voter_id'     => $voterId,
                          'activity_id'  => $params['interviewer_id'] );
+        
+        //time to validate custom data.
+        require_once 'CRM/Core/BAO/CustomField.php';
+        $errors = CRM_Core_BAO_CustomField::validateCustomData( $params );
+        if ( is_array( $errors ) && !empty( $errors )  ) {
+            $result['errors'] = $errors;
+            echo json_encode( $result );
+            CRM_Utils_System::civiExit( );
+        }
+        
+        //process the response/interview data.
+        require_once 'CRM/Campaign/Form/Task/Interview.php';
+        $activityId = CRM_Campaign_Form_Task_Interview::registerInterview( $params );
+        if ( $activityId ) $result['status'] = 'success'; 
         
         require_once "CRM/Utils/JSON.php";
         echo json_encode( $result );
@@ -83,7 +101,7 @@ class CRM_Campaign_Page_AJAX
     }
     
     static function loadOptionGroupDetails( ) {
-
+        
         $id       = CRM_Utils_Array::value( 'option_group_id', $_POST );
         $status   = 'fail';
         $opValues = array( );
@@ -129,6 +147,7 @@ class CRM_Campaign_Page_AJAX
                                'sort_name', 
                                'street_unit',
                                'street_name',
+                               'postal_code',
                                'street_number', 
                                'street_address', 
                                'survey_interviewer_id', 

@@ -42,6 +42,11 @@
        {/foreach}
     </tbody>
 </table>
+<div class="clear"><br /></div>
+<div class="action-link">
+    <a href="{crmURL p="civicrm/contact/deduperules" q="reset=1"}" class="button"><span>{ts}Done{/ts}</span></a>
+</div>
+
 
 {literal}
 <script type="text/javascript">

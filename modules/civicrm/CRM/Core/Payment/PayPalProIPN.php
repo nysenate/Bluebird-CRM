@@ -177,10 +177,18 @@ class CRM_Core_Payment_PayPalProIPN extends CRM_Core_Payment_BaseIPN {
         $recur->save( );
 
         if ( $sendNotification ) {
+            $autoRenewMembership = false;
+            if ( $recur->id && 
+                 isset( $ids['membership'] ) && $ids['membership'] ) {
+                $autoRenewMembership = true;
+            }
             //send recurring Notification email for user
             require_once 'CRM/Contribute/BAO/ContributionPage.php';
-            CRM_Contribute_BAO_ContributionPage::recurringNofify( $subscriptionPaymentStatus, $ids['contact'], 
-                                                                  $ids['contributionPage'], $recur );
+            CRM_Contribute_BAO_ContributionPage::recurringNofify( $subscriptionPaymentStatus, 
+                                                                  $ids['contact'], 
+                                                                  $ids['contributionPage'], 
+                                                                  $recur,
+                                                                  $autoRenewMembership );
         }
 
         if ( $txnType != 'recurring_payment' ) {

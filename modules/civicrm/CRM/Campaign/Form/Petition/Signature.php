@@ -457,11 +457,12 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form
 
 			require_once 'CRM/Core/Transaction.php';
 			$transaction = new CRM_Core_Transaction( );
-				
-			$this->_contactId = CRM_Contact_BAO_Contact::createProfileContact($params, $this->_contactProfileFields,
-																	   $this->_contactId, $this->_addToGroupID,
-																	   $this->_contactProfileId, $this->_ctype,
-																	   true );
+			
+            $addToGroupID = isset($this->_addToGroupID) ? $this->_addToGroupID : null;
+			$this->_contactId = CRM_Contact_BAO_Contact::createProfileContact( $params, $this->_contactProfileFields,
+                                                                               $this->_contactId, $addToGroupID,
+                                                                               $this->_contactProfileId, $this->_ctype,
+                                                                               true );
 
 			// get additional custom activity profile field data 
 			// to save with new signature activity record
@@ -537,8 +538,8 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form
             require_once 'CRM/Profile/Form.php';
             $session = CRM_Core_Session::singleton( );
             $this->assign( "petition" , $this->petition );
-            //$contactID = $this->_contactId;	   
-            $this->assign( contact_id, $this->_contactId );
+            $contactID = null; //$contactID = $this->_contactId;	   
+            $this->assign( 'contact_id', $this->_contactId );
 
             $fields = null;
             if ( $contactID ) { //TODO: contactID is never set (commented above)
@@ -592,13 +593,13 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form
     }
        
 
-  function getTemplateFileName() {
-    if ($this->thankyou) {
-       return('CRM/Campaign/Page/Petition/ThankYou.tpl');
-    } else {
+    function getTemplateFileName() {
+        if ( isset($this->thankyou) ) {
+            return('CRM/Campaign/Page/Petition/ThankYou.tpl');
+        } else {
+        }
+        return parent::getTemplateFileName();
     }
-      return parent::getTemplateFileName();
-  }
  
     // check if user has already signed this petition    
 	function redirectIfSigned( $params )

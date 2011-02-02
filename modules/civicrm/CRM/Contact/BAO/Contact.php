@@ -152,7 +152,7 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact
             $allNull = false;
 
             //format individual fields
-            require_once "CRM/Contact/BAO/Individual.php";
+            require_once 'CRM/Contact/BAO/Individual.php';
             CRM_Contact_BAO_Individual::format( $params, $contact );
         } else if ($contact->contact_type == 'Household') {
             if ( isset( $params['household_name'] ) ) {
@@ -997,7 +997,7 @@ WHERE id={$id}; ";
             if ( ! $fields ) {
                 $fields = CRM_Contact_DAO_Contact::import( );
 
-                require_once "CRM/Core/OptionValue.php";
+                require_once 'CRM/Core/OptionValue.php';
                 // get the fields thar are meant for contact types
                 if ( in_array($contactType, array('Individual', 'Household', 'Organization', 'All')) ) {
                     $fields = array_merge( $fields, CRM_Core_OptionValue::getFields('', $contactType ) );  
@@ -1170,7 +1170,7 @@ WHERE id={$id}; ";
                 $fields = array_merge($fields, $locationFields);
 
                 //add world region
-                require_once "CRM/Core/DAO/Worldregion.php";
+                require_once 'CRM/Core/DAO/Worldregion.php';
                 $fields = array_merge($fields,
                                       CRM_Core_DAO_Worldregion::export( ) );
 
@@ -1475,7 +1475,7 @@ ORDER BY civicrm_email.is_primary DESC";
         } else {
             //we should get contact type only if contact
             if ( $ufGroupId ) {
-                require_once "CRM/Core/BAO/UFField.php";
+                require_once 'CRM/Core/BAO/UFField.php';
                 $data['contact_type'] = CRM_Core_BAO_UFField::getProfileType( $ufGroupId );
                 
                 //special case to handle profile with only contact fields
@@ -1499,10 +1499,10 @@ ORDER BY civicrm_email.is_primary DESC";
             $data['contact_sub_type'] = $subType;
         }
         
-        if ( $ctype == "Organization" ) {
-            $data["organization_name"] = $contactDetails["organization_name"];
-        } else if ( $ctype == "Household" ) {
-            $data["household_name"] = $contactDetails["household_name"];
+        if ( $ctype == 'Organization' ) {
+            $data['organization_name'] = CRM_Utils_Array::value( 'organization_name', $contactDetails );
+        } else if ( $ctype == 'Household' ) {
+            $data['household_name'] = CRM_Utils_Array::value( 'household_name', $contactDetails );
         }
 
         $locationType = array( );
@@ -1513,7 +1513,7 @@ ORDER BY civicrm_email.is_primary DESC";
             $data['contact_id'] = $contactID;
             $primaryLocationType = self::getPrimaryLocationType($contactID);
         } else {
-            require_once "CRM/Core/BAO/LocationType.php";
+            require_once 'CRM/Core/BAO/LocationType.php';
             $defaultLocation =& CRM_Core_BAO_LocationType::getDefault();
             $defaultLocationId = $defaultLocation->id;
         }
@@ -1713,7 +1713,7 @@ ORDER BY civicrm_email.is_primary DESC";
         $privacy = CRM_Core_SelectValues::privacy( );
         foreach ($privacy as $key => $value) {
             if (array_key_exists($key, $fields)) {
-                if ($params[$key]) {
+                if ( CRM_Utils_Array::value( $key, $params ) ) {
                     $data[$key] = $params[$key];
                 } else {
                     $data[$key] = 0;
@@ -2264,7 +2264,7 @@ UNION
       * @return array  $locBlockIds  loc block ids which fulfill condition. 
       * @static
       */
-     static function getLocBlockIds( $contactId, $criteria = array( ), $condOperator = "AND" ) 
+     static function getLocBlockIds( $contactId, $criteria = array( ), $condOperator = 'AND' ) 
      {
          $locBlockIds = array( );
          if ( !$contactId ) {

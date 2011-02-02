@@ -101,6 +101,14 @@
                   {$form.street_number.html}
               </td>
 	  </tr>
+          <tr>
+	      <td class="font-size12pt">
+                  {$form.postal_code.label}
+       	      </td>
+              <td>	
+                  {$form.postal_code.html}
+              </td>
+	  </tr>
 	  {if $customSearchFields.ward || $customSearchFields.precinct}
 	  <tr>
 	      {if $customSearchFields.ward}

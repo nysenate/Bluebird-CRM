@@ -636,12 +636,12 @@ class CRM_Contribute_Form_Contribution_Main extends CRM_Contribute_Form_Contribu
         $frUnits = CRM_Utils_Array::value( 'recur_frequency_unit', $form->_values );
         if ( empty( $frUnits ) && 
              $className == 'CRM_Contribute_Form_Contribution' ) {
-            $frUnits = implode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+            $frUnits = implode( CRM_Core_DAO::VALUE_SEPARATOR,
                                 CRM_Core_OptionGroup::values(  'recur_frequency_units' ) );
         }
         
         $units    = array( );
-        $unitVals = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $frUnits );
+        $unitVals = explode( CRM_Core_DAO::VALUE_SEPARATOR, $frUnits );
         $frequencyUnits = CRM_Core_OptionGroup::values( 'recur_frequency_units' );
         foreach ( $unitVals as $key => $val ) {
             if ( array_key_exists( $val, $frequencyUnits ) ) {

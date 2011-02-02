@@ -42,6 +42,16 @@ class CRM_Core_Payment_IATS extends CRM_Core_Payment {
         CHARSET  = 'UFT-8'; # (not used, implicit in the API, might need to convert?)
     const
         CURRENCIES = 'CAD,USD,AUD,GBP,EUR,NZD'; /* check IATS website for additional supported currencies */
+
+    /** 
+     * We only need one instance of this object. So we use the singleton 
+     * pattern and cache the instance in this variable 
+     * 
+     * @var object 
+     * @static 
+     */ 
+    static private $_singleton = null;
+
     /** 
      * Constructor 
      *
@@ -62,6 +72,14 @@ class CRM_Core_Payment_IATS extends CRM_Core_Payment {
             // Configuration error: default currency must be in CURRENCIES const
             return self::error('Invalid configuration:'.$currencyID.', you must use one of '.self::CURRENCIES.' with IATS'); 
         }
+    }
+
+    static function &singleton( $mode, &$paymentProcessor ) {
+        $processorName = $paymentProcessor['name'];
+        if (self::$_singleton[$processorName] === null ) {
+            self::$_singleton[$processorName] = new CRM_Core_Payment_IATS( $mode, $paymentProcessor );
+        }
+        return self::$_singleton[$processorName];
     }
 
     function doDirectPayment( &$params ) {

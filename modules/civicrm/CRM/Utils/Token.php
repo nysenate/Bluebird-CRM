@@ -62,6 +62,8 @@ class CRM_Utils_Token
                                                       'approvalStatus',
                                                       'approvalNote',
                                                       'approveUrl',
+                                                      'creator',
+                                                      'creatorEmail'
                                                       ),
                              'contact'       => null,  // populate this dynamically
                              'domain'        => array( 
@@ -423,6 +425,14 @@ class CRM_Utils_Token
                                             true, null, false, true );
             break;
             
+        case 'creator':
+            $value = CRM_Contact_BAO_Contact::displayName( $mailing->created_id );
+            break;
+
+        case 'creatorEmail':
+            $value = CRM_Contact_BAO_Contact::getPrimaryEmail( $mailing->created_id );
+            break;
+            
         default:
             $value = "{mailing.$token}";
             break;
@@ -430,7 +440,7 @@ class CRM_Utils_Token
      
         if ( $escapeSmarty ) {
             $value = self::tokenEscapeSmarty( $value );
-        }
+        }     
         return $value;
     }
 

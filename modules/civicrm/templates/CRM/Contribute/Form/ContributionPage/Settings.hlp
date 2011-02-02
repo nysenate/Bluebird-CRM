@@ -24,12 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 {htxt id="id-contribution_type"}
-<p>{ts}Select the corresponding contribution type for contributions made using this page (e.g. donation, capital campaign, etc.).
-Contribution types (and associated accounting codes) are included when contributions are exported, so it can helpful to set up
-specific types for accounting purposes. You can add or modify contribution available types from Administer &gt; CiviContribute &gt; Contribution Types.{/ts}</p>
-<p>{ts}NOTE: If you are using this contribution page for membership signup and renewals, the contribution type configured in the
-membership type settings will be used when recording the membership payment. The contribution type selected here will only be used
-if you are also collecting additional contributions (as configured on the Membership Settings page).{/ts}</p>
+<p>{ts}Select the corresponding contribution type for contributions made using this page (e.g. donation, capital campaign, etc.). Contribution types (and associated accounting codes) are included when contributions are exported, so it can helpful to set up specific types for accounting purposes. You can add or modify contribution available types from Administer &gt; CiviContribute &gt; Contribution Types.{/ts}</p>
+<p>{ts}NOTE: If you are using this contribution page for membership signup and renewals, the contribution type configured in the membership type settings will be used when recording the membership payment. The contribution type selected here will only be used if you are also collecting additional contributions (as configured on the Membership Settings page).{/ts}</p>
 {/htxt}
 
 {htxt id="id-intro_msg"}
@@ -53,7 +49,5 @@ if you are also collecting additional contributions (as configured on the Member
 {/htxt}
 
 {htxt id="id-is_organization"}
-{ts}When enabled, this feature allows users to identify an organization as the donor or member. Logged in users will be given a choice of selecting from a list of organizations that they have a permissioned relationship with OR entering a new organization.
-Anonymous users are prompted to enter the organization name. If a matching organization is found using your site's configured strict duplicate matching rules for Organizations, the contribution or membership will be linked to that organization. Otherwise a new organization
-contact record is created. In either case, users will be able to optionally enter email, phone and postal address data for the organization.{/ts}
-{/htxt} 
+{ts}When enabled, this feature allows users to identify an organization as the donor or member. Logged in users will be given a choice of selecting from a list of organizations that they have a permissioned relationship with OR entering a new organization. Anonymous users are prompted to enter the organization name. If a matching organization is found using your site's configured strict duplicate matching rules for Organizations, the contribution or membership will be linked to that organization. Otherwise a new organization contact record is created. In either case, users will be able to optionally enter email, phone and postal address data for the organization.{/ts}
+{/htxt}

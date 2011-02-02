@@ -271,7 +271,7 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
      * Function to calculate start date and end date for new membership 
      * 
      * @param int  $membershipTypeId membership type id
-     * @param date $joinDate join date ( in mysql date format ) 
+     * @param date $joinDate member since ( in mysql date format ) 
      * @param date $startDate start date ( in mysql date format ) 
      *
      * @return array associated array with  start date, end date and join date for the membership
@@ -352,6 +352,13 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
                     $fixed_period_rollover = true;
                     $year = $year + 1;
                 } 
+                
+                //CRM-7392 --now we have all dates in hand,
+                //in case join date is less than fixed start and 
+                //calculated roll over date, lets reduce year by one 
+                if ( ( $joinDate < $fixedStartDate ) && ( $joinDate < $actualRolloverDate ) ) {
+                    $year = $year - 1;
+                }
                 
                 $actualStartDate = date( 'Y-m-d', mktime( 0, 0, 0, $startMonth, $startDay, $year ) );
                 if ( !$startDate ) {

@@ -445,6 +445,7 @@ class CRM_Member_Import_Form_MapField extends CRM_Core_Form {
                     $weightSum += $ruleFields[$val];
                 }
             }
+            $fieldMessage = '';
             foreach ($ruleFields as $field => $weight) {
                 $fieldMessage .= ' '.$field.'(weight '.$weight.')';
             }
@@ -528,13 +529,13 @@ class CRM_Member_Import_Form_MapField extends CRM_Core_Form {
             $mapper[$i]     = $this->_mapperFields[$mapperKeys[$i][0]];
             $mapperKeysMain[$i] = $mapperKeys[$i][0];
             
-            if (is_numeric($mapperKeys[$i][1])) {
+            if ( CRM_Utils_Array::value( 1, $mapperKeys[$i] ) && is_numeric( $mapperKeys[$i][1] ) ) {
                 $mapperLocType[$i] = $mapperKeys[$i][1];
             } else {
                 $mapperLocType[$i] = null;
             }
 
-            if ( !is_numeric($mapperKeys[$i][2])) {
+            if ( CRM_Utils_Array::value( 2, $mapperKeys[$i] ) && ( !is_numeric( $mapperKeys[$i][2] ) ) ) {
                 $mapperPhoneType[$i] = $mapperKeys[$i][2];
             } else {
                 $mapperPhoneType[$i] = null;
@@ -565,7 +566,10 @@ class CRM_Member_Import_Form_MapField extends CRM_Core_Form {
                 $updateMappingFields->mapping_id = $params['mappingId'];
                 $updateMappingFields->column_number = $i;
 
-                list($id, $first, $second) = explode('_', $mapperKeys[$i][0]);
+                $mapperKeyParts = explode( '_', $mapperKeys[$i][0], 3 );
+                $id     = isset( $mapperKeyParts[0] ) ? $mapperKeyParts[0] : null;
+                $first  = isset( $mapperKeyParts[1] ) ? $mapperKeyParts[1] : null;
+                $second = isset( $mapperKeyParts[2] ) ? $mapperKeyParts[2] : null;
                 $updateMappingFields->name = $mapper[$i];
                 $updateMappingFields->save();                
             }
@@ -586,7 +590,10 @@ class CRM_Member_Import_Form_MapField extends CRM_Core_Form {
                 $saveMappingFields->mapping_id = $saveMapping->id;
                 $saveMappingFields->column_number = $i;                             
                 
-                list($id, $first, $second) = explode('_', $mapperKeys[$i][0]);
+                $mapperKeyParts = explode( '_', $mapperKeys[$i][0], 3 );
+                $id     = isset( $mapperKeyParts[0] ) ? $mapperKeyParts[0] : null;
+                $first  = isset( $mapperKeyParts[1] ) ? $mapperKeyParts[1] : null;
+                $second = isset( $mapperKeyParts[2] ) ? $mapperKeyParts[2] : null;
                 $saveMappingFields->name = $mapper[$i];
                 $saveMappingFields->save();
             }

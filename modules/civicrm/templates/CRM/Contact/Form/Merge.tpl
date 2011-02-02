@@ -33,7 +33,7 @@
 </div>
 
 <div class="action-link">
-       <a id='notDuplicate' href="#" title={ts}Mark this pair as not a duplicate.{/ts} onClick="processDupes( {$main_cid}, {$other_cid}, 'dupe-nondupe', 'merge-contact', '{$userContextURL}' );return false;">&raquo; {ts}Mark this pair as not a duplicate.{/ts}</a>
+       <a id='notDuplicate' href="#" title={ts}Mark this pair as not a duplicate.{/ts} onClick="processDupes( {$main_cid}, {$other_cid}, 'dupe-nondupe', 'merge-contact', '{crmURL p="civicrm/contact/deduperules" q="reset=1&context=nonDupe"}' );return false;">&raquo; {ts}Mark this pair as not a duplicate.{/ts}</a>
 </div>	
 
 <table>
@@ -80,7 +80,7 @@
   {foreach from=$rel_tables item=params key=paramName}
     {if $paramName eq 'move_rel_table_users'}
       <tr class="{cycle values="even-row,odd-row"}">
-      <th>{ts}Move related...{/ts}</th><td><a href="{$params.other_url}">{$params.other_title}</a></td><td style='white-space: nowrap'>{if $otherUfId}=={$form.$paramName.html}==&gt;{/if}</td><td>{if $mainUfId}<a href="{$params.main_url}">{$params.main_title}</a>{/if}</td>
+      <th>{ts}Move related...{/ts}</th><td>{if $otherUfId}<a href="{$params.other_url}">{$params.other_title}</a></td><td style='white-space: nowrap'>=={$form.$paramName.html}==&gt;{else}<td style='white-space: nowrap'></td>{/if}</td><td>{if $mainUfId}<a href="{$params.main_url}">{$params.main_title}</a>{/if}</td>
     </tr>
     {else}
     <tr class="{cycle values="even-row,odd-row"}">
@@ -93,10 +93,10 @@
   <!--<p>{$form.moveBelongings.html} {$form.moveBelongings.label}</p>-->
   <!--<p>{$form.deleteOther.html} {$form.deleteOther.label}</p>-->
 </div>
-<div class="form-item">
+<div class="message status">
     <p><strong>{ts}WARNING: The duplicate contact record WILL BE DELETED after the merge is complete.{/ts}</strong></p>
     {if $user}
-      <p><strong>{ts}There are Drupal user accounts associated with both the original and duplicate contacts. If you continue with the merge, the user record associated with the duplicate contact will not be deleted, but will be un-linked from the associated contact record (which will be deleted). If that user logs in again, a new contact record will be created for them.{/ts}</strong></p>
+      <p><strong>{ts 1=$config->userFramework}There are %1 user accounts associated with both the original and duplicate contacts. If you continue with the merge, the user record associated with the duplicate contact will not be deleted, but will be un-linked from the associated contact record (which will be deleted). If that user logs in again, a new contact record will be created for them.{/ts}</strong></p>
     {/if}
     {if $other_contact_subtype}
       <p><strong>The duplicate contact (the one that will be deleted) is a <em>{$other_contact_subtype}</em>. Any data related to this will be lost forever (there is no undo) if you complete the merge.</strong></p>

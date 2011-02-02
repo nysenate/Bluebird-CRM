@@ -60,6 +60,12 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule
      * @return string  SQL query performing the search
      */
     function sql() {
+        if ( $this->params && 
+             ( !array_key_exists($this->rule_table, $this->params) || 
+               !array_key_exists($this->rule_field, $this->params[$this->rule_table]) ) ) {
+            // if params is present and doesn't have an entry for a field, don't construct the clause.
+            return null;
+        }
 
         // we need to initialise WHERE, ON and USING here, as some table types 
         // extend them; $where is an array of required conditions, $on and 

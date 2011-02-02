@@ -84,7 +84,6 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
             if ( ! CRM_Core_Permission::check( 'schedule mailings' ) &&
                  CRM_Core_Permission::check( 'create mailings' ) ) {
                 $name = ts('Inform Scheduler');
-                
             }
         }
         
@@ -105,21 +104,14 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
             $buttons = array( array(  'type'  => 'back',
                                       'name'  => ts('<< Previous')),
                               array(  'type'  => 'next',
-                                      'name'  => ts('Next >>'),
+                                      'name'  => $name,
                                       'spacing' => '&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;',
                                       'isDefault' => true ),
                               array(  'type'  => 'cancel',
                                       'name'  => ts('Cancel') ),
                               );
         }
-        require_once 'CRM/Mailing/Info.php';
-        if ( CRM_Mailing_Info::workflowEnabled( ) ) {
-            if ( ! CRM_Core_Permission::check( 'schedule mailings' ) &&
-                 CRM_Core_Permission::check( 'create mailings' ) ) {
-                unset($buttons[2]);
-            }
-        }
-        
+
         $this->addButtons( $buttons );
               
         $mailingID = $this->get( 'mailing_id' );
@@ -141,13 +133,17 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
         $this->assign( 'preview', $preview );
         //Token Replacement of Subject in preview mailing
         $options = array( );
-        $session->getVars( $options, "CRM_Mailing_Controller_Send_$qfKey" );
+        $prefix  = "CRM_Mailing_Controller_Send_$qfKey";
+        if ( $this->_searchBasedMailing ) {
+            $prefix = "CRM_Contact_Controller_Search_$qfKey";
+        }
+        $session->getVars( $options, $prefix );
         
         require_once 'CRM/Mailing/BAO/Mailing.php';
         $mailing = new CRM_Mailing_BAO_Mailing( );
         $mailing->id = $options['mailing_id'];
         $mailing->find( true );
-        $fromEmail   = $mailing->from_email;
+        $fromEmail = $mailing->from_email;
         
         require_once 'CRM/Core/BAO/File.php';
         $attachments =& CRM_Core_BAO_File::getEntityFile( 'civicrm_mailing',
@@ -242,6 +238,15 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
             } else { 
                 $status = ts("Your mailing has been saved. Click the 'Continue' action to resume working on it.");
                 CRM_Core_Session::setStatus( $status );
+                $url = CRM_Utils_System::url( 'civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1' );
+                CRM_Utils_System::redirect( $url );
+            }
+        }
+        
+        require_once 'CRM/Mailing/Info.php';
+        if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+            if ( ! CRM_Core_Permission::check( 'schedule mailings' ) &&
+                CRM_Core_Permission::check( 'create mailings' ) ) {
                 $url = CRM_Utils_System::url( 'civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1' );
                 CRM_Utils_System::redirect( $url );
             }

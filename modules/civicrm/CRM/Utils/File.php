@@ -279,9 +279,12 @@ class CRM_Utils_File {
             $extensions = array_change_key_case( $extensions, CASE_LOWER );
             // allow html/htm extension ONLY if the user is admin 
             // and/or has access CiviMail
+            require_once 'CRM/Mailing/Info.php';
             require_once 'CRM/Core/Permission.php';
-            if ( ! CRM_Core_Permission::check( 'access CiviMail' ) &&
-                 ! CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
+            if ( ! ( CRM_Core_Permission::check( 'access CiviMail' ) ||
+                     CRM_Core_Permission::check( 'administer CiviCRM' ) ||
+                     ( CRM_Mailing_Info::workflowEnabled( ) && 
+                       CRM_Core_Permission::check( 'create mailings' ) ) ) ) {
                 unset( $extensions['html'] );
                 unset( $extensions['htm' ] );
             }

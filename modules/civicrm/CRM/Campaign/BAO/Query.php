@@ -299,6 +299,7 @@ INNER JOIN civicrm_activity_assignment ON ( civicrm_activity.id = civicrm_activi
         $form->add( 'text', 'street_unit',     ts( 'Street Unit'    ), $attributes['street_unit']    );
         $form->add( 'text', 'street_address',  ts( 'Street Address' ), $attributes['street_address'] );
         $form->add( 'text', 'city',            ts( 'City'           ), $attributes['city']           );
+        $form->add( 'text', 'postal_code',     ts('Zip / Postal Code'), $attributes['postal_code']   );
         
         $showInterviewer = false;
         if ( CRM_Core_Permission::check( 'administer CiviCampaign' ) ) {

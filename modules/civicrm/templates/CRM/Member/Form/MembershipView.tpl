@@ -52,7 +52,7 @@
         <tr><td class="label">{ts}Membership Type{/ts}</td><td>{$membership_type}</td></tr>
         <tr><td class="label">{ts}Status{/ts}</td><td>{$status}</td></tr>
         <tr><td class="label">{ts}Source{/ts}</td><td>{$source}</td></tr>
-        <tr><td class="label">{ts}Join date{/ts}</td><td>{$join_date|crmDate}</td></tr>
+        <tr><td class="label">{ts}Member Since{/ts}</td><td>{$join_date|crmDate}</td></tr>
         <tr><td class="label">{ts}Start date{/ts}</td><td>{$start_date|crmDate}</td></tr>
         <tr><td class="label">{ts}End date{/ts}</td><td>{$end_date|crmDate}</td></tr>
         <tr><td class="label">{ts}Auto-renew{/ts}</td><td>{$auto_renew}</td></tr>

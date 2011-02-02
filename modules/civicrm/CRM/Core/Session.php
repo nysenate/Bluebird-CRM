@@ -258,10 +258,12 @@ class CRM_Core_Session {
             require_once 'CRM/Core/BAO/Cache.php';
             $values = CRM_Core_BAO_Cache::getItem( 'CiviCRM Session', "CiviCRM_{$prefix}" );
         }
-
-        foreach ($values as $name => $value) {
-            $vars[$name] = $value;
-        }
+        
+        if ( $values ) {
+            foreach ($values as $name => $value) {
+                $vars[$name] = $value;
+            }
+        }         
     }
 
     /**

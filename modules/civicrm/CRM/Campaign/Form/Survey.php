@@ -364,7 +364,10 @@ class CRM_Campaign_Form_Survey extends CRM_Core_Form
              ( count(array_filter( $fields['option_value'] ) ) == 0 ) ) {
              $errors['option_label[1]'] = ts( 'Enter atleast one response option.' );
              return $errors;       
-        } 
+        } else if ( !CRM_Utils_Array::value( 'option_label', $fields ) &&
+                    !CRM_Utils_Array::value( 'option_value', $fields ) ) {
+            return $errors;
+        }
 
         if ( $fields['option_type'] == 2 && 
              !CRM_Utils_Array::value( 'option_group_id', $fields) ) {

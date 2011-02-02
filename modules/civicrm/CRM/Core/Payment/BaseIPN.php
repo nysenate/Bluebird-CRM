@@ -49,11 +49,11 @@ class CRM_Core_Payment_BaseIPN {
         $contact = new CRM_Contact_DAO_Contact( );
         $contact->id = $ids['contact'];
         if ( ! $contact->find( true ) ) {
-            CRM_Core_Error::debug_log_message( "Could not find contact record: $contactID" );
-            echo "Failure: Could not find contact record: $contactID<p>";
+            CRM_Core_Error::debug_log_message( "Could not find contact record: {$ids['contact']}" );
+            echo "Failure: Could not find contact record: {$ids['contact']}<p>";
             return false;
         }
-
+        
         // make sure contribution exists and is valid
         require_once 'CRM/Contribute/DAO/Contribution.php';
         $contribution = new CRM_Contribute_DAO_Contribution( );
@@ -331,21 +331,23 @@ class CRM_Core_Payment_BaseIPN {
         
         $values = array( );
         if ( $input['component'] == 'contribute' ) {
-            $isOfflineRecur = false;
             if ( $contribution->contribution_page_id ) {
                 require_once 'CRM/Contribute/BAO/ContributionPage.php';
                 CRM_Contribute_BAO_ContributionPage::setValues( $contribution->contribution_page_id, $values ); 
                 $source = ts( 'Online Contribution' ) . ': ' . $values['title'];
             } else if ( $recurContrib->id ) {
-                $isOfflineRecur = true;
                 $contribution->contribution_page_id = null;
                 $values['amount'] = $recurContrib->amount;
                 $values['contribution_type_id'] = $objects['contributionType']->id;
-                $values['title'] = $source = ts( 'Offline Recurring Contribution Payment' );
+                $values['title'] = $source = ts( 'Offline Recurring Contribution' );
+                $values['is_email_receipt'] = true;
+                require_once 'CRM/Core/BAO/Domain.php';
+                $domainValues = CRM_Core_BAO_Domain::getNameAndEmail( );
+                $values['receipt_from_name'] = $domainValues[0];
+                $values['receipt_from_email'] = $domainValues[1];
             }
             $contribution->source = $source;  
-            if ( $isOfflineRecur || 
-                 CRM_Utils_Array::value( 'is_email_receipt', $values ) ) {
+            if ( CRM_Utils_Array::value( 'is_email_receipt', $values ) ) {
                 $contribution->receipt_date = self::$_now;
             }
             
@@ -396,8 +398,12 @@ class CRM_Core_Payment_BaseIPN {
                 //updating the membership log
                 $membershipLog = array();
                 $membershipLog = $formatedParams;
-                $logStartDate  = CRM_Utils_Date::customFormat( $dates['log_start_date'], $format );
-                $logStartDate  = ($logStartDate) ? CRM_Utils_Date::isoToMysql( $logStartDate ) : $formatedParams['start_date'];
+                
+                $logStartDate  = $formatedParams['start_date'];
+                if ( CRM_Utils_Array::value( 'log_start_date', $dates ) ) {
+                    $logStartDate = CRM_Utils_Date::customFormat( $dates['log_start_date'], $format ); 
+                    $logStartDate = CRM_Utils_Date::isoToMysql( $logStartDate );
+                }
                 
                 $membershipLog['start_date']    = $logStartDate;
                 $membershipLog['membership_id'] = $membership->id;
@@ -530,7 +536,7 @@ class CRM_Core_Payment_BaseIPN {
        
         CRM_Core_Error::debug_log_message( "Contribution record updated successfully" );
         $transaction->commit( );
-
+        
         self::sendMail( $input, $ids, $objects, $values, $recur, false );
 
         CRM_Core_Error::debug_log_message( "Success: Database updated and mail sent" );

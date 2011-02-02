@@ -746,10 +746,23 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
                 }
             } 
             
+            $isZeroAmount = $skipPayementValidation = false;
+            if ( CRM_Utils_Array::value( 'priceSetId', $fields ) ) {
+                if ( CRM_Utils_Array::value( 'amount', $fields ) == 0 ) {
+                    $isZeroAmount = true;
+                }
+            } else if ( CRM_Utils_Array::value( 'amount', $fields ) &&
+                        ( CRM_Utils_Array::value( 'value',  $self->_values['fee'][$fields['amount']] ) == 0 ) ) {
+                $isZeroAmount = true; 
+            }
+
+            if ( $isZeroAmount && !($self->_forcePayement && CRM_Utils_Array::value( 'additional_participants', $fields ) ) ) {
+                $skipPayementValidation = true;
+            }
             // also return if paylater mode or zero fees for valid members
             if ( CRM_Utils_Array::value( 'is_pay_later', $fields ) ||
                  CRM_Utils_Array::value( 'bypass_payment', $fields ) ||
-                 ( CRM_Utils_Array::value( 'priceSetId', $fields ) && $fields['amount'] == '0' ) ||
+                 $skipPayementValidation || 
                  ( !$self->_allowConfirmation && ( $self->_requireApproval || $self->_allowWaitlist ) ) ) {
                 return empty( $errors ) ? true : $errors;
             }
@@ -805,7 +818,12 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
         $params = $this->controller->exportValues( $this->_name ); 
         
         //set as Primary participant
-        $params ['is_primary'] = 1;         
+        $params ['is_primary'] = 1;   
+
+        if ( !$this->_allowConfirmation ) {
+            // check if the participant is already registered
+            $params['contact_id'] = self::checkRegistration( $params, $this, false, true );
+        }
         
         if ( CRM_Utils_Array::value( 'image_URL', $params  ) ) {
             CRM_Contact_BAO_Contact::processImageParams( $params ) ;
@@ -956,7 +974,6 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
             }
         } else {
             $session = CRM_Core_Session::singleton( );
-            $contactID = parent::getContactID( );
             $params['description'] = ts( 'Online Event Registration' ) . ' ' . $this->_values['event']['title'];
             
             $this->_params                = array();
@@ -990,7 +1007,6 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
     public function processRegistration( $params, $contactID = null ) 
     {
         $session = CRM_Core_Session::singleton( );
-        $contactID = parent::getContactID( );
         $this->_participantInfo   = array();
         
         // CRM-4320, lets build array of cancelled additional participant ids 
@@ -1023,6 +1039,10 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
                     } else {
                         $this->_participantInfo[] = $value['first_name'] .' ' . $value['last_name'];  
                     }
+                } else if ( CRM_Utils_Array::value( 'contact_id', $value ) ) {
+                    $contactID = $value['contact_id'];
+                } else {
+                    $contactID = parent::getContactID( );
                 }
                 
                 require_once 'CRM/Event/Form/Registration/Confirm.php';
@@ -1150,11 +1170,12 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
      * @return void  
      * @access public 
      */ 
-    function checkRegistration($fields, &$self, $isAdditional = false)
+    function checkRegistration( $fields, &$self, $isAdditional = false, $returnContactId = false )
     {
         // CRM-3907, skip check for preview registrations
         // CRM-4320 participant need to walk wizard
-        if ( $self->_mode == 'test' || $self->_allowConfirmation ) {
+        if ( !$returnContactId &&
+             ( $self->_mode == 'test' || $self->_allowConfirmation ) ) {
             return false;
         }
         
@@ -1193,6 +1214,12 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
             }
         }
         
+        if ( $returnContactId ) {
+            // CRM-7377 
+            // return contactID if contact already exists
+            return $contactID;
+        }
+
         if ( $contactID ) {
             require_once 'CRM/Event/BAO/Participant.php';
             $participant = new CRM_Event_BAO_Participant();

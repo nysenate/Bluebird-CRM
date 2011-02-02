@@ -12,10 +12,10 @@ function processDupes( cid, oid, oper, context, reloadURL ) {
         if ( !cid || !oid || !oper ) return;
         
 	var title = {/literal}'{ts escape="js"}Mark as Dedupe Exception{/ts}'{literal};
-	var msg = {/literal}'{ts escape="js"}Are you sure you want to mark these contacts as dedupe exception.{/ts}'{literal};
+	var msg = {/literal}'{ts escape="js"}Are you sure you want to mark this pair of contacts as NOT duplicates?{/ts}'{literal};
         if ( oper == 'nondupe-dupe' ) {
 	  var title = {/literal}'{ts escape="js"}Remove Dedupe Exception{/ts}'{literal};
-          var msg = {/literal}'{ts escape="js"}Are you sure you want to remove dedupe exception.{/ts}'{literal};
+          var msg = {/literal}'{ts escape="js"}Are you sure you want to remove this dedupe exception.{/ts}'{literal};
         }
     
 	cj("#processDupes").show( );
@@ -40,7 +40,8 @@ function processDupes( cid, oid, oper, context, reloadURL ) {
 			        saveProcessDupes( cid, oid, oper, context );
 			        cj(this).dialog( 'close' );
 				if ( context == 'merge-contact' && reloadURL ) {
-				     window.location.href = reloadURL;  
+                                     // redirect after a small delay
+                                     setTimeout("window.location.href = '" + reloadURL + "'", 500);
 				}
 			}
 		} 

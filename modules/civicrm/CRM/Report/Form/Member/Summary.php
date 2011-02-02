@@ -69,7 +69,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                          
                          'filters'     =>             
                          array( 'join_date' =>
-                                array('title'         => 'Membership Join Date',
+                                array('title'         => 'Member Since',
                                       'type'          => CRM_Utils_Type::T_DATE,
                                       'operatorType'  => CRM_Report_Form::OP_DATE ),
                                 'membership_type_id'  =>
@@ -85,7 +85,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
                                 ),  
                          'group_bys'        =>
                          array( 'join_date' => 
-                                array('title'      => ts('Join Date'),
+                                array('title'      => ts('Member Since'),
                                       'default'    => true,
                                       'frequency'  => true,
                                       'chart'      => true,
@@ -135,7 +135,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
         $this->_columnHeaders = array( ); 
         $select[] = " COUNT( DISTINCT {$this->_aliases['civicrm_membership']}.id ) as civicrm_membership_member_count";
         $select['joinDate'] = " {$this->_aliases['civicrm_membership']}.join_date  as civicrm_membership_member_join_date";
-        $this->_columnHeaders["civicrm_membership_member_join_date"] = array( 'title' => ts('Join Date'),
+        $this->_columnHeaders["civicrm_membership_member_join_date"] = array( 'title' => ts('Member Since'),
                                                                               'type'  => CRM_Utils_Type::T_DATE);
         foreach ( $this->_columns as $tableName => $table ) {
             if ( array_key_exists('group_bys', $table) ) {
@@ -445,7 +445,7 @@ class CRM_Report_Form_Member_Summary extends CRM_Report_Form {
             if ( $isMembershipType ) { 
                 $graphRows['value'] = $display;
                 $chartInfo          = array( 'legend' => 'Membership Summary',
-                                             'xname'  => 'Join Date / Member Type',
+                                             'xname'  => 'Member Since / Member Type',
                                              'yname'  => 'Fees' );                
                 CRM_Utils_OpenFlashChart::reportChart( $graphRows, $this->_params['charts'], $interval, $chartInfo );
             } else {                

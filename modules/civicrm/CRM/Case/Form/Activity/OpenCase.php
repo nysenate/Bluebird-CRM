@@ -56,10 +56,19 @@ class CRM_Case_Form_Activity_OpenCase
         require_once 'CRM/Case/XMLProcessor/Process.php';
         $xmlProcessorProcess = new CRM_Case_XMLProcessor_Process( );
         $form->_allowMultiClient = (bool)$xmlProcessorProcess->getAllowMultipleCaseClients( );
-        
+
         if ( $form->_context == 'caseActivity' ) {
-            return;
+            $contactID = CRM_Utils_Request::retrieve( 'cid', 'Positive', $form );
+            require_once 'CRM/Core/OptionGroup.php';
+            $atype = CRM_Core_OptionGroup::getValue( 'activity_type',
+                                                     'Change Case Start Date',
+                                                     'name' ); 
+            $form->assign( 'changeStartURL', CRM_Utils_System::url( 'civicrm/case/activity',
+                                                                    "action=add&reset=1&cid=$contactID&caseid={$form->_caseId}&atype=$atype" )
+                         );
+        	return;
         }
+
         $form->_context   = CRM_Utils_Request::retrieve( 'context', 'String', $form );
         $form->_contactID = CRM_Utils_Request::retrieve( 'cid', 'Positive', $form );
         $form->assign( 'context', $form->_context );
@@ -80,7 +89,7 @@ class CRM_Case_Form_Activity_OpenCase
         }
 
         require_once 'CRM/Utils/Date.php';
-        list( $defaults['start_date'] ) = CRM_Utils_Date::setDateDefaults( );
+        list( $defaults['start_date'], $defaults['start_date_time'] ) = CRM_Utils_Date::setDateDefaults( );
         
         // set case status to 'ongoing'
         $defaults['status_id'] = 1;
@@ -134,7 +143,7 @@ class CRM_Case_Form_Activity_OpenCase
             $form->assign( 'clientName', $displayName );
         }
         
-        $form->addDate( 'start_date', ts('Case Start Date'), true, array( 'formatType' => 'activityDate') );
+        $form->addDate( 'start_date', ts('Case Start Date'), true, array( 'formatType' => 'activityDateTime') );
         
         $form->add('select', 'medium_id',  ts( 'Medium' ), 
                    CRM_Case_PseudoConstant::encounterMedium( ), true );
@@ -179,7 +188,7 @@ class CRM_Case_Form_Activity_OpenCase
         }
 
         // for open case start date should be set to current date
-        $params['start_date'] = CRM_Utils_Date::processDate( $params['start_date'], date('Hi') );
+        $params['start_date'] = CRM_Utils_Date::processDate( $params['start_date'], $params['start_date_time'] );
         require_once 'CRM/Case/PseudoConstant.php';
         $caseStatus = CRM_Case_PseudoConstant::caseStatus( 'name' );
         // for resolved case the end date should set to now    

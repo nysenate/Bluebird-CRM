@@ -121,6 +121,13 @@
 
 {literal}
 <script type="text/javascript">
+{/literal}{if $freezeMailignList}{literal}
+cj('input[type=checkbox][name="group_type[{/literal}{$freezeMailignList}{literal}]"]').attr('disabled',true);
+{/literal}{/if}{literal}	
+{/literal}{if $hideMailignList}{literal}
+cj('input[type=checkbox][name="group_type[{/literal}{$hideMailignList}{literal}]"]').hide();
+cj('label[for="group_type[{/literal}{$hideMailignList}{literal}]"]').hide();
+{/literal}{/if}{literal}
 {/literal}{if $organizationID}{literal}
     cj(document).ready( function() { 
 	//group organzation default setting

@@ -429,7 +429,7 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         }
 
         if ( $isError ) {
-            $errors['_qf_default'] = ts('For Chart view, please select at least one field from %1 OR %2 .', array( 1 => implode( ', ', $criterias['count'] ), 2 => implode( ', ', $criterias['rate'] ) ) );
+            $errors['_qf_default'] = ts('For Chart view, please select at least one field from %1 OR %2.', array( 1 => implode( ', ', $criterias['count'] ), 2 => implode( ', ', $criterias['rate'] ) ) );
         }
 
         return $errors;

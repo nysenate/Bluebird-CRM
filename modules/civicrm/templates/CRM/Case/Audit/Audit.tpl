@@ -125,6 +125,8 @@ There's the potential for collisions (two different labels having the same short
 				{else}
 					{$field.value|escape|truncate:10:'':true|crmDate}
 				{/if}
+            {elseif $field.label eq 'Details'}
+                {$field.value}
 			{else}
 				{$field.value|escape}
 			{/if}

@@ -156,9 +156,9 @@ class CRM_Price_Page_Option extends CRM_Core_Page
         }
         // Add order changing widget to selector
         $returnURL = CRM_Utils_System::url( 'civicrm/admin/price/field/option', "action=browse&reset=1&fid={$this->_fid}&sid={$this->_sid}" );
-        $filter    = "option_group_id = (SELECT id FROM civicrm_option_group WHERE name = 'civicrm_price_field.amount.{$this->_fid}')";
+        $filter    = "price_field_id = {$this->_fid}";
         require_once 'CRM/Utils/Weight.php';
-        CRM_Utils_Weight::addOrder( $customOption, 'CRM_Core_DAO_OptionValue',
+        CRM_Utils_Weight::addOrder( $customOption, 'CRM_Price_DAO_FieldValue',
                                     'id', $returnURL, $filter );
 
         $this->assign('customOption', $customOption);

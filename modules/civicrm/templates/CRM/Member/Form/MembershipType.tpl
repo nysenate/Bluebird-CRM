@@ -139,7 +139,7 @@
                      {if $authorize}
                         <td>{$form.auto_renew.html}</td>
                      {else}
-                        <td>{ts}You will need to select and configure a supported payment processor (currently Authornize.net) in order to offer automatically renewing memberships.{/ts}{docURL page="CiviContribute Payment Processor Configuration"}</td>
+                        <td>{ts}You will need to select and configure a supported payment processor (currently Authorize.Net, PayPal Pro, or PayPal Website Standard) in order to offer automatically renewing memberships.{/ts} {docURL page="CiviContribute Payment Processor Configuration"}</td>
                      {/if}
              </tr>
              <tr class="crm-membership-type-form-block-duration_unit_interval">        

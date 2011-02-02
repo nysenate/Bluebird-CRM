@@ -1166,7 +1166,7 @@ class CRM_Contact_BAO_Query
             }
 
             $result = array( $id, 'IN', $values, 0, 0 );
-        } else if ( $id == 'contact_tags' ) {
+        } else if ( $id == 'contact_tags' || $id == 'tag' ) {
             if (! is_array( $values ) ) {
                 $tagIds = explode( ',', $values );
                 unset( $values );
@@ -2373,24 +2373,28 @@ WHERE  id IN ( $groupIDs )
     function tag( &$values ) 
     {
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
-        
-        if ( count( $value ) > 1 ) {
-            $this->_useDistinct = true;
+                
+        $tagNames = CRM_Core_PseudoConstant::tag( );
+        if ( is_array( $value ) ) {
+            if ( count( $value ) > 1 ) {
+                $this->_useDistinct = true;
+            }
+            foreach ( $value as $id => $dontCare ) {
+                $names[] = $tagNames[$id];
+            }
+            $names = implode( ' ' . ts('or') . ' ', $names );
+            $value = implode( ',', array_keys( $value ) );
+        } else {
+            $names = CRM_Utils_Array::value( $value, $tagNames );
         }
-
-        $etTable = "`civicrm_entity_tag-" .implode( ',', array_keys($value) ) ."`";
+                
+        $etTable = "`civicrm_entity_tag-" . $value ."`";
         $this->_tables[$etTable] = $this->_whereTables[$etTable] =
             " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND 
                         {$etTable}.entity_table = 'civicrm_contact' ) ";
        
-        $names = array( );
-        $tagNames =& CRM_Core_PseudoConstant::tag( );
-        foreach ( $value as $id => $dontCare ) {
-            $names[] = $tagNames[$id];
-        }
-
-        $this->_where[$grouping][] = "{$etTable}.tag_id $op (". implode( ',', array_keys( $value ) ) . ')';
-        $this->_qill[$grouping][]  = ts('Tagged %1', array( 1 => $op ) ) . ' ' . implode( ' ' . ts('or') . ' ', $names ); 
+        $this->_where[$grouping][] = "{$etTable}.tag_id $op (". $value . ')';
+        $this->_qill[$grouping][]  = ts('Tagged %1', array( 1 => $op ) ). ' ' . $names;
     } 
 
     /**

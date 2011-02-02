@@ -224,19 +224,19 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $honor_block_is_active = $this->get( 'honor_block_is_active');
         // make sure we have values for it
         if ( $honor_block_is_active &&
-             ( ( ! empty( $params["honor_first_name"] ) && ! empty( $params["honor_last_name"] ) ) ||
-               ( ! empty( $params["honor_email"] ) ) ) ) {
+             ( ( ! empty( $params['honor_first_name'] ) && ! empty( $params['honor_last_name'] ) ) ||
+               ( ! empty( $params['honor_email'] ) ) ) ) {
             $this->assign('honor_block_is_active', $honor_block_is_active );
-            $this->assign("honor_block_title", CRM_Utils_Array::value( 'honor_block_title', $this->_values ) );
+            $this->assign('honor_block_title', CRM_Utils_Array::value( 'honor_block_title', $this->_values ) );
           
-            require_once "CRM/Core/PseudoConstant.php";
+            require_once 'CRM/Core/PseudoConstant.php';
             $prefix = CRM_Core_PseudoConstant::individualPrefix();
             $honor  = CRM_Core_PseudoConstant::honor( );             
-            $this->assign("honor_type",       CRM_Utils_Array::value( $params["honor_type_id"], $honor ) );
-            $this->assign("honor_prefix",     CRM_Utils_Array::value( $params["honor_prefix_id"], $prefix ) );
-            $this->assign("honor_first_name", $params["honor_first_name"]);
-            $this->assign("honor_last_name",  $params["honor_last_name"]);
-            $this->assign("honor_email",      $params["honor_email"]);
+            $this->assign('honor_type',       CRM_Utils_Array::value( $params['honor_type_id'], $honor ) );
+            $this->assign('honor_prefix',     CRM_Utils_Array::value( $params['honor_prefix_id'], $prefix ) );
+            $this->assign('honor_first_name', $params['honor_first_name']);
+            $this->assign('honor_last_name',  $params['honor_last_name']);
+            $this->assign('honor_email',      $params['honor_email']);
         }
         $this->assign('receiptFromEmail', CRM_Utils_Array::value( 'receipt_from_email', $this->_values ) );
         $amount_block_is_active = $this->get( 'amount_block_is_active');
@@ -251,7 +251,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             $this->set('option',$option);
         }
         $config = CRM_Core_Config::singleton( );
-        if ( in_array("CiviMember", $config->enableComponents) ) {
+        if ( in_array('CiviMember', $config->enableComponents) ) {
             if ( isset( $params['selectMembership'] ) &&
                  $params['selectMembership'] != 'no_thanks' ) {
                 CRM_Member_BAO_Membership::buildMembershipBlock( $this,
@@ -267,7 +267,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $this->buildCustom( $this->_values['custom_pre_id'] , 'customPre' , true );
         $this->buildCustom( $this->_values['custom_post_id'], 'customPost', true );
         $this->_separateMembershipPayment = $this->get( 'separateMembershipPayment' );
-        $this->assign( "is_separate_payment", $this->_separateMembershipPayment );
+        $this->assign( 'is_separate_payment', $this->_separateMembershipPayment );
         $this->assign( 'lineItem', $this->_lineItem );
         $this->assign( 'priceSetID', $this->_priceSetId );
         
@@ -312,7 +312,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $defaults = array( );
         $options = array( );
         $fields = array( );
-        require_once "CRM/Core/BAO/CustomGroup.php";
+        require_once 'CRM/Core/BAO/CustomGroup.php';
         $removeCustomFieldTypes = array ('Contribution');
         foreach ( $this->_fields as $name => $dontCare ) {
             $fields[$name] = 1;
@@ -385,7 +385,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
     public function postProcess( )
     {
         $config = CRM_Core_Config::singleton( );
-        require_once "CRM/Contact/BAO/Contact.php";
+        require_once 'CRM/Contact/BAO/Contact.php';
 
         $contactID = $this->_userID;
 
@@ -418,7 +418,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
 
         // set email for primary location.
-        $fields["email-Primary"] = 1;
+        $fields['email-Primary'] = 1;
         
         // don't create primary email address, just add it to billing location
         //$params["email-Primary"] = $params["email-{$this->_bltID}"];
@@ -453,9 +453,9 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         //unset the billing parameters if it is pay later mode
         //to avoid creation of billing location
         if ( $params['is_pay_later'] ) {
-            $billingFields = array( "billing_first_name",
-                                    "billing_middle_name",
-                                    "billing_last_name",
+            $billingFields = array( 'billing_first_name',
+                                    'billing_middle_name',
+                                    'billing_last_name',
                                     "billing_street_address-{$this->_bltID}",
                                     "billing_city-{$this->_bltID}",
                                     "billing_state_province-{$this->_bltID}",
@@ -588,7 +588,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             $paymentParams      = $this->_params;
             $contributionTypeId = $this->_values['contribution_type_id'];
             
-            require_once "CRM/Contribute/BAO/Contribution/Utils.php";
+            require_once 'CRM/Contribute/BAO/Contribution/Utils.php';
             CRM_Contribute_BAO_Contribution_Utils::processConfirm( $this, $paymentParams, 
                                                                    $premiumParams, $contactID, 
                                                                    $contributionTypeId, 
@@ -814,15 +814,15 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
         
         if ( isset($honorCId)  ) {
-            $contribParams["honor_contact_id"] = $honorCId;
-            $contribParams["honor_type_id"]    = $params['honor_type_id'];
+            $contribParams['honor_contact_id'] = $honorCId;
+            $contribParams['honor_type_id']    = $params['honor_type_id'];
         }
 
         if ( $recurringContributionID ) {
             $contribParams['contribution_recur_id'] = $recurringContributionID;
         }
 
-        $contribParams["contribution_status_id"] = $pending ? 2 : 1;
+        $contribParams['contribution_status_id'] = $pending ? 2 : 1;
 
         $contribParams['is_test'] = 0;
         if ( $form->_mode == 'test' ) {
@@ -981,7 +981,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             }
         }
         
-        require_once "CRM/Contribute/BAO/Contribution/Utils.php";
+        require_once 'CRM/Contribute/BAO/Contribution/Utils.php';
 
         if ( isset($params['related_contact']) ) {
             $contactID = $params['related_contact'];
@@ -1102,9 +1102,9 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $params = $this->controller->exportValues( 'Main' );
        
         // return if we dont have enough information
-        if ( empty( $params["honor_first_name"] ) &&
-             empty( $params["honor_last_name" ] ) &&
-             empty( $params["honor_email"] ) ) {
+        if ( empty( $params['honor_first_name'] ) &&
+             empty( $params['honor_last_name' ] ) &&
+             empty( $params['honor_email'] ) ) {
             return null;
         }
         
@@ -1112,16 +1112,16 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $honor_block_is_active = $this->get( 'honor_block_is_active');
         
         $this->assign('honor_block_is_active', $honor_block_is_active );
-        $this->assign("honor_block_title", $this->_values['honor_block_title'] );
+        $this->assign('honor_block_title', $this->_values['honor_block_title'] );
         
-        require_once "CRM/Core/PseudoConstant.php";
+        require_once 'CRM/Core/PseudoConstant.php';
         $prefix = CRM_Core_PseudoConstant::individualPrefix();
         $honorType = CRM_Core_PseudoConstant::honor( );
-        $this->assign("honor_type",       $honorType[$params["honor_type_id"]]);
-        $this->assign("honor_prefix",     $prefix[$params["honor_prefix_id"]]);
-        $this->assign("honor_first_name", $params["honor_first_name"]);
-        $this->assign("honor_last_name",  $params["honor_last_name"]);
-        $this->assign("honor_email",      $params["honor_email"]);
+        $this->assign('honor_type',       $honorType[$params['honor_type_id']]);
+        $this->assign('honor_prefix',     $prefix[$params['honor_prefix_id']]);
+        $this->assign('honor_first_name', $params['honor_first_name']);
+        $this->assign('honor_last_name',  $params['honor_last_name']);
+        $this->assign('honor_email',      $params['honor_email']);
         
         //create honoree contact
         require_once 'CRM/Contribute/BAO/Contribution.php';
@@ -1148,7 +1148,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
 
         // formalities for creating / editing organization.
-        require_once "CRM/Core/BAO/LocationType.php";
+        require_once 'CRM/Core/BAO/LocationType.php';
         $locType = CRM_Core_BAO_LocationType::getDefault();
         $behalfOrganization['contact_type'] = 'Organization';
         foreach ( array('phone', 'email', 'address') as $locFld ) {
@@ -1157,9 +1157,9 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
         
         // get the relationship type id
-        require_once "CRM/Contact/DAO/RelationshipType.php";
+        require_once 'CRM/Contact/DAO/RelationshipType.php';
         $relType = new CRM_Contact_DAO_RelationshipType();
-        $relType->name_a_b = "Employee of";
+        $relType->name_a_b = 'Employee of';
         $relType->find(true);
         $relTypeId = $relType->id;
         

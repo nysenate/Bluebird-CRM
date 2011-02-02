@@ -360,6 +360,9 @@ INNER JOIN  civicrm_option_value ov ON ( ca.case_type_id=ov.value AND ov.option_
         }
         
         if ( $result ) {
+            // CRM-7364, disable relationships
+            self::enableDisableCaseRelationships( $caseId, false );            
+       	
             // remove case from recent items.
             $caseRecent = array(
                                 'id'   => $caseId,
@@ -372,6 +375,32 @@ INNER JOIN  civicrm_option_value ov ON ( ca.case_type_id=ov.value AND ov.option_
         
         return false;
     }
+
+    /**
+     * Function to enable disable case related relationships
+     *
+     *  @param int      $caseId case id
+     *  @param boolean  $enable action 
+     *  
+     *  @return void
+     *  @access public
+     *  @static
+     */
+    static function enableDisableCaseRelationships( $caseId, $enable ) {
+        $contactIds = self::retrieveContactIdsByCaseId( $caseId );
+        if ( !empty( $contactIds ) ) {
+            foreach ( $contactIds as $cid ) {
+                $roles = self::getCaseRoles( $cid, $caseId );
+                if ( !empty( $roles ) ) {
+                    $relationshipIds = implode( ',', array_keys( $roles ) );
+                    $enable = (int)$enable;
+                    $query = "UPDATE civicrm_relationship SET is_active = {$enable}
+                        WHERE id IN ( {$relationshipIds} )";
+                    CRM_Core_DAO::executeQuery( $query );
+                }
+            }
+        }
+    }  
 
     /**                                                           
      * Delete the activities related to case
@@ -846,10 +875,11 @@ WHERE is_deleted =0
     {
         $query = '
 SELECT civicrm_relationship.id as civicrm_relationship_id, civicrm_contact.sort_name as sort_name, civicrm_email.email as email, civicrm_phone.phone as phone, civicrm_relationship.contact_id_b as civicrm_contact_id, civicrm_relationship_type.label_b_a as relation, civicrm_relationship_type.id as relation_type 
-FROM civicrm_relationship, civicrm_relationship_type, civicrm_contact 
+FROM civicrm_relationship INNER JOIN civicrm_relationship_type ON civicrm_relationship.relationship_type_id = civicrm_relationship_type.id
+INNER JOIN civicrm_contact ON civicrm_relationship.contact_id_b = civicrm_contact.id
 LEFT OUTER JOIN civicrm_phone ON (civicrm_phone.contact_id = civicrm_contact.id AND civicrm_phone.is_primary = 1) 
 LEFT JOIN civicrm_email ON (civicrm_email.contact_id = civicrm_contact.id ) 
-WHERE civicrm_relationship.relationship_type_id = civicrm_relationship_type.id AND civicrm_relationship.contact_id_a = %1 AND civicrm_relationship.contact_id_b = civicrm_contact.id AND civicrm_relationship.case_id = %2
+WHERE civicrm_relationship.contact_id_a = %1 AND civicrm_relationship.case_id = %2
 ';
 
         $params = array( 1 => array( $contactID, 'Integer' ),
@@ -1293,6 +1323,8 @@ GROUP BY cc.id';
         
         $receiptFrom = "$name <$address>";   
         
+        $recordedActivityParams = array();
+        
         foreach ( $contacts as $mail => $info ) {
             $tplParams['contact'] = $info;
             self::buildPermissionLinks( $tplParams, $activityParams );
@@ -1319,21 +1351,35 @@ GROUP BY cc.id';
 
             $activityParams['subject']           = $activitySubject.' - copy sent to '.$displayName;
             $activityParams['details']           = $message;
-            $activityParams['target_contact_id'] = $info['contact_id'];
             
             if ($result[$info['contact_id']]) {
-                $activity = CRM_Activity_BAO_Activity::create( $activityParams );
-                
-                //create case_activity record if its case activity.
-                if ( $caseId ) {
-                    $caseParams = array( 'activity_id' => $activity->id,
-                                         'case_id'     => $caseId );
-                    self::processCaseActivity( $caseParams );
+            	/*
+            	 * Really only need to record one activity with all the targets combined.
+            	 * Originally the template was going to possibly have different content, e.g. depending on permissions,
+            	 * but it's always the same content at the moment.
+            	 */
+                if ( empty( $recordedActivityParams ) ) {
+                    $recordedActivityParams = $activityParams;
+                } else {
+                	$recordedActivityParams['subject'] .= "; $displayName";
                 }
+                $recordedActivityParams['target_contact_id'][] = $info['contact_id'];
             } else {
                 unset($result[$info['contact_id']]);  
             }
         }
+
+        if ( ! empty( $recordedActivityParams ) ) {
+	        $activity = CRM_Activity_BAO_Activity::create( $recordedActivityParams );
+	                
+	        //create case_activity record if its case activity.
+	        if ( $caseId ) {
+	            $caseParams = array( 'activity_id' => $activity->id,
+	                                 'case_id'     => $caseId );
+	            self::processCaseActivity( $caseParams );
+	        }
+        }
+        
         return $result;
     }
     
@@ -1548,6 +1594,9 @@ AND civicrm_case.is_deleted     = {$cases['case_deleted']}";
         $case->id = $caseId; 
         $case->is_deleted = 0;
         $case->save( );
+        
+        //CRM-7364, enable relationships
+        self::enableDisableCaseRelationships( $caseId, true );            
         return true;
     }
     

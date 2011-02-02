@@ -101,9 +101,7 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
         //get the contact read only fields to display.
         require_once 'CRM/Core/BAO/Preferences.php';
         $readOnlyFields = array_merge( array( 'contact_type' => '', 
-                                              'sort_name'    => ts( 'Name' ) ),
-                                       CRM_Core_BAO_Preferences::valueOptions( 'contact_autocomplete_options',
-                                                                               true, null, false, 'name', true ) );
+                                              'sort_name'    => ts( 'Name' ) ) );
         
         //get the read only field data.
         $returnProperties  = array_fill_keys( array_keys( $readOnlyFields ), 1 );
@@ -115,6 +113,7 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
                                'entity_table' => 'civicrm_survey',   
                                'module'       => 'CiviCampaign' );
         $this->_ufGroupId = CRM_Core_BAO_UFJoin::findUFGroupId( $ufJoinParams );
+        $this->assign( 'ufGroupId', $this->_ufGroupId );
         
         //validate all voters for required activity.
         //get the survey activities for given voters.
@@ -237,6 +236,16 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
             require_once 'CRM/Core/BAO/UFGroup.php';
             $this->_surveyFields = CRM_Core_BAO_UFGroup::getFields( $this->_ufGroupId, 
                                                                     false, CRM_Core_Action::VIEW );
+        }
+        
+        //don't load these fields in grid.
+        $removeFields = array( 'File', 'Autocomplete-Select', 'RichTextEditor' );
+        require_once 'CRM/Core/BAO/CustomField.php';
+        foreach ( $this->_surveyFields as $name => $field ) {
+            if ( CRM_Core_BAO_CustomField::getKeyID( $name ) && 
+                 in_array( $field['html_type'], $removeFields ) ) {
+                unset( $this->_surveyFields[$name] );
+            }
         }
         
         //build all fields.

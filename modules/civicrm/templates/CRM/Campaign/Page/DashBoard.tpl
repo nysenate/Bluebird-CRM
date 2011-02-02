@@ -308,7 +308,11 @@ function displayResponses( surveyId, surveyTitle, OptionGroupId ) {
     if ( opGroup.status == 'success' ) {
       var result = opGroup.result; 
       for( key in result ) {
-        content += '<tr><td>'+  result[key].label +'</td><td>'+ result[key].value +'</td><td>'+ result[key].interval +'</td><td>'+ result[key].weight +'</td></tr>';
+        var interval = '';
+	if ( result[key].interval && result[key].interval != 'undefined' ) {
+	  interval = result[key].interval;
+	}
+        content += '<tr><td>'+  result[key].label +'</td><td>'+ result[key].value +'</td><td>'+ interval +'</td><td>'+ result[key].weight +'</td></tr>';
       }
 
       cj("#survey-response-dialog").show( ).html('<table>'+content+'</table>').dialog({

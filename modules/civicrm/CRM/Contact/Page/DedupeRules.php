@@ -129,6 +129,11 @@ class CRM_Contact_Page_DedupeRules extends CRM_Core_Page_Basic
         $this->assign('action', $action);
         $id = CRM_Utils_Request::retrieve('id', 'Positive', $this, false, 0);
 
+        $context = CRM_Utils_Request::retrieve('context', 'String', $this, false );
+        if ( $context == 'nonDupe' ) {
+            CRM_Core_Session::setStatus( ts('Selected contacts have been marked as not duplicates') );
+        }
+
         // assign permissions vars to template
         require_once 'CRM/Core/Permission.php';
         $this->assign('hasperm_administer_dedupe_rules', CRM_Core_Permission::check('administer dedupe rules'));

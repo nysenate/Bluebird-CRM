@@ -879,7 +879,10 @@ class CRM_Import_Form_MapField extends CRM_Core_Form
                 $updateMappingFields->mapping_id = $params['mappingId'];
                 $updateMappingFields->column_number = $i;
 
-                list($id, $first, $second) = explode('_', $mapperKeys[$i][0]);
+                $mapperKeyParts = explode( '_', $mapperKeys[$i][0], 3 );
+                $id     = isset( $mapperKeyParts[0] ) ? $mapperKeyParts[0] : null;
+                $first  = isset( $mapperKeyParts[1] ) ? $mapperKeyParts[1] : null;
+                $second = isset( $mapperKeyParts[2] ) ? $mapperKeyParts[2] : null;
                 if ( ($first == 'a' && $second == 'b') || ($first == 'b' && $second == 'a') ) {
                     $updateMappingFields->relationship_type_id = $id;
                     $updateMappingFields->relationship_direction = "{$first}_{$second}";
@@ -947,7 +950,10 @@ class CRM_Import_Form_MapField extends CRM_Core_Form
                 $saveMappingFields->contact_type  = $cType;
                 $saveMappingFields->column_number = $i;                             
                 
-                list($id, $first, $second) = explode('_', $mapperKeys[$i][0]);
+                $mapperKeyParts = explode( '_', $mapperKeys[$i][0], 3 );
+                $id     = isset( $mapperKeyParts[0] ) ? $mapperKeyParts[0] : null;
+                $first  = isset( $mapperKeyParts[1] ) ? $mapperKeyParts[1] : null;
+                $second = isset( $mapperKeyParts[2] ) ? $mapperKeyParts[2] : null;
                 if ( ($first == 'a' && $second == 'b') || ($first == 'b' && $second == 'a') ) {
                     $saveMappingFields->name = ucwords(str_replace("_", " ",$mapperKeys[$i][1]));
                     $saveMappingFields->relationship_type_id = $id;

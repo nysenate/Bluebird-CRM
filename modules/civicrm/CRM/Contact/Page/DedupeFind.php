@@ -38,6 +38,7 @@ require_once 'CRM/Core/Page/Basic.php';
 require_once 'CRM/Dedupe/Finder.php';
 require_once 'CRM/Dedupe/DAO/Rule.php';
 require_once 'CRM/Dedupe/DAO/RuleGroup.php';
+require_once 'CRM/Contact/BAO/Contact/Permission.php';
 
 class CRM_Contact_Page_DedupeFind extends CRM_Core_Page_Basic
 {

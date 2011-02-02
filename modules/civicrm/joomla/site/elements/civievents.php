@@ -51,7 +51,7 @@ class JElementCivievents extends JElement {
                         'return.end_date'               => 1,
                         'return.start_date' 			  => 1
                         );
-    	$events = civicrm_event_search( &$params );
+    	$events = civicrm_event_search( $params );
 		$currentdate = date("Y-m-d H:i:s");
 		$options = array();
 		$options[] = JHTML::_('select.option', '', JText::_('- Select Event -') );

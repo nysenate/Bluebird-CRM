@@ -255,7 +255,7 @@ AND og.name = 'activity_type'";
         while ( $dao->fetch() ) {      
            //$survey['campaign_id'] = $dao->campaign_id;  
            //$survey['campaign_name'] = $dao->campaign_name; 
-           $surveyInfo['activity_type'] = $dao->survey_type; 
+           $surveyInfo['activity_type'] = $dao->activity_type; 
            $surveyInfo['activity_type_id'] = $dao->activity_type_id;   
            $surveyInfo['title'] = $dao->title; 
         }
@@ -410,7 +410,7 @@ WHERE 	a.source_record_id = " . $surveyId . "
         require_once 'api/v2/Group.php';
         $group_params['title'] = CIVICRM_PETITION_CONTACTS;
         $groups = civicrm_group_get($group_params);
-        if (($groups['is_error'] == 1) && ($groups['error_message'] == 'No such group exists')) {
+        if ( ( CRM_Utils_Array::value('is_error', $groups) == 1 ) && ( CRM_Utils_Array::value('error_message', $groups) == 'No such group exists' ) ) {
             $group_params['is_active'] = 1;
             $group_params['visibility'] = 'Public Pages';
             $newgroup = civicrm_group_add($group_params);

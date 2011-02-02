@@ -49,7 +49,7 @@ class CRM_Utils_Mail
      * subject : subject of the email
      * text    : text of the message
      * html    : html version of the message
-     * reply-to: reply-to header in the email
+     * replyTo : reply-to header in the email
      * attachments: an associative array of
      *   fullPath : complete pathname to the file
      *   mime_type: mime type of the attachment

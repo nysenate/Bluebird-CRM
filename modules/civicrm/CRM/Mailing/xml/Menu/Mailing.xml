@@ -5,7 +5,7 @@
      <path>civicrm/mailing</path>
      <title>CiviMail</title>
      <page_callback>CRM_Mailing_Page_Browse</page_callback>
-     <access_arguments>access CiviMail</access_arguments>
+     <access_arguments>access CiviMail;create mailings</access_arguments>
      <page_type>1</page_type>
      <weight>600</weight>
      <component>CiviMail</component>
@@ -80,7 +80,7 @@
      <path>civicrm/mailing/browse/archived</path>
      <title>Archived Mailings</title>
      <page_callback>CRM_Mailing_Page_Browse</page_callback>
-     <access_arguments>access CiviMail</access_arguments>
+     <access_arguments>access CiviMail;create mailings</access_arguments>
      <page_type>1</page_type>
      <weight>625</weight>
   </item>
@@ -143,7 +143,7 @@
      <path>civicrm/mailing/report</path>
      <title>Mailing Report</title>
      <page_callback>CRM_Mailing_Page_Report</page_callback>
-     <access_arguments>access CiviMail</access_arguments>
+     <access_arguments>access CiviMail;create mailings</access_arguments>
      <path_arguments>mid=%%mid%%</path_arguments>
      <weight>680</weight>
   </item>

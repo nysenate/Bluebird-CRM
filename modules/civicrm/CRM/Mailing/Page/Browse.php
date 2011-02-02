@@ -43,7 +43,8 @@ require_once 'CRM/Core/Page.php';
  * object to do the actual dispay. The fields displayd are controlled by
  * the admin
  */
-class CRM_Mailing_Page_Browse extends CRM_Core_Page {
+class CRM_Mailing_Page_Browse extends CRM_Core_Page
+{
 
     /**
      * all the fields that are listings related
@@ -92,27 +93,32 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
      */
     function preProcess() 
     {
-        $this->_unscheduled = $this->_archived = false;
-        $this->_mailingId = CRM_Utils_Request::retrieve('mid', 'Positive', $this);
+        $this->_unscheduled = $this->_archived = $archiveLinks = false;
+        $this->_mailingId = CRM_Utils_Request::retrieve( 'mid', 'Positive', $this );
 
         // check that the user has permission to access mailing id
         require_once 'CRM/Mailing/BAO/Mailing.php';
         CRM_Mailing_BAO_Mailing::checkPermission( $this->_mailingId );
 
-        $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this);
-        $this->assign('action', $this->_action);
+        $this->_action = CRM_Utils_Request::retrieve( 'action', 'String', $this );
+        $this->assign( 'action', $this->_action );
 
         $showLinks = true;
         require_once 'CRM/Mailing/Info.php';
         if ( CRM_Mailing_Info::workflowEnabled( ) ) {
+            if ( CRM_Core_Permission::check( 'create mailings' ) ) {
+                $archiveLinks = true;
+            }
             if ( ! CRM_Core_Permission::check( 'access CiviMail' ) && 
                  ! CRM_Core_Permission::check( 'create mailings' ) ) {
                 $showLinks = false;
             }
         }
-        $this->assign('showLinks', $showLinks); 
+        $this->assign( 'showLinks', $showLinks ); 
         if ( CRM_Core_Permission::check( 'access CiviMail' ) ) {
             $archiveLinks = true;
+        }
+        if ( $archiveLinks == true ) {
             $this->assign( 'archiveLinks', $archiveLinks );
         }
     }
@@ -122,13 +128,13 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
      * 
      * @return void 
      */ 
-    function run($newArgs) {
-
+    function run( $newArgs )
+    {
         $this->preProcess();
         if ( isset( $_GET['runJobs'] ) || CRM_Utils_Array::value( '2', $newArgs ) == 'queue' ) {
             require_once 'CRM/Mailing/BAO/Job.php';
             $config =& CRM_Core_Config::singleton();
-            CRM_Mailing_BAO_Job::runJobs_pre($config->mailerJobSize);
+            CRM_Mailing_BAO_Job::runJobs_pre( $config->mailerJobSize );
             CRM_Mailing_BAO_Job::runJobs();
             CRM_Mailing_BAO_Job::runJobs_post();
         }
@@ -167,20 +173,20 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         $session = CRM_Core_Session::singleton();
         $context = $session->readUserContext( );
         
-        if ($this->_action & CRM_Core_Action::DISABLE) {                 
-            if (CRM_Utils_Request::retrieve('confirmed', 'Boolean', $this )) {
+        if ( $this->_action & CRM_Core_Action::DISABLE ) {                 
+            if ( CRM_Utils_Request::retrieve( 'confirmed', 'Boolean', $this ) ) {
                 require_once 'CRM/Mailing/BAO/Job.php';
-                CRM_Mailing_BAO_Job::cancel($this->_mailingId);
+                CRM_Mailing_BAO_Job::cancel( $this->_mailingId );
                 CRM_Utils_System::redirect( $context );
             } else {
                 $controller = new CRM_Core_Controller_Simple( 'CRM_Mailing_Form_Browse',
-                                                               ts('Cancel Mailing'),
+                                                               ts( 'Cancel Mailing' ),
                                                                $this->_action );
                 $controller->setEmbedded( true );
                 $controller->run( );
             }
-        } else if ($this->_action & CRM_Core_Action::DELETE) {
-            if (CRM_Utils_Request::retrieve('confirmed', 'Boolean', $this )) {
+        } else if ( $this->_action & CRM_Core_Action::DELETE ) {
+            if ( CRM_Utils_Request::retrieve( 'confirmed', 'Boolean', $this ) ) {
                 
                 // check for action permissions.
                 if ( !CRM_Core_Permission::checkActionPermission( 'CiviMail', $this->_action ) ) {
@@ -188,8 +194,8 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
                 }
                 
                 require_once 'CRM/Mailing/BAO/Mailing.php';
-                CRM_Mailing_BAO_Mailing::del($this->_mailingId);
-                CRM_Utils_System::redirect($context);
+                CRM_Mailing_BAO_Mailing::del( $this->_mailingId );
+                CRM_Utils_System::redirect( $context );
             } else {
                 $controller = new CRM_Core_Controller_Simple( 'CRM_Mailing_Form_Browse',
                                                                ts('Delete Mailing'),
@@ -199,13 +205,13 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
             }
         } else if ( $this->_action & CRM_Core_Action::RENEW ) {
             //archive this mailing, CRM-3752.
-            if (CRM_Utils_Request::retrieve('confirmed', 'Boolean', $this )) {
+            if ( CRM_Utils_Request::retrieve( 'confirmed', 'Boolean', $this ) ) {
                 //set is_archived to 1
                 CRM_Core_DAO::setFieldValue( 'CRM_Mailing_DAO_Mailing', $this->_mailingId, 'is_archived', true );
-                CRM_Utils_System::redirect($context);
+                CRM_Utils_System::redirect( $context );
             } else {
                 $controller = new CRM_Core_Controller_Simple( 'CRM_Mailing_Form_Browse',
-                                                               ts('Archive Mailing'),
+                                                               ts( 'Archive Mailing' ),
                                                                $this->_action );
                 $controller->setEmbedded( true );
                 $controller->run( );
@@ -227,26 +233,26 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         $controller->run( );
         
         //hack to display results as per search
-        $rows = $controller->getRows($controller);
-        $this->assign('rows', $rows );
+        $rows = $controller->getRows( $controller );
+        $this->assign( 'rows', $rows );
         
         $urlParams = 'reset=1';
         $urlString = 'civicrm/mailing/browse';
         if ( CRM_Utils_Array::value( 3,  $newArgs ) == 'unscheduled' ) {
             $urlString .= '/unscheduled';
             $urlParams .= '&scheduled=false';
-            $this->assign('unscheduled', true );
-            CRM_Utils_System::setTitle(ts('Draft and Unscheduled Mailings'));
+            $this->assign( 'unscheduled', true );
+            CRM_Utils_System::setTitle( ts( 'Draft and Unscheduled Mailings' ) );
         } else if ( CRM_Utils_Array::value( 3,  $newArgs ) == 'archived' ) {
             $urlString .= '/archived';
-            $this->assign('archived', true );
-            CRM_Utils_System::setTitle(ts('Archived Mailings'));
+            $this->assign( 'archived', true );
+            CRM_Utils_System::setTitle( ts( 'Archived Mailings' ) );
         } else if ( CRM_Utils_Array::value( 3,  $newArgs)  == 'scheduled' ) {
             $urlString .= '/scheduled';
             $urlParams .= '&scheduled=true';
-            CRM_Utils_System::setTitle(ts('Scheduled and Sent Mailings'));
+            CRM_Utils_System::setTitle( ts( 'Scheduled and Sent Mailings' ) );
         } else {
-            CRM_Utils_System::setTitle(ts('Find Mailings'));
+            CRM_Utils_System::setTitle( ts( 'Find Mailings' ) );
         }
         
         $crmRowCount = CRM_Utils_Request::retrieve( 'crmRowCount', 'Integer', CRM_Core_DAO::$_nullObject );
@@ -257,7 +263,7 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
             $urlParams .= $crmPID ? '&crmPID=' . $crmPID : ''; 
         }
         
-        $crmSID      = CRM_Utils_Request::retrieve( 'crmSID', 'Integer', CRM_Core_DAO::$_nullObject );
+        $crmSID = CRM_Utils_Request::retrieve( 'crmSID', 'Integer', CRM_Core_DAO::$_nullObject );
         if ( $crmSID ) {
             $urlParams .= '&crmSID=' . $crmSID;
         } 
@@ -273,21 +279,25 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page {
         return parent::run( );
     }
 
-    function search( ) {
+    function search( )
+    {
         if ( $this->_action &
              ( CRM_Core_Action::ADD    |
                CRM_Core_Action::UPDATE ) ) {
             return;
         }
 
-        $form = new CRM_Core_Controller_Simple( 'CRM_Mailing_Form_Search', ts( 'Search Mailings' ), CRM_Core_Action::ADD );
+        $form = new CRM_Core_Controller_Simple( 'CRM_Mailing_Form_Search', 
+                                                ts( 'Search Mailings' ),
+                                                CRM_Core_Action::ADD );
         $form->setEmbedded( true );
         $form->setParent( $this );
         $form->process( );
         $form->run( );
     }
 
-    function whereClause( &$params, $sortBy = true ) {
+    function whereClause( &$params, $sortBy = true )
+    {
         $values =  array( );
 
         $clauses = array( );

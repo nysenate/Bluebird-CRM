@@ -184,6 +184,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form
     public $_lineItemParticipantsCount;
     public $_availableRegistrations;
     
+    public $_forcePayement;
     /** 
      * Function to set variables up before form is built 
      *                                                           
@@ -223,7 +224,9 @@ class CRM_Event_Form_Registration extends CRM_Core_Form
         
         // check for waitlisting.
         $this->_allowWaitlist = $this->get( 'allowWaitlist' );
-        
+
+        $this->_forcePayement = $this->get( 'forcePayement' );
+
         //get the additional participant ids.
         $this->_additionalParticipantIds = $this->get( 'additionalParticipantIds' );
         
@@ -243,6 +246,7 @@ class CRM_Event_Form_Registration extends CRM_Core_Form
             // get all the values from the dao object
             $this->_values = array( );
             $this->_fields = array( );
+            $this->_forcePayement = false;
 
             // get the participant values, CRM-4320
             $this->_allowConfirmation = false;

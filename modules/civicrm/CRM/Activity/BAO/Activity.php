@@ -38,6 +38,7 @@ require_once 'CRM/Activity/DAO/Activity.php';
 require_once 'CRM/Activity/BAO/ActivityTarget.php';
 require_once 'CRM/Activity/BAO/ActivityAssignment.php';
 require_once 'CRM/Utils/Hook.php';
+require_once 'CRM/Mailing/Info.php';
 
 /**
  * This class is for activity functions
@@ -115,7 +116,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
                 $target_contact_names = CRM_Activity_BAO_ActivityTarget::getTargetNames( $activity->id );
                 
                 $defaults['target_contact_value'] = implode('; ', $target_contact_names);
-            } else if ( CRM_Core_Permission::check('access CiviMail') ) {
+            } else if ( CRM_Core_Permission::check('access CiviMail') || ( CRM_Mailing_Info::workflowEnabled( ) && CRM_Core_Permission::check( 'create mailings' ) ) ) {
                 $defaults['mailingId'] = CRM_Utils_System::url( 'civicrm/mailing/report', 
                                                                 "mid={$activity->source_record_id}&reset=1&atype={$activity->activity_type_id}&aid={$activity->id}&cid={$activity->source_contact_id}&context=activity" );
             } else {
@@ -764,7 +765,7 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = {$acti
         //CRM-3553, need to check user has access to target groups.
         require_once 'CRM/Mailing/BAO/Mailing.php';
         $mailingIDs =& CRM_Mailing_BAO_Mailing::mailingACLIDs( );
-        $accessCiviMail = CRM_Core_Permission::check('access CiviMail');
+        $accessCiviMail = ( ( CRM_Core_Permission::check( 'access CiviMail' ) ) || ( CRM_Mailing_Info::workflowEnabled( ) && CRM_Core_Permission::check( 'create mailings' ) ) );
         
         $values = array( );
         while( $dao->fetch() ) {

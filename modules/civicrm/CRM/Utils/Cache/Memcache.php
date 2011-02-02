@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.2                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -90,7 +90,7 @@ class CRM_Utils_Cache_Memcache {
     }
 
     function set( $key, &$value ) {
-
+		//NYSS
         //make the key host specific to avoid namespace conflicts
         $key = md5($_SERVER['HTTP_HOST']).$key;
 
@@ -101,7 +101,7 @@ class CRM_Utils_Cache_Memcache {
     }
 
     function &get( $key ) {
-
+		//NYSS
         //make the key host specific to avoid namespace conflicts
         $key = md5($_SERVER['HTTP_HOST']).$key;
 
@@ -110,7 +110,7 @@ class CRM_Utils_Cache_Memcache {
     }
 
     function delete( $key ) {
-
+		//NYSS
         //make the key host specific to avoid namespace conflicts
 //DOESNT WORK - used in config
 //        $config =& CRM_Core_Config::singleton();

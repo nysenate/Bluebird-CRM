@@ -397,7 +397,7 @@ class CRM_Case_Selector_Search extends CRM_Core_Selector_Base
             self::$_columnHeaders = array( 
                                           array(
                                                 'name'      => ts('Status'),
-                                                'sort'      => 'case_status_id',
+                                                'sort'      => 'case_status',
                                                 'direction' => CRM_Utils_Sort::DONTCARE,
                                                 ),
                                           array(

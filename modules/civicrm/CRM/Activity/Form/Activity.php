@@ -472,6 +472,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             if ( !CRM_Utils_Array::value('activity_date_time', $defaults) ) {
                 list( $defaults['activity_date_time'], $defaults['activity_date_time_time'] ) = CRM_Utils_Date::setDateDefaults( null, 'activityDateTime' );
             } else if ( $this->_action & CRM_Core_Action::UPDATE ){
+            	$this->assign( 'current_activity_date_time', $defaults['activity_date_time'] );
                 list( $defaults['activity_date_time'], 
                       $defaults['activity_date_time_time'] ) = CRM_Utils_Date::setDateDefaults( $defaults['activity_date_time'], 'activityDateTime' );
             }
@@ -785,11 +786,11 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         //FIX me temp. comment
         // make sure if associated contacts exist
         require_once 'CRM/Contact/BAO/Contact.php';
-       
+
         if ( $fields['source_contact_id'] && ! is_numeric($fields['source_contact_qid'])) {
             $errors['source_contact_id'] = ts('Source Contact non-existent!');
         }
-        
+
         if ( CRM_Utils_Array::value( 'assignee_contact_id', $fields ) ) {
             foreach ( explode( ',', $fields['assignee_contact_id'] ) as $key => $id ) {
                 if ( $id && ! is_numeric($id)) {
@@ -855,7 +856,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             CRM_Core_Session::setStatus( ts("Selected Activity has been deleted sucessfully.") );
             return;
         }
-        
+
         // store the submitted values in an array
         if ( ! $params ) {
             $params = $this->controller->exportValues( $this->_name );

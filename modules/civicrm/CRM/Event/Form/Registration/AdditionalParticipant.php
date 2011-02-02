@@ -461,8 +461,81 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
             }
         }
         
+        
+        if ( $button != 'skip' && 
+             $self->_values['event']['is_monetary'] && 
+             !isset($errors['_qf_default']) && 
+             !$self->validatePaymentValues($self, $fields)  ) {
+            $errors['_qf_default'] = ts("Your payement information looks incomplete. Please go back to the main registration page, to complete payment information.");
+            $self->set( 'forcePayement', true ) ;
+        } else if ( $button == 'skip' )  {
+            $self->set( 'forcePayement', true ) ;
+        }
+
         return $errors;
         
+    }
+
+    function validatePaymentValues( $self, $fields ) {
+        
+        if ( CRM_Utils_Array::value( 'bypass_payment', $self->_params[0] ) ||
+             $self->_allowWaitlist ||
+             empty( $self->_fields ) ||
+             CRM_Utils_Array::value( 'amount', $self->_params[0] ) > 0 ) {
+            return true;
+        }
+        
+        $validatePayement = false;
+        if ( CRM_Utils_Array::value( 'priceSetId', $fields ) ) {
+            require_once 'CRM/Price/BAO/Set.php';
+            $lineItem = array( );
+            CRM_Price_BAO_Set::processAmount( $self->_values['fee'], $fields, $lineItem );
+            if ( $fields['amount'] > 0 ) {
+                $validatePayement =  true;
+                // $self->_forcePayement = true;
+                // return false;
+            }
+        } else if ( CRM_Utils_Array::value( 'amount', $fields ) &&
+                    ( CRM_Utils_Array::value( 'value',  $self->_values['fee'][$fields['amount']] ) > 0 ) ) {
+            $validatePayement =  true;
+        }
+            
+        if ( !$validatePayement ) return true;
+ 
+        foreach ( $self->_fields as $name => $fld ) {
+            if ( $fld['is_required'] &&
+                 CRM_Utils_System::isNull( CRM_Utils_Array::value( $name, $fields ) ) ) {
+                return false;
+            }
+        }
+        
+        // make sure that credit card number and cvv are valid
+        require_once 'CRM/Utils/Rule.php';
+        require_once 'CRM/Core/OptionGroup.php';
+        if ( CRM_Utils_Array::value( 'credit_card_type', $self->_params[0] ) ) {
+            if ( CRM_Utils_Array::value( 'credit_card_number', $self->_params[0] ) &&
+                 !CRM_Utils_Rule::creditCardNumber( $self->_params[0]['credit_card_number'], $self->_params[0]['credit_card_type'] ) ) {
+                return false;
+            }
+            
+            if ( CRM_Utils_Array::value( 'cvv2', $self->_params[0] ) &&
+                 ! CRM_Utils_Rule::cvv( $self->_params[0]['cvv2'], $self->_params[0]['credit_card_type'] ) ) {
+                return false;
+            }
+        }
+        
+        $elements = array( 'email_greeting'  => 'email_greeting_custom', 
+                           'postal_greeting' => 'postal_greeting_custom',
+                           'addressee'       => 'addressee_custom' ); 
+        foreach ( $elements as $greeting => $customizedGreeting ) {
+            if( $greetingType = CRM_Utils_Array::value($greeting, $self->_params[0]) ) {
+                $customizedValue = CRM_Core_OptionGroup::getValue( $greeting, 'Customized', 'name' ); 
+                if( $customizedValue  == $greetingType && 
+                    ! CRM_Utils_Array::value( $customizedGreeting, $self->_params[0] ) ) {
+                    return false;
+                }
+            }
+        }
     }
 
     /**
@@ -481,6 +554,11 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
         
         //user submitted params.
         $params = $this->controller->exportValues( $this->_name );
+
+        if ( !$this->_allowConfirmation ) {
+            // check if the participant is already registered
+            $params['contact_id'] = CRM_Event_Form_Registration_Register::checkRegistration( $params, $this, true, true );
+        }
         
         // if waiting is enabled
         if ( !$this->_allowConfirmation && 

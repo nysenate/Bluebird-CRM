@@ -82,7 +82,7 @@ class CRM_Contribute_Form_ManagePremiums extends CRM_Contribute_Form
                 $this->assign('imageURL',$tempDefaults['image']);
             }
             if ( isset ($tempDefaults['period_type'] )  ) {
-                $this->assign("showSubscriptions" , true );
+                $this->assign('showSubscriptions' , true );
             }
             
         }
@@ -204,10 +204,10 @@ class CRM_Contribute_Form_ManagePremiums extends CRM_Contribute_Form
         if ( isset ( $params['imageOption'] ) ) {
             if ( $params['imageOption'] == 'thumbnail' ) {
                 if ( ! $params['imageUrl']) {
-                    $errors ['imageUrl']= "Image URL is Reqiured ";
+                    $errors ['imageUrl']= 'Image URL is Required ';
                 }
                 if ( ! $params['thumbnailUrl']) {
-                    $errors ['thumbnailUrl']= "Thumbnail URL is Reqiured ";
+                    $errors ['thumbnailUrl']= 'Thumbnail URL is Required ';
                 }
             }
         }

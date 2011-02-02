@@ -70,14 +70,14 @@ class CRM_Contact_BAO_GroupContactCache extends CRM_Contact_DAO_GroupContactCach
         //make sure to give original timezone settings again.
         $originalTimezone = date_default_timezone_get( );
         date_default_timezone_set('UTC');
-        $now = date('Y-m-d H:i:s');
+        $now = date('YmdHis');
         date_default_timezone_set( $originalTimezone );
         
         $query  = "
 SELECT     g.id
 FROM       civicrm_group g
 WHERE      g.id IN ( {$groupID} ) AND ( g.saved_search_id IS NOT NULL OR g.children IS NOT NULL ) AND 
-          (g.cache_date IS NULL OR (TIMESTAMPDIFF(MINUTE, g.cache_date, $now)) >= $smartGroupCacheTimeout))
+          (g.cache_date IS NULL OR (TIMESTAMPDIFF(MINUTE, g.cache_date, $now) >= $smartGroupCacheTimeout))
 ";
 
         $dao      =& CRM_Core_DAO::executeQuery( $query );
