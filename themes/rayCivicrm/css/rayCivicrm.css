@@ -972,26 +972,26 @@ ul.token-input-list-facebook { width:265px;}
 	text-shadow:0 1px 0 black;
 }
 
-#crm-container #tagRow291 {
+#crm-container #crm-tagRow291 {
 	display: none;
 }
-#crm-container #tagListWrap {
+#crm-container #crm-tagListWrap {
 	height: 600px;
 	overflow: auto;
 	border: solid 1px #CCCCCC;
 }
-#crm-container #tagListWrap td input {
+#crm-container #crm-tagListWrap td input {
 	float: left;
 }
-#crm-container #tagListWrap td label {
+#crm-container #crm-tagListWrap td label {
 	display: block;
 	float: left;
 	padding-left: 2px;
 }
-#crm-container #tagListWrap td label.level2 {
+#crm-container #crm-tagListWrap td label.level2 {
 	font-weight: bold;
 }
-#crm-container #tagListWrap td label.level3 {
+#crm-container #crm-tagListWrap td label.level3 {
 	padding-left: 15px;
 	width: 80%;
 }
@@ -1011,8 +1011,8 @@ ul.token-input-list-facebook { width:265px;}
 /* Hide some tag stuff */
 #crm-container .crm-tag-form-block-used_for,
 #crm-container #newTagSet,
-.crm-contact-task-addtotag-form-block-tag #tagRow_tag291,
-.crm-contact-task-removefromtag-form-block-tag #tagRow_tag291 {
+.crm-contact-task-addtotag-form-block-tag #crm-tagRow_tag291,
+.crm-contact-task-removefromtag-form-block-tag #crm-tagRow_tag291 {
 	display: none;
 }
 

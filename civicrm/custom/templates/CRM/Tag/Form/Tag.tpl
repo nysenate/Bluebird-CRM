@@ -125,9 +125,10 @@ function initTagTree() {
     	<div class="clear"></div>
     {/if}
     
-    <ul id="tagtree" class="tree">
+    <div id="tagtree">
+    <ul class="tree">
         {foreach from=$tree item="node" key="id"}
-        <li id="tag_{$id}" class="tagset">
+        <li id="tag_{$id}">
             {if ! $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
             {if $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
             {if $node.children} <span class="hit"></span> {/if} <label for="check_{$id}" id="tagLabel_{$id}">{$node.name}</label> 
@@ -168,6 +169,7 @@ function initTagTree() {
         </li>	 
         {/foreach} 
     </ul>
+    </div>
    
       {*foreach from=$tag item="row" key="id"}
 

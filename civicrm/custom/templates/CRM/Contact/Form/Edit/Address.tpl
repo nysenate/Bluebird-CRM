@@ -204,11 +204,11 @@
 </td>
 </tr></table>
 
-{if $className eq 'CRM_Contact_Form_Contact'}
-	<div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
-    	<a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}Another Address{/ts}</span></a>
-    </div>
-{/if}
+  {if $className eq 'CRM_Contact_Form_Contact'}
+      <div id="addMoreAddress{$blockId}" class="crm-add-address-wrapper">
+          <a href="#" class="button" onclick="buildAdditionalBlocks( 'Address', '{$className}' );return false;"><span><div class="icon add-icon"></div>{ts}Another Address{/ts}</span></a>
+      </div>
+  {/if}
 
 {if $title and $className eq 'CRM_Contact_Form_Contact'}
 </div>

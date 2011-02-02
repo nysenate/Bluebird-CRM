@@ -97,7 +97,7 @@ function loadPanes( id ) {
     <div class="spacer"></div>
 
     <table class="form-layout">
-        <tr>
+        <tr>{*NYSS add reset button*}
             <td>{$form.buttons.html}<a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton"><span>Reset Form</span></a></td>
         </tr>
     </table>

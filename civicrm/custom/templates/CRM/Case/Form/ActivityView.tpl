@@ -51,6 +51,7 @@
 <table class="crm-info-panel" id="crm-activity-view-table">
 {foreach from=$report.fields item=row name=report}
 <tr class="crm-case-activity-view-{$row.label}">
+{*NYSS change terminology*}
     <td class="label">{if $row.label eq 'Client'}Constituent{else}{$row.label}{/if}</td>
     {if $smarty.foreach.report.first AND ( $activityID OR $parentID OR $latestRevisionID )} {* Add a cell to first row with links to prior revision listing and Prompted by (parent) as appropriate *}
         <td>{if $row.value eq 'Client'}Constituent{else}{$row.value}{/if}</td>

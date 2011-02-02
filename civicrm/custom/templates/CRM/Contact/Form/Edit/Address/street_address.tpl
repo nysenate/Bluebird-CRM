@@ -74,11 +74,6 @@ function processAddressFields( name, blockId, loadData ) {
 	    if (streetNumber === null) streetNumber = '';  
 	    var streetAddress = eval( "allAddressValues.street_address_" + blockId );
 	    if (streetAddress === null) streetAddress = '';  
-		//http://senatedev.senate.state.ny.us/issues/show/2367
-		/*var suppAddress1 	 = eval( "allAddressValues.supplemental_address_1_" + blockId ).toUpperCase(); //NYSS - LCD
-			if (suppAddress1 == null) { suppAddress1 = ''; }
-		var suppAddress2 	 = eval( "allAddressValues.supplemental_address_2_" + blockId ).toUpperCase(); //NYSS - LCD
-			if (suppAddress2 == null) { suppAddress2 = ''; }*/
 	}
 
 	var showBlockName = '';
@@ -109,9 +104,7 @@ function processAddressFields( name, blockId, loadData ) {
           cj( '#address_' + blockId +'_street_unit'    ).val( streetUnit    );
           cj( '#address_' + blockId +'_street_number'  ).val( streetNumber  );
           cj( '#address_' + blockId +'_street_address' ).val( streetAddress );
-          /*cj( '#address_' + blockId +'_supplemental_address_1' ).val( suppAddress1 ); //NYSS - LCD
-          cj( '#address_' + blockId +'_supplemental_address_2' ).val( suppAddress2 ); //NYSS - LCD*/
-    }
+       }
 }
 
 </script>

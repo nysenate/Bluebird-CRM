@@ -26,7 +26,7 @@
 {include file="CRM/common/dashboard.tpl"}
 {include file="CRM/common/openFlashChart.tpl"}
 
-<div class="crm-dashboard-buttons crm-submit-buttons">
+<div class="crm-dashboard-buttons crm-submit-buttons">{*NYSS*}
 <a href="javascript:addDashlet( );" class="button show-add">
 	<span><div class="icon settings-icon"></div>{ts}Configure Your Dashboard{/ts}</span></a>
 
