@@ -112,11 +112,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         $this->assign( 'otherUfId', $otherUfId );
         $this->assign( 'otherUfName', $otherUser->name );
         
-        $cmsUser = false;
-        if ( $mainUfId || $otherUfId ) {
-            $cmsUser = true;  
-        }
-        
+        $cmsUser = ( $mainUfId && $otherUfId ) ? true : false;  
         $this->assign( 'user', $cmsUser );
                 
         $session = CRM_Core_Session::singleton( );
@@ -331,8 +327,10 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         // add the related tables and unset the ones that don't sport any of the duplicate contact's info
         $relTables = CRM_Dedupe_Merger::relTables();
         $activeRelTables = CRM_Dedupe_Merger::getActiveRelTables($oid);
+        $activeMainRelTables = CRM_Dedupe_Merger::getActiveRelTables($cid);
         foreach ($relTables as $name => $null) {
-            if (!in_array($name, $activeRelTables)) {
+            if ( !in_array( $name, $activeRelTables ) &&  
+                 !( ( $name == 'rel_table_users' ) && in_array( $name, $activeMainRelTables ) ) ) {
                 unset($relTables[$name]);
                 continue;
             }
@@ -653,13 +651,15 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         CRM_Core_Session::setStatus(ts('The contacts have been merged.'));
         
 		//NYSS - LCD #1419
+		//NYSS - restore to normal behavior for performance purposes
+		//NYSS - c3.4 will have pagination to help with performance load
 		//if merge originated from dupe search, return there. else return merged contact record.
-		if ( $this->_rgid ) {
+		/*if ( $this->_rgid ) {
 			$url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->_rgid}" );
 		} else {
 			$url = CRM_Utils_System::url( 'civicrm/contact/view', "reset=1&cid={$this->_cid}" );
-		}
-		
+		}*/
+        $url = CRM_Utils_System::url( 'civicrm/contact/view', "reset=1&cid={$this->_cid}" );
         CRM_Utils_System::redirect($url);
     }
     

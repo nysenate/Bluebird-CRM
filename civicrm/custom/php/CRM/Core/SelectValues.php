@@ -180,7 +180,7 @@ class CRM_Core_SelectValues
                  ''             => ts('- select -'),
                  'start_date'   => ts('start date'),
                  'end_date'     => ts('end date'),
-                 'join_date'    => ts('join date')
+                 'join_date'    => ts('member since')
              );
         }
         return $eventDate;

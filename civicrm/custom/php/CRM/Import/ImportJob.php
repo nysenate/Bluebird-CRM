@@ -196,7 +196,10 @@ class CRM_Import_ImportJob {
                 }
             }
             
-            list( $id, $first, $second ) = explode( '_', $fldName, 3 );
+            $fldNameParts = explode( '_', $fldName, 3 );
+            $id           = $fldNameParts[0];
+            $first        = isset($fldNameParts[1])? $fldNameParts[1] : null;
+            $second       = isset($fldNameParts[2])? $fldNameParts[2] : null;
             if ( ($first == 'a' && $second == 'b') ||
                  ($first == 'b' && $second == 'a') ) {
                 

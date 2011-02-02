@@ -40,8 +40,10 @@
  *
  */
 require_once 'CRM/Contact/BAO/ContactType.php';
-
-class CRM_Contact_Task {
+require_once 'CRM/Mailing/Info.php';
+ 
+class CRM_Contact_Task
+{
     const
         GROUP_CONTACTS        =     1,
         REMOVE_CONTACTS       =     2,
@@ -196,13 +198,23 @@ class CRM_Contact_Task {
                                            'class'  => 'CRM_Event_Form_Participant' );
             }
             
-            if ( CRM_Core_Permission::access( 'CiviMail' ) || CRM_Core_Permission::check( 'create mailings' ) ) { //NYSS
-                self::$_tasks[20] = array( 'title'  => ts( 'Create a Mass Mailing' ),
+            if ( CRM_Core_Permission::access( 'CiviMail' ) ) { 
+                self::$_tasks[20] = array( 'title'  => ts( 'Schedule/Send a Mass Mailing' ),
                                            'class'  => array( 'CRM_Mailing_Form_Group',
                                                               'CRM_Mailing_Form_Settings',
                                                               'CRM_Mailing_Form_Upload',
                                                               'CRM_Mailing_Form_Test',
                                                               'CRM_Mailing_Form_Schedule'
+                                                              ),
+                                           'result' => false
+                                           );
+            } elseif ( CRM_Mailing_Info::workflowEnabled( ) && 
+                       CRM_Core_Permission::check( 'create mailings' ) ) { 
+                self::$_tasks[20] = array( 'title'  => ts( 'Create a Mass Mailing' ),
+                                           'class'  => array( 'CRM_Mailing_Form_Group',
+                                                              'CRM_Mailing_Form_Settings',
+                                                              'CRM_Mailing_Form_Upload',
+                                                              'CRM_Mailing_Form_Test',
                                                               ),
                                            'result' => false
                                            );
@@ -284,12 +296,16 @@ class CRM_Contact_Task {
         } else {
             $tasks = array( 
                            5  => self::$_tasks[ 5]['title'],
-                           6  => self::$_tasks[ 6] ['title'],
+                           6  => self::$_tasks[ 6]['title'],
                            12 => self::$_tasks[12]['title'],
                            16 => self::$_tasks[16]['title'],
+                           20 => self::$_tasks[20]['title'],
                            100 => self::$_tasks[100]['title'], //NYSS
                            101 => self::$_tasks[101]['title'], //NYSS
                            );
+            if ( ! self::$_tasks[20]['title'] ) {
+                unset( $tasks[20] );
+            }
             if ( ! self::$_tasks[12]['title'] ) {
                 //usset it, No edit permission and Map provider info
                 //absent, drop down shows blank space

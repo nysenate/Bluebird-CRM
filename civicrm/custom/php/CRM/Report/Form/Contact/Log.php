@@ -109,7 +109,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                        ),
                                  'data' => 
                                  array( 'title'     => ts( 'Description' ),
-								 		'default'	=> true,
+								 		'default'	=> true, //NYSS
                                        ),
                                 ),
                           'filters' =>             
@@ -119,6 +119,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                         'type'    => CRM_Utils_Type::T_DATE,
                                         'default' => 'this.week',
                                        ),
+								 //NYSS
 								 'data' => 
                                  array( 'title'     => ts( 'Description' ),
                                         'type'      => CRM_Utils_Type::T_STRING,

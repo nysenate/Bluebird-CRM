@@ -84,7 +84,7 @@ class CRM_Core_Form_Tag
                 if ( $entityId ) {
                     $tagset[$tagsetItem]['entityId'] = $entityId;
                     require_once 'CRM/Core/BAO/EntityTag.php';
-                    $entityTags = CRM_Core_BAO_EntityTag::getChildEntityTags( $parentId, $entityId, $entityTable );
+                    $entityTags = CRM_Core_BAO_EntityTag::getChildEntityTags( $parentId, $entityId, $entityTable );                    
                 } elseif ( !empty( $form->_submitValues['taglist'] ) && 
                            CRM_Utils_Array::value( $parentId, $form->_submitValues['taglist']) ) {
 
