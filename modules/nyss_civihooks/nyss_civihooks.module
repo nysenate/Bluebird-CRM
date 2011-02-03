@@ -164,26 +164,30 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	//Construct some arrays and values to be passed to the tag tab
 	if ( $formName == 'CRM_Tag_Form_Tag' ) {
+		//CRM_Core_Error::debug($form);
 	
 		$contactId = $form->getVar( '_entityID' );
 		
 		//Construct list of tags, comma-separated
-		//CRM_Core_Error::debug($form);
 		$contactTagsList = array();
 		$contactTags = CRM_Core_BAO_EntityTag::getContactTags( $contactId );
+		//CRM_Core_Error::debug($contactTags);
         if ( !empty( $contactTags ) ) {
-            $contactTagsList = implode( ', ', $contactTags );
+            $contactTagsList = stripslashes( implode( ', ', $contactTags ) );
         }
 		$form->assign( 'contactTagsList', $contactTagsList );
 		
 		//Construct list of issue codes, comma-separated
-		$contactIssueCode_list = array();
-		$contactIssueCode_item = array();
-		$contactIssueCodes = CRM_Core_BAO_EntityTag::getChildEntityTags( 291, $contactId );
-        foreach ( $contactIssueCodes as $contactIssueCode ) {
-			$contactIssueCode_item[] = $contactIssueCode['name'];
+		//Need to work with the full list and subtract tagsets
+		$contactTags 	 = array();
+		$contactTags 	 = CRM_Core_BAO_EntityTag::getTag( $contactId );
+		$tagsNotTagset = CRM_Core_BAO_Tag::getTagsNotInTagset();
+		foreach ( $tagsNotTagset as $key => $issueCode ) {
+			if ( in_array( $key, $contactTags ) ) {
+				$contactIssueCode_item[] = $issueCode;
+			}
 		}
-		$contactIssueCode_list = implode( ', ', $contactIssueCode_item );
+		$contactIssueCode_list = stripslashes( implode( ', ', $contactIssueCode_item ) );
 		$form->assign( 'contactIssueCode_list', $contactIssueCode_list );
 		
 		//Construct list of Legislative Positions

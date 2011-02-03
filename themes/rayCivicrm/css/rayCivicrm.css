@@ -849,7 +849,9 @@ textarea, input {
 #tagtree {
 	float:right;
 	margin:4px 20px 4px 4px;
-	width:300px;
+	width:315px;
+	overflow: hidden;
+	font-size: 11px;
 	}
 
 #crm-container a#tag-refresh-button {

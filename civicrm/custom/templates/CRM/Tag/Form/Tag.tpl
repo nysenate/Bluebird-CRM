@@ -25,11 +25,12 @@
 *}
 {* this template is used for adding/editing tags  *}
 <style>
-.hit {ldelim}padding-left:10px;{rdelim}
+/*.hit {ldelim}padding-left:10px;{rdelim}*/ /*NYSS*/
 .tree li {ldelim}padding-left:10px;{rdelim}
 #Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
 #Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
 #Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
+.jstree-icon {ldelim}border: 1px solid white;{rdelim} /*NYSS*/
 </style>
 <script type="text/javascript">
 
@@ -127,6 +128,7 @@ function initTagTree() {
     
     <div id="tagtree">
     <ul class="tree">
+
         {foreach from=$tree item="node" key="id"}
         <li id="tag_{$id}">
             {if ! $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}

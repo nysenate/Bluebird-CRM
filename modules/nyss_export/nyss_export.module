@@ -1,3 +1,18 @@
 <?php 
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
+
+	foreach ( $headerRows as $key => $headerRow ) {
+		if ( $headerRow == 'Signature Text' || $headerRow == 'Signature Html' ) {
+			unset( $headerRows[$key] );
+		}
+	}
+	unset( $sqlColumns['signature_text'] );
+	unset( $sqlColumns['signature_html'] );
+
+	/*CRM_Core_Error::debug('tt', $exportTempTable);
+	CRM_Core_Error::debug('hr', $headerRows);
+	CRM_Core_Error::debug('sc', $sqlColumns);
+	CRM_Core_Error::debug('em', $exportMode);
+	exit();*/
+
 }
