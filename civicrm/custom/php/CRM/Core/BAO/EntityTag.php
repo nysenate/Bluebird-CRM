@@ -94,6 +94,11 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
         // dont save the object if it already exists, CRM-1276
         if ( ! $entityTag->find( true ) ) {
             $entityTag->save( );
+			
+			//NYSS invoke post hook on entityTag
+        	require_once 'CRM/Utils/Hook.php';
+        	$object = array( 0 => array( 0 => $params['entity_id'] ), 1 => $params['entity_table'] );
+        	CRM_Utils_Hook::post( 'create', 'EntityTag', $params['tag_id'], $object );
         }
 
         return $entityTag;
@@ -129,6 +134,11 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
         $entityTag->copyValues( $params );
         $entityTag->delete( );
         //return $entityTag;
+		
+		//NYSS invoke post hook on entityTag
+        require_once 'CRM/Utils/Hook.php';
+        $object = array( 0 => array( 0 => $params['entity_id'] ), 1 => $params['entity_table'] );
+        CRM_Utils_Hook::post( 'delete', 'EntityTag', $params['tag_id'], $object );
     }
 
     /**
