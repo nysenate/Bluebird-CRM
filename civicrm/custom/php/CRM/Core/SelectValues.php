@@ -470,7 +470,7 @@ class CRM_Core_SelectValues
 
 
     /**
-     * Function to get the Map Provider 
+     * Function to get the Map Providers from available plugins
      * 
      * @return array $map array of map providers
      * @static
@@ -479,13 +479,11 @@ class CRM_Core_SelectValues
     {
         static $map = null;
         if (!$map) {
-            $map = array(
-                         'Yahoo'  => ts('Yahoo'),
-                         'Google' => ts('Google')
-                         );
+            return CRM_Utils_System::getPluginList( 'CRM/Utils/Geocode' );
         }
         return $map;
     }
+
 
     /**
      * different type of Mailing Tokens
