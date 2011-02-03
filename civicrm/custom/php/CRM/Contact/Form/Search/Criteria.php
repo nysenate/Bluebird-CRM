@@ -373,6 +373,13 @@ class CRM_Contact_Form_Search_Criteria {
          
         $form->addDate( 'birth_date_low', ts('Birth Dates - From'), false, array( 'formatType' => 'birth') );
         $form->addDate( 'birth_date_high', ts('To'), false, array( 'formatType' => 'birth') );
+		
+		//NYSS 2693 radio button for is_deceased
+        $deceasedOptions = array( );
+        $deceasedOptions[1] = HTML_QuickForm::createElement('radio', null, ts('Deceased'), 'Yes', 1);
+		$deceasedOptions[0] = HTML_QuickForm::createElement('radio', null, ts('Deceased'), 'No', 0);
+        $form->addGroup($deceasedOptions, 'is_deceased', ts('Deceased'));
+		//NYSS end
 
         $form->addDate( 'deceased_date_low', ts('Deceased Dates - From'), false, array( 'formatType' => 'birth') );
         $form->addDate( 'deceased_date_high', ts('To'), false, array( 'formatType' => 'birth') );
