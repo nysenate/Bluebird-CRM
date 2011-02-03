@@ -2,9 +2,11 @@
 #
 # rsync_bluebird.sh - Synchronize the local repo with the production codebase
 #
+# Project: BluebirdCRM
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-07
+# Revised: 2011-02-03
 #
 
 prog=`basename $0`
@@ -14,7 +16,7 @@ script_dir=`dirname $0`
 
 dry_run_opt=
 delete_opt="--delete"
-repo_dir="$HOME/Bluebird-CRM"
+repo_dir=`cd $script_dir/..; echo $PWD`
 target_dir=
 
 usage() {
