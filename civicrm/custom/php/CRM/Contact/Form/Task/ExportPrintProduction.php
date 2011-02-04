@@ -205,9 +205,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 					$aHeader[] = $name;
 				}
 			}
-
-            $aHeader[] = "Tags";
-
+			//only append tags header if not already set
+			if ( end( $aHeader ) != 'issueCodes' ) {
+				$aHeader[] = "issueCodes";
+			}
+			
 			fputcsv2($fhout, $aHeader,"\t",'',false,false);
 			$firstLine=false;
 		}
