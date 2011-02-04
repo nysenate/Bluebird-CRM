@@ -3674,15 +3674,30 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
             return $clause;
 
         case 'IN':
-            if ( isset($dataType) ) {
+            //CRM_Core_Error::debug($value);
+			//CRM_Core_Error::debug($dataType);
+			if ( isset($dataType) ) {
                 $value = CRM_Utils_Type::escape( $value, "String" );
                 $values = explode ( ',', CRM_Utils_Array::value( 0, explode(')',CRM_Utils_Array::value( 1, explode('(', $value ) ) ) ) );
-                // supporting multiple values in IN clause
+                //NYSS
+				$district_values = '';
+				if ( $dataType == 'Districts' ) {
+					$district_values = $value;
+					$dataType = 'String';
+				}
+				//CRM_Core_Error::debug($value);
+				//CRM_Core_Error::debug($values);
+				
+				// supporting multiple values in IN clause
                 $val = array();
                 foreach ( $values as $v ) {
                     $val[] = "'" . CRM_Utils_Type::escape( $v, $dataType ) . "'";
                 }
                 $value = "(" . implode( $val, "," ) . ")";
+				//NYSS
+				if ( $district_values ) {
+					$value = '('.$district_values.')';
+				}
             }
             return "$clause $value";
             
