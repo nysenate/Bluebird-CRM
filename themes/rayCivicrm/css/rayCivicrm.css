@@ -1090,4 +1090,11 @@ ul.token-input-list-facebook { width:265px;}
 }
 #_qf_Advanced_refresh {
 	width: 100px;
+	float: right;
+}
+.civi-adv-search-body .medium {
+    width: 12em;
+}
+.civi-adv-search-body .big {
+    width: 15em;
 }
