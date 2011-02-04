@@ -53,12 +53,6 @@
 </div>
 
 {if $rowsEmpty}
-{*LCD*}
-{literal}
-<script type="text/javascript">
-cj(function() { cj().crmaccordions(); });
-</script>
-{/literal}
 <div class="crm-content-block">
 	<div class="crm-results-block crm-results-block-empty">
     {include file="CRM/Contact/Form/Search/EmptyResults.tpl"}

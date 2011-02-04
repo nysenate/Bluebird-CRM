@@ -39,12 +39,12 @@ cj(document).ready( function() {
 // load panes function calls for snippet based on id of crm-accordion-header
 function loadPanes( id ) {
     var url = "{/literal}{crmURL p='civicrm/contact/search/advanced' q="snippet=1&qfKey=`$qfKey`&searchPane=" h=0}{literal}" + id;
-   if ( ! cj('form#Advanced div.'+id).html() ) {
+   if ( ! cj('div.'+id).html() ) {
 	    var loading = '<div class="crm-loading-element"><span class="loading-text">{/literal}{ts}Loading{/ts}{literal}...</span></div>';
-	    cj('form#Advanced div.'+id).html(loading);
+	    cj('div.'+id).html(loading);
 	    cj.ajax({
 	        url    : url,
-	        success: function(data) { cj('form#Advanced div.'+id).html(data); }
+	        success: function(data) { cj('div.'+id).html(data); }
 	        });
     	}
 	}
@@ -70,6 +70,8 @@ function loadPanes( id ) {
         {include file="CRM/Contact/Form/Search/Criteria/Basic.tpl"}
     </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
+
+{*NYSS manually add location to default open*}
     {foreach from=$allPanes key=paneName item=paneValue}
     {if $paneValue.id eq 'location'}
       <div class="crm-accordion-wrapper crm-ajax-accordion crm-{$paneValue.id}-accordion crm-accordion-open">
@@ -81,8 +83,6 @@ function loadPanes( id ) {
        </div>
     {/if}
     {/foreach}
-    
-    
     {foreach from=$allPanes key=paneName item=paneValue}
     {if $paneValue.id neq 'location'}
       <div class="crm-accordion-wrapper crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true'}crm-accordion-open{else}crm-accordion-closed{/if}">
@@ -102,44 +102,3 @@ function loadPanes( id ) {
         </tr>
     </table>
 {/strip}
-
-{literal}
-<script>
-cj( function() {
-      var element_date   = "#custom_24_-1";var element_time  = "#custom_24_-1_time";var time_format   = cj( element_time ).attr('timeFormat');
-              cj(element_time).timeEntry({ show24Hours : time_format, spinnerImage: '' });
-          var currentYear = new Date().getFullYear();var date_format = cj( element_date ).attr('format');var alt_field   = 'input#custom_24_-1_hidden';var yearRange   = currentYear - parseInt( cj( element_date ).attr('startOffset') );yearRange  += ':';yearRange  += currentYear + parseInt( cj( element_date ).attr('endOffset'  ) );
- 
-      cj(element_date).datepicker({
-                                    closeAtTop        : true, 
-                                    dateFormat        : date_format,
-                                    changeMonth       : true,
-                                    changeYear        : true,
-                                    altField          : alt_field,
-                                    altFormat         : 'mm/dd/yy',
-                                    yearRange         : yearRange
-                                });
-    
-      cj(element_date).click( function( ) {
-          hideYear( this );
-      });  
-      cj('.ui-datepicker-trigger').click( function( ) {
-          hideYear( cj(this).prev() );
-      });  
-    });
-    
-    function hideYear( element ) {
-        var format = cj( element ).attr('format');
-        if ( format == 'dd-mm' || format == 'mm/dd' ) {
-            cj(".ui-datepicker-year").css( 'display', 'none' );
-        }
-    }
-    
-    function clearDateTime( element ) {
-        cj('input#' + element + ',input#' + element + '_time').val('');
-    }
-
-</script>
-{/literal}
-
-   

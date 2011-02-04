@@ -1082,3 +1082,12 @@ ul.token-input-list-facebook { width:265px;}
 #crm-container .tag-292-section div.token-input-dropdown-facebook {
 	width: 300px;
 }
+.civi-adv-search-body {
+	padding: 0;
+}
+.civi-adv-search-body .form-layout {
+	font-size:11px;
+}
+#_qf_Advanced_refresh {
+	width: 100px;
+}

@@ -23,73 +23,35 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-<table class="form-layout">
-<tr>
-    <td valign="top">
-        Search Contacts<br />
-        {$form.sort_name.html}
-            <div class="description font-italic">
-                {ts}Complete OR partial Contact Name.{/ts}
-            </div>
-            {$form.email.html}
-            <div class="description font-italic">
-                {ts}Complete OR partial Email Address.{/ts}
-            </div>
-            
-    </td>
-    <td valign="top">
-    {if $form.group}
-            <label>{ts}Group(s){/ts}</label>
-                {$form.group.html}
-                {literal}
-                <script type="text/javascript">
-                cj("select#group").crmasmSelect({
-                    addItemTarget: 'bottom',
-                    animate: false,
-                    highlight: true,
-                    sortable: true,
-                    respectParents: true
-                });
-
-                </script>
-                {/literal}
-    {/if}
+	<table class="form-layout">
+		<tr>
+            <td><label>{ts}Complete OR Partial Name{/ts}</label>&nbsp;{help id='id-advanced-intro'}<br />
+                {$form.sort_name.html|crmReplace:class:big}
+            </td>
+            <td>
+                <label>{ts}Complete OR Partial Email{/ts}</label><br />
+                {$form.email.html|crmReplace:class:medium}
+            </td>
+            <td>
+                {if $form.component_mode}  
+                    {$form.component_mode.label} {help id="id-display-results"}<br />{$form.component_mode.html}
+                {else}
+                    &nbsp;
+                {/if}
+            </td>
+            <td>
+                {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
+            </td>
+            <td class="label">
+            	<div class="crm-submit-buttons" style="margin-top:1em;">{$form.buttons.html}</div>
+                <a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton" style="float:right;margin-left:0;">
+                	<span style="margin:auto;display: block; width: 86px; text-align: center;">Reset Form</span></a>
     
-    </td>
-    <td valign="top">
-    {if $form.contact_tags}
-    <label>{ts}Issue Codes{/ts}</label>
-                {$form.contact_tags.html}
-                {literal}
-                <script type="text/javascript">
-
-                cj("select#contact_tags").crmasmSelect({
-                    addItemTarget: 'bottom',
-                    animate: false,
-                    highlight: true,
-                    sortable: true,
-                    respectParents: true
-                });
-
-                </script>
-                {/literal}   
-    {/if}
-    
-    </td>
-    <td>
-    <div style="display:block;">{$form.buttons.html}{help id='id-advanced-intro'}</div>
-    <a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton" style="float:left;margin-left:0;"><span>Reset Form</span></a>
-    </td>
-</tr>
-<tr>
-    <td>
-    <div id="locationSection"></div>
-    <div id="locationSectionHidden"></div>
-              
-    </td> 
-    <td>
-    {if $form.contact_type}
-            <label>{ts}Contact Type(s){/ts}</label><br />
+            </td>       
+        </tr>
+		<tr>
+{if $form.contact_type}
+            <td><label>{ts}Contact Type(s){/ts}</label><br />
                 {$form.contact_type.html}
                  {literal}
 					<script type="text/javascript">
@@ -104,39 +66,82 @@
 
 						</script>
 					{/literal}
-    {/if}
-    {$form.contact_source.label}<br />
-    {$form.contact_source.html}<br />
-    {$form.job_title.label}<br />
-    {$form.job_title.html}
-    <br />
-    {$form.preferred_communication_method.label}<br />
-    {$form.preferred_communication_method.html}<br />
-    {$form.email_on_hold.html} {$form.email_on_hold.label}
-    </td>
-    <td colspan="2">
-        {include file="CRM/common/Tag.tpl"}
-        <br />
-        {$form.privacy.label}<br />
-        {$form.privacy.html} {help id="id-privacy"}
-    </td>
-</tr>
-<tr>       
-    <td></td>
-    <td>
-    </td>
-    </tr>
-</table>
-<div style="display:none">
-  {$form.uf_group_id.label} {$form.uf_group_id.html}
-                <br /><br />
-                <div class="form-item">
-                    {if $form.uf_user}{$form.uf_user.label} {$form.uf_user.html}
-                    <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('uf_user', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
+            </td>
+{else}
+            <td>&nbsp;</td>
+{/if}
+{if $form.group}
+            <td><label>{ts}Group(s){/ts}</label>
+                {$form.group.html}
+                {literal}
+                <script type="text/javascript">
+                cj("select#group").crmasmSelect({
+                    addItemTarget: 'bottom',
+                    animate: false,
+                    highlight: true,
+                    sortable: true,
+                    respectParents: true
+                });
 
-                    <div class="description font-italic">
-                        {ts 1=$config->userFramework}Does the contact have a %1 Account?{/ts}
-                    </div>
-                    {/if}
-                </div>
-</div>
+                </script>
+                {/literal}
+            </td>
+{else}
+            <td>&nbsp;</td>
+{/if}
+
+{if $form.contact_tags}
+            <td colspan="2"><label>{ts}Tag(s){/ts}</label>
+                {$form.contact_tags.html}
+                {literal}
+                <script type="text/javascript">
+
+                cj("select#contact_tags").crmasmSelect({
+                    addItemTarget: 'bottom',
+                    animate: false,
+                    highlight: true,
+                    sortable: true,
+                    respectParents: true
+                });
+
+                </script>
+                {/literal}   
+            </td>
+{else}
+            <td colspan="3">&nbsp;</td>
+{/if}
+	    </tr>
+        
+        <tr><td colspan="5">{include file="CRM/common/Tag.tpl"}</td></tr>
+        
+        <tr>
+            <td colspan="2">
+                {$form.privacy.label}<br />
+                {$form.privacy.html} {help id="id-privacy"}
+            </td>
+            <td colspan="2">
+                {$form.preferred_communication_method.label}<br />
+                {$form.preferred_communication_method.html}<br />
+                <div class="spacer"></div>
+                {$form.email_on_hold.html} {$form.email_on_hold.label}
+            </td>
+            
+            <td>{$form.preferred_language.label}<br />
+                {$form.preferred_language.html|crmReplace:class:medium}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                {$form.contact_source.label}<br />
+                {$form.contact_source.html|crmReplace:class:medium}
+            </td>
+            <td>
+                {$form.job_title.label}<br />
+                {$form.job_title.html|crmReplace:class:medium}
+            </td>
+            <td colspan="3">
+                {if $form.deleted_contacts}<br />{$form.deleted_contacts.html} {$form.deleted_contacts.label}{else}&nbsp;{/if}
+            </td>
+        </tr>
+        
+    </table>
