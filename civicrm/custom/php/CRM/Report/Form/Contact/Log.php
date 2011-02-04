@@ -39,6 +39,7 @@ require_once 'CRM/Report/Form.php';
 class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 
     protected $_summary      = null;
+	protected $_addressField = false; //NYSS
     
     function __construct( ) {		
 
@@ -80,7 +81,19 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                 ),
                           'grouping'  => 'contact-fields',
                           ),
-                          
+                  //NYSS add address
+				  'civicrm_address' =>
+                   array( 'dao'       => 'CRM_Core_DAO_Address',
+                          'grouping'  => 'contact-fields',
+                          'fields'    =>
+                          array( 'street_address'    => null,
+                                 'city'              => null,
+                                 'postal_code'       => null,
+                                 'state_province_id' => 
+                                 array( 'title'   => ts( 'State/Province' ), ),
+                                 ),
+                          ),
+				          
                   'civicrm_activity' => 
                    array( 'dao'       => 'CRM_Activity_DAO_Activity',
                           'fields'    =>
@@ -144,7 +157,12 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
                          CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
 
-                        $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
+                        //NYSS
+						if ( $tableName == 'civicrm_address' ) {
+                            $this->_addressField = true;
+						}
+						
+						$select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
                     }
@@ -167,6 +185,14 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
         left join civicrm_contact {$this->_aliases['civicrm_contact_touched']} on ({$this->_aliases['civicrm_log']}.entity_table='civicrm_contact' AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_contact_touched']}.id)
         left join civicrm_activity {$this->_aliases['civicrm_activity']} on ({$this->_aliases['civicrm_log']}.entity_table='civicrm_activity' AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_activity']}.id)
         ";
+		
+		//NYSS
+		if ( $this->_addressField ) {
+            $this->_from .= "
+            LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
+                   ON ({$this->_aliases['civicrm_contact_touched']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
+                      {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
+        }
             
     }
 
@@ -268,6 +294,14 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
             if ( array_key_exists('civicrm_activity_activity_type_id', $row ) ) {
                 if ( $value = $row['civicrm_activity_activity_type_id'] ) {
                     $rows[$rowNum]['civicrm_activity_activity_type_id'] = $this->activityTypes[$value];
+                }
+                $entryFound = true;
+            }
+			
+			//NYSS handle state
+			if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
+                if ( $value = $row['civicrm_address_state_province_id'] ) {
+                    $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince( $value, false );
                 }
                 $entryFound = true;
             }
