@@ -478,10 +478,26 @@ class CRM_Core_SelectValues
     static function &mapProvider()
     {
         static $map = null;
-        if (!$map) {
-            return CRM_Utils_System::getPluginList( 'CRM/Utils/Geocode' );
+        if (! $map ) {
+            return CRM_Utils_System::getPluginList( 'templates/CRM/Contact/Form/Task/Map', ".tpl" );
         }
         return $map;
+    }
+
+
+    /**
+     * Function to get the Geocoding Providers from available plugins
+     * 
+     * @return array $geo array of geocoder providers
+     * @static
+     */
+    static function &geoProvider()
+    {
+        static $geo = null;
+        if (! $geo ) {
+            return CRM_Utils_System::getPluginList( 'CRM/Utils/Geocode' );
+        }
+        return $geo;
     }
 
 
