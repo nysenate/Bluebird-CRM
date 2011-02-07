@@ -137,7 +137,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
 	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ";
 	
-	$sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
+	$sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, "; 
+	$sql .= " CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
 	$sql .= " IFNULL(c.birth_date, '9999-01-01');";
 	//order export by oldest male, then oldest female
 	//ensure empty values fall last
@@ -233,12 +234,30 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 			}
 		}
 
-	 	if (strlen(trim($aOut['prefix_id']))==0) {
-
-			if ($aOut['gender_id']=="Male") $aOut['prefix_id']="Mr.";
-			else if ($aOut['gender_id']=="Female") $aOut['prefix_id']="Ms.";
+		//CRM_Core_Error::debug($aOut); exit();
+		
+		//handle empty prefix values and special prefixes that need reinterpreting
+	 	if ( strlen(trim($aOut['prefix_id'])) == 0 && $aOut['contact_type'] == 'Individual' ) {
+			//construct prefix using gender if possible
+			if ( $aOut['gender_id'] == 'Male' ) $aOut['prefix_id'] = 'Mr.';
+			elseif ( $aOut['gender_id']=="Female" ) $aOut['prefix_id']="Ms.";
 			else $aOut['prefix_id']="M.";
-		};
+			
+			//reconstruct postal_greeting if Dear Lastname; else assume it's been set purposely
+			if ( $aOut['postal_greeting_display'] == 'Dear '.$aOut['last_name'] ) {
+				$aOut['postal_greeting_display'] = 'Dear '.$aOut['prefix_id'].' '.$aOut['last_name'];
+			}
+		} elseif ( $aOut['prefix_id'] == 'The Honorable' ) {
+			//construct prefix using gender if possible
+			if ( $aOut['gender_id'] == 'Male' ) $aOut['prefix_id'] = 'Mr.';
+			elseif ( $aOut['gender_id']=="Female" ) $aOut['prefix_id']="Ms.";
+			else $aOut['prefix_id']="M.";
+			
+			//reconstruct postal_greeting if Dear The Honorable Lastname; else assume it's been set purposely
+			if ( $aOut['postal_greeting_display'] == 'Dear The Honorable '.$aOut['last_name'] ) {
+				$aOut['postal_greeting_display'] = 'Dear '.$aOut['prefix_id'].' '.$aOut['last_name'];
+			}
+		}
  
 		fputcsv2($fhout, $aOut,"\t",'',false,false);
 	}
