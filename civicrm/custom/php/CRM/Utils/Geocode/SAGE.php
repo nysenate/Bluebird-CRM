@@ -50,7 +50,7 @@ class CRM_Utils_Geocode_SAGE {
         $config = CRM_Core_Config::singleton( );
 
         $arg = array( );
-        $arg[] = "key=" . urlencode( $config->mapAPIKey );
+        $arg[] = "key=" . urlencode( $config->geoAPIKey );
 
         if (  CRM_Utils_Array::value( 'street_address', $values ) ) {
             $arg[] = "street=" . urlencode( $values['street_address'] );

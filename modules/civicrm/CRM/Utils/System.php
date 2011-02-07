@@ -1231,16 +1231,19 @@ class CRM_Utils_System {
      * @author Ken Zalewski
      * @param string $relpath a relative path referencing a directory that
      *               contains one or more plugins
+     * @param string $fext only files with this extension will be considered
+     *               to be plugins
      * @return array List of plugins, where the plugin name is both the
      *               key and the value of each element. 
      * @access public
      */
-    static function getPluginList( $relpath ) {
+    static function getPluginList( $relpath, $fext = '.php' ) {
+        $fext_len = strlen( $fext );
         $plugins = array( );
         $inc_files = CRM_Utils_System::listIncludeFiles( $relpath );
         foreach ( $inc_files as $inc_file ) {
-            if ( substr( $inc_file, -4 ) == '.php' ) {
-                $plugin_name = substr( $inc_file, 0, -4 );
+            if ( substr( $inc_file, 0 - $fext_len ) == $fext ) {
+                $plugin_name = substr( $inc_file, 0, 0 - $fext_len );
                 $plugins[$plugin_name] = ts( $plugin_name );
             }
         }
