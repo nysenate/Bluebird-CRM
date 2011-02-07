@@ -262,27 +262,56 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 		fputcsv2($fhout, $aOut,"\t",'',false,false);
 	}
 //exit;
-		//get rid of helper table
-        $sql = "DROP TABLE tmpExport$rnd;";
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+	//generate issue code and keyword stats
+	$ic_stats = statsIssueCodes( 'tmpExport'.$rnd );
+	$key_stats = statsKeywords( 'tmpExport'.$rnd );
+	$tag_stats = array_merge( array('Issue Code'=>'Count'), $ic_stats, array(''=>'','Keyword'=>'Count'), $key_stats);
+	//CRM_Core_Error::debug($ic_stats); exit();
+	//CRM_Core_Error::debug($key_stats); exit();
+	//CRM_Core_Error::debug($tag_stats); exit();
+	
+	//set filename and full path
+    $filenameStats = 'printExportTagStats_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv';
+    $fnameStats = $path.'/'.$filenameStats;
+	$fhoutStats = fopen($fnameStats, 'w');
+	
+	//write to file
+	foreach ( $tag_stats as $tag_name => $tag_stat ) {
+		//fputcsv2($fhoutStats, $tag_stats,"\t",'',false,false);
+		fwrite($fhoutStats, $tag_name."\t".$tag_stat."\n" );
+	}
+	
+	
+	$urlStats = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filenameStats;
+	$urlcleanStats = urlencode( $urlStats );
+	//end stats
+	
+	//get rid of helper table
+    $sql = "DROP TABLE tmpExport$rnd;";
+    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 		
-		$url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
-		$urlclean = urlencode( $url );
-		$href = "mailto:?subject=print export: $filename&body=".$urlclean;
+	$url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
+	$urlclean = urlencode( $url );
+	$body = "Contact export: $urlclean \r\n\r\n
+			 Tag stats export: $urlcleanStats \r\n";
+	$href = "mailto:?subject=print export: $filename&body=$body";
 		
-		$status = array();
-		$status[] = "Print Production Export";
-		$status[] = "District: $instance (task $rnd).";
-		$status[] = sizeof($this->_contactIds). " contact(s) were exported.";
-		$status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
+	$status = array();
+	$status[] = "Print Production Export";
+	$status[] = "District: $instance (task $rnd).";
+	$status[] = sizeof($this->_contactIds). " contact(s) were exported.";
+	$status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
 		
-		require_once 'CRM/Core/Permission.php';
-        if ( CRM_Core_Permission::check( 'export print production files' ) ) {
-			$status[] = "Download the file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
-        }
+	require_once 'CRM/Core/Permission.php';
+    if ( CRM_Core_Permission::check( 'export print production files' ) ) {
+		$status[] = "Download the export file: <a href=\"$url\" target=\"_blank\">".$filename.'</a>';
+		$status[] = "Download the stats file: <a href=\"$urlStats\" target=\"_blank\">".$filenameStats.'</a>';
+    }
         
-        CRM_Core_Session::setStatus( $status );
-    }//end of function
+    CRM_Core_Session::setStatus( $status );
+    
+	} //end of function
 }
 
 function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {
@@ -362,3 +391,50 @@ function getStates()
   return $options;
 } // getOptions()
 
+function statsIssueCodes( $tmpTbl ) {
+
+	$sql = "SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ic_count
+  			FROM civicrm_entity_tag
+       		 INNER JOIN civicrm_tag
+       		  ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+			 INNER JOIN $tmpTbl
+       		  ON ( $tmpTbl.id = civicrm_entity_tag.entity_id )
+ 			WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
+       		 AND ( civicrm_tag.parent_id != 292 )
+			 AND ( civicrm_tag.parent_id != 296 )
+       		 AND ( civicrm_tag.is_tagset != 1 )
+			GROUP BY name
+			ORDER BY ic_count DESC;";
+	
+    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $ic_stats = array();
+    while ($dao->fetch()) {
+		$ic_stats[$dao->name] = $dao->ic_count;
+	}
+
+	return $ic_stats;
+	
+}
+
+function statsKeywords( $tmpTbl ) {
+
+	$sql = "SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as key_count
+  			FROM civicrm_entity_tag
+       		 INNER JOIN civicrm_tag
+       		  ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+			 INNER JOIN $tmpTbl
+       		  ON ( $tmpTbl.id = civicrm_entity_tag.entity_id )
+ 			WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
+			 AND ( civicrm_tag.parent_id = 296 )
+			GROUP BY name
+			ORDER BY key_count DESC;";
+	
+    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    $key_stats = array();
+    while ($dao->fetch()) {
+		$key_stats[stripslashes($dao->name)] = $dao->key_count;
+	}
+
+	return $key_stats;
+	
+}
