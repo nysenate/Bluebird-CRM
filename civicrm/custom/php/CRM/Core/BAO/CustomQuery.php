@@ -395,7 +395,7 @@ SELECT label, value
 							//NYSS build district id fields using IN to allow multiple values
 							if ( $id >= 46 && $id <= 51 ) {
 								$op  = 'IN';
-								$field['data_type'] = 'Districts';
+								$field['data_type'] = 'Districts'; //flag for processing
 							}
 
                             if ( $wildcard ) {
