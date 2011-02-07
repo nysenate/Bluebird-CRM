@@ -75,17 +75,11 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
                     ts( 'Individual\'s Birth Month (1-12)' ),
 					$month,
 					false );
-            
-		/*$form->add( 'text',
-                    'after_date',
-                    ts( 'Birthday after (date)' ) );*/
-        
-		//$form->addElement('date', 'after_date', ts( 'Birthday after (date)' ), array('format' => 'MdY', 'minYear' => 1900, 'maxYear' => date('Y'))); 
 		
 		$form->addDate( 'start_date', ts( 'Birthday after (date)' ), false, array('formatType' => 'birth') );
+		$form->addDate( 'end_date', ts( 'Birthday before (date)' ), false, array('formatType' => 'birth') );
 		 
-        //$form->assign( 'elements', array( 'birth_month', 'after_date') );
-		$form->assign( 'elements', array( 'birth_month', 'start_date') );
+		$form->assign( 'elements', array( 'birth_month', 'start_date', 'end_date') );
 
 		$form->setDefaults( $this->setDefaultValues() );
     }
@@ -114,21 +108,21 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
         $params = array( );
 		
 		$birth_month = CRM_Utils_Array::value( 'birth_month', $this->_formValues );
-        //$after_date  = CRM_Utils_Array::value( 'after_date', $this->_formValues );
-		$after_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['start_date'] ) );
+		$start_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['start_date'] ) );
+		$end_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['end_date'] ) );
 		
 		if ( $birth_month ) {
-        	$where  = "MONTH( contact_a.birth_date ) = $birth_month ";
+        	$where[] = "MONTH( contact_a.birth_date ) = $birth_month ";
 		}
-		if ( $birth_month && $after_date ) {
-			$where .= "AND ";
+		if ( $start_date ) {
+			$where[] = "contact_a.birth_date >= '$start_date' ";
 		}
-		if ( $after_date ) {
-			//$after_date = $after_date['Y'].'-'.$after_date['m'].'-'.$after_date['d'];
-			$where .= "contact_a.birth_date > '$after_date' ";
+		if ( $end_date ) {
+			$where[] = "contact_a.birth_date <= '$end_date' ";
 		}
-	
-        return $this->whereClause( $where, $params );
+		$whereClause = implode( ' AND ', $where );
+		
+        return $this->whereClause( $whereClause, $params );
     }
 
     function templateFile( ) {
@@ -137,7 +131,8 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     }
 
     function setDefaultValues( ) {
-        return array( 'birth_month' => 1, 'after_date' => '1900-01-01');
+        return array( 'birth_month' => 1, 
+					  'start_date' => '1900-01-01' );
     }
 
     function alterRow( &$row ) {
