@@ -107,7 +107,7 @@ class CRM_Contact_Form_Search_Custom_Group
 		//NYSS end
 		
         if ( count($groups) == 0 || count($tags) == 0 ) {
-            CRM_Core_Session::setStatus( ts("Atleast one Group and Tag must be present, for Custom Group / Tag search.") );
+            CRM_Core_Session::setStatus( ts("At least one Group and Tag must be present, for Custom Group/Tag search.") );
             $url = CRM_Utils_System::url( 'civicrm/contact/search/custom/list', 'reset=1' );
             CRM_Utils_System::redirect($url);
         } 
