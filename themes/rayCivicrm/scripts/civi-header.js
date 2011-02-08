@@ -19,20 +19,20 @@ $(document).ready(function() {
 	});
     
     
-	$("input[name=sort_name]").focus(function(){
+	/*$("input[name=sort_name]").focus(function(){
 		var defaultText = $(this).val();
 		if(defaultText === 'enter name or email'){
 			$(this).val('');
 			$(this).addClass('input-active');			
 			}
-		});
-	$("input[name=sort_name]").blur(function(){
+		});*/
+	/*$("input[name=sort_name]").blur(function(){
 		var defaultText = $(this).val();
 		if(defaultText === ''){
 			$(this).val('enter name or email');
 			$(this).removeClass('input-active');
 			}
-		});	
+		});	*/
 
 	$("#civi_text_search").focus(function(){
 		var defaultText = $(this).val();

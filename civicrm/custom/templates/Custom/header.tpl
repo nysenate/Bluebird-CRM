@@ -90,13 +90,13 @@ cj( document ).ready( function( ) {
 			$(this).addClass('input-active');			
 			}
 		});
-	$("input[name=sort_name]").blur(function(){
+	/*$("input[name=sort_name]").blur(function(){
 		var defaultText = $(this).val();
 		if(defaultText === ''){
 			$(this).val('enter name');
 			$(this).removeClass('input-active');
 			}
-		});
+		});*/
 
 });
 
