@@ -225,6 +225,14 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		
 	}
 	
+	//don't set US as default country in advanced search or contacts with no address are excluded
+	if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
+	
+		$defaults['country'] = '';
+		$form->setDefaults( $defaults );
+	
+	}
+	
 } //close buildForm
 
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {

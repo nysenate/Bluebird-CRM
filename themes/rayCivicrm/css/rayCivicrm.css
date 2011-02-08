@@ -1092,6 +1092,9 @@ ul.token-input-list-facebook { width:265px;}
 	width: 100px;
 	float: right;
 }
+.advsearch_bottom_buttons #_qf_Advanced_refresh {
+	float: left;
+}
 .civi-adv-search-body .medium {
     width: 12em;
 }
