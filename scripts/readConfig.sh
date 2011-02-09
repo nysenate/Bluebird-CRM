@@ -42,6 +42,11 @@ usage() {
   echo "Usage: $prog [--config-file file] [--global] [--group name [--group name]...] [--instance name] [--instance-or-global|--ig name] [--list-all-groups] [--list-all-instances] [--list-matching-groups pattern] [--quiet] [key]" >&2
 }
 
+get_value() {
+  sed -e "s;^[^=]*=[ ]*;;" -e 's;^";;' -e 's;"$;;'
+}
+
+
 # Start by using the default value.
 cfgfile=$DEFAULT_CONFIG_FILE
 
@@ -118,7 +123,7 @@ elif [ "$group_names" -a "$key_name" ]; then
   for group_name in $group_names; do
     key_line=`sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | grep "^$key_name[ =]"`
     if [ $? -eq 0 ]; then
-      echo "$key_line" | sed -e "s;^[^=]*=[ ]*;;"
+      echo "$key_line" | get_value
       errcode=0
       break
     fi
@@ -133,7 +138,7 @@ elif [ "$key_name" = "*" ]; then
   cat $cfgfile
 elif [ "$key_name" ]; then
   key_lines=`grep "^$key_name[ =]" $cfgfile`
-  [ $? -eq 0 ] && echo "$key_lines" | sed -e "s;^[^=]*=[ ]*;;" || errcode=1
+  [ $? -eq 0 ] && echo "$key_lines" | get_value || errcode=1
 else
   echo $cfgfile
 fi
