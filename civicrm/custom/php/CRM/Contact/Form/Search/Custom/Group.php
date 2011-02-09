@@ -103,7 +103,11 @@ class CRM_Contact_Form_Search_Custom_Group
 		require_once 'CRM/Core/BAO/Tag.php';
 		$issue_codes = CRM_Core_BAO_Tag::getTags( );
 		$keywords = CRM_Core_BAO_Tag::getTags( 'civicrm_contact', $tags, 296 );
-		$tags = $issue_codes + array ('296' => 'Keywords') + $keywords;
+		if ( $keywords ) {
+			$tags = $issue_codes + array ('296' => 'Keywords') + $keywords;
+		} else {
+			$tags = $issue_codes;
+		}
 		//NYSS end
 		
         if ( count($groups) == 0 || count($tags) == 0 ) {
