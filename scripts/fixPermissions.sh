@@ -49,4 +49,8 @@ set -x
 [ "$webowner" ] && chown -R "$webowner" "$webdir/"
 [ "$webperms" ] && chmod -R "$webperms" "$webdir/"
 
+# The Bluebird config file should have the strictest permissions.
+cfgpath=`$readConfig`
+chmod g-wx,o= "$cfgpath"
+
 exit 0
