@@ -77,39 +77,13 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
 	//LCD - limit activity assignees to office staff group
     if ( $context == 'activity_assignee' && $groupID ) {
 
-		$query = str_replace("\n", " ", $query);
-        $splitQuery = explode(" ",$query);
-        $selectClause = $fromClause = $whereClause = $orderByClause = null ;
-        $select = $from = $where = null;
-        foreach( $splitQuery as $key => $value ) {
-            if( !strcasecmp( $value , 'SELECT')) {
-                continue;
-            }
-            if( !strcasecmp( $value , 'FROM')) {
-                $select = true;
-                continue;
-            } 
-            if( !strcasecmp( $value , 'WHERE')) { 
-                $from = true;
-                continue;
-            }
-            if( !strcasecmp( $value , 'ORDER')) { 
-                $where = true;
-            }
-            if( !$select ) {
-                $selectClause = $selectClause.' '.$value;
-            } else if( !$from ) {
-                $fromClause = $fromClause.' '.$value;
-            } else if( !$where){
-                $whereClause = $whereClause.' '.$value;
-            } else {
-                $orderByClause = $orderByClause.' '.$value;
-            }
-        }      
-
-        $fromClause .= " INNER JOIN civicrm_group_contact cgc ON cgc.contact_id = cc.id ";
-        $whereClause = " ($whereClause) AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";   
-        $query = "SELECT $selectClause FROM $fromClause WHERE $whereClause $orderByClause";
+		//echo $query;
+		$query = "
+			SELECT sort_name name, cc.id
+			FROM civicrm_contact cc 
+				INNER JOIN civicrm_group_contact cgc ON cgc.contact_id = cc.id
+			WHERE cc.is_deceased = 0 AND cc.sort_name LIKE '%$name%' AND cc.is_deleted = 0 
+				AND cgc.group_id IN ($groupID) AND cgc.status = 'Added'";
 
     } elseif ( $context == 'caseview' && $groupID ) { //case roles
 		$query = "SELECT id, data 
