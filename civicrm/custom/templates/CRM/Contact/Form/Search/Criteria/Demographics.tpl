@@ -37,7 +37,7 @@
        <tr>
        	<td>
         	{$form.is_deceased.label}<br />
-            {$form.is_deceased.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('is_deaceased', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
+            {$form.is_deceased.html}<span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('is_deceased', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
         </td>
        </tr>
        {*NYSS end*}
