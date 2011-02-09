@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-11
-# Revised: 2010-09-27
+# Revised: 2011-02-09
 #
 # Notes:
 #   The configuration file is searched for using the following methods:
@@ -102,6 +102,12 @@ errcode=0
 #
 # If only a key name is given, then print out all matching key-value pairs
 # that have the provided key name, across all groups.
+#
+# If the key name is a wildcard ('*'), then dump the entire config file.
+#
+# If no group pattern, group name, or key name is given, then print the
+# full path to the located config file.
+#
 
 [ $no_output -eq 1 ] && exec > /dev/null
 
@@ -123,11 +129,13 @@ elif [ "$group_names" ]; then
     sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | egrep -v "(^[[;]|^$)"
     [ $? -eq 0 ] && errcode=0 && break
   done
+elif [ "$key_name" = "*" ]; then
+  cat $cfgfile
 elif [ "$key_name" ]; then
   key_lines=`grep "^$key_name[ =]" $cfgfile`
   [ $? -eq 0 ] && echo "$key_lines" | sed -e "s;^[^=]*=[ ]*;;" || errcode=1
 else
-  cat $cfgfile
+  echo $cfgfile
 fi
 
 exit $errcode
