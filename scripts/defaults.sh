@@ -29,6 +29,3 @@ DEFAULT_BACKUP_ROOTDIR=/crmbackups
 
 DEFAULT_BASE_DOMAIN=crm.nysenate.gov
 
-DEFAULT_OWNER_USER=www-data
-DEFAULT_OWNER_GROUP=bluebird
-

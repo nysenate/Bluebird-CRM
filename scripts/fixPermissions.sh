@@ -6,37 +6,51 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-13
-# Revised: 2010-09-30
+# Revised: 2011-02-09
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 readConfig=$script_dir/readConfig.sh
 
-. $script_dir/defaults.sh
-
-datadir=`$readConfig --global data.rootdir` || datadir="$DEFAULT_DATA_ROOTDIR"
-webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
-appdir=`$readConfig --global app.rootdir` || appdir="$DEFAULT_APP_ROOTDIR"
-owner_user=`$readConfig --global owner.user` || owner_user="$DEFAULT_OWNER_USER"
-owner_group=`$readConfig --global owner.group` || owner_group="$DEFAULT_OWNER_GROUP"
-
-if [ ! "$datadir" -o ! "$webdir" -o ! "$owner_user" -o ! "$owner_group" ]; then
-  echo "$prog: Please set drupal.rootdir, owner.user, and owner.group in the Bluebird config file." >&2
+if [ `id -u` -ne 0 ]; then
+  echo "$prog: This script must be run by root." >&2
   exit 1
 fi
 
+. $script_dir/defaults.sh
+
+appdir=`$readConfig --global app.rootdir` || appdir="$DEFAULT_APP_ROOTDIR"
+datdir=`$readConfig --global data.rootdir` || datdir="$DEFAULT_DATA_ROOTDIR"
+impdir=`$readConfig --global import.rootdir` || impdir="$DEFAULT_IMPORT_ROOTDIR"
+webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
+
+appowner=`$readConfig --global app.rootdir.owner`
+datowner=`$readConfig --global data.rootdir.owner`
+impowner=`$readConfig --global import.rootdir.owner`
+webowner=`$readConfig --global drupal.rootdir.owner`
+
+appperms=`$readConfig --global app.rootdir.perms`
+datperms=`$readConfig --global data.rootdir.perms`
+impperms=`$readConfig --global import.rootdir.perms`
+webperms=`$readConfig --global drupal.rootdir.perms`
+
 set -x
-chown -R $owner_user:$owner_group "$datadir/"
-chmod -R ug+rw,o-w "$datadir/"
-#chown -R $owner_user:$owner_group "$webdir/sites"
-#chmod -R u+rw,go+r-w "$webdir"
-#chmod -R ug+rw,o-w "$webdir/sites"
-#chown -R $owner_user:$owner_group "$appdir/civicrm"
-#find "$appdir/civicrm/." -type f -exec chmod 664 {} \;
-#find "$appdir/civicrm/." -type d -exec chmod 775 {} \;
-#chown -R $owner_user:$owner_group "$appdir/modules"
-#find "$appdir/modules/." -type f -exec chmod 664 {} \;
-#find "$appdir/modules/." -type d -exec chmod 775 {} \;
+
+[ "$appowner" ] && chown -R "$appowner" "$appdir/"
+[ "$appperms" ] && chmod -R "$appperms" "$appdir/"
+
+[ "$datowner" ] && chown -R "$datowner" "$datdir/"
+[ "$datperms" ] && chmod -R "$datperms" "$datdir/"
+
+[ "$impowner" ] && chown -R "$impowner" "$impdir/"
+[ "$impperms" ] && chmod -R "$impperms" "$impdir/"
+
+[ "$webowner" ] && chown -R "$webowner" "$webdir/"
+[ "$webperms" ] && chmod -R "$webperms" "$webdir/"
+
+# The Bluebird config file should have the strictest permissions.
+cfgpath=`$readConfig`
+chmod g-wx,o= "$cfgpath"
 
 exit 0

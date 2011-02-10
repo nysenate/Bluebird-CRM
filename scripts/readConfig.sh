@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-11
-# Revised: 2010-09-27
+# Revised: 2011-02-09
 #
 # Notes:
 #   The configuration file is searched for using the following methods:
@@ -41,6 +41,11 @@ no_output=0
 usage() {
   echo "Usage: $prog [--config-file file] [--global] [--group name [--group name]...] [--instance name] [--instance-or-global|--ig name] [--list-all-groups] [--list-all-instances] [--list-matching-groups pattern] [--quiet] [key]" >&2
 }
+
+get_value() {
+  sed -e "s;^[^=]*=[ ]*;;" -e 's;^";;' -e 's;"$;;'
+}
+
 
 # Start by using the default value.
 cfgfile=$DEFAULT_CONFIG_FILE
@@ -102,6 +107,12 @@ errcode=0
 #
 # If only a key name is given, then print out all matching key-value pairs
 # that have the provided key name, across all groups.
+#
+# If the key name is a wildcard ('*'), then dump the entire config file.
+#
+# If no group pattern, group name, or key name is given, then print the
+# full path to the located config file.
+#
 
 [ $no_output -eq 1 ] && exec > /dev/null
 
@@ -112,7 +123,7 @@ elif [ "$group_names" -a "$key_name" ]; then
   for group_name in $group_names; do
     key_line=`sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | grep "^$key_name[ =]"`
     if [ $? -eq 0 ]; then
-      echo "$key_line" | sed -e "s;^[^=]*=[ ]*;;"
+      echo "$key_line" | get_value
       errcode=0
       break
     fi
@@ -123,11 +134,13 @@ elif [ "$group_names" ]; then
     sed -n -e "/^\[$group_name\]/,/^\[/p" $cfgfile | egrep -v "(^[[;]|^$)"
     [ $? -eq 0 ] && errcode=0 && break
   done
+elif [ "$key_name" = "*" ]; then
+  cat $cfgfile
 elif [ "$key_name" ]; then
   key_lines=`grep "^$key_name[ =]" $cfgfile`
-  [ $? -eq 0 ] && echo "$key_lines" | sed -e "s;^[^=]*=[ ]*;;" || errcode=1
+  [ $? -eq 0 ] && echo "$key_lines" | get_value || errcode=1
 else
-  cat $cfgfile
+  echo $cfgfile
 fi
 
 exit $errcode
