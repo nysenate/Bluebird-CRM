@@ -1,30 +1,14 @@
 <?php
-
 /*
- +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
- +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
+ * SAGE.php - An address information provider using the Senate Address
+ *            Geo-coding Engine (SAGE).
+ *
+ * Project: BluebirdCRM
+ * Author: Ken Zalewski
+ * Organization: New York State Senate
+ * Date: 2010-12-19
+ * Revised: 2011-02-07
+ */
 
 /**
  *
@@ -42,12 +26,12 @@
 class CRM_Utils_Address_SAGE
 {
     static function checkAddress( &$values )
-    {//CRM_Core_Error::debug($values);exit();
+    {
 
-        if ( ! isset($values['street_address'])     || 
-               ( ! isset($values['city']           )   &&
-                 ! isset($values['state_province'] )   &&
-                 ! isset($values['postal_code']    )      ) ) {
+        if (!isset($values['street_address']) || 
+             (!isset($values['city']) &&
+              !isset($values['state_province']) &&
+              !isset($values['postal_code']))) {
             return false;
         } 
         
@@ -56,23 +40,43 @@ class CRM_Utils_Address_SAGE
         ** The URL will be used as the SAGE URL.
         */
         require_once 'CRM/Core/BAO/Preferences.php';
-        $userID = CRM_Core_BAO_Preferences::value( 'address_standardization_userid' );
-        $url    = CRM_Core_BAO_Preferences::value( 'address_standardization_url'    );
+        $userID = CRM_Core_BAO_Preferences::value('address_standardization_userid');
+        $url = CRM_Core_BAO_Preferences::value('address_standardization_url');
+        $session = CRM_Core_Session::singleton();
 
-        if ( empty( $userID ) || empty( $url ) ) {
+        if (empty($userID) || empty($url)) {
             return false;
         }
 
         $api_key = $userID;
-        $addr2 = str_replace( ',', '', $values['street_address'] );    
-        $city  = $values['city'];
-        $zip5  = $values['postal_code'];
-        $state = $values['state_province'];
-        $data = array('addr2' => $addr2, 'city' => $city, 'zip5' => $zip5, 'state' => $state, 'key' => $api_key);
+
+        // Try a sequence of possible address fields to find a non-empty value.
+        $addr_fields = array('street_address',
+                             'supplemental_address_1',
+                             'supplemental_address_2');
+        $addr2 = null;
+        foreach ($addr_fields as $addr_field) {
+            if (!empty($values[$addr_field])) {
+                $addr2 = $values[$addr_field];
+                break;
+            }
+        }
+
+        if (!$addr2) {
+            $session->setStatus(ts('SAGE Warning: Not enough address info.'));
+            return false;
+        }
+
+        $data = array('addr2' => str_replace(',', '', $addr2),
+                      'city' => $values['city'],
+                      'zip5' => $values['postal_code'],
+                      'state' => $values['state_province'],
+                      'key' => $api_key);
         $urlstring = ''; 
         foreach ($data as $key => $value) {
            $urlstring .= urlencode($key).'='.urlencode($value).'&';
         } 
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_TIMEOUT, 180);
@@ -85,42 +89,39 @@ class CRM_Utils_Address_SAGE
 
         $xml = simplexml_load_string($html);
     
-        $session = CRM_Core_Session::singleton( );
-        if (is_null($xml) || is_null($xml->address2) ) {
-            $session->setStatus( ts( 'Your SAGE API lookup has failed.' ) );
+        if (is_null($xml) || is_null($xml->address2)) {
+            $session->setStatus(ts("SAGE Warning: Postal lookup for [$addr2] has failed.\n"));
+            return false;
+        } 
+        else if (!empty($xml->message)) {
+            $session->setStatus(ts('SAGE Warning: '.$xml->message));
             return false;
         }
-		//determine source and suppress address lookup messages when importing
-		require_once 'CRM/Utils/System.php';
-		$urlpath = CRM_Utils_System::currentPath( );
-		if ( $urlpath != 'civicrm/import/contact' ) {
-        	if ( !empty($xml->message) ) {
-        	    $session->setStatus( ts('Error:'.$xml->message ) );
-        	    return false;
-        	}  
-        	else {
-    		    $session->setStatus( ts( 'SAGE USPS API lookup has succeeded.' ) );
-        	}
-		} 
- 
-        $values['street_address'] = ucwords(strtolower((string)$xml->address2));
-        $address_element = explode(" ", $values['street_address']);
-        for ($j=0; $j < count($address_element); $j++) {
-            if ((preg_match( "/^[1-9]*[1](st)$/", $address_element[$j])) ||
-                (preg_match( "/^[1-9]*[2](nd)$/", $address_element[$j])) ||
-                (preg_match( "/^[1-9]*[3](rd)$/", $address_element[$j])) ||
-                (preg_match( "/^[1-9]*[4-9,0](th)$/", $address_element[$j]))) {
-                //don't do anything
-            }
-            elseif (preg_match( "/^[1-9][0-9a-zA-Z]+/", $address_element[$j], $matches)) {
-                $address_element[$j] = strtoupper($address_element[$j]);
-            }	
+        else {
+            /*** kz - We really only care if the lookup fails, and we need
+             ***      to cut down on the number of messages on import.
+            $session->setStatus(ts('SAGE Info: Postal lookup has succeeded.'));
+            ***/
         }
  
-        $values['street_address']     = (string)(implode(" ",$address_element));
-        $values['city']               = (string)(ucwords(strtolower($xml->city)));
-        $values['state_province']     = (string)$xml->state;
-        $values['postal_code']        = (string)$xml->zip5;
+        $addr2 = ucwords(strtolower((string)$xml->address2));
+        $addr_element = explode(" ", $addr2);
+        for ($j = 0; $j < count($addr_element); $j++) {
+            if ((preg_match("/^[1-9]*[1](st)$/", $addr_element[$j])) ||
+                (preg_match("/^[1-9]*[2](nd)$/", $addr_element[$j])) ||
+                (preg_match("/^[1-9]*[3](rd)$/", $addr_element[$j])) ||
+                (preg_match("/^[1-9]*[4-9,0](th)$/", $addr_element[$j]))) {
+                //don't do anything
+            }
+            elseif (preg_match("/^[1-9][0-9a-zA-Z]+/", $addr_element[$j])) {
+                $addr_element[$j] = strtoupper($addr_element[$j]);
+            }
+        }
+ 
+        $values[$addr_field] = (string)(implode(" ", $addr_element));
+        $values['city'] = (string)(ucwords(strtolower($xml->city)));
+        $values['state_province'] = (string)$xml->state;
+        $values['postal_code'] = (string)$xml->zip5;
         $values['postal_code_suffix'] = (string)$xml->zip4;
         return true;
     }
