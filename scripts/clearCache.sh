@@ -13,6 +13,7 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
+drush=$script_dir/drush.sh
 clear_all=0
 
 . $script_dir/defaults.sh
@@ -63,5 +64,8 @@ sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_up
 ( set -x
   $execSql -i $instance -c "$sql" --drupal
 )
+
+echo "Run Drupal clear cache for js/css compression clean"
+$drush $instance cc all
 
 exit 0
