@@ -42,7 +42,7 @@
 class CRM_Utils_Address_SAGE
 {
     static function checkAddress( &$values )
-    {
+    {//CRM_Core_Error::debug($values);exit();
 
         if ( ! isset($values['street_address'])     || 
                ( ! isset($values['city']           )   &&
@@ -89,15 +89,19 @@ class CRM_Utils_Address_SAGE
         if (is_null($xml) || is_null($xml->address2) ) {
             $session->setStatus( ts( 'Your SAGE API lookup has failed.' ) );
             return false;
-        } 
-        if (!empty($xml->message)) {
-            $session->setStatus( ts('Error:'.$xml->message ) );
-            return false;
-        }  
-        else {
-    	   $session->setStatus( ts( 'SAGE USPS API lookup has succeeded.' ) );
         }
- 
+		//determine source and suppress address lookup messages when importing
+		require_once 'CRM/Utils/System.php';
+		$urlpath = CRM_Utils_System::currentPath( );
+		if ( $urlpath != 'civicrm/import/contact' ) {
+        	if ( !empty($xml->message) ) {
+        	    $session->setStatus( ts('Error:'.$xml->message ) );
+        	    return false;
+        	}  
+        	else {
+    		    $session->setStatus( ts( 'SAGE USPS API lookup has succeeded.' ) );
+        	}
+		} 
  
         $values['street_address'] = ucwords(strtolower((string)$xml->address2));
         $address_element = explode(" ", $values['street_address']);
