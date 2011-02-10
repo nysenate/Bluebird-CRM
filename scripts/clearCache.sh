@@ -65,7 +65,7 @@ sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_up
   $execSql -i $instance -c "$sql" --drupal
 )
 
-echo "Run Drupal clear cache for js/css compression clean"
-$drush $instance cc all
+echo "Running Drupal clear-cache for js/css compression clean"
+$drush $instance cc css+js
 
 exit 0

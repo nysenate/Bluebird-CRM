@@ -502,6 +502,23 @@ class CRM_Core_SelectValues
 
 
     /**
+     * Function to get the Address Standardization Providers from available
+     * plugins
+     * 
+     * @return array $addr array of address standardization providers
+     * @static
+     */
+    static function &addressProvider()
+    {
+        static $addr = null;
+        if (! $addr ) {
+            return CRM_Utils_System::getPluginList( 'CRM/Utils/Address' );
+        }
+        return $addr;
+    }
+
+
+    /**
      * different type of Mailing Tokens
      *
      * @static
