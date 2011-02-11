@@ -1101,6 +1101,9 @@ ul.token-input-list-facebook { width:265px;}
 .civi-adv-search-body .big {
     width: 15em;
 }
+#commPrefs #preferred_language {
+	width: 400px;
+}
 
 /*override tag tree expand/close icons*/
 .jstree-default li, .jstree-default ins {
