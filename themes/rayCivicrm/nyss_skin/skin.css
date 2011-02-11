@@ -170,7 +170,7 @@ input.form-submit {
     
 div.token-input-dropdown-facebook {
     max-height: 400px;
-    overflow: auto;
+    overflow-y: scroll;
     }
 
 #crm-container div.section-hidden-border {background-color: transparent;}
