@@ -1106,17 +1106,17 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*override tag tree expand/close icons*/
-.jstree-default li, .jstree-default ins {
+#Tag .jstree-default li, .jstree-default ins {
     background-color: transparent;
     background-image: url("/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png");
     background-repeat: no-repeat;
 }
-.jstree-default .jstree-closed > ins {
+#Tag .jstree-default .jstree-closed > ins {
     background-position: -31px -15px;
 }
-.jstree-default .jstree-open > ins {
+#Tag .jstree-default .jstree-open > ins {
     background-position: -63px -16px;
 }
-.jstree-default .jstree-leaf > ins {
+#Tag .jstree-default .jstree-leaf > ins {
 	background: none;
 }
