@@ -32,7 +32,7 @@
     {if $savedSearch.name}{$savedSearch.name} ({ts}smart group{/ts}) - {/if}
     {ts count=$pager->_totalItems plural='%count Results'}%count Result{/ts}{if $selectorLabel}&nbsp;-&nbsp;{$selectorLabel}{/if}
     </td>
-    <td class="nowrap">
+    <td>
         {* Search criteria are passed to tpl in the $qill array *}
         {if $qill}
             {include file="CRM/common/displaySearchCriteria.tpl"}

@@ -1114,7 +1114,7 @@ WHERE civicrm_event.is_active = 1
                         'confirm_email_text' => CRM_Utils_Array::value('confirm_email_text', $values['event']),
                         'isShowLocation'     => CRM_Utils_Array::value('is_show_location',   $values['event']),
                     ),
-                    'PDFFilename' => 'civicrm.pdf',
+                    'PDFFilename' => 'eventReceipt.pdf',
                 );
 
                 // address required during receipt processing (pdf and email receipt)
@@ -1789,74 +1789,28 @@ WHERE  ce.loc_block_id = $locBlockId";
      */
     static function getFromEmailIds( $eventId = null ) 
     {
-        static $emails;
-        $session   = CRM_Core_Session::singleton( );
-        $contactID = $session->get( 'userID' );
-        
-        $cacheKey  = 'd';
-        if ( $eventId ) $cacheKey .= '_eid_'.$eventId;
-        if ( $contactID ) $cacheKey .= '_cid_'.$contactID;
-
-        $fromEmailValues = $fromEmailIds = $eventEmail = $contactEmails = array( );
-        
-        if ( isset( $emails[$cacheKey] ) ) { 
-            return $emails[$cacheKey];
-        }
-
+        require_once 'CRM/Core/BAO/Email.php';
+        $fromEmailValues['from_email_id'] = CRM_Core_BAO_Email::getFromEmail( );
+                
         if ( $eventId ) {
             // add the email id configured for the event
             $params           = array( 'id' => $eventId );
             $returnProperties = array( 'confirm_from_name', 'confirm_from_email', 'cc_confirm', 'bcc_confirm' );
+            $eventEmail       = array( );
             
             CRM_Core_DAO::commonRetrieve( 'CRM_Event_DAO_Event', $params, $eventEmail, $returnProperties );
             if( CRM_Utils_Array::value( 'confirm_from_name', $eventEmail ) 
                 && CRM_Utils_Array::value( 'confirm_from_email', $eventEmail ) ) {
-                $fromEmailValues[] = $fromEmailIds[] = 
-                    "{$eventEmail['confirm_from_name']} <{$eventEmail['confirm_from_email']}>";
-            }
-        }
+                $eventEmailId = "{$eventEmail['confirm_from_name']} <{$eventEmail['confirm_from_email']}>";
 
-        // add the domain email id
-        require_once 'CRM/Core/BAO/Domain.php';
-        $domainEmail = CRM_Core_BAO_Domain::getNameAndEmail( );
-        $domainEmail = "$domainEmail[0] <$domainEmail[1]>";
-        if ( !in_array( $domainEmail, $fromEmailIds ) ) {
-            $fromEmailValues[] = $fromEmailIds[] = $domainEmail;
-        }
-        
-        require_once 'CRM/Core/BAO/Email.php';
-        // add logged in user's active email ids
-        if ( $contactID ) {
-            $contactEmails = CRM_Core_BAO_Email::allEmails( $contactID );
-            $fromDisplayName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $contactID, 'display_name' );
-            
-            foreach( $contactEmails as $emailId => $emailVal ) {
-                $email = trim( $emailVal['email'] );
-                if ( !$email || $emailVal['on_hold'] ) {
-                    continue;
-                }
-                
-                $fromEmail = "$fromDisplayName <$email>";
-                if ( !in_array( $fromEmail, $fromEmailIds ) ) {
-                    $fromEmailValues[$emailId]  = $fromEmailIds[] = $fromEmail;
-                    $fromEmailValues[$emailId] .= $emailVal['locationType']; 
-                    
-                    if ( CRM_Utils_Array::value( 'is_primary', $emailVal ) ) {
-                        $fromEmailValues[$emailId] .=  ' ' . ts('(preferred)');
-                    }
-                }
+                $fromEmailValues['from_email_id'][$eventEmailId] = htmlspecialchars( $eventEmailId );
+                $fromEmailId = array( 'cc'  => CRM_Utils_Array::value( 'cc_confirm', $eventEmail ),
+                                      'bcc' => CRM_Utils_Array::value( 'bcc_confirm', $eventEmail )
+                                      );
+                $fromEmailValues = array_merge( $fromEmailValues, $fromEmailId );
             }
         }
         
-        foreach ( $fromEmailValues as $key => $value ) {
-            $emailValues[] = htmlspecialchars( $value );
-        }
-        
-        $emails[$cacheKey] = array( 'name'  => $fromEmailIds, 
-                                    'label' => $emailValues,
-                                    'cc'    => CRM_Utils_Array::value( 'cc_confirm', $eventEmail ),
-                                    'bcc'   => CRM_Utils_Array::value( 'bcc_confirm', $eventEmail ) ) ;
-        return $emails[$cacheKey];
+        return $fromEmailValues;
     }
 }
-

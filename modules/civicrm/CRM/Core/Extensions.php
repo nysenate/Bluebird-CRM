@@ -44,6 +44,11 @@ class CRM_Core_Extensions
 {
 
     /**
+     * An URL for public extensions repository
+     */
+    const PUBLIC_EXTENSIONS_REPOSITORY = 'http://extdir.civicrm.org/';
+
+    /**
      * The option group name
      */
     const OPTION_GROUP_NAME = 'system_extensions';
@@ -92,6 +97,8 @@ class CRM_Core_Extensions
     private $_extByKey = null;
 
 
+    private $_remotesDiscovered = null;
+
     /**
      * Constructor - we're not initializing information here
      * since we don't want any database hits upon object
@@ -107,7 +114,12 @@ class CRM_Core_Extensions
         }
         if( ! empty( $this->_extDir ) ) {
             $this->enabled = TRUE;
-        }        
+            $tmp = $this->_extDir . DIRECTORY_SEPARATOR . 'tmp';
+            $cache = $this->_extDir . DIRECTORY_SEPARATOR . 'cache';
+            require_once 'CRM/Utils/File.php';
+            if( !file_exists( $tmp ) ) { CRM_Utils_File::createDir( $tmp ); }
+            if( !file_exists( $cache ) ) { CRM_Utils_File::createDir( $cache ); }
+        }
     }
 
     /**
@@ -198,6 +210,70 @@ class CRM_Core_Extensions
         return $result;                
     }    
 
+    public function getExtensions( $fullInfo = FALSE ) {
+
+        // Workflow for extensions:
+        // * Remote (made available on public server)
+        // * Local (downloaded, code available locally)
+        // * Installed /+Enabled/ (downloaded, entry in db, is_active = 1)
+        // * Installed /+Disabled/ (downloadded, entry in db, is_active = 0)
+        // * Outdated (Local or Installed with newer version available Remotely)
+
+        $exts = array();
+
+        // locally available extensions first (those which are installed
+        // will be overwritten later on)
+        $local = $this->_discoverAvailable( TRUE );
+        foreach( $local as $dc => $e ) {
+            if( array_key_exists( $e->key, $exts ) ) {
+                
+            }
+            $exts[$e->key] = $e;
+        }
+
+        // now those which are available on public directory
+        $remote = $this->_discoverRemote();
+        
+        foreach( $remote as $dc => $e ) {
+            $exts[$e->key] = $e;
+        }
+        
+        // get installed extensions at the end, they overwrite everything
+        $installed = $this->_discoverInstalled( TRUE );
+        foreach( $installed as $dc => $e ) {
+            $exts[$e->key] = $e;
+        }
+
+        // now check for upgrades - rolling over installed, since
+        // those that we care to upgrade
+        foreach( $installed as $dc => $i ) {
+            $key = $i->key;
+            foreach( $remote as $dc => $r ) {
+                if( $key == $r->key ) {
+                    $installedVersion = explode('.', $i->version);
+                    $remoteVersion = explode('.', $r->version);
+
+                    for ($y = 0; $y < 2; $y++) {
+                        if( CRM_Utils_Array::value( $y, $installedVersion ) == CRM_Utils_Array::value( $y,$remoteVersion ) ) {
+                            $outdated = false;
+                        } elseif( CRM_Utils_Array::value( $y, $installedVersion ) > CRM_Utils_Array::value( $y,$remoteVersion ) ) {
+                            $outdated = false;
+                        } elseif( CRM_Utils_Array::value($y,$installedVersion) < CRM_Utils_Array::value($y,$remoteVersion) ) {
+                            $outdated = true;
+                        }
+                    }
+                    $upg = $exts[$key];
+                    
+
+                    
+                    if( $outdated ) { $upg->setUpgradable(); $upg->setUpgradeVersion( $r->version ); }
+                }
+            }
+        }
+        
+        return $exts;
+    }
+
 
     /**
      * Searches for and returnes installed extensions.
@@ -216,20 +292,67 @@ class CRM_Core_Extensions
         foreach( $ov as $id => $entry ) {
             $ext = new CRM_Core_Extensions_Extension( $entry['value'], $entry['grouping'], $entry['name'], 
                                                       $entry['label'], $entry['description'], $entry['is_active'] );
+            $ext->setInstalled();
             $ext->setId($id);
             if( $fullInfo ) {
-                $ext->readXMLInfo();            
+                $ext->readXMLInfo();
             }
             $result[$id] = $ext;
         }
         return $result;
     }
 
+    public function getRemoteByKey( ) {
+        $re = $this->_discoverRemote();
+        $result = array();
+        foreach( $re as $id => $ext ) {
+            $result[$ext->key] = $ext;
+        }
+        return $result;
+    }
+
+    public function _discoverRemote( ) {
+
+        require_once 'CRM/Core/Config.php';
+        $config =& CRM_Core_Config::singleton( );
+        $tsPath = $config->extensionsDir . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'timestamp.txt';
+        $timestamp = false;
+
+        if( file_exists( $tsPath ) ) {
+            $timestamp =  file_get_contents( $tsPath );
+        }
+
+        // 3 minutes ago for now
+        $outdated = (int) $timestamp < ( time() - 180) ? true : false;
+        
+        if( !$timestamp || $outdated ) {
+            $remoties = $this->grabRemoteKeyList();
+            $cached = false;
+        } else {
+            $remoties = $this->grabCachedKeyList();
+            $cached = true;
+        }
+
+            require_once 'CRM/Core/Extensions/Extension.php';
+            foreach( $remoties as $id => $rext ) {
+                $ext = new CRM_Core_Extensions_Extension( $rext['key'] );
+                $ext->setRemote();
+                $xml = $this->grabRemoteInfoFile( $rext['key'], $cached );
+                if( $xml != false ) {
+                    $ext->readXMLInfo( $xml );
+                    $this->_remotesDiscovered[] = $ext;
+                }
+            }
+            file_put_contents( $tsPath, (string) time() );
+
+        return $this->_remotesDiscovered;
+    }
+
     /**
      * Retrieve all the extension information for all the extensions
-	 * in extension directory. Beware, we're relying on scandir's 
-	 * extension retrieval order here, array indices will be used as 
-	 * ids for extensions that are not installed later on.
+     * in extension directory. Beware, we're relying on scandir's 
+     * extension retrieval order here, array indices will be used as 
+     * ids for extensions that are not installed later on.
      * 
      * @access private
      * @return array list of extensions
@@ -243,6 +366,7 @@ class CRM_Core_Extensions
             $infoFile = $dir . DIRECTORY_SEPARATOR . self::EXT_INFO_FILENAME;
             if( is_dir( $dir ) && file_exists( $infoFile ) ) {
                 $ext = new CRM_Core_Extensions_Extension( $name );
+                $ext->setLocal();
                 $ext->readXMLInfo();
                 $result[] = $ext;
             }
@@ -390,7 +514,7 @@ class CRM_Core_Extensions
     }
 
     /**
-     * Given the id from selector (generated in $this->_discoverAvailable),
+     * Given the key,
      * fires off appropriate CRM_Core_Extensions_Extension object's install method.
      *
      * @todo change method signature, drop $id, work with $key only
@@ -401,27 +525,124 @@ class CRM_Core_Extensions
      * @return void
      */
     public function install( $id, $key ) {
-        $e = $this->getNotInstalled();
-        $ext = $e[$id];
+        $e = $this->getExtensions();
+        $ext = $e[$key];
         $ext->install();
     }
 
     /**
     * Given the key, fires off appropriate CRM_Core_Extensions_Extension object's 
-	* uninstall method.
-	*
-	* @todo change method signature, drop $id, work with $key only
+    * uninstall method.
+    *
+    * @todo change method signature, drop $id, work with $key only
     * 
     * @access public
     * @param int $id id of option value record
-	* @param string $key extension key
+    * @param string $key extension key
     * @return void
     */
     public function uninstall( $id, $key ) {
         $this->populate();
-        $e = $this->getExtensionsByKey( );
+        $e = $this->getExtensions( );
         $ext = $e[$key];
         $ext->uninstall();
+    }
+
+
+    /**
+    * Given the key, fires off appropriate CRM_Core_Extensions_Extension object's 
+    * upgrade method.
+    *
+    * @todo change method signature, drop $id, work with $key only
+    * 
+    * @access public
+    * @param int $id id of option value record
+    * @param string $key extension key
+    * @return void
+    */
+    public function upgrade( $id, $key ) {
+        $this->populate();
+        // get installed and uninstall
+        $e = $this->getExtensionsByKey( true );
+        $ext = $e[$key];
+        $ext->uninstall();
+        
+        // get fresh scope and install
+        $e = $this->getExtensions( );        
+        $ext = $e[$key];        
+        $ext->install();
+    }
+
+
+    public function grabCachedKeyList( ) {
+        require_once 'CRM/Core/Config.php';
+        $result = array();
+        $config =& CRM_Core_Config::singleton( );
+        $cachedPath = $config->extensionsDir . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR;
+        $files = scandir( $cachedPath );
+        foreach( $files as $dc => $fname ) {
+            if( substr( $fname, -4 ) == '.xml' ) {
+                $result[] = array( 'key' => trim( $fname, '.xml' ) );
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Connects to public server and grabs the list of publically available 
+     * extensions.
+     *
+     * @access public
+     * @return Array list of extension names
+     */
+    public function grabRemoteKeyList( ) {
+
+        $handl = fopen ( self::PUBLIC_EXTENSIONS_REPOSITORY , "r");
+
+        while (!feof ($handl)) {
+            $ln = fgets ($handl, 2048);
+            if (preg_match ("@\<li\>(.*)\</li\>@i", $ln, $out)) {
+                $extsRaw[] = $out;// success
+                $key = strip_tags($out[1]);
+                if( substr( $key, -4 ) == '.xml' ) {
+                    $exts[] = array( 'key' => trim( $key, '.xml' ) );
+                }
+                
+            } else {
+                //fail
+            }
+        }
+
+        fclose($handl);
+        
+        return $exts;
+    }
+
+    public function grabRemoteInfoFile( $key, $cached = false ) {
+        require_once 'CRM/Core/Config.php';
+        $config =& CRM_Core_Config::singleton( );
+        
+        $path = $config->extensionsDir . DIRECTORY_SEPARATOR . 'cache';
+        $filename = $path . DIRECTORY_SEPARATOR . $key . '.xml';
+        $url = self::PUBLIC_EXTENSIONS_REPOSITORY . '/' . $key . '.xml';
+
+        if( ! $cached ) {
+            file_put_contents( $filename, file_get_contents( $url ) );
+        }
+
+        $contents = file_get_contents( $filename );
+
+        //parse just in case
+        $check = simplexml_load_string( $contents );
+
+        if (!$check) {
+            foreach(libxml_get_errors() as $error) {
+                CRM_Core_Error::debug( 'xmlError', $error );
+            }
+            return;
+        }
+        
+        return $contents;
     }
 
 }

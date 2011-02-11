@@ -106,6 +106,10 @@
      <page_callback>CRM_Case_Page_AJAX::getRelatedCases</page_callback>
   </item>
   <item>
+     <path>civicrm/case/ajax/addclient</path>
+     <page_callback>CRM_Case_Page_AJAX::addClient</page_callback>
+  </item>  
+  <item>
      <path>civicrm/case/ajax/processtags</path>
      <page_callback>CRM_Case_Page_AJAX::processCaseTags</page_callback>
      <access_arguments>access CiviCRM</access_arguments>

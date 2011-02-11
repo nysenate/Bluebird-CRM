@@ -3,7 +3,10 @@
         <td class="label">{ts}Description{/ts}</td><td>{$extension.description}</td>
     </tr>
     <tr>
-        <td class="label">{ts}Location{/ts}</td><td>{$extension.path}</td>
+        <td class="label">{ts}Download Location{/ts}</td><td>{$extension.downloadUrl}</td>
+    </tr>
+    <tr>
+        <td class="label">{ts}Local path{/ts}</td><td>{$extension.path}</td>
     </tr>
         {foreach from=$extension.urls key=label item=url}
             <tr><td class="label">{$label}</td><td><a href="{$url}">{$url}</a></td></tr>

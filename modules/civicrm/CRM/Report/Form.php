@@ -694,15 +694,17 @@ class CRM_Report_Form extends CRM_Core_Form {
             $this->addElement('submit', $this->_csvButtonName, $label );
         }
 
-        if ( CRM_Core_Permission::check( 'administer Reports' ) && $this->_add2groupSupported ) {
-            $this->addElement( 'select', 'groups', ts( 'Group' ), 
-                               array( '' => ts( '- select group -' )) + CRM_Core_PseudoConstant::staticGroup( ) );
-            $this->assign( 'group', true );
+        if ( $this->_report != 'Grant' ) {
+            if ( CRM_Core_Permission::check( 'administer Reports' ) && $this->_add2groupSupported ) {
+                $this->addElement( 'select', 'groups', ts( 'Group' ), 
+                                   array( '' => ts( '- select group -' )) + CRM_Core_PseudoConstant::staticGroup( ) );
+                $this->assign( 'group', true );
+            }
+            
+            //$this->addElement('select', 'select_add_to_group_id', ts('Group'), $groupList);
+            $label = ts( 'Add these Contacts to Group' );
+            $this->addElement('submit', $this->_groupButtonName, $label, array('onclick' => 'return checkGroup();') );
         }
-        
-        //$this->addElement('select', 'select_add_to_group_id', ts('Group'), $groupList);
-        $label = ts( 'Add these Contacts to Group' );
-        $this->addElement('submit', $this->_groupButtonName, $label, array('onclick' => 'return checkGroup();') );
 
         $this->addChartOptions( );
         $this->addButtons( array(

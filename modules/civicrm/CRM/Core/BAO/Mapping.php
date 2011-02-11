@@ -587,8 +587,10 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping
                     foreach ( $mapperFields[$k] as $field => $dontCare ) {
                         if ( isset ( $hasRelationTypes[$k][$field] ) ) {
                             list( $id, $first, $second ) = explode( '_', $field );
-                            $relationshipCustomFields    = self::getRelationTypeCustomGroupData( $id );
-                            asort( $relationshipCustomFields ) ;
+                            // FIX ME: For now let's not expose custom data related to relationship
+                            $relationshipCustomFields = array( );
+                            //$relationshipCustomFields    = self::getRelationTypeCustomGroupData( $id );
+                            //asort( $relationshipCustomFields ) ;
                             
                             require_once 'CRM/Contact/BAO/RelationshipType.php';
                             $relationshipType = new CRM_Contact_BAO_RelationshipType( ); 
@@ -603,13 +605,13 @@ class CRM_Core_BAO_Mapping extends CRM_Core_DAO_Mapping
                                 }
                             }
                             $relationshipType->free( );
-                            
+                            asort( $relatedFields ); 
                             $sel5[$k][$field] = $relatedFields;
                         } 
                     }
                 }
             }
-         
+
             //Location Type for relationship fields
             
             foreach ( $sel5 as $k => $v ) { 

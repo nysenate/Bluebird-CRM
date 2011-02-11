@@ -374,8 +374,7 @@ class CRM_Contribute_Form_AdditionalInfo
         } else {
             //offline contribution
             //Retrieve the name and email from receipt is to be send
-            $params['receipt_from_name'] = $form->userDisplayName;
-            $params['receipt_from_email']= $form->userEmail;
+            $params['from_email_id'] = $form->fromEmailId;
             // assigned various dates to the templates
             $form->assign('receipt_date',  CRM_Utils_Date::processDate( $params['receipt_date'] ) );
             $form->assign('cancel_date',   CRM_Utils_Date::processDate( $params['cancel_date']  ) );
@@ -426,17 +425,13 @@ class CRM_Contribute_Form_AdditionalInfo
         $this->assign( 'currency', $params['currency']);
         $this->assign( 'receive_date',  CRM_Utils_Date::processDate( $params['receive_date'] ) );
 
-        $session  = CRM_Core_Session::singleton( );
-        $userID   = $session->get( 'userID' );
-        list( $userName, $userEmail ) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $userID );
-
         require_once 'CRM/Core/BAO/MessageTemplates.php';
         list ($sendReceipt, $subject, $message, $html) = CRM_Core_BAO_MessageTemplates::sendTemplate(
             array(
                 'groupName' => 'msg_tpl_workflow_contribution',
                 'valueName' => 'contribution_offline_receipt',
                 'contactId' => $params['contact_id'],
-                'from'      => "$userName <$userEmail>",
+                'from'      => $params['from_email_id'],
                 'toName'    => $contributorDisplayName,
                 'toEmail'   => $contributorEmail,
                 'isTest'    => $form->_mode == 'test',

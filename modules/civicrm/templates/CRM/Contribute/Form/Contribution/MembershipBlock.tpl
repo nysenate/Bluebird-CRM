@@ -143,7 +143,7 @@ function showHideAutoRenew( memTypeId )
   var singleMembership = {/literal}'{$singleMembership}'{literal};
   if ( !memTypeId && singleMembership ) memTypeId = cj("#selectMembership").val( ); 
   
-  var renewOptions  = {/literal}{$autoRenewMembershipTypeOptions}{literal};	 
+  var renewOptions  = {/literal}'{$autoRenewMembershipTypeOptions}'{literal};	 
   var currentOption = eval( "renewOptions." + 'autoRenewMembershipType_' + memTypeId );
   
   funName = 'hide();';

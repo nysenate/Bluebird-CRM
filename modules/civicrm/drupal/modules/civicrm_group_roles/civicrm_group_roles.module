@@ -105,7 +105,10 @@ function civicrm_group_roles_user($op, $edit, &$user, $category = NULL)
  */
 function civicrm_group_roles_form_alter(&$form, &$form_state, $form_id) {
   // append this to change user edit submit function
-    if ( $form['#id'] == 'user-profile-form' && isset( $form['#uid'] ) && module_exists( 'content_profile' ) || $form['#id'] == 'user-edit-form' ) {
+    if ( $form['#id'] == 'user-profile-form' &&
+         isset( $form['#uid'] ) &&
+         module_exists( 'content_profile' ) || 
+         $form['#id'] == 'user-edit-form' ) {
     // make sure there is a civicrm record
     civicrm_initialize(true);
     require_once 'api/v2/UFGroup.php';
@@ -129,9 +132,11 @@ function _civicrm_group_update ($form_id, $form_values) {
       return;
   }
   $new_roles = array_filter($form_values['values']['roles']);
-  //if there is a difference then something was removed
+
+  // if there is a difference then something was removed
   $removed_roles = array_diff_key($roles,$new_roles);
-  //now delete the cooresponding group from the record in CiviCRM (if there is a cooresponding group)
+
+  // now delete the corresponding group from the record in CiviCRM (if there is a corresponding group)
   if ( $removed_roles ) {
       civicrm_group_roles_add_remove_groups ( $removed_roles, $user, 'remove' );
   }
@@ -156,7 +161,8 @@ function civicrm_group_roles_civicrm_post( $op, $objectName, $objectId, &$object
     $query = db_query("SELECT role_id FROM {civicrm_group_roles_rules} WHERE group_id=%d", $group_id);   
     while ($rid = db_result($query)) {
         
-        $role_name = db_result(db_query('SELECT name FROM {role} WHERE rid = %d', $rid)); //we need this to properly save the user account below.
+        // we need this to properly save the user account below.
+        $role_name = db_result(db_query('SELECT name FROM {role} WHERE rid = %d', $rid));
  				
         foreach ($objectRef AS $contact_id) {
             
@@ -511,8 +517,11 @@ function civicrm_group_roles_add_remove_groups( $roles, $user, $op )
                     //add the contact
                     $contacts = array( $contact );
                     $gparams = array( 'group_id' => $gid, 'contact_id' => $contact_id );
-                    $function =  'civicrm_group_contact_'.$op;
-                    $result = call_user_func( $function, $gparams );
+                    if ( $op == 'add' ) {
+                        $result = civicrm_group_contact_add( $gparams );
+                    } else {
+                        $result = civicrm_group_contact_remove( $gparams );
+                    }
                     
                     if ( $result['is_error'] > 0 ) {
                         $msg = 'Error: Unable to sync role @role';

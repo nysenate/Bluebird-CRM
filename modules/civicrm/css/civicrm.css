@@ -1080,7 +1080,11 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
     margin:0px;
     border:1px solid #FFFF66;
     text-align:center;
-    -moz-border-radius: 4px; -webkit-border-radius: 4px;   -khtml-border-radius: 4px; border-radius:4px;
+    -moz-border-radius: 0px 4px 4px 4px; 
+    -webkit-border-radius: 0px 4px 4px 4px;   
+    -khtml-border-radius: 0px 4px 4px 4px; 
+    border-radius:0px 4px 4px 4px;
+    padding-top:1em;
 }
 
 .block-civicrm div#recently-viewed ul li.crm-recently-viewed ul li a:hover {
@@ -3061,3 +3065,11 @@ div#crm-toolTip
     background-color:#00CC00;
     color:white;
  }
+
+.extension-upgradable {
+    background-color:#FFFFCC !important;
+}
+
+.extension-installed {
+    background-color:#DDFFDD !important;
+}

@@ -261,31 +261,67 @@ function addClient( ) {
     cj("#dialog").dialog({
         title: "Add Client to the Case",
         modal: true,
-		bgiframe: true,
-		close  : function(event, ui) { cj("#rel_contact").unautocomplete( ); },
-		overlay: { opacity: 0.5, background: "black" },
-		beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
+	bgiframe: true,
+	close  : function(event, ui) { cj("#rel_contact").unautocomplete( ); },
+	overlay: { opacity: 0.5, background: "black" },
 
-		open:function() {
+	open:function() {
 
-			var contactUrl = {/literal}"{crmURL p='civicrm/ajax/rest' q='className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=caseview' h=0 }"{literal};
+		var contactUrl = {/literal}"{crmURL p='civicrm/ajax/rest' q='className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=caseview' h=0 }"{literal};
 
-			cj("#rel_contact").autocomplete( contactUrl, {
-				width: 260,
-				selectFirst: false,
-	                        matchContains: true 
-			});
+		cj("#rel_contact").autocomplete( contactUrl, {
+			width: 260,
+			selectFirst: false,
+                        matchContains: true 
+		});
 			
-			cj("#rel_contact").focus();
-			cj("#rel_contact").result(function(event, data, formatted) {
-				cj("input[id=rel_contact_id]").val(data[1]);
-			});		    
-		
+		cj("#rel_contact").focus();
+		cj("#rel_contact").result(function(event, data, formatted) {
+			cj("input[id=rel_contact_id]").val(data[1]);
+		});
+	},
+
+	buttons: { 
+		"Done": function() {
+
+				if ( ! cj("#rel_contact").val( ) ) {
+					alert('{/literal}{ts escape="js"}Select valid contact from the list{/ts}{literal}.');
+					return false;
+				}
+
+				var postUrl = {/literal}"{crmURL p='civicrm/case/ajax/addclient' h=0 }"{literal};
+				var caseID        = {/literal}"{$caseID}"{literal};
+				var contactID = cj("#rel_contact_id").val( );
+
+				if ( ! contactID ) {
+					alert('{/literal}{ts escape="js"}Select valid contact from the list{/ts}{literal}.');
+					return false;
+				}
+
+
+		                cj.post( postUrl, 
+					 { contactID: contactID, 
+				    	   caseID: caseID, 
+				           key: {/literal}"{crmKey name='civicrm/case/ajax/addclient'}"{literal} },
+		                    	   function( data ) {
+						var resourceBase   = {/literal}"{$config->resourceBase}"{literal};
+					   }, 
+                                           'json'
+				); 
+
+			cj(this).dialog("close"); 
+			cj(this).dialog("destroy");
+	                //due to caching issues we use redirection rather than reload
+	                document.location = {/literal}'{crmURL q="action=view&reset=1&id=$caseID&cid=$contactID&context=$context" h=0 }'{literal};
 		},
 
-		buttons: { "Done": function() { cj(this).dialog("close"); cj(this).dialog("destroy"); }}	
-	}
-	)
+		"Cancel": function() { 
+			cj(this).dialog("close"); 
+			cj(this).dialog("destroy"); 
+		}
+
+	}	
+    })
 }
 
 function createRelationship( relType, contactID, relID, rowNumber, relTypeName ) {
@@ -690,10 +726,6 @@ function addTags() {
         overlay: { 
             opacity: 0.5, 
             background: "black" 
-        },
-
-        beforeclose: function(event, ui) {
-            cj(this).dialog("destroy");
         },
 
         open:function() {

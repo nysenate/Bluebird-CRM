@@ -158,7 +158,7 @@ cj("form").submit(function() {
 //current employer default setting
 var employerId = "{/literal}{$currentEmployer}{literal}";
 if ( employerId ) {
-    var dataUrl = "{/literal}{crmURL p='civicrm/ajax/rest' h=0 q="className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&id=" }{literal}" + employerId ;
+    var dataUrl = "{/literal}{crmURL p='civicrm/ajax/rest' h=0 q="className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=contact&org=1&id=" }{literal}" + employerId + "&employee_id=" + cid ;
     cj.ajax({ 
         url     : dataUrl,   
         async   : false,

@@ -57,6 +57,7 @@ class CRM_Admin_Form_Setting_Miscellaneous extends  CRM_Admin_Form_Setting
         $validTriggerPermission = CRM_Core_DAO::checkTriggerViewPermission( false );
 
         // FIXME: for now, disable logging for multilingual sites OR if triggers are not permittted
+        require_once 'CRM/Core/DAO/Domain.php';
         $domain = new CRM_Core_DAO_Domain;
         $domain->find(true);
         $attribs = $domain->locales || ! $validTriggerPermission ? array('disabled' => 'disabled') : null;

@@ -25,7 +25,11 @@
 *}
 {* Report form criteria section *}
     {if $colGroups}
+        {if $componentName eq 'Grant'}
+            <h3>Report Sections</h3>
+        {else}
 	    <h3>Display Columns</h3>
+        {/if}
         {foreach from=$colGroups item=grpFields key=dnc}
             {assign  var="count" value="0"}
             {* Wrap custom field sets in collapsed accordion pane. *}

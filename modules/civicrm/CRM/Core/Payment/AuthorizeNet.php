@@ -12,7 +12,7 @@
  *
  * @package CRM
  * @author Marshal Newrock <marshal@idealso.com>
- * $Id: AuthorizeNet.php 31477 2010-12-29 07:25:05Z deepak $
+ * $Id: AuthorizeNet.php 32169 2011-02-02 16:10:39Z deepak $
  */
 
 /* NOTE:
@@ -114,6 +114,8 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
                                                      $authorizeNetFields );
 
         foreach ( $authorizeNetFields as $field => $value ) {
+            // CRM-7419, since double quote is used as enclosure while doing csv parsing
+            $value = ($field == 'x_description') ? str_replace( '"', "'", $value ) : $value;
             $postFields[] = $field . '=' . urlencode( $value );
         }
 
@@ -385,7 +387,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
     function checkMD5( $responseMD5, $transaction_id, $amount, $ipn = false ) {
         // cannot check if no MD5 hash
         $md5Hash = $this->_getParam( 'md5Hash' );
-        if ( $md5Hash == '' ) {
+        if ( empty( $md5Hash ) ) {
             return true;
         }
         $loginid    = $this->_getParam( 'apiLogin' );

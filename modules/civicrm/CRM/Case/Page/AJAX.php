@@ -122,6 +122,7 @@ class CRM_Case_Page_AJAX
         echo 'true';
         CRM_Utils_System::civiExit( );
     }
+
     function caseDetails( ) {
         $caseId    = CRM_Utils_Type::escape( $_GET['caseId'], 'Integer' );
         $contactId = CRM_Utils_Type::escape( $_GET['contactId'], 'Integer' );
@@ -136,12 +137,51 @@ class CRM_Case_Page_AJAX
              $cs = $caseStatuses[$dao->status_id];
              $caseDetails = "<html><table><tr><td>Case Subject</td><td>$dao->subject</td></tr>
                                           <tr><td>Case Type</td><td>$caseType</td></tr> 
-                                          <tr><td> Case Status</td><td>$cs</td></tr>
+                                          <tr><td>Case Status</td><td>$cs</td></tr>
                                           <tr><td>Case Start Date</td><td>$dao->start_date</td></tr>
                                           <tr><td>Case End Date</td><td></td></tr>$dao->end_date</table></html>";        
              echo $caseDetails;
          }
          
     }
+
+
+    function addClient( ) {
+
+        $caseId = CRM_Utils_Type::escape( $_POST['caseID'], 'Integer' );
+        $contactId = CRM_Utils_Type::escape( $_POST['contactID'], 'Integer' );
+
+        $params = array(
+            'case_id'    => $caseId,
+            'contact_id' => $contactId
+        );
+        
+        require_once 'CRM/Case/BAO/Case.php';
+        $result = CRM_Case_BAO_Case::addCaseToContact( $params );
+
+        $session =& CRM_Core_Session::singleton( );
+
+        require_once "CRM/Activity/BAO/Activity.php";
+        require_once "CRM/Core/OptionGroup.php";
+        $activityParams = array( );
+        
+        $activityParams['source_contact_id']  = $session->get( 'userID' );
+        $activityParams['activity_type_id']   = CRM_Core_OptionGroup::getValue( 'activity_type', 'Add Client To Case', 'name' );
+        $activityParams['activity_date_time'] = date('YmdHis');
+        $activityParams['status_id']          = CRM_Core_OptionGroup::getValue( 'activity_status', 'Completed', 'name' );
+        $activityParams['case_id']            = $caseId;
+        $activityParams['is_auto']            = 0;
+        $activityParams['subject']            = 'Client Added To Case';
+ 
+        $activity = CRM_Activity_BAO_Activity::create( $activityParams );
+        
+        require_once "CRM/Case/BAO/Case.php";
+        $caseParams = array( 'activity_id' => $activity->id,
+                             'case_id'     => $caseId );
+        
+        CRM_Case_BAO_Case::processCaseActivity( $caseParams );
+        echo json_encode( true );
+        CRM_Utils_System::civiExit( );        
+    }    
     
 }

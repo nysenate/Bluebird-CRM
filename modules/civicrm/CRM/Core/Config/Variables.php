@@ -268,35 +268,21 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
     /**
      * Map Provider 
      *
-     * @var string
+     * @var boolean
      */
     public $mapProvider = null;
 
     /**
      * Map API Key 
      *
-     * @var string
+     * @var boolean
      */
     public $mapAPIKey = null;
     
     /**
-     * Geocoding Provider 
-     *
-     * @var string
-     */
-    public $geoProvider = null;
-
-    /**
-     * Geocoding API Key 
-     *
-     * @var string
-     */
-    public $geoAPIKey = null;
-    
-    /**
      * How should we get geo code information if google map support needed
      *
-     * @var string
+     * @var boolean
      */
     public $geocodeMethod    = '';
     

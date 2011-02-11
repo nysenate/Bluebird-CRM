@@ -51,9 +51,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic
      */
     static $_links = null;
 
-    static $_extInstalled = null;
-
-    static $_extNotInstalled = null;
+    static $_extensions = null;
 
     /**
      * Obtains the group name from url and sets the title.
@@ -67,8 +65,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic
         require_once 'CRM/Core/Extensions.php';
         $ext = new CRM_Core_Extensions();
         if( $ext->enabled === TRUE ) {
-            self::$_extInstalled = $ext->getInstalled( TRUE );
-            self::$_extNotInstalled = $ext->getNotInstalled();
+            self::$_extensions = $ext->getExtensions( );
         }
         CRM_Utils_System::setTitle(ts('CiviCRM Extensions'));
     }
@@ -116,7 +113,13 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic
                                                                     'url'   => 'civicrm/admin/extensions',
                                                                     'qs'    => 'action=delete&id=%%id%%&key=%%key%%',
                                                                     'title' => ts('Uninstall Extension') 
-                                                                    )
+                                                                    ),
+                                  CRM_Core_Action::UPDATE  => array(
+                                                                    'name'  => ts('Upgrade'),
+                                                                    'url'   => 'civicrm/admin/extensions',
+                                                                    'qs'    => 'action=update&id=%%id%%&key=%%key%%',
+                                                                    'title' => ts('Upgrade Extension') 
+                                                                    )                                                                    
                                   );
             
         }
@@ -146,42 +149,60 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic
     {
 
         $this->assign('extEnabled', FALSE );
-        if( self::$_extInstalled ) {
+        if( self::$_extensions ) {
             $this->assign('extEnabled', TRUE );
+        } else {
+            return;
+        }
 
-            // convert objects to arrays for handling in the template
-            $rows = array();
-            foreach( self::$_extInstalled as $id => $obj ) {
-                $rows[$id] = (array) $obj;
+        $extensionRows = array();
+        $em  = self::$_extensions;
+
+        $fid = 1;
+        require_once 'CRM/Core/Extensions/Extension.php';
+        foreach( $em as $key => $obj ) {
+
+            // rewrite ids to be numeric, but keep those which are 
+            // installed (they have option_value table id)
+            // It's totally unlikely, that installed extensions will
+            // have ids below 50.
+            if( $obj->id ) {
+                $id = $obj->id;
+            } else {
+                $id = $fid++;
+            }
+
+            $extensionRows[$id] = (array) $obj;
+
+            // assign actions
+            if( $obj->status == CRM_Core_Extensions_Extension::STATUS_INSTALLED ) {
                 if( $obj->is_active ) {
                     $action = CRM_Core_Action::DISABLE;
+                    if( $obj->upgradable ) { $action += CRM_Core_Action::UPDATE; }
                 } else {
                     $action = array_sum(array_keys($this->links()));
                     $action -= CRM_Core_Action::DISABLE;
                     $action -= CRM_Core_Action::ADD;
+                    if( ! $obj->upgradable ) { $action -= CRM_Core_Action::UPDATE; }
                 }
-                $rows[$id]['action'] = CRM_Core_Action::formLink(self::links(), $action,
-                                                                 array('id' => $id, 
-                                                                       'key' => $obj->key ));
-            }            
-            $this->assign('rows', $rows );
-        }
-
-        if( self::$_extNotInstalled ) {
-            $this->assign('extEnabled', TRUE );        
-            $rowsUpl = array();
-            foreach( self::$_extNotInstalled as $id => $obj ) {
-                $rowsUpl[$id] = (array) $obj;
+                $extensionRows[$id]['action'] = CRM_Core_Action::formLink(self::links(), $action,
+                                                                          array('id' => $id, 
+                                                                                'key' => $obj->key ));                
+            } else {
                 $action = array_sum(array_keys($this->links()));
                 $action -= CRM_Core_Action::DISABLE;
                 $action -= CRM_Core_Action::ENABLE;
                 $action -= CRM_Core_Action::DELETE;
-                $rowsUpl[$id]['action'] = CRM_Core_Action::formLink(self::links(), $action,
-                                                                    array('id' => $id, 
-                                                                          'key' => $obj->key ));
-            }
-            $this->assign('rowsUploaded', $rowsUpl );
+                $action -= CRM_Core_Action::UPDATE;
+                $extensionRows[$id]['action'] = CRM_Core_Action::formLink(self::links(), $action,
+                                                                          array('id' => $id, 
+                                                                                'key' => $obj->key ));            
+            } 
+                        
+            
         }
+
+        $this->assign('extensionRows', $extensionRows);        
 
     }
     

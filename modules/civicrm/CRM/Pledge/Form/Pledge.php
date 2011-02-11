@@ -175,6 +175,9 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form
         //get the pledge frequency units.
         require_once 'CRM/Core/OptionGroup.php';
         $this->_freqUnits = CRM_Core_OptionGroup::values("recur_frequency_units");
+
+        require_once "CRM/Core/BAO/Email.php";
+        $this->_fromEmails = CRM_Core_BAO_Email::getFromEmail( );
     }
     
     /**
@@ -409,7 +412,10 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form
         if ( CRM_Utils_Array::value('status_id', $this->_values) != 
              array_search( 'Cancelled', CRM_Contribute_PseudoConstant::contributionStatus( null, 'name' ) ) ) { 
             
-            $this->addElement('checkbox','is_acknowledge', ts('Send Acknowledgment?'),null, array('onclick' =>"return showHideByValue('is_acknowledge','','acknowledgeDate','table-row','radio',true);") );
+            $this->addElement( 'checkbox', 'is_acknowledge', ts('Send Acknowledgment?'), null, 
+                               array( 'onclick' => "showHideByValue( 'is_acknowledge', '', 'acknowledgeDate', 'table-row', 'radio', true); showHideByValue( 'is_acknowledge', '', 'fromEmail', 'table-row', 'radio', false );" ) );
+
+            $this->add( 'select', 'from_email_address', ts('Receipt From'), $this->_fromEmails );
         }
 
         $this->addDate( 'acknowledge_date', ts('Acknowledgment Date') );
@@ -646,6 +652,9 @@ class CRM_Pledge_Form_Pledge extends CRM_Core_Form
             $params['acknowledge_date'] = $pledge->acknowledge_date;
             $params['is_test'] = $pledge->is_test;
             
+            // retrieve 'from email id' for acknowledgement
+            $params['from_email_id'] = $formValues['from_email_address'];
+                        
             $this->paymentId = null;
             //send Acknowledgment mail.
             require_once 'CRM/Pledge/BAO/Pledge.php';

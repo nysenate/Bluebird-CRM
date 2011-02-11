@@ -468,8 +468,8 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
             $this->customFileUploadDir = $this->uploadDir;
         }
         
-        if ( $this->geoProvider ) {
-            $this->geocodeMethod = 'CRM_Utils_Geocode_'. $this->geoProvider ;
+        if ( $this->mapProvider ) {
+            $this->geocodeMethod = 'CRM_Utils_Geocode_'. $this->mapProvider ;
         }
     }
 

@@ -135,6 +135,9 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
         } else {
             $this->assign( 'membershipMode', false );
         }
+
+        require_once "CRM/Core/BAO/Email.php";
+        $this->_fromEmails = CRM_Core_BAO_Email::getFromEmail( );
         parent::preProcess( );
     }
 
@@ -266,8 +269,11 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
             $this->add( 'text', 'check_number', ts('Check Number'), 
                         CRM_Core_DAO::getAttribute( 'CRM_Contribute_DAO_Contribution', 'check_number' ) );
         }
-        $this->addElement('checkbox', 'send_receipt', ts('Send Confirmation and Receipt?'), null, 
-                          array('onclick' =>"return showHideByValue('send_receipt','','notice','table-row','radio',false);") );
+        $this->addElement( 'checkbox', 'send_receipt', ts('Send Confirmation and Receipt?'), null, 
+                           array( 'onclick' => "showHideByValue( 'send_receipt', '', 'notice', 'table-row', 'radio', false ); showHideByValue( 'send_receipt', '', 'fromEmail', 'table-row', 'radio',false);" ) );
+
+        $this->add( 'select', 'from_email_address', ts('Receipt From'), $this->_fromEmails );
+
         $this->add('textarea', 'receipt_text_renewal', ts('Renewal Message') );
 
         if ( $this->_mode ) {
@@ -530,7 +536,7 @@ class CRM_Member_Form_MembershipRenewal extends CRM_Member_Form
             // Retrieve the name and email of the contact - this will be the TO for receipt email
             list( $this->_contributorDisplayName, 
                   $this->_contributorEmail ) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $this->_contactID );
-            $receiptFrom = '"' . $userName . '" <' . $userEmail . '>';
+            $receiptFrom = $formValues['from_email_address'];
             
             $paymentInstrument = CRM_Contribute_PseudoConstant::paymentInstrument();
             $formValues['paidBy'] = $paymentInstrument[$formValues['payment_instrument_id']];

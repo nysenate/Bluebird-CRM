@@ -129,14 +129,19 @@
      {if $email and $outBound_option != 2}
      <table class="form-layout">
 	     <tr class="crm-member-membershiprenew-form-block-send_receipt">
-	       <td class="label">{$form.send_receipt.label}</td>
-           <td>{$form.send_receipt.html}<br />
-	       <span class="description">{ts 1=$email}Automatically email a membership confirmation and receipt to %1?{/ts}</span></td>
-	     </tr> 
+	        <td class="label">{$form.send_receipt.label}</td>
+                <td>{$form.send_receipt.html}<br />
+	           <span class="description">{ts 1=$email}Automatically email a membership confirmation and receipt to %1?{/ts}</span>
+                </td>
+             </tr>
+	     <tr id="fromEmail" >
+                <td class="label">{$form.from_email_address.label}</td>
+                <td>{$form.from_email_address.html}</td>
+             </tr>
 	     <tr id="notice" class="crm-member-membershiprenew-form-block-receipt_text_renewal">	
-    	    <td class="label">{$form.receipt_text_renewal.label}</td>
-            <td><span class="description">{ts}Enter a message you want included at the beginning of the emailed receipt. EXAMPLE: 'Thanks for supporting our organization with your membership.'{/ts}</span><br />
-            {$form.receipt_text_renewal.html|crmReplace:class:huge}</td> 
+    	        <td class="label">{$form.receipt_text_renewal.label}</td>
+                <td><span class="description">{ts}Enter a message you want included at the beginning of the emailed receipt. EXAMPLE: 'Thanks for supporting our organization with your membership.'{/ts}</span><br />
+                    {$form.receipt_text_renewal.html|crmReplace:class:huge}</td> 
 	     </tr>
      </table>
      {/if}
@@ -172,6 +177,14 @@
     target_element_id   ="checkNumber" 
     target_element_type ="table-row"
     field_type          ="select"
+    invert              = 0
+}
+{include file="CRM/common/showHideByFieldValue.tpl" 
+    trigger_field_id    ="send_receipt"
+    trigger_value       =""
+    target_element_id   ="fromEmail" 
+    target_element_type ="table-row"
+    field_type          ="radio"
     invert              = 0
 }
 {/if}

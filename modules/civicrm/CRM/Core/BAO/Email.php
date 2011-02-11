@@ -219,5 +219,47 @@ ORDER BY e.is_primary DESC, email_id ASC ";
             }
         }
     }
+
+    /**
+     * Build From Email as the combination of all the email ids of the logged in user and
+     * the domain email id 
+     * 
+     * @return array         an array of email ids
+     * @access public
+     * @static
+     */
+    static function getFromEmail( )
+    {
+        $session   = CRM_Core_Session::singleton( );
+        $contactID = $session->get( 'userID' );
+        $fromEmailValues = array( ); 
+        
+        // add the domain email id
+        require_once 'CRM/Core/BAO/Domain.php';
+        $domainEmail = CRM_Core_BAO_Domain::getNameAndEmail( );
+        $domainEmail = "$domainEmail[0] <$domainEmail[1]>";
+        $fromEmailValues[$domainEmail] = htmlspecialchars( $domainEmail );
+        
+        // add logged in user's active email ids
+        if ( $contactID ) {
+            $contactEmails   = self::allEmails( $contactID );
+            $fromDisplayName = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $contactID, 'display_name' );
+            
+            foreach( $contactEmails as $emailId => $emailVal ) {
+                $email = trim( $emailVal['email'] );
+                if ( !$email || $emailVal['on_hold'] ) {
+                    continue;
+                }
+                $fromEmail      = "$fromDisplayName <$email>";
+                $fromEmailHtml  =  htmlspecialchars( $fromEmail ) . ' ' . $emailVal['locationType'];
+                                
+                if ( CRM_Utils_Array::value( 'is_primary', $emailVal ) ) {
+                    $fromEmailHtml .=  ' ' . ts('(preferred)');
+                }
+                $fromEmailValues[$fromEmail] = $fromEmailHtml;
+            }
+        }
+        return $fromEmailValues;
+    }
 }
 

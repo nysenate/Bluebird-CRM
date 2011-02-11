@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for install /uninstall extensions  *}
-<h3>{if $action eq 1}{ts}Install Extension{/ts}{elseif $action eq 2}{ts}Edit Extension{/ts}{else}{ts}Uninstall Extension{/ts}{/if}</h3>
+<h3>{if $action eq 1}{ts}Install Extension{/ts}{elseif $action eq 2}{ts}Upgrade Extension{/ts}{else}{ts}Uninstall Extension{/ts}{/if}</h3>
 <div class="crm-block crm-form-block crm-admin-optionvalue-form-block">
    {if $action eq 8}
       <div class="messages status">
@@ -37,8 +37,14 @@
           <div class="icon inform-icon"></div>
           {ts}Installing this extension will provide you with new functionality. Please make sure that the extension you're installing comes from a trusted source.{/ts} {ts}Do you want to continue?{/ts}
       </div>
-   {/if}   
-   {if $action eq 8 or $action eq 1}
+   {/if}
+   {if $action eq 2}
+      <div class="messages status">
+          <div class="icon inform-icon"></div>
+          {ts}Upgrading this extension will provide you with new functionality. Please make sure that the extension you're installing comes from a trusted source.{/ts} {ts}Do you want to continue?{/ts}
+      </div>
+   {/if}
+   {if $action eq 8 or $action eq 1 or $action eq 2}
         {include file="CRM/Admin/Page/ExtensionDetails.tpl"}
    {/if}
    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>      

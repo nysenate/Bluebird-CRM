@@ -248,8 +248,10 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
              array_key_exists( $linkActTypeId, $aTypes ) ) {
             unset( $aTypes[$linkActTypeId] );
         }
-        
-        asort( $aTypes );
+
+        if( ! $xmlProcessor->getNaturalActivityTypeSort( ) ) {
+            asort( $aTypes );
+        }
         
         $this->add('select', 'activity_type_id',  ts( 'New Activity' ), array( '' => ts( '- select activity type -' ) ) + $aTypes );
         if ( $this->_hasAccessToAllCases ) {

@@ -101,7 +101,7 @@ class CRM_Upgrade_ThreeZero_ThreeZero extends CRM_Upgrade_Form {
             CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_report_instance ADD description VARCHAR(255)");
             CRM_Core_DAO::executeQuery("UPDATE civicrm_report_instance SET description = description_{$locales[0]}");
 
-            CRM_Core_DAO::executeQuery("DROP TRIGGER civicrm_report_instance_before_insert");
+            CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS civicrm_report_instance_before_insert");
             foreach ($locales as $locale) {
                 CRM_Core_DAO::executeQuery("DROP VIEW civicrm_report_instance_$locale");
                 CRM_Core_DAO::executeQuery("ALTER TABLE civicrm_report_instance DROP description_$locale");

@@ -104,7 +104,7 @@ class CRM_Utils_PDF_Utils {
           </body>
         </html>';
                         
-        $dompdf->load_html( $html );
+        $dompdf->load_html(utf8_decode($html));
         $dompdf->set_paper ($paperSize, $orientation);
         $dompdf->render( );
         
@@ -142,7 +142,7 @@ class CRM_Utils_PDF_Utils {
         foreach ( $values as $value ) {
             $html .= "{$value}\n";
         }
-        $dompdf->load_html( $html );
+        $dompdf->load_html(utf8_decode($html));
         $dompdf->set_paper ($paperSize, $orientation);
         $dompdf->render( );
         if ( $output ) {

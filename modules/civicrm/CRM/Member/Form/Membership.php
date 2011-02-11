@@ -155,6 +155,9 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
                                                                                                                    'Membership' );
         }
         $this->assign( 'onlinePendingContributionId', $this->_onlinePendingContributionId );
+
+        require_once "CRM/Core/BAO/Email.php";
+        $this->_fromEmails = CRM_Core_BAO_Email::getFromEmail( );
         
         parent::preProcess( );
     }
@@ -503,10 +506,13 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
             $this->add( 'text', 'check_number', ts('Check Number'), 
                         CRM_Core_DAO::getAttribute( 'CRM_Contribute_DAO_Contribution', 'check_number' ) );
         }
-        $this->addElement('checkbox', 
-                          'send_receipt', 
-                          ts('Send Confirmation and Receipt?'), null, 
-                          array('onclick' =>"return showHideByValue('send_receipt','','notice','table-row','radio',false);") );
+        $this->addElement( 'checkbox', 
+                           'send_receipt', 
+                           ts('Send Confirmation and Receipt?'), null, 
+                           array( 'onclick' => "showHideByValue( 'send_receipt', '', 'notice', 'table-row', 'radio', false); showHideByValue( 'send_receipt', '', 'fromEmail', 'table-row', 'radio', false);" ) );
+
+        $this->add( 'select', 'from_email_address', ts('Receipt From'), $this->_fromEmails );
+
         $this->add('textarea', 'receipt_text_signup', ts('Receipt Message') );
         if ( $this->_mode ) {
             
@@ -1066,7 +1072,8 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
         $receiptSend = false;
         if ( CRM_Utils_Array::value( 'send_receipt', $formValues ) ) {
             $receiptSend = true;
-            $receiptFrom = "$userName <$userEmail>";
+            // retrieve 'from email id' for acknowledgement
+            $receiptFrom = $formValues['from_email_address'];
             
             if ( CRM_Utils_Array::value( 'payment_instrument_id', $formValues ) ) {
                 $paymentInstrument    = CRM_Contribute_PseudoConstant::paymentInstrument();

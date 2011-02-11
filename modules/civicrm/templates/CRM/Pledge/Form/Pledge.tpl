@@ -100,6 +100,10 @@
 	    {elseif $context eq 'standalone' and $outBound_option != 2 }
                 <tr id="acknowledgment-receipt" style="display:none;"><td class="label">{$form.is_acknowledge.label}</td><td>{$form.is_acknowledge.html} <span class="description">{ts}Automatically email an acknowledgment of this pledge to {/ts}<span id="email-address"></span>?</span></td></tr>
         {/if}
+        <tr id="fromEmail" style="display:none;">
+            <td class="label">{$form.from_email_address.label}</td>
+            <td>{$form.from_email_address.html}</td>
+        </tr>
         <tr id="acknowledgeDate"><td class="label" class="crm-pledge-form-block-acknowledge_date">{$form.acknowledge_date.label}</td>
             <td>{include file="CRM/common/jcalendar.tpl" elementName=acknowledge_date}<br />
             <span class="description">{ts}Date when an acknowledgment of the pledge was sent.{/ts}</span></td></tr>
@@ -248,6 +252,14 @@ cj(function() {
     target_element_type ="table-row"
     field_type          ="radio"
     invert              = 1
+}
+{include file="CRM/common/showHideByFieldValue.tpl" 
+    trigger_field_id    ="is_acknowledge"
+    trigger_value       =""
+    target_element_id   ="fromEmail" 
+    target_element_type ="table-row"
+    field_type          ="radio"
+    invert              = 0	
 }
 {/if}
 

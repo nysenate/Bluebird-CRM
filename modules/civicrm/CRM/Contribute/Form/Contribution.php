@@ -215,6 +215,9 @@ class CRM_Contribute_Form_Contribution extends CRM_Core_Form
         $this->_paymentProcessor = array( 'billing_mode' => 1 );
         
         $this->assign( 'showCheckNumber', false );
+
+        require_once "CRM/Core/BAO/Email.php";
+        $this->_fromEmails = CRM_Core_BAO_Email::getFromEmail( );
         
         //ensure that processor has a valid config
         //only valid processors get display to user  
@@ -821,7 +824,10 @@ WHERE  contribution_id = {$this->_id}
                             array( 'CRM_Contribute_DAO_Contribution', $this->_id, 'trxn_id' ) );
         }
         //add receipt for offline contribution
-        $this->addElement('checkbox','is_email_receipt', ts('Send Receipt?'),null, array('onclick' =>"return showHideByValue('is_email_receipt','','receiptDate','table-row','radio',true);") );
+        $this->addElement( 'checkbox','is_email_receipt', ts('Send Receipt?'), null,
+                           array( 'onclick' => "showHideByValue( 'is_email_receipt', '', 'receiptDate', 'table-row', 'radio', true); showHideByValue( 'is_email_receipt', '', 'fromEmail', 'table-row', 'radio', false );" ) );
+
+        $this->add( 'select', 'from_email_address', ts('Receipt From'), $this->_fromEmails );
 
         $status = CRM_Contribute_PseudoConstant::contributionStatus(  );
         // supressing contribution statuses that are NOT relevant to pledges (CRM-5169)
@@ -1464,6 +1470,9 @@ WHERE  contribution_id = {$this->_id}
             if ( $contribution->id && CRM_Utils_Array::value( 'is_email_receipt', $formValues ) ) {
                 $formValues['contact_id']      = $this->_contactID;
                 $formValues['contribution_id'] = $contribution->id;
+
+                // to get 'from email id' for send receipt
+                $this->fromEmailId = $formValues['from_email_address'];
                 $sendReceipt = CRM_Contribute_Form_AdditionalInfo::emailReceipt( $this, $formValues );
             }
             

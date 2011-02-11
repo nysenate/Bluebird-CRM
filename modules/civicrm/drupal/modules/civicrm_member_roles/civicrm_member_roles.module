@@ -210,7 +210,12 @@ function civicrm_member_roles_configure()
                                                                   '#title' => t('Automatic Synchronization Method'),
                                                                   '#description' => t('Select which method CiviMember Roles Sync will use to automatically synchronize Memberships and Roles. If you choose user login/logout, you will have to run an initial "Manual Synchronization" after you create a new rule for it to be applied to all users and contacts. Leave the default setting if you are unsure which method to use.'),
                                                                   '#default_value' => variable_get('civicrm_member_roles_sync_method', 0),
-                                                                  '#options' => array(t('Synchronize whenever a user logs in or logs out. This action is performed only on the user logging in or out.'), t('Synchronize when Drupal cron is ran. This action will be performed on all users and contacts.'), t('Disable automatic synchronization. You will have to use the "Manually Synchronize" form to synchronize memberships and roles yourself.')),
+                                                                  '#options' => array(
+                                                                    0 => t('Synchronize whenever a user logs in or logs out. This action is performed only on the user logging in or out.'),
+                                                                    1 => t('Synchronize when Drupal cron is ran. This action will be performed on all users and contacts.'),
+                                                                    3 => t('Synchronize when membership is updated.'),
+                                                                    2 => t('Disable automatic synchronization. You will have to use the "Manually Synchronize" form to synchronize memberships and roles yourself.'),
+                                                                    ),
                                                                   );
     
     return system_settings_form($form);
@@ -408,7 +413,7 @@ function civicrm_member_roles_add_rule_form_submit($form, &$form_state)
  * Finds members and applies roles based on the rules defined in the settings page. If the ext_uid param is defined then
  * this function will only sync one user.
  */
-function _civicrm_member_roles_sync( $ext_uid = NULL ) 
+function _civicrm_member_roles_sync( $ext_uid = NULL, $cid = NULL ) 
 {    
     if ( ! civicrm_initialize( ) ) {
         return;
@@ -423,7 +428,7 @@ function _civicrm_member_roles_sync( $ext_uid = NULL )
     }
     
     //Find all contacts that have membership rules (or just use $ext_uid)
-    if ( empty( $ext_uid ) ) {
+    if ( empty( $ext_uid ) && empty( $cid ) ) {
         //Put all unique membership types that have rules in an array
         $all_rule_membership_types = array();
         while ($result = db_fetch_object( $rules ) ) {
@@ -438,17 +443,29 @@ function _civicrm_member_roles_sync( $ext_uid = NULL )
             return FALSE;
         }
     } else {
-        //Let's get the UID's Contact ID so we only grab one record from the CiviCRM DB.
-        $uid = $ext_uid;
-        $sql = "SELECT contact_id FROM civicrm_uf_match WHERE uf_id = %1";
-        $params = array( 1=>array( $uid, "Integer" ) );
-        $contacts = CRM_Core_DAO::executeQuery ( $sql, $params );
-        if ($contacts->N == 0) {
-            watchdog( 'civicrm_member_roles', 
-                     'The uid: @uid did not have a CiviCRM Contact ID.',
-                     array('@uid' => (int) $ext_uid),
-                     WATCHDOG_ERROR );
-            return FALSE;
+        if (!empty($ext_uid)) {
+            //Let's get the UID's Contact ID so we only grab one record from the CiviCRM DB.
+            $uid = $ext_uid;
+            $sql = "SELECT contact_id FROM civicrm_uf_match WHERE uf_id = %1";
+            $params = array( 1=>array( $uid, "Integer" ) );
+            $contacts = CRM_Core_DAO::executeQuery ( $sql, $params );
+            if ($contacts->N == 0) {
+                watchdog( 'civicrm_member_roles', 
+                        'The uid: @uid did not have a CiviCRM Contact ID.',
+                        array('@uid' => (int) $ext_uid),
+                        WATCHDOG_ERROR );
+                return FALSE;
+            }
+        } else {
+            // Seems silly to add this query, but the while loop below needs result set.
+            $sql = "SELECT id AS contact_id FROM civicrm_contact WHERE id = %1";
+            $params = array( 1=>array( $cid, "Integer" ) );
+            $contacts = CRM_Core_DAO::executeQuery ( $sql, $params );
+            if ($contacts->N == 0) {
+                watchdog( 'civicrm_member_roles', 
+                        'Unable to get CiviCRM Contact ID @cid.', array('@uid' => (int) $cid), WATCHDOG_ERROR );
+                return FALSE;
+            }
         }
     }
     $memberRules = db_query( 'SELECT * FROM {civicrm_member_roles_rules}' );
@@ -561,3 +578,12 @@ function _civicrm_member_roles_get_data($type)
   
     return $result;
 }
+
+function civicrm_member_roles_civicrm_post($op, $objname, $objid, &$objref) {
+    if ($objname == "Membership") {
+        if (variable_get('civicrm_member_roles_sync_method', 0) == 3) {
+            _civicrm_member_roles_sync(NULL, $objref->contact_id);
+        }
+    }
+}
+

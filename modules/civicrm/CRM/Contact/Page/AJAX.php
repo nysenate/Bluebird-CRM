@@ -75,7 +75,8 @@ class CRM_Contact_Page_AJAX
                 break;
             }
         }
-        
+        $config = CRM_Core_Config::singleton( );
+
         $select = implode( ', ', $select );
         $from   = implode( ' ' , $from   );
         if ( CRM_Utils_Array::value( 'limit', $_GET) ) {
@@ -96,6 +97,28 @@ class CRM_Contact_Page_AJAX
             if ( $orgId = CRM_Utils_Array::value( 'id', $_GET) ) {
                  $where .= " AND cc.id = {$orgId}";
              }
+
+            // CRM-7157, hack: get current employer details when
+            // employee_id is present.
+            $currEmpDetails  = array( );
+            if ( CRM_Utils_Array::value( 'employee_id', $_GET) ) {
+                if ( $currentEmployer = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', CRM_Utils_Type::escape( $_GET['employee_id'], 'Positive' ), 'employer_id' ) ) {
+
+                    if ( $config->includeWildCardInName ) {
+                        $strSearch = "%$name%";
+                    } else {
+                        $strSearch = "$name%";
+                    }
+
+                    // get current employer details
+                    $dao = CRM_Core_DAO::executeQuery( "SELECT cc.id as id, CONCAT_WS( ' :: ', {$select} ) as data, sort_name
+                                                        FROM civicrm_contact cc {$from} WHERE cc.contact_type = \"Organization\" AND cc.id = {$currentEmployer} AND cc.sort_name LIKE '$strSearch'" );
+                    if ( $dao->fetch( ) ) {
+                        $currEmpDetails = array( 'id'   => $dao->id,
+                                                 'data' => $dao->data );
+                    }
+                }
+            }
         }
 
         if ( CRM_Utils_Array::value( 'cid', $_GET) ) {
@@ -111,8 +134,6 @@ class CRM_Contact_Page_AJAX
             $rel      = CRM_Utils_Type::escape( $relation[2], 'String');
         }
        
-        $config = CRM_Core_Config::singleton( );
-
         if ( $config->includeWildCardInName ) {
            $strSearch = "%$name%";
         } else {
@@ -154,14 +175,25 @@ class CRM_Contact_Page_AJAX
 
         $dao = CRM_Core_DAO::executeQuery( $query );
         $contactList = null;
+        $listCurrentEmployer = true;
         while ( $dao->fetch( ) ) {
             echo $contactList = "$dao->data|$dao->id\n";
+            
+            if ( CRM_Utils_Array::value( 'org', $_GET ) &&
+                 !empty($currEmpDetails) && 
+                 $dao->id == $currEmpDetails['id']) {
+                $listCurrentEmployer = false;
+            }
         }
         
         //return organization name if doesn't exist in db
         if ( !$contactList ) {
             if ( CRM_Utils_Array::value( 'org', $_GET) ) {
-                echo CRM_Utils_Array::value( 's', $_GET );
+                if ( $listCurrentEmployer && !empty($currEmpDetails) ) {
+                    echo  "{$currEmpDetails['data']}|{$currEmpDetails['id']}\n";
+                } else {
+                    echo CRM_Utils_Array::value( 's', $_GET );
+                }
             } else if ( CRM_Utils_Array::value( 'context', $_GET ) == 'customfield' ) {
                 echo "$name|$name\n";
             }

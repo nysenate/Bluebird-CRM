@@ -66,7 +66,11 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form
         
         require_once "CRM/Core/Extensions.php";
         $ext = new CRM_Core_Extensions( );
-        $extension = $ext->getExtensionsByKey( TRUE );
+        if ( $this->_action & CRM_Core_Action::ADD || $this->_action & CRM_Core_Action::UPDATE ) {
+            $extension = $ext->getRemoteByKey( );
+        } else {
+            $extension = $ext->getExtensions( );
+        }
 
         $this->assign( 'extension', get_object_vars($extension[$this->_key]) );
     }
@@ -100,6 +104,15 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form
                                            'name'      => ts('Cancel')),
                                     )
                               );
+        } elseif ($this->_action & CRM_Core_Action::UPDATE) {
+            $this->addButtons(array(
+                                    array ('type'      => 'next',
+                                           'name'      => ts('Upgrade'),
+                                           'isDefault' => true),
+                                    array ('type'      => 'cancel',
+                                           'name'      => ts('Cancel')),
+                                    )
+                              );                              
         } else {
             $this->addButtons( array(
                                      array ( 'type'      => 'next',
@@ -154,5 +167,12 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form
             $ext->install($this->_id, $this->_key);
             CRM_Core_Session::setStatus( ts('Extension has been installed.') );
         }
+        
+        if ( $this->_action & CRM_Core_Action::UPDATE ) {
+            require_once('CRM/Core/Extensions.php');
+            $ext = new CRM_Core_Extensions();
+            $ext->upgrade($this->_id, $this->_key);
+            CRM_Core_Session::setStatus( ts('Extension has been upgraded.') );
+        }        
     }
 }

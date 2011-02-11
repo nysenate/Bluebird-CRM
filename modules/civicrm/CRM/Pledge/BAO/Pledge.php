@@ -608,6 +608,8 @@ WHERE  $whereCond
         if ( CRM_Utils_Array::value('receipt_from_email', $params ) ) {
             $userName  = CRM_Utils_Array::value('receipt_from_name', $params );
             $userEmail = CRM_Utils_Array::value('receipt_from_email', $params );
+        } else if ( CRM_Utils_Array::value( 'from_email_id', $params ) )  {
+            $receiptFrom = $params['from_email_id'];
         } else if ( $userID = $session->get( 'userID' ) )  {
             //check for loged in user.
             list( $userName, $userEmail ) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $userID );
@@ -616,7 +618,10 @@ WHERE  $whereCond
             $userName  = CRM_Utils_Array::value('name', $domainValues );
             $userEmail = CRM_Utils_Array::value('email', $domainValues );
         }
-        $receiptFrom = "$userName <$userEmail>";
+
+        if ( !isset( $receiptFrom ) ) {
+            $receiptFrom = "$userName <$userEmail>";
+        }
 
         require_once 'CRM/Core/BAO/MessageTemplates.php';
         list ($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplates::sendTemplate(

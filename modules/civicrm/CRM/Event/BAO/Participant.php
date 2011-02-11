@@ -805,8 +805,10 @@ WHERE  civicrm_participant.id = {$participantId}
      */ 
     static function deleteParticipant( $id ) 
     {
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::pre( 'delete', 'Participant', $id, CRM_Core_DAO::$_nullArray );
+
         require_once 'CRM/Core/Transaction.php';
-      
         $transaction = new CRM_Core_Transaction( );
 
         //delete activity record
@@ -835,6 +837,8 @@ WHERE  civicrm_participant.id = {$participantId}
         $participant->delete( );
 
         $transaction->commit( );
+
+        CRM_Utils_Hook::post( 'delete', 'Participant', $participant->id, $participant );
 
         // delete the recently created Participant
         require_once 'CRM/Utils/Recent.php';

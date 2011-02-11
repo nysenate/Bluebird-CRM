@@ -53,13 +53,11 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                              array( 'name'       => 'id',
                                                     'alias'      => 'contact_civireport',
                                                     'no_display' => true, 
-                                                    'required'   => true, 
                                                     ),
                                              'contact_source'    =>
                                               array( 'name'      => 'display_name' ,
                                                      'title'     => ts( 'Source Contact Name' ),
                                                      'alias'     => 'contact_civireport',
-                                                     'required'  => true,
                                                      'no_repeat' => true ),
                                               'contact_assignee' =>
                                               array( 'name'      => 'display_name' ,
@@ -156,8 +154,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                               ),
                                        'group_bys' =>             
                                        array( 'source_contact_id'  =>
-                                              array('title'    => ts( 'Source Contact' ),
-                                                    'default'  => true ),
+                                              array('title'    => ts( 'Source Contact' ) ),
                                               'activity_date_time' => 
                                               array( 'title'   => ts( 'Activity Date' ) ),
                                               'activity_type_id'   =>

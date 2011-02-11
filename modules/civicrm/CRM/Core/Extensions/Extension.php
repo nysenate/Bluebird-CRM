@@ -46,11 +46,21 @@ class CRM_Core_Extensions_Extension
      */
     const OPTION_GROUP_NAME = 'system_extensions';
 
+    const STATUS_INSTALLED = 'installed';
+    
+    const STATUS_LOCAL = 'local';
+    
+    const STATUS_REMOTE = 'remote';
+
     public $type = null;
     
     public $path = null;
     
-    function __construct( $key, $type = null, $name = null, $label = null, $file = null, $is_active = 0 ) {
+    public $upgradable = false;
+    
+    public $upgradeVersion = null;    
+    
+    function __construct( $key, $type = null, $name = null, $label = null, $file = null, $is_active = 1 ) {
         $this->key = $key;
         $this->type = $type;
         $this->name = $name;
@@ -64,6 +74,34 @@ class CRM_Core_Extensions_Extension
 
     public function setId( $id ) {
         $this->id = $id;
+    }
+
+    public function setUpgradable( ) {
+        $this->upgradable = true;
+    }
+    
+    public function setUpgradeVersion( $version ) {
+        $this->upgradeVersion = $version;
+    }    
+
+    public function setInstalled( ) {
+        $this->setStatus( self::STATUS_INSTALLED );
+    }
+    
+    public function setLocal( ) {
+        $this->setStatus( self::STATUS_LOCAL );
+    }
+    
+    public function setRemote( ) {
+        $this->setStatus( self::STATUS_REMOTE );
+    }
+
+    public function setStatus( $status ) {
+        $labels = array( self::STATUS_INSTALLED => ts('Installed'),
+                         self::STATUS_LOCAL     => ts('Local only'),
+                         self::STATUS_REMOTE	=> ts('Available') );
+        $this->status = $status;
+        $this->statusLabel = $labels[$status];
     }
 
     public function xmlObjToArray($obj)
@@ -87,8 +125,17 @@ class CRM_Core_Extensions_Extension
         return $arr;
     }
 
-    public function readXMLInfo( ) {
-        $info = $this->_parseXMLFile( $this->path . 'info.xml' );
+    public function readXMLInfo( $xml = false ) {
+        if( $xml === false ) {
+            $info = $this->_parseXMLFile( $this->path . 'info.xml' );
+        } else {
+            $info = $this->_parseXMLString( $xml );
+        }
+        
+        if ( $info == false ) {
+            $this->name = 'Invalid extension';
+        } else {
+        
         $this->type = (string) $info->attributes()->type;
         $this->file = (string) $info->file;
         $this->label = (string) $info->name;
@@ -110,6 +157,11 @@ class CRM_Core_Extensions_Extension
                 $this->$attr = $this->xmlObjToArray( $val );
             }
         }
+        }
+    }
+
+    private function _parseXMLString( $string ) {
+        return simplexml_load_string( $string, 'SimpleXMLElement');
     }
 
     private function _parseXMLFile( $file ) {
@@ -123,13 +175,69 @@ class CRM_Core_Extensions_Extension
     }
     
     public function install( ) {
+        $this->download();
+        $this->installFiles();
         $this->_registerExtensionByType();
         $this->_createExtensionEntry();
     }
     
     public function uninstall( ) {
+        $this->removeFiles();    
         $this->_removeExtensionByType();
         $this->_removeExtensionEntry();
+    }
+
+    public function removeFiles() {
+        require_once 'CRM/Utils/File.php';
+        require_once 'CRM/Core/Config.php';
+        $config =& CRM_Core_Config::singleton( );
+        CRM_Utils_File::cleanDir( $config->extensionsDir . DIRECTORY_SEPARATOR . $this->key, true );
+    }
+    
+    public function installFiles() {
+        require_once 'CRM/Utils/File.php';
+        require_once 'CRM/Core/Config.php';
+        $config =& CRM_Core_Config::singleton( );
+        
+        $zip = new ZipArchive;
+        $res = $zip->open( $this->tmpFile );
+        if ($res === TRUE) {
+            $path = $config->extensionsDir . DIRECTORY_SEPARATOR . 'tmp';        
+            $zip->extractTo( $path );
+            $zip->close();
+        } else {
+            CRM_Core_Error::fatal( 'Unable to extract the extension.' );
+        }
+
+        $filename = $path . DIRECTORY_SEPARATOR . $this->key . DIRECTORY_SEPARATOR . 'info.xml';
+        $newxml = file_get_contents( $filename );
+        require_once 'CRM/Core/Extensions/Extension.php';
+        $check = new CRM_Core_Extensions_Extension( $this->key . ".newversion" );
+        $check->readXMLInfo( $newxml );
+        if( $check->version != $this->version ) {
+            CRM_Core_Error::fatal( 'Cannot install - there are differences between extdir XML file and archive XML file!' );
+        }
+        
+        CRM_Utils_File::copyDir( $path . DIRECTORY_SEPARATOR . $this->key,
+                                 $config->extensionsDir . DIRECTORY_SEPARATOR . $this->key );
+        
+        
+    }
+    
+    public function download( ) {
+        require_once 'CRM/Core/Config.php';
+        $config =& CRM_Core_Config::singleton( );
+        
+        $path = $config->extensionsDir . DIRECTORY_SEPARATOR . 'tmp';
+        $filename = $path . DIRECTORY_SEPARATOR . $this->key . '.zip';
+
+        if( !$this->downloadUrl ) {
+            CRM_Core_Error::fatal( 'Cannot install this extension - downloadUrl is not set!' );
+        }
+        
+        file_put_contents( $filename, file_get_contents( $this->downloadUrl ) );
+        
+        $this->tmpFile = $filename;
     }    
 
     public function enable( ) {

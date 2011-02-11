@@ -171,7 +171,11 @@
             <td class="label">{$form.send_receipt.label}</td><td>{$form.send_receipt.html}<br />
             <span class="description">{ts}Automatically email a membership confirmation and receipt to {/ts}<span id="email-address"></span>?</span></td>
         </tr>
-    {/if}    
+    {/if}
+        <tr id="fromEmail" style="display:none;">
+            <td class="label">{$form.from_email_address.label}</td>
+            <td>{$form.from_email_address.html}</td>
+        </tr>    
         <tr id='notice' style="display:none;">
             <td class="label">{$form.receipt_text_signup.label}</td>
             <td class="html-adjust"><span class="description">{ts}If you need to include a special message for this member, enter it here. Otherwise, the confirmation email will include the standard receipt message configured under System Message Templates.{/ts}</span>
@@ -248,6 +252,14 @@ cj( function( ) {
     trigger_field_id    ="send_receipt"
     trigger_value       =""
     target_element_id   ="notice" 
+    target_element_type ="table-row"
+    field_type          ="radio"
+    invert              = 0
+}
+{include file="CRM/common/showHideByFieldValue.tpl" 
+    trigger_field_id    ="send_receipt"
+    trigger_value       =""
+    target_element_id   ="fromEmail" 
     target_element_type ="table-row"
     field_type          ="radio"
     invert              = 0

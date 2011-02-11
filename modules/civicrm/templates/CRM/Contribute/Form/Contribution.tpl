@@ -135,6 +135,10 @@
             {elseif $context eq 'standalone' and $outBound_option != 2 }
                 <tr id="email-receipt" style="display:none;" class="crm-contribution-form-block-is_email_receipt"><td class="label">{$form.is_email_receipt.label}</td><td>{$form.is_email_receipt.html} <span class="description">{ts}Automatically email a receipt for this contribution to {/ts}<span id="email-address"></span>?</span></td></tr>
             {/if}
+            <tr id="fromEmail" style="display:none;" >
+                <td class="label">{$form.from_email_address.label}</td>
+                <td>{$form.from_email_address.html}</td>
+            </tr>
             <tr id="receiptDate" class="crm-contribution-form-block-receipt_date">
                 <td class="label">{$form.receipt_date.label}</td>
                 <td>{include file="CRM/common/jcalendar.tpl" elementName=receipt_date}<br />
@@ -161,6 +165,10 @@
             {elseif $context eq 'standalone' and $outBound_option != 2 }
                 <tr id="email-receipt" style="display:none;" class="crm-contribution-form-block-is_email_receipt"><td class="label">{$form.is_email_receipt.label}</td><td>{$form.is_email_receipt.html} <span class="description">{ts}Automatically email a receipt for this contribution to {/ts}<span id="email-address"></span>?</span></td></tr>
             {/if}
+            <tr id="fromEmail" style="display:none;" >
+                <td class="label">{$form.from_email_address.label}</td>
+                <td>{$form.from_email_address.html}</td>
+            </tr>
             <tr id="receiptDate" class="crm-contribution-form-block-receipt_date">
                 <td class="label">{$form.receipt_date.label}</td>
                 <td>{include file="CRM/common/jcalendar.tpl" elementName=receipt_date}<br />
@@ -349,6 +357,16 @@ function loadPanes( id ) {
     target_element_type ="table-row"
     field_type          ="radio"
     invert              = 1
+}
+{/if}
+{if $email and $outBound_option != 2}
+{include file="CRM/common/showHideByFieldValue.tpl" 
+    trigger_field_id    ="is_email_receipt"
+    trigger_value       =""
+    target_element_id   ="fromEmail" 
+    target_element_type ="table-row"
+    field_type          ="radio"
+    invert              = 0
 }
 {/if}
 {if !$contributionMode} 
