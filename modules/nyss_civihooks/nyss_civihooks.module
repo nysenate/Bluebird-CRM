@@ -193,8 +193,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 			$defaults['address'][$i]['state_province_id'] = 1031;
 			$i++;
 		}
-		
-		$defaults['preferred_language'] = 'en';
         
 		$form->setDefaults( $defaults );
 		
