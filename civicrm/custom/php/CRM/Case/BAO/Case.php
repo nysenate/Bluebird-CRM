@@ -1882,10 +1882,12 @@ WHERE civicrm_case.id = %2";
             $limitClause = "LIMIT 0, $limit"; 
         }
         
+		//NYSS retrieve case subject
         $query = "
     SELECT  c.id as contact_id, 
             c.sort_name,
             ca.id, 
+			ca.subject as case_subject,
             ov.label as case_type,
             ca.start_date as start_date
       FROM  civicrm_case ca INNER JOIN civicrm_case_contact cc ON ca.id=cc.case_id
@@ -1906,7 +1908,8 @@ INNER JOIN  civicrm_option_value ov ON (ca.case_type_id=ov.value AND ov.option_g
             $unclosedCases[$dao->id] = array( 'sort_name'  => $dao->sort_name,
                                               'case_type'  => $dao->case_type,
                                               'contact_id' => $dao->contact_id,
-                                              'start_date' => $dao->start_date
+                                              'start_date' => $dao->start_date,
+											  'case_subject' => $dao->case_subject, //NYSS
                                               );
         }
         $dao->free( );
