@@ -27,7 +27,6 @@ class CRM_Utils_Address_SAGE
 {
     static function checkAddress( &$values )
     {
-
         if (!isset($values['street_address']) || 
              (!isset($values['city']) &&
               !isset($values['state_province']) &&
@@ -105,24 +104,30 @@ class CRM_Utils_Address_SAGE
         }
  
         $addr2 = ucwords(strtolower((string)$xml->address2));
-        $addr_element = explode(" ", $addr2);
-        for ($j = 0; $j < count($addr_element); $j++) {
-            if ((preg_match("/^[1-9]*[1](st)$/", $addr_element[$j])) ||
-                (preg_match("/^[1-9]*[2](nd)$/", $addr_element[$j])) ||
-                (preg_match("/^[1-9]*[3](rd)$/", $addr_element[$j])) ||
-                (preg_match("/^[1-9]*[4-9,0](th)$/", $addr_element[$j]))) {
-                //don't do anything
+        if (substr($addr2, 0, 6) == "Po Box") {
+            $addr2 = "P.O. Box".substr($addr2, 6);
+        }
+        else {
+            $addr_elems = explode(" ", $addr2);
+            for ($j = 0; $j < count($addr_elems); $j++) {
+                if ((preg_match("/^[1-9]*[1](st)$/", $addr_elems[$j])) ||
+                    (preg_match("/^[1-9]*[2](nd)$/", $addr_elems[$j])) ||
+                    (preg_match("/^[1-9]*[3](rd)$/", $addr_elems[$j])) ||
+                    (preg_match("/^[1-9]*[4-9,0](th)$/", $addr_elems[$j]))) {
+                    //don't do anything
+                }
+                elseif (preg_match("/^[1-9][0-9a-zA-Z]+/", $addr_elems[$j])) {
+                    $addr_elems[$j] = strtoupper($addr_elems[$j]);
+                }
             }
-            elseif (preg_match("/^[1-9][0-9a-zA-Z]+/", $addr_element[$j])) {
-                $addr_element[$j] = strtoupper($addr_element[$j]);
-            }
+            $addr2 = implode(" ", $addr_elems);
         }
  
-        $values[$addr_field] = (string)(implode(" ", $addr_element));
-        $values['city'] = (string)(ucwords(strtolower($xml->city)));
-        $values['state_province'] = (string)$xml->state;
-        $values['postal_code'] = (string)$xml->zip5;
-        $values['postal_code_suffix'] = (string)$xml->zip4;
+        $values[$addr_field] = $addr2;
+        $values['city'] = ucwords(strtolower($xml->city));
+        $values['state_province'] = $xml->state;
+        $values['postal_code'] = $xml->zip5;
+        $values['postal_code_suffix'] = $xml->zip4;
         return true;
     }
 }
