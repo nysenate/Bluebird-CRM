@@ -865,7 +865,7 @@ function addTags() {
   <th class='crm-case-activities-subject'>{ts}Subject{/ts}</th>
   <th class='crm-case-activities-type'>{ts}Type{/ts}</th>
   <th class='crm-case-activities-with'>{ts}With{/ts}</th>
-  <th class='crm-case-activities-assignee'>{ts}Reporter / Assignee{/ts}</th>
+  <th class='crm-case-activities-assignee'>{ts}Reporter/Assignee{/ts}</th>
   <th class='crm-case-activities-status'>{ts}Status{/ts}</th>
   <th class='crm-case-activities-status' id="nosort">&nbsp;</th>
   <th class='hiddenElement'>&nbsp;</th>

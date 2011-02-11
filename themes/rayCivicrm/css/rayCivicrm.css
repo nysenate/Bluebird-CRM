@@ -1106,18 +1106,23 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*override tag tree expand/close icons*/
-#Tag .jstree-default li, 
-#Tag .jstree-default ins {
+ 
+.jstree-default ins {
     background-color: transparent;
     background-image: url("/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png");
     background-repeat: no-repeat;
 }
-#Tag .jstree-default .jstree-closed > ins {
+.jstree-default .jstree-closed > ins {
     background-position: -31px -15px;
 }
-#Tag .jstree-default .jstree-open > ins {
+.jstree-default .jstree-open > ins {
     background-position: -63px -16px;
 }
-#Tag .jstree-default .jstree-leaf > ins {
+.jstree-default .jstree-leaf > ins {
 	background: none;
+}
+
+/*show attachment icon if activity has attachments*/
+#crm-container .attachment-icon {
+	background-position: -142px -142px;
 }
