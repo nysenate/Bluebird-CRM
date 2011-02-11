@@ -1,4 +1,4 @@
-﻿(function() {
+﻿/*(function() {
 	
 	var BrowserDetect = {
 		init: function () {
@@ -120,7 +120,7 @@
 	
 	window.$.client = { os : BrowserDetect.OS, browser : BrowserDetect.browser };
 	
-})();
+})();*/
 
 
 
@@ -155,10 +155,10 @@ var global_formNavigate = true;		// Js Global Variable for onChange Flag
         
         
         // NYSS kj - if windows XP & ie8, don't use onbeforeunload: too buggy 
-        var ua = navigator.userAgent;
-        if (!ua.match(/Win(dows )?(NT 5\.1|XP)/) || ($.browser.version != '8.0')) {
+        /*var ua = navigator.userAgent;
+        if (!ua.match(/Win(dows )?(NT 5\.1|XP)/) || ($.browser.version != '8.0')) {*/
 	       window.onbeforeunload = confirmExit;
-        }
+        //}
         
         function confirmExit( event ) {  
             if (global_formNavigate == true) {  event.cancelBubble = true;  }  else  { return message;  }
