@@ -48,12 +48,14 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
 
         $this->_columns = array( ts('Contact Id') => 'contact_id',
                                  ts('Name')  	  => 'sort_name' ,
-                                 ts('Birth Date') => 'birth_date');
+                                 ts('Birth Date') => 'birth_date',
+								 ts('Age')		  => 'age'
+								);
     }
 
     function buildForm( &$form ) {
 
-		$this->setTitle('Contacts By Birth Month');
+		$this->setTitle('Birthday Search');
 
 		$month = array( ''   => '- select month -', 
 						'1'  => 'January', 
@@ -76,25 +78,95 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
 					$month,
 					false );
 		
+		$form->add('text', 'year_start', ts('Birthday: year after'), array('size' => 4, 'maxlength' => 4));
+		$form->add('text', 'year_end', ts('Birthday: year before'), array('size' => 4, 'maxlength' => 4));
+		
+		$form->add('text', 'day_start', ts('Birthday: day after'), array('size' => 2, 'maxlength' => 2));
+		$form->add('text', 'day_end', ts('Birthday: day before'), array('size' => 2, 'maxlength' => 2));
+		
+		$form->add('text', 'age_start', ts('Age greater than'), array('size' => 3, 'maxlength' => 3));
+		$form->add('text', 'age_end', ts('Age less than'), array('size' => 3, 'maxlength' => 3));
+		
 		$form->addDate( 'start_date', ts( 'Birthday after (date)' ), false, array('formatType' => 'birth') );
 		$form->addDate( 'end_date', ts( 'Birthday before (date)' ), false, array('formatType' => 'birth') );
-		 
-		$form->assign( 'elements', array( 'birth_month', 'start_date', 'end_date') );
+		
+		$formfields = array( 'start_date', 
+							 'end_date', 
+							 'age_start',
+							 'age_end',
+							 'birth_month', 
+							 'year_start', 
+							 'year_end', 
+							 'day_start', 
+							 'day_end' );
+		$form->assign( 'elements', $formfields );
+		
+		$form->add('hidden', 'form_message' );
 
 		$form->setDefaults( $this->setDefaultValues() );
+		$form->addFormRule( array( 'CRM_Contact_Form_Search_Custom_BirthdayByMonth', 'formRule' ), $this );
+    }
+	
+	static function formRule( $fields ) 
+    {
+        $errors = array( );
+		//CRM_Core_Error::debug($fields); exit();
+		
+        //make sure _start < _end
+		//removed: there may be value in doing gap searches
+        /*if ( (int)$fields['year_start'] > (int)$fields['year_end'] ) {
+			$errors['year_start'] = ts( 'Year after should be less than Year before.' );
+        }
+		if ( (int)$fields['day_start'] > (int)$fields['day_end'] ) {
+			$errors['day_start'] = ts( 'Day after should be less than Day before.' );
+        }
+		$start_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $fields['start_date'] ) );
+		$end_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $fields['end_date'] ) );
+		if ( $start_date > $end_date ) {
+			$errors['start_date'] = ts( 'Birthday after should be less than Birthday before.' );
+        }*/
+		
+		//days cannot be > 31
+		if ( (int)$fields['day_start'] > 31 ) {
+			$errors['day_start'] = ts( 'Day after cannot be greater than 31.' );
+        }
+		if ( (int)$fields['day_end'] > 31 ) {
+			$errors['day_end'] = ts( 'Day before cannot be greater than 31.' );
+        }
+		
+		//must select some criteria
+		$criteriaexists = 0;
+		$criteria = $fields;
+		unset($criteria['qfKey']);
+		unset($criteria['_qf_default']);
+		unset($criteria['_qf_Custom_refresh']);
+		//CRM_Core_Error::debug($criteria); exit();
+		foreach ( $criteria as $criterion ) {
+			if ( !empty($criterion) ) $criteriaexists = 1;
+		}
+		if ( !$criteriaexists ) {
+			$errors['form_message'] = ts( 'Please select some criteria.' );
+        }
+        
+        return empty($errors) ? true : $errors;
     }
 
     function summary( ) {
         return null;
     }
 
-    function all( $offset = 0, $rowcount = 0, $sort = null,
-                  $includeContactIDs = false ) {
-        $selectClause = "contact_a.id as contact_id,
+    function all( $offset = 0, $rowcount = 0, $sort = null, $includeContactIDs = false ) {
+        
+		$selectClause = "contact_a.id as contact_id,
             		 	 contact_a.sort_name as sort_name,
-            		 	 contact_a.birth_date as birth_date
-        		        ";
-        return $this->sql( $selectClause,
+            		 	 contact_a.birth_date as birth_date,
+						 (YEAR(CURDATE())-YEAR(birth_date)) - (RIGHT(CURDATE(),5)<RIGHT(birth_date,5)) AS age";
+						 
+        if ( empty( $sort ) ) { $sort = "ORDER BY birth_date asc"; }
+		
+		//CRM_Core_Error::debug('select',$selectClause); exit();
+		
+		return $this->sql( $selectClause,
                            $offset, $rowcount, $sort,
                            $includeContactIDs, null );
 
@@ -111,16 +183,55 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
 		$start_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['start_date'] ) );
 		$end_date  = CRM_Utils_Date::mysqlToIso( CRM_Utils_Date::processDate( $this->_formValues['end_date'] ) );
 		
-		if ( $birth_month ) {
-        	$where[] = "MONTH( contact_a.birth_date ) = $birth_month ";
-		}
+		//add filters by start/end date
 		if ( $start_date ) {
 			$where[] = "contact_a.birth_date >= '$start_date' ";
 		}
 		if ( $end_date ) {
 			$where[] = "contact_a.birth_date <= '$end_date' ";
 		}
-		$whereClause = implode( ' AND ', $where );
+		
+		//add filter by month
+		if ( $birth_month ) {
+        	$where[] = "MONTH( contact_a.birth_date ) = $birth_month ";
+		}
+		
+		//add filters by start/end year
+		if ( $this->_formValues['year_start'] ) {
+			$year_start = $this->_formValues['year_start'];
+			$where[] = "YEAR( contact_a.birth_date ) >= '$year_start' ";
+		}
+		if ( $this->_formValues['year_end'] ) {
+			$year_end = $this->_formValues['year_end'];
+			$where[] = "YEAR( contact_a.birth_date ) <= '$year_end' ";
+		}
+		
+		//add filters by start/end day
+		if ( $this->_formValues['day_start'] ) {
+			$day_start = $this->_formValues['day_start'];
+			$where[] = "DAY( contact_a.birth_date ) >= '$day_start' ";
+		}
+		if ( $this->_formValues['day_end'] ) {
+			$day_end = $this->_formValues['day_end'];
+			$where[] = "DAY( contact_a.birth_date ) <= '$day_end' ";
+		}
+		
+		//add filters by start/end age
+		if ( $this->_formValues['age_start'] ) {
+			$age_start = (int)$this->_formValues['age_start'];
+			$where[] = "(DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(birth_date, '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(birth_date, '00-%m-%d')) ) >= $age_start ";
+		}
+		if ( $this->_formValues['age_end'] ) {
+			$age_end = (int)$this->_formValues['age_end'];
+			$where[] = "(DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(birth_date, '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(birth_date, '00-%m-%d')) ) <= $age_end ";
+		}
+		
+		if ( !empty($where) ) {
+			$whereClause = implode( ' AND ', $where );
+		} else {
+			$whereClause = '';
+		}
+		//CRM_Core_Error::debug($whereClause); exit();
 		
         return $this->whereClause( $whereClause, $params );
     }
@@ -131,8 +242,8 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     }
 
     function setDefaultValues( ) {
-        return array( 'birth_month' => 1, 
-					  'start_date' => '1900-01-01' );
+        /*return array( 'birth_month' => 1, 
+					  'start_date' => '1900-01-01' );*/
     }
 
     function alterRow( &$row ) {
