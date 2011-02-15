@@ -42,10 +42,11 @@
             <td>
                 {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
             </td>
-            <td class="label">
-            	<div class="crm-submit-buttons" style="margin-top:1em;">{$form.buttons.html}</div>
-                <a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton" style="float:right;margin-left:0;">
-                	<span style="margin:auto;display: block; width: 86px; text-align: center;">Reset Form</span></a>
+            <td class="advsearch_buttons_top">
+            	<div class="crm-submit-buttons">{$form.buttons.html}</div>
+                <a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton">
+                	<span>Reset Form</span>
+                </a>
     
             </td>       
         </tr>
