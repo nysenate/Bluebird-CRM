@@ -1148,3 +1148,8 @@ ul.token-input-list-facebook { width:265px;}
 #crm-container .attachment-icon {
 	background-position: -142px -142px;
 }
+
+/*hide permissioned relationships legend*/
+#Relationships #permission-legend {
+	display: none;
+}
