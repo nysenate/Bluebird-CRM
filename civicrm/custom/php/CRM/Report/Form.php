@@ -673,25 +673,28 @@ class CRM_Report_Form extends CRM_Core_Form {
         require_once 'CRM/Report/Form/Instance.php';
         CRM_Report_Form_Instance::buildForm( $this );
         
+		//NYSS 1873 for each button we decide to open in a new window or the same
+		//we need to manually set it back to "normal" behavior as target attribute will persist after set
+		
         $label = $this->_id ? ts( 'Update Report' ) : ts( 'Create Report' );
         
-        $this->addElement( 'submit', $this->_instanceButtonName, $label );
-        $this->addElement('submit', $this->_printButtonName, ts( 'Print Report' ) );
-        $this->addElement('submit', $this->_pdfButtonName, ts( 'PDF' ) );
+        $this->addElement( 'submit', $this->_instanceButtonName, $label, array('onclick' => 'form.setAttribute("target", "_self");') );
+        $this->addElement('submit', $this->_printButtonName, ts( 'Print Report' ), array('onclick' => 'form.setAttribute("target", "_blank");') );
+        $this->addElement('submit', $this->_pdfButtonName, ts( 'PDF' ), array('onclick' => 'form.setAttribute("target", "_self");') );
         if ( $this->_instanceForm ){
             $this->assign( 'instanceForm', true );
         }
 
         $label = $this->_id ? ts( 'Print Report' ) : ts( 'Print Preview' );
-        $this->addElement('submit', $this->_printButtonName, $label );
+        $this->addElement('submit', $this->_printButtonName, $label, array('onclick' => 'form.setAttribute("target", "_blank");') );
 
         $label = $this->_id ? ts( 'PDF' ) : ts( 'Create PDF' );//NYSS 2489
-        $this->addElement('submit', $this->_pdfButtonName, $label );
+        $this->addElement('submit', $this->_pdfButtonName, $label, array('onclick' => 'form.setAttribute("target", "_self");') );
 
         $label = $this->_id ? ts( 'Export to CSV' ) : ts( 'Create CSV' );//NYSS 2489
 
         if ( $this->_csvSupported ) {
-            $this->addElement('submit', $this->_csvButtonName, $label );
+            $this->addElement('submit', $this->_csvButtonName, $label, array('onclick' => 'form.setAttribute("target", "_self");') );
         }
 
         if ( $this->_report != 'Grant' ) {
@@ -703,14 +706,16 @@ class CRM_Report_Form extends CRM_Core_Form {
             
             //$this->addElement('select', 'select_add_to_group_id', ts('Group'), $groupList);
             $label = ts( 'Add these Contacts to Group' );
-            $this->addElement('submit', $this->_groupButtonName, $label, array('onclick' => 'return checkGroup();') );
+            $this->addElement('submit', $this->_groupButtonName, $label, array('onclick' => 'return checkGroup(); form.setAttribute("target", "_self");') );
         }
 
         $this->addChartOptions( );
+		$js = array( 'onclick' => 'form.setAttribute("target", "_self");' ); //NYSS
         $this->addButtons( array(
                                  array ( 'type'      => 'submit',
                                          'name'      => ts('Preview Report'),
-                                         'isDefault' => true   ),
+                                         'isDefault' => true,
+										 'js'	     => $js ), //NYSS
                                  )
                            );
     }
