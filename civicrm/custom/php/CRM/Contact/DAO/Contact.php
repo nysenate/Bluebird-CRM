@@ -846,7 +846,7 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
                     'where' => 'civicrm_contact.user_unique_id',
                     'headerPattern' => '/^Open\s?ID|u(niq\w*)?\s?ID/i',
                     'dataPattern' => '/^[\w\/\:\.]+$/',
-                    'export' => true,
+                    'export' => false, //NYSS 2719
                     'rule' => 'url',
                 ) ,
                 'current_employer_id' => array(
