@@ -40,7 +40,7 @@
         var entityId         = "{/literal}{$tagset.entityId}{literal}";
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
 		var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*NYSS fix for tag not being created*/
-        var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
+        var skipEntityAction = "{/literal}{if $tagset.parentID eq '296'}0{else}{$tagset.skipEntityAction}{/if}{literal}";
 		//var sponsor = 'don't have a good way to pass value for now';
          
         cj.post( postUrl, { action: action, 
