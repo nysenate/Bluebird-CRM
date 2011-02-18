@@ -34,6 +34,11 @@
  *
  */
 
+require_once 'CRM/Core/Config.php';
+require_once 'CRM/Core/Error.php';
+require_once 'CRM/Core/Session.php';
+require_once 'CRM/Utils/Array.php';
+
 /**
  * System wide utilities.
  *
@@ -1073,7 +1078,6 @@ class CRM_Utils_System {
 
     static function civiExit( $status = 0 ) {
         // move things to CiviCRM cache as needed
-        require_once 'CRM/Core/Session.php';
         CRM_Core_Session::storeSessionObjects( );
         
         exit( $status );
