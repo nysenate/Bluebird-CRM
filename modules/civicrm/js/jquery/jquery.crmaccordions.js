@@ -26,12 +26,12 @@
 (function($){ $.fn.crmaccordions = function(){
 	if ($('.crm-accordion-processed').length == 0){
 	  var crmAccordionHeader = $('.crm-accordion-header');  
-	  crmAccordionHeader.live('mouseover',
+	  crmAccordionHeader.delegate('mouseover',
 		function() {$(this).addClass('crm-accordion-header-hover')});
-	  crmAccordionHeader.live('mouseout',	
+	  crmAccordionHeader.delegate('mouseout',	
 		function() {$(this).removeClass('crm-accordion-header-hover')});
 	  crmAccordionHeader.die('click');
-	  crmAccordionHeader.live('click', function () {
+	  crmAccordionHeader.delegate('click', function () {
 		$(this).parent().toggleClass('crm-accordion-open');
 		$(this).parent().toggleClass('crm-accordion-closed');
 		//return false to prevent wiring of click event
