@@ -40,7 +40,7 @@
         var entityId         = "{/literal}{$tagset.entityId}{literal}";
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
 		var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*NYSS fix for tag not being created*/
-        var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
+        var skipEntityAction = "{/literal}0{literal}";
          
         cj.post( postUrl, { action: action, 
                             tagID: id, 
