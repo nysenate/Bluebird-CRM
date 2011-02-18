@@ -34,16 +34,18 @@
     cj( ".tag-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) .taglist_{/literal}{$tagset.parentID}{literal}"  )
         .tokenInput( tagUrl, { prePopulate: entityTags, classes: tokenClass, hintText: hintText, ajaxCallbackFunction: 'processTags_{/literal}{$tagset.parentID}{literal}', minChars: 3 });
     cj( ".tag-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input)").addClass("crm-processed-input");    
-    function processTags_{/literal}{$tagset.parentID}{literal}( action, id ) {
+    function processTags_{/literal}{$tagset.parentID}{literal}( action, id, sponsor ) { //NYSS add sponsor
         var postUrl          = "{/literal}{crmURL p='civicrm/ajax/processTags' h=0}{literal}";
         var parentId         = "{/literal}{$tagset.parentID}{literal}";
         var entityId         = "{/literal}{$tagset.entityId}{literal}";
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
 		var skipTagCreate    = "{/literal}{$skipTagCreateFix}{literal}"; /*NYSS fix for tag not being created*/
-        var skipEntityAction = "{/literal}0{literal}";
+        var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
+		//var sponsor = 'don't have a good way to pass value for now';
          
         cj.post( postUrl, { action: action, 
                             tagID: id, 
+							sponsor: sponsor, //NYSS pass sponsor name
                             parentId: parentId, 
                             entityId: entityId, 
                             entityTable: entityTable,

@@ -204,7 +204,7 @@ $('.civi-general-search').append('<div id="general-form-hack"></div>');
 {else}
 {* Printer friendly link/icon. *}
 <div id="printer-friendly">
-<a href="{$printerFriendly}" title="{ts}Printer-friendly view of this page.{/ts}">
+<a href="{$printerFriendly}" title="{ts}Printer-friendly view of this page.{/ts}" target="_blank">
 	<div class="ui-icon ui-icon-print"></div>
 </a>
 </div>

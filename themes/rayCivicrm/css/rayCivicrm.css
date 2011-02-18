@@ -973,6 +973,28 @@ ul.token-input-list-facebook { width:265px;}
 	text-decoration:none;
 	text-shadow:0 1px 0 black;
 }
+#Advanced .advsearch_buttons_top {
+	width: 200px;
+}
+#Advanced .advsearch_buttons_top div {
+	margin-top:1em; 
+	float:right;
+}
+#Advanced .advsearch_buttons_top div input,
+#Advanced .advsearch_bottom_buttons input {
+	display: block;
+	padding: 3px 6px;
+}
+#Advanced .advsearch_buttons_top a.resetbutton {
+	float:right;
+	margin-left:0;
+}
+#Advanced .advsearch_buttons_top a.resetbutton span {
+	margin:auto;
+	display: block; 
+	width: 86px; 
+	text-align: center;
+}
 
 #crm-container #crm-tagRow291 {
 	display: none;
@@ -1125,4 +1147,9 @@ ul.token-input-list-facebook { width:265px;}
 /*show attachment icon if activity has attachments*/
 #crm-container .attachment-icon {
 	background-position: -142px -142px;
+}
+
+/*hide permissioned relationships legend*/
+#Relationships #permission-legend {
+	display: none;
 }

@@ -44,7 +44,7 @@
                             	<td>{$form.$pdf.html}&nbsp;&nbsp;</td>
                             	<td>{$form.$csv.html}&nbsp;&nbsp;</td>
                             {else}
-                            	<span><em>To print or export your report, please reduce the number of contacts by further restricting your selection criteria. You may also use the search tools to run your search and export to a .csv file, which may be opened and manipulated in Excel.</em></span>
+                            	<td><span><em>To print or export your report, please reduce the number of contacts by further restricting your selection criteria. You may also use the search tools to run your search and export to a .csv file, which may be opened and manipulated in Excel.</em></span></td>
                             {/if}                 
                             {if $instanceUrl}
                                 <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>

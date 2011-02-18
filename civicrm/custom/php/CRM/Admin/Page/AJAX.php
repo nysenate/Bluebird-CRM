@@ -322,6 +322,7 @@ class CRM_Admin_Page_AJAX
 					
 					//construct tags array
 					foreach ( $positiontags as $positiontag ) {
+						
 						$query2 = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name = '{$positiontag}'";
         				$dao2 = CRM_Core_DAO::executeQuery( $query2 );
 						
@@ -331,11 +332,13 @@ class CRM_Admin_Page_AJAX
 						
 						//if tag exists use; else plan to create new
 						if ( $dao2->fetch( ) ) {
-							$tags[] = array('name' => $positiontag_name,
-											'id'   => $dao2->id );
+							$tags[] = array('name'    => $positiontag_name,
+											'id'      => $dao2->id,
+											'sponsor' => $json[$j]['sponsor'] );
         	 			} else {
-        	 				$tags[] = array('name' => $positiontag_name,
-											'id'   => $positiontag );
+        	 				$tags[] = array('name'    => $positiontag_name,
+											'id'      => $positiontag_name. ":::value", //include full value (includes sponsor)
+											'sponsor' => $json[$j]['sponsor'] );
         	 			}
 					} //end foreach
 					
@@ -375,11 +378,13 @@ class CRM_Admin_Page_AJAX
 		
 		//NYSS - retrieve OpenLeg ID and construct URL
 		$bill_url = '';
+		$sponsor = CRM_Utils_Type::escape( $_POST['sponsor'], 'String' );
 		if ( $parentId == 292 ) {
 			$ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
 			if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
 			$ol_url = 'http://open.nysenate.gov/legislation/bill/'.$ol_id;
-			$bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>';
+			$sponsor = ( $sponsor ) ? ' ('.$sponsor.')' : '';
+			$bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>'.$sponsor;
 		}
 		        
         require_once 'CRM/Core/BAO/EntityTag.php';
