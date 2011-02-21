@@ -110,7 +110,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$rnd = mt_rand(1,9999999999999999);
 
 	//add any members of the seed group
-	$sql = "SELECT contact_id FROM civicrm_group_contact WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing Seeds');";
+	$sql = "SELECT contact_id FROM civicrm_group_contact WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds');";
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
 
@@ -193,7 +193,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
     $aHeader=array();
 	$firstLine = true;
-        while ($dao->fetch()) {
+    $adjusted_count = 0;
+	
+	//fetch records
+	while ($dao->fetch()) {
 
 		//add the issue codes
 		if (!empty($iss[$dao->id])) $dao->issueCodes = implode(',',$iss[$dao->id]);
@@ -213,6 +216,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 			
 			fputcsv2($fhout, $aHeader,"\t",'',false,false);
 			$firstLine=false;
+
 		}
 
 	    $aOut = array();
@@ -260,7 +264,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 		}
  
 		fputcsv2($fhout, $aOut,"\t",'',false,false);
-	}
+		$adjusted_count++;
+		
+	} //dao fetch end
 //exit;
 
 	//generate issue code and keyword stats
@@ -300,7 +306,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$status = array();
 	$status[] = "Print Production Export";
 	$status[] = "District: $instance (task $rnd).";
-	$status[] = sizeof($this->_contactIds). " contact(s) were exported.";
+	$status[] = sizeof($this->_contactIds). " contact(s) were originally retrieved.";
+	$status[] = $adjusted_count. " contact(s) were exported after adjustments.";
 	$status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
 		
 	require_once 'CRM/Core/Permission.php';
