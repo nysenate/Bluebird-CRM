@@ -886,37 +886,55 @@ ul.token-input-list-facebook { width:265px;}
     }
 
 /* Contact Tags Tab*/
-#mainTabContainer div#Tag .tag-section {
+#mainTabContainer div#Tag .tag-section,
+#tagSelect .tag-section {
 	float: left;
     width: 410px;
 	margin-left: 16px;
 }
-#mainTabContainer div#Tag .tag-section .label {
+#tagSelect #tagtree {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+#mainTabContainer div#Tag .tag-section .label,
+#tagSelect .tag-section .label {
 	font-size: 120%;
-	margin: 4px 0 -10px;
+	margin: 10px 0 -10px;
 	float: none;
 }
-#mainTabContainer div#Tag .tag-section .content {
+#tagSelect .tag-section .label {
+	margin-bottom: 6px;
+}
+#mainTabContainer div#Tag .tag-section .content,
+#tagSelect .tag-section .content {
 	margin-left: 0;
 }
-#mainTabContainer .contactTagsList {
+#mainTabContainer .contactTagsList,
+#tagSelect .contactTagsList {
 	font-size: 11px;
-	margin: 0 16px 6px;
+	margin: 10px 16px 6px;
 }
-#mainTabContainer ul.token-input-list-facebook {
+#mainTabContainer ul.token-input-list-facebook,
+#tagSelect ul.token-input-list-facebook {
 	width: 410px;
 }
-#mainTabContainer .legpositions {
+#mainTabContainer .legpositions,
+#tagSelect .legpositions {
 	font-size: 11px;
 	margin: 0 16px 6px;
 	width: 398px;
 	padding: 6px;
 }
-#mainTabContainer .legpositions ul {
+#mainTabContainer .legpositions ul,
+#tagSelect .legpositions ul {
 	margin: .5em 0 0 1.5em;
 }
-#mainTabContainer .legpositions .label {
+#mainTabContainer .legpositions .label,
+#tagSelect .legpositions ul {
 	font-size: 14px;
+}
+#mainTabContainer .legpositions li,
+#tagSelect .legpositions li {
+	font-size: 11px;
 }
 
 /* PDF printing fixes */
