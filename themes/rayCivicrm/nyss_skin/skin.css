@@ -115,7 +115,8 @@ input.form-submit {
 #header-access div.helpicon,		
 #edit-profile .settings-icon,
 #edit-profile .logout-icon,
-#edit-profile .key-icon { 
+#edit-profile .key-icon,
+#edit-profile .flag-icon { 
 	background-image:url(images/icons-4EBAFF.png);
 	}
 #edit-profile .settings-icon{
@@ -124,6 +125,10 @@ input.form-submit {
 	}
 #edit-profile .key-icon{
 	background-position: -113px -127px;
+	float: right;
+	}
+.flag-icon {
+	background-position: -14px -113px;
 	float: right;
 	}
 /* dropdowns */

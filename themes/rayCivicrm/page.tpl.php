@@ -96,10 +96,12 @@ if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
     <?php /*?><a href="<?php print base_path(); ?>user/<?php print $user->uid; ?>/edit">
   		<div class="icon settings-icon"></div>Update your Profile 
   	</a><?php */?> <!--#2288-->
-  	<a href="<?php print base_path(); ?>logout" class="logout">
-  		<div class="icon logout-icon"></div> Logout 
-  	</a>
-        <div class="icon key-icon"></div><span style="color:#4EBAFF;"> <?php echo $role; ?> </span>
+  		<a href="<?php print base_path(); ?>logout" class="logout">
+  			<div class="icon logout-icon"></div> Logout 
+  		</a>
+        <div class="sitedetails"><div class="icon key-icon"></div><span> <?php echo $role; ?> </span></div>
+        <?php $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) ); ?>
+        <div class="sitedetails"><div class="icon flag-icon"></div><span> <?php echo $instance; ?> </span></div>
   	</div>
   	<div class="account-info-wrapper">
   		<div class="account-info">

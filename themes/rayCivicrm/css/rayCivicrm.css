@@ -956,6 +956,13 @@ ul.token-input-list-facebook { width:265px;}
 	right: 0;
 	width: auto; /* Fixes on zoom out 2436 */
 }
+.main-container #edit-profile .sitedetails {
+	float: right;
+	margin-left: 8px;
+}
+.main-container #edit-profile .sitedetails span {
+	color:#4EBAFF;
+}
 #crm-container #existing-dashlets-col-0,
 #crm-container #dashlets-header-col-0 {
 	width: 70%;
