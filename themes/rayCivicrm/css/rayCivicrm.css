@@ -1195,6 +1195,9 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*search result "more" popup - overlay footer*/
-span.btn-slide {
+#crm-container span.btn-slide {
 	z-index: 101;
+}
+#crm-container span.btn-slide-active {
+	z-index: 102;
 }
