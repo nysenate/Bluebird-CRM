@@ -190,12 +190,16 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		//we could potentially have as many as 6 addresses, so let's set US and NY default for all
 		$i = 1;
 		while ( $i <= 6 ) {
-    		$defaults['address'][$i]['country_id'] = 1228;
-			$defaults['address'][$i]['state_province_id'] = 1031;
+    		if ( empty( $form->_defaultValues['address'][$i]['country_id'] ) ) 
+				$defaults['address'][$i]['country_id'] = 1228;
+			if ( empty( $form->_defaultValues['address'][$i]['state_province_id'] ) ) 
+				$defaults['address'][$i]['state_province_id'] = 1031;
 			$i++;
 		}
         
 		$form->setDefaults( $defaults );
+		
+		//$defaults['address[1][country_id]'] = 1004;
 		
 	}
 	
