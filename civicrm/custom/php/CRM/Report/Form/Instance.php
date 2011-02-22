@@ -127,7 +127,7 @@ class CRM_Report_Form_Instance {
         $config = CRM_Core_Config::singleton(); 
         $defaults['report_header'] = $report_header = "<html>
   <head>
-    <title>CiviCRM Report</title>
+    <title>Bluebird Report</title>
     <style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
   </head>
   <body><div id=\"crm-container\">";

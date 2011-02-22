@@ -52,7 +52,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                           'fields'    =>
                           array( 'display_name' => 
                                  array( 'title'     => ts( 'Modified By' ),
-                                        'required'  => true,),
+                                        /*'required'  => true,*/),
                                  'id'           => 
                                  array( 'no_display'=> true,
                                         'required'  => true, ), ),
@@ -69,46 +69,46 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                           array( 'display_name_touched' => 
                                  array( 'title'     => ts( 'Touched Contact' ),
                                         'name'      => 'display_name',
-                                        'required'  => true,),
+                                        /*'required'  => true,*/),
                                  'id'       => 
                                  array( 'no_display'=> true,
                                         'required'  => true, ), ),
                           'filters'   =>             
-                          array( 'sort_name_touched'    => 
+                          array( 'sort_name_touched' => 
                                  array( 'title'      => ts( 'Touched Contact' ),
                                         'name'       => 'sort_name',
                                       ),
                                 ),
                           'grouping'  => 'contact-fields',
                           ),
-                  //NYSS add address
+                  //NYSS address
 				  'civicrm_address' =>
                    array( 'dao'       => 'CRM_Core_DAO_Address',
                           'grouping'  => 'contact-fields',
                           'fields'    =>
-                          array( 'street_address'    => null,
-                                 'city'              => null,
-                                 'postal_code'       => null,
-                                 'state_province_id' => 
-                                 array( 'title'   => ts( 'State/Province' ), ),
+                          array( 'street_address'    => array( 'no_display' => true ),
+                                 'city'              => array( 'no_display' => true ),
+                                 'postal_code'       => array( 'no_display' => true ),
+                                 'state_province_id' => array( 'title'      => ts( 'State/Province' ),
+								 							   'no_display' => true ),
                                  ),
                           ),
 				          
-                  'civicrm_activity' => 
+				  'civicrm_activity' => 
                    array( 'dao'       => 'CRM_Activity_DAO_Activity',
                           'fields'    =>
-                          array( 'id'  => array('title' => ts('Activity ID'),
+                          array( 'id'  => array('title'      => ts( 'Activity ID' ),
                                                 'no_display' => true,
-                                                'required' => true,
+                                                /*'required'   => true,*/ //NYSS
                                                ),
                                  'subject'  => array('title' => ts('Touched Activity'),
-                                                'required' => true,
+                                                     /*'required'   => true,*/
                                                ),
-                                 'activity_type_id'  => array('title' => ts( 'Activity Type' ),
-                                                'required' => true,
+                                 'activity_type_id'  => array('title'    => ts( 'Activity Type' ),
+                                                			  /*'required' => true,*/
                                                ),
                                  'source_contact_id'  => array('no_display' => true,
-                                                'required' => true,
+                                                			   'required'   => true,
                                                ),
                               ),
                           ),
@@ -127,10 +127,10 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                 ),
                           'filters' =>             
                           array( 'modified_date' => 
-                                 array( 'title'     => ts( 'Modified Date' ),
+                                 array( 'title'        => ts( 'Modified Date' ),
                                         'operatorType' => CRM_Report_Form::OP_DATE,
-                                        'type'    => CRM_Utils_Type::T_DATE,
-                                        'default' => 'this.week',
+                                        'type'         => CRM_Utils_Type::T_DATE,
+                                        'default'      => 'this.week',
                                        ),
 								 //NYSS
 								 'data' => 
@@ -156,11 +156,6 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
                          CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
-
-                        //NYSS
-						if ( $tableName == 'civicrm_address' ) {
-                            $this->_addressField = true;
-						}
 						
 						$select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
@@ -169,7 +164,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                 }
             }
         }
-
+		
         $this->_select = "SELECT " . implode( ', ', $select ) . " ";
     }
 
@@ -181,19 +176,15 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     function from( ) {
         $this->_from = "
         FROM civicrm_log {$this->_aliases['civicrm_log']}
-        inner join civicrm_contact {$this->_aliases['civicrm_contact']} on {$this->_aliases['civicrm_log']}.modified_id = {$this->_aliases['civicrm_contact']}.id
-        left join civicrm_contact {$this->_aliases['civicrm_contact_touched']} on ({$this->_aliases['civicrm_log']}.entity_table='civicrm_contact' AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_contact_touched']}.id)
-        left join civicrm_activity {$this->_aliases['civicrm_activity']} on ({$this->_aliases['civicrm_log']}.entity_table='civicrm_activity' AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_activity']}.id)
-        ";
-		
-		//NYSS
-		if ( $this->_addressField ) {
-            $this->_from .= "
-            LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
-                   ON ({$this->_aliases['civicrm_contact_touched']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
-                      {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
-        }
-            
+        INNER JOIN civicrm_contact {$this->_aliases['civicrm_contact']} 
+			ON {$this->_aliases['civicrm_log']}.modified_id = {$this->_aliases['civicrm_contact']}.id
+        LEFT JOIN civicrm_contact {$this->_aliases['civicrm_contact_touched']} 
+			ON ({$this->_aliases['civicrm_log']}.entity_table='civicrm_contact' 
+			AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_contact_touched']}.id)
+        LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} 
+			ON ({$this->_aliases['civicrm_log']}.entity_table='civicrm_activity' 
+			AND {$this->_aliases['civicrm_log']}.entity_id = {$this->_aliases['civicrm_activity']}.id)
+        "; 
     }
 
     function where( ) {
@@ -257,6 +248,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
     function alterDisplay( &$rows ) {
         // custom code to alter rows
         $entryFound = false;
+		//CRM_Core_Error::debug($rows);
         foreach ( $rows as $rowNum => $row ) {
             // convert display name to links
             if ( array_key_exists('civicrm_contact_display_name', $row) && 
@@ -272,7 +264,92 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
             if ( array_key_exists('civicrm_contact_touched_display_name_touched', $row) && 
                  array_key_exists('civicrm_contact_touched_id', $row) &&
                  $row['civicrm_contact_touched_display_name_touched'] !== '' ) {
-                $url = CRM_Utils_System::url( 'civicrm/contact/view', 
+                
+				//NYSS add details about touched contact via API
+				//Gender, DOB, ALL District Information.
+				if ( $row['civicrm_contact_touched_id'] ) {
+				
+				$cid = $row['civicrm_contact_touched_id'];
+				
+				//get address, phone, email
+				require_once 'api/v2/Location.php';
+				require_once 'api/v2/Contact.php';
+				require_once 'CRM/Core/BAO/CustomValueTable.php';
+				require_once 'CRM/Core/BAO/CustomField.php';
+				$c_phone = array();
+				$c_email = array();
+				$c_address = array();
+				$c_distinfo = array();
+				$c_demo = array();
+				
+				$locationTypes = CRM_Core_PseudoConstant::locationType();
+				//CRM_Core_Error::debug($locationTypes);
+				
+				$c_locations = civicrm_location_get( array( 'contact_id' => $cid ) );
+				//CRM_Core_Error::debug($c_locations);
+				
+				foreach ( $c_locations as $c_location ) {
+				
+					$locType = $locationTypes[$c_location['location_type_id']];
+					
+					//phone
+					if ( $c_location['phone'] ) {
+						foreach ( $c_location['phone'] as $phone ) {
+							$c_phone[] = $phone['phone']." ($locType)";
+						}
+					}
+					
+					//email
+					if ( $c_location['email'] ) {
+						foreach ( $c_location['email'] as $email ) {
+							$c_email[] = $email['email']." ($locType)";
+						}
+					}
+					
+					//address and dist info
+					if ( $c_location['address'] ) {
+						
+						$aid = $c_location['address']['id'];
+						$di_details = '<ul>';
+						$di_vals = CRM_Core_BAO_CustomValueTable::getEntityValues( $aid, 'Address' );
+						unset($di_vals[57]);
+						foreach ( $di_vals as $di_key => $di_val ) {
+							if ( $di_val ) {
+								$di_label = CRM_Core_BAO_CustomField::getTitle( $di_key );
+								$di_details .= "<li>$di_label: $di_val</li>";
+							}
+						}
+						$di_details .= '</ul>';
+						if ( $di_details == '<ul></ul>' ) $di_details = '';
+						$c_address[] = $c_location['address']['display']." ($locType)<br />".$di_details;
+						
+					}
+					
+				}
+				
+				$c_params = array( 'contact_id' => $cid );
+				$c_contacts = civicrm_contact_get( &$c_params );
+				$di_demo = '<ul>';
+				foreach ( $c_contacts as $c_contact ) {
+					//CRM_Core_Error::debug($c_contact);
+					if ( $c_contact['gender'] )     $di_demo .= '<li>Gender: '.$c_contact['gender'].'</li>';
+					if ( $c_contact['birth_date'] ) $di_demo .= '<li>Birthday: '.$c_contact['birth_date'].'</li>';
+				}
+				$di_demo .= '</ul>';
+				
+				
+				$rows[$rowNum]['civicrm_contact_touched_phone'] = implode( '<br />', $c_phone );
+				$rows[$rowNum]['civicrm_contact_touched_email'] = implode( '<br />', $c_email );
+				$rows[$rowNum]['civicrm_contact_touched_address'] = implode( '<br />', $c_address );
+				$rows[$rowNum]['civicrm_contact_touched_demographics'] = $di_demo;
+				
+				//CRM_Core_Error::debug('ph', $rows[$rowNum]['civicrm_contact_touched_phone']);
+				//CRM_Core_Error::debug('em', $rows[$rowNum]['civicrm_contact_touched_email']);
+				//CRM_Core_Error::debug('ad', $rows[$rowNum]['civicrm_contact_touched_address']);
+				} //end if
+				//NYSS end
+				
+				$url = CRM_Utils_System::url( 'civicrm/contact/view', 
                                               'reset=1&cid=' . $row['civicrm_contact_touched_id'],
                                               $this->_absoluteUrl );
                 $rows[$rowNum]['civicrm_contact_touched_display_name_touched_link' ] = $url;

@@ -105,7 +105,8 @@ function initTagTree() {
 {*<span id="restmsg" style="display:none"></span>*}{*NYSS*}
 <div id="Tag" class="view-content">
 <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
-    <p>
+    {*NYSS hide this para*}
+    {*<p>
     {if $action eq 16}
         {if $permission EQ 'edit'}
             {capture assign=crmURL}{crmURL p='civicrm/contact/view/tag' q='action=update'}{/capture}
@@ -118,7 +119,7 @@ function initTagTree() {
         {ts}Mark or unmark the checkboxes, <span class="unobstructive">and click 'Update Tags' to modify tags.</span>{/ts}
 	{/if}
     {/if}
-    </p>
+    </p>*}
     
     {*NYSS add list of Issue Codes*}
     {if $contactIssueCode_list}
