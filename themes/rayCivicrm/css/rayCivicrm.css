@@ -1186,3 +1186,8 @@ ul.token-input-list-facebook { width:265px;}
 	border: none;
 	width: 50%;
 }
+
+/*search result "more" popup - overlay footer*/
+span.btn-slide {
+	z-index: 101;
+}
