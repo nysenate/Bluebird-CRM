@@ -60,8 +60,6 @@ function run()
     $config = CRM_Core_Config::singleton();
     $geocodeMethod = $config->geocodeMethod;
     echo "Geocode method is configured as: $geocodeMethod\n";
-    echo "entire config: ".print_r($config, true);
-    exit();
 
     // do check for geocoding.
     if (empty($geocodeMethod)) {
@@ -80,7 +78,7 @@ function run()
     // do check for parse street address.
     require_once 'CRM/Core/BAO/Preferences.php';
     $parseAddress = CRM_Utils_Array::value('street_address_parsing',
-                                            CRM_Core_BAO_Preferences::valueOptions('address_options'), false);
+                                           CRM_Core_BAO_Preferences::valueOptions('address_options'), false);
     $parseStreetAddress = false;
     if (!$parseAddress) {
         if ($optlist['parse'] == true) {
