@@ -35,17 +35,17 @@
  */
 
 require_once 'script_utils.php';
-define('THROTTLE_REQUESTS', 0);
-define('ADDRESS_BATCH', 200);
+define('DEFAULT_ADDRESS_BATCH', 200);
+define('DEFAULT_SLOW_REQUEST_THRESHOLD', 1.0);
 
 
 function run()
 {
     $prog = basename(__FILE__);
-    $shortopts = 's:e:gp';
-    $longopts = array('start=', 'end=', 'geocode', 'parse');
+    $shortopts = 's:e:b:h:gpt';
+    $longopts = array('start=', 'end=', 'batch=', 'threshold=', 'geocode', 'parse', 'throttle');
     $stdusage = civicrm_script_usage();
-    $usage = "[--start|-s startID]  [--end|-e endID]  [--geocode|-g]  [--parse|-p]";
+    $usage = "[--start|-s startID]  [--end|-e endID]  [--batch|-b count]  [--threshold|-h secs]  [--geocode|-g]  [--parse|-p]  [--throttle|-t]";
 
     $optlist = civicrm_script_init($shortopts, $longopts);
     if ($optlist === null) {
@@ -104,13 +104,16 @@ function run()
         exit(1);
     }
     
-    // we have an exclusive lock - run the mail queue
-    processContacts($geocodeMethod, $parseStreetAddress,
-                    $optlist['start'], $optlist['end']);
+    $batch = ($optlist['batch']) ? $optlist['batch'] : DEFAULT_ADDRESS_BATCH;
+    $threshold = ($optlist['threshold']) ? $optlist['threshold'] : DEFAULT_SLOW_REQUEST_THRESHOLD;
+
+    processContacts($geocodeMethod, $parseStreetAddress, $optlist['start'],
+                    $optlist['end'], $batch, $threshold ,$optlist['throttle']);
 }
 
 
-function processContacts($geoMethod, $parseStreetAddress, $start = null, $end = null) 
+function processContacts($geoMethod, $parseStreetAddress, $start, $end,
+                         $batch, $threshold, $throttle)
 {
     $start_time = microtime(true);
     echo "Start time = $start_time secs\n";
@@ -166,6 +169,8 @@ WHERE      {$whereClause}
     $unparseableContactAddress = array( );
     while ($dao->fetch()) {
         $totalAddresses++;
+        $addr_start_time = microtime(true);
+
         $params = array('street_address'    => $dao->street_address,
                         'postal_code'       => $dao->postal_code,
                         'city'              => $dao->city,
@@ -182,7 +187,7 @@ WHERE      {$whereClause}
             
             $maxTries = 5;
             do {
-                if (defined('THROTTLE_REQUESTS') && THROTTLE_REQUESTS) {
+                if ($throttle) {
                     usleep(50000);
                 }
                 
@@ -197,7 +202,7 @@ WHERE      {$whereClause}
                 $addressParams['geo_code_2'] = $params['geo_code_2'];
             }
             else {
-                echo 'Unable to geocode address: '.$dao->street_address.', '.$dao->city.', '.$dao->state.' '.$dao->postal_code."\n";
+                echo 'Unable to geocode address: '.get_address_line($dao)."\n";
             }
         }
         
@@ -236,7 +241,13 @@ WHERE      {$whereClause}
             $address->free();
         }
 
-        if ($totalAddresses % ADDRESS_BATCH == 0) {
+        $addr_elapsed_time = get_elapsed_time($addr_start_time);
+        if ($addr_elapsed_time > $threshold) {
+            echo "SLOW REQUEST (took $addr_elapsed_time secs): ".
+                 get_address_line($dao)."\n";
+        }
+
+        if ($totalAddresses % $batch == 0) {
             echo "Processed $totalAddresses addresses; average time per address = ".(get_elapsed_time($start_time)/$totalAddresses)." secs\n";
         }
     }
@@ -266,6 +277,13 @@ WHERE      {$whereClause}
     }
     return;
 }
+
+
+
+function get_address_line(&$dao_p)
+{
+  return $dao_p->street_address.', '.$dao_p->city.', '.$dao_p->state.' '.$dao_p->postal_code;
+} // get_address_line()
 
 run();
 
