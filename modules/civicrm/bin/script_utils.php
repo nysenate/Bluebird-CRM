@@ -172,3 +172,10 @@ function civicrm_script_usage()
     return $usage;
   }
 } // civicrm_script_usage()
+
+
+
+function get_elapsed_time($start_time = 0)
+{
+  return microtime(true) - $start_time;
+} // get_elapsed_time()
