@@ -50,6 +50,14 @@ class CRM_Utils_Geocode_SAGE {
         $config = CRM_Core_Config::singleton();
 
         $arg = array();
+
+        /* Without service=geocoder, SAGE will default to Yahoo as the
+        ** geocoding provider.
+        ** Service options include: yahoo, google, bing, geocoder
+        ** "geocoder" is the Senate's own geocoding provider, which uses
+        ** the open source "geocoder" project.
+        */
+        $arg[] = "service=geocoder";  // use the Senate's geocoder
         $arg[] = "key=" . urlencode($config->geoAPIKey);
 
         if (CRM_Utils_Array::value('street_address', $values)) {
