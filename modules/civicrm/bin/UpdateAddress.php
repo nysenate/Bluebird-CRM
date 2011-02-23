@@ -36,6 +36,7 @@
 
 require_once 'script_utils.php';
 define('THROTTLE_REQUESTS', 0);
+define('ADDRESS_BATCH', 200);
 
 
 function run()
@@ -50,6 +51,10 @@ function run()
     if ($optlist === null) {
       error_log("Usage: $prog $stdusage $usage");
       exit(1);
+    }
+
+    if (!is_cli_script()) {
+        echo "<pre>\n";
     }
 
     //log the execution of script
@@ -107,6 +112,9 @@ function run()
 
 function processContacts($geoMethod, $parseStreetAddress, $start = null, $end = null) 
 {
+    $start_time = microtime(true);
+    echo "Start time = $start_time secs\n";
+
     // build where clause.
     $clause = array( '( c.id = a.contact_id )' );
     if ($start && is_numeric($start)) {
@@ -144,6 +152,8 @@ WHERE      {$whereClause}
 
     $dao =& CRM_Core_DAO::executeQuery($query, CRM_Core_DAO::$_nullArray);
     
+    echo "Query time = " . get_elapsed_time($start_time) . " secs\n";
+
     if ($geoMethod) {
         require_once(str_replace('_', DIRECTORY_SEPARATOR, $geoMethod).'.php');
     }
@@ -164,8 +174,6 @@ WHERE      {$whereClause}
         
         $addressParams = array();
 
-        echo "Examining address: ".print_r($params, true)."\n";
-        
         // process geocode.
         if ($geoMethod) {
             // loop through the address removing more information
@@ -178,16 +186,18 @@ WHERE      {$whereClause}
                     usleep(50000);
                 }
                 
-                eval($geoMethod.'::format($params, true);');
+                $rc = eval('return '.$geoMethod.'::format($params, true);');
                 array_shift($params);
                 $maxTries--;
-            } while ((!isset($params['geo_code_1'])) && ($maxTries > 1));
+            } while ($rc != true && $maxTries > 1);
             
-            if (isset($params['geo_code_1'])) {
+            if ($rc) {
                 $totalGeocoded++;
                 $addressParams['geo_code_1'] = $params['geo_code_1'];
                 $addressParams['geo_code_2'] = $params['geo_code_2'];
-                echo "Geocoded address using $geoMethod: ".print_r($addressParams, true)."\n";
+            }
+            else {
+                echo 'Unable to geocode address: '.$dao->street_address.', '.$dao->city.', '.$dao->state.' '.$dao->postal_code."\n";
             }
         }
         
@@ -205,7 +215,8 @@ WHERE      {$whereClause}
             // do check for all elements.
             if ($success) {
                 $totalAddressParsed++;
-            } else if ($dao->street_address) { 
+            }
+            else if ($dao->street_address) { 
                 //build contact edit url, 
                 //so that user can manually fill the street address fields if the street address is not parsed, CRM-5886
                 $url = CRM_Utils_System::url('civicrm/contact/add', "reset=1&action=update&cid={$dao->id}");
@@ -224,14 +235,18 @@ WHERE      {$whereClause}
             $address->save();
             $address->free();
         }
+
+        if ($totalAddresses % ADDRESS_BATCH == 0) {
+            echo "Processed $totalAddresses addresses; average time per address = ".(get_elapsed_time($start_time)/$totalAddresses)." secs\n";
+        }
     }
     
-    echo ts("Addresses Evaluated: $totalAddresses\n");
+    echo ts("Total addresses evaluated: $totalAddresses\n");
     if ($geoMethod) {
-        echo ts("Addresses Geocoded: $totalGeocoded\n");
+        echo ts("Addresses geocoded: $totalGeocoded\n");
     }
     if ($parseStreetAddress) {
-        echo ts("Street Address Parsed: $totalAddressParsed\n");
+        echo ts("Addresses parsed: $totalAddressParsed\n");
         if ($unparseableContactAddress) {
             echo ts("<br />\nFollowing is the list of contacts whose address is not parsed :<br />\n");
             foreach ($unparseableContactAddress as $contactLink) {
@@ -240,6 +255,15 @@ WHERE      {$whereClause}
         }
     }
     
+    $elapsed_time = get_elapsed_time($start_time);
+    echo "Elapsed time = $elapsed_time secs\n";
+    if ($totalAddresses > 0) {
+      echo "Average time per address = ".($elapsed_time/$totalAddresses)." secs\n";
+    }
+
+    if (!is_cli_script()) {
+        echo "</pre>\n";
+    }
     return;
 }
 
