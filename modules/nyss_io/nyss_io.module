@@ -398,12 +398,13 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 		$suffixes = ioGetOptions("individual_suffix");
 		$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
 		$l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
-		$display_name = $l['first_name'].' '.$l['middle_name'].' '.$l['last_name'].$suffix; 
-		$display_name = convertProperCase( $display_name, true );
-		//$l['display_name'] = CRM_Utils_String::stripSpaces( $display_name );
+		//need to propercase these values before constructing display and sort name
+		$fnc = convertProperCase( $l['first_name'], true );
+		$mnc = convertProperCase( $l['middle_name'], true );
+		$lnc = convertProperCase( $l['last_name'], true );
+		$display_name = $fnc.' '.$mnc.' '.$lnc.$suffix;
 		$l['display_name'] = nyss_stripSpaces( $display_name );
-		$sort_name = $l['last_name'].', '.$l['first_name'].' '.$l['middle_name'];
-		$l['sort_name'] = convertProperCase( $sort_name, true );
+		$l['sort_name'] = $lnc.', '.$fnc.' '.$mnc;
 		$l['location_type_id'] = 6; //set address type to BOE
 		$l['address_is_primary'] = 1; //set to primary
 		$l['phone_type_id'] = 1; //set to phone
