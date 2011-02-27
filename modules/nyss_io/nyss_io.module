@@ -399,9 +399,11 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 		$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
 		$l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
 		$display_name = $l['first_name'].' '.$l['middle_name'].' '.$l['last_name'].$suffix; 
+		$display_name = convertProperCase( $display_name, true );
 		//$l['display_name'] = CRM_Utils_String::stripSpaces( $display_name );
 		$l['display_name'] = nyss_stripSpaces( $display_name );
-		$l['sort_name'] = $l['last_name'].', '.$l['first_name'].' '.$l['middle_name'];
+		$sort_name = $l['last_name'].', '.$l['first_name'].' '.$l['middle_name'];
+		$l['sort_name'] = convertProperCase( $sort_name, true );
 		$l['location_type_id'] = 6; //set address type to BOE
 		$l['address_is_primary'] = 1; //set to primary
 		$l['phone_type_id'] = 1; //set to phone
