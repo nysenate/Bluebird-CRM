@@ -20,8 +20,12 @@ function get_bluebird_config($filename = 'bluebird.cfg')
     $cfg_file = "/etc/$filename";
   }
   
-  if (isset($_SERVER['SERVER_NAME'])) {
-    $servername = $_SERVER['SERVER_NAME'];
+  if (!file_exists($cfg_file)) {
+    die("$cfg_file: Bluebird configuration file not found.\n");
+  }
+
+  if (isset($_SERVER['HTTP_HOST'])) {
+    $servername = $_SERVER['HTTP_HOST'];
     $firstdot = strpos($servername, '.');
     if ($firstdot === false) {
       $shortname = $servername;
@@ -40,6 +44,9 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   }
   
   $bbini = parse_ini_file($cfg_file, true);
+  if ($bbini === false) {
+    die("Unable to parse the Bluebird configuration file.\n");
+  }
   
   $dbhost = get_key_value($bbini, $shortname, 'db.host');
   $dbuser = get_key_value($bbini, $shortname, 'db.user');
@@ -50,7 +57,7 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $basedomain = get_key_value($bbini, $shortname, 'base.domain') or
     $basedomain = $default_base_domain;
 
-  // Always set servername, even if SERVER_NAME was set above.  This allows
+  // Always set servername, even if HTTP_HOST was set above.  This allows
   // us to override the domain in the config file.
   $servername = "$shortname.$basedomain";
 

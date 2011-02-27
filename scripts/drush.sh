@@ -33,8 +33,14 @@ if ! $readConfig --instance $instance --quiet; then
 fi
 
 drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
+base_domain=`$readConfig --ig $instance base.domain`
 
-cd "$drupal_rootdir"
-INSTANCE_NAME="$instance" drush $@
+if [ "$base_domain" ]; then
+  full_uri="http://$instance.$base_domain/"
+else
+  full_uri="http://$instance/"
+fi
+
+drush --root="$drupal_rootdir" --uri="$full_uri" $@
 
 exit $?

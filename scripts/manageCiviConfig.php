@@ -1,4 +1,10 @@
 <?php
+// Project: BluebirdCRM
+// Author: Ken Zalewski
+// Organization: New York State Senate
+// Date: 2010-11-23
+// Revised: 2010-11-23
+//
 
 function getCiviConfig($dbcon)
 {
