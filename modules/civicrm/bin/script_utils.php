@@ -164,9 +164,9 @@ function process_url_args($longopts)
 
 function civicrm_script_usage()
 {
-  $usage = "--user|-U username  --pass|-P password";
+  $usage = "[--user|-U username]  [--pass|-P password]";
   if (is_cli_script()) {
-    return $usage."  --key|-K key  --site|-S site";
+    return "--site|-S site  [--key|-K key]  ".$usage;
   }
   else {
     return $usage;
