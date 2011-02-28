@@ -49,7 +49,7 @@ function run()
 
     $optlist = civicrm_script_init($shortopts, $longopts);
     if ($optlist === null) {
-      error_log("Usage: $prog $stdusage $usage");
+      error_log("Usage: $prog  $stdusage  $usage");
       exit(1);
     }
 
