@@ -87,14 +87,26 @@ $.TokenList = function (input, settings) {
         .css({
             outline: "none"
         })
+		//NYSS handle the hide dropdown better in IE when scrollbar present
         .focus(function () {
-            if (settings.tokenLimit == null || settings.tokenLimit != token_count) {
+            search_has_focus = true; 
+			if (settings.tokenLimit == null || settings.tokenLimit != token_count) {
                 show_dropdown_hint();
             }
         })
         .blur(function () {
-            hide_dropdown();
+            search_has_focus = false;
+  			if (!keep_focus) {
+    			hide_dropdown();
+  			} else {
+    			keep_focus = false;
+    			search_ctrl.focus();
+  			}
         })
+		.click(function () {
+			keep_focus = search_has_focus;
+		}) 
+		//NYSS end
         .bind("keydown text", function (event) {
             var previous_token;
             var next_token;
