@@ -226,9 +226,11 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 	if ( ( $op == 'edit' || $op == 'create' ) && 
 		 ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
 
-		foreach ( $objectRef['email'] as $key => $block ) {
-			if ( $block['signature_html'] == '<br />' ) {
-				$objectRef['email'][$key]['signature_html'] = NULL;
+		if ( $objectRef['email'] ) {
+			foreach ( $objectRef['email'] as $key => $block ) {
+				if ( $block['signature_html'] == '<br />' ) {
+					$objectRef['email'][$key]['signature_html'] = NULL;
+				}
 			}
 		}
 
