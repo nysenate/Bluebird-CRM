@@ -12,6 +12,7 @@
 ----------------------------------------------------------------------- */
 
 @import url("printCivicrm.css") print; /* insert CiviCRM print stylesheet override */
+/*@import url("recent-items.css"); /* for recent items block */
 
 /* reset.css */
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {margin:0;padding:0;border:0;font-weight:inherit;font-style:inherit;font-size:100%;font-family:inherit;vertical-align:baseline;}
@@ -1200,4 +1201,24 @@ ul.token-input-list-facebook { width:265px;}
 }
 #crm-container span.btn-slide-active {
 	z-index: 102;
+}
+
+/*recently viewed block*/
+.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul li {
+	-moz-border-radius: 0px 4px 4px 4px; 
+ 	-webkit-border-radius: 0px 4px 4px 4px;   
+ 	-khtml-border-radius: 0px 4px 4px 4px; 
+ 	border-radius:0px 4px 4px 4px;
+ 	padding: 2px 4px;
+}
+.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul li a {
+	padding: 0 2px;
+}
+.block-civicrm div#recently-viewed ul li.crm-recently-viewed ul {
+	background-color: #131A1C;
+	position: fixed;
+	margin-top: -40px !important;
+	margin-left: 18px !important;
+	/*padding: 2px 4px;*/
+	
 }
