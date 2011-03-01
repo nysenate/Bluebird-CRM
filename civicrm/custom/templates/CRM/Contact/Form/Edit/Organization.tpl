@@ -44,7 +44,7 @@
        		{$form.nick_name.html|crmReplace:class:big}
         </td>
         <td>
-        	{assign var='custom_41' value='custom_41_-1'}
+        	{assign var='custom_41' value=$groupTree.3.fields.41.element_name}
             {$form.$custom_41.label}<br/>
        		{$form.$custom_41.html}
 		</td>
@@ -53,12 +53,12 @@
 	</tr>
     <tr>
 		<td>
-        	{assign var='custom_26' value='custom_26_-1'}
+        	{assign var='custom_26' value=$groupTree.3.fields.26.element_name}
             {$form.$custom_26.label}<br/>
        		{$form.$custom_26.html|crmReplace:class:big}
         </td>
         <td>
-        	{assign var='custom_25' value='custom_25_-1'}
+        	{assign var='custom_25' value=$groupTree.3.fields.25.element_name}
             {$form.$custom_25.label}<br/>
        		{$form.$custom_25.html|crmReplace:class:big}
         </td>
