@@ -260,7 +260,37 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
                 $rows[$rowNum]['civicrm_contact_display_name_hover'] = ts("View Contact details for this contact.");
                 $entryFound = true;
             }
+			
+			// strip out the activity targets (could be multiple)
+			if ( array_key_exists('civicrm_activity_activity_type_id', $row ) &&
+                 $row['civicrm_activity_activity_type_id'] != '' ) {
+				// source, target, assignee are concatenated; we need to strip out the target
+				$loc_target = strrpos( $row['civicrm_log_data'], 'target=' );
+				$loc_assign = strrpos( $row['civicrm_log_data'], ', assignee=' );
+				$str_target = substr( $row['civicrm_log_data'], $loc_target + 7, $loc_assign - $loc_target - 7 );
+				//CRM_Core_Error::debug('lc', $loc_target);
+				//CRM_Core_Error::debug('la', $loc_assign);
+				//CRM_Core_Error::debug('st', $str_target);
+				
+				$targets = explode( ',', $str_target );
+				//CRM_Core_Error::debug('at', $targets);
+				
+				// build links
+				require_once 'api/v2/Contact.php';
+				$atlist = array();
+				foreach ( $targets as $target ) {
+					$turl = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid='.$target, $this->_absoluteUrl );
+                	$tc_params = array( 'contact_id' => $target );
+					$tc_contacts = civicrm_contact_get( &$tc_params );
+					$atlist[] = '<a href="'.$turl.'">'.$tc_contacts[$target]['display_name'].'</a>';
+				}
+				$stlist = implode( ', ', $atlist );
+				//CRM_Core_Error::debug('stlist', $stlist);
+				$rows[$rowNum]['civicrm_activity_targets_list'] = $stlist;
+				
+			}
 
+			// convert touched name to links with details
             if ( array_key_exists('civicrm_contact_touched_display_name_touched', $row) && 
                  array_key_exists('civicrm_contact_touched_id', $row) &&
                  $row['civicrm_contact_touched_display_name_touched'] !== '' ) {

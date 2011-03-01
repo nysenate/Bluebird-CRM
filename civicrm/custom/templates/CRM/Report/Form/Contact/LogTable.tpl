@@ -109,6 +109,9 @@
                                     </td>
                                 </tr>
                             </table>
+                        {elseif $field eq 'civicrm_contact_touched_display_name_touched' && $row.civicrm_activity_targets_list}
+                        	{*NYSS add activity target list*}
+                            {$row.civicrm_activity_targets_list}
                         {/if}
                     </td>
                 {/foreach}
