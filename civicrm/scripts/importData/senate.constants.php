@@ -20,9 +20,9 @@ define('LOC_TYPE_MAIN', 3);
 define('LOC_TYPE_OTHER', 4);
 
 // phone type IDs
-define('PHONE_TYPE_PHONE', 246);
-define('PHONE_TYPE_MOBILE', 247);
-define('PHONE_TYPE_FAX', 248);
+define('PHONE_TYPE_PHONE', 1);
+define('PHONE_TYPE_MOBILE', 2);
+define('PHONE_TYPE_FAX', 3);
 
 // addressee formats
 // check civicrm_option_value table to confirm these values
