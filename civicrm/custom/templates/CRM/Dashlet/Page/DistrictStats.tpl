@@ -31,7 +31,8 @@
 	width: 70px;
 }
 #districts .IssueCodes th,
-#districts .Keywords th {
+#districts .Keywords th,
+#districts .Positions th {
 	width: 150px;
 }
 #districts table {
@@ -179,6 +180,19 @@
        		<table>
         	{foreach from=$keywords key=k item=kcount}
             	<tr><th>{$k}</th><td>{$kcount}</td></tr>
+            {/foreach}
+        	</table>
+       </div>
+    </div>
+    <div class="crm-accordion-wrapper crm-ajax-accordion crm-Positions-accordion crm-accordion-closed">
+       <div class="crm-accordion-header" id="Positions">
+       		<div class="icon crm-accordion-pointer"></div>
+       	 	Legislative Positions
+       </div>
+       <div class="crm-accordion-body Positions">
+       		<table>
+        	{foreach from=$positions key=p item=pcount}
+            	<tr><th>{$p}</th><td>{$pcount}</td></tr>
             {/foreach}
         	</table>
        </div>

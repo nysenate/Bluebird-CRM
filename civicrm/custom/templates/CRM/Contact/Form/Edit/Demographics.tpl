@@ -39,8 +39,7 @@
         </span>
   </div>
   <div id="showOtherGender" class="form-item" style="display:none;">
-        {if $customId}{assign var='custom_45' value=custom_45_`$customId`}
-        {else}{assign var='custom_45' value='custom_45_-1'}{/if}
+        {assign var='custom_45' value=$groupTree.1.fields.45.element_name}
         <span class="labels">{$form.$custom_45.label}</span>
         <span class="fields">{$form.$custom_45.html}</span>
   </div>
@@ -60,14 +59,12 @@
   
   <div class="rightColumn">
   <div class="form-item">
-        {if $customId}{assign var='custom_58' value=custom_58_`$customId`}
-        {else}{assign var='custom_58' value='custom_58_-1'}{/if}
+        {assign var='custom_58' value=$groupTree.1.fields.58.element_name}
         <span class="labels">{$form.$custom_58.label}</span>
         <span class="fields">{$form.$custom_58.html}</span>
   </div>
   <div class="form-item">
-        {if $customId}{assign var='custom_62' value=custom_62_`$customId`}
-        {else}{assign var='custom_62' value='custom_62_-1'}{/if}
+        {assign var='custom_62' value=$groupTree.1.fields.62.element_name}
         <span class="labels">{$form.$custom_62.label}</span>
         <span class="fields">{$form.$custom_62.html}</span>
   </div>

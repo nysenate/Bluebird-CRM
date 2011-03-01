@@ -52,13 +52,30 @@ $role = str_replace('authenticated user','', $rolesList);
 <div class="civi-general-search">
 	<div class="civi-search-title">Find Anything!</div>
 	{if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
-		<form id="id_search_block" name="Custom" method="post" action="{crmURL p='civicrm/contact/search/custom' h=0 }">
-           	<div class="input-wrapper" id="gen-search-wrapper">
-				<input type="text" class="form-text" id="civi_text_search" name="text" value="enter any text" style="width:193px;">
-    			<input type="hidden" id="table" name="table">
-				<input type="submit" value="Go" name="_qf_Custom_refresh" class="form-submit default" style="background-image:url(t.gif)"> 
-			</div>
-		</form>
+
+{literal}
+<script type="text/javascript">   
+    function submitForm( ) {
+        var text  = document.getElementById('civi_text_search').value;
+        var url = {/literal}'{crmURL p="civicrm/contact/search/custom" h=0 q="csid=15&reset=1&force=1&text="}'{literal} + text;
+        document.getElementById('id_fulltext_search').action = url;
+    }      
+</script>
+{/literal}
+    <form method="post" id="id_fulltext_search">
+    <div class="input-wrapper" id="gen-search-wrapper">
+    <input type="text" name="text" id='civi_text_search' class="form-text" value="" style="width: 10em;" />
+    <input type="submit" name="submit" id="fulltext_submit" value="{ts}Go{/ts}" class="form-submit default" onclick='submitForm();' style="background-image:url(t.gif)"/>
+	</div>
+    </form>
+
+<!--<form id="id_search_block" name="Custom" method="post" action="{crmURL p='civicrm/contact/search/custom' h=0 }">
+        <div class="input-wrapper" id="gen-search-wrapper">
+			<input type="text" class="form-text" id="civi_text_search" name="text" value="enter any text" style="width:193px;">
+    		<input type="hidden" id="table" name="table">
+			<input type="submit" value="Go" name="_qf_Custom_refresh" class="form-submit default" style="background-image:url(t.gif)"> 
+		</div>
+</form>-->
 
 {literal}
 <script>
@@ -109,12 +126,12 @@ $(function(){
     });
 });
 
-$('.civi-general-search').append('<div id="general-form-hack"></div>');
+/*$('.civi-general-search').append('<div id="general-form-hack"></div>');
 	$('#general-form-hack').hide()
-		.load('{/literal}{crmURL p='civicrm/contact/search/custom&csid=15&reset=1&snippet=1'}{literal}', 
+		.load('{/literal}{crmURL p='civicrm/contact/search/custom&csid=15&reset=1&force=1'}{literal}', 
 			function(){
 				$('#general-form-hack #Custom input[type=hidden]').appendTo('#gen-search-wrapper');
-			});
+			});*/
 </script>
 {/literal}
             

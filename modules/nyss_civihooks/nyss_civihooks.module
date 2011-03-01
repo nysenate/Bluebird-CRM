@@ -226,13 +226,29 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 	if ( ( $op == 'edit' || $op == 'create' ) && 
 		 ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
 
-		foreach ( $objectRef['email'] as $key => $block ) {
-			if ( $block['signature_html'] == '<br />' ) {
-				$objectRef['email'][$key]['signature_html'] = NULL;
+		if ( $objectRef['email'] ) {
+			foreach ( $objectRef['email'] as $key => $block ) {
+				if ( $block['signature_html'] == '<br />' ) {
+					$objectRef['email'][$key]['signature_html'] = NULL;
+				}
 			}
 		}
 
 	}
 	
 }
+
+function nyss_civihooks_civicrm_pageRun( &$page ) {
+//CRM_Core_Error::debug($page);
+	
+	$pagename = $page->getVar( '_name' );
+	
+	//2960
+	if ( $pagename == 'CRM_Case_Page_DashBoard' ) {
+		
+		CRM_Utils_System::setTitle( ts('Case Dashboard') );
+		
+	}
+}
+
 

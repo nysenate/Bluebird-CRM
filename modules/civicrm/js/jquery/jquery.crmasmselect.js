@@ -82,8 +82,8 @@
 					.wrap($container).before($select).before($ol);
 
 				if(options.sortable) makeSortable();
-
-				if($.browser.msie) $ol.css('display', 'inline-block'); 
+				//NYSS update from 1.0.4a beta
+				if($.browser.msie && $.browser.version < 8) $ol.css('display', 'inline-block'); // Thanks Matthew Hutton
 			}
 
 			function makeSortable() {

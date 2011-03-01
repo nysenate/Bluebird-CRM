@@ -1869,8 +1869,8 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
             require_once 'CRM/Core/BAO/Address.php';
             if ( array_key_exists( 'address', $formatted ) && is_array( $formatted['address'] ) ) { 
                 foreach ( $formatted['address'] as $instance => &$address ) {
-                    $streetAddress = CRM_Utils_Array::value( 'street_address', $address );
-                    if ( empty( $streetAddress ) ) continue;
+                    //$streetAddress = CRM_Utils_Array::value( 'street_address', $address );
+                    //if ( empty( $streetAddress ) ) continue;
                     
 					//NYSS #2443 account for parsed addressed fields on import; concatenate to build address field
 					$streetAddress = CRM_Utils_Array::value( 'street_address', $address );
