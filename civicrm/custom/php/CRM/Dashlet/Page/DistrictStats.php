@@ -215,8 +215,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
        				AND ( civicrm_tag.is_tagset != 1 )
 					AND ( civicrm_contact.is_deleted != 1 )
 				   GROUP BY name
-				   ORDER BY ic_count DESC
-				   LIMIT 20;";
+				   ORDER BY ic_count DESC;";
 		$dao = CRM_Core_DAO::executeQuery( $sql_ic );
 		while ( $dao->fetch( ) ) {
             $issueCodes[$dao->name] = $dao->ic_count;
@@ -235,13 +234,31 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
        				AND ( civicrm_tag.is_tagset != 1 )
 					AND ( civicrm_contact.is_deleted != 1 )
 				   GROUP BY name
-				   ORDER BY kword_count DESC
-				   LIMIT 20;";
+				   ORDER BY kword_count DESC;";
 		$dao = CRM_Core_DAO::executeQuery( $sql_kword );
 		while ( $dao->fetch( ) ) {
             $keywords[$dao->name] = $dao->kword_count;
         }
 		$this->assign('keywords', $keywords);
+		
+		//get contact positions
+		$sql_pos = "SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as pos_count
+  				   FROM civicrm_entity_tag
+       				INNER JOIN civicrm_tag
+       				 ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+					INNER JOIN civicrm_contact
+       				 ON ( civicrm_contact.id = civicrm_entity_tag.entity_id )
+ 				   WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_contact%' )
+       				AND ( civicrm_tag.parent_id = 292 )
+       				AND ( civicrm_tag.is_tagset != 1 )
+					AND ( civicrm_contact.is_deleted != 1 )
+				   GROUP BY name
+				   ORDER BY pos_count DESC;";
+		$dao = CRM_Core_DAO::executeQuery( $sql_pos );
+		while ( $dao->fetch( ) ) {
+            $positions[$dao->name] = $dao->pos_count;
+        }
+		$this->assign('positions', $positions);
 
         return parent::run( );
     }
