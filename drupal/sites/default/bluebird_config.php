@@ -56,6 +56,7 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $datadir = get_key_value($bbini, $shortname, 'data.rootdir');
   $basedomain = get_key_value($bbini, $shortname, 'base.domain') or
     $basedomain = $default_base_domain;
+  $imapaccts = get_key_value($bbini, $shortname, 'imap.accounts');
 
   // Always set servername, even if HTTP_HOST was set above.  This allows
   // us to override the domain in the config file.
@@ -72,6 +73,7 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $bbcfg['drupal_root'] = $drupal_dir;
   $bbcfg['data_rootdir'] = $datadir;
   $bbcfg['base_domain'] = $basedomain;
+  $bbcfg['imap_accounts'] = $imapaccts;
 
   return $bbcfg;
 } // get_bluebird_config()

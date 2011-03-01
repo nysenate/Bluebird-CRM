@@ -15,6 +15,9 @@
 require_once './includes/bootstrap.inc';
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
+require_once('../scripts/nyssTimer.inc.php');
+nyssStartTimer(1);
+
 $return = menu_execute_active_handler();
 
 // Menu status constants are integers; page content is a string.
@@ -37,3 +40,5 @@ elseif (isset($return)) {
 }
 
 drupal_page_footer();
+
+nyssWriteElapsed();
