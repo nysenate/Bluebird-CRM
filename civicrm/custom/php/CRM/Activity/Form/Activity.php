@@ -264,6 +264,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         }
 		
 		//NYSS 3157
+		/* //NYSS from 3.2/1.1.2
         $this->_currentlyViewedContactId = $this->get('contactId');
         $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, false, null, 'GET' );
         if ( ! $this->_currentlyViewedContactId ||
@@ -278,7 +279,17 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         if ( ! $this->_activityTypeId ) {
             $this->_activityTypeId = CRM_Utils_Array::value( 'activity_type_id', $_POST );
         }
-		
+		*/
+
+		//NYSS restore core code in 3.3/1.2
+		$this->_currentlyViewedContactId = $this->get('contactId');
+        if ( ! $this->_currentlyViewedContactId ) {
+            $this->_currentlyViewedContactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this );
+        }
+        
+        $this->_activityTypeId = CRM_Utils_Request::retrieve( 'atype', 'Positive', $this );
+		//NYSS end
+
         $this->assign( 'atype', $this->_activityTypeId );
         
         //check for required permissions, CRM-6264 
