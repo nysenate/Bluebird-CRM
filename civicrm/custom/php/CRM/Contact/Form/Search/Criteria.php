@@ -175,7 +175,20 @@ class CRM_Contact_Form_Search_Criteria {
         $form->addGroup($commPreff, 'preferred_communication_method', ts('Preferred Communication Method'));
 
         //CRM-6138 Preferred Language
-        $langPreff = CRM_Core_PseudoConstant::languages( );
+		//NYSS 3273/2752 pull directly as pseudoconstant was causing problems; should revisit
+		require_once 'CRM/Core/OptionValue.php';
+		static $languages = null;
+        if ($languages === null) {
+            $rows = array();
+            CRM_Core_OptionValue::getValues(array('name' => 'languages'), $rows, 'weight', true);
+            $languages = array();
+            foreach ($rows as $row) {
+                $languages[$row['name']] = $row['label'];
+            }
+        } 
+		$langPreff = $languages;
+		//NYSS end
+        //$langPreff = CRM_Core_PseudoConstant::languages( );
         $form->add( 'select', 'preferred_language', ts('Preferred Language'), array( '' => ts('- select language -')) + $langPreff );
         
     }
