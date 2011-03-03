@@ -150,7 +150,7 @@
         			{foreach from=$target_contact key=id item=name}
                       {*NYSS 3083 - include phone number of target*}
                       {crmAPI entity='contact' action="get" var="contact" id=$id}
-        			  <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$id"}">{$name}</a>{if $contact.$key.phone} ({$contact.$key.phone}){/if};&nbsp;
+        			  <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=$id"}">{$name}</a>{if $contact.$id.phone} ({$contact.$id.phone}){/if};&nbsp;
         			{/foreach}
 		        </td>
              {/if}
