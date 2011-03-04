@@ -94,8 +94,10 @@ class CRM_Case_Page_AJAX
         CRM_Core_BAO_EntityTag::del( $params );
         
         foreach( $tagIds as $tagid ) {
-            $params['tag_id'] = $tagid;
-            CRM_Core_BAO_EntityTag::add( $params );
+            if ( is_numeric( $tagid ) ) {
+                $params['tag_id'] = $tagid;
+                CRM_Core_BAO_EntityTag::add( $params );
+            }
         }
         
         $session =& CRM_Core_Session::singleton( );
