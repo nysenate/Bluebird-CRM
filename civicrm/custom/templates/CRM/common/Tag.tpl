@@ -1,5 +1,4 @@
 {foreach from=$tagset|@array_reverse item=tagset} {*NYSS reverse order so keywords are first*}
-<!--<pre>{$tagset|@print_r}</pre>-->
 {if !$tagset.skipTagCreate}{assign var=skipTagCreateFix value=''}{/if} {*NYSS fix tag not being created issues*}
 
 <div class="crm-section tag-section tag-{$tagset.parentID}-section">
