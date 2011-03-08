@@ -252,9 +252,9 @@ cj( document ).ready( function( ) {
 	           $('.civi-adv-search-linkwrap').removeClass('crm-loading'); 
 	       	if ($('#advanced-search-form .crm-accordion-processed').length == 0){
 	       	console.log('processing');
-            	cj('.crm-accordion-header').bind('mouseenter', function() {$(this).addClass('crm-accordion-header-hover')});
-            	cj('.crm-accordion-header').bind('mouseleave', function() {$(this).removeClass('crm-accordion-header-hover')});
-            	$('.crm-accordion-header').bind('click', function () {
+            	cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function() {$(this).addClass('crm-accordion-header-hover')});
+            	cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function() {$(this).removeClass('crm-accordion-header-hover')});
+            	$('#advanced-search-form .crm-accordion-header').bind('click', function () {
             		$(this).parent().toggleClass('crm-accordion-open');
             		$(this).parent().toggleClass('crm-accordion-closed');
             		//return false to prevent wiring of click event
