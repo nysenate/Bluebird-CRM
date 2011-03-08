@@ -51,7 +51,7 @@
         </table>
     </div>
     
-    <div id="help">All district counts are based on the contact's primary address only. Issue Code/Keyword counts are for contact records only (not tags attached to activities or cases) and represent the top 20 most common tags. Expand each panel to view the statistics. Calculations are real-time.</div>
+    <div id="help">All district counts are based on the contact's primary address only. Issue Code/Keyword/Legislative Position counts are for contact records only (not tags attached to activities or cases). Expand each panel to view the statistics. Calculations are real-time.</div>
     
     <table>
     <tr id="districts">

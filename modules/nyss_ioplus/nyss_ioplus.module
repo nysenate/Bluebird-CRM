@@ -1,0 +1,536 @@
+<?php
+
+//define(NYSSIODEBUG,false);
+define(NYSSIOPLUSDEBUG,true);
+
+require_once(dirname(__FILE__) . '/nyss_iopluslib.php');
+require_once(dirname(__FILE__) . '/nyss_ioplus.php');
+
+function nyss_ioplus_menu () {
+
+  $items = array();
+
+  $items['importdata'] = array (
+    'title' => t('Import Data'),
+    'page callback' => 'nyss_ioplusimportdata_page',
+    'access arguments' => array('export print production files'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  return $items;
+}
+
+function nyss_ioplusimportdata_page() {
+
+        return drupal_get_form('nyss_ioplusimport_form');
+}
+          
+function nyss_ioplusimport_form() {
+
+   $form = array();
+
+   $form['#attributes'] = array('enctype' => "multipart/form-data");
+
+   $form['csv'] = array(
+     '#type' => 'file',
+     '#title' => t('Upload a file'),
+     '#size' => 40,
+   );
+
+   $form['servercsv'] = array(
+     '#type' => 'textfield',
+     '#title' => t('OR specify a filename on the server in the \'/data/importData\' dir'),
+     '#size' => 40,
+   );
+
+   $form['sendemail'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('send summary email'),
+     '#default_value' => 1,
+   );
+
+   $form['dryrun'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Dry Run (parses data but does not alter the instance)'),
+     '#default_value' => 1,
+   );
+
+   $form['runnum'] = array(
+     '#type' => 'select',
+     '#title' => t('How many records to process in dry run mode (must be set to ALL for the real import)'),
+     '#options' => array(
+	     '10' => t('10'),
+	     '100' => t('100'),
+	     '500' => t('500'),
+	     '1000' => t('1000'),
+	     'All' => t('All'),
+	),
+     '#default_value' => '10',
+   );
+
+   $form['import']['submit'] = array(
+     '#type' => 'submit',
+     '#value' => t('Submit'),
+   );
+
+   return $form;
+}
+
+function nyss_ioplusimport_form_validate($form, &$form_state) {
+
+   nyss_ioplusvalidateuploadform($form, $form_state);
+}
+
+function nyss_ioplusvalidateuploadform($form, &$form_state) {
+
+	if (!empty($form_state['values']['servercsv'])) {
+
+		$form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
+    	$form_state['values']['csv']['file']->filepath = '/data/importData/'.$form_state['values']['servercsv'];
+		if ( !file_exists($form_state['values']['csv']['file']->filepath ) ) {
+			form_set_error('servercsv', 'No file by that name was found.');
+		}
+	
+   	} else {
+	
+	   	$file = file_save_upload('csv');
+
+	    if (!$file) {
+	      	form_set_error('csv', 'You must select a valid file to upload.');
+	    } else {
+	      	// Manually add the uploaded file to the $form_state
+	      	$form_state['values']['csv']['title'] = $file->filename;
+	      	$form_state['values']['csv']['file'] = $file;
+	    }
+		
+   	}
+}
+
+function nyss_ioplusimport_form_submit($form, &$form_state) {
+
+	global $user;
+	global $nyss_ioplusline;
+	global $nyss_ioplustotallines;
+
+//nyss_out("debug",$form_state,true);
+
+	civicrm_initialize( );
+	require_once 'CRM/Core/Config.php';
+	$config =& CRM_Core_Config::singleton();
+
+	$path = $config->uploadDir.'printProduction/';
+	if ( !file_exists($path) ) {
+		mkdir( $path, 0775 );
+	}
+
+	$logFilename = "import." . mt_rand(1,9999999999999999).".log";
+    $logFilePath = $path . $logFilename;
+	$logFile = fopen($logFilePath, 'w');
+
+	require_once(dirname(__FILE__) . '/nyss_ioplus_definitions.inc');
+
+	$filename = $form_state['values']['csv']['file']->filepath;
+
+	$fo = new nyss_ioplusfileobject($filename, "\t");
+	$nyss_ioplustotallines = $fo->countLines();
+
+	//initialize some values
+	$bImportData = array();
+	$nyss_ioplusline = 0;
+	$runnum=$form_state['values']['runnum'];
+	$dryrun=$form_state['values']['dryrun'];
+	if (!$dryrun) $dryrun=false;
+
+	//get some civicrm values and flip so we can easily lookup values
+    $aStates = array_flip(ioplusGetStates());
+    $aGender = array_flip(ioplusGetOptions("gender"));
+    $aSuffix = array_flip(ioplusGetOptions("individual_suffix"));
+	//echo '<pre>'; print_r($aStates); echo '</pre>'; exit();
+	//echo '<pre>'; print_r($aGender); echo '</pre>'; exit();
+	//echo '<pre>'; print_r($aSuffix); echo '</pre>'; exit();
+
+	nyss_out('status',"importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",true);
+
+  	while ($l = $fo->getLine()) {
+
+		//nyss_out('debug', $l,true);
+
+		//seconds to process each row
+		set_time_limit (30);
+
+		//increase line number
+		++$nyss_ioplusline;
+
+		if(is_numeric($runnum)) {
+
+			if($form_state['values']['runnum']<=$nyss_ioplusline) {
+				nyss_out('debug',"Stopping at {$nyss_ioplusline} lines.", true);
+				break;
+			}
+		}
+		
+		if ($nyss_ioplusline%20==0) nyss_out('status', "processed {$nyss_ioplusline} lines", true);
+
+		//fix the gender entries
+		$l['gender'] = ( $l['gender'] ) ? $l['gender'] : $l['gender_id'];
+		if ($l['gender']=='M') $l['gender'] = 'Male';
+        if ($l['gender']=='F') $l['gender'] = 'Female';
+		$l['gender_id'] = $l['gender'];
+
+		//fix birthdate
+		$d = $l['birth_date'];
+		if ( !empty($d) && $d != 0 && $d != 19000101 && $d != 19010101 ) { //remove errant records
+			$l['birth_date'] = substr($d,0,4).'-'.substr($d,4,2).'-'.substr($d,6,2);
+		} else {
+			$l['birth_date'] = NULL;
+		}
+		
+		//fix suffixes
+		$suffix_val = '';
+		if ( array_key_exists( $l['suffix_id'], $aGender ) ) { //if a valid value, retain
+			$suffix_val = $l['suffix_id'];
+		} elseif ( array_key_exists( $l['suffix_id'], $nyss_ioplussuffixes ) ) { //check if in suffix map
+			$suffix_val = $nyss_ioplussuffixes[$l['suffix_id']];
+		} else { //if odd, ignore
+			$suffix_val = '';
+		}
+
+		//set ids; accomodate both import field schemas
+		$l['gender_id'] = ( $aGender[$l['gender']] ) ? $aGender[$l['gender']] : $aGender[$l['gender_id']];
+		$l['state_province_id'] = ( $aStates[$l['st']] ) ? $aStates[$l['st']] : $aStates[$l['state_province_id']];
+		$l['suffix_id'] = $aSuffix[$suffix_val];
+		
+		//set the last import timestamp
+		$l['last_import_57'] = date( 'Y-m-d H:i:s' );
+		
+		//set all addresses as BOE type //TODO in future years should handle more intelligently
+		$l['location_type_id'] = 6; 
+		
+		//set contact source to BOE 
+		//first look for existing record for selected contact
+		//TODO in future years we will preserve source on update if exists
+		if ( !empty($l['id']) ) {
+			$sql = "SELECT id AS constinfo_id FROM civicrm_value_constituent_information_1 WHERE entity_id = {$l['id']}";
+			$dao = &CRM_Core_DAO::executeQuery( $sql );
+	        if ( $dao->fetch() ) $l['constinfo_id'] = $dao->constinfo_id;
+			CRM_Core_DAO::freeResult( );
+		}
+		$l['contact_source_60'] = 'boe';
+		
+		//fix street_unit
+		//if street_unit value exists, and there is no "apt" text, prepend to value
+		if ( $l['street_unit'] ) {
+			$needle_found = 0;
+			$unit_needles = array ( 'apt', 'unit', 'super', 'sup', 'supt', 'ste', 'rm', 'pvt', 'fl', 'bsmt' );
+			foreach ( $unit_needles as $unit_needle ) {
+				$needle_search = stripos( $l['street_unit'], $unit_needle );
+				if ( $needle_search !== false ) { $needle_found = 1; }
+			}
+			if ( !$needle_found ) { $l['street_unit'] = 'Apt. '.$l['street_unit']; }
+		}
+
+		//form the street address
+		$l['street_address'] = "{$l['street_number']} {$l['street_name']}";
+		if ( $l['street_unit'] ) { $l['street_address'] = $l['street_address'].', '.$l['street_unit']; }
+
+		//find an address if we don't have an addressID already
+		if (!empty($l['id']) && empty($l['address_id'])) {
+			$sql = "SELECT id as address_id from civicrm_address where contact_id like '{$l['id']}' AND street_number like '{$l['street_number']}' AND street_name like '{$l['street_name']}' AND city like '{$l['city']}' AND postal_code like '{$l['postal_cod']}'";
+			$dao = &CRM_Core_DAO::executeQuery( $sql );
+	        if ($dao->fetch()) $l['address_id'] = $dao->address_id;
+			CRM_Core_DAO::freeResult( );
+		}
+		
+		//nyss_out('debug', $l,true);
+
+		//NOW IMPORT THE DATA
+
+		//import contact details
+		nyss_ioplusimportData('civicrm_contact', $l, $dryrun, $logFile);
+
+		//import address details
+		//set key correctly for ref
+		$l['contact_id']=$l['id'];
+		nyss_ioplusimportData('civicrm_address', $l, $dryrun, $logFile);
+		
+		//import phone details
+		//set key correctly for ref
+		nyss_ioplusimportData('civicrm_phone', $l, $dryrun, $logFile);
+		
+		//import email details
+		//set key correctly for ref
+		nyss_ioplusimportData('civicrm_email', $l, $dryrun, $logFile);
+		
+		//import contact source details
+		//set key correctly for ref
+		$l['constinfo_entity_id'] = $l['id'];
+		nyss_ioplusimportData('civicrm_value_constituent_information_1', $l, $dryrun, $logFile);
+
+        //import district details
+        //set key correctly for ref (ID is for addresses)
+        $l['entity_id'] = $l['address_id'];
+        nyss_ioplusimportData('civicrm_value_district_information_7', $l, $dryrun, $logFile);
+	}
+
+	if ($form_state['values']['sendmail']==1) {
+
+   		//now send a confirmation email
+   		$message = array(
+      		'to' => $user->mail,
+      		'subject' => 'import Data Summary'.Date("Y-m-d H:i:s"). " filename: {$filename}",
+      		'body' => 'download the import report here: '.urlencode( "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename)),
+      		'headers' => array('From' => 'import@cms.nysenate.gov'),
+   		);
+
+   		drupal_mail_send($message);
+  	}
+
+  	nyss_out('status',"Imported $nyss_ioplusline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
+
+  	nyss_out('status','<a href="">click here</a> to continue to return to the import page.',true);
+
+  	exit();
+
+}
+
+function nyss_ioplusimportData( $tbl, &$l, $dryrun, $logFile ) {
+
+	//nyss_out('debug', $tbl,true);
+	//nyss_out('debug', $l,true);
+
+    global $nyss_ioplusfields;
+	global $nyss_select;
+	global $nyss_ioplusline;
+
+	//build the select array once and store global for efficiency
+	if ( empty($nyss_select) ) {
+
+		$nyss_select = array();
+		foreach ( $nyss_ioplusfields as $table=>$tableDetails ) {
+
+		  $tmp = array();
+		  foreach ($tableDetails as $key=>$importField) {
+		
+			$tmp[] = "`{$importField['fld']}` as '{$key}'";
+
+			if ($importField['PK']) {
+				$nyss_select[$table]['PK']['importField'] = $key;
+				$nyss_select[$table]['PK']['civiField'] = $importField['fld'];
+			}
+		  }
+
+          $nyss_select[$table]['fields'] = implode(",",$tmp);
+		}
+		
+	}
+	
+    $pkCivi = $nyss_select[$tbl]['PK']['civiField'];
+    $pkImport = $nyss_select[$tbl]['PK']['importField'];
+
+	//if we are being passed a key, this is going to be an update
+	//otherwise it's an insert
+	if ( !empty($l[$pkImport]) ) {
+
+//nyss_out('status', 1, true);
+//nyss_out('debug', $pkCivi, true);
+//nyss_out('debug', $pkImport, true);
+
+		//get the existing data
+		$sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
+//nyss_out('debug', $sql, true);
+
+		$dao = &CRM_Core_DAO::executeQuery( $sql );
+
+		if ( !$dao->fetch() ) nyss_out('error','no civirecord found. not importing.',true);
+
+        $up = array();
+	
+		//compare the fields
+		foreach( $l as $key=>$data ) {
+
+            //apply handler if set
+			if(isset($nyss_ioplusfields[$tbl][$key]['handler'])) $data = $nyss_ioplusfields[$tbl][$key]['handler']($data, true);
+			
+//echo 'existing: '.$dao->$key.'<br />';
+//echo 'new: '.$data.'<br /><br />';
+			//if the import data doesn't match civi data, update it
+			//if ( isset($dao->$key) && $dao->$key<>$data ) { //this was preventing a fill action - if existing field was null
+			if ( isset($nyss_ioplusfields[$tbl][$key]) && $dao->$key<>$data ) {
+			
+				//escape some sql fields
+	            $data = str_replace("'","\'",$data);
+
+				//add to the update statement
+				if (!empty($data)) $up[] = "{$nyss_ioplusfields[$tbl][$key]['fld']}='{$data}'";
+			}
+		}
+
+		CRM_Core_DAO::freeResult( );
+
+		//if there is something to update, do it!
+		if (!empty($up)) {
+			$sqlUP = "UPDATE {$tbl} SET ".implode(',',$up). " WHERE {$pkCivi}={$l[$pkImport]}";
+			//print_r($sqlUP."<br>");
+
+			if ( !$dryrun ) {
+				$dao=&CRM_Core_DAO::executeQuery( $sqlUP );
+		        CRM_Core_DAO::freeResult( );
+			} else {
+				//if ($tbl=='civicrm_value_constituent_information_1' || $tbl=='civicrm_value_district_information_7') {
+				print_r($sqlUP."<br>"); //debug
+				//}
+			}
+			fwrite($logFile, "line {$nyss_ioplusline}: updated record. " . $sqlUP. "\n");
+		} else {
+			fwrite($logFile, "line {$nyss_ioplusline}: nothing to update for $tbl record: " . implode(',',$l). "\n");
+		}
+
+	//otherwise just insert
+	} else {
+
+		$up = array();
+
+		//first set a few additional values required for insert action
+		require_once 'CRM/Utils/String.php';
+	
+		$l['contact_type'] = 'Individual';
+		$l['country_id'] = 1228; //assume US
+		$suffixes = ioplusGetOptions("individual_suffix");
+		$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
+		$l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
+		$display_name = $l['first_name'].' '.$l['middle_name'].' '.$l['last_name'].$suffix; 
+		//$l['display_name'] = CRM_Utils_String::stripSpaces( $display_name );
+		$l['display_name'] = nyss_stripSpaces( $display_name );
+		$l['sort_name'] = $l['last_name'].', '.$l['first_name'].' '.$l['middle_name'];
+		$l['location_type_id'] = 6; //set address type to BOE
+		$l['address_is_primary'] = 1; //set to primary
+		$l['phone_type_id'] = 1; //set to phone
+		$l['phone_location_type_id'] = 1; //set to home
+		$l['phone_is_primary'] = 1; //set to primary
+		$l['email_location_type_id'] = 1; //set to home
+		$l['email_is_primary'] = 1; //set to primary
+		
+		//nyss_out('debug', $l, true);
+		
+		//set up the insert
+		foreach($l as $key=>$data) {
+
+			//apply handler if set
+            if(isset($nyss_ioplusfields[$tbl][$key]['handler'])) $data = $nyss_ioplusfields[$tbl][$key]['handler']($data, true);
+
+            //make sure we're only processing the records for that table
+            if (!isset($nyss_ioplusfields[$tbl][$key])) continue;
+
+			$up = array();
+
+            //skip if required values not found
+            if (empty($data) && $nyss_ioplusfields[$tbl][$key]['required']) {
+            	$skip=true;
+                break;
+            }
+
+  			//skip if no data
+			if (empty($data)) continue;
+
+ 			$data = str_replace("'","\'",$data);
+
+			$insertKeys[] = "`{$nyss_ioplusfields[$tbl][$key]['fld']}`";
+			$insertData[] = "'{$data}'";
+		}
+
+		if ($skip) return;
+
+		if ( $insertKeys && $insertData ) {
+			$sqlINSERT = "INSERT INTO {$tbl} (".implode(',',$insertKeys).") VALUES (".implode(',',$insertData).")";
+			//echo '<pre>'; print_r($sqlINSERT."<br>"); echo '</pre>'; //debug
+		}
+		
+		if ( !$dryrun ) {
+			$dao = & CRM_Core_DAO::executeQuery( $sqlINSERT, CRM_Core_DAO::$_nullArray );
+	        CRM_Core_DAO::freeResult( );
+
+            $dao = & CRM_Core_DAO::executeQuery( "SELECT LAST_INSERT_ID() as lastid", CRM_Core_DAO::$_nullArray );
+			$dao->fetch();
+			$l[$pkImport]=$dao->lastid;
+
+	        CRM_Core_DAO::freeResult( );
+		} else {
+			//if ($tbl=='civicrm_value_constituent_information_1') {
+			print_r($sqlINSERT."<br>"); //debug
+			//}
+		}
+		
+		fwrite($logFile, "line {$nyss_ioplusline}: inserted record. " . $sqlINSERT . "\n");
+	}
+}
+
+function ioplusGetOptions($strGroup)
+{
+  $session =& CRM_Core_Session::singleton();
+
+  $dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray);
+  $dao->fetch();
+  $optionGroupID = $dao->id;
+
+  $dao = &CRM_Core_DAO::executeQuery("SELECT name, label, value from civicrm_option_value where option_group_id=$optionGroupID;", CRM_Core_DAO::$_nullArray);
+
+  $options = array();
+
+  while ($dao->fetch()) {
+    $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
+    $options[$dao->value] = $name;
+  }
+
+  return $options;
+} // ioGetOptions()
+
+function ioplusGetStates()
+{
+  $session =& CRM_Core_Session::singleton();
+
+  $dao = &CRM_Core_DAO::executeQuery("SELECT id, abbreviation FROM civicrm_state_province WHERE country_id = 1228", CRM_Core_DAO::$_nullArray); //lookup US states only
+
+  $options = array();
+
+  while ($dao->fetch()) {
+    $options[$dao->id] = $dao->abbreviation;
+  }
+
+  return $options;
+} // ioGetStates()
+
+function ioplusConvertProperCase( $string, $skipMixed = false ) {
+
+	//if mixed case, don't do anything
+    if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
+
+    // list of words we want to force
+    $forceWords = array('of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
+                    'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to',
+                    'into', 'with', 'II', 'IV', 'A-Level', "'s", 'UK', 'VI', '<i>', 'III', 'VII', 'PO');
+
+    // punctuation used to determine that the following letter
+    // should be capitalised
+    $punctuation = array('.', '-', ':', '!', '\'', '-', '?');
+
+	$string = ucwords(strtolower($string));
+
+	$words = explode(' ', $string);
+
+	foreach ($words as $word) {
+	
+		$replace = array();
+	
+		//trim any non-word chars and replace with nothing for easier matching
+		$cleanWord = preg_replace("/[^\w]/", '', $word);
+		if (!empty($cleanWord)) $replace = preg_grep( "/$cleanWord/i", $forceWords);
+
+		if (isset($replace[0])) $word=str_replace($cleanWord,$replace[0],$word);
+
+		$fixedWords[] = $word;
+	}
+
+	$string = implode(' ',$fixedWords);
+
+    return $string;
+}

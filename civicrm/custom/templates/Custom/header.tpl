@@ -52,7 +52,7 @@ $role = str_replace('authenticated user','', $rolesList);
 <div class="civi-general-search">
 	<div class="civi-search-title">Find Anything!</div>
 	{if call_user_func(array('CRM_Core_Permission','giveMeAllACLs'))}
-		<form id="id_search_block" name="Custom" method="get" action="/civicrm/contact/search/custom">
+		<form id="id_search_block" name="findAnything" method="get" action="/civicrm/contact/search/custom">
            	<div class="input-wrapper" id="gen-search-wrapper">
 				<input type="text" class="form-text" id="civi_text_search" name="text" value="enter any text" style="width:193px;">
 				<input type="hidden" name="force" value="true">

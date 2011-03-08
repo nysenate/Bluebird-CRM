@@ -135,7 +135,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 								 //NYSS
 								 'data' => 
                                  array( 'title'     => ts( 'Description' ),
-                                        'type'      => CRM_Utils_Type::T_STRING,
+                                        'type'      => CRM_Utils_Type::T_TEXT,
                                        ),
                                 ), 
                           ),
@@ -263,7 +263,8 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
 			
 			// strip out the activity targets (could be multiple)
 			if ( array_key_exists('civicrm_activity_activity_type_id', $row ) &&
-                 $row['civicrm_activity_activity_type_id'] != '' ) {
+                 $row['civicrm_activity_activity_type_id'] != '' &&
+				 strpos( $row['civicrm_log_data'], 'target=' ) ) {
 				// source, target, assignee are concatenated; we need to strip out the target
 				$loc_target = strrpos( $row['civicrm_log_data'], 'target=' );
 				$loc_assign = strrpos( $row['civicrm_log_data'], ', assignee=' );

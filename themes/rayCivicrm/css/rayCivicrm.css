@@ -1222,3 +1222,17 @@ ul.token-input-list-facebook { width:265px;}
 	/*padding: 2px 4px;*/
 	
 }
+
+/*activity search*/
+#crm-container .activitySearch .listing-box,
+.activitySearch .listing-box,
+#Advanced .activity .listing-box {
+	height: auto;
+	max-height: 400px;
+	margin-bottom: 8px;
+}
+#Advanced .activity .listing-box {
+	border: 1px solid #999999;
+	background-color: #ewewew;
+	overflow: auto;
+}
