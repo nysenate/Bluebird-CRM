@@ -251,7 +251,6 @@ cj( document ).ready( function( ) {
 	       function() { 
 	           $('.civi-adv-search-linkwrap').removeClass('crm-loading'); 
 	       	if ($('#advanced-search-form .crm-accordion-processed').length == 0){
-	       	console.log('processing');
             	cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function() {$(this).addClass('crm-accordion-header-hover')});
             	cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function() {$(this).removeClass('crm-accordion-header-hover')});
             	$('#advanced-search-form .crm-accordion-header').bind('click', function () {
