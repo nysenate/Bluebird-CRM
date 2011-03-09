@@ -23,12 +23,24 @@
      <page_callback>CRM_Dashlet_Page_DistrictStats</page_callback>
   </item> 
   
-  <item> <!--add so we override core perm and allow create mailings to access-->
+  <!--add so we override core perm and allow create mailings to access-->
+  <item> 
      <path>civicrm/mailing/browse/archived</path>
      <title>Archived Mailings</title>
      <page_callback>CRM_Mailing_Page_Browse</page_callback>
      <access_arguments>access CiviMail;create mailings;schedule mailings</access_arguments>
      <page_type>1</page_type>
      <weight>625</weight>
+  </item>
+  
+  <!--JIRA 7734-->
+  <item>
+     <path>civicrm/admin/options/languages</path>
+     <title>Preferred Languages</title>
+     <desc>Options for contact languages.</desc>
+     <path_arguments>group=languages</path_arguments>
+     <page_callback>CRM_Admin_Page_Options</page_callback>
+     <adminGroup>Option Lists</adminGroup>
+     <weight>375</weight>
   </item>
 </menu>
