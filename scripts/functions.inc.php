@@ -22,7 +22,7 @@ function runCmd($cmd, $description = null, $debug = false, &$aOut = null)
 function cLog($num=0, $type='notice', $message='', $debug=false)
 {
   if (is_object($message)) $message = print_r($message, true);
-  if (RAYDEBUG || $debug || $type!='debug') print($num.' ['.$type.'] '.date("Y-m-d H:i:s")." ".$message."\n");
+  if ($debug || $type!='debug') print($num.' ['.$type.'] '.date("Y-m-d H:i:s")." ".$message."\n");
 } // cLog()
 
 
