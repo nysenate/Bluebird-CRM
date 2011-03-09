@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2010-12-29
+# Revised: 2011-03-08
 #
 
 prog=`basename $0`
@@ -16,7 +16,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-i instance] [-h host] [-u user] [-p password] [--create] [--drupal] [dbName]" >&2
+  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-i instance] [-h host] [-u user] [-p password] [--quiet|-q] [--create] [--drupal] [dbName]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -33,6 +33,7 @@ dbuser=
 dbpass=
 dbname=
 create_db=0
+be_quiet=0
 db_prefix_keyname=db.civicrm.prefix
 default_db_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 
@@ -45,6 +46,7 @@ while [ $# -gt 0 ]; do
     -h|--host) shift; dbhost="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
+    -q|--quiet) be_quiet=1 ;;
     --create) create_db=1 ;;
     --drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
@@ -86,12 +88,12 @@ elif [ $create_db -eq 1 ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
     exit 1
   fi
-  set -x
+  [ $be_quiet -eq 0 ] && set -x
   mysql -h $dbhost -u $dbuser -p$dbpass -e "create database $dbname" --batch
 elif [ "$sqlfile" ]; then
-  set -x
+  [ $be_quiet -eq 0 ] && set -x
   cat $sqlfile | mysql -h $dbhost -u $dbuser -p$dbpass $dbname
 else
-  set -x
+  [ $be_quiet -eq 0 ] && set -x
   mysql -h $dbhost -u $dbuser -p$dbpass -e "$sqlcmd" --batch --skip-column-names $dbname
 fi
