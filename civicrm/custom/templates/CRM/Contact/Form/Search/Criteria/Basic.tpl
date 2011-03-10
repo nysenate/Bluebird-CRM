@@ -92,7 +92,7 @@
 {/if}
 
 {if $form.contact_tags}
-            <td colspan="2"><label>{ts}Tag(s){/ts}</label>
+            <td><label>{ts}Issue Code(s){/ts}</label>{*NYSS*}
                 {$form.contact_tags.html}
                 {literal}
                 <script type="text/javascript">
@@ -108,12 +108,13 @@
                 </script>
                 {/literal}   
             </td>
+            <td colspan="2">
+            	{include file="CRM/common/Tag.tpl"}{*NYSS*}
+            </td>
 {else}
             <td colspan="3">&nbsp;</td>
 {/if}
 	    </tr>
-        
-        <tr><td colspan="5">{include file="CRM/common/Tag.tpl"}</td></tr>
         
         <tr>
             <td colspan="2">
