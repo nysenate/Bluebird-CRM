@@ -38,7 +38,7 @@
 {/htxt}
 
 {htxt id="id-display-results"}
-    <p>{ts}Advanced Search returns your results as Contact records by default. However, you may want to get another record type instead. For example, you may want to see all the Contribution records which match your search criteria.{/ts}</p>
+    <p>{ts}Advanced Search returns your results as Contact records by default. However, you may want to get another record type instead. For example, you may want to see all the Activity records which match your search criteria.{/ts}</p>{*NYSS*}
 {/htxt}
 
 {htxt id="id-search-views"}
