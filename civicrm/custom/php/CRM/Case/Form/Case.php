@@ -81,14 +81,13 @@ class CRM_Case_Form_Case extends CRM_Core_Form
      */
     public $_activityId       = null;
 
-
-
     /**
      * action
      */
-    public $_action;
+    public $_action; //NYSS
 
-     /**     * Function to build the form
+     /*
+	 * Function to build the form
      *
      * @return None
      * @access public
