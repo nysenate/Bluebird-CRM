@@ -495,9 +495,9 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                           $this->_absoluteUrl );
                         } else {
                             $url = CRM_Utils_System::url( "civicrm/contact/view/activity"  , 
-                                                          'action=view&reset=1&cid=' . $rows[$rowNum]['civicrm_contact_source_contact_id'] .
+                                                          'action=view&reset=1&cid=' . $rows[$rowNum]['civicrm_activity_source_contact_id'] .
                                                           '&id=' . $rows[$rowNum]['civicrm_activity_id'] . '&atype=' . $value ,
-                                                          $this->_absoluteUrl );
+                                                          $this->_absoluteUrl ); //NYSS 3472
                         }
                         $rows[$rowNum]['civicrm_activity_activity_type_id_link'] = $url;
                         $rows[$rowNum]['civicrm_activity_activity_type_id_hover'] = $onHoverAct;
