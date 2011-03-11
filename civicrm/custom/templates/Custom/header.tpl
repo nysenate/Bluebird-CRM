@@ -248,8 +248,20 @@ cj( document ).ready( function( ) {
 	 if (cj('form#Advanced').length == 0) {
 	   $('.civi-adv-search-linkwrap').addClass('crm-loading');
 	   cj('#advanced-search-form').load('{/literal}{crmURL p='civicrm/contact/search/advanced?reset=1&snippet=1'}{literal}',
-	       function() { $('.civi-adv-search-linkwrap').removeClass('crm-loading'); }
-	       );
+	       function() { 
+	           $('.civi-adv-search-linkwrap').removeClass('crm-loading'); 
+	       	if ($('#advanced-search-form .crm-accordion-processed').length == 0){
+            	cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function() {$(this).addClass('crm-accordion-header-hover')});
+            	cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function() {$(this).removeClass('crm-accordion-header-hover')});
+            	$('#advanced-search-form .crm-accordion-header').bind('click', function () {
+            		$(this).parent().toggleClass('crm-accordion-open');
+            		$(this).parent().toggleClass('crm-accordion-closed');
+            		//return false to prevent wiring of click event
+            		return false;
+            		});
+            	$('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
+            	};
+            });
 	  } else {
 	   cj('.civi-advanced-search-link').removeClass('civi-advanced-search-link').addClass('civi-advanced-search-button');
 	  }
@@ -270,4 +282,3 @@ cj(function() {
 });
 </script>
 {/literal}
-
