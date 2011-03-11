@@ -150,16 +150,24 @@ function _civicrm_processElement( &$form, $elementName, $freezeElement = false, 
     if ( $freezeElement ) {
         $element->freeze( );
     }
-
+	
     if ( $unsetOption ) {
-        foreach ( $element->_options as $index => $options ) {
-                if ( $options['text'] == 'BOE' || 
-		     $options['text'] == 'Billing' ||
-                     $options['text'] == 'NCOA')
-		{
-                    unset( $element->_options[$index] );
-                }
+        $newOptions = array();
+		foreach ( $element->_options as $index => $options ) {
+            /*if ( $options['text'] == 'BOE' || 
+		         $options['text'] == 'Billing' ||
+                 $options['text'] == 'NCOA') {
+				 
+                unset( $element->_options[$index] );
+				
+            }*/
+			if ( $options['text'] != 'BOE' && 
+		         $options['text'] != 'Billing' &&
+                 $options['text'] != 'NCOA' ) {
+				 
+				 $newOptions[] = $element->_options[$index];
+			}
         }
+		$element->_options = $newOptions;
     }
-    
 }
