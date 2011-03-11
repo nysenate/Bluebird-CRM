@@ -1,14 +1,12 @@
 <?php
 
-error_reporting(E_ERROR && E_PARSE);
 error_reporting(E_ALL && ~E_NOTICE);
 
 //no limit
 set_time_limit(0);
 
 require_once 'senate.constants.php';
-require_once '../commonLibs/config.php';
-require_once '../commonLibs/lib.inc.php';
+require_once 'lib.inc.php';
 
 $prog = $argv[0];
 $task = "import";
@@ -996,14 +994,16 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
       // Remember each tagID associated with the current contact.
       $stored_tag_ids = array();
+      $issCatLower = strtolower($issCat);
+      $issDescLower = strtolower($issDesc);
 
       /* If the category is in the tags table and is part of the issue code
          hierarchy (parent is not Freeform or Positions), then link to it
          as well as any parent tags.
       */
       if ($issCat != "*NOMATCH*") {
-        if (isset($aTagsByName[$issCat])) {
-          $tag_id = $aTagsByName[$issCat];
+        if (isset($aTagsByName[$issCatLower])) {
+          $tag_id = $aTagsByName[$issCatLower];
           $parent_id = $aTagsByID[$tag_id];
           if ($parent_id == POSITION_TAG_PARENT_ID ||
               $parent_id == FREEFORM_TAG_PARENT_ID) {
@@ -1028,12 +1028,12 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       // If IS_TAG is set, then the issue description becomes a freeform tag.
       if ($isRow['IS_TAG'] == 'Y') {
         // If the issDesc is not yet a tag, then create it.
-        if (isset($aTagsByName[$issDesc])) {
-          $tag_id = $aTagsByName[$issDesc];
+        if (isset($aTagsByName[$issDescLower])) {
+          $tag_id = $aTagsByName[$issDescLower];
         }
         else {
           $tag_id = ++$tagID;
-          $aTagsByName[$issDesc] = $tag_id;
+          $aTagsByName[$issDescLower] = $tag_id;
           $aTagsByID[$tagID] = FREEFORM_TAG_PARENT_ID;
           writeFreeformTag($fout['tag'], $tag_id, $issDesc);
         }
@@ -1327,7 +1327,8 @@ function writeEntityTags($f, $contact_id, $tag_id, $tags_by_id, &$stored_ids)
 
 function getAllTags(&$tags_by_name, &$tags_by_id)
 {
-  // This array maps a tag name (issue description) to a tagID.
+  // This array maps a tag name (issue description) to a tagID.  Tag names
+  // are stored as lower-case in order to detect and avoid naming conflicts.
   $tags_by_name = array();
   // This array maps a tagID to its parent tagID.
   $tags_by_id = array();
@@ -1343,7 +1344,7 @@ function getAllTags(&$tags_by_name, &$tags_by_id)
     if ($dao->id > $max_id) {
       $max_id = $dao->id;
     }
-    $tags_by_name[$dao->name] = $dao->id;
+    $tags_by_name[strtolower($dao->name)] = $dao->id;
     $tags_by_id[$dao->id] = $dao->parent_id;    
   }
   return $max_id;
@@ -1437,9 +1438,9 @@ function create_civi_organization($orgid, $src, $omisid, $company, $nickname)
     'birth_date' => DBNULL,
     'prefix_id' => DBNULL,
     'suffix_id' => DBNULL,
-    'addressee_id' => DBNULL,
+    'addressee_id' => ADDRESSEE_ORG,
     'addressee_custom' => DBNULL,
-    'addressee_display' => DBNULL,
+    'addressee_display' => $company,
     'postal_greeting_id' => DBNULL,
     'postal_greeting_custom' => DBNULL,
     'postal_greeting_display' => DBNULL,

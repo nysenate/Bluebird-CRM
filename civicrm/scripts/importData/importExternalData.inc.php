@@ -30,8 +30,7 @@ error_reporting(E_ERROR | E_PARSE);
 //no limit
 set_time_limit(0);
 
-require_once dirname(__FILE__)."/../commonLibs/config.php";
-require_once dirname(__FILE__).'/../commonLibs/lib.inc.php';
+require_once 'lib.inc.php';
 
 if (isset($argv[1])) $task = strtolower($argv[1]);
 if (isset($argv[2])) define('CIVICRM_CONFDIR',RAYROOTDIR."sites/{$argv[2]}".RAYROOTDOMAIN);

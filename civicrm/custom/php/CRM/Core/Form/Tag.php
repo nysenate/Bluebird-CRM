@@ -155,8 +155,13 @@ class CRM_Core_Form_Tag
             $insertSQL    = null;
             if ( !empty( $tagsIDs ) ) {
                 foreach( $tagsIDs as $tagId ) {
-                    if ( is_numeric( $tagId ) && !array_key_exists( $tagId, $form->_entityTagValues ) ) {
-                        $insertValues[] = "( {$tagId}, {$entityId}, '{$entityTable}' ) ";
+                    if ( is_numeric( $tagId ) ) {
+						//NYSS 3394
+						if ( $form->_action != CRM_Core_Action::UPDATE ) {
+                             $insertValues[] = "( {$tagId}, {$entityId}, '{$entityTable}' ) ";
+                        } else if ( !array_key_exists( $tagId, $form->_entityTagValues ) ) {
+                             $insertValues[] = "( {$tagId}, {$entityId}, '{$entityTable}' ) ";
+						}
                     }
                 }
                 

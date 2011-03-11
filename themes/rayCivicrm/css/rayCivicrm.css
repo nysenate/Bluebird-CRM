@@ -1236,3 +1236,6 @@ ul.token-input-list-facebook { width:265px;}
 	background-color: #ewewew;
 	overflow: auto;
 }
+#crm-container .crm-report-form-block .dataTables_wrapper {
+	overflow: auto;
+}

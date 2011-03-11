@@ -27,8 +27,7 @@
 
 error_reporting(E_ERROR | E_PARSE);
 
-require_once dirname(__FILE__)."/../commonLibs/config.php";
-require_once dirname(__FILE__).'/../commonLibs/lib.inc.php';
+require_once 'lib.inc.php';
 
 if (isset($argv[1])) define('CIVICRM_CONFDIR',"/data/www/nyss/sites/{$argv[1]}".RAYROOTDOMAIN);
 if (isset($argv[2])) $task = strtolower($argv[2]);
