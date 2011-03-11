@@ -61,6 +61,13 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
      * @var int
      */
     public $_activityTypeId;
+	
+	/**
+     * The name of activity type
+ 	 *
+ 	 * @var string
+ 	 */
+ 	public $_activityTypeName; //NYSS
 
     /**
      * The id of currently viewed contact
@@ -311,6 +318,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
             require_once 'CRM/Core/OptionGroup.php';
             $activityTName = CRM_Core_OptionGroup::values( 'activity_type', false, false, false, 'AND v.value = '.$this->_activityTypeId , 'name' );
             if ( $activityTName[$this->_activityTypeId] ) {
+				$this->_activityTypeName = $activityTName[$this->_activityTypeId]; //NYSS
                 $this->assign( 'activityTName', $activityTName[$this->_activityTypeId] );
             }
         }
@@ -698,10 +706,16 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
                        array( 'id' => 'tags',  'multiple'=> 'multiple', 'title' => ts('- select -') ));
         }
         
-        // build tag widget
-        require_once 'CRM/Core/Form/Tag.php';
-        $parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_activity' );
-        CRM_Core_Form_Tag::buildQuickForm( $this, $parentNames, 'civicrm_activity', $this->_activityId, false, true );
+		//NYSS exclude activity tagset for open case; should revert in core
+        // we need to hide activity tagset for special activities
+ 	 	$specialActivities = array( 'Open Case' );
+ 	 	
+ 	 	if ( !in_array( $this->_activityTypeName, $specialActivities ) ) {
+ 	 		// build tag widget
+ 	 		require_once 'CRM/Core/Form/Tag.php';
+ 	 	 	$parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_activity' );
+ 	 	 	CRM_Core_Form_Tag::buildQuickForm( $this, $parentNames, 'civicrm_activity', $this->_activityId, false, true );
+ 	 	}
         
         // check for survey activity
         $this->_isSurveyActivity = false;
