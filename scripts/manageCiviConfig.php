@@ -3,7 +3,7 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2010-11-23
-// Revised: 2010-11-23
+// Revised: 2011-03-12
 //
 
 function getCiviConfig($dbcon)
@@ -46,6 +46,11 @@ function updateCiviConfig($dbcon, $cb, $crmhost, $appdir, $datadir)
   $http_prefix = "http://$crmhost";
   $data_prefix = "$datadir/$crmhost/civicrm";
 
+  $cb['civiAbsoluteURL'] = "$http_prefix/";
+
+  /***  
+     The remainder of these parameters are deprecated in config_backend.
+     They are now configurable via civicrm_option_value.
   $cb['userFrameworkResourceURL'] = "$http_prefix/sites/all/modules/civicrm/";
   $cb['imageUploadURL'] = "$http_prefix/sites/default/files/civicrm/images/";
   $cb['uploadDir'] = "$data_prefix/upload/";
@@ -53,8 +58,8 @@ function updateCiviConfig($dbcon, $cb, $crmhost, $appdir, $datadir)
   $cb['customFileUploadDir'] = "$data_prefix/custom/";
   $cb['customTemplateDir'] = "$appdir/civicrm/custom/templates";
   $cb['customPHPPathDir'] = "$appdir/civicrm/custom/php";
-  $cb['civiAbsoluteURL'] = "$http_prefix/";
   $cb['configAndLogDir'] = "$data_prefix/templates_c/en_US/ConfigAndLog/";
+  ****/
 
   //save back to db
   $sql = "UPDATE civicrm_domain set config_backend='".serialize($cb)."';";
