@@ -148,7 +148,7 @@
                         {if $custom_60.field_value || $source}
                         	<tr>
                                 <td class="label">
-                                   {$custom_60.field_title}
+                                   {if $custom_60.field_value}{$custom_60.field_title}{else}Source{/if}
                                 </td>
                                 <td>
                                    {$custom_60.field_value}
