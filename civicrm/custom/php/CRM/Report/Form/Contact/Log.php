@@ -135,7 +135,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 								 //NYSS
 								 'data' => 
                                  array( 'title'     => ts( 'Description' ),
-                                        'type'      => CRM_Utils_Type::T_TEXT,
+                                        'type'      => CRM_Utils_Type::T_STRING,
                                        ),
                                 ), 
                           ),
