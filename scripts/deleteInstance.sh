@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-14
-# Revised: 2010-09-27
+# Revised: 2011-03-13
 #
 
 prog=`basename $0`
@@ -62,8 +62,14 @@ if [ $force_ok -eq 0 ]; then
   echo "Drupal DB Prefix: $db_drup_prefix"
   echo "Drupal Root Directory: $drupal_rootdir"
   echo "Data Root Directory: $data_rootdir"
-  echo "Will delete: $instance_dir"
-  echo "Will delete: $instance_data_dir"
+  if [ $db_only -ne 1 ]; then
+    echo "Will delete dir: $instance_dir"
+    echo "Will delete dir: $instance_data_dir"
+  fi
+  if [ $files_only -ne 1 ]; then
+    echo "Will delete DB: $db_drup_prefix$instance"
+    echo "Will delete DB: $db_civi_prefix$instance"
+  fi
   echo
   echo -n "Are you sure that you want to delete instance $instance ([N]/y)? "
   read ch
