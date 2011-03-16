@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-12-03
-# Revised: 2011-01-05
+# Revised: 2011-03-16
 #
 
 prog=`basename $0`
@@ -85,7 +85,7 @@ for instance in $instances; do
   if $readConfig --instance $instance --quiet; then
     realcmd=`echo "$cmd" | sed -e "s;%%INSTANCE%%;$instance;g" -e "s;{};$instance;g"`
     echo "About to exec: $realcmd" >&2
-    $realcmd
+    eval $realcmd
   else
     echo "$prog: $instance: Instance not found in config file; skipping" >&2
   fi
