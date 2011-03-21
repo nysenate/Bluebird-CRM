@@ -43,6 +43,7 @@ fi
 
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
+data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance.$base_domain"
 
 echo "Clearing CiviCRM database caches"
 sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE civicrm_cache; TRUNCATE civicrm_group_contact_cache; TRUNCATE civicrm_menu; TRUNCATE civicrm_uf_match; TRUNCATE civicrm_task_action_temp; UPDATE civicrm_preferences SET navigation=null; UPDATE civicrm_dashboard SET content = null;"
@@ -53,9 +54,9 @@ sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE ci
 
 echo "Clearing CiviCRM filesystem caches"
 ( set -x
-  rm -rf $data_rootdir/$instance.$base_domain/civicrm/templates_c/*
-  rm -rf $data_rootdir/$instance.$base_domain/civicrm/css/*
-  rm -rf $data_rootdir/$instance.$base_domain/civicrm/js/*
+  rm -rf $data_rootdir/$data_basename/civicrm/templates_c/*
+  rm -rf $data_rootdir/$data_basename/civicrm/css/*
+  rm -rf $data_rootdir/$data_basename/civicrm/js/*
 )
 
 echo "Clearing Drupal database caches"
