@@ -53,6 +53,8 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $dbpass = get_key_value($bbini, $shortname, 'db.pass');
   $dbciviprefix = get_key_value($bbini, $shortname, 'db.civicrm.prefix');
   $dbdrupprefix = get_key_value($bbini, $shortname, 'db.drupal.prefix');
+  $dbbasename = get_key_value($bbini, $shortname, 'db.basename') or
+    $dbbasename = $shortname;
   $datadir = get_key_value($bbini, $shortname, 'data.rootdir');
   $basedomain = get_key_value($bbini, $shortname, 'base.domain') or
     $basedomain = $default_base_domain;
@@ -62,8 +64,8 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   // us to override the domain in the config file.
   $servername = "$shortname.$basedomain";
 
-  $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbciviprefix$shortname";
-  $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$shortname";
+  $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbciviprefix$dbbasename";
+  $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$dbbasename";
   
   $bbcfg = array();
   $bbcfg['servername'] = $servername;
