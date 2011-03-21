@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-14
-# Revised: 2011-03-13
+# Revised: 2011-03-21
 #
 
 prog=`basename $0`
@@ -47,12 +47,14 @@ fi
 [ "$domain" ] || domain=`$readConfig --ig $instance base.domain` || domain="$DEFAULT_BASE_DOMAIN"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
+db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
+data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance.$domain"
 errcode=0
 
-instance_dir="$drupal_rootdir/sites/$instance.$domain"
-instance_data_dir="$data_rootdir/$instance.$domain"
+instance_dir="$drupal_rootdir/sites/$data_basename"
+instance_data_dir="$data_rootdir/$data_basename"
 
 if [ $force_ok -eq 0 ]; then
   echo "Please review before deleting:"
@@ -67,8 +69,8 @@ if [ $force_ok -eq 0 ]; then
     echo "Will delete dir: $instance_data_dir"
   fi
   if [ $files_only -ne 1 ]; then
-    echo "Will delete DB: $db_drup_prefix$instance"
-    echo "Will delete DB: $db_civi_prefix$instance"
+    echo "Will delete DB: $db_drup_prefix$db_basename"
+    echo "Will delete DB: $db_civi_prefix$db_basename"
   fi
   echo
   echo -n "Are you sure that you want to delete instance $instance ([N]/y)? "
@@ -89,13 +91,13 @@ fi
 if [ $files_only -ne 1 ]; then
   echo "Deleting Drupal database for instance [$instance]"
   ( set -x
-    $execSql -c "drop database $db_drup_prefix$instance"
+    $execSql -c "drop database $db_drup_prefix$db_basename"
   ) || errcode=$(($errcode | 2))
   set +x
 
   echo "Deleting CiviCRM database for instance [$instance]"
   ( set -x
-    $execSql -c "drop database $db_civi_prefix$instance"
+    $execSql -c "drop database $db_civi_prefix$db_basename"
   ) || errcode=$(($errcode | 4))
   set +x
 fi
