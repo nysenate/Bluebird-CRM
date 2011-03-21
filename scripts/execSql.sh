@@ -64,7 +64,7 @@ ig_opt="--global"
 # Use the --drupal option to execute SQL on the Drupal DB instead.
 
 if [ "$instance" ]; then
-  if ! $readConfig --instance --quiet; then
+  if ! $readConfig --instance $instance --quiet; then
     echo "$prog: $instance: Instance not found" >&2
     exit 1
   fi
