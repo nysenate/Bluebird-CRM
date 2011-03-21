@@ -153,8 +153,7 @@ fi
 locked_instances=`$readConfig --instance-set "LOCKED"`
 mkdir -p "$tempdir"
 
-instance_config=`$readConfig --instance $instance`
-if [ ! "$instance_config" ]; then
+if ! $readConfig --instance $instance --quiet ; then
   echo "$prog: Error: CRM instance [$instance] not found in config file." >&2
   exit 1
 elif echo "$locked_instances" | egrep -q "(^|[ ]+)$instance([ ]+|$)"; then
