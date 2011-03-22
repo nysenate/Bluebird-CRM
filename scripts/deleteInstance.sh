@@ -50,11 +50,12 @@ db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance.$domain"
+data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance"
+data_dirname="$data_basename.$domain"
 errcode=0
 
-instance_dir="$drupal_rootdir/sites/$data_basename"
-instance_data_dir="$data_rootdir/$data_basename"
+instance_dir="$drupal_rootdir/sites/$data_dirname"
+instance_data_dir="$data_rootdir/$data_dirname"
 
 if [ $force_ok -eq 0 ]; then
   echo "Please review before deleting:"
