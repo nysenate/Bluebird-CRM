@@ -5,7 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2010-09-30
+# Revised: 2011-03-22
 #
 
 function get_bluebird_config($filename = 'bluebird.cfg')
@@ -53,28 +53,34 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $dbpass = get_key_value($bbini, $shortname, 'db.pass');
   $dbciviprefix = get_key_value($bbini, $shortname, 'db.civicrm.prefix');
   $dbdrupprefix = get_key_value($bbini, $shortname, 'db.drupal.prefix');
-  $dbbasename = get_key_value($bbini, $shortname, 'db.basename') or
-    $dbbasename = $shortname;
+  $db_basename = get_key_value($bbini, $shortname, 'db.basename') or
+    $db_basename = $shortname;
+  $base_domain = get_key_value($bbini, $shortname, 'base.domain') or
+    $base_domain = $default_base_domain;
   $datadir = get_key_value($bbini, $shortname, 'data.rootdir');
-  $basedomain = get_key_value($bbini, $shortname, 'base.domain') or
-    $basedomain = $default_base_domain;
+  $data_basename = get_key_value($bbini, $shortname, 'data.basename') or
+    $data_basename = $shortname;
+  $data_dirname = "$data_basename.$base_domain";
   $imapaccts = get_key_value($bbini, $shortname, 'imap.accounts');
 
   // Always set servername, even if HTTP_HOST was set above.  This allows
   // us to override the domain in the config file.
-  $servername = "$shortname.$basedomain";
+  $servername = "$shortname.$base_domain";
 
-  $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbciviprefix$dbbasename";
-  $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$dbbasename";
+  $civicrm_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbciviprefix$db_basename";
+  $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$db_basename";
   
   $bbcfg = array();
+  $bbcfg['base_dir'] = $base_dir;
+  $bbcfg['drupal_root'] = $drupal_dir;
   $bbcfg['servername'] = $servername;
   $bbcfg['shortname'] = $shortname;
+  $bbcfg['base_domain'] = $base_domain;
+  $bbcfg['db_basename'] = $db_basename;
   $bbcfg['drupal_db_url'] = $drupal_db_url;
   $bbcfg['civicrm_db_url'] = $civicrm_db_url;
-  $bbcfg['drupal_root'] = $drupal_dir;
   $bbcfg['data_rootdir'] = $datadir;
-  $bbcfg['base_domain'] = $basedomain;
+  $bbcfg['data_dirname'] = $data_dirname;
   $bbcfg['imap_accounts'] = $imapaccts;
 
   return $bbcfg;
