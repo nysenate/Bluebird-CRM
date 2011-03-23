@@ -685,4 +685,14 @@ $.TokenList.Cache = function (options) {
 
 })(jQuery);
 
+  $(document).ready(function(){
+    $("input.form-submit").attr("disabled", false);
+
+    $("#crm-container form").submit(function(){
+      $("input.form-submit").attr("disabled", true)
+                            .val("Working...");
+      return true;
+    })
+  })
+
 
