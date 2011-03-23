@@ -1219,6 +1219,9 @@ ul.token-input-list-facebook { width:265px;}
 	position: fixed;
 	margin-top: -40px !important;
 	margin-left: 18px !important;
+	-webkit-border-radius: 4px 4px 0 0;
+	-moz-border-radius: 4px 4px 0 0;
+	border-radius: 4px 4px 0px 0px;
 	/*padding: 2px 4px;*/
 	
 }
