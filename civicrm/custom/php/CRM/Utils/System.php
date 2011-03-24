@@ -320,7 +320,7 @@ class CRM_Utils_System {
      */
     static function redirect( $url = null ) {
 
-	error_log("REDIRECT: $url");
+	require_once(dirname(__FILE__).'/../../../../scripts/nyssTimer.inc.php');
 	nyssWriteElapsed();
 
         if ( ! $url ) {
