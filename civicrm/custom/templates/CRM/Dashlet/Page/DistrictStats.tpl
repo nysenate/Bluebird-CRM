@@ -42,12 +42,32 @@
 </style>
 {/literal}
 
+{if $smarty.get.snippet eq 2}
+{literal}
+<style type="text/css" media="all">
+<!--
+#districts .crm-accordion-body {
+	display: block !important;
+}
+-->
+</style>
+{/literal}
+{/if}
+
 <div class="crm-block crm-content-block">
 	<div id="ContactTypes">
     	<h3>Contact Type Counts</h3>
         <table>
-        	<tr>{foreach from=$contactTypes key=type item=tcount}<th>{$type}</th>{/foreach}</tr>
-            <tr>{foreach from=$contactTypes key=type item=tcount}<td>{$tcount}</td>{/foreach}</tr>
+        	<tr>{foreach from=$contactTypes key=type item=tcount}<th>{$type}</th>{/foreach}
+            	<th>Male</th>
+                <th>Female</th>
+                <th>Other Gender</th>
+            </tr>
+            <tr>{foreach from=$contactTypes key=type item=tcount}<td>{$tcount}</td>{/foreach}
+            	<td>{$contactGenders.2}</td>
+                <td>{$contactGenders.1}</td>
+                <td>{$contactGenders.4}</td>
+            </tr>
         </table>
     </div>
     
@@ -155,6 +175,32 @@
         	</table>
        </div>
     </div>
+    <div class="crm-accordion-wrapper crm-ajax-accordion crm-Schools-accordion crm-accordion-closed">
+       <div class="crm-accordion-header" id="Schools">
+       		<div class="icon crm-accordion-pointer"></div>
+       	 	School Districts
+       </div>
+       <div class="crm-accordion-body Schools">
+       		<table>
+        	{foreach from=$contactSC key=school item=schoolcount}
+            	<tr><th>{$school}</th><td>{$schoolcount}</td></tr>
+            {/foreach}
+        	</table>
+       </div>
+    </div>
+    <div class="crm-accordion-wrapper crm-ajax-accordion crm-Zip-accordion crm-accordion-closed">
+       <div class="crm-accordion-header" id="Zip">
+       		<div class="icon crm-accordion-pointer"></div>
+       	 	Zip Codes
+       </div>
+       <div class="crm-accordion-body Schools">
+       		<table>
+        	{foreach from=$contactZip key=zip item=zipcount}
+            	<tr><th>{$zip}</th><td>{$zipcount}</td></tr>
+            {/foreach}
+        	</table>
+       </div>
+    </div>
     </td>
     
     <td width="25%">
@@ -171,10 +217,11 @@
         	</table>
        </div>
     </div>
+    
     <div class="crm-accordion-wrapper crm-ajax-accordion crm-Keywords-accordion crm-accordion-closed">
        <div class="crm-accordion-header" id="Keywords">
        		<div class="icon crm-accordion-pointer"></div>
-       	 	Keywords
+       	 	Keywords (contacts)
        </div>
        <div class="crm-accordion-body Keywords">
        		<table>
@@ -184,6 +231,33 @@
         	</table>
        </div>
     </div>
+    <div class="crm-accordion-wrapper crm-ajax-accordion crm-aKeywords-accordion crm-accordion-closed">
+       <div class="crm-accordion-header" id="aKeywords">
+       		<div class="icon crm-accordion-pointer"></div>
+       	 	Keywords (activities)
+       </div>
+       <div class="crm-accordion-body aKeywords">
+       		<table>
+        	{foreach from=$akeywords key=k item=akcount}
+            	<tr><th>{$k}</th><td>{$akcount}</td></tr>
+            {/foreach}
+        	</table>
+       </div>
+    </div>
+    <div class="crm-accordion-wrapper crm-ajax-accordion crm-cKeywords-accordion crm-accordion-closed">
+       <div class="crm-accordion-header" id="cKeywords">
+       		<div class="icon crm-accordion-pointer"></div>
+       	 	Keywords (cases)
+       </div>
+       <div class="crm-accordion-body cKeywords">
+       		<table>
+        	{foreach from=$ckeywords key=k item=ckcount}
+            	<tr><th>{$k}</th><td>{$ckcount}</td></tr>
+            {/foreach}
+        	</table>
+       </div>
+    </div>
+    
     <div class="crm-accordion-wrapper crm-ajax-accordion crm-Positions-accordion crm-accordion-closed">
        <div class="crm-accordion-header" id="Positions">
        		<div class="icon crm-accordion-pointer"></div>

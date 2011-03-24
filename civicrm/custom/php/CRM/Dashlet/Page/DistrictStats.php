@@ -75,6 +75,17 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		$this->assign('contactTypes', $contactTypes);
 		//CRM_Core_Error::debug($contactTypes);
 		
+		//get gender counts
+		$sql_genders = "SELECT gender_id, COUNT( id ) AS gender_count
+						FROM civicrm_contact
+						WHERE is_deleted != 1
+						GROUP BY gender_id;";
+		$dao = CRM_Core_DAO::executeQuery( $sql_genders );
+		while ( $dao->fetch( ) ) {
+            $contactGenders[$dao->gender_id] = $dao->gender_count;
+        }
+		$this->assign('contactGenders', $contactGenders);
+		
 		//get contact counts by Senate District
 		$sql_sd = "SELECT COUNT( civicrm_contact.id ) as sd_count, ny_senate_district_47
   				   FROM ( civicrm_address
@@ -201,7 +212,41 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
             $contactWard[$dao->ward_53] = $dao->ward_count;
         }
 		$this->assign('contactWard', $contactWard);
+
+		//get contact counts by School District
+		$sql_sc = "SELECT COUNT( civicrm_contact.id ) as sc_count, school_district_54
+  				   FROM ( civicrm_address
+           			INNER JOIN civicrm_value_district_information_7 
+					 ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+       			   INNER JOIN civicrm_contact
+       				ON ( civicrm_contact.id = civicrm_address.contact_id )
+ 				   WHERE ( civicrm_contact.is_deleted != 1 ) 
+				    AND ( civicrm_address.is_primary = 1 )
+					AND ( civicrm_value_district_information_7.school_district_54 IS NOT NULL )
+					AND ( civicrm_value_district_information_7.school_district_54 != '' )
+				   GROUP BY school_district_54;";
+		$dao = CRM_Core_DAO::executeQuery( $sql_sc );
+		while ( $dao->fetch( ) ) {
+            $contactSC[$dao->school_district_54] = $dao->sc_count;
+        }
+		$this->assign('contactSC', $contactSC);
 		
+		//get contact counts by Zip code
+		$sql_zp = "SELECT COUNT( civicrm_contact.id ) as zip_count, postal_code
+  				   FROM civicrm_address
+       			   INNER JOIN civicrm_contact
+       				ON ( civicrm_contact.id = civicrm_address.contact_id )
+ 				   WHERE ( civicrm_contact.is_deleted != 1 ) 
+				    AND ( civicrm_address.is_primary = 1 )
+					AND ( civicrm_address.postal_code != '' )
+					AND ( civicrm_address.postal_code IS NOT NULL )
+				   GROUP BY postal_code";
+		$dao = CRM_Core_DAO::executeQuery( $sql_zp );
+		while ( $dao->fetch( ) ) {
+            $contactZip[$dao->postal_code] = $dao->zip_count;
+        }
+		$this->assign('contactZip', $contactZip);
+				
 		//get contact issue codes
 		$sql_ic = "SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ic_count
   				   FROM civicrm_entity_tag
@@ -240,6 +285,44 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
             $keywords[$dao->name] = $dao->kword_count;
         }
 		$this->assign('keywords', $keywords);
+		
+		//get activity keywords
+		$sql_akword = "SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as akword_count
+  				   FROM civicrm_entity_tag
+       				INNER JOIN civicrm_tag
+       				 ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+					INNER JOIN civicrm_activity
+       				 ON ( civicrm_activity.id = civicrm_entity_tag.entity_id )
+ 				   WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_activity%' )
+       				AND ( civicrm_tag.parent_id = 296 )
+       				AND ( civicrm_tag.is_tagset != 1 )
+					AND ( civicrm_activity.is_deleted != 1 )
+				   GROUP BY name
+				   ORDER BY akword_count DESC";
+		$dao = CRM_Core_DAO::executeQuery( $sql_akword );
+		while ( $dao->fetch( ) ) {
+            $akeywords[$dao->name] = $dao->akword_count;
+        }
+		$this->assign('akeywords', $akeywords);
+		
+		//get case keywords
+		$sql_ckword = "SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as ckword_count
+  				   FROM civicrm_entity_tag
+       				INNER JOIN civicrm_tag
+       				 ON ( civicrm_entity_tag.tag_id = civicrm_tag.id )
+					INNER JOIN civicrm_case
+       				 ON ( civicrm_case.id = civicrm_entity_tag.entity_id )
+ 				   WHERE ( civicrm_entity_tag.entity_table LIKE '%civicrm_case%' )
+       				AND ( civicrm_tag.parent_id = 296 )
+       				AND ( civicrm_tag.is_tagset != 1 )
+					AND ( civicrm_case.is_deleted != 1 )
+				   GROUP BY name
+				   ORDER BY ckword_count DESC";
+		$dao = CRM_Core_DAO::executeQuery( $sql_ckword );
+		while ( $dao->fetch( ) ) {
+            $ckeywords[$dao->name] = $dao->ckword_count;
+        }
+		$this->assign('ckeywords', $ckeywords);
 		
 		//get contact positions
 		$sql_pos = "SELECT civicrm_tag.name, COUNT( civicrm_entity_tag.id ) as pos_count
