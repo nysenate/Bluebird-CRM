@@ -282,7 +282,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
 				foreach ( $targets as $target ) {
 					$turl = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid='.$target, $this->_absoluteUrl );
                 	$tc_params = array( 'contact_id' => $target );
-					$tc_contacts = civicrm_contact_get( &$tc_params );
+					$tc_contacts = civicrm_contact_get( $tc_params );
 					$atlist[] = '<a href="'.$turl.'">'.$tc_contacts[$target]['display_name'].'</a>';
 				}
 				$stlist = implode( ', ', $atlist );
@@ -359,7 +359,7 @@ ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
 				}
 				
 				$c_params = array( 'contact_id' => $cid );
-				$c_contacts = civicrm_contact_get( &$c_params );
+				$c_contacts = civicrm_contact_get( $c_params );
 				$di_demo = '<ul>';
 				foreach ( $c_contacts as $c_contact ) {
 					//CRM_Core_Error::debug($c_contact);
