@@ -46,7 +46,9 @@
                         </a>
                         </li>
                         
-                        {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')} 
+                        {*NYSS 3598*}
+                        {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts') && 
+                            call_user_func(array('CRM_Core_Permission','check'), 'delete contacts permanently') } 
                         <li class="crm-delete-action crm-contact-permanently-delete">
                         <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1"}" class="delete button" title="{ts}Delete Permanently{/ts}">
                         <span><div class="icon delete-icon"></div>{ts}Delete Contact Permanently{/ts}</span>{*NYSS*}

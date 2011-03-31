@@ -16,7 +16,7 @@ function nyss_civihooks_menu() {
 
 function nyss_civihooks_perm() {
 
-	return array('export print production files');
+	return array('export print production files', 'delete contacts permanently');
 	
 }
 
