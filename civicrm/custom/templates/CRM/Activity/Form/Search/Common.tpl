@@ -89,9 +89,9 @@
          {/foreach}
       </div>
       {/if}
-      <!--{if $tagset}
+      {*if $tagset}
          {include file="CRM/common/Tag.tpl"}
-      {/if}-->
+      {/if*}
       &nbsp;
     </td>
 </tr>
