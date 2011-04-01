@@ -227,6 +227,12 @@ $nyss_iofields['civicrm_value_constituent_information_1'] = array(
 	'contact_source_60' => array(
 		'fld' => 'contact_source_60',
 	),
+	'boe_date_of_registration_24' => array(
+		'fld' => 'boe_date_of_registration_24',
+	),
+	'voter_registration_status_23' => array(
+		'fld' => 'voter_registration_status_23',
+	),
 );
 
 $nyss_iosuffixes = array(

@@ -46,7 +46,7 @@ function nyss_ioimport_form() {
    $form['sendemail'] = array(
      '#type' => 'checkbox',
      '#title' => t('send summary email'),
-     '#default_value' => 1,
+     '#default_value' => 0,
    );
 
    $form['dryrun'] = array(
@@ -117,6 +117,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	civicrm_initialize( );
 	require_once 'CRM/Core/Config.php';
 	$config =& CRM_Core_Config::singleton();
+	
+	require_once 'CRM/Utils/String.php';
 
 	$path = $config->uploadDir.'printProduction/';
 	if ( !file_exists($path) ) {
@@ -185,6 +187,14 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$l['birth_date'] = NULL;
 		}
 		
+		//fix boe registration date
+		$boe_reg = $l['boe_date_of_registration_24'];
+		if ( !empty($boe_reg) && $boe_reg != 0 && $boe_reg != 19000101 && $boe_reg != 19010101 ) { //remove errant records
+			$l['boe_date_of_registration_24'] = substr($boe_reg,0,4).'-'.substr($boe_reg,4,2).'-'.substr($boe_reg,6,2);
+		} else {
+			$l['boe_date_of_registration_24'] = NULL;
+		}
+		
 		//fix suffixes
 		$suffix_val = '';
 		if ( array_key_exists( $l['suffix_id'], $aGender ) ) { //if a valid value, retain
@@ -217,6 +227,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		}
 		$l['contact_source_60'] = 'boe';
 		
+		//set voter registration status to registered
+		$l['voter_registration_status_23'] = 'registered';
+		
 		//fix street_unit
 		//if street_unit value exists, and there is no "apt" text, prepend to value
 		if ( $l['street_unit'] ) {
@@ -241,7 +254,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			CRM_Core_DAO::freeResult( );
 		}
 		
-		//nyss_out('debug', $l,true);
+		//strip leading/trailing/double spaces for all imported data
+		foreach ( $l as $k => $v ) {
+			$l[$k] = CRM_Utils_String::stripSpaces($v);
+		}
+		
+		//nyss_out('debug', $l, true);
 
 		/*------NOW IMPORT THE DATA-------------------------------------*/
 
