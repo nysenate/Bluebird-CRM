@@ -225,11 +225,13 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     }
     
     function orderBy( ) {
-        $this->_orderBy = "
-ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
-";
+        $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC ";
     }
-    
+	
+    function groupBy( ) {
+        $this->_groupBy   = "GROUP BY {$this->_aliases['civicrm_contact']}.id ";
+    }
+	
 /*    function postProcess( ) {
 
         $this->beginPostProcess( );
