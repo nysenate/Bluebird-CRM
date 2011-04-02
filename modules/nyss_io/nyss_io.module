@@ -165,14 +165,15 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 	nyss_out('status',"importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",true);
 	
-	//set includes based on array keys
-	if ( array_key_exists('current_employer', $l) ) { require_once 'CRM/Contact/BAO/Contact/Utils.php'; }
-	if ( array_key_exists('keywords', $l) ) {
+	//set includes based on column headers
+	$columns = $fo->header;
+	if ( array_key_exists('current_employer', $columns) ) { require_once 'CRM/Contact/BAO/Contact/Utils.php'; }
+	if ( array_key_exists('keywords', $columns) ) {
 		require_once 'api/v2/Tag.php';
 		require_once 'api/v2/EntityTag.php';
 		require_once 'CRM/Core/BAO/EntityTag.php';
 	}
-	if ( array_key_exists('note', $l) ) { require_once 'api/v2/Note.php'; }
+	if ( array_key_exists('note', $columns) ) { require_once 'api/v2/Note.php'; }
 	
 	//also create group here if set in form
 	if ( !empty($form_state['values']['addtogroup']) ) {
@@ -195,7 +196,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$group = array_keys($get_group);
 			$groupID = $group[0];
 		}
-		nyss_out("debug", $groupID, true);
+		echo 'groupID: '.$groupID;
 	}
 
   	while ($l = $fo->getLine()) {
@@ -209,7 +210,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		++$nyss_ioline;
 
 		if(is_numeric($runnum)) {
-
 			if($form_state['values']['runnum']<=$nyss_ioline) {
 				nyss_out('debug',"Stopping at {$nyss_ioline} lines.", true);
 				break;
@@ -349,6 +349,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         nyss_ioimportData('civicrm_value_district_information_7', $l, $dryrun, $logFile);
 		
 		//process special fields using API/BAO
+		//echo 'now begin processing special fields:<br />';
 		if ( array_key_exists( 'current_employer', $l ) && !empty($l['current_employer']) ) {
 			$sql = "SELECT c.id 
 			        FROM civicrm_contact c 
@@ -363,7 +364,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			if ( $dryrun ) {
 				nyss_out('debug', $current_employer, true);
 			} else {
-				CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $l['id'], $current_employer );
+				$organization = CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $l['id'], $current_employer );
 			}
 		}
 		if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
@@ -375,6 +376,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 					$tag = civicrm_tag_get($params);
 					//echo 'tag_get: '; nyss_out('debug', $tag, true);
 					if ( $tag['is_error'] ) {
+						echo 'creating tag: '.$keyword.'<br />';
 						$tag = civicrm_tag_create($params);
 						$tagid = $tag['tag_id'];
 					} else {
