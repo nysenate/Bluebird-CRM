@@ -1,7 +1,0 @@
-; $Id: nyss_io.info,v 1.0 2010/03/23  Exp $
-name = NYSS 3rd Party Import 
-description = NYSS 3rd Party Import module.
-dependencies[] = civicrm
-package = CiviCRM
-version="3.3"
-core="6.x"

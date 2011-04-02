@@ -67,6 +67,12 @@ function nyss_ioimport_form() {
 	),
      '#default_value' => '10',
    );
+   
+   $form['addtogroup'] = array(
+     '#type' => 'textfield',
+     '#title' => t('Add contacts to a group. If the group name does not exist, it will be created.'),
+     '#size' => 40,
+   );
 
    $form['import']['submit'] = array(
      '#type' => 'submit',
@@ -120,13 +126,17 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	
 	require_once 'CRM/Utils/String.php';
 
-	$path = $config->uploadDir.'printProduction/';
+	$path = '/data/importData/';
+	$logpath = $path.'logs/';
 	if ( !file_exists($path) ) {
 		mkdir( $path, 0775 );
 	}
+	if ( !file_exists($logpath) ) {
+		mkdir( $logpath, 0775 );
+	}
 
 	$logFilename = "import." . mt_rand(1,9999999999999999).".log";
-    $logFilePath = $path . $logFilename;
+    $logFilePath = $logpath.$logFilename;
 	$logFile = fopen($logFilePath, 'w');
 
 	require_once(dirname(__FILE__) . '/nyss_io_definitions.inc');
@@ -146,12 +156,47 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	//get some civicrm values and flip so we can easily lookup values
     $aStates = array_flip(ioGetStates());
     $aGender = array_flip(ioGetOptions("gender"));
+    $aPrefix = array_flip(ioGetOptions("individual_prefix"));
     $aSuffix = array_flip(ioGetOptions("individual_suffix"));
 	//echo '<pre>'; print_r($aStates); echo '</pre>'; exit();
 	//echo '<pre>'; print_r($aGender); echo '</pre>'; exit();
 	//echo '<pre>'; print_r($aSuffix); echo '</pre>'; exit();
+	//echo '<pre>'; print_r($aPrefix); echo '</pre>'; exit();
 
 	nyss_out('status',"importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",true);
+	
+	//set includes based on array keys
+	if ( array_key_exists('current_employer', $l) ) { require_once 'CRM/Contact/BAO/Contact/Utils.php'; }
+	if ( array_key_exists('keywords', $l) ) {
+		require_once 'api/v2/Tag.php';
+		require_once 'api/v2/EntityTag.php';
+		require_once 'CRM/Core/BAO/EntityTag.php';
+	}
+	if ( array_key_exists('note', $l) ) { require_once 'api/v2/Note.php'; }
+	
+	//also create group here if set in form
+	if ( !empty($form_state['values']['addtogroup']) ) {
+		require_once 'api/v2/Group.php';
+		require_once 'api/v2/GroupContact.php';
+		$groupID = '';
+		
+		$groupname = $form_state['values']['addtogroup'];
+		$groupparams = array( 'title' => $groupname );
+    	$get_group =& civicrm_group_get( $groupparams );
+		//nyss_out("debug", $get_group, true);
+		
+		if ( $get_group['is_error'] && !$dryrun ) {
+			$params = array( 'title' => $groupname, 'is_active' => 1 );
+				//nyss_out("debug", $params, true);
+			$group = civicrm_group_add( $params );
+				//nyss_out("debug", $group, true);
+			$groupID = $group['result'];
+		} else {
+			$group = array_keys($get_group);
+			$groupID = $group[0];
+		}
+		nyss_out("debug", $groupID, true);
+	}
 
   	while ($l = $fo->getLine()) {
 
@@ -195,9 +240,19 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$l['boe_date_of_registration_24'] = NULL;
 		}
 		
+		//fix prefixes
+		$prefix_val = '';
+		if ( array_key_exists( $l['prefix_id'], $aPrefix ) ) { //if a valid value, retain
+			$prefix_val = $l['prefix_id'];
+		} elseif ( array_key_exists( $l['prefix_id'], $nyss_ioprefixes ) ) { //check if in prefix map
+			$prefix_val = $nyss_ioprefixes[$l['prefix_id']];
+		} else { //if odd, ignore
+			$prefix_val = '';
+		}
+		
 		//fix suffixes
 		$suffix_val = '';
-		if ( array_key_exists( $l['suffix_id'], $aGender ) ) { //if a valid value, retain
+		if ( array_key_exists( $l['suffix_id'], $aSuffix ) ) { //if a valid value, retain
 			$suffix_val = $l['suffix_id'];
 		} elseif ( array_key_exists( $l['suffix_id'], $nyss_iosuffixes ) ) { //check if in suffix map
 			$suffix_val = $nyss_iosuffixes[$l['suffix_id']];
@@ -208,6 +263,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		//set ids; accomodate both import field schemas
 		$l['gender_id'] = ( $aGender[$l['gender']] ) ? $aGender[$l['gender']] : $aGender[$l['gender_id']];
 		$l['state_province_id'] = ( $aStates[$l['st']] ) ? $aStates[$l['st']] : $aStates[$l['state_province_id']];
+		$l['prefix_id'] = $aPrefix[$prefix_val];
 		$l['suffix_id'] = $aSuffix[$suffix_val];
 		
 		//set the last import timestamp
@@ -242,9 +298,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			if ( !$needle_found ) { $l['street_unit'] = 'Apt. '.$l['street_unit']; }
 		}
 
-		//form the street address
-		$l['street_address'] = "{$l['street_number']} {$l['street_name']}";
-		if ( $l['street_unit'] ) { $l['street_address'] = $l['street_address'].', '.$l['street_unit']; }
+		//form the street address; convert proper case first
+		$so = convertProperCase( $l['street_number'], true );
+		$sn = convertProperCase( $l['street_name'], true );
+		$su = convertProperCase( $l['street_unit'], true );
+		$l['street_address'] = $so.' '.$sn;
+		if ( $su ) { $l['street_address'] = $l['street_address'].', '.$su; }
 
 		//find an address if we don't have an addressID already
 		if (!empty($l['id']) && empty($l['address_id'])) {
@@ -288,6 +347,81 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         //set key correctly for ref (ID is for addresses)
         $l['entity_id'] = $l['address_id'];
         nyss_ioimportData('civicrm_value_district_information_7', $l, $dryrun, $logFile);
+		
+		//process special fields using API/BAO
+		if ( array_key_exists( 'current_employer', $l ) && !empty($l['current_employer']) ) {
+			$sql = "SELECT c.id 
+			        FROM civicrm_contact c 
+			        WHERE c.organization_name = %1 AND c.contact_type = 'Organization' AND is_deleted = 0 
+				    LIMIT 1";
+            $sqlParams = array( 1 => array( $l['current_employer'], 'String' ) );
+            if ( $orgID = CRM_Core_DAO::singleValueQuery( $sql, $sqlParams ) ) {
+                $current_employer = $orgID;
+            } else {
+				$current_employer = $l['current_employer'];
+			}
+			if ( $dryrun ) {
+				nyss_out('debug', $current_employer, true);
+			} else {
+				CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $l['id'], $current_employer );
+			}
+		}
+		if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
+			$keywords = array();
+			$keywords = explode( ',', str_replace(', ', ',', str_replace('"', '', $l['keywords'])) );
+			if ( !$dryrun ) {
+				foreach ( $keywords as $keyword ) {
+					$params = array( 'name' => $keyword, 'parent_id' => '296' );
+					$tag = civicrm_tag_get($params);
+					//echo 'tag_get: '; nyss_out('debug', $tag, true);
+					if ( $tag['is_error'] ) {
+						$tag = civicrm_tag_create($params);
+						$tagid = $tag['tag_id'];
+					} else {
+						$tagid = $tag['id'];
+					}
+					
+					//only add tag to contact if not already present
+					$entityTags =& CRM_Core_BAO_EntityTag::getTag($l['id']);
+					if ( !in_array($tagid, $entityTags) ) {
+						$entityParams = array('tag_id' => $tagid, 'contact_id' => $l['id'] );
+						//nyss_out('debug', $entityParams, true);
+						$entityTag = civicrm_entity_tag_add( $entityParams );
+					}
+				} 
+			} else {
+				nyss_out('debug', $l['keywords'], true); 
+			}
+		}
+		if ( array_key_exists( 'note', $l ) && !empty($l['note']) ) {
+			require_once 'api/v2/Note.php';
+			$params = array();
+			$params = array(
+                    'entity_table'  => 'civicrm_contact',
+                    'entity_id'     => $l['id'],
+                    'note'          => $l['note'],
+                    'contact_id'    => $l['id'],
+                    'modified_date' => date('Ymd'),
+                    'subject'       => 'Import Note',
+                    );
+    		if ( $dryrun ) {
+				nyss_out('debug', $l['note'], true);
+			} else {
+				$note = civicrm_note_create( $params );
+			}
+		}
+		
+		//add contact to group
+		if ( !empty($form_state['values']['addtogroup']) ) {
+			if ( !$dryrun ) {
+				$params = array( 'contact_id' => $l['id'],
+                    			 'group_id'   => $groupID );
+    			//nyss_out('debug', $params, true);
+				$groupcontact = civicrm_group_contact_add( $params );
+				//nyss_out('debug', $groupcontact, true);
+			}
+		}
+		
 	}
 
 	if ($form_state['values']['sendmail']==1) {
@@ -352,6 +486,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 //nyss_out('status', 1, true);
 //nyss_out('debug', $pkCivi, true);
 //nyss_out('debug', $pkImport, true);
+//nyss_out('debug', $l, true);
 
 		//get the existing data
 		$sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
@@ -380,6 +515,13 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 
 				//add to the update statement
 				if (!empty($data)) $up[] = "{$nyss_iofields[$tbl][$key]['fld']}='{$data}'";
+				
+				//if address is being updated, set lat/lon to null for reprocessing
+				if ( $key = 'street_address' && 
+		     		 ( empty($l['geo_code_1']) || empty($l['geo_code_2']) ) ) {
+					$l['geo_code_1'] = NULL;
+					$l['geo_code_2'] = NULL;
+				}
 			}
 		}
 
@@ -413,6 +555,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 	
 		$l['contact_type'] = 'Individual';
 		$l['country_id'] = 1228; //assume US
+		$prefixes = ioGetOptions("individual_prefix");
 		$suffixes = ioGetOptions("individual_suffix");
 		$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
 		$l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
@@ -420,9 +563,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 		$fnc = convertProperCase( $l['first_name'], true );
 		$mnc = convertProperCase( $l['middle_name'], true );
 		$lnc = convertProperCase( $l['last_name'], true );
-		$display_name = $fnc.' '.$mnc.' '.$lnc.$suffix;
+		$display_name = $prefixes[$l['prefix_id']].' '.$fnc.' '.$mnc.' '.$lnc.$suffix;
 		$l['display_name'] = nyss_stripSpaces( $display_name );
-		$l['sort_name'] = $lnc.', '.$fnc.' '.$mnc;
+		$l['sort_name'] = $lnc.', '.$fnc.' '.$mnc.' '.$lnc.$suffix;;
 		$l['location_type_id'] = 6; //set address type to BOE
 		$l['address_is_primary'] = 1; //set to primary
 		$l['phone_type_id'] = 1; //set to phone
@@ -431,7 +574,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 		$l['email_location_type_id'] = 1; //set to home
 		$l['email_is_primary'] = 1; //set to primary
 		
-		//nyss_out('debug', $l, true);
+		//nyss_out('debug', $l, true); exit();
 		
 		//set up the insert
 		foreach($l as $key=>$data) {
@@ -452,7 +595,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 
   			//skip if no data
 			if (empty($data)) continue;
-
+			
  			$data = str_replace("'","\'",$data);
 
 			$insertKeys[] = "`{$nyss_iofields[$tbl][$key]['fld']}`";
@@ -463,7 +606,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile ) {
 
 		if ( $insertKeys && $insertData ) {
 			$sqlINSERT = "INSERT INTO {$tbl} (".implode(',',$insertKeys).") VALUES (".implode(',',$insertData).")";
-			//echo '<pre>'; print_r($sqlINSERT."<br>"); echo '</pre>'; //debug
+			//nyss_out('debug', $sqlINSERT, true); exit();
 		}
 		
 		if ( !$dryrun ) {
@@ -522,6 +665,8 @@ function ioGetStates()
 
 function convertProperCase( $string, $skipMixed = false ) {
 
+	require_once 'CRM/Utils/String.php';
+	
 	//if mixed case, don't do anything
     if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
 
@@ -534,7 +679,7 @@ function convertProperCase( $string, $skipMixed = false ) {
     // should be capitalised
     $punctuation = array('.', '-', ':', '!', '\'', '-', '?');
 
-	$string = ucwords(strtolower($string));
+	$string = CRM_Utils_String::stripSpaces( ucwords(strtolower($string)) );
 
 	$words = explode(' ', $string);
 

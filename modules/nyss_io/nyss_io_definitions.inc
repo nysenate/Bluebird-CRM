@@ -2,6 +2,7 @@
 
 global $nyss_iofields;
 global $nyss_iosuffixes;
+global $nyss_ioprefixes;
 
 $nyss_iofields['civicrm_contact'] = array(
 	'id' => array(
@@ -21,6 +22,9 @@ $nyss_iofields['civicrm_contact'] = array(
 	'last_name' => array(
 		'fld' => 'last_name',
         'handler' => 'convertProperCase',
+	),
+	'prefix_id' => array(
+		'fld' => 'prefix_id',
 	),
 	'suffix_id' => array(
 		'fld' => 'suffix_id',
@@ -48,6 +52,9 @@ $nyss_iofields['civicrm_contact'] = array(
 	),
 	'contact_type' => array(
 		'fld' => 'contact_type',
+	),
+	'job_title' => array(
+		'fld' => 'job_title',
 	),
 );
 
@@ -115,6 +122,12 @@ $nyss_iofields['civicrm_address'] = array(
 	),
 	'address_is_primary' => array(
 		'fld' => 'is_primary',
+	),
+	'geo_code_1' => array(
+		'fld' => 'geo_code_1',
+	),
+	'geo_code_2' => array(
+		'fld' => 'geo_code_2',
 	),
 );
 
@@ -243,6 +256,13 @@ $nyss_iosuffixes = array(
 	'Dr'	=> 'M.D.',
 	's'		=> 'Sr.',
 	'Sr'	=> 'Sr.',
+);
+
+$nyss_iosuffixes = array(
+	'Mr' 	=> 'Mr.',
+	'Mrs' 	=> 'Mrs.',
+	'Ms'	=> 'Ms.',
+	'Rev'	=> 'Rev.',
 );
 
 ?>
