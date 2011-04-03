@@ -13,14 +13,18 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
-liveInstances=`$script_dir/iterateInstances.sh --live`
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $prog instance" >&2
+  exit 1
+fi
+
+instance="$1"
 
 . $script_dir/defaults.sh
 
 sql="UPDATE civicrm_phone SET phone_type_id=1 WHERE phone_type_id=246; UPDATE civicrm_phone SET phone_type_id=2 WHERE phone_type_id=247; UPDATE civicrm_phone SET phone_type_id=3 WHERE phone_type_id=248;"
 
-for instance in $liveInstances; do
-  echo "fixing: $instance"
-  $execSql -i $instance -c "$sql"
-done
+echo "Fixing phone types for instance [$instance]"
+$execSql -i $instance -c "$sql"
 

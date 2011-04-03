@@ -22,7 +22,7 @@ set_time_limit(0);
 
 $prog = basename(__FILE__);
 
-require_once dirname(__FILE__).'/../../core/bin/script_utils.php';
+require_once dirname(__FILE__).'/../core/bin/script_utils.php';
 $stdusage = civicrm_script_usage();
 $usage = "[--server|-s imap_server]  [--opts|-o imap_options]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]";
 $shortopts = "s:o:c:m:a:";

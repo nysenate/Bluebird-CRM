@@ -64,13 +64,13 @@ ig_opt="--global"
 # Use the --drupal option to execute SQL on the Drupal DB instead.
 
 if [ "$instance" ]; then
+  if ! $readConfig --instance $instance --quiet; then
+    echo "$prog: $instance: Instance not found" >&2
+    exit 1
+  fi
   ig_opt="--ig $instance"
   if [ ! "$dbname" ]; then
-    db_basename=`$readConfig --instance $instance db.basename`
-    if [ $? -ne 0 ]; then
-      echo "$prog: $instance: Instance not found" >&2
-      exit 1
-    fi
+    db_basename=`$readConfig --instance $instance db.basename` || db_basename="$instance"
     db_prefix=`$readConfig $ig_opt $db_prefix_keyname` || db_prefix=$default_db_prefix
     dbname="$db_prefix$db_basename"
   fi
