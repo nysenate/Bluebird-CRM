@@ -92,23 +92,27 @@
 {/if}
 
 {if $form.contact_tags}
-            <td><label>{ts}Issue Code(s){/ts}</label>{*NYSS*}
-                {$form.contact_tags.html}
-                {literal}
-                <script type="text/javascript">
-
-                cj("select#contact_tags").crmasmSelect({
-                    addItemTarget: 'bottom',
-                    animate: false,
-                    highlight: true,
-                    sortable: true,
-                    respectParents: true
-                });
-
-                </script>
-                {/literal}   
-            </td>
-            <td colspan="2">
+            <td colspan="3" id="advSearchContactTags">
+            	<div class="crm-section tag-section contact-issue-codes">
+                  <div class="label">
+                  	<label>{ts}Issue Code(s){/ts}</label>{*NYSS*}
+                  </div>
+                  <div class="content">
+                  	{$form.contact_tags.html}
+                  	{literal}
+                  	<script type="text/javascript">
+                  	cj("select#contact_tags").crmasmSelect({
+                  	  addItemTarget: 'bottom',
+                  	  animate: false,
+                  	  highlight: true,
+                  	  sortable: true,
+                  	  respectParents: true
+                  	});
+                  </script>
+                  {/literal}
+                  </div>
+                </div>
+            
             	{include file="CRM/common/Tag.tpl"}{*NYSS*}
             </td>
 {else}

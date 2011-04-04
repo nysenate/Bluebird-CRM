@@ -891,8 +891,8 @@ ul.token-input-list-facebook { width:265px;}
     }
 
 /* Contact Tags Tab*/
-#mainTabContainer div#Tag .tag-section,
-#tagSelect .tag-section {
+#mainTabContainer div#Tag .,
+#tagSelect . {
 	float: left;
     width: 410px;
 	margin-left: 16px;
@@ -900,17 +900,17 @@ ul.token-input-list-facebook { width:265px;}
 #tagSelect #tagtree {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 }
-#mainTabContainer div#Tag .tag-section .label,
-#tagSelect .tag-section .label {
+#mainTabContainer div#Tag . .label,
+#tagSelect . .label {
 	font-size: 120%;
 	margin: 10px 0 -10px;
 	float: none;
 }
-#tagSelect .tag-section .label {
+#tagSelect . .label {
 	margin-bottom: 6px;
 }
-#mainTabContainer div#Tag .tag-section .content,
-#tagSelect .tag-section .content {
+#mainTabContainer div#Tag . .content,
+#tagSelect . .content {
 	margin-left: 0;
 }
 #mainTabContainer .contactTagsList,
@@ -1155,6 +1155,18 @@ ul.token-input-list-facebook { width:265px;}
 }
 #commPrefs #preferred_language {
 	width: 400px;
+}
+
+/*advanced search contact tags*/
+#advSearchContactTags .contact-issue-codes .label {
+	margin-top: 8px;
+}
+#advSearchContactTags .contact-issue-codes .crmasmContainer,
+#advSearchContactTags .contact-issue-codes .crmasmSelect {
+	width: 320px;
+}
+#advSearchContactTags ul.token-input-list-facebook {
+	width: 320px;
 }
 
 /*override tag tree expand/close icons*/
