@@ -316,7 +316,7 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                 </td>
              </tr>
              {/if}
-                 <tr class="crm-case-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl"}</td></tr>
+                 <tr class="crm-case-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl" tagsetType='activity'}</td></tr>{*NYSS 3426*}
              </table>
 
            {/if}

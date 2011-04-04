@@ -216,19 +216,35 @@ class CRM_Admin_Page_AJAX
     static function getTagList( ) {
         $name     = CRM_Utils_Type::escape( $_GET['name'], 'String' );
         $parentId = CRM_Utils_Type::escape( $_GET['parentId'], 'Integer' );
+		
+		//NYSS 3426
+		$isSearch = null;
+ 	 	if ( isset( $_GET['search'] ) ) {
+ 	 		$isSearch = CRM_Utils_Type::escape( $_GET['search'], 'Integer' );
+ 	 	}
+		//NYSS end
         
         $tags = array( );
 		//NYSS treat issue codes and keywords using normal method
         if ($parentId != 292) {
             
-            $tags[] = array( 'name' => $name,
-                             'id'   => $name. ":::value" ); 
-                             	 
+			//NYSS 3426
+            if ( !$isSearch ) {
+				$tags[] = array( 'name' => $name,
+            	                 'id'   => $name. ":::value" ); 
+            }
+			                 	 
         	$query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
         	$dao = CRM_Core_DAO::executeQuery( $query );
         
         	while( $dao->fetch( ) ) {
-            	$tags[] = array( 'name' => addcslashes($dao->name, '"'),
+            	//NYSS 3426
+				// make sure we return tag name entered by user only if it does not exists in db
+ 	 			if ( $name == $dao->name ) {
+ 	 				$tags = array();
+ 	 			}
+ 				// escape double quotes, which break results js
+				$tags[] = array( 'name' => addcslashes($dao->name, '"'),
                              	 'id'   => $dao->id );
         	}
         

@@ -89,9 +89,7 @@
          {/foreach}
       </div>
       {/if}
-      {*if $tagset}
-         {include file="CRM/common/Tag.tpl"}
-      {/if*}
+      {include file="CRM/common/Tag.tpl" tagsetType='activity'} {*NYSS 3426*}
       &nbsp;
     </td>
 </tr>

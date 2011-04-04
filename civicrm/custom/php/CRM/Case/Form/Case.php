@@ -359,10 +359,10 @@ class CRM_Case_Form_Case extends CRM_Core_Form
         require_once 'CRM/Core/BAO/EntityTag.php';
         CRM_Core_BAO_EntityTag::create( $tagParams, 'civicrm_case', $caseObj->id );
         
-        //save free tags
-        if ( isset( $params['taglist'] ) && !empty( $params['taglist'] ) ) {
+        //save free tags //NYSS 3426
+        if ( isset( $params['case_taglist'] ) && !empty( $params['case_taglist'] ) ) {
             require_once 'CRM/Core/Form/Tag.php';
-            CRM_Core_Form_Tag::postProcess( $params['taglist'], $caseObj->id, 'civicrm_case', $this );
+            CRM_Core_Form_Tag::postProcess( $params['case_taglist'], $caseObj->id, 'civicrm_case', $this );
         }
         
         // user context

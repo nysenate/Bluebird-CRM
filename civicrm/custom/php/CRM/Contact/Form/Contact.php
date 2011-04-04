@@ -914,10 +914,10 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
             CRM_Core_BAO_EntityTag::create( $params['tag'],'civicrm_contact' ,
                                             $params['contact_id'] );
         
-            //save free tags
-            if ( isset( $params['taglist'] ) && !empty( $params['taglist'] ) ) {
+            //save free tags //NYSS 3426
+            if ( isset( $params['contact_taglist'] ) && !empty( $params['contact_taglist'] ) ) {
                 require_once 'CRM/Core/Form/Tag.php';
-                CRM_Core_Form_Tag::postProcess( $params['taglist'], $params['contact_id'], 'civicrm_contact', $this );
+                CRM_Core_Form_Tag::postProcess( $params['contact_taglist'], $params['contact_id'], 'civicrm_contact', $this );
             }
         }
         

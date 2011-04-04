@@ -679,11 +679,13 @@ function addRole() {
   {ts}Case Tags{/ts}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
+  {assign var="tagExits" value=0} {*NYSS 3426*}
   {if $tags}
     <div class="crm-block crm-content-block crm-case-caseview-display-tags">{$tags}</div>
+    {assign var="tagExits" value=1} {*NYSS 3426*}
   {/if}
 
-  {foreach from=$tagset item=displayTagset}
+  {foreach from=$tagsetInfo_case item=displayTagset} {*NYSS 3426*}
       {if $displayTagset.entityTagsArray}
           <div class="crm-block crm-content-block crm-case-caseview-display-tagset">
               &nbsp;&nbsp;{$displayTagset.parentName}:
@@ -691,16 +693,17 @@ function addRole() {
                   &nbsp;{$val.name}{if !$smarty.foreach.tagsetList.last},{/if}
               {/foreach}
           </div>
+          {assign var="tagExits" value=1} {*NYSS 3426*}
       {/if}
   {/foreach}
 
-  {if !tags and !$displayTagset.entityTagsArray }
+  {if !$tagExits } {*NYSS 3426*}
     <div class="status">
         {ts}There are no tags currently assigend to this case.{/ts}
     </div>
   {/if}
 
-  <div class="crm-submit-buttons"><input type="button" class="form-submit" onClick="javascript:addTags()" value={if $tags || $displayTagset.entityTagsArray}"{ts}Edit Tags{/ts}"{else}"{ts}Add Tags{/ts}"{/if} /></div>
+  <div class="crm-submit-buttons"><input type="button" class="form-submit" onClick="javascript:addTags()" value={if $tagExits}"{ts}Edit Tags{/ts}"{else}"{ts}Add Tags{/ts}"{/if} /></div> {*NYSS 3426*}
 
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
@@ -708,7 +711,7 @@ function addRole() {
     <div id="manageTags">
         <div class="label">{$form.case_tag.label}</div>
         <div class="view-value"><div class="crm-select-container">{$form.case_tag.html}</div>
-        <div style="text-align:left;">{include file="CRM/common/Tag.tpl"}</div>
+        <div style="text-align:left;">{include file="CRM/common/Tag.tpl" tagsetType='case'}</div>{*NYSS 3426*}
     </div>
     </div>
 
@@ -727,19 +730,10 @@ function addTags() {
     cj("#manageTags").show( );
 
     cj("#manageTags").dialog({
-        title: "Change Case Tags",
+        title: "{/literal}{ts}Change Case Tags{/ts}{literal}", //NYSS
         modal: true,
-        bgiframe: true,
-        width : 450,
-        overlay: { 
-            opacity: 0.5, 
-            background: "black" 
-        },
 
-        open:function() {
-            /* set defaults if editing */
-        },
-
+		width: '550', //NYSS
         buttons: { 
             "Save": function() { 
                 var tagsChecked = '';	    
@@ -756,7 +750,7 @@ function addTags() {
                 });
                 
                 var tagList = '';
-                cj("#manageTags input[name^=taglist]").each( function( ) {
+                cj("#manageTags input[name^=case_taglist]").each( function( ) { //NYSS 3426
                     if ( !tagsChecked ) {
                         tagsChecked = cj(this).val() + '';
                     } else {

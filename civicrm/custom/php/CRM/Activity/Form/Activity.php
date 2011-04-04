@@ -994,10 +994,10 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         require_once 'CRM/Core/BAO/EntityTag.php';
         CRM_Core_BAO_EntityTag::create( $tagParams, 'civicrm_activity',  $activity->id );
  
-        //save free tags
-        if ( isset( $params['taglist'] ) && !empty( $params['taglist'] ) ) {
+        //save free tags //NYSS 3426
+        if ( isset( $params['activity_taglist'] ) && !empty( $params['activity_taglist'] ) ) {
             require_once 'CRM/Core/Form/Tag.php';
-            CRM_Core_Form_Tag::postProcess( $params['taglist'], $activity->id, 'civicrm_activity', $this );
+            CRM_Core_Form_Tag::postProcess( $params['activity_taglist'], $activity->id, 'civicrm_activity', $this );
         }
         
         // call end post process. Idea is to let injecting file do any
