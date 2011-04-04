@@ -55,6 +55,7 @@ $nyss_iofields['civicrm_contact'] = array(
 	),
 	'job_title' => array(
 		'fld' => 'job_title',
+		'handler' => 'convertProperCase',
 	),
 );
 
