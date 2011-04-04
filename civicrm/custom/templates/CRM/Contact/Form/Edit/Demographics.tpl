@@ -68,6 +68,11 @@
         <span class="labels">{$form.$custom_62.label}</span>
         <span class="fields">{$form.$custom_62.html}</span>
   </div>
+  <div class="form-item">
+        {assign var='custom_63' value=$groupTree.1.fields.63.element_name}
+        <span class="labels">{$form.$custom_63.label}</span>
+        <span class="fields">{$form.$custom_63.html}</span>
+  </div>
   </div>
   
   <div class="clear"></div>
