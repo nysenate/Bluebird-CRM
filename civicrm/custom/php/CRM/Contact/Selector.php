@@ -296,7 +296,10 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
                     } else if ( $value['key'] == 'email' ) {
                         $url = "civicrm/contact/view/activity";
                         $qs  = "atype=3&action=add&reset=1&cid=%%id%%{$extraParams}";
-                    }
+                    } else if ( $value['key'] == 'tag' ) { //NYSS 3329
+						$url = "civicrm/contact/view";
+						$qs = "selectedChild=tag&reset=1&cid=%%id%%{$extraParams}";
+					}
                     
                     self::$_links[$counter++]  = array(
                                                        'name'     => $value['title'],
