@@ -38,11 +38,6 @@ require_once 'CRM/Core/Page.php';
 
 class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 
-	//NYSS need to sort the array after merge
-	static function cmpFunc( $a, $b ) {
-        return ( $a['date'] >= $b['date'] ) ? -1 : 1;
-    }
-
    /**
      * This function is called when action is browse
      * 
@@ -97,7 +92,8 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 								    'description' => $dao->data );
         }
 		$logEntries = array_merge_recursive( $clogEntries, $alogEntries );
-		usort( $logEntries, array('CRM_Contact_Page_View_Log', 'cmpFunc') );
+		require_once 'CRM/Utils/Sort.php';
+		usort( $logEntries, array('CRM_Utils_Sort', 'cmpDate') );
 		
 		$this->assign( 'logCount', count( $logEntries ) );
         $this->assign_by_ref( 'log', $logEntries );
