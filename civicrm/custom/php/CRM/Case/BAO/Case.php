@@ -557,6 +557,11 @@ WHERE cc.contact_id = %1
                          civicrm_activity.id as case_recent_activity_id,
                          aov.name as case_recent_activity_type_name,
                          aov.label as case_recent_activity_type ";
+        } else if ( $type == 'all' ) { //NYSS 2173
+            $query .=  " civicrm_activity.activity_date_time as case_activity_date,
+                         civicrm_activity.id as case_activity_id,
+                         aov.name as case_activity_type_name,
+                         aov.label as case_activity_type ";
         } 
         
         $query .= 
@@ -581,6 +586,10 @@ WHERE cc.contact_id = %1
                                   AND civicrm_activity.status_id != $scheduledStatusId
                                   AND civicrm_activity.activity_date_time <= NOW() 
                                   AND civicrm_activity.activity_date_time >= DATE_SUB( NOW(), INTERVAL 14 DAY ) ) ";
+        } else if ( $type == 'all' ) { //NYSS 2173
+            $query .= " LEFT JOIN civicrm_activity
+                             ON ( civicrm_case_activity.activity_id = civicrm_activity.id
+                                  AND civicrm_activity.is_current_revision = 1 ) ";
         }
                
         $query .= "
@@ -624,10 +633,17 @@ WHERE cc.contact_id = %1
                        AND ca2.activity_date_time <= NOW() 
                        AND ca2.activity_date_time >= DATE_SUB( NOW(), INTERVAL 14 DAY )
                        AND civicrm_activity.activity_date_time < ca2.activity_date_time )";
-        }
+        } else if ( $type == 'all' ) { //NYSS 2173
+		    $query .= " )";
+		}
         
-        $query .= " WHERE ca2.id IS NULL";
-
+		//NYSS 2173
+        if ( $type == 'all' ) {
+			$query .= " WHERE ca2.id";
+		} else {
+			$query .= " WHERE ca2.id IS NULL";
+		}
+		
         if ( $condition ) {
             $query .= $condition;
         }
@@ -636,8 +652,10 @@ WHERE cc.contact_id = %1
             $query .=" ORDER BY case_scheduled_activity_date ASC ";
         } else if ( $type == 'recent' ) {
             $query .= " ORDER BY case_recent_activity_date ASC ";
+        } else if ( $type == 'all' ) { //NYSS 2173
+            $query .= " ORDER BY case_activity_date ASC ";
         }
-
+		//CRM_Core_Error::debug($query);
         return $query;
     }
 
@@ -684,7 +702,7 @@ WHERE cc.contact_id = %1
 AND civicrm_activity.is_deleted = 0
 AND civicrm_case.is_deleted     = 0";
         
-        if ( $type == 'upcoming' ) {
+        if ( $type == 'upcoming' || $type == 'all' ) { //NYSS 2173
             require_once 'CRM/Core/OptionGroup.php';
             $closedId    = CRM_Core_OptionGroup::getValue( 'case_status', 'Closed', 'name' );
             $condition .= "
@@ -724,6 +742,11 @@ AND civicrm_case.status_id != $closedId";
             $resultFields[] = 'case_recent_activity_type_name';
             $resultFields[] = 'case_recent_activity_type';
             $resultFields[] = 'case_recent_activity_id';
+        } else if ( $type == 'all' ) { //NYSS 2173
+            $resultFields[] = 'case_activity_date';
+            $resultFields[] = 'case_activity_type_name';
+            $resultFields[] = 'case_activity_type';
+            $resultFields[] = 'case_activity_id';
         }
 
         // we're going to use the usual actions, so doesn't make sense to duplicate definitions
