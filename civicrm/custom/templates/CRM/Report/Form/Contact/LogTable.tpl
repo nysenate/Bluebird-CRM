@@ -30,7 +30,7 @@
         </div>
     {/if}
     {include file="CRM/common/jsortable.tpl"}
-    <table class="report-layout display">
+    <table class="report-layout display" id="logTable">
         <thead class="sticky">
         <tr> 
             {foreach from=$columnHeaders item=header key=field}
@@ -59,11 +59,15 @@
         </thead>
        
         {foreach from=$rows item=row key=rowid}
+        {*<pre>{$row|@print_r}</pre>*}
             <tr  class="{cycle values="odd-row,even-row"} crm-report" id="crm-report_{$rowid}">
                 {foreach from=$columnHeaders item=header key=field}
                     {assign var=fieldLink value=$field|cat:"_link"}
                     {assign var=fieldHover value=$field|cat:"_hover"}
-                    <td class="crm-report-{$field}{if $header.type eq 1024 OR $header.type eq 1} report-contents-right{elseif $row.$field eq 'Subtotal'} report-label{/if}">
+                    {assign var=hideTouched value=""}
+                    
+                    <td class="crm-report-{$field}{if $header.type eq 1024 OR $header.type eq 1} report-contents-right{elseif $row.$field eq 'Subtotal'} report-label{/if}" id="{$field}_{$rowid}" >
+                    	
                         {if $row.$fieldLink}
                             <a title="{$row.$fieldHover}" href="{$row.$fieldLink}">
                         {/if}
@@ -114,6 +118,11 @@
                             {$row.civicrm_activity_targets_list}
                         {/if}
                     </td>
+                    {if $field eq 'civicrm_contact_touched_display_name_touched' && $row.hideTouched}
+                    <script type="text/javascript">
+   						document.getElementById('civicrm_contact_touched_display_name_touched_{$rowid}').innerHTML=""
+					</script>
+                    {/if}
                 {/foreach}
             </tr>
         {/foreach}

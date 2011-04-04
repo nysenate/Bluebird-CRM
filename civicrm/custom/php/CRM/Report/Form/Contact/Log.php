@@ -70,7 +70,10 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                  array( 'title'     => ts( 'Touched Contact' ),
                                         'name'      => 'display_name',
                                         /*'required'  => true,*/),
-                                 'id'       => 
+                                 'sort_name_touched' => 
+                                 array( 'no_display' => true,
+                                        'name'      => 'sort_name', ),
+								 'id'       => 
                                  array( 'no_display'=> true,
                                         'required'  => true, ), ),
                           'filters'   =>             
@@ -225,27 +228,28 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     }
     
     function orderBy( ) {
-        $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC ";
+        $this->_orderBy = "ORDER BY IFNULL({$this->_aliases['civicrm_contact_touched']}.sort_name, 'zzzz'), 
+			{$this->_aliases['civicrm_log']}.modified_date DESC ";
     }
 	
-    function groupBy( ) {
-        $this->_groupBy   = "GROUP BY {$this->_aliases['civicrm_contact_touched']}.id, {$this->_aliases['civicrm_log']}.id ";
-    }
+    /*function groupBy( ) {
+        $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact_touched']}.id, {$this->_aliases['civicrm_log']}.id ";
+    }*/
 	
-/*    function postProcess( ) {
+    /*function postProcess( ) {
 
         $this->beginPostProcess( );
 
         $sql  = $this->buildQuery( true );
-//CRM_Core_Error::debug('sql', $sql);             
+CRM_Core_Error::debug('sql', $sql); exit();
         $rows = $graphRows = array();
         $this->buildRows ( $sql, $rows );
         
         $this->formatDisplay( $rows );
         $this->doTemplateAssignment( $rows );
         $this->endPostProcess( $rows );	
-    }
-*/
+    }*/
+
     
     function alterDisplay( &$rows ) {
         // custom code to alter rows
@@ -254,14 +258,15 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 		//CRM_Core_Error::debug($rows);
         foreach ( $rows as $rowNum => $row ) {
             
-			//NYSS
-			//CRM_Core_Error::debug($this);
-			if ( /*!empty($this->_noRepeats) &&*/ $this->_outputMode != 'csv' ) {
-				CRM_Core_Error::debug('row', $row);
-				CRM_Core_Error::debug('cid', $cid);
-                // don't repeat contact details if its same as the previous row
+			//NYSS 3504 don't repeat contact details if its same as the previous row
+			$rows[$rowNum]['hideTouched' ] = 0;
+			if ( $this->_outputMode != 'csv' ) {
+				//CRM_Core_Error::debug('row', $row);
+				//CRM_Core_Error::debug('cid', $cid);
+				//CRM_Core_Error::debug('prev_cid', $prev_cid);
+				//CRM_Core_Error::debug('display_flag', $display_flag);
                 if ( array_key_exists('civicrm_contact_touched_id', $row ) && !empty($row['civicrm_contact_touched_id']) ) {
-                    if ( $cid =  $row['civicrm_contact_touched_id'] ) {
+                    if ( $cid = $row['civicrm_contact_touched_id'] ) {
                         if ( $rowNum == 0 ) {
                             $prev_cid = $cid;
                         } else {
@@ -275,13 +280,8 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                         }
                         
                         if ( $display_flag ) {
-                            foreach ( $row as $colName => $colVal ) {
-                                if ( in_array($colName, $this->_noRepeats) ) {
-                                    unset($rows[$rowNum][$colName]);          
-                                }
-                            }
-                        }
-                        $entryFound = true;
+                            $rows[$rowNum]['hideTouched' ] = 1;
+						}
                     }
                 }
             }
