@@ -573,6 +573,15 @@ blockquote p {
   display: none;
 }
 
+#crm-container #saving {
+  background: none;
+  padding: 2px 4px;
+  font-weight: normal;
+  font-size: 1em;
+  display: none;
+}
+
+
 #saving p {
   margin: 0;
 }

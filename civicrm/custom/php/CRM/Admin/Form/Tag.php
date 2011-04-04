@@ -99,7 +99,8 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form
             
             $this->add('text', 'name', ts('Name')       ,
                        CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Tag', 'name' ),true );
-            $this->addRule( 'name', ts('Name already exists in Database.'), 'objectExists', array( 'CRM_Core_DAO_Tag', $this->_id ) );
+            // add formRule
+            $this->addFormRule( array( 'CRM_Admin_Form_Tag', 'formRule' ) );
 
             $this->add('text', 'description', ts('Description'), 
                        CRM_Core_DAO::getAttribute( 'CRM_Core_DAO_Tag', 'description' ) );
@@ -173,4 +174,45 @@ class CRM_Admin_Form_Tag extends CRM_Admin_Form
             CRM_Core_Session::setStatus( ts('The tag \'%1\' has been saved.', array(1 => $tag->name)) );
         }        
     }//end of function
-}
+     
+     /**
+      * Function to check if the tag already exists within the tag set.
+      */
+     
+     static function formRule( $fields ) {
+ 
+         // load tag library
+         require_once 'CRM/Core/BAO/Tag.php';
+         
+         // find all tags with the same parent id. this is the same as a tag set
+         $tags = CRM_Core_BAO_Tag::getTags('', $bar,$fields["parent_id"]);
+ 
+         // collision checks if there are any duplicate tag names within this tag set
+         $collision = false;
+ 
+         foreach ($tags as $id => $name) {
+             // for some reason the names contain a bunch of &nbsp
+             $name = str_replace("&nbsp;","",$name);
+ 
+             // check current name against each tag name
+             if ($fields["name"] == $name) {
+                 $collision = true;
+             }
+         }
+  
+         $errors = array( );
+         
+         if($collision) {
+             $errors['_qf_default'] = 
+                 ts(
+                     "The tag " . $fields["name"] . " already exists in this tag set."
+                 );
+         }
+ 
+         if ( ! empty( $errors ) ) {
+             return $errors;
+         }
+ 
+         return empty( $errors ) ? true : $errors;
+     }
+ }
