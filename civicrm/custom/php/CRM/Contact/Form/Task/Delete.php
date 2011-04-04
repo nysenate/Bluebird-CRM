@@ -207,7 +207,7 @@ class CRM_Contact_Form_Task_Delete extends CRM_Contact_Form_Task {
         } else {
             if ( $deletedContacts ) {
                 
-				//NYSS 3338 we dono't want to return to the full list of contacts
+				//NYSS 3338 we don't want to return to the full list of contacts
                 //$session->replaceUserContext( CRM_Utils_System::url( $urlString, $urlParams ) );
                 
                 if ($this->_restore) {
