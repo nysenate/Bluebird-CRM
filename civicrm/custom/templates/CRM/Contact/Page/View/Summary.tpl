@@ -397,7 +397,14 @@
          				{else}
          				   <td class="label">{ts}Age{/ts}</td>
          				   <td>{if $age.y}{ts count=$age.y plural='%count years'}%count year{/ts}{elseif $age.m}{ts count=$age.m plural='%count months'}%count month{/ts}{/if} </td>
-        				 {/if}
+        				{/if}
+                        </tr>
+                        {if $custom_63.field_value}{*religion*}
+                        <tr>
+                        	<td class="label">{$custom_63.field_title}</td>
+                        	<td>{$custom_63.field_value}</td>
+                        </tr>
+                        {/if}
     				</table>
 				    {/if}
 					</div><!-- #contactCardRight -->
