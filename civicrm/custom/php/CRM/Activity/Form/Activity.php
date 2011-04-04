@@ -490,7 +490,16 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
 
             if ( !CRM_Utils_Array::crmIsEmptyArray( $defaults['target_contact'] ) ) {
                 $target_contact_value = explode(';', trim($defaults['target_contact_value'] ) );
-                $this->assign( 'target_contact', array_combine( array_unique( $defaults['target_contact'] ), $target_contact_value ) );
+				//NYSS 3083
+				$targetsCombined = array_combine( array_unique( $defaults['target_contact'] ), $target_contact_value );
+				require_once 'CRM/Contact/BAO/Contact/Location.php';
+				foreach ( $targetsCombined as $targetID => $targetName ) {
+					$targetPhone = CRM_Contact_BAO_Contact_Location::getPhoneDetails($targetID);
+					if ( $targetPhone[1] ) {
+						$targetsCombined[$targetID] = $targetName.' ('.$targetPhone[1].')';
+					}
+				}
+                $this->assign( 'target_contact', $targetsCombined );
             }
             
             if ( !CRM_Utils_Array::crmIsEmptyArray( $defaults['assignee_contact'] ) ) {
