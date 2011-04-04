@@ -31,6 +31,30 @@ Blueprint.formCheck = function() {
   });
 };
 
+// prevent users from clicking a submit button twice
+Blueprint.formCheck = function() {
+  // only apply this to node and comment and new user registration forms
+  var forms = $("#crm-container>form .crm-submit-buttons .crm-button-type-upload>input");
+
+  // insert the saving div now to cache it for better performance and to show the loading image
+  // $('<div id="saving"><p class="saving">Saving</p></div>').insertAfter(forms);
+
+  forms.click(function() {
+    // $(this).siblings("input:submit").hide();
+    $(this).attr('value', 'Working...');
+    $(this).parents('form:first').attr('disabled','disabled');
+   // $("#saving").show();
+
+    var notice = function() {
+      $('<p id="saving-notice">Not saving? Wait a few seconds, reload this page, and try again. Every now and then the internet hiccups too :-)</p>').appendTo("#saving").fadeIn();
+    };
+
+    // append notice if form saving isn't work, perhaps a timeout issue
+    setTimeout(notice, 24000);
+  });
+};
+
+
 // Global Killswitch.
 if (Drupal.jsEnabled) {
   $(document).ready(Blueprint.formCheck);
@@ -684,15 +708,5 @@ $.TokenList.Cache = function (options) {
 };
 
 })(jQuery);
-
-  $(document).ready(function(){
-    $("input.form-submit").attr("disabled", false);
-
-    $("#crm-container form").submit(function(){
-      $("input.form-submit").attr("disabled", true)
-                            .val("Working...");
-      return true;
-    })
-  })
 
 
