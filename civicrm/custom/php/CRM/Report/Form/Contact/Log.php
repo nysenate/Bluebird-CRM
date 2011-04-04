@@ -47,23 +47,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
         asort($this->activityTypes);
     	
         $this->_columns = 
-            array( 'civicrm_contact' =>
-                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
-                          'fields'    =>
-                          array( 'display_name' => 
-                                 array( 'title'     => ts( 'Modified By' ),
-                                        /*'required'  => true,*/),
-                                 'id'           => 
-                                 array( 'no_display'=> true,
-                                        'required'  => true, ), ),
-                          'filters'   =>             
-                          array( 'sort_name'    => 
-                                 array( 'title'      => ts( 'Modified By' )  ),
-                          ),
-                          'grouping'  => 'contact-fields',
-                        ),
-
-                   'civicrm_contact_touched' =>
+            array('civicrm_contact_touched' =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
                           array( 'display_name_touched' => 
@@ -84,7 +68,24 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                 ),
                           'grouping'  => 'contact-fields',
                           ),
-                  //NYSS address
+                  //NYSS alter the order so touched contact is first
+				  'civicrm_contact' =>
+                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
+                          'fields'    =>
+                          array( 'display_name' => 
+                                 array( 'title'     => ts( 'Modified By' ),
+                                        /*'required'  => true,*/),
+                                 'id'           => 
+                                 array( 'no_display'=> true,
+                                        'required'  => true, ), ),
+                          'filters'   =>             
+                          array( 'sort_name'    => 
+                                 array( 'title'      => ts( 'Modified By' )  ),
+                          ),
+                          'grouping'  => 'contact-fields',
+                        ),
+				  
+				  //NYSS address
 				  'civicrm_address' =>
                    array( 'dao'       => 'CRM_Core_DAO_Address',
                           'grouping'  => 'contact-fields',
