@@ -229,7 +229,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     }
 	
     function groupBy( ) {
-        $this->_groupBy   = "GROUP BY {$this->_aliases['civicrm_contact']}.id ";
+        $this->_groupBy   = "GROUP BY {$this->_aliases['civicrm_contact_touched']}.id, {$this->_aliases['civicrm_log']}.id ";
     }
 	
 /*    function postProcess( ) {
@@ -250,9 +250,44 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     function alterDisplay( &$rows ) {
         // custom code to alter rows
         $entryFound = false;
+		$display_flag = $prev_cid = $cid = 0;
 		//CRM_Core_Error::debug($rows);
         foreach ( $rows as $rowNum => $row ) {
-            // convert display name to links
+            
+			//NYSS
+			//CRM_Core_Error::debug($this);
+			if ( /*!empty($this->_noRepeats) &&*/ $this->_outputMode != 'csv' ) {
+				CRM_Core_Error::debug('row', $row);
+				CRM_Core_Error::debug('cid', $cid);
+                // don't repeat contact details if its same as the previous row
+                if ( array_key_exists('civicrm_contact_touched_id', $row ) && !empty($row['civicrm_contact_touched_id']) ) {
+                    if ( $cid =  $row['civicrm_contact_touched_id'] ) {
+                        if ( $rowNum == 0 ) {
+                            $prev_cid = $cid;
+                        } else {
+                            if( $prev_cid == $cid ) {
+                                $display_flag = 1;
+                                $prev_cid = $cid;
+                            } else {
+                                $display_flag = 0;
+                                $prev_cid = $cid;
+                            }
+                        }
+                        
+                        if ( $display_flag ) {
+                            foreach ( $row as $colName => $colVal ) {
+                                if ( in_array($colName, $this->_noRepeats) ) {
+                                    unset($rows[$rowNum][$colName]);          
+                                }
+                            }
+                        }
+                        $entryFound = true;
+                    }
+                }
+            }
+			
+			
+			// convert display name to links
             if ( array_key_exists('civicrm_contact_display_name', $row) && 
                  array_key_exists('civicrm_contact_id', $row) ) {
                 $url = CRM_Utils_System::url( 'civicrm/contact/view', 
