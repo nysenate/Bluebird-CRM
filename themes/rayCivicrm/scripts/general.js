@@ -41,8 +41,10 @@ Blueprint.formCheck = function() {
 
   forms.click(function() {
     // $(this).siblings("input:submit").hide();
+    $(this).parents('form:first').submit();
     $(this).attr('value', 'Working...');
     $(this).parents('form:first').attr('disabled','disabled');
+    $(this).click(function() {return false});
    // $("#saving").show();
 
     var notice = function() {
