@@ -78,19 +78,22 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 		$activityIDlist = implode(',', $activityIDs);
 		//CRM_Core_Error::debug($activityIDlist);
 		$allContacts = 0;
-		$sqlAlogs = "SELECT entity_id, data, modified_id, modified_date
-					 FROM civicrm_log
-					 WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);";
-		$dao = CRM_Core_DAO::executeQuery( $sqlAlogs );
 		$alogEntries = array( );
-		while ( $dao->fetch( ) ) {
-            list( $displayName, $contactImage ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $dao->modified_id );
-			$alogEntries[] = array( 'id'    => $dao->modified_id,
-                                    'name'  => $displayName,
-                                    'image' => $contactImage,
-                                    'date'  => $dao->modified_date,
-								    'description' => $dao->data );
-        }
+		if ( !empty($activityIDlist) ) {
+			$sqlAlogs = "SELECT entity_id, data, modified_id, modified_date
+						 FROM civicrm_log
+						 WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);";
+			$dao = CRM_Core_DAO::executeQuery( $sqlAlogs );
+		
+			while ( $dao->fetch( ) ) {
+        	    list( $displayName, $contactImage ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $dao->modified_id );
+				$alogEntries[] = array( 'id'    => $dao->modified_id,
+        	                            'name'  => $displayName,
+        	                            'image' => $contactImage,
+        	                            'date'  => $dao->modified_date,
+									    'description' => $dao->data );
+        	}
+		}
 		$logEntries = array_merge_recursive( $clogEntries, $alogEntries );
 		require_once 'CRM/Utils/Sort.php';
 		usort( $logEntries, array('CRM_Utils_Sort', 'cmpDate') );

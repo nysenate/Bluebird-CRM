@@ -1275,6 +1275,7 @@ class CRM_Contact_BAO_Query
         case 'activity_type_id':
         case 'activity_survey_id':
         case 'activity_tags': 
+		case 'activity_taglist': //NYSS 3426
         case 'activity_test':   
         case 'activity_contact_name':
             CRM_Activity_BAO_Query::whereClauseSingle( $values, $this );
@@ -1293,6 +1294,11 @@ class CRM_Contact_BAO_Query
                         
         case 'changed_by':
             $this->changeLog( $values );
+            return;
+		
+		//NYSS 3355
+        case 'changeLogData':
+            $this->changeLogData( $values );
             return;
 
         case 'do_not_phone':
@@ -2814,6 +2820,24 @@ WHERE  id IN ( $groupIDs )
         $this->_where[$grouping][] = "contact_b.sort_name LIKE '%$name%'";
         $this->_tables['civicrm_log'] = $this->_whereTables['civicrm_log'] = 1; 
         $this->_qill[$grouping][] = ts('Changed by') . ": $name";
+    }
+	
+	//NYSS 3355
+	function changeLogData ( &$values ) 
+    {
+        list( $name, $op, $value, $grouping, $wildcard ) = $values;
+        
+        $targetName = $this->getWhereValues( 'changeLogData', $grouping );
+        if ( ! $targetName ) {
+            return;
+        }
+
+        $data = trim( $targetName[2] );
+        $data = strtolower( CRM_Core_DAO::escapeString( $data ) );
+        $data = $targetName[4] ? "%$data%" : $data;
+        $this->_where[$grouping][] = "civicrm_log.data LIKE '%$data%'";
+        $this->_tables['civicrm_log'] = $this->_whereTables['civicrm_log'] = 1; 
+        $this->_qill[$grouping][] = ts('Change log') . ": $name";
     }
 
     function modifiedDates( $values )

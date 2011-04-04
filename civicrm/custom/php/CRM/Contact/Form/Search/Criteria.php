@@ -73,7 +73,7 @@ class CRM_Contact_Form_Search_Criteria {
             require_once 'CRM/Core/Form/Tag.php';
             require_once 'CRM/Core/BAO/Tag.php';
             $parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_contact' );
-            CRM_Core_Form_Tag::buildQuickForm( $form, $parentNames, 'civicrm_contact', null, true );
+            CRM_Core_Form_Tag::buildQuickForm( $form, $parentNames, 'civicrm_contact', null, true, false, true ); //NYSS 3426
         }
 
         // add text box for last name, first name, street name, city
@@ -322,6 +322,9 @@ class CRM_Contact_Form_Search_Criteria {
 
         // block for change log
         $form->addElement('text', 'changed_by', ts('Modified By'), null);
+		
+		//NYSS 3355
+        $form->addElement('text', 'changeLogData', ts('Changelog Description'), null);
 
         $form->addDate( 'modified_date_low', ts('Modified Between'), false, array( 'formatType' => 'searchDate') );
         $form->addDate( 'modified_date_high', ts('and'), false, array( 'formatType' => 'searchDate') );
