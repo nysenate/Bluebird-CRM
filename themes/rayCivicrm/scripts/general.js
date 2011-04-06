@@ -34,7 +34,7 @@ Blueprint.formCheck = function() {
 // prevent users from clicking a submit button twice
 Blueprint.formCheck = function() {
   // only apply this to node and comment and new user registration forms
-  var forms = $("#crm-container>form .crm-submit-buttons .crm-button-type-upload>input");
+  var forms = $("#crm-container>form:not('#Case') .crm-submit-buttons .crm-button-type-upload>input");
 
   // insert the saving div now to cache it for better performance and to show the loading image
   // $('<div id="saving"><p class="saving">Saving</p></div>').insertAfter(forms);
