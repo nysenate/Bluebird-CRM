@@ -737,6 +737,7 @@ function addTags() {
         modal: true,
 
 		width: '550', //NYSS
+		height: '300', //NYSS
         buttons: { 
             "Save": function() { 
                 var tagsChecked = '';	    

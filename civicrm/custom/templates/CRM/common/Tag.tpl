@@ -9,7 +9,7 @@
 {assign var=parID     value = $tagset.parentID}
 {assign var=editTagSet value=false}
 {$form.$elemName.$parID.html}
-{if $action ne 4 or $form.formName eq 'CaseView' }
+{if $action ne 4}
  {assign var=editTagSet value=true}
  {if $action eq 16 and !($permission eq 'edit') }
    {assign var=editTagSet value=false}
@@ -28,8 +28,8 @@
     var hintText = "{/literal}{ts}Type in a partial or complete name of an existing tag.{/ts}{literal}";
     
     cj( ".contact-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
-        .addClass("contact-taglist_{/literal}{$tagset.parentID}{literal}")
-    cj( "#contact_taglist_{/literal}{$tagset.parentID}{literal}"  )
+        .addClass("contact-taglist_{/literal}{$tagset.parentID}{literal}");
+ 	cj( ".contact-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) .contact-taglist_{/literal}{$tagset.parentID}{literal}"  )    
         .tokenInput( tagUrl, { prePopulate: contactEntityTags, classes: tokenClass, hintText: hintText, ajaxCallbackFunction: 'processContactTags_{/literal}{$tagset.parentID}{literal}'});
     cj( ".contact-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input)").addClass("crm-processed-input");    
     function processContactTags_{/literal}{$tagset.parentID}{literal}( action, id ) {
@@ -89,7 +89,7 @@
 {assign var=parID     value = $tagset.parentID}
 {assign var=editTagSet value=false}
 {$form.$elemName.$parID.html}
-{if $action ne 4 or $form.formName eq 'CaseView' }
+{if $action ne 4 }
  {assign var=editTagSet value=true}
  {if $action eq 16 and !($permission eq 'edit') }
    {assign var=editTagSet value=false}
@@ -108,8 +108,8 @@
     var hintText = "{/literal}{ts}Type in a partial or complete name of an existing tag.{/ts}{literal}";
     
     cj( ".activity-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
-        .addClass("activity-taglist_{/literal}{$tagset.parentID}{literal}")
-    cj( "#activity_taglist_{/literal}{$tagset.parentID}{literal}"  )
+        .addClass("activity-taglist_{/literal}{$tagset.parentID}{literal}");
+ 	cj( ".activity-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) .activity-taglist_{/literal}{$tagset.parentID}{literal}"  )    
         .tokenInput( tagUrl, { prePopulate: activityEntityTags, classes: tokenClass, hintText: hintText, ajaxCallbackFunction: 'processActivityTags_{/literal}{$tagset.parentID}{literal}'});
     cj( ".activity-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input)").addClass("crm-processed-input");    
     function processActivityTags_{/literal}{$tagset.parentID}{literal}( action, id ) {
@@ -187,9 +187,8 @@
     var hintText = "{/literal}{ts}Type in a partial or complete name of an existing tag.{/ts}{literal}";
     
     cj( ".case-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
-    cj( "#case_taglist_{/literal}{$tagset.parentID}{literal}"  )
-        .addClass("case-taglist_{/literal}{$tagset.parentID}{literal}")
-    cj( "#case_taglist_{/literal}{$tagset.parentID}{literal}"  )
+        .addClass("case-taglist_{/literal}{$tagset.parentID}{literal}");
+ 	cj( ".case-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) .case-taglist_{/literal}{$tagset.parentID}{literal}"  )
         .tokenInput( tagUrl, { prePopulate: caseEntityTags, classes: tokenClass, hintText: hintText, ajaxCallbackFunction: 'processCaseTags_{/literal}{$tagset.parentID}{literal}'});
     cj( ".case-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input)").addClass("crm-processed-input");    
     function processCaseTags_{/literal}{$tagset.parentID}{literal}( action, id ) {
