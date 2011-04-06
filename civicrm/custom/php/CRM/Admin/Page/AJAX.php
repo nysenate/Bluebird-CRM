@@ -226,7 +226,7 @@ class CRM_Admin_Page_AJAX
         
         $tags = array( );
 		//NYSS treat issue codes and keywords using normal method
-        if ($parentId != 292) {
+        if ($parentId != 292 || $isSearch) {
             
 			//NYSS 3426
             if ( !$isSearch ) {

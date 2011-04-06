@@ -38,7 +38,7 @@
         var entityId         = "{/literal}{$tagset.entityId}{literal}";
         var entityTable      = "{/literal}{$tagset.entityTable}{literal}";
         var skipTagCreate    = "{/literal}{$tagset.skipTagCreate}{literal}";
-        var skipEntityAction = "{/literal}{$tagset.skipEntityAction}{literal}";
+        var skipEntityAction = "{/literal}{if $tagset.parentID eq '296'}0{else}{$tagset.skipEntityAction}{/if}{literal}";//NYSS
          
         cj.post( postUrl, { action: action, tagID: id, parentId: parentId, entityId: entityId, entityTable: entityTable,
                             skipTagCreate: skipTagCreate, skipEntityAction: skipEntityAction, key: {/literal}"{crmKey name='civicrm/ajax/processTags'}"{literal} },

@@ -71,7 +71,7 @@ class CRM_Core_Form_Tag
                 //tokeninput url
 				//NYSS 3426
 				$qparams = "parentId={$parentId}";
- 	 			if ( $searchMode ) {
+ 	 			if ( $searchMode || $form->getVar('_context') == 'search' ) { //NYSS 3622
  	 				$qparams .= '&search=1';
  	 			}
 				//NYSS end
