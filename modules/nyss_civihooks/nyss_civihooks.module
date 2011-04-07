@@ -212,12 +212,12 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	}
 	
 	//remove primary field export option
-	if ( $formName == 'CRM_Export_Form_Select' ) {
+	/*if ( $formName == 'CRM_Export_Form_Select' ) {
 
 		$exportOptions = $form->_elements[1];
 		unset( $exportOptions->_elements[0] );
 
-	}
+	}*/
 	
 } //close buildForm
 
