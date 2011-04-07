@@ -330,33 +330,29 @@ class CRM_Admin_Page_AJAX
 				
         		for ($j=0; $j < count($json); $j++){
 
+
 					//construct positions
 					$positiontags = array();
 					$positiontags[] = $json[$j]['id'];
 					$positiontags[] = $json[$j]['id'].' - FOR';
 					$positiontags[] = $json[$j]['id'].' - AGAINST';
+
 					
 					//construct tags array
 					foreach ( $positiontags as $positiontag ) {
 						
-						$query2 = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name = '{$positiontag}'";
-        				$dao2 = CRM_Core_DAO::executeQuery( $query2 );
+                        //if ( $json[$j]['sponsor'] ) { $positiontag_name .= ' ('.$json[$j]['sponsor'].')'; }
 						
 						//add sponsor to display if exists
         	 			if ( $json[$j]['sponsor'] ) { $positiontag_name = $positiontag.' ('.$json[$j]['sponsor'].')'; }
 							else { $positiontag_name = $positiontag; }
-						
-						//if tag exists use; else plan to create new
-						if ( $dao2->fetch( ) ) {
-							$tags[] = array('name'    => $positiontag_name,
-											'id'      => $dao2->id,
+
+						//exit($positiontag_name);
+
+	   	 				$tags[] = array('name'    => $positiontag_name,
+											'id'      => $positiontag_name, //include full value (includes sponsor)
 											'sponsor' => $json[$j]['sponsor'] );
-        	 			} else {
-        	 				$tags[] = array('name'    => $positiontag_name,
-											'id'      => $positiontag_name. ":::value", //include full value (includes sponsor)
-											'sponsor' => $json[$j]['sponsor'] );
-        	 			}
-					} //end foreach
+      				} //end foreach
 					
 				}
                    	
@@ -384,13 +380,20 @@ class CRM_Admin_Page_AJAX
             $skipEntityAction = CRM_Utils_Type::escape( $_POST['skipEntityAction'], 'Integer' );
         }
         
-        $tagValue = explode( ':::', $_POST['tagID'] );
+        $tagID = $_POST['tagID'] ;
         
         $createNewTag = false;
-        $tagID  = $tagValue[0];
-        if ( isset( $tagValue[1] ) && $tagValue[1] == 'value' ) {
+		$query2 = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name = '{$tagID}'";
+		$dao2 = CRM_Core_DAO::executeQuery( $query2 );
+
+		//if tag exists use; else plan to create new
+		if (!$dao2->fetch( ) ) {
             $createNewTag = true;
-        } 
+        } else {
+        
+            $tagID = $dao2->id;
+            
+        }
 		
 		//NYSS - retrieve OpenLeg ID and construct URL
 		$bill_url = '';
@@ -429,7 +432,8 @@ class CRM_Admin_Page_AJAX
                 $params = array( 'entity_table' => $entityTable,
                                  'entity_id'    => $entityId,
                                  'tag_id'       => $tagID);
-                             
+
+      
                 CRM_Core_BAO_EntityTag::add( $params );
             }
         } elseif ( $action == 'delete' ) {  // if action is delete
