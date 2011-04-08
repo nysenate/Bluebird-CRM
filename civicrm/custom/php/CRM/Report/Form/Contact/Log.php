@@ -300,21 +300,27 @@ CRM_Core_Error::debug('sql', $sql); exit();
                                                    'value' => $count );
 		
 		//CRM_Core_Error::debug($this);
+		$this->_select = 'SELECT DISTINCT contact_touched_civireport.id as distinctContacts';
+		$query = $this->_select.' '.$this->_from.' '.$this->_where.' '.$this->_groupBy;
+		//echo $query;
+		$distinctContacts = CRM_Core_DAO::executeQuery( $query );
+        $rowCount = $distinctContacts->N;
+		
         if ( $this->_rowsFound && ($this->_rowsFound > $count) ) {
             $statistics['counts']['rowsFound'] = array( 'title' => ts('Total Row(s)'),
-                                                        'value' => $this->_rowsFound );
+                                                        'value' => $rowCount );
         }
     }
 	
 	//NYSS add group by so our counts are contact touched specific
-	function limit( $rowCount = self::ROW_COUNT_LIMIT ) {
+/*	function limit( $rowCount = self::ROW_COUNT_LIMIT ) {
         require_once 'CRM/Utils/Pager.php';
         // lets do the pager if in html mode
         $this->_limit = null;
 		//CRM_Core_Error::debug($this);
         if ( $this->_outputMode == 'html' || $this->_outputMode == 'group'  ) {
             $this->_select = str_ireplace( 'SELECT ', 'SELECT SQL_CALC_FOUND_ROWS ', $this->_select );
-			$this->_groupBy = 'GROUP BY contact_touched_civireport.id'; //NYSS
+			//$this->_groupBy = 'GROUP BY contact_touched_civireport.id'; //NYSS
 			
             $pageId = CRM_Utils_Request::retrieve( 'crmPID', 'Integer', CRM_Core_DAO::$_nullObject );
            
@@ -333,7 +339,30 @@ CRM_Core_Error::debug('sql', $sql); exit();
 
             $this->_limit  = " LIMIT $offset, " . $rowCount;
         }
-    }
+    }*/
+/*	function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
+        //CRM_Core_Error::debug($this);
+		//$this->_select = str_ireplace( 'SELECT SQL_CALC_FOUND_ROWS', 'SELECT', $this->_select );
+		$this->_select = 'SELECT count(contact_touched_civireport.id)';
+		$this->_groupBy = 'GROUP BY contact_touched_civireport.id';
+		$query = $this->_select.' '.$this->_from.' '.$this->_where.' '.$this->_groupBy;
+		echo $query;
+		
+		if ( $this->_limit && ($this->_limit != '') ) {
+            require_once 'CRM/Utils/Pager.php';
+            $sql    = "SELECT FOUND_ROWS();";
+            $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $query );
+            $params = array( 'total'        => $this->_rowsFound,
+                             'rowCount'     => $rowCount,
+                             'status'       => ts( 'Records %%StatusMessage%%' ),
+                             'buttonBottom' => 'PagerBottomButton',
+                             'buttonTop'    => 'PagerTopButton',
+                             'pageID'       => $this->get( CRM_Utils_Pager::PAGE_ID ) );
+
+            $pager = new CRM_Utils_Pager( $params );
+            $this->assign_by_ref( 'pager', $pager );
+        }
+    }*/
 	//NYSS end
     
     function alterDisplay( &$rows ) {
