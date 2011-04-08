@@ -270,7 +270,71 @@ CRM_Core_Error::debug('sql', $sql); exit();
         $this->doTemplateAssignment( $rows );
         $this->endPostProcess( $rows );	
     }*/
+	
+	//NYSS alter the way count is generated
+	function statistics( &$rows ) {
+        
+		$statistics = array();
+		//CRM_Core_Error::debug($rows);
+		
+		$count = 0;
+		$past_touched = 0;
+		foreach ( $rows as $row ) {
+			$current_touched = $row['civicrm_contact_touched_id'];
+			if ( $current_touched != $past_touched ) {
+				$count++;
+			}
+			$past_touched = $current_touched;
+			//echo $count.'<br />';
+		}
+        
+        $this->countStat  ( $statistics, $count );
+        $this->filterStat ( $statistics );
+        
+		//CRM_Core_Error::debug($statistics);
+        return $statistics;
+    }
+	
+	function countStat( &$statistics, $count ) {
+        $statistics['counts']['rowCount'] = array( 'title' => ts('Row(s) Listed'),
+                                                   'value' => $count );
+		
+		//CRM_Core_Error::debug($this);
+        if ( $this->_rowsFound && ($this->_rowsFound > $count) ) {
+            $statistics['counts']['rowsFound'] = array( 'title' => ts('Total Row(s)'),
+                                                        'value' => $this->_rowsFound );
+        }
+    }
+	
+	//NYSS add group by so our counts are contact touched specific
+	function limit( $rowCount = self::ROW_COUNT_LIMIT ) {
+        require_once 'CRM/Utils/Pager.php';
+        // lets do the pager if in html mode
+        $this->_limit = null;
+		//CRM_Core_Error::debug($this);
+        if ( $this->_outputMode == 'html' || $this->_outputMode == 'group'  ) {
+            $this->_select = str_ireplace( 'SELECT ', 'SELECT SQL_CALC_FOUND_ROWS ', $this->_select );
+			$this->_groupBy = 'GROUP BY contact_touched_civireport.id'; //NYSS
+			
+            $pageId = CRM_Utils_Request::retrieve( 'crmPID', 'Integer', CRM_Core_DAO::$_nullObject );
+           
+            if ( !$pageId && !empty($_POST) ) {
+                if ( isset($_POST['PagerBottomButton']) && isset($_POST['crmPID_B']) ) {
+                    $pageId = max( (int) @$_POST['crmPID_B'], 1 );
+                } elseif(  isset($_POST['PagerTopButton']) && isset($_POST['crmPID']) ) {
+                    $pageId = max( (int) @$_POST['crmPID'], 1 );
+                }   
+                unset( $_POST['crmPID_B'] , $_POST['crmPID'] );
+            } 
+            
+            $pageId = $pageId ? $pageId : 1;
+            $this->set( CRM_Utils_Pager::PAGE_ID, $pageId );
+            $offset = ( $pageId - 1 ) * $rowCount;
 
+            $this->_limit  = " LIMIT $offset, " . $rowCount;
+        }
+    }
+	//NYSS end
     
     function alterDisplay( &$rows ) {
         // custom code to alter rows
