@@ -51,19 +51,20 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
                           array( 'display_name_touched' => 
-                                 array( 'title'     => ts( 'Touched Contact' ),
-                                        'name'      => 'display_name',
-                                        /*'required'  => true,*/),
+                                 array( 'title'      => ts( 'Touched Contact' ),
+                                        'name'       => 'display_name', ),
                                  'sort_name_touched' => 
                                  array( 'no_display' => true,
-                                        'name'      => 'sort_name', ),
+                                        'name'       => 'sort_name', ),
 								 'id'       => 
-                                 array( 'no_display'=> true,
-                                        'required'  => true, ), ),
+                                 array( 'no_display' => true,
+                                        'required'   => true, ), ),
                           'filters'   =>             
                           array( 'sort_name_touched' => 
                                  array( 'title'      => ts( 'Touched Contact' ),
                                         'name'       => 'sort_name',
+										'type'       => '2',
+                                        'where'      => 'civicrm_contact.display_name', //NYSS 3271
                                       ),
                                 ),
                           'grouping'  => 'contact-fields',
@@ -141,7 +142,16 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                  array( 'title'     => ts( 'Description' ),
                                         'type'      => CRM_Utils_Type::T_STRING,
                                        ),
-                                ), 
+                                 //NYSS exclude activity records
+								 'exclude_activities'	 => 
+								 array( 'name'         => 'exclude_activities' ,
+                                        'title'        => ts( 'Exclude Activity Records' ),
+										'type'         => CRM_Utils_Type::T_INT,
+                                      	'operatorType' => CRM_Report_Form::OP_SELECT,
+                                        'options'      => array('0'=>'No', '1'=>'Yes'),
+								 		'default'	   => 1,
+                                       ), 
+								), 
                           ),
                    );
 
@@ -215,6 +225,16 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                                 CRM_Utils_Array::value( "{$fieldName}_max", $this->_params ) );
                         }
                     }
+					
+					//NYSS 3504 process contact logs only
+					if ( $field['name'] == 'exclude_activities' ) {
+						$excludeActivities = CRM_Utils_Array::value( "{$fieldName}_value", $this->_params );
+						if ( $excludeActivities == 1 ) {
+							$clause = "( {$this->_aliases['civicrm_log']}.entity_table = 'civicrm_contact' )";
+						} else { //if not flagged, ignore filter value
+							$clause = NULL;
+						}
+					} //LCD end
 
                     if ( ! empty( $clause ) ) {
                         $clauses[ ] = $clause;
