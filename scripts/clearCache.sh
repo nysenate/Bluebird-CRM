@@ -60,6 +60,9 @@ echo "Clearing CiviCRM filesystem caches"
   rm -rf $data_rootdir/$data_dirname/civicrm/js/*
 )
 
+echo "Run Civi clear cache via drush to cover our bases"
+$drush $instance civicrm-cache-clear
+
 echo "Clearing Drupal database caches"
 sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_update; truncate cache_menu; truncate cache_block; truncate cache_filter; truncate sessions;"
 [ $clear_all -eq 1 ] && sql="truncate watchdog; $sql"
