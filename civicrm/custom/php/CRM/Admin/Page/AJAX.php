@@ -380,20 +380,28 @@ class CRM_Admin_Page_AJAX
             $skipEntityAction = CRM_Utils_Type::escape( $_POST['skipEntityAction'], 'Integer' );
         }
         
-        $tagID = $_POST['tagID'] ;
+		//NYSS
+		if ( $parentId == 292 ) {
+        	$tagID = $_POST['tagID'] ;
         
-        $createNewTag = false;
-		$query2 = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name = '{$tagID}'";
-		$dao2 = CRM_Core_DAO::executeQuery( $query2 );
+        	$createNewTag = false;
+			$query2 = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name = '{$tagID}'";
+			$dao2 = CRM_Core_DAO::executeQuery( $query2 );
 
-		//if tag exists use; else plan to create new
-		if (!$dao2->fetch( ) ) {
-            $createNewTag = true;
-        } else {
-        
-            $tagID = $dao2->id;
-            
-        }
+			//if tag exists use; else plan to create new
+			if (!$dao2->fetch( ) ) {
+        	    $createNewTag = true;
+        	} else {
+        	    $tagID = $dao2->id;
+        	}
+		} else {
+			$tagValue = explode( ':::', $_POST['tagID'] );
+			$createNewTag = false;
+			$tagID  = $tagValue[0];
+        	if ( isset( $tagValue[1] ) && $tagValue[1] == 'value' ) {
+				$createNewTag = true;
+			}
+		}
 		
 		//NYSS - retrieve OpenLeg ID and construct URL
 		$bill_url = '';
