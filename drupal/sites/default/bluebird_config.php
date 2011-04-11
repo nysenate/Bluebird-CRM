@@ -62,6 +62,8 @@ function get_bluebird_config($filename = 'bluebird.cfg')
     $data_basename = $shortname;
   $data_dirname = "$data_basename.$base_domain";
   $imapaccts = get_key_value($bbini, $shortname, 'imap.accounts');
+  $use_apc = get_key_value($bbini, $shortname, 'cache.apc');
+  $use_memcache = get_key_value($bbini, $shortname, 'cache.memcache');
 
   // Always set servername, even if HTTP_HOST was set above.  This allows
   // us to override the domain in the config file.
@@ -82,6 +84,8 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $bbcfg['data_rootdir'] = $datadir;
   $bbcfg['data_dirname'] = $data_dirname;
   $bbcfg['imap_accounts'] = $imapaccts;
+  $bbcfg['use_apc'] = $use_apc;
+  $bbcfg['use_memcache'] = $use_memcache;
 
   return $bbcfg;
 } // get_bluebird_config()
