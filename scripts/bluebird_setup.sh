@@ -6,13 +6,15 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-01
-# Revised: 2011-01-05
+# Revised: 2011-04-12
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 script_dir=`cd "$script_dir"; echo $PWD`
+base_dir=`cd "$script_dir/.."; echo $PWD`
 readConfig="$script_dir/readConfig.sh"
+geoCoder="$base_dir/modules/civicrm/bin/UpdateAddress.php"
 app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --global data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 import_rootdir=`$readConfig --global import.rootdir` || data_rootdir="$DEFAULT_IMPORT_ROOTDIR"
@@ -21,7 +23,7 @@ tempdir=/tmp/bluebird_imports
 
 
 usage() {
-  echo "Usage: $prog [--no-init] [--no-unzip] [--no-import] [--no-ldapconfig] [--no-cc] [--no-fixperms] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name" >&2
+  echo "Usage: $prog [--no-init] [--no-unzip] [--no-import] [--no-ldapconfig] [--no-cc] [--no-fixperms] [--geocode] [--force-unzip] [--keep] [--temp-dir tempdir] [--use-importdir] instance_name" >&2
 }
 
 create_instance() {
@@ -116,6 +118,15 @@ fix_permissions() {
 }
 
 
+geocode_instance() {
+  instance="$1"
+  (
+    set -x
+    php $geoCoder -S$instance -g
+  )
+}
+
+
 stage=$default_stage
 no_init=0
 no_unzip=0
@@ -123,6 +134,7 @@ no_import=0
 no_ldapcfg=0
 no_clearcache=0
 no_fixperms=0
+geocode=0
 force_unzip=0
 keep_tempdir=0
 instance=
@@ -135,6 +147,7 @@ while [ $# -gt 0 ]; do
     --no-ldap*) no_ldapcfg=1 ;;
     --no-clear-cache|--no-cc) no_clearcache=1 ;;
     --no-fixperm*) no_fixperms=1 ;;
+    --geocode) geocode=1 ;;
     --force-unzip) force_unzip=1 ;;
     --keep|-k) keep_tempdir=1 ;;
     --temp-dir|-t) shift; tempdir="$1" ;;
@@ -217,6 +230,13 @@ if [ $no_fixperms -eq 1 ]; then
 else
   echo "==> About to fix permissions for CRM instance [$instance]"
   fix_permissions
+fi
+
+if [ $geocode -eq 1 ]; then
+  echo "==> About to geocode CRM instance [$instance]"
+  geocode_instance $instance
+else
+  echo "==> Skipping geocode process for CRM instance [$instance]"
 fi
 
 exit 0
