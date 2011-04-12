@@ -17,7 +17,7 @@ execSql=$script_dir/execSql.sh
 
 
 usage() {
-  echo "Usage: $prog [--all] [--live] [--locked] [--training] [--set instanceSet] [--instance instance_name] [cmd]" >&2
+  echo "Usage: $prog [--quiet] [--all] [--live] [--locked] [--training] [--set instanceSet] [--instance instance_name] [cmd]" >&2
   echo "Note: Any occurrence of '%%INSTANCE%%' or '{}' in the command will be replaced by the current instance name." >&2
 }
 
@@ -27,6 +27,7 @@ use_all=0
 use_live=0
 instance_set=
 instances=
+quiet_mode=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -36,6 +37,7 @@ while [ $# -gt 0 ]; do
     --training) instance_set="training" ;;
     --set|-s) shift; instance_set="$1" ;;
     --instance|-i) shift; instances="$instances $1" ;;
+    --quiet|-q) quiet_mode=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) cmd="$1" ;;
   esac
@@ -54,7 +56,7 @@ if [ $use_all -eq 1 -o $use_live -eq 1 ]; then
       # "show databases" on the server, since each instance can have its own
       # database config.  Thus, we iterate over each instance and attempt to
       # establish a quick connection with its DB to determine if it is "live".
-      echo "Calculating live CRM instances..." >&2
+      [ $quiet_mode -eq 0 ] && echo "Calculating live CRM instances..." >&2
       live_instances=
       for instance in $instances; do
         if $execSql -i $instance 2>/dev/null; then
@@ -84,7 +86,7 @@ fi
 for instance in $instances; do
   if $readConfig --instance $instance --quiet; then
     realcmd=`echo "$cmd" | sed -e "s;%%INSTANCE%%;$instance;g" -e "s;{};$instance;g"`
-    echo "About to exec: $realcmd" >&2
+    [ $quiet_mode -eq 0 ] && echo "About to exec: $realcmd" >&2
     eval $realcmd
   else
     echo "$prog: $instance: Instance not found in config file; skipping" >&2

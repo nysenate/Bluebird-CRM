@@ -24,6 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {include file="CRM/common/version.tpl" assign=version}
+{include file="CRM/common/bbversion.tpl" assign=bbversion}
 {include file="CRM/common/accesskeys.tpl"}
 {if isset($contactId) and $contactId} {* Display contact-related footer. *}
     <div class="footer" id="record-log">
@@ -38,6 +39,6 @@
 {/if}
 
 <div class="footer" id="civicrm-footer">{*NYSS*}
-Bluebird v1.2.2. Powered by <a href='http://civicrm.org/' target="_blank">CiviCRM</a> {ts 1=$version}%1.{/ts}<br />
+Bluebird v{ts 1=$bbversion}%1.{/ts} Powered by <a href='http://civicrm.org/' target="_blank">CiviCRM</a> {ts 1=$version}%1.{/ts}<br />
 CiviCRM{ts 1='http://www.gnu.org/licenses/agpl-3.0.html'} is openly available under the <a href='%1' target="_blank">GNU Affero General Public License (GNU AGPL)</a>.{/ts}
 </div>
