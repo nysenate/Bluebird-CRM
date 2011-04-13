@@ -57,7 +57,7 @@ $execSql -i $instance -c "$perms_upd" --drupal
 ### CiviCRM ###
 
 ## navigation menu items
-navigation="UPDATE civicrm_navigation SET parent_id = 172, permission = 'administer CiviCRM,export print production files' WHERE name = 'District Stats';
+navigation="UPDATE civicrm_navigation SET parent_id = 172, permission = 'access CiviCRM' WHERE name = 'District Stats';
 UPDATE civicrm_navigation SET label = 'BOE/3rd Party Import' WHERE url = 'importData';"
 $execSql -i $instance -c "$navigation"
 
