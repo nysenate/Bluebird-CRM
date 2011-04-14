@@ -1072,12 +1072,16 @@ FROM   $tableName
         if ( ! $id ) {
             $id = 0;
         }
+//NYSS debug
+//CRM_Core_Error::debug('d', $details);
+//CRM_Core_Error::debug('col', $sqlColumns);
 
         $sqlClause = array( );
 
         foreach ( $details as $dontCare => $row ) {
             $id++;
             $valueString = array( $id );
+			unset( $row['7_a_bstate_province_id'] ); //NYSS 3628 creates conflict when both merge options selected
             foreach ( $row as $dontCare => $value ) {
                 if ( empty( $value ) ) {
                     $valueString[] = "''";
@@ -1272,7 +1276,7 @@ DROP  $drop";
                                 'url'                 => 'website',
                                 'contact_sub_type'    => 'contact_subtype',
                                 'is_opt_out'          => 'no_bulk_emails__user_opt_out_',
-                                'external_identifier' => 'external_identifier__match_to_contact_',
+                                //'external_identifier' => 'external_identifier__match_to_contact_', //NYSS 3628
                                 'contact_source'      => 'source_of_contact_data',
                                 'user_unique_id'      => 'unique_id__openid_',
                                 'contact_source'      => 'source_of_contact_data',
@@ -1289,7 +1293,7 @@ DROP  $drop";
         //figure out which columns are to be replaced by which ones
         foreach ( $sqlColumns as $columnNames => $dontCare ) {
             if ( $rep = CRM_Utils_Array::value( $columnNames, $mappingFields ) ) {
-                $replaced[$columnNames] = CRM_Utils_String::munge( $prefixColumn . $rep, '_', 64 );
+				$replaced[$columnNames] = CRM_Utils_String::munge( $prefixColumn . $rep, '_', 64 );
             } else {
                 $householdColName = CRM_Utils_String::munge( $prefixColumn . $columnNames, '_', 64 );
 
