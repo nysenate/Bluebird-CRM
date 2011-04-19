@@ -132,13 +132,17 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
     {
         $entityTag = new CRM_Core_BAO_EntityTag( );
         $entityTag->copyValues( $params );
-        $entityTag->delete( );
-        //return $entityTag;
 		
-		//NYSS invoke post hook on entityTag
-        require_once 'CRM/Utils/Hook.php';
-        $object = array( 0 => array( 0 => $params['entity_id'] ), 1 => $params['entity_table'] );
-        CRM_Utils_Hook::post( 'delete', 'EntityTag', $params['tag_id'], $object );
+		//NYSS refine conditions
+		// only delete the object if it already exists
+        if ( $entityTag->find( true ) ) {
+            $entityTag->delete( );
+		
+			//NYSS invoke post hook on entityTag
+        	require_once 'CRM/Utils/Hook.php';
+        	$object = array( 0 => array( 0 => $params['entity_id'] ), 1 => $params['entity_table'] );
+        	CRM_Utils_Hook::post( 'delete', 'EntityTag', $params['tag_id'], $object );
+		}
     }
 
     /**
@@ -155,6 +159,8 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
     static function addEntitiesToTag( &$entityIds, $tagId, $entityTable = 'civicrm_contact' ) {
         $numEntitiesAdded    = 0;
         $numEntitiesNotAdded = 0;
+		$entityIdsAdded = array(); //NYSS
+		
         foreach ( $entityIds as $entityId ) {
             $tag = new CRM_Core_DAO_EntityTag( );
 
@@ -163,6 +169,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
             $tag->entity_table  = $entityTable;
             if ( ! $tag->find( ) ) {
                 $tag->save( );
+				$entityIdsAdded[] = $entityId; //NYSS construct array of just added IDs
                 $numEntitiesAdded++;
             } else {
                 $numEntitiesNotAdded++;
@@ -171,7 +178,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
 
         //invoke post hook on entityTag
         require_once 'CRM/Utils/Hook.php';
-        $object = array( $entityIds, $entityTable );
+        $object = array( $entityIdsAdded, $entityTable ); //NYSS include array of only added IDs
         CRM_Utils_Hook::post('create', 'EntityTag', $tagId, $object );
 
         // reset the group contact cache for all groups
@@ -197,6 +204,8 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
     {
         $numEntitiesRemoved    = 0;
         $numEntitiesNotRemoved = 0;
+		$entityIdsRemoved = array(); //NYSS
+		
         foreach ( $entityIds as $entityId ) {
             $tag = new CRM_Core_DAO_EntityTag( );
             
@@ -205,6 +214,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
             $tag->entity_table = $entityTable;
             if (  $tag->find( ) ) {
                 $tag->delete( );
+				$entityIdsRemoved[] = $entityId; //NYSS construct array of just added IDs
                 $numEntitiesRemoved++;
             } else {
                 $numEntitiesNotRemoved++;
@@ -213,7 +223,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
         
         //invoke post hook on entityTag
         require_once 'CRM/Utils/Hook.php';
-        $object = array( $entityIds, $entityTable );
+        $object = array( $entityIdsRemoved, $entityTable ); //NYSS include array of only removed IDs
         CRM_Utils_Hook::post( 'delete', 'EntityTag', $tagId, $object );
         
         // reset the group contact cache for all groups

@@ -50,7 +50,7 @@ function nyss_tags_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
 			}
 		
 		} elseif ( $op == 'delete' ) {
-		
+			
 			foreach ( $contacts as $contact ) {
 				$logMessage = 'Removed tag: '.stripslashes($tag['name']).' ('.$objectId.')';
         		$logParams = array( 'entity_table'  => $entity_table,
