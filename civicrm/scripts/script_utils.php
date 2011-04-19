@@ -33,7 +33,7 @@ function civicrm_script_init($shopts = "", $longopts = array())
   }
 
   if ($myopts) {
-    require_once dirname(__FILE__).'/../civicrm.config.php';
+    require_once dirname(__FILE__).'/../core/civicrm.config.php';
 
     // If running from web server, or if a username was provided, then
     // authenticate the user.  This allows us to run anonymously from the CLI.

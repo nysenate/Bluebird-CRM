@@ -5,8 +5,8 @@ define('DEFAULT_IMAP_SERVER', 'webmail.senate.state.ny.us');
 define('DEFAULT_IMAP_OPTS', '/imap/ssl/notls');
 define('DEFAULT_IMAP_MAILBOX', 'Inbox');
 define('DEFAULT_IMAP_ARCHIVEBOX', 'Archive');
-define('IMAP_PROCESS_UNREAD_ONLY', false);
-define('IMAP_MOVE_MAIL_TO_ARCHIVE', true);
+define('DEFAULT_IMAP_PROCESS_UNREAD_ONLY', false);
+define('DEFAULT_IMAP_ARCHIVE_MAIL', true);
 
 define('IMAP_CMD_POLL', 1);
 define('IMAP_CMD_LIST', 2);
@@ -22,11 +22,11 @@ set_time_limit(0);
 
 $prog = basename(__FILE__);
 
-require_once dirname(__FILE__).'/../core/bin/script_utils.php';
+require_once 'script_utils.php';
 $stdusage = civicrm_script_usage();
-$usage = "[--server|-s imap_server]  [--opts|-o imap_options]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]";
-$shortopts = "s:o:c:m:a:";
-$longopts = array("server=", "opts=", "cmd=", "mailbox=", "archivebox=");
+$usage = "[--server|-s imap_server]  [--imap-user|-u username]  [--imap-pass|-p password]  [--imap-opts|-o imap_options]  [--cmd|-c <poll|list|delarchive>]  [--mailbox|-m name]  [--archivebox|-a name]  [--unread-only|-r]  [--archive-mail|-t]";
+$shortopts = "s:u:p:o:c:m:a:rt";
+$longopts = array("server=", "imap-user=", "imap-pass=", "imap-opts=", "cmd=", "mailbox=", "archivebox=", "unread-only", "archive-mail");
 $optlist = civicrm_script_init($shortopts, $longopts);
 if ($optlist === null) {
   error_log("Usage: $prog  $stdusage  $usage\n");
@@ -44,25 +44,45 @@ require_once 'CRM/Core/BAO/CustomValueTable.php';
 require_once 'CRM/Core/PseudoConstant.php';
 require_once 'CRM/Core/Error.php';
 
+/* More than one IMAP account can be checked per CRM instance.
+** The username and password for each account is specified in the Bluebird
+** config file.
+**
+** The user= and pass= command line args can be used to override the IMAP
+** accounts from the config file.
+*/
 $imap_accounts = CIVICRM_IMAP_ACCOUNTS;
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
+$imap_user = null;
+$imap_pass = null;
 $imap_opts = DEFAULT_IMAP_OPTS;
 $imap_mailbox = DEFAULT_IMAP_MAILBOX;
 $imap_archivebox = DEFAULT_IMAP_ARCHIVEBOX;
+$imap_process_unread_only = DEFAULT_IMAP_PROCESS_UNREAD_ONLY;
+$imap_archive_mail = DEFAULT_IMAP_ARCHIVE_MAIL;
 
 if (!empty($optlist['server'])) {
   $imap_server = $optlist['server'];
 }
-if (!empty($optlist['opts'])) {
-  $imap_opts = $optlist['opts'];
+if (!empty($optlist['imap-user']) && !empty($optlist['imap-pass'])) {
+  $imap_accounts = $optlist['imap-user'].'|'.$optlist['imap-pass'];
+}
+if (!empty($optlist['imap-opts'])) {
+  $imap_opts = $optlist['imap-opts'];
 }
 if (!empty($optlist['mailbox'])) {
   $imap_mailbox = $optlist['mailbox'];
 }
 if (!empty($optlist['archivebox'])) {
   $imap_archivebox = $optlist['archivebox'];
+}
+if ($optlist['unread-only'] == true) {
+  $imap_process_unread_only = true;
+}
+if ($optlist['archive-mail'] == true) {
+  $imap_archive_mail = true;
 }
 if ($cmd == 'list') {
   $cmd = IMAP_CMD_LIST;
@@ -103,7 +123,9 @@ foreach (explode(",", $imap_accounts) as $imap_account) {
     'user' => $imapUser,
     'pass' => $imapPass,
     'mailbox' => $imap_mailbox,
-    'archivebox' => $imap_archivebox
+    'archivebox' => $imap_archivebox,
+    'unreadonly' => $imap_process_unread_only,
+    'archivemail' => $imap_archive_mail
   );
 
   $rc = processMailboxCommand($cmd, $imap_params);
@@ -162,7 +184,7 @@ function checkImapAccount($conn, $params)
 
   //create archive box in case it doesn't exist
   //don't report errors since it will almost always fail
-  if (IMAP_MOVE_MAIL_TO_ARCHIVE == true) {
+  if ($params['archivemail'] == true) {
     $rc = imap_createmailbox($conn, imap_utf7_encode($crm_archivebox));
     if ($rc) {
       echo "Created new mailbox: $crm_archivebox\n";
@@ -183,7 +205,7 @@ function checkImapAccount($conn, $params)
       //mark as read
       imap_setflag_full($conn, $email->uid, '\\Seen', ST_UID);
       //move to folder if necessary
-      if (IMAP_MOVE_MAIL_TO_ARCHIVE == true) {
+      if ($params['archivemail'] == true) {
         imap_mail_move($conn, $msg_num, $params['archivebox']);
       }
     }
@@ -211,8 +233,8 @@ function retrieveMessage($conn, $idx)
   echo "Message #$idx (uid={$email->uid}): {$email->id} from {$email->replyTo}\n";
 
   // Skip message if we are processing unread only.
-  if ($header->Unseen != "U" && IMAP_PROCESS_UNREAD_ONLY) {
-    echo "Skipping (IMAP_PROCESS_UNREAD_ONLY flag set): {$email->id} {$email->replyTo} {$email->subject}\n";
+  if ($header->Unseen != "U" && $params['unreadonly']) {
+    echo "Skipping (PROCESS_UNREAD_ONLY flag set): {$email->id} {$email->replyTo} {$email->subject}\n";
     return null;
   }
 
