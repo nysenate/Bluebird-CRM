@@ -2,9 +2,11 @@
 // Project: BluebirdCRM
 // Author: Ken Zalewski
 // Organization: New York State Senate
-// Date: 201l-02-17
-// Revised: 2011-02-18
+// Date: 2011-02-17
+// Revised: 2011-04-19
 //
+
+define('SCRIPT_UTILS_CIVIROOT', realpath(dirname(__FILE__).'/../core'));
 
 
 function is_cli_script()
@@ -33,7 +35,7 @@ function civicrm_script_init($shopts = "", $longopts = array())
   }
 
   if ($myopts) {
-    require_once dirname(__FILE__).'/../core/civicrm.config.php';
+    require_once SCRIPT_UTILS_CIVIROOT.'/civicrm.config.php';
 
     // If running from web server, or if a username was provided, then
     // authenticate the user.  This allows us to run anonymously from the CLI.
@@ -49,7 +51,11 @@ function civicrm_script_init($shopts = "", $longopts = array())
 
 function civicrm_script_init_cli($shopts, $longopts)
 {
-  $civiroot = add_packages_to_include_path();
+  $old_incpath = add_packages_to_include_path();
+  if ($old_incpath === false) {
+    error_log("Unable to set the script include_path.");
+    return null;
+  }
 
   // When running from the CLI, SITE is required.
   $shopts .= "U:P:K:S:";
@@ -89,10 +95,9 @@ function civicrm_script_init_http($longopts)
 
 function add_packages_to_include_path()
 {
-  $civiroot = realpath(dirname(__FILE__).'/..');
-  set_include_path("$civiroot/packages".PATH_SEPARATOR.get_include_path());
+  $old_incpath = set_include_path(SCRIPT_UTILS_CIVIROOT."/packages".PATH_SEPARATOR.get_include_path());
   session_start();
-  return $civiroot;
+  return $old_incpath;
 } // add_packages_to_include_path()
 
 
