@@ -81,6 +81,9 @@ $.TokenList = function (input, settings) {
 
     // Keep track of the timeout
     var timeout;
+	
+	// Keep track of dropdown focus //NYSS
+	var keep_focus;
 
     // Create a new text input an attach keyup events
     var input_box = $("<input type=\"text\" class='token-input-box'>")

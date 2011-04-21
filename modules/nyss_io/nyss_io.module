@@ -459,7 +459,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
   	nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
 
-  	nyss_out('status','<a href="">click here</a> to continue to return to the import page.',true);
+  	nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
 
   	exit();
 

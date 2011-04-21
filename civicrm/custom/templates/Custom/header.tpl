@@ -57,7 +57,7 @@ $role = str_replace('authenticated user','', $rolesList);
 				<input type="text" class="form-text" id="civi_text_search" name="text" value="enter any text" style="width:193px;">
 				<input type="hidden" name="force" value="true">
 				<input type="hidden" name="csid" value="15">
-				<input type="submit" value="Go" name="_qf_Custom_refresh" class="form-submit default" style="background-image:url(t.gif)"> 
+				<input type="submit" value="Go" name="_qf_Custom_refresh" class="form-submit default tgif"> 
 			</div>
 		</form>
 
@@ -87,7 +87,7 @@ cj( document ).ready( function( ) {
       htmlContent = '<input type="hidden" name="_qf_Basic_refresh">' +
 	  				'<input type="text" class="form-text" id="civi_sort_name" name="sort_name" style="width:193px;" value="enter name" />' + 
                     '<input type="text" id="sort_contact_id" style="display: none" />' +
-					'<input type="submit" id="find_contacts" value="Go" name="_qf_Basic_refresh" class="form-submit default" style="background-image:url(t.gif)" />';
+					'<input type="submit" id="find_contacts" value="Go" name="_qf_Basic_refresh" class="form-submit default tgif" />';
 	  cj( '#quickSearch' ).append( htmlContent );
 
    var contactUrl = {/literal}"{crmURL p='civicrm/ajax/rest' q='className=CRM_Contact_Page_AJAX&fnName=getContactList&json=1&context=navigation' h=0 }"{literal};

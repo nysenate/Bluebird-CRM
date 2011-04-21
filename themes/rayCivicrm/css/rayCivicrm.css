@@ -916,7 +916,7 @@ ul.token-input-list-facebook { width:265px;}
 	float: none;
 }
 #tagSelect .tag-section .label {
-	margin-bottom: 6px;
+	/*margin-bottom: 6px;*/
 }
 #mainTabContainer div#Tag .tag-section .content,
 #tagSelect .tag-section .content {
@@ -1274,4 +1274,9 @@ ul.token-input-list-facebook { width:265px;}
 }
 #crm-container .crm-report-form-block .dataTables_wrapper {
 	overflow: auto;
+}
+
+/*transparent gif; css fixes to core*/
+.tgif {
+	background: url(../images/t.gif) !important;
 }
