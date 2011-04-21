@@ -32,6 +32,116 @@
 #Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
 .jstree-icon {ldelim}border: 1px solid white;{rdelim} /*NYSS*/
 </style>
+
+{*<span id="restmsg" style="display:none"></span>*}{*NYSS*}
+<div id="TagGroups" class="view-content">
+<h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
+    {*NYSS hide this para*}
+    {*<p>
+    {if $action eq 16}
+        {if $permission EQ 'edit'}
+            {capture assign=crmURL}{crmURL p='civicrm/contact/view/tag' q='action=update'}{/capture}
+            <span class="unobstructive">{ts 1=$displayName 2=$crmURL}Current tags for <strong>%1</strong> are highlighted. You can add or remove tags from <a href='%2'>Edit Tags</a>.{/ts}</span>
+        {else}
+            {ts}Current tags are highlighted.{/ts}
+        {/if}
+    {else}
+        {if !$hideContext} 
+        {ts}Mark or unmark the checkboxes, <span class="unobstructive">and click 'Update Tags' to modify tags.</span>{/ts}
+	{/if}
+    {/if}
+    </p>*}
+    
+    {*NYSS add list of Issue Codes*}
+    {if $contactIssueCode_list}
+    	<div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
+    	<div class="clear"></div>
+    {/if}
+    
+    <div id="tagtree">
+      <ul class="tree">
+
+        {foreach from=$tree item="node" key="id"}
+        <li id="tag_{$id}">
+            {if ! $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
+            {if $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
+            {if $node.children} <span class="hit"></span> {/if} <label for="check_{$id}" id="tagLabel_{$id}">{$node.name}</label> 
+            {if $node.children}
+            <ul>
+                {foreach from=$node.children item="subnode" key="subid"}
+                    <li id="tag_{$subid}">
+                        <input id="check_{$subid}" name="tagList[{$subid}]" type="checkbox" {if $tagged[$subid]}checked="checked"{/if}/>
+                        {if $subnode.children} <span class="hit"></span> {/if} <label for="check_{$subid}" id="tagLabel_{$subid}">{$subnode.name}</label> 
+                        {if $subnode.children}
+                        <ul>
+                            {foreach from=$subnode.children item="subsubnode" key="subsubid"}
+                                <li id="tag_{$subsubid}">
+                                    <input id="check_{$subsubid}" name="tagList[{$subsubid}]" type="checkbox" {if $tagged[$subsubid]}checked="checked"{/if}/>
+                                    <label for="check_{$subsubid}" id="tagLabel_{$subsubid}">{$subsubnode.name}</label>
+                                    
+                                    {*NYSS Extend to level 4*}
+                                    {if $subsubnode.children}
+                        			<ul>
+                            			{foreach from=$subsubnode.children item="subsubsubnode" key="subsubsubid"}
+                                		<li id="tag_{$subsubsubid}">value
+                                    	<input id="check_{$subsubsubid}" name="tagList[{$subsubsubid}]" type="checkbox" {if $tagged[$subsubsubid]}checked="checked"{/if}/>
+                                    	<label for="check_{$subsubsubid}" id="tagLabel_{$subsubsubid}">{$subsubsubnode.name}</label>
+                                		</li>
+                            			{/foreach} 
+                        			</ul>
+                        			{/if}
+                                    {*NYSS end*}
+                                    
+                                </li>
+                            {/foreach} 
+                        </ul>
+                        {/if}
+                    </li>	 
+                {/foreach} 
+            </ul>
+            {/if}
+        </li>	 
+        {/foreach} 
+      </ul>
+    </div>
+   
+      {*foreach from=$tag item="row" key="id"}
+
+        <div class="form-item" id="rowidtag_{$id}">
+         {$form.tagList[$id].html} &nbsp;<label for="tag_{$id}">{$row}</label>
+        </div>
+
+      {/foreach*}
+
+    {* Show Edit Tags link if in View mode *}
+    {if $permission EQ 'edit' AND $action eq 16}
+        <!--</fieldset>-->
+        <div class="action-link unobstructive">
+          <a accesskey="N" href="{crmURL p='civicrm/contact/view/tag' q='action=update'}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Tags{/ts}</span></a>
+        </div>
+    {else}
+       <div class="form-item unobstructive">{$form.buttons.html}</div>
+       <!--</fieldset>-->
+    {/if}
+
+    {include file="CRM/common/Tag.tpl"}
+    
+    {*NYSS add list of leg positions with descriptions*}
+    {if $legpositions}
+    <div class="clear_left"></div>
+    <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
+    	<ul>
+        {foreach from=$legpositions item="legposition"}
+        	{if $legposition.description && $legposition.description neq 'No description available.'}
+            	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
+            {/if}
+        {/foreach}
+        </ul>
+    </div>
+    {/if}
+    
+</div>
+
 <script type="text/javascript">
 
 options = {ldelim} ajaxURL:"{crmURL p='civicrm/ajax/rest' h=0}"
@@ -50,7 +160,10 @@ function initTagTree() {
     cj(".unobstructive").hide();
 
     //load js tree.
-    cj("#tagtree").jstree({"plugins" : ["themes", "html_data"]});
+    cj("#tagtree").jstree({
+		core : { animation: 0 }, //NYSS disable animation for performance improvement
+		"plugins" : ["themes", "html_data"]
+	});
 
     cj("#tagtree ul input:checked").each (function(){
         cj(this).parents("li").children(".jstree-icon").addClass('highlighted');
@@ -102,114 +215,6 @@ function initTagTree() {
 };
 {/literal}
 </script>
-{*<span id="restmsg" style="display:none"></span>*}{*NYSS*}
-<div id="Tag" class="view-content">
-<h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
-    {*NYSS hide this para*}
-    {*<p>
-    {if $action eq 16}
-        {if $permission EQ 'edit'}
-            {capture assign=crmURL}{crmURL p='civicrm/contact/view/tag' q='action=update'}{/capture}
-            <span class="unobstructive">{ts 1=$displayName 2=$crmURL}Current tags for <strong>%1</strong> are highlighted. You can add or remove tags from <a href='%2'>Edit Tags</a>.{/ts}</span>
-        {else}
-            {ts}Current tags are highlighted.{/ts}
-        {/if}
-    {else}
-        {if !$hideContext} 
-        {ts}Mark or unmark the checkboxes, <span class="unobstructive">and click 'Update Tags' to modify tags.</span>{/ts}
-	{/if}
-    {/if}
-    </p>*}
-    
-    {*NYSS add list of Issue Codes*}
-    {if $contactIssueCode_list}
-    	<div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
-    	<div class="clear"></div>
-    {/if}
-    
-    <div id="tagtree">
-    <ul class="tree">
-
-        {foreach from=$tree item="node" key="id"}
-        <li id="tag_{$id}">
-            {if ! $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
-            {if $node.children}<input name="tagList[{$id}]" id="check_{$id}" type="checkbox" {if $tagged[$id]}checked="checked"{/if}/>{/if}
-            {if $node.children} <span class="hit"></span> {/if} <label for="check_{$id}" id="tagLabel_{$id}">{$node.name}</label> 
-            {if $node.children}
-            <ul>
-                {foreach from=$node.children item="subnode" key="subid"}
-                    <li id="tag_{$subid}">
-                        <input id="check_{$subid}" name="tagList[{$subid}]" type="checkbox" {if $tagged[$subid]}checked="checked"{/if}/>
-                        {if $subnode.children} <span class="hit"></span> {/if} <label for="check_{$subid}" id="tagLabel_{$subid}">{$subnode.name}</label> 
-                        {if $subnode.children}
-                        <ul>
-                            {foreach from=$subnode.children item="subsubnode" key="subsubid"}
-                                <li id="tag_{$subsubid}">
-                                    <input id="check_{$subsubid}" name="tagList[{$subsubid}]" type="checkbox" {if $tagged[$subsubid]}checked="checked"{/if}/>
-                                    <label for="check_{$subsubid}" id="tagLabel_{$subsubid}">{$subsubnode.name}</label>
-                                    
-                                    {*NYSS Extend to level 4*}
-                                    {if $subsubnode.children}
-                        			<ul>
-                            			{foreach from=$subsubnode.children item="subsubsubnode" key="subsubsubid"}
-                                		<li id="tag_{$subsubsubid}">value
-                                    	<input id="check_{$subsubsubid}" name="tagList[{$subsubsubid}]" type="checkbox" {if $tagged[$subsubsubid]}checked="checked"{/if}/>
-                                    	<label for="check_{$subsubsubid}" id="tagLabel_{$subsubsubid}">{$subsubsubnode.name}</label>
-                                		</li>
-                            			{/foreach} 
-                        			</ul>
-                        			{/if}
-                                    {*NYSS end*}
-                                    
-                                </li>
-                            {/foreach} 
-                        </ul>
-                        {/if}
-                    </li>	 
-                {/foreach} 
-            </ul>
-            {/if}
-        </li>	 
-        {/foreach} 
-    </ul>
-    </div>
-   
-      {*foreach from=$tag item="row" key="id"}
-
-        <div class="form-item" id="rowidtag_{$id}">
-         {$form.tagList[$id].html} &nbsp;<label for="tag_{$id}">{$row}</label>
-        </div>
-
-      {/foreach*}
-
-    {* Show Edit Tags link if in View mode *}
-    {if $permission EQ 'edit' AND $action eq 16}
-        </fieldset>
-        <div class="action-link unobstructive">
-          <a accesskey="N" href="{crmURL p='civicrm/contact/view/tag' q='action=update'}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Tags{/ts}</span></a>
-        </div>
-    {else}
-       <div class="form-item unobstructive">{$form.buttons.html}</div>
-       </fieldset>
-    {/if}
-
-    {include file="CRM/common/Tag.tpl"}
-    
-    {*NYSS add list of leg positions with descriptions*}
-    {if $legpositions}
-    <div class="clear_left"></div>
-    <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
-    	<ul>
-        {foreach from=$legpositions item="legposition"}
-        	{if $legposition.description && $legposition.description neq 'No description available.'}
-            	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
-            {/if}
-        {/foreach}
-        </ul>
-    </div>
-    {/if}
-    
-</div>
 
 {if $action eq 1 or $action eq 2 }
  <script type="text/javascript">
