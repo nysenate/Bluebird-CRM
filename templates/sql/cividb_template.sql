@@ -1347,7 +1347,7 @@ CREATE TABLE `civicrm_dedupe_rule` (
   PRIMARY KEY (`id`),
   KEY `FK_civicrm_dedupe_rule_dedupe_rule_group_id` (`dedupe_rule_group_id`),
   CONSTRAINT `FK_civicrm_dedupe_rule_dedupe_rule_group_id` FOREIGN KEY (`dedupe_rule_group_id`) REFERENCES `civicrm_dedupe_rule_group` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=178 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=187 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1356,7 +1356,7 @@ CREATE TABLE `civicrm_dedupe_rule` (
 
 LOCK TABLES `civicrm_dedupe_rule` WRITE;
 /*!40000 ALTER TABLE `civicrm_dedupe_rule` DISABLE KEYS */;
-INSERT INTO `civicrm_dedupe_rule` VALUES (113,8,'civicrm_contact','birth_date',NULL,1),(114,8,'civicrm_contact','last_name',NULL,5),(115,8,'civicrm_contact','first_name',NULL,5),(116,8,'civicrm_address','city',NULL,5),(121,1,'civicrm_address','street_address',NULL,1),(122,1,'civicrm_contact','last_name',NULL,5),(123,1,'civicrm_contact','first_name',NULL,5),(124,1,'civicrm_address','city',NULL,5),(125,9,'civicrm_contact','first_name',NULL,10),(126,9,'civicrm_contact','last_name',NULL,10),(127,9,'civicrm_email','email',NULL,10),(138,6,'civicrm_contact','household_name',NULL,10),(139,6,'civicrm_address','street_address',NULL,10),(140,6,'civicrm_address','city',NULL,10),(141,6,'civicrm_email','email',NULL,10),(142,7,'civicrm_contact','household_name',NULL,10),(143,7,'civicrm_address','street_address',NULL,10),(144,7,'civicrm_address','city',NULL,10),(145,3,'civicrm_contact','household_name',NULL,10),(146,3,'civicrm_address','street_address',NULL,10),(147,3,'civicrm_address','postal_code',NULL,10),(152,5,'civicrm_contact','organization_name',NULL,10),(153,5,'civicrm_address','street_address',NULL,10),(154,5,'civicrm_address','city',NULL,10),(155,5,'civicrm_email','email',NULL,10),(170,2,'civicrm_contact','organization_name',NULL,4),(171,2,'civicrm_address','street_address',NULL,3),(172,2,'civicrm_address','postal_code',NULL,2),(173,2,'civicrm_address','city',NULL,1),(174,10,'civicrm_contact','organization_name',NULL,3),(175,10,'civicrm_address','street_address',NULL,2),(176,10,'civicrm_address','city',NULL,1),(177,4,'civicrm_contact','last_name',NULL,1);
+INSERT INTO `civicrm_dedupe_rule` VALUES (113,8,'civicrm_contact','birth_date',NULL,1),(114,8,'civicrm_contact','last_name',NULL,5),(115,8,'civicrm_contact','first_name',NULL,5),(116,8,'civicrm_address','city',NULL,5),(121,1,'civicrm_address','street_address',NULL,1),(122,1,'civicrm_contact','last_name',NULL,5),(123,1,'civicrm_contact','first_name',NULL,5),(124,1,'civicrm_address','city',NULL,5),(125,9,'civicrm_contact','first_name',NULL,10),(126,9,'civicrm_contact','last_name',NULL,10),(127,9,'civicrm_email','email',NULL,10),(138,6,'civicrm_contact','household_name',NULL,10),(139,6,'civicrm_address','street_address',NULL,10),(140,6,'civicrm_address','city',NULL,10),(141,6,'civicrm_email','email',NULL,10),(142,7,'civicrm_contact','household_name',NULL,10),(143,7,'civicrm_address','street_address',NULL,10),(144,7,'civicrm_address','city',NULL,10),(145,3,'civicrm_contact','household_name',NULL,10),(146,3,'civicrm_address','street_address',NULL,10),(147,3,'civicrm_address','postal_code',NULL,10),(152,5,'civicrm_contact','organization_name',NULL,10),(153,5,'civicrm_address','street_address',NULL,10),(154,5,'civicrm_address','city',NULL,10),(155,5,'civicrm_email','email',NULL,10),(170,2,'civicrm_contact','organization_name',NULL,4),(171,2,'civicrm_address','street_address',NULL,3),(172,2,'civicrm_address','postal_code',NULL,2),(173,2,'civicrm_address','city',NULL,1),(174,10,'civicrm_contact','organization_name',NULL,3),(175,10,'civicrm_address','street_address',NULL,2),(176,10,'civicrm_address','city',NULL,1),(177,4,'civicrm_contact','last_name',NULL,1),(186,1,'civicrm_contact','suffix_id',NULL,5);
 /*!40000 ALTER TABLE `civicrm_dedupe_rule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1384,7 +1384,7 @@ CREATE TABLE `civicrm_dedupe_rule_group` (
 
 LOCK TABLES `civicrm_dedupe_rule_group` WRITE;
 /*!40000 ALTER TABLE `civicrm_dedupe_rule_group` DISABLE KEYS */;
-INSERT INTO `civicrm_dedupe_rule_group` VALUES (1,'Individual',16,'Fuzzy',1,'Level 3 (street + lname + fname + city)'),(2,'Organization',10,'Fuzzy',1,'Level 2 (name + street + city + zip)'),(3,'Household',30,'Fuzzy',1,'Level 2 (name + street + zip)'),(4,'Individual',1,'Strict',1,'Level 1 (fname + lname + birth + postal)'),(5,'Organization',40,'Strict',1,'Level 1 (name + address + city + email)'),(6,'Household',40,'Strict',1,'Level 1 (name + street + city + email)'),(7,'Household',30,'Fuzzy',0,'Level 3 (name + street + city)'),(8,'Individual',16,'Strict',0,'Level 2 (fname + lname + city + birth)'),(9,'Individual',30,'Fuzzy',0,'Level 4 (fname + lname + email)'),(10,'Organization',6,'Fuzzy',0,'Level 3 (name + street + city)');
+INSERT INTO `civicrm_dedupe_rule_group` VALUES (1,'Individual',21,'Fuzzy',1,'Level 3 (street + lname + fname + city + suffix)'),(2,'Organization',10,'Fuzzy',1,'Level 2 (name + street + city + zip)'),(3,'Household',30,'Fuzzy',1,'Level 2 (name + street + zip)'),(4,'Individual',1,'Strict',1,'Level 1 (fname + lname + birth + postal)'),(5,'Organization',40,'Strict',1,'Level 1 (name + address + city + email)'),(6,'Household',40,'Strict',1,'Level 1 (name + street + city + email)'),(7,'Household',30,'Fuzzy',0,'Level 3 (name + street + city)'),(8,'Individual',16,'Strict',0,'Level 2 (fname + lname + city + birth)'),(9,'Individual',30,'Fuzzy',0,'Level 4 (fname + lname + email)'),(10,'Organization',6,'Fuzzy',0,'Level 3 (name + street + city)');
 /*!40000 ALTER TABLE `civicrm_dedupe_rule_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2148,7 +2148,7 @@ CREATE TABLE `civicrm_log` (
   KEY `index_entity` (`entity_table`,`entity_id`),
   KEY `FK_civicrm_log_modified_id` (`modified_id`),
   CONSTRAINT `FK_civicrm_log_modified_id` FOREIGN KEY (`modified_id`) REFERENCES `civicrm_contact` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2157,7 +2157,6 @@ CREATE TABLE `civicrm_log` (
 
 LOCK TABLES `civicrm_log` WRITE;
 /*!40000 ALTER TABLE `civicrm_log` DISABLE KEYS */;
-INSERT INTO `civicrm_log` VALUES (1,'civicrm_domain',1,'upgrade:3.2.3->3.2.4.upgrade',NULL,'2011-03-12 10:20:33'),(2,'civicrm_domain',1,'upgrade:3.2.4.upgrade->3.2.4',NULL,'2011-03-12 10:20:33'),(3,'civicrm_domain',1,'upgrade:3.2.4->3.2.5.upgrade',NULL,'2011-03-12 10:20:33'),(4,'civicrm_domain',1,'upgrade:3.2.5.upgrade->3.2.5',NULL,'2011-03-12 10:20:33'),(5,'civicrm_domain',1,'upgrade:3.2.5->3.3.alpha1.upgrade',NULL,'2011-03-12 10:20:33'),(6,'civicrm_domain',1,'upgrade:3.3.alpha1.upgrade->3.3.alpha1',NULL,'2011-03-12 10:20:40'),(7,'civicrm_domain',1,'upgrade:3.3.alpha1->3.3.alpha2.upgrade',NULL,'2011-03-12 10:20:40'),(8,'civicrm_domain',1,'upgrade:3.3.alpha2.upgrade->3.3.alpha2',NULL,'2011-03-12 10:20:40'),(9,'civicrm_domain',1,'upgrade:3.3.alpha2->3.3.beta1.upgrade',NULL,'2011-03-12 10:20:40'),(10,'civicrm_domain',1,'upgrade:3.3.beta1.upgrade->3.3.beta1',NULL,'2011-03-12 10:20:43'),(11,'civicrm_domain',1,'upgrade:3.3.beta1->3.3.beta2.upgrade',NULL,'2011-03-12 10:20:43'),(12,'civicrm_domain',1,'upgrade:3.3.beta2.upgrade->3.3.beta2',NULL,'2011-03-12 10:20:46'),(13,'civicrm_domain',1,'upgrade:3.3.beta2->3.3.beta3.upgrade',NULL,'2011-03-12 10:20:46'),(14,'civicrm_domain',1,'upgrade:3.3.beta3.upgrade->3.3.beta3',NULL,'2011-03-12 10:20:46'),(15,'civicrm_domain',1,'upgrade:3.3.beta3->3.3.0.upgrade',NULL,'2011-03-12 10:20:46'),(16,'civicrm_domain',1,'upgrade:3.3.0.upgrade->3.3.0',NULL,'2011-03-12 10:20:46'),(17,'civicrm_domain',1,'upgrade:3.3.0->3.3.1.upgrade',NULL,'2011-03-12 10:20:46'),(18,'civicrm_domain',1,'upgrade:3.3.1.upgrade->3.3.1',NULL,'2011-03-12 10:20:47'),(19,'civicrm_domain',1,'upgrade:3.3.1->3.3.2.upgrade',NULL,'2011-03-12 10:20:47'),(20,'civicrm_domain',1,'upgrade:3.3.2.upgrade->3.3.2',NULL,'2011-03-12 10:20:49'),(21,'civicrm_domain',1,'upgrade:3.3.2->3.3.3.upgrade',NULL,'2011-03-12 10:20:49'),(22,'civicrm_domain',1,'upgrade:3.3.3.upgrade->3.3.3',NULL,'2011-03-12 10:20:49'),(23,'civicrm_domain',1,'upgrade:3.3.3->3.3.4.upgrade',NULL,'2011-03-12 10:20:49'),(24,'civicrm_domain',1,'upgrade:3.3.4.upgrade->3.3.4',NULL,'2011-03-12 10:20:49'),(25,'civicrm_domain',1,'upgrade:3.3.4->3.3.5',NULL,'2011-03-12 10:20:49');
 /*!40000 ALTER TABLE `civicrm_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4998,4 +4997,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-04-20 16:30:25
+-- Dump completed on 2011-04-21 11:00:10
