@@ -97,8 +97,8 @@ function updateUrlPref($dbcon, $optname, $optval)
 
 function updateCiviConfig($dbcon, $civicfg, $crmhost, $appdir, $datadir)
 {
-  $http_prefix = "http://$crmhost";
-  $data_prefix = "$datadir/$crmhost/civicrm";
+  $http_prefix = "http://$crmhost";  // no longer necessary
+  $data_prefix = "$datadir/$crmhost/civicrm";  // no longer necessary
   $rc = true;
 
   $cb = $civicfg['backend'];
@@ -115,13 +115,13 @@ function updateCiviConfig($dbcon, $civicfg, $crmhost, $appdir, $datadir)
     $rc = false;
   }
 
-  updateDirPref($dbcon, 'uploadDir', "$data_prefix/upload/");
-  updateDirPref($dbcon, 'imageUploadDir', "$data_prefix/images/");
-  updateDirPref($dbcon, 'customFileUploadDir', "$data_prefix/custom/");
+  updateDirPref($dbcon, 'uploadDir', "upload/");
+  updateDirPref($dbcon, 'imageUploadDir', "images/");
+  updateDirPref($dbcon, 'customFileUploadDir', "custom/");
   updateDirPref($dbcon, 'customTemplateDir', "$appdir/civicrm/custom/templates");
   updateDirPref($dbcon, 'customPHPPathDir', "$appdir/civicrm/custom/php");
-  updateUrlPref($dbcon, 'userFrameworkResourceURL', "$http_prefix/sites/all/modules/civicrm/");
-  updateUrlPref($dbcon, 'imageUploadURL', "$http_prefix/sites/default/files/civicrm/images/");
+  updateUrlPref($dbcon, 'userFrameworkResourceURL', "/sites/all/modules/civicrm/");
+  updateUrlPref($dbcon, 'imageUploadURL', "/sites/default/files/civicrm/images/");
 
   return $rc;
 } // updateCiviConfig()
