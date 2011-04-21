@@ -211,6 +211,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	}
 	
+	//set NY as default for state field in proximity search
+	if ( $formName == 'CRM_Contact_Form_Search_Custom' && 
+	     $form->getVar('_customSearchClass') == 'CRM_Contact_Form_Search_Custom_Proximity' ) {
+	
+		$defaults['state_province_id'] = 1031;
+		$form->setDefaults( $defaults );
+	
+	}
+	
 	//remove primary field export option
 	/*if ( $formName == 'CRM_Export_Form_Select' ) {
 

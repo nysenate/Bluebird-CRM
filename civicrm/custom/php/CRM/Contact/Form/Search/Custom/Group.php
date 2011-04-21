@@ -49,11 +49,13 @@ class CRM_Contact_Form_Search_Custom_Group
 
     function __construct( &$formValues ) {
         $this->_formValues = $formValues;
-        $this->_columns = array( ts('Contact Id')   => 'contact_id'  ,
-                                 ts('Contact Type') => 'contact_type',
-                                 ts('Name')         => 'sort_name',
-                                 ts('Group Name')   => 'gname',
-                                 ts('Tag Name')     => 'tname' );
+        $this->_columns = array( ts('Contact Type')   => 'contact_type',
+                                 ts('Name')           => 'sort_name',
+                                 ts('Group Name')     => 'gname',
+                                 ts('Tag Name')       => 'tname',
+								 ts('Street Address') => 'street_address',
+								 ts('City')           => 'city'
+								 );
         
         $this->_includeGroups   = CRM_Utils_Array::value( 'includeGroups', $this->_formValues, array( ) );
         $this->_excludeGroups   = CRM_Utils_Array::value( 'excludeGroups', $this->_formValues, array( ) ); 
@@ -173,7 +175,9 @@ class CRM_Contact_Form_Search_Custom_Group
         } else {
             $selectClause = "DISTINCT(contact_a.id)  as contact_id,
                          contact_a.contact_type as contact_type,
-                         contact_a.sort_name    as sort_name";
+                         contact_a.sort_name    as sort_name,
+						 addr.street_address,
+						 addr.city"; //NYSS
             
             //distinguish column according to user selection
             if ( $this->_includeGroups && ( ! $this->_includeTags ) ) {
@@ -653,6 +657,9 @@ class CRM_Contact_Form_Search_Custom_Group
         }
 
         $from .= " LEFT JOIN civicrm_email ON ( contact_a.id = civicrm_email.contact_id AND ( civicrm_email.is_primary = 1 OR civicrm_email.is_bulkmail = 1 ) )";
+		
+		//NYSS
+		$from .= " LEFT JOIN civicrm_address addr ON addr.contact_id = contact_a.id AND addr.is_primary = 1";
 
         return $from;
     }

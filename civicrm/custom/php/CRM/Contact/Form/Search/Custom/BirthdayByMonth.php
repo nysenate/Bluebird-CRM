@@ -46,10 +46,11 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     function __construct( &$formValues ) {
         parent::__construct( $formValues );
 
-        $this->_columns = array( ts('Contact Id') => 'contact_id',
-                                 ts('Name')  	  => 'sort_name' ,
-                                 ts('Birth Date') => 'birth_date',
-								 ts('Age')		  => 'age'
+        $this->_columns = array( ts('Name')  	      => 'sort_name' ,
+                                 ts('Birth Date')     => 'birth_date',
+								 ts('Age')		      => 'age',
+								 ts('Street Address') => 'street_address',
+								 ts('City')           => 'city'
 								);
     }
 
@@ -157,10 +158,11 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
 
     function all( $offset = 0, $rowcount = 0, $sort = null, $includeContactIDs = false ) {
         
-		$selectClause = "contact_a.id as contact_id,
-            		 	 contact_a.sort_name as sort_name,
+		$selectClause = "contact_a.sort_name as sort_name,
             		 	 contact_a.birth_date as birth_date,
-						 (YEAR(CURDATE())-YEAR(birth_date)) - (RIGHT(CURDATE(),5)<RIGHT(birth_date,5)) AS age";
+						 (YEAR(CURDATE())-YEAR(birth_date)) - (RIGHT(CURDATE(),5)<RIGHT(birth_date,5)) AS age,
+						 addr.street_address,
+						 addr.city"; //NYSS
 						 
         if ( empty( $sort ) ) { $sort = "ORDER BY birth_date asc"; }
 		
@@ -173,7 +175,10 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     }
     
     function from( ) {
-        return "FROM civicrm_contact contact_a ";
+        //NYSS
+		$from = "FROM civicrm_contact contact_a 
+LEFT JOIN civicrm_address addr ON addr.contact_id = contact_a.id AND addr.is_primary = 1";
+		return $from;
     }
 
     function where( $includeContactIDs = false ) {
