@@ -238,7 +238,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 		//fix birthdate
 		$d = $l['birth_date'];
-		if ( !empty($d) && $d != 0 && $d != 19000101 && $d != 19010101 ) { //remove errant records
+		if ( !empty($d) && $d != 0 && $d != 19000101 && $d != 19010101 && $d > 19000000 ) { //remove errant records
 			$l['birth_date'] = substr($d,0,4).'-'.substr($d,4,2).'-'.substr($d,6,2);
 		} else {
 			$l['birth_date'] = NULL;
