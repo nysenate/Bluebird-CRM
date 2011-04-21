@@ -59,7 +59,7 @@ function run()
 
     //log the execution of script
     require_once 'CRM/Core/Error.php';
-    CRM_Core_Error::debug_log_message('UpdateAddress.php');
+    CRM_Core_Error::debug_log_message('updateAddresses.php');
 
     require_once 'CRM/Core/Config.php';
     $config = CRM_Core_Config::singleton();
