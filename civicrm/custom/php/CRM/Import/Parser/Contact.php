@@ -701,6 +701,27 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
                 $this->_newContacts[] =  $contactID;
             }
         }
+		
+		//NYSS
+		// call import hook
+        require_once 'CRM/Utils/Hook.php';
+		$currentContactID = end($this->_newContacts);
+		$currentImportID  = end($values);
+		$keys             = $this->_mapperKeys;
+		
+		$importIDs = array( 'contactID' => $currentContactID, 
+						    'importID'  => $currentImportID,
+							'keys'      => $keys );
+		
+		$importTempTable = $this->_tableName;
+		$fields          = $this->_activeFields;
+		
+        CRM_Utils_Hook::import( 'process', 
+								$this, 
+								$importTempTable,
+								$importIDs, 
+								$fields );
+		//NYSS end
         
         if ( $relationship ) {
             $primaryContactId = null;
