@@ -735,7 +735,7 @@ class CRM_Utils_Hook {
                   '::invoke( 3, $obj, $type, $query, $null, $null , \'civicrm_dupeQuery\' );' );
     }
 	
-	/** //NYSS
+	/**
      * This hook is called before record is imported
      * 
      * @param string  $usage           - hook usage/location
@@ -747,13 +747,13 @@ class CRM_Utils_Hook {
      * @return void
      * @access public 
      */
-    static function import( $usage, &$objectRef, &$importTempTable, &$importIDs, &$fields ) {
+    static function import( $usage, &$objectRef, &$params ) {
         $config = CRM_Core_Config::singleton( );
         require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userHookClass ) . '.php' );
         $null =& CRM_Core_DAO::$_nullObject;
         return   
             eval( 'return ' .
                   $config->userHookClass .
-                  '::invoke( 5, $usage, $objectRef, $importTempTable, $importIDs, $fields, \'civicrm_import\' );' );
+                  '::invoke( 3, $usage, $objectRef, $params, $null, $null, \'civicrm_import\' );' );
     }
 }

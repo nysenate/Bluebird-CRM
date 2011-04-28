@@ -708,19 +708,18 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
 		$currentContactID = end($this->_newContacts);
 		$currentImportID  = end($values);
 		$keys             = $this->_mapperKeys;
+		$importTempTable  = $this->_tableName;
+		$fields           = $this->_activeFields;
 		
-		$importIDs = array( 'contactID' => $currentContactID, 
-						    'importID'  => $currentImportID,
-							'keys'      => $keys );
-		
-		$importTempTable = $this->_tableName;
-		$fields          = $this->_activeFields;
+		$params = array( 'contactID'       => $currentContactID, 
+						 'importID'        => $currentImportID,
+						 'importTempTable' => $importTempTable,
+						 'keys'            => $keys,
+						 'fields'          => $fields );
 		
         CRM_Utils_Hook::import( 'process', 
 								$this, 
-								$importTempTable,
-								$importIDs, 
-								$fields );
+								$params );
 		//NYSS end
         
         if ( $relationship ) {

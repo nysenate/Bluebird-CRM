@@ -1,11 +1,13 @@
 <?php 
-function nyss_import_civicrm_import( $usage, &$objectRef, &$importTempTable, &$importIDs, &$fields ) {
+function nyss_import_civicrm_import( $usage, &$objectRef, $params ) {
 	
 	//during import, accept special tag_import column for processing
-	$cType     = $objectRef->_contactType;
-	$dupeType  = $objectRef->_onDuplicate;
-	$contactID = $importIDs['contactID'];
-	$importID  = $importIDs['importID'];
+	$cType           = $objectRef->_contactType;
+	$dupeType        = $objectRef->_onDuplicate;
+	$contactID       = $params['contactID'];
+	$importID        = $params['importID'];
+	$importTempTable = $params['importTempTable'];
+	$fields          = $params['fields'];
 	
 	require_once 'CRM/Core/DAO.php';
 	$sqlTags = "SELECT tag_import
