@@ -182,11 +182,6 @@
         </tr>
         </table>
 		</div>
-		<script type="text/javascript">
-			var eleSpan          = "span#custom1";
-			var eleDiv           = "div#customData1";
-			showTab[1] = {literal}{"spanShow":eleSpan,"divShow":eleDiv}{/literal};
-		</script>
 </div>
 {/if}
 

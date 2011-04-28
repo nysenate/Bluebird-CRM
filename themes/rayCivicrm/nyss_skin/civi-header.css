@@ -294,11 +294,14 @@ img.menu-item-arrow {
     }
 #crm-seal {
     background:transparent url(images/seal-bluebird.png) no-repeat scroll left top;
-    width:300px;
+    width:160px;
     height:55px;
     margin-top:10px;
     float: left;
     }
+#crm-container .footer .col1 {
+	width: auto;
+}
 /* adv search */
 .civi-adv-search-linkwrap {
 	cursor: pointer;
