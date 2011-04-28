@@ -31,12 +31,8 @@ if ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
-webdir=`$readConfig --global drupal.rootdir` || webdir="$DEFAULT_DRUPAL_ROOTDIR"
-base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
-
 ###### Begin Update Scripts ######
 
 ## set do not mail if birthdate < 1901 ##
-birthdayDNM="UPDATE civicrm_contact SET do_not_mail = 1 WHERE birth_date < '1901-12-31';"
+birthdayDNM="UPDATE civicrm_contact SET do_not_mail = 1 WHERE birth_date < '1901-01-01';"
 $execSql -i $instance -c "$birthdayDNM"
