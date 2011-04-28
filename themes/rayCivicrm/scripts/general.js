@@ -31,8 +31,9 @@ Blueprint.formCheck = function() {
   });
 };
 
+// NYSS/LCD 042811 - handle via buildForm hook
 // prevent users from clicking a submit button twice
-Blueprint.formCheck = function() {
+/*Blueprint.formCheck = function() {
   // only apply this to node and comment and new user registration forms
   var forms = $("#crm-container>form:not('#Case') .crm-submit-buttons .crm-button-type-upload>input");
 
@@ -54,7 +55,7 @@ Blueprint.formCheck = function() {
     // append notice if form saving isn't work, perhaps a timeout issue
     setTimeout(notice, 24000);
   });
-};
+};*/
 
 
 // Global Killswitch.

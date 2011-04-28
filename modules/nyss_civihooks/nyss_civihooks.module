@@ -228,6 +228,34 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 
 	}*/
 	
+	//add limit submit js to all submit buttons
+	if ( isset( $form->_elementIndex['buttons'] ) ) {
+		$buttons =& $form->getElement( 'buttons' );
+		$formID = $form->_attributes['id'];
+		
+		//handle case form differently as buttons element is constructed twice due to embedded form
+		if ( $formID == 'Case' ) {
+			$form->removeElement( 'buttons' );
+			$buttons =& $form->getElement( 'buttons' );
+		}
+		
+		$btnExclude = array();
+		
+		foreach ( $buttons->_elements as $key=>$button ) {
+			$btnType = $buttons->_elements[$key]->_attributes['type'];
+			if ( $btnType == 'submit' ) {
+				$btnName = $buttons->_elements[$key]->_attributes['name'];
+				if ( !in_array($btnName, $btnExclude) ) {
+					//$js = "return submitOnce(this,'".$formID."','Processing');";
+					$js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
+					$buttons->_elements[$key]->_attributes['onclick'] = $js;
+				}
+			}
+		}
+		//CRM_Core_Error::debug($buttons);
+	}
+	//CRM_Core_Error::debug($form);
+	
 } //close buildForm
 
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
