@@ -738,11 +738,9 @@ class CRM_Utils_Hook {
 	/**
      * This hook is called before record is imported
      * 
-     * @param string  $usage           - hook usage/location
-     * @param string  $objectRef       - import record object
-     * @param string  $importTempTable - name of temp table used by import
-     * @param array   $importIDs       - array with contact id, import row id, and field headers
-	 * @param array   $fields          - array of fields
+     * @param string  $usage      - hook usage/location
+     * @param string  $objectRef  - import record object
+     * @param array   $params     - array with contact id, import row id, field headers, tempTable, fields
      *  
      * @return void
      * @access public 
