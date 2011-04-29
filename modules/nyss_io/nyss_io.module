@@ -6,6 +6,7 @@ define(NYSSIODEBUG,true);
 require_once(dirname(__FILE__) . '/nyss_lib.php');
 require_once(dirname(__FILE__) . '/nyss_io.php');
 
+//define menu path
 function nyss_io_menu () {
 
   $items = array();
@@ -20,11 +21,13 @@ function nyss_io_menu () {
   return $items;
 }
 
+//define page
 function nyss_ioimportdata_page() {
 
         return drupal_get_form('nyss_ioimport_form');
 }
-          
+
+//define form
 function nyss_ioimport_form() {
 
    $form = array();
@@ -57,7 +60,7 @@ function nyss_ioimport_form() {
 
    $form['runnum'] = array(
      '#type' => 'select',
-     '#title' => t('How many records to process in dry run mode (must be set to ALL for the real import)'),
+     '#title' => t('How many records to process in dry run mode (should be set to ALL for the real import)'),
      '#options' => array(
 	     '10' => t('10'),
 	     '100' => t('100'),
@@ -94,13 +97,16 @@ function nyss_ioimport_form() {
    return $form;
 }
 
+//define form validation
 function nyss_ioimport_form_validate($form, &$form_state) {
 
    nyss_iovalidateuploadform($form, $form_state);
 }
 
+//process form validation steps
 function nyss_iovalidateuploadform($form, &$form_state) {
 
+	//require either a file be uploaded or referenced on the server
 	if (!empty($form_state['values']['servercsv'])) {
 
 		$form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
@@ -124,6 +130,7 @@ function nyss_iovalidateuploadform($form, &$form_state) {
    	}
 }
 
+//main function for processing import
 function nyss_ioimport_form_submit($form, &$form_state) {
 
 	global $user;
@@ -188,10 +195,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	if ( array_key_exists('note', $columns) ) { require_once 'api/v2/Note.php'; }
 	
 	//also create group here if set in form
+	$groupID = '';
 	if ( !empty($form_state['values']['addtogroup']) ) {
 		require_once 'api/v2/Group.php';
 		require_once 'api/v2/GroupContact.php';
-		$groupID = '';
 		
 		$groupname = $form_state['values']['addtogroup'];
 		$groupparams = array( 'title' => $groupname );
@@ -204,11 +211,19 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$group = civicrm_group_add( $params );
 				//nyss_out("debug", $group, true);
 			$groupID = $group['result'];
+		} elseif ( $get_group['is_error'] && $dryrun ) {
+			nyss_out('status',"group '{$groupname}' does not exist; it will be created during import.",true);
 		} else {
 			$group = array_keys($get_group);
 			$groupID = $group[0];
+			if ( $dryrun ) {
+				nyss_out('status',"imported records will be added to the existing group: {$groupname}.",true);
+			}
 		}
-		echo 'groupID: '.$groupID;
+		
+		if ( !$dryrun ) {
+			nyss_out('status',"groupID: {$groupID}.",true);
+		}
 	}
 
   	while ($l = $fo->getLine()) {
@@ -231,52 +246,59 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		if ($nyss_ioline%20==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
 
 		//fix the gender entries
-		$l['gender'] = ( $l['gender'] ) ? $l['gender'] : $l['gender_id'];
-		if ($l['gender']=='M') $l['gender'] = 'Male';
-        if ($l['gender']=='F') $l['gender'] = 'Female';
-		$l['gender_id'] = $l['gender'];
+		if ( isset($l['gender']) || isset($l['gender_id']) ) {
+			$l['gender'] = ( $l['gender'] ) ? $l['gender'] : $l['gender_id'];
+			if ($l['gender']=='M') $l['gender'] = 'Male';
+        	if ($l['gender']=='F') $l['gender'] = 'Female';
+			$l['gender_id'] = $aGender[$l['gender']];
+			unset($l['gender']); //remove text value
+		}
 
 		//fix birthdate
-		$d = $l['birth_date'];
-		if ( !empty($d) && $d != 0 && $d != 19000101 && $d != 19010101 && $d > 19000000 ) { //remove errant records
-			$l['birth_date'] = substr($d,0,4).'-'.substr($d,4,2).'-'.substr($d,6,2);
-		} else {
-			$l['birth_date'] = NULL;
+		if ( isset( $l['birth_date'] ) ) {
+			$d = $l['birth_date'];
+			if ( !empty($d) && $d != 0 && $d != 19000101 && $d != 19010101 && $d > 19000000 ) { //remove errant records
+				$l['birth_date'] = substr($d,0,4).'-'.substr($d,4,2).'-'.substr($d,6,2);
+			} else {
+				$l['birth_date'] = NULL;
+			}
 		}
 		
 		//fix boe registration date
-		$boe_reg = $l['boe_date_of_registration_24'];
-		if ( !empty($boe_reg) && $boe_reg != 0 && $boe_reg != 19000101 && $boe_reg != 19010101 ) { //remove errant records
-			$l['boe_date_of_registration_24'] = substr($boe_reg,0,4).'-'.substr($boe_reg,4,2).'-'.substr($boe_reg,6,2);
-		} else {
-			$l['boe_date_of_registration_24'] = NULL;
+		if ( isset( $l['boe_date_of_registration_24'] ) ) {
+			$boe_reg = $l['boe_date_of_registration_24'];
+			if ( !empty($boe_reg) && $boe_reg != 0 && $boe_reg != 19000101 && $boe_reg != 19010101 ) { //remove errant records
+				$l['boe_date_of_registration_24'] = substr($boe_reg,0,4).'-'.substr($boe_reg,4,2).'-'.substr($boe_reg,6,2);
+			} else {
+				$l['boe_date_of_registration_24'] = NULL;
+			}
 		}
 		
 		//fix prefixes
-		$prefix_val = '';
-		if ( array_key_exists( $l['prefix_id'], $aPrefix ) ) { //if a valid value, retain
-			$prefix_val = $l['prefix_id'];
-		} elseif ( array_key_exists( $l['prefix_id'], $nyss_ioprefixes ) ) { //check if in prefix map
-			$prefix_val = $nyss_ioprefixes[$l['prefix_id']];
-		} else { //if odd, ignore
+		if ( isset( $l['prefix_id'] ) ) {
 			$prefix_val = '';
+			if ( array_key_exists( $l['prefix_id'], $aPrefix ) ) { //if a valid value, retain
+				$prefix_val = $l['prefix_id'];
+			} elseif ( array_key_exists( $l['prefix_id'], $nyss_ioprefixes ) ) { //check if in prefix map
+				$prefix_val = $nyss_ioprefixes[$l['prefix_id']];
+			} else { //if odd, ignore
+				$prefix_val = '';
+			}
+			$l['prefix_id'] = $aPrefix[$prefix_val];
 		}
 		
 		//fix suffixes
-		$suffix_val = '';
-		if ( array_key_exists( $l['suffix_id'], $aSuffix ) ) { //if a valid value, retain
-			$suffix_val = $l['suffix_id'];
-		} elseif ( array_key_exists( $l['suffix_id'], $nyss_iosuffixes ) ) { //check if in suffix map
-			$suffix_val = $nyss_iosuffixes[$l['suffix_id']];
-		} else { //if odd, ignore
+		if ( isset( $l['suffix_id'] ) ) {
 			$suffix_val = '';
-		}
-
-		//set ids; accomodate both import field schemas
-		$l['gender_id'] = ( $aGender[$l['gender']] ) ? $aGender[$l['gender']] : $aGender[$l['gender_id']];
-		$l['state_province_id'] = ( $aStates[$l['st']] ) ? $aStates[$l['st']] : $aStates[$l['state_province_id']];
-		$l['prefix_id'] = $aPrefix[$prefix_val];
-		$l['suffix_id'] = $aSuffix[$suffix_val];
+			if ( array_key_exists( $l['suffix_id'], $aSuffix ) ) { //if a valid value, retain
+				$suffix_val = $l['suffix_id'];
+			} elseif ( array_key_exists( $l['suffix_id'], $nyss_iosuffixes ) ) { //check if in suffix map
+				$suffix_val = $nyss_iosuffixes[$l['suffix_id']];
+			} else { //if odd, ignore
+				$suffix_val = '';
+			}
+			$l['suffix_id'] = $aSuffix[$suffix_val];
+		}	
 		
 		//set the last import timestamp
 		$l['last_import_57'] = date( 'Y-m-d H:i:s' );
@@ -304,9 +326,13 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		
 		} //end BOE processing
 		
-		//fix street_unit
+		//set state id
+		if ( isset($l['st']) || isset($l['state_province_id']) ) {
+			$l['state_province_id'] = ( $aStates[$l['st']] ) ? $aStates[$l['st']] : $aStates[$l['state_province_id']];
+		}
+		
 		//if street_unit value exists, and there is no "apt" text, prepend to value
-		if ( $l['street_unit'] ) {
+		if ( isset($l['street_unit']) && $l['street_unit'] ) {
 			$needle_found = 0;
 			$unit_needles = array ( 'apt', 'unit', 'super', 'sup', 'supt', 'ste', 'rm', 'pvt', 'fl', 'bsmt' );
 			foreach ( $unit_needles as $unit_needle ) {
@@ -325,7 +351,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 		//find an address if we don't have an addressID already
 		if (!empty($l['id']) && empty($l['address_id'])) {
-			$sql = "SELECT id as address_id from civicrm_address where contact_id like '{$l['id']}' AND street_number like '{$l['street_number']}' AND street_name like '{$l['street_name']}' AND city like '{$l['city']}' AND postal_code like '{$l['postal_cod']}'";
+			$sql = "SELECT id AS address_id FROM civicrm_address WHERE contact_id LIKE '{$l['id']}' AND street_number LIKE '{$l['street_number']}' AND street_name LIKE '{$l['street_name']}' AND city LIKE '{$l['city']}' AND ( postal_code LIKE '{$l['postal_cod']}' OR postal_code LIKE '{$l['postal_code']}' )";
 			$dao = &CRM_Core_DAO::executeQuery( $sql );
 	        if ($dao->fetch()) $l['address_id'] = $dao->address_id;
 			CRM_Core_DAO::freeResult( );
@@ -336,6 +362,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$l[$k] = CRM_Utils_String::stripSpaces($v);
 		}
 		
+		nyss_out('debug', 'ready to begin importing record...', true);
 		//nyss_out('debug', $l, true);
 
 		/*------NOW IMPORT THE DATA-------------------------------------*/
@@ -467,8 +494,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
-	//nyss_out('debug', $tbl,true);
-	//nyss_out('debug', $l,true);
+	//nyss_out('debug', "tbl top: $tbl", true);
+	//nyss_out('debug', $l, true);
 
     global $nyss_iofields;
 	global $nyss_select;
@@ -499,7 +526,11 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
     $pkCivi = $nyss_select[$tbl]['PK']['civiField'];
     $pkImport = $nyss_select[$tbl]['PK']['importField'];
 
-	nyss_out('debug', $l, true);
+	//nyss_out('debug', $nyss_select, true);
+	//nyss_out('debug', "pkCivi: $pkCivi", true);
+	//nyss_out('debug', "pkImport: $pkImport", true);
+	//nyss_out('debug', "fields: {$nyss_select[$tbl]['fields']}", true);
+	//nyss_out('debug', $l, true);
 
 	//if we are being passed a key, this is going to be an update
 	//otherwise it's an insert
@@ -577,7 +608,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		require_once 'CRM/Utils/String.php';
 		
 		//contact record work
-		if ( $tbl = 'civicrm_contact' ) {
+		if ( $tbl == 'civicrm_contact' ) {
 			$l['contact_type'] = 'Individual';
 			$prefixes = ioGetOptions("individual_prefix");
 			$suffixes = ioGetOptions("individual_suffix");
@@ -589,7 +620,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			$lnc = convertProperCase( $l['last_name'], true );
 			$display_name = $prefixes[$l['prefix_id']].' '.$fnc.' '.$mnc.' '.$lnc.$suffix;
 			$l['display_name'] = nyss_stripSpaces( $display_name );
-			if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.' '.$mnc.' '.$lnc.$suffix;
+			if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.' '.$mnc.' '.$suffix;
 		}
 		
 		//only set these if the corresponding data columns exist in the import file
@@ -608,7 +639,8 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			$l['email_is_primary'] = 1; //set to primary
 		}
 		
-		//nyss_out('debug', $l, true); exit();
+		//nyss_out('debug', $tbl, true);
+		//nyss_out('debug', $l, true); //exit();
 		
 		//set up the insert
 		foreach($l as $key=>$data) {
