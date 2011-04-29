@@ -101,28 +101,21 @@
                             {assign var=cAddress value="civicrm_contact_touched_address"}
                             {assign var=cDemographics value="civicrm_contact_touched_demographics"}
                             <br />
-                            <table class="logContactDetails">
-                            	<tr>
-                                	<td>
-                                    	{$row.$cAddress}
-                                    </td>
-                                    <td>
-                                    	{$row.$cPhone}
-                                        {$row.$cEmail}
-                                        {$row.$cDemographics}
-                                    </td>
-                                </tr>
-                            </table>
+                            {$row.$cPhone}
+                            {$row.$cEmail}
+                            {$row.$cDemographics}<br />
+                            {$row.$cAddress}
                         {elseif $field eq 'civicrm_contact_touched_display_name_touched' && $row.civicrm_activity_targets_list}
                         	{*NYSS add activity target list*}
                             {$row.civicrm_activity_targets_list}
                         {/if}
+                    
+                    	{if $field eq 'civicrm_contact_touched_display_name_touched' && $row.hideTouched}
+                    	<script type="text/javascript">
+   							document.getElementById('civicrm_contact_touched_display_name_touched_{$rowid}').innerHTML=""
+						</script>
+                    	{/if}
                     </td>
-                    {if $field eq 'civicrm_contact_touched_display_name_touched' && $row.hideTouched}
-                    <script type="text/javascript">
-   						document.getElementById('civicrm_contact_touched_display_name_touched_{$rowid}').innerHTML=""
-					</script>
-                    {/if}
                 {/foreach}
             </tr>
         {/foreach}

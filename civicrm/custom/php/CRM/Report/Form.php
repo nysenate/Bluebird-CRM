@@ -1772,8 +1772,9 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                     //delete the object
                     imagedestroy($chart);
                 }
-                require_once 'CRM/Utils/PDF/Utils.php';                     
-                CRM_Utils_PDF_Utils::html2pdf( $content, "CiviReport.pdf" );
+                require_once 'CRM/Utils/PDF/Utils.php'; 
+				//CRM_Core_Error::debug($content); exit();  
+                CRM_Utils_PDF_Utils::html2pdf( $content, "BluebirdReport.pdf", 'landscape', 'letter' ); //LCD
             }
             CRM_Utils_System::civiExit( );
         } else if ( $this->_outputMode == 'csv' ) {

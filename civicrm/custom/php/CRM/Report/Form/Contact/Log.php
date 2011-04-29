@@ -492,23 +492,24 @@ CRM_Core_Error::debug('sql', $sql); exit();
 					if ( $c_location['address'] ) {
 						
 						$aid = $c_location['address']['id'];
-						$di_details = '<ul>';
 						$di_vals = CRM_Core_BAO_CustomValueTable::getEntityValues( $aid, 'Address' );
-						unset($di_vals[57]);
-						foreach ( $di_vals as $di_key => $di_val ) {
-							if ( $di_val ) {
-								$di_label = CRM_Core_BAO_CustomField::getTitle( $di_key );
-								$di_details .= "<li>$di_label: $di_val</li>";
+						$di_details = '';
+						if ( $di_vals ) {
+							$di_details = "<ul>\n";
+							unset($di_vals[57]);
+							foreach ( $di_vals as $di_key => $di_val ) {
+								if ( $di_val ) {
+									$di_label = CRM_Core_BAO_CustomField::getTitle( $di_key );
+									$di_details .= "<li>$di_label: $di_val</li>\n";
+								}
 							}
+							$di_details .= "</ul>\n";
+							if ( $di_details == '<ul></ul>' ) $di_details = '';
 						}
-						$di_details .= '</ul>';
-						if ( $di_details == '<ul></ul>' ) $di_details = '';
-						$c_address[] = $c_location['address']['display']." ($locType)<br />".$di_details;
-						
+						$c_address[] = $c_location['address']['display']." ({$locType})<br />".$di_details;
 					}
-					
 				}
-				
+
 				$c_params = array( 'contact_id' => $cid );
 				$c_contacts = civicrm_contact_get( $c_params );
 				$di_demo = '<ul>';
@@ -518,6 +519,7 @@ CRM_Core_Error::debug('sql', $sql); exit();
 					if ( $c_contact['birth_date'] ) $di_demo .= '<li>Birthday: '.$c_contact['birth_date'].'</li>';
 				}
 				$di_demo .= '</ul>';
+				if ( $di_demo == '<ul></ul>' ) $di_demo = '';
 				
 				
 				$rows[$rowNum]['civicrm_contact_touched_phone'] = implode( '<br />', $c_phone );
