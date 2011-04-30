@@ -60,7 +60,7 @@ function nyss_ioimport_form() {
 
    $form['runnum'] = array(
      '#type' => 'select',
-     '#title' => t('How many records to process in dry run mode (should be set to ALL for the real import)'),
+     '#title' => t('How many records to process in dry run mode (should be set to ALL for data import)'),
      '#options' => array(
 	     '10' => t('10'),
 	     '100' => t('100'),
@@ -83,10 +83,11 @@ function nyss_ioimport_form() {
      '#default_value' => 1,
    );
    
-   $form['birthdateoverride'] = array(
+   $form['fieldoverride'] = array(
      '#type' => 'checkbox',
-     '#title' => t('Allow empty birthdate values to override existing values.'),
+     '#title' => t('Null/empty override'),
      '#default_value' => 0,
+	 '#description' => t('Enabling this option will allow you to override existing birthdate and district fields with empty values. Standard behavior ignores empty values in your import file, thus retaining existing values in Bluebird. Use with caution.'),
    );
 
    $form['import']['submit'] = array(
@@ -550,6 +551,18 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		if ( !$dao->fetch() ) nyss_out('error','no civirecord found. not importing.',true);
 
         $up = array();
+		
+		//fields that can be overridden with null/empty values if option selected
+		$override = array( 0 => 'birth_date',
+		                   1 => 'town_52',
+		                   2 => 'ward_53',
+		                   3 => 'election_district_49',
+		                   4 => 'congressional_district_46',
+		                   5 => 'ny_senate_district_47',
+		                   6 => 'ny_assembly_district_48',
+		                   7 => 'school_district_54',
+		                   8 => 'county_50',
+						 );
 	
 		//compare the fields
 		foreach( $l as $key=>$data ) {
@@ -561,14 +574,25 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 //echo 'new: '.$data.'<br /><br />';
 			//if the import data doesn't match civi data, update it
 			//if ( isset($dao->$key) && $dao->$key<>$data ) { //this was preventing a fill action - if existing field was null
-			if ( ( isset($nyss_iofields[$tbl][$key]) && $dao->$key<>$data ) ||
-			     ( $form_state['values']['birthdateoverride'] && $key == 'birth_date' ) ) {
+			if ( ( isset($nyss_iofields[$tbl][$key]) && 
+			       ( $dao->$key<>$data ||
+			         ( $form_state['values']['fieldoverride'] && in_array($key, $override) ) 
+				   )
+				 ) 
+			   ) {
 			
 				//escape some sql fields
 	            $data = str_replace("'","\'",$data);
 
 				//add to the update statement
-				if (!empty($data)) $up[] = "{$nyss_iofields[$tbl][$key]['fld']}='{$data}'";
+				if ( !empty($data) || in_array($key, $override) ) {
+					if ( empty($data) ) { 
+						$up[] = "{$nyss_iofields[$tbl][$key]['fld']}=NULL";
+					} else {
+						$up[] = "{$nyss_iofields[$tbl][$key]['fld']}='{$data}'";
+					}
+					
+				}
 				
 				//if address is being updated, set lat/lon to null for reprocessing
 				if ( $key = 'street_address' && 
