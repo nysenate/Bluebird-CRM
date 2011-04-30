@@ -73,4 +73,7 @@ sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_up
 echo "Running Drupal clear-cache for js/css compression clean"
 $drush $instance cc css+js
 
+echo "Fixing permissions"
+$script_dir/fixPermissions.sh
+
 exit 0
