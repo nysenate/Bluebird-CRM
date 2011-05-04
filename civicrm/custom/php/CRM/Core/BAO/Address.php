@@ -315,7 +315,9 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
         require_once 'CRM/Core/BAO/Preferences.php';
         $asp = CRM_Core_BAO_Preferences::value( 'address_standardization_provider' );
         //NYSS clean up the address via specified web services if enabled
-        if ( ! empty( $asp ) ) {
+		$urlpath = explode( '/', CRM_Utils_System::currentPath() );
+		//NYSS don't run checkAddress if importing
+        if ( ! empty( $asp ) && $urlpath[1] != 'import' ) {
             $rc = include_once "CRM/Utils/Address/$asp.php";
             if ($rc) {
                 $funcname = "CRM_Utils_Address_$asp::checkAddress";
@@ -787,6 +789,9 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
             require_once 'CRM/Core/BAO/Preferences.php';
             $addressOptions = CRM_Core_BAO_Preferences::valueOptions( 'address_options', true, null, true );
         }
+		//NYSS add geocode fields manually so available to import/export
+		$addressOptions['geo_code_1'] = 1;
+		$addressOptions['geo_code_2'] = 1;
         
         if ( is_array( $fields ) && !empty ( $fields ) ) {
             foreach ( $addressOptions as $key => $value ) {
