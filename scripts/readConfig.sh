@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-11
-# Revised: 2011-02-09
+# Revised: 2011-05-04
 #
 # Notes:
 #   The configuration file is searched for using the following methods:
@@ -115,6 +115,9 @@ errcode=0
 #
 
 [ $no_output -eq 1 ] && exec > /dev/null
+
+# Escape forward slashes in group_names.
+group_names=`echo "$group_names" | sed -e 's;/;\\\/;g'`
 
 if [ "$group_pattern" ]; then
   sed -n -e "s;^\[\([^]]*$group_pattern[^]]*\)\]$;\1;p" $cfgfile
