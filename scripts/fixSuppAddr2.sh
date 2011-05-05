@@ -7,7 +7,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2011-05-02
-# Revised: 2011-05-03
+# Revised: 2011-05-05
 #
 
 prog=`basename $0`
@@ -15,11 +15,12 @@ script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 force_ok=0
+dry_run=0
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog instanceName" >&2
+  echo "Usage: $prog [--dry-run] [--ok] instanceName" >&2
 }
 
 
@@ -31,6 +32,7 @@ fi
 while [ $# -gt 0 ]; do
   case "$1" in
     --ok) force_ok=1 ;;
+    -n|--dry-run) dry_run=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -58,7 +60,7 @@ echo "Total address records with e-mail in supp2: $cnt1" >&2
 echo "E-mails that will be inserted into civicrm_email: $cnt2" >&2
 echo "Total e-mails before insertion: $cnt3" >&2
 
-if [ $cnt1 -gt 0 ]; then
+if [ $cnt1 -gt 0 -a $dry_run -eq 0 ]; then
   if [ $force_ok -eq 0 ]; then
     echo -n "Proceed with clean-up operation (N/y)? "
     read ch
@@ -88,7 +90,7 @@ echo "Total address records with phone number in supp2: $cnt1" >&2
 echo "Phone numbers that will be inserted into civicrm_phone: $cnt1" >&2
 echo "Total phone records before insertion: $cnt2" >&2
 
-if [ $cnt1 -gt 0 ]; then
+if [ $cnt1 -gt 0 -a $dry_run -eq 0 ]; then
   if [ $force_ok -eq 0 ]; then
     echo -n "Proceed with clean-up operation (N/y)? "
     read ch
