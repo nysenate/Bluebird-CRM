@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2010-12-10
+# Revised: 2011-05-05
 #
 # Note: When backing up to a non-local directory, SSH is used to make the
 #       connection.  The account under which this script is running should
@@ -19,8 +19,8 @@ script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 default_rsync_opts="-av --delete --delete-excluded";
-backup_host=`$readConfig --global backup.host`
-backup_dir=`$readConfig --global backup.rootdir`
+backup_host=`$readConfig --global backup.cron.host`
+backup_dir=`$readConfig --global backup.cron.rootdir`
 db_civicrm_prefix=`$readConfig --global db.civicrm.prefix`
 db_drupal_prefix=`$readConfig --global db.drupal.prefix`
 app_rootdir=`$readConfig --global app.rootdir`
