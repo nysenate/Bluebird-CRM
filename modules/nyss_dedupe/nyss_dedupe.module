@@ -1,21 +1,22 @@
 <?php 
 
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
-//CRM_Core_Error::debug($o);exit();
-//CRM_Core_Error::debug($tableQueries);exit();
+//CRM_Core_Error::debug('o', $o);
+//CRM_Core_Error::debug('table', $table);
+//CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
 
 	//don't run these during user account/contact creation
-	if ( !$o->noRules ) {
+	if ( !$o->noRules && $table == 'table' ) {
 	
-		//indiv default strict
-		if ( $table == 'table' && $o->name=='Level 1 (fname + lname + birth + postal)' ) {
-
+		if ( $o->name=='Level 1 (fname + lname + birth + postal)' ) {
+		//indiv rule 1
+		//create index individualStrict1 on civicrm_contact(first_name,last_name,birth_date);
 			$tableQueries['civicrm_contact.last_name.1'] = "
 SELECT t1.id id1, t2.id id2, 1 weight 
 FROM civicrm_contact t1 
   JOIN civicrm_contact t2 USING (first_name, last_name, birth_date) 
-  INNER JOIN civicrm_address a1 on t1.id=a1.id 
-  INNER JOIN civicrm_address a2 on t2.id=a2.id AND a1.postal_code=a2.postal_code 
+  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id 
+  INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.postal_code=a2.postal_code 
 WHERE t1.contact_type = 'Individual' 
   AND t2.contact_type = 'Individual' 
   AND t1.id <> t2.id 
@@ -24,7 +25,33 @@ WHERE t1.contact_type = 'Individual'
   AND t1.first_name IS NOT NULL 
   AND a1.postal_code IS NOT NULL"; 
 
-		}
+		} elseif ( $o->name=='Level 3 (street + lname + fname + city + suffix)' && empty($o->params) ) {
+		//indiv rule 3
+		//create index individualFuzzy3 on civicrm_contact(first_name,middle_name,last_name,suffix_id);
+			//first unset existing queries
+			foreach ( $tableQueries as $key=>$dontCare ) {
+				unset( $tableQueries[$key] );
+			}
+			//now set custom query; make sure weight matches what is configured in system
+  			$tableQueries['civicrm_contact.last_name.5'] = "
+SELECT t1.id id1, t2.id id2, 5 weight 
+FROM civicrm_contact t1 
+  JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND 
+                               t1.last_name = t2.last_name AND 
+                               IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
+                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0)) 
+  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id 
+  INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.street_address=a2.street_address AND a1.city=a2.city
+WHERE t1.contact_type = 'Individual' 
+  AND t2.contact_type = 'Individual' 
+  AND t1.id <> t2.id  
+  AND t1.last_name IS NOT NULL 
+  AND t1.first_name IS NOT NULL 
+  AND a1.street_address IS NOT NULL
+  AND a1.city IS NOT NULL";
+
+		} 
+		//CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
 	
 	}
 
