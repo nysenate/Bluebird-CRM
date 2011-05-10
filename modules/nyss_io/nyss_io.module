@@ -413,9 +413,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 				$organization = CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $l['id'], $current_employer );
 			}
 		}
+		//pipe separated list of keywords
 		if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
 			$keywords = array();
-			$keywords = explode( ',', str_replace(', ', ',', str_replace('"', '', $l['keywords'])) );
+			$keywords = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['keywords'])) );
 			if ( !$dryrun ) {
 				foreach ( $keywords as $keyword ) {
 					$params = array( 'name' => $keyword, 'parent_id' => '296' );
