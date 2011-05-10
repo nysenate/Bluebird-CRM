@@ -103,7 +103,7 @@
                             <br />
                             {$row.$cPhone}
                             {$row.$cEmail}
-                            {$row.$cDemographics}<br />
+                            {$row.$cDemographics}
                             {$row.$cAddress}
                         {elseif $field eq 'civicrm_contact_touched_display_name_touched' && $row.civicrm_activity_targets_list}
                         	{*NYSS add activity target list*}

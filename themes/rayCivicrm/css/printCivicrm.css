@@ -20,10 +20,14 @@ table.form-layout td, table.form-layout th {
  }
 #crm-container {   
     overflow: visible !important;
-    font-family      : serif;
+    font-family      : sans-serif;
     margin           : 0px 10px 0px 10px;
 	background: none;
 }
+#crm-container table.report-layout tr td {
+	font-size: 12px;
+}
+
 #Print {
 	background: none;
 }

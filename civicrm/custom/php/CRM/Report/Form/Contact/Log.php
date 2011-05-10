@@ -366,7 +366,16 @@ CRM_Core_Error::debug('sql', $sql); exit();
 	//NYSS end
     
     function alterDisplay( &$rows ) {
-        // custom code to alter rows
+        
+		//NYSS 3653 remove pdf button
+		$elements =& $this->_elements;
+		foreach ( $elements as $key=>$element ) {
+			if ( $element->_attributes['name'] == '_qf_Log_submit_pdf' ) {
+				unset($elements[$key]);
+			}
+		}
+		
+		// custom code to alter rows
         $entryFound = false;
 		$display_flag = $prev_cid = $cid = 0;
 		//CRM_Core_Error::debug($rows);
