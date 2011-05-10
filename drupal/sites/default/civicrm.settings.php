@@ -1,6 +1,21 @@
 <?php
+# civicrm.settings.php - CiviCRM configuration file
+#
+# Project: BluebirdCRM
+# Author: Ken Zalewski
+# Organization: New York State Senate
+# Date: 2010-09-10
+# Revised: 2011-05-02
+#
+# This customized civicrm.settings.php file takes advantage of the strict
+# CRM hostname naming scheme that we have developed.  Each CRM instance is
+# of the form <instanceName>.crm.nysenate.gov.  The <instanceName> maps
+# indirectly to the databases that are used for that instance via the
+# Bluebird configuration file.
+#
 
-require_once 'bluebird_config.php';
+
+require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
 $bbconfig = get_bluebird_config('bluebird.cfg');
 
