@@ -5,7 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-05-02
+# Revised: 2011-05-11
 #
 # This customized civicrm.settings.php file takes advantage of the strict
 # CRM hostname naming scheme that we have developed.  Each CRM instance is
@@ -17,17 +17,17 @@
 
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
-$bbconfig = get_bluebird_config('bluebird.cfg');
+$bbconfig = get_bluebird_instance_config('bluebird.cfg');
 
 define('CIVICRM_UF', 'Drupal');
-define('CIVICRM_USE_MEMCACHE', $bbconfig['use_memcache']);
+define('CIVICRM_USE_MEMCACHE', $bbconfig['cache.memcache']);
 define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
 define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
 
 global $civicrm_root;
 
-$civicrm_root = $bbconfig['drupal_root'].'/sites/all/modules/civicrm';
-define('CIVICRM_TEMPLATE_COMPILEDIR', $bbconfig['data_rootdir'].'/'.$bbconfig['data_dirname'].'/civicrm/templates_c');
+$civicrm_root = $bbconfig['drupal.rootdir'].'/sites/all/modules/civicrm';
+define('CIVICRM_TEMPLATE_COMPILEDIR', $bbconfig['data.rootdir'].'/'.$bbconfig['data_dirname'].'/civicrm/templates_c');
 define('CIVICRM_UF_BASEURL', 'http://'.$bbconfig['servername'].'/');
 define('CIVICRM_SITE_KEY', '32425kj24h5kjh24542kjh524');
 
@@ -47,7 +47,7 @@ define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
 define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
 define('CIVICRM_CIVIMAIL_WORKFLOW', 1 );
 
-define('CIVICRM_IMAP_ACCOUNTS', $bbconfig['imap_accounts']);
+define('CIVICRM_IMAP_ACCOUNTS', $bbconfig['imap.accounts']);
 
 
 /**
