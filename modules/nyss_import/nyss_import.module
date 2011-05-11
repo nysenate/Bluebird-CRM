@@ -10,37 +10,42 @@ function nyss_import_civicrm_import( $usage, &$objectRef, $params ) {
 	$fields          = $params['fields'];
 	
 	require_once 'CRM/Core/DAO.php';
-	$sqlTags = "SELECT tag_import
-				FROM $importTempTable
-				WHERE _id = $importID;";
-	$taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
 	
-	if ( $taglist ) {
+	//only proceed if tag_import exists in import
+	if ( CRM_Core_DAO::checkFieldExists($importTempTable, 'tag_import') ) {
+	
+		$sqlTags = "SELECT tag_import
+					FROM $importTempTable
+					WHERE _id = $importID;";
+		$taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
+	
+		if ( $taglist ) {
 
-		require_once 'api/v2/Tag.php';
-		require_once 'api/v2/EntityTag.php';
-		require_once 'CRM/Core/BAO/EntityTag.php';
+			require_once 'api/v2/Tag.php';
+			require_once 'api/v2/EntityTag.php';
+			require_once 'CRM/Core/BAO/EntityTag.php';
 	
-		$keywords = array();
-		$keywords = explode( '|', $taglist );
+			$keywords = array();
+			$keywords = explode( '|', $taglist );
 	
-		foreach ( $keywords as $keyword ) {
-			$params = array( 'name' => $keyword, 'parent_id' => '296' );
+			foreach ( $keywords as $keyword ) {
+				$params = array( 'name' => $keyword, 'parent_id' => '296' );
 			
-			//lookup tag; create new if nonexist
-			$tag = civicrm_tag_get($params);
-			if ( $tag['is_error'] ) {
-				$tag = civicrm_tag_create($params);
-				$tagid = $tag['tag_id'];
-			} else {
-				$tagid = $tag['id'];
-			}
+				//lookup tag; create new if nonexist
+				$tag = civicrm_tag_get($params);
+				if ( $tag['is_error'] ) {
+					$tag = civicrm_tag_create($params);
+					$tagid = $tag['tag_id'];
+				} else {
+					$tagid = $tag['id'];
+				}
 					
-			//only add tag to contact if not already present
-			$entityTags =& CRM_Core_BAO_EntityTag::getTag($contactID);
-			if ( !in_array($tagid, $entityTags) ) {
-				$entityParams = array('tag_id' => $tagid, 'contact_id' => $contactID );
-				$entityTag = civicrm_entity_tag_add( $entityParams );
+				//only add tag to contact if not already present
+				$entityTags =& CRM_Core_BAO_EntityTag::getTag($contactID);
+				if ( !in_array($tagid, $entityTags) ) {
+					$entityParams = array('tag_id' => $tagid, 'contact_id' => $contactID );
+					$entityTag = civicrm_entity_tag_add( $entityParams );
+				}
 			}
 		}
 	}
