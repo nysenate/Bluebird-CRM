@@ -5,21 +5,31 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-03-22
+# Revised: 2011-05-02
 #
 
-function get_bluebird_config($filename = 'bluebird.cfg')
-{
-  $drupal_dir = realpath(dirname(__FILE__).'/../../');
-  $base_dir = realpath($drupal_dir.'/../');
+define('BASE_DIR', realpath(dirname(__FILE__).'/../../'));
 
-  if (file_exists($base_dir."/$filename")) {
-    $cfg_file = $base_dir."/$filename";
+
+function get_config_filepath($filename)
+{
+  $cfg_file = null;
+
+  if (file_exists(BASE_DIR."/$filename")) {
+    $cfg_file = BASE_DIR."/$filename";
   }
   else if (($cfg_file = getenv('BLUEBIRD_CONFIG_FILE')) === false) {
     $cfg_file = "/etc/$filename";
   }
   
+  return $cfg_file;
+} // get_config_filepath()
+
+
+function get_bluebird_config($filename = 'bluebird.cfg')
+{
+  $cfg_file = get_config_filepath($filename);
+
   if (!file_exists($cfg_file)) {
     die("$cfg_file: Bluebird configuration file not found.\n");
   }
@@ -73,8 +83,8 @@ function get_bluebird_config($filename = 'bluebird.cfg')
   $drupal_db_url = "mysql://$dbuser:$dbpass@$dbhost/$dbdrupprefix$db_basename";
   
   $bbcfg = array();
-  $bbcfg['base_dir'] = $base_dir;
-  $bbcfg['drupal_root'] = $drupal_dir;
+  $bbcfg['base_dir'] = BASE_DIR;
+  $bbcfg['drupal_root'] = BASE_DIR.'/drupal/';
   $bbcfg['servername'] = $servername;
   $bbcfg['shortname'] = $shortname;
   $bbcfg['base_domain'] = $base_domain;
