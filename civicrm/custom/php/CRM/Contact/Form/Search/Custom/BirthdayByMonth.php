@@ -158,7 +158,8 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
 
     function all( $offset = 0, $rowcount = 0, $sort = null, $includeContactIDs = false ) {
         
-		$selectClause = "contact_a.sort_name as sort_name,
+		$selectClause = "DISTINCT(contact_a.id) as contact_id,
+		                 contact_a.sort_name as sort_name,
             		 	 contact_a.birth_date as birth_date,
 						 (YEAR(CURDATE())-YEAR(birth_date)) - (RIGHT(CURDATE(),5)<RIGHT(birth_date,5)) AS age,
 						 addr.street_address,
@@ -242,7 +243,6 @@ LEFT JOIN civicrm_address addr ON addr.contact_id = contact_a.id AND addr.is_pri
     }
 
     function templateFile( ) {
-        //return 'CRM/Contact/Form/Search/Custom/Sample.tpl';
 		return 'CRM/Contact/Form/Search/Custom.tpl';
     }
 

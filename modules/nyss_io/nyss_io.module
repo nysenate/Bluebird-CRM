@@ -413,9 +413,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 				$organization = CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $l['id'], $current_employer );
 			}
 		}
+		//pipe separated list of keywords
 		if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
 			$keywords = array();
-			$keywords = explode( ',', str_replace(', ', ',', str_replace('"', '', $l['keywords'])) );
+			$keywords = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['keywords'])) );
 			if ( !$dryrun ) {
 				foreach ( $keywords as $keyword ) {
 					$params = array( 'name' => $keyword, 'parent_id' => '296' );
@@ -769,9 +770,9 @@ function convertProperCase( $string, $skipMixed = false ) {
     if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
 
     // list of words we want to force
-    $forceWords = array('of', 'a', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
+    $forceWords = array('of', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
                     'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to',
-                    'into', 'with', 'II', 'IV', 'A-Level', "'s", 'UK', 'VI', '<i>', 'III', 'VII', 'PO');
+                    'into', 'with', 'II', 'IV', 'UK', 'VI', '<i>', 'III', 'VII', 'PO');
 
     // punctuation used to determine that the following letter
     // should be capitalised
@@ -787,10 +788,9 @@ function convertProperCase( $string, $skipMixed = false ) {
 	
 		//trim any non-word chars and replace with nothing for easier matching
 		$cleanWord = preg_replace("/[^\w]/", '', $word);
-		if (!empty($cleanWord)) $replace = preg_grep( "/$cleanWord/i", $forceWords);
-
-		if (isset($replace[0])) $word=str_replace($cleanWord,$replace[0],$word);
-
+		if (!empty($cleanWord)) $replace = preg_grep( "/\b{$cleanWord}\b/i", $forceWords);
+		$replace = array_values($replace);
+		if (isset($replace[0])) $word = str_replace($cleanWord,$replace[0],$word);
 		$fixedWords[] = $word;
 	}
 
