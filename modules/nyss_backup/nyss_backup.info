@@ -1,0 +1,7 @@
+; $Id: nyss_backup.info,v 1.0 2010/03/23  Exp $
+name = NYSS Backup/Restore 
+description = NYSS Backup/Restore module.
+dependencies[] = civicrm
+package = CiviCRM
+version="3.3"
+core="6.x"

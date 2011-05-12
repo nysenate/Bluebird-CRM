@@ -1,0 +1,84 @@
+.instance_file {
+	border-left:1px solid #bfb6ac;
+	border-right:1px solid #bfb6ac;
+	background-color: #fff2e6;
+	margin-bottom:3px;
+	padding: 5px;
+}
+.instance_file_name {
+	background-color:#bfb6ac;	
+	padding-left:2px;
+	padding-right:4px;
+}
+.instance_file_date {
+	font-size:90%;
+	font-style: italic;
+	padding-left:4px;
+	padding-right:4px;
+}
+.nyss_backup-button {
+	float: right;
+	margin:-3px 0px 0px 20px;
+}
+
+#instance_files {
+	margin: 0px auto;
+	width: 90%;
+}
+
+.instance_create_backup {
+	height:18px;
+}
+
+.nyss_backup_create {
+	margin-top: -3px;
+}
+
+#blocker {
+	position:absolute;
+	z-index:2;
+	background-color:black;
+	opacity: .5;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	border-radius:2px;
+	-moz-border-radius:2px;
+}
+
+#progress_container {
+	z-index:3;
+	background-color:white;
+	position:absolute;
+	left:0px;
+	top:50px;
+	width:300px;
+	height:100px;
+	margin-left:35%;
+	border-radius:15px;
+	-moz-border-radius:15px;
+}
+
+#instance_confirm_action {
+	margin-left:28%;
+	margin-top: 7%;
+}
+
+#instance_progress_image {
+	margin-left:13%;
+	margin-top: 7%;
+}
+
+
+#instance_confirm_text {
+	margin-top: 1%;
+	text-align:center;
+	display:block;
+	font-size:125%;
+}
+
+.hot {
+	color:red;
+	font-weight:bold;
+}
