@@ -48,6 +48,7 @@
 	function get_files($dir, $filter = "/.*/")
 	{
 		$ret = array();
+		
 		if($handle = opendir($dir))
 		{
 			while(false !== ($file = readdir($handle)))
@@ -69,6 +70,7 @@
 		$instance_files = array();
 		
 		$files = $filter ? get_files($data_dir, $filter) : get_files($data_dir);
+		rsort($files);
 		
 		foreach($files as $i => $file)
 		{
