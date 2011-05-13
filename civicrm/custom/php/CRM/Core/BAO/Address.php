@@ -322,6 +322,26 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
             if ($rc) {
                 $funcname = "CRM_Utils_Address_$asp::checkAddress";
                 call_user_func_array($funcname, array(&$params));
+				
+				//NYSS 3356/Jira 8077
+				// do street parsing again if enabled, since street address might have changed
+ 	            require_once 'CRM/Core/BAO/Preferences.php';
+ 	            $parseStreetAddress = CRM_Utils_Array::value( 'street_address_parsing', 
+ 	                                                          CRM_Core_BAO_Preferences::valueOptions( 'address_options' ), 
+ 	                                                          false );
+ 	
+ 	            if ( $parseStreetAddress && !empty( $params['street_address']) ) {
+ 	                foreach ( array( 'street_number', 'street_name', 'street_unit', 'street_number_suffix' ) as $fld ) {
+ 	                    unset( $params[$fld] );
+ 	                }
+ 	                // main parse string.
+ 	                $parseString  = CRM_Utils_Array::value( 'street_address', $params );
+ 	                $parsedFields = CRM_Core_BAO_Address::parseStreetAddress( $parseString );
+ 	                
+ 	                // merge parse address in to main address block.
+ 	                $params = array_merge( $params, $parsedFields );
+ 	            }
+				//NYSS end
             }
         }
         
