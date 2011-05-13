@@ -771,7 +771,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
                                     'OFC',  'OFFICE',     'PH',    'PENTHOUSE', 'TRLR', 'TRAILER', 
                                     'UPPR', 'RM',         'ROOM',  'SIDE',      'SLIP', 'KEY',  
                                     'LOT',  'PIER',       'REAR',  'SPC',       'SPACE', 
-                                    'STOP', 'STE',        'SUITE', 'UNIT',      '#',     'ST' );
+                                    'STOP', 'STE',        'SUITE', 'UNIT',      '#' );
         
         // overwriting $streetUnitFormats for 'en_CA' and 'fr_CA' locale
         if ( in_array( $locale, array ( 'en_CA', 'fr_CA') ) ) {   
