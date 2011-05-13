@@ -573,12 +573,14 @@ class CRM_Core_SelectValues
                                  'is_deceased','deceased_date','legal_identifier','contact_sub_type', 'user_unique_id'
                                  );
             $customFields = array();
-            $customFields = CRM_Core_BAO_CustomField::getFields('Individual');
+            $customFieldsIndiv = CRM_Core_BAO_CustomField::getFields('Individual');
+			$customFieldsAddress = CRM_Core_BAO_CustomField::getFields('Address');
+			$customFields = $customFieldsIndiv + $customFieldsAddress;
             
             foreach($values as $key => $val) {
                 if ( in_array($val, $skipTokens) ) {
                     continue;
-                } 
+                }
                 //keys for $tokens should be constant. $token Values are changed for Custom Fields. CRM-3734
                 if ( $customFieldId = CRM_Core_BAO_CustomField::getKeyID( $val ) ) {
                     $tokens["{contact.$val}"] = $customFields[$customFieldId]['label']." :: ".$customFields[$customFieldId]['groupTitle'];
