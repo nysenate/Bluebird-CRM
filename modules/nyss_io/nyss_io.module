@@ -762,23 +762,26 @@ function ioGetStates()
   return $options;
 } // ioGetStates()
 
-function convertProperCase( $string, $skipMixed = false ) {
+function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) {
 
 	require_once 'CRM/Utils/String.php';
 	
 	//if mixed case, don't do anything
     if ($skipMixed && preg_match('/[a-z]/', $string)) return $string;
+	
+	$string = CRM_Utils_String::stripSpaces( ucwords(strtolower($string)) );
+	
+	//if we skip special words processing, return now
+    if ($skipSpecial) return $string;
 
     // list of words we want to force
     $forceWords = array('of', 'the', 'and', 'an', 'or', 'nor', 'but', 'is', 'if', 'then',
                     'else', 'when', 'at', 'from', 'by', 'on', 'off', 'for', 'in', 'out', 'over', 'to',
-                    'into', 'with', 'II', 'IV', 'UK', 'VI', '<i>', 'III', 'VII', 'PO');
+                    'into', 'with', 'II', 'IV', 'UK', 'VI', 'III', 'VII', 'PO', 'McDonald');
 
     // punctuation used to determine that the following letter
     // should be capitalised
     $punctuation = array('.', '-', ':', '!', '\'', '-', '?');
-
-	$string = CRM_Utils_String::stripSpaces( ucwords(strtolower($string)) );
 
 	$words = explode(' ', $string);
 
