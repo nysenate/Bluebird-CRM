@@ -5,7 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-05-02
+# Revised: 2011-05-11
 #
 # This customized settings.php file takes advantage of the strict CRM
 # hostname naming scheme that we have developed.  Each CRM instance is
@@ -16,7 +16,7 @@
 
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
-$bbconfig = get_bluebird_config('bluebird.cfg');
+$bbconfig = get_bluebird_instance_config('bluebird.cfg');
 
 $db_url = $bbconfig['drupal_db_url'];
 $db_prefix = '';

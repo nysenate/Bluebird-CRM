@@ -1,0 +1,68 @@
+<?php
+require_once(dirname(__FILE__) . '/nyss_backup.php');
+
+function nyss_backup_menu () {
+	$items = array();
+
+	$items['backupdata'] = array (
+    'title' => t('Backup/Restore Instance'),
+    'page callback' => 'nyss_backup_page',
+    'access arguments' => array('export print production files'),
+	);
+
+	return $items;
+}
+
+function nyss_backup_page() {
+	$server_name = explode('.',$_SERVER['SERVER_NAME']);
+	$instance_name = $server_name[0];
+
+	if($_GET['function']) {
+		$app_functions = array(
+			'instance_file_list' => 'nyss_backup_instance_file_list',
+			'delete' => 'nyss_backup_delete_file',
+			'backup' => 'nyss_backup_backup_file',
+			'restore' => 'nyss_backup_restore_from_file',
+		);
+
+		$function = $_GET['function'];
+
+		$data = array('error' => 'error');
+		if($app_functions[$function]) {
+			$data = call_user_func($app_functions[$function], $instance_name);
+		}
+
+		header('Content-type: application/json');
+		print json_encode($data);
+
+		//prevent theme from rendering
+		exit();
+	}
+	else {
+		drupal_add_js(drupal_get_path('module','nyss_backup').'/js/tmpl.js');
+		drupal_add_js(drupal_get_path('module','nyss_backup').'/js/nyss_backup.js');
+		drupal_add_js(drupal_get_path('module','civicrm').'/../packages/jquery/jquery.js');
+		drupal_add_css(drupal_get_path('module','nyss_backup').'/nyss_backup.css');
+		include 'js/templates.html';
+		
+		return "";
+	}
+}
+
+function nyss_backup_instance_file_list($instance_name) {
+	return get_instance_files("/".$instance_name."/");
+}
+
+function nyss_backup_delete_file() {
+	$file = $_GET['file'];
+	return array('success' => do_delete($file));
+}
+
+function nyss_backup_backup_file($instance_name) {
+	return array('success' => do_backup($instance_name));
+}
+
+function nyss_backup_restore_from_file($instance_name) {
+	$file = $_GET['file'];
+	return array('success' => do_restore($instance_name, $file));
+}
