@@ -2,7 +2,7 @@
 	require_once(dirname(__FILE__) . './../../civicrm/scripts/bluebird_config.php');
 	
 	$GLOBALS['nyss_backup_file_ext'] = '.zip';
-	$GLOBALS['nyss_backup_data_dir'] = get_backup_dir() ;
+	$GLOBALS['nyss_backup_data_dir'] = get_backup_dir().'/';
 	$GLOBALS['nyss_backup_backup_script'] = '../scripts/dumpInstance.sh';
 	$GLOBALS['nyss_backup_restore_script'] = '../scripts/restoreInstance.sh';
 	
