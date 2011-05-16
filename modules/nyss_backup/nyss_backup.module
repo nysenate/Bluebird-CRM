@@ -14,8 +14,6 @@ function nyss_backup_menu () {
 }
 
 function nyss_backup_page() {
-	$instance_name = get_instance_name();
-
 	if($_GET['function']) {
 		$app_functions = array(
 			'instance_file_list' => 'nyss_backup_instance_file_list',
@@ -28,7 +26,7 @@ function nyss_backup_page() {
 
 		$data = array('error' => 'error');
 		if($app_functions[$function]) {
-			$data = call_user_func($app_functions[$function], $instance_name);
+			$data = call_user_func($app_functions[$function]);
 		}
 
 		header('Content-type: application/json');
@@ -48,7 +46,7 @@ function nyss_backup_page() {
 	}
 }
 
-function nyss_backup_instance_file_list($instance_name) {
+function nyss_backup_instance_file_list() {
 	return get_instance_files();
 }
 
@@ -57,13 +55,13 @@ function nyss_backup_delete_file() {
 	return array('success' => do_delete($file));
 }
 
-function nyss_backup_backup_file($instance_name) {
+function nyss_backup_backup_file() {
 	$file_name = urldecode($_GET['file_name']);
 	$file_time = urldecode($_GET['file_time']);
-	return array('success' => do_backup($file_name, $file_time, $instance_name));
+	return array('success' => do_backup($file_name, $file_time));
 }
 
-function nyss_backup_restore_from_file($instance_name) {
+function nyss_backup_restore_from_file() {
 	$file = $_GET['file'];
-	return array('success' => do_restore($instance_name, $file));
+	return array('success' => do_restore($file));
 }

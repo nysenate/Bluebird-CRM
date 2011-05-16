@@ -1,15 +1,15 @@
 <?php
 	require_once(dirname(__FILE__) . './../../civicrm/scripts/bluebird_config.php');
 	
-	$GLOBALS['nyss_backup_file_ext'] = '.zip';
 	$GLOBALS['nyss_backup_data_dir'] = get_data_dir();
+	$GLOBALS['nyss_backup_file_ext'] = '.zip';
 	$GLOBALS['nyss_backup_backup_script'] = '../scripts/dumpInstance.sh';
 	$GLOBALS['nyss_backup_restore_script'] = '../scripts/restoreInstance.sh';
 	$GLOBALS['nyss_backup_name_size'] = 50;
-	
+		
 	/* API functions */
 	
-	function do_backup($file_name, $file_time, $instance_name)
+	function do_backup($file_name, $file_time)
 	{
 		global $nyss_backup_file_ext, 
 				$nyss_backup_backup_script, 
@@ -18,7 +18,9 @@
 				
 		$file_date = get_file_date($file_time);
 		
-		$instance_name = get_instance_name($instance_name);
+		$instance_config = get_bluebird_instance_config();
+		
+		$instance_name = $instance_config['shortname'];
 		
 		//if provided file name only consists of white spaces
 		//and non word chracters set to default YYYYMMDD-HHMMSS
@@ -87,14 +89,14 @@
 		return false;
 	}
 	
-	function do_restore($instance_name, $file_name)
+	function do_restore($file_name)
 	{
-		$instance_name = get_instance_name($instance_name);
+		$instance_config = get_bluebird_instance_config();
 		
 		if($file_name)
 		{
 			global $nyss_backup_restore_script, $nyss_backup_data_dir;
-			passthru($nyss_backup_restore_script.' '.$instance_name
+			passthru($nyss_backup_restore_script.' '.$instance_config['shortname']
 				.' --archive-file '.$nyss_backup_data_dir.$file_name.' --ok > /dev/null', $err);
 			return $err == 0 ? true : false;
 		}
@@ -103,15 +105,12 @@
 	
 	/* utility functions */
 	
-	function get_data_dir($instance_name) {
-		$instance_name = get_instance_name($instance_name);
-		
-		$instance_config = get_bluebird_instance_config('../bluebird.cfg', $instance_name);
-		$bb_config = get_bluebird_config();
-		
-		$data_dir = $bb_config['globals']['data.rootdir']
+	function get_data_dir() {
+		$instance_config = get_bluebird_instance_config();
+				
+		$data_dir = $instance_config['data.rootdir']
 					.'/'.$instance_config['data_dirname']
-					.'/'.$bb_config['globals']['backup.ui.dirname']
+					.'/'.$instance_config['backup.ui.dirname']
 					.'/';
 					
 		if(!is_dir($data_dir)) {
@@ -119,18 +118,6 @@
 		}
 		
 		return $data_dir;
-	}
-	
-	//return value if $instance_name provided, otherwise
-	//look at $_SERVER object
-	function get_instance_name($instance_name) {
-		if($instance_name) return $instance_name;
-		
-		if($_SERVER && $_SERVER['SERVER_NAME']) {
-			$server_name = explode('.',$_SERVER['SERVER_NAME']);
-			return $server_name[0];
-		}
-		return "";
 	}
 	
 	function json_encode_boolean($bool)
@@ -152,13 +139,17 @@
 	
 	function get_files($dir)
 	{
+		global $nyss_backup_data_dir;
 		$ret = array();
-		
+				
 		if($handle = opendir($dir))
 		{
 			while(false !== ($file = readdir($handle)))
 			{
-				if($file != '.' && $file != '..')
+				if($file != '.' 
+						&& $file != '..' 
+						&& !is_dir($nyss_backup_data_dir.$file)
+						&& preg_match('/.*\.zip/', $file))
 				{
 					$ret[] = $file;
 				}
