@@ -573,6 +573,7 @@ class CRM_Core_SelectValues
                                  'is_deceased','deceased_date','legal_identifier','contact_sub_type', 'user_unique_id'
                                  );
             $customFields = array();
+			//NYSS make sure address tokens are constructed correctly
             $customFieldsIndiv = CRM_Core_BAO_CustomField::getFields('Individual');
 			$customFieldsAddress = CRM_Core_BAO_CustomField::getFields('Address');
 			$customFields = $customFieldsIndiv + $customFieldsAddress;
