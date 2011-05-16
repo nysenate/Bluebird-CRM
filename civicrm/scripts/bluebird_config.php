@@ -37,6 +37,18 @@ function get_config_filepath($filename)
 */
 function get_bluebird_config($filename = null)
 {
+  static $bbini = null;
+  static $s_filename= null;
+
+  /* Do not re-read the configuration file within the same HTTP request,
+  ** unless a different config file is specified.
+  */
+  if ($bbini && $s_filename == $filename) {
+    return $bbini;
+  }
+
+  $s_filename = $filename;   // save the filename for subsequent calls
+
   if (empty($filename)) {
     $filename = DEFAULT_CONFIG_FILENAME;
   }
@@ -68,7 +80,21 @@ function get_bluebird_config($filename = null)
 */
 function get_bluebird_instance_config($instance = null, $filename = null)
 {
+  static $bbcfg = null;
+  static $s_instance = null;
+  static $s_filename = null;
+
   $shortname = null;
+
+  /* Do not re-read the configuration file within the same HTTP request,
+  ** unless a different instance or config file is specified.
+  */
+  if ($bbcfg && $s_instance == $instance && $s_filename == $filename) {
+    return $bbcfg;
+  }
+
+  $s_instance = $instance;
+  $s_filename = $filename;
 
   if ($instance == null) {
     if (isset($_SERVER['HTTP_HOST'])) {
