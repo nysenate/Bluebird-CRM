@@ -2,6 +2,9 @@
 <div id="progress_container" />
 <div id="blocker" />
 <div id="instance_files">
+	<div class="instance_file instance_create_backup">
+		<input action="backup" type="submit" value="Create New Backup" class="form-submit default nyss_backup_create nyss_backup_action">
+	</div>
 	<% if(data && data.length && data.length > 0) { %>
 		<% for(i in data) {	%>
 			<div class="instance_file">
@@ -16,11 +19,6 @@
 		<span class="instance_file_date">No backups currently available for this instance</span>
 		</div>
 	<% } %>
-	
-	<div class="instance_file instance_create_backup">
-	<input action="backup" type="submit" value="Create New Backup" class="form-submit default nyss_backup_create nyss_backup_action">
-	</div>
-	
 </div>
 </script>
 <script type="text/html" id="tmpl_restore">
