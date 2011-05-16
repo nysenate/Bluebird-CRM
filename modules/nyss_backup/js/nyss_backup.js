@@ -52,7 +52,7 @@ $(document).ready(function(){
 			cur_action = {'action':action,'file':file};
 			
 			$('#progress_container')
-				.html(tmpl('tmpl_' + action, {'file':file}))
+				.html(tmpl('tmpl_' + action, {'file':file, "util":util}))
 				.append(tmpl('tmpl_confirmation'))
 				.fadeIn();
 			
@@ -65,10 +65,20 @@ $(document).ready(function(){
 	  			return;
 			
 			if(action == "confirm" && cur_action.action) {
-				$('#progress_container').html(tmpl("tmpl_progress"));
+				var file_time_elem = $('#file_time');
+				var file_time = file_time_elem.size() == 0 ? null : file_time_elem.val();
+				
+				var file_name_elem = $('#file_name');
+				var file_name = file_name_elem.size() == 0 ? null : file_name_elem.val();
+				
+				$('#progress_container')
+					.html(tmpl("tmpl_progress"));
+								
 				util.getJSON(base_url 
 						+ cur_action.action 
-						+ (cur_action.file ? "&file=" + cur_action.file : ""),
+						+ (cur_action.file ? "&file=" + cur_action.file : "")
+						+ (file_name ? "&file_name=" + file_name : "")
+						+ (file_time ? "&file_time=" + file_time : ""),
 					[finishRequest]);
 			}
 			else {
@@ -84,6 +94,17 @@ $(document).ready(function(){
 
 (function() {
 	this.util = { 
+		'getFileNameDate': function() {
+			var date = new Date();
+			var ret = "";
+			ret += date.getFullYear();
+			ret += (date.getMonth() < 9 ? "0":"") + (date.getMonth() + 1);
+			ret += (date.getDate() < 10 ? "0":"") + date.getDate();
+			ret +=  "-" + (date.getHours() < 9 ? "0":"") + date.getHours();
+			ret += (date.getMinutes() < 9 ? "0":"") + date.getMinutes();
+			ret += (date.getSeconds() < 9 ? "0":"") + date.getSeconds();
+			return {'str':ret, 'int':Math.floor(date.getTime()/1000)};
+		},
 		'getDate': function (epochTime) {
 			if(epochTime<10000000000) epochTime *= 1000;
 			

@@ -54,10 +54,11 @@
 	left:0px;
 	top:50px;
 	width:300px;
-	height:100px;
+	padding-bottom:5px;
 	margin-left:35%;
 	border-radius:15px;
 	-moz-border-radius:15px;
+	overflow: hidden;
 }
 
 #instance_confirm_action {
@@ -76,9 +77,23 @@
 	text-align:center;
 	display:block;
 	font-size:125%;
+	word-wrap: break-word;
 }
 
 .hot {
 	color:red;
 	font-weight:bold;
+}
+
+#file_name {
+	border-right: 0px;
+	text-align:right;
+}
+
+#file_ext {
+	border-top: 1px dashed #BBBBBB;
+	border-right: 1px dashed #BBBBBB;
+	border-bottom: 1px dashed #BBBBBB;
+	padding:3px;
+	background-color:#FFC;
 }

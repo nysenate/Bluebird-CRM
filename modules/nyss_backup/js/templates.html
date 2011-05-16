@@ -29,6 +29,9 @@
 <script type="text/html" id="tmpl_backup">
 	<div id="instance_confirm_text">
   		Are you sure you want to <span class="hot">back up</span> this instance</b>?
+		<% var date_obj = util.getFileNameDate(); %>
+		<br/><span>File name: </span><input id="file_name" type="text" value="<%=date_obj.str%>" /><span id="file_ext">.zip</span>
+		<input id="file_time" type="hidden" value="<%=date_obj.int%>" />
   	</div>
 </script>
 <script type="text/html" id="tmpl_delete">
