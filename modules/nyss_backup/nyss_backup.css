@@ -17,8 +17,7 @@
 	padding-right:4px;
 }
 .nyss_backup-button {
-	float: right;
-	margin:-3px 0px 0px 20px;
+	margin:0px 0px 0px 20px;
 }
 
 #instance_files {
@@ -96,4 +95,19 @@
 	border-bottom: 1px dashed #BBBBBB;
 	padding:3px;
 	background-color:#FFC;
+}
+
+.line_item {
+	display:-moz-inline-stack;
+	display:inline-block;
+	zoom:1;
+	*display:inline;
+}
+
+.left {
+	width:72%;
+}
+
+.right {
+	width:28%;
 }

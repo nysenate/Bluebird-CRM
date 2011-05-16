@@ -8,10 +8,14 @@
 	<% if(data && data.length && data.length > 0) { %>
 		<% for(i in data) {	%>
 			<div class="instance_file">
-			<span class="instance_file_name"><%=data[i].file%></span>
-			<span class="instance_file_date">Created on <%=util.getDate(data[i].time)%></span>
-			<input action="delete" type="submit" value="Delete Copy" class="form-submit default nyss_backup-button nyss_backup_action">
-			<input action="restore" type="submit" value="Restore From" class="form-submit default nyss_backup-button nyss_backup_action">
+				<div class="line_item left">
+					<span class="instance_file_name"><%=data[i].file%></span>
+					<span class="instance_file_date">Created on <%=util.getDate(data[i].time)%></span>
+				</div>
+				<div class="line_item right">
+					<input action="delete" type="submit" value="Delete Copy" class="form-submit default nyss_backup-button nyss_backup_action">
+					<input action="restore" type="submit" value="Restore From" class="form-submit default nyss_backup-button nyss_backup_action">
+				</div>
 			</div>
 		<% } %>
 	<% } else { %>
