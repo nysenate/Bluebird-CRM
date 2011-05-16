@@ -5,10 +5,11 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-05-11
+# Revised: 2011-05-16
 #
 
 define('BASE_DIR', realpath(dirname(__FILE__).'/../../'));
+define('DEFAULT_CONFIG_FILENAME', 'bluebird.cfg');
 
 
 /*
@@ -34,8 +35,12 @@ function get_config_filepath($filename)
 ** configuration file.  The array is indexed by the config groups.  Each
 ** value is itself an array of name-value pairs.
 */
-function get_bluebird_config($filename = 'bluebird.cfg')
+function get_bluebird_config($filename = null)
 {
+  if (empty($filename)) {
+    $filename = DEFAULT_CONFIG_FILENAME;
+  }
+
   $cfg_file = get_config_filepath($filename);
 
   if (!file_exists($cfg_file)) {
