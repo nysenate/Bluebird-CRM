@@ -61,7 +61,7 @@ function get_bluebird_config($filename = 'bluebird.cfg')
 ** The instance can be a short name (hostname only), or a server name (fully
 ** qualified domain name).
 */
-function get_bluebird_instance_config($filename, $instance = null)
+function get_bluebird_instance_config($instance = null, $filename = null)
 {
   $shortname = null;
 
