@@ -85,18 +85,21 @@ function get_bluebird_instance_config($filename, $instance = null)
     $default_base_domain = substr($instance, $firstdot + 1);
   }
 
+  $bbcfg = array();
   $bbini = get_bluebird_config($filename);
   if ($bbini) {
-    $bbcfg = array();
-    // Grab the globals first.
+    // If successful, merge the globals into the instance-specific params.
     if (isset($bbini['globals'])) {
       $bbcfg = array_merge($bbcfg, $bbini['globals']);
     }
-    // Now merge the instance-specific parameters, which override the globals.
     $instance_key = 'instance:'.$shortname;
     if (isset($bbini[$instance_key])) {
       $bbcfg = array_merge($bbcfg, $bbini[$instance_key]);
     }
+  }
+  else {
+    error_log("CRM instance [$instance] could not be configured.");
+    return null;
   }
 
   $db_url = 'mysql://'.$bbcfg['db.user'].':'.$bbcfg['db.pass'].'@'.$bbcfg['db.host'].'/';
