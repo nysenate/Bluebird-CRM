@@ -16,6 +16,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 				unset( $tableQueries[$key] );
 			}
 			if ( empty($o->params) ) {
+				//run rules
 				$tableQueries['civicrm_contact.last_name.5'] = "
 SELECT t1.id id1, t2.id id2, 5 weight 
 FROM civicrm_contact t1 
@@ -36,6 +37,25 @@ WHERE t1.contact_type = 'Individual'
   AND a1.street_address IS NOT NULL";
   			} else {
 				//inline and import
+				
+				//construct abbreviation and punctuation replacements list for street_address
+				$abbrevs = array( 'street'    => 'st',
+								  'road'      => 'rd',
+								  'boulevard' => 'blvd',
+								  'avenue'    => 'ave',
+								  'terrace'   => 'ter',
+								  'parkway'   => 'pkwy',
+								  'west'      => 'w',
+								  'east'      => 'e',
+								  'north'     => 'n',
+								  'south'     => 's',
+								  '.'         => '',
+								  ','         => '',
+								  '-'         => '',
+								  ':'         => '',
+								  ';'         => '',
+								);
+				
 				//first ensure that all match fields exist in the array; construct NULL value if not
 				$contact =& $o->params['civicrm_contact'];
 				$contactflds = array ( 'first_name', 'middle_name', 'last_name', 'suffix_id' );
@@ -47,7 +67,6 @@ WHERE t1.contact_type = 'Individual'
 						$$contactfld = "= '$contact[$contactfld]'";
 					}
 				}
-				
 				$address =& $o->params['civicrm_address'];
 				$addressflds = array ( 'street_address', 'postal_code' );
 				foreach ( $addressflds as $addressfld ) {
@@ -55,7 +74,19 @@ WHERE t1.contact_type = 'Individual'
 						$address[$addressfld] = "IS NULL";
 						$$addressfld = "IS NULL";
 					} else {
-						$$addressfld = "= '$address[$addressfld]'";
+						if ( $addressfld == 'street_address' ) {
+							//handle street_address cleaning
+							$street_address_sql = 'TRIM(LCASE(street_address))';
+							$street_address_php = trim(strtolower($address[$addressfld]));
+							foreach ( $abbrevs as $longname => $abbrev ) {
+								$street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
+								$street_address_php = str_replace( $longname, $abbrev, $street_address_php );
+							}
+							
+							$$addressfld = "= '$street_address_php'";
+						} else {
+							$$addressfld = "= '$address[$addressfld]'";
+						}
 					}
 				}
 				
@@ -65,13 +96,13 @@ WHERE t1.contact_type = 'Individual'
 SELECT t1.id id1, 5 weight 
 FROM civicrm_contact t1 
   INNER JOIN civicrm_address a1 on t1.id=a1.contact_id 
-WHERE t1.contact_type   = 'Individual'
-  AND t1.last_name      $last_name 
-  AND t1.first_name     $first_name
-  AND t1.middle_name    $middle_name
-  AND t1.suffix_id      $suffix_id
-  AND a1.postal_code    $postal_code
-  AND a1.street_address $street_address";
+WHERE t1.contact_type     = 'Individual'
+  AND t1.last_name        $last_name 
+  AND t1.first_name       $first_name
+  AND t1.middle_name      $middle_name
+  AND t1.suffix_id        $suffix_id
+  AND a1.postal_code      $postal_code
+  AND $street_address_sql $street_address";
   				
 				//CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
 

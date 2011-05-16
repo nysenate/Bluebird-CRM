@@ -282,7 +282,7 @@ WHERE      {$whereClause}
 
 function get_address_line(&$dao_p)
 {
-  return $dao_p->street_address.', '.$dao_p->city.', '.$dao_p->state.' '.$dao_p->postal_code;
+  return 'ID #'.$dao_p->address_id.': '.$dao_p->street_address.', '.$dao_p->city.', '.$dao_p->state.' '.$dao_p->postal_code;
 } // get_address_line()
 
 run();
