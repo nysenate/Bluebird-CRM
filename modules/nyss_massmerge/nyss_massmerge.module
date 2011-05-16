@@ -31,11 +31,11 @@ function nyss_massmerge_run() {
 		nyss_massmerge_out('error', 'Please select the rule below:',true);
 
 		$rule = new CRM_Core_DAO();
-		$rule->query("SELECT name, level, contact_type as type, id FROM civicrm_dedupe_rule_group;");
+		$rule->query("SELECT name, level, contact_type as type, id FROM civicrm_dedupe_rule_group ORDER BY type, name;");
         
 		while ($rule->fetch()) {
 			
-			print_r("<a href=\"?ruleid={$rule->id}\">{$rule->name} - {$rule->level} - {$rule->type}</a><br>");
+			print_r("<a href=\"?ruleid={$rule->id}\">{$rule->type}: {$rule->name} - {$rule->level}</a><br>");
 		}
 
 		return;

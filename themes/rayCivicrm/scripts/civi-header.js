@@ -75,6 +75,16 @@ $(document).ready(function() {
 	
 	var extID = $('#external_identifier').val();
     $('#external_identifier').after(extID).remove();
-
+	
+	//prevent duplicate form submission with enter key
+	var submitted = false;
+	$('form').submit(function(e){
+		if( submitted && e.keyCode == 13 ) {
+        	return false;
+        } else if ( e.keyCode == 13 ) {
+        	submitted = true;
+        	return true;
+        }
+	});
     
 });
