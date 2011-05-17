@@ -114,7 +114,7 @@ class CRM_Import_DataSource_CSV extends CRM_Import_DataSource
         
         $config = CRM_Core_Config::singleton();
 		//NYSS support tab separated
-		if ( $fieldSeparator == 'T' ) {
+		if ( strtolower($fieldSeparator) == 'tab' ) {
 			$fieldSeparator = "\t";
 		}
         //$firstrow = fgetcsv($fd, 0, $config->fieldSeparator);
