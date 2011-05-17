@@ -69,6 +69,17 @@
              <td class="label">{$form.onDuplicate.label}</td>
              <td>{$form.onDuplicate.html} {help id='dupes'}</td>
          </tr>
+         
+         {*NYSS 3750*}
+         <tr class="crm-import-datasource-form-block-dedupe">
+ 	             <td class="label">{$form.dedupe.label}</td>
+ 	             <td><span id="contact-dedupe">{$form.dedupe.html}</span></td>
+ 	     </tr>
+ 	     <tr class="crm-import-datasource-form-block-fieldSeparator">
+ 	             <td class="label">{$form.fieldSeparator.label}</td>
+ 	             <td>{$form.fieldSeparator.html}</td>
+ 	     </tr>
+         
          <tr>{include file="CRM/Core/Date.tpl"}</tr>
          <tr>
              <td></td><td class="description">{ts}Select the format that is used for date fields in your import data.{/ts}</td>
@@ -105,6 +116,7 @@
          //build data source form block
          buildDataSourceFormBlock();
          buildSubTypes();
+		 buildDedupeRules(); //NYSS 3750
       });
       
       function buildDataSourceFormBlock(dataSource)
@@ -152,6 +164,35 @@
   });
        
       }
+	  
+	  //NYSS 3750
+	  function buildDedupeRules( )
+ 	      {
+ 	        element = cj("'input[name=contactType]:checked'").val();
+ 	        var postUrl = {/literal}"{crmURL p='civicrm/ajax/dedupeRules' h=0 }"{literal};
+ 	        var param = 'parentId='+ element;
+ 	        cj.ajax({ type: "POST", url: postUrl, data: param, async: false, dataType: 'json',
+ 	
+ 	                        success: function(dedupe){
+ 	                                                   if ( dedupe.length == 0 ) {
+ 	                                                      cj("#dedupe").empty(); 
+ 	                                                      cj("#contact-dedupe").hide();
+ 	                                                   } else {       
+ 	                                                       cj("#contact-dedupe").show();   
+ 	                                                       cj("#dedupe").empty();                                   
+ 	
+ 	                                                       cj("#dedupe").append("<option value=''>-Select-</option>");  
+ 	                                                       for ( var key in  dedupe ) {
+ 	                                                           // stick these new options in the dedupe select 
+ 	                                                           cj("#dedupe").append("<option value="+key+">"+dedupe[key]+" </option>");  
+ 	                                                       }
+ 	                                                   } 
+ 	                                       
+ 	
+ 	                                                 }
+ 	  });
+ 	       
+ 	      }
 
     </script>
   {/literal}
