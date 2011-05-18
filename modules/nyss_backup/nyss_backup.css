@@ -17,8 +17,7 @@
 	padding-right:4px;
 }
 .nyss_backup-button {
-	float: right;
-	margin:-3px 0px 0px 20px;
+	margin:0px 0px 0px 20px;
 }
 
 #instance_files {
@@ -54,15 +53,17 @@
 	left:0px;
 	top:50px;
 	width:300px;
-	height:100px;
+	padding-bottom:5px;
 	margin-left:35%;
 	border-radius:15px;
 	-moz-border-radius:15px;
+	overflow: hidden;
 }
 
 #instance_confirm_action {
 	margin-left:28%;
 	margin-top: 7%;
+	padding-bottom:10px;
 }
 
 #instance_progress_image {
@@ -76,9 +77,39 @@
 	text-align:center;
 	display:block;
 	font-size:125%;
+	word-wrap: break-word;
 }
 
 .hot {
 	color:red;
 	font-weight:bold;
+}
+
+#file_name {
+	border-right: 0px;
+	text-align:right;
+}
+
+#file_ext {
+	border-top: 1px dashed #BBBBBB;
+	border-right: 1px dashed #BBBBBB;
+	border-bottom: 1px dashed #BBBBBB;
+	padding:3px;
+	background-color:#FFC;
+}
+
+.line_item {
+	display:-moz-inline-stack;
+	display:inline-block;
+	zoom:1;
+	*display:inline;
+}
+
+.main-container {
+	min-height:200px;
+	height:auto;
+}
+
+* html .main-container {
+	height:200px;
 }

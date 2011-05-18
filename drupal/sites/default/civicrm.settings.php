@@ -17,7 +17,7 @@
 
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
-$bbconfig = get_bluebird_instance_config('bluebird.cfg');
+$bbconfig = get_bluebird_instance_config();
 
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_USE_MEMCACHE', $bbconfig['cache.memcache']);

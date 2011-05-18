@@ -1,16 +1,84 @@
 <?php
 	require_once(dirname(__FILE__) . './../../civicrm/scripts/bluebird_config.php');
 	
+	$GLOBALS['nyss_backup_data_dir'] = get_data_dir();
 	$GLOBALS['nyss_backup_file_ext'] = '.zip';
-	$GLOBALS['nyss_backup_data_dir'] = get_backup_dir().'/';
 	$GLOBALS['nyss_backup_backup_script'] = '../scripts/dumpInstance.sh';
 	$GLOBALS['nyss_backup_restore_script'] = '../scripts/restoreInstance.sh';
+	$GLOBALS['nyss_backup_name_size'] = 50;
+		
+	/* API functions */
 	
-	function get_backup_dir() {
-		$bbconfig = get_bluebird_config();
-		return $bbconfig['globals']['backup.ui.rootdir'];
+	function do_backup($file_name, $file_time)
+	{
+		global $nyss_backup_file_ext, 
+				$nyss_backup_backup_script, 
+				$nyss_backup_data_dir, 
+				$nyss_backup_name_size;
+				
+		$file_date = get_file_date($file_time);
+		
+		$instance_config = get_bluebird_instance_config();
+		
+		$instance_name = $instance_config['shortname'];
+		
+		//if provided file name only consists of white spaces
+		//and non word chracters set to default YYYYMMDD-HHMMSS
+		if(!$file_name || preg_match('/^[\s\W]*$/', $file_name)) {
+			$file_name = $file_date['string_date'];
+		}
+		else {
+			//remove special characters and replace whitespace with _
+			$pat = array('/(?![ \-])\W/','/ /');
+			$rep = array('','_');
+			$file_name =  preg_replace($pat, $rep, $file_name);
+		}
+		
+		//get substring if file name too long
+		if(strlen($file_name) > $nyss_backup_name_size) {
+			$file_name = substr($file_name, 0, $nyss_backup_name_size);
+		}
+		
+		$file_name_with_path = $nyss_backup_data_dir
+							.$file_name
+							.$nyss_backup_file_ext;
+		
+		//if the file already exists tack on date string
+		if(file_exists($file_name_with_path)) {
+			$file_name_with_path = $nyss_backup_data_dir
+							.$file_name.'-'
+							.$file_date['string_date']
+							.$nyss_backup_file_ext;
+		}
+		
+		shell_exec($nyss_backup_backup_script.' '
+						.$instance_name.' --zip --archive-file '.$file_name_with_path);
+						
+		//touch file to make sure date in file name matches modified date
+		return file_exists($file_name_with_path);
 	}
 	
+	/*
+	 * convert file list to associative array with format [{file:<filename>, time:<timestamp>}]
+	 */
+	function get_instance_files() {
+		global $nyss_backup_data_dir;
+		$data_dir = $nyss_backup_data_dir;
+		
+		$instance_files = array();
+		
+		$files = get_files($data_dir);
+		usort($files, 'sort_by_ctime');
+		
+		foreach($files as $i => $file)
+		{
+			$time_stamp = filemtime($data_dir.$file);			
+			$instance_files[] = array('file' => $file, 'time' => $time_stamp);
+		}
+		
+		return $instance_files; 
+	}
+		
 	function do_delete($file_name)
 	{
 		if($file_name)
@@ -21,72 +89,35 @@
 		return false;
 	}
 	
-	function do_restore($instance_name, $file_name)
+	function do_restore($file_name)
 	{
-		if($instance_name && $file_name)
+		$instance_config = get_bluebird_instance_config();
+		
+		if($file_name)
 		{
 			global $nyss_backup_restore_script, $nyss_backup_data_dir;
-			passthru($nyss_backup_restore_script.' '.$instance_name
+			passthru($nyss_backup_restore_script.' '.$instance_config['shortname']
 				.' --archive-file '.$nyss_backup_data_dir.$file_name.' --ok > /dev/null', $err);
 			return $err == 0 ? true : false;
 		}
 		return false;
 	}
 	
-	//files stored with name format: <instance>-YYYYMMDD-HHMMSS.zip
-	function do_backup($instance_name)
-	{
-		if($instance_name)
-		{
-			global $nyss_backup_file_ext, $nyss_backup_backup_script, $nyss_backup_data_dir;
-			$file_name = $nyss_backup_data_dir.$instance_name.'-'.getFileDate().$nyss_backup_file_ext;	
-			shell_exec($nyss_backup_backup_script.' '.$instance_name.' --zip --archive-file '.$file_name);
-			return file_exists($file_name);
-		}
-		return false;
-	}
+	/* utility functions */
 	
-	function get_files($dir, $filter = "/.*/")
-	{
-		$ret = array();
-		
-		if($handle = opendir($dir))
-		{
-			while(false !== ($file = readdir($handle)))
-			{
-				if($file != '.' && $file != '..' && preg_match($filter, $file))
-				{
-					$ret[] = $file;
-				}
-			}
-		}
-		closedir($handle);
-		return $ret;
-	}
-	
-	/*
-	 * convert file list to associative array with format [{file:<filename>, time:<timestamp>}]
-	 */
-	function get_instance_files($filter) {
-		global $nyss_backup_data_dir;
-		$data_dir = $nyss_backup_data_dir;
-		
-		$instance_files = array();
-		
-		$files = $filter ? get_files($data_dir, $filter) : get_files($data_dir);
-		rsort($files);
-		
-		foreach($files as $i => $file)
-		{
-			$pieces = explode('-',$file);
-			$name = $pieces[0];
-			$time_stamp = explode('.',$pieces[2]);
-			$time_stamp = parseFileDate($pieces[1].'-'.$time_stamp[0]);
-			
-			$instance_files[] = array('file' => $file, 'time' => $time_stamp);
+	function get_data_dir() {
+		$instance_config = get_bluebird_instance_config();
+				
+		$data_dir = $instance_config['data.rootdir']
+					.'/'.$instance_config['data_dirname']
+					.'/'.$instance_config['backup.ui.dirname']
+					.'/';
+					
+		if(!is_dir($data_dir)) {
+			mkdir($data_dir);
 		}
 		
-		return $instance_files; 
+		return $data_dir;
 	}
 	
 	function json_encode_boolean($bool)
@@ -95,15 +126,36 @@
 		return json_encode($json);
 	}
 	
-	// YYYYMMDD-HHMMSS -> unix time stamp
-	function parseFileDate($str) {
-		$date = mktime(substr($str, 9, 2), substr($str, 11, 2), substr($str, 13, 2), substr($str, 4, 2), substr($str, 6, 2), substr($str, 0, 4));
-		return $date;
+	// returns date in format YYYYMMDD-HHMMSS
+	function get_file_date($file_time) {
+		$file_time = $file_time ? $file_time : time();
+		return array('string_date' => date("Ymd-His", $file_time), 'int_date' => $file_time);
 	}
 	
-	// returns date in format YYYYMMDD-HHMMSS
-	function getFileDate() {
-		$date = mktime(date('H'),date('i'), date('s'), date('m'), date('d'), date('Y'));
-		return date("Ymd-His", $date);
+	function sort_by_ctime($f1, $f2) {
+		global $nyss_backup_data_dir;
+		return (filemtime($nyss_backup_data_dir.$f1) < filemtime($nyss_backup_data_dir.$f2)); 
+	}
+	
+	function get_files($dir)
+	{
+		global $nyss_backup_data_dir;
+		$ret = array();
+				
+		if($handle = opendir($dir))
+		{
+			while(false !== ($file = readdir($handle)))
+			{
+				if($file != '.' 
+						&& $file != '..' 
+						&& !is_dir($nyss_backup_data_dir.$file)
+						&& preg_match('/.*\.zip/', $file))
+				{
+					$ret[] = $file;
+				}
+			}
+		}
+		closedir($handle);
+		return $ret;
 	}
 ?>

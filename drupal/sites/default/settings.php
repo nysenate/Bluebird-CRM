@@ -16,7 +16,7 @@
 
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
-$bbconfig = get_bluebird_instance_config('bluebird.cfg');
+$bbconfig = get_bluebird_instance_config();
 
 $db_url = $bbconfig['drupal_db_url'];
 $db_prefix = '';

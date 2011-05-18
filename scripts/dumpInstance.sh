@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # dumpInstance.sh - Perform a MySQL dump for a CRM instance
 #
@@ -6,13 +6,14 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-12
-# Revised: 2011-05-04
+# Revised: 2011-05-17
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
+tmpdir=/tmp/dumpInstance_$$
 civi_file=
 no_civi=0
 drup_file=
@@ -56,10 +57,19 @@ db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
 
-[ "$civi_file" ] || civi_file=$db_civi_prefix$db_basename.sql
-[ "$drup_file" ] || drup_file=$db_drup_prefix$db_basename.sql
+if [ "$archive_dump" -o ! "$civi_file" ]; then
+  civi_file=$db_civi_prefix$db_basename.sql
+fi
+if [ "$archive_dump" -o ! "$drup_file" ]; then
+  drup_file=$db_drup_prefix$db_basename.sql
+fi
 
 errcode=0
+
+if [ "$archive_dump" ]; then
+  mkdir -p "$tmpdir"
+  pushd "$tmpdir"
+fi
 
 if [ $no_civi -eq 0 ]; then
   echo "Dumping CiviCRM database for instance [$instance]"
@@ -82,16 +92,17 @@ if [ "$archive_dump" ]; then
     *) file_ext="zip"; arc_cmd="zip" ;;
   esac
 
-  if [ "$archive_file" ]; then
-    arc_file="$archive_file"
-  else
-    todays_date=`date +%Y%m%d`
-    arc_file="${instance}_dump_$todays_date.$file_ext"
-  fi
+  todays_date=`date +%Y%m%d`
+  arc_file="${instance}_dump_$todays_date.$file_ext"
   $arc_cmd $arc_file $civi_file $drup_file
-  if [ $? -eq 0 ]; then
-    rm -vf $civi_file $drup_file
+  popd
+  if [ "$archive_file" ]; then
+    mv "$tmpdir/$arc_file" "$archive_file"
+  else
+    mv "$tmpdir/$arc_file" .
   fi
+
+  rm -rf "$tmpdir"
 fi
 
 exit $errcode

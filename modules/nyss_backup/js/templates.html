@@ -8,10 +8,14 @@
 	<% if(data && data.length && data.length > 0) { %>
 		<% for(i in data) {	%>
 			<div class="instance_file">
-			<span class="instance_file_name"><%=data[i].file%></span>
-			<span class="instance_file_date">Created on <%=util.getDate(data[i].time)%></span>
-			<input action="delete" type="submit" value="Delete Copy" class="form-submit default nyss_backup-button nyss_backup_action">
-			<input action="restore" type="submit" value="Restore From" class="form-submit default nyss_backup-button nyss_backup_action">
+				<div style="width:<%=util.browser.getLeftWidth()%>;" class="line_item">
+					<span class="instance_file_name"><%=data[i].file%></span>
+					<span class="instance_file_date">Created on <%=util.getDate(data[i].time)%></span>
+				</div>
+				<div style="width:<%=util.browser.getRightWidth()%>;" class="line_item">
+					<input action="restore" type="submit" value="Restore From" class="form-submit default nyss_backup-button nyss_backup_action">
+					<input action="delete" type="submit" value="Delete Copy" class="form-submit default nyss_backup-button nyss_backup_action">
+				</div>
 			</div>
 		<% } %>
 	<% } else { %>
@@ -29,6 +33,9 @@
 <script type="text/html" id="tmpl_backup">
 	<div id="instance_confirm_text">
   		Are you sure you want to <span class="hot">back up</span> this instance</b>?
+		<% var date_obj = util.getFileNameDate(); %>
+		<br/><span>File name: </span><input id="file_name" type="text" value="<%=date_obj.str%>" /><span id="file_ext">.zip</span>
+		<input id="file_time" type="hidden" value="<%=date_obj.int%>" />
   	</div>
 </script>
 <script type="text/html" id="tmpl_delete">

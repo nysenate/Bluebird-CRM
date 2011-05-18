@@ -5,10 +5,11 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-05-11
+# Revised: 2011-05-16
 #
 
 define('BASE_DIR', realpath(dirname(__FILE__).'/../../'));
+define('DEFAULT_CONFIG_FILENAME', 'bluebird.cfg');
 
 
 /*
@@ -34,8 +35,24 @@ function get_config_filepath($filename)
 ** configuration file.  The array is indexed by the config groups.  Each
 ** value is itself an array of name-value pairs.
 */
-function get_bluebird_config($filename = 'bluebird.cfg')
+function get_bluebird_config($filename = null)
 {
+  static $bbini = null;
+  static $s_filename= null;
+
+  /* Do not re-read the configuration file within the same HTTP request,
+  ** unless a different config file is specified.
+  */
+  if ($bbini && $s_filename == $filename) {
+    return $bbini;
+  }
+
+  $s_filename = $filename;   // save the filename for subsequent calls
+
+  if (empty($filename)) {
+    $filename = DEFAULT_CONFIG_FILENAME;
+  }
+
   $cfg_file = get_config_filepath($filename);
 
   if (!file_exists($cfg_file)) {
@@ -61,9 +78,23 @@ function get_bluebird_config($filename = 'bluebird.cfg')
 ** The instance can be a short name (hostname only), or a server name (fully
 ** qualified domain name).
 */
-function get_bluebird_instance_config($filename, $instance = null)
+function get_bluebird_instance_config($instance = null, $filename = null)
 {
+  static $bbcfg = null;
+  static $s_instance = null;
+  static $s_filename = null;
+
   $shortname = null;
+
+  /* Do not re-read the configuration file within the same HTTP request,
+  ** unless a different instance or config file is specified.
+  */
+  if ($bbcfg && $s_instance == $instance && $s_filename == $filename) {
+    return $bbcfg;
+  }
+
+  $s_instance = $instance;
+  $s_filename = $filename;
 
   if ($instance == null) {
     if (isset($_SERVER['HTTP_HOST'])) {
@@ -85,18 +116,21 @@ function get_bluebird_instance_config($filename, $instance = null)
     $default_base_domain = substr($instance, $firstdot + 1);
   }
 
+  $bbcfg = array();
   $bbini = get_bluebird_config($filename);
   if ($bbini) {
-    $bbcfg = array();
-    // Grab the globals first.
+    // If successful, merge the globals into the instance-specific params.
     if (isset($bbini['globals'])) {
       $bbcfg = array_merge($bbcfg, $bbini['globals']);
     }
-    // Now merge the instance-specific parameters, which override the globals.
     $instance_key = 'instance:'.$shortname;
     if (isset($bbini[$instance_key])) {
       $bbcfg = array_merge($bbcfg, $bbini[$instance_key]);
     }
+  }
+  else {
+    error_log("CRM instance [$instance] could not be configured.");
+    return null;
   }
 
   $db_url = 'mysql://'.$bbcfg['db.user'].':'.$bbcfg['db.pass'].'@'.$bbcfg['db.host'].'/';
