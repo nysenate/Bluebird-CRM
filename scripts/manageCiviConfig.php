@@ -120,8 +120,8 @@ function updateCiviConfig($dbcon, $civicfg, $crmhost, $appdir, $datadir)
   updateDirPref($dbcon, 'customFileUploadDir', "custom/");
   updateDirPref($dbcon, 'customTemplateDir', "$appdir/civicrm/custom/templates");
   updateDirPref($dbcon, 'customPHPPathDir', "$appdir/civicrm/custom/php");
-  updateUrlPref($dbcon, 'userFrameworkResourceURL', "/sites/all/modules/civicrm/");
-  updateUrlPref($dbcon, 'imageUploadURL', "/sites/default/files/civicrm/images/");
+  updateUrlPref($dbcon, 'userFrameworkResourceURL', "sites/all/modules/civicrm/");
+  updateUrlPref($dbcon, 'imageUploadURL', "sites/default/files/civicrm/images/");
 
   return $rc;
 } // updateCiviConfig()
