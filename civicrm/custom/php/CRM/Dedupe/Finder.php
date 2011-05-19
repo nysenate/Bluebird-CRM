@@ -86,25 +86,55 @@ class CRM_Dedupe_Finder
      * @param string $ctype   contact type to match against
      * @param string $level   dedupe rule group level ('Fuzzy' or 'Strict')
      * @param array  $except  array of contacts that shouldn't be considered dupes
-     *
+     * @param int    $ruleGroupID the id of the dedupe rule we should be using
      * @return array  matching contact ids
      */
-    function dupesByParams($params, $ctype, $level = 'Strict', $except = array()) {
+    //NYSS 3750
+	//function dupesByParams($params, $ctype, $level = 'Strict', $except = array()) {
+	function dupesByParams($params,
+ 	                       $ctype,
+ 	                       $level = 'Strict',
+ 	                       $except = array(),
+ 	                       $ruleGroupID = null ) {
         // If $params is empty there is zero reason to proceed.
         if ( ! $params ) {
             return array();
         }
-        $rgBao = new CRM_Dedupe_BAO_RuleGroup();
+        //NYSS
+		/*$rgBao = new CRM_Dedupe_BAO_RuleGroup();
         $rgBao->contact_type = $ctype;
         $rgBao->params = $params;
         $rgBao->level = $level;
         $rgBao->is_default = 1;
         if (!$rgBao->find(true)) {
             CRM_Core_Error::fatal("$level rule for $ctype does not exist");
+		}*/
+		
+		        $foundByID = false;
+ 	        if ( $ruleGroupID ) {
+ 	            $rgBao = new CRM_Dedupe_BAO_RuleGroup();
+ 	            $rgBao->id = $ruleGroupID;
+ 	            $rgBao->contact_type = $ctype;
+ 	            if ( $rgBao->find( true ) ) {
+ 	                $foundByID = true;
+ 	            }
         }
+ 	
+ 	        if ( ! $foundByID ) {
+ 	            $rgBao = new CRM_Dedupe_BAO_RuleGroup();
+ 	            $rgBao->contact_type = $ctype;
+ 	            $rgBao->level = $level;
+ 	            $rgBao->is_default = 1;
+ 	            if (!$rgBao->find(true)) {
+ 	                CRM_Core_Error::fatal("$level rule for $ctype does not exist");
+ 	            }
+ 	        }
+		//NYSS end
+		
         $params['check_permission'] = CRM_Utils_Array::value( 'check_permission', $params, true );
 
-        $rgBao->fillTable();
+        $rgBao->params = $params; //NYSS
+		$rgBao->fillTable();
         $dao = new CRM_Core_DAO();
         $dao->query($rgBao->thresholdQuery($params['check_permission']));
         $dupes = array();

@@ -11,8 +11,7 @@ $(document).ready(function(){
 		
 		var tmpl_data = {"data":data, "util":util};
 		$('.main-container')
-			.html(tmpl("tmpl_instance_contents", tmpl_data))
-			.css('min-height','200px');
+			.html(tmpl("tmpl_instance_contents", tmpl_data));
 		
 		$('#blocker, #progress_container').hide();
 		
@@ -42,12 +41,18 @@ $(document).ready(function(){
 	}
 	
 	function assign_delegates() {
+		$('input').css('vertical-align','baseline');
+		
 		$('body').delegate('.nyss_backup_action', 'click', function() {
 			var action = $(this).attr('action');
 			if(action == "null")
 	  			return;
 			
-			var file = $(this).siblings('.instance_file_name').html();
+			var file = $(this)
+				.parent()
+				.prev()
+				.children('.instance_file_name')
+				.html();
 			
 			cur_action = {'action':action,'file':file};
 			
@@ -93,6 +98,16 @@ $(document).ready(function(){
 });
 
 (function() {
+	function browser() {
+		var ie = (function() {
+			if(navigator.appVersion.indexOf("MSIE") != -1)
+				return true;
+			return false;
+		})();
+		this.getIe = function() { return ie };
+		this.getLeftWidth  = function() { return (ie ? '64%' : '72%'); }
+		this.getRightWidth = function() { return (ie ? '36%' : '28%'); }
+	}
 	this.util = { 
 		'getFileNameDate': function() {
 			var date = new Date();
@@ -129,7 +144,8 @@ $(document).ready(function(){
   					callbacks[i](data, params);
   				}
 			});
-		}
+		},
+		'browser': new browser()
 	}
 	//set timeout to an hour
 	$.ajaxSetup({

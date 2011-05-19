@@ -73,16 +73,10 @@ class CRM_Import_DataSource_CSV extends CRM_Import_DataSource
     {
         $file = $params['uploadFile']['name'];
         
-        //NYSS 3750
-		/*$result = self::_CsvToTable( $db, $file, $params['skipColumnHeader'],
-                                     CRM_Utils_Array::value( 'import_table_name', $params ) );*/
-        $result = self::_CsvToTable( $db,
- 	                                     $file,
- 	                                     $params['skipColumnHeader'],
- 	                                     CRM_Utils_Array::value( 'import_table_name', $params ),
- 	                                     CRM_Utils_Array::value( 'fieldSeparator', $params, ',' ) );
+        $result = self::_CsvToTable( $db, $file, $params['skipColumnHeader'],
+                                     CRM_Utils_Array::value( 'import_table_name', $params ) );
         
-		$this->set('originalColHeader', CRM_Utils_Array::value( 'original_col_header', $result ) );
+        $this->set('originalColHeader', CRM_Utils_Array::value( 'original_col_header', $result ) );
         
         $table = $result['import_table_name'];
         require_once 'CRM/Import/ImportJob.php';
@@ -97,28 +91,17 @@ class CRM_Import_DataSource_CSV extends CRM_Import_DataSource
      * @param string $file   file name to load
      * @param bool   $headers  whether the first row contains headers
      * @param string $table  Name of table from which data imported.
-     * @param string $fieldSeparator Character that seperates the various columns in the file //NYSS
+     *
      * @return string  name of the created table
      */
-    //NYSS 3750
-	//private static function _CsvToTable(&$db, $file, $headers = false, $table = null )
-	private static function _CsvToTable(&$db,
- 	                                    $file,
- 	                                    $headers = false,
- 	                                    $table = null,
- 	                                    $fieldSeparator = ',' )
+    private static function _CsvToTable(&$db, $file, $headers = false, $table = null )
     {
         $result = array( );
         $fd = fopen($file, 'r');
         if (!$fd) CRM_Core_Error::fatal("Could not read $file");
         
         $config = CRM_Core_Config::singleton();
-		//NYSS support tab separated
-		if ( strtolower($fieldSeparator) == 'tab' ) {
-			$fieldSeparator = "\t";
-		}
-        //$firstrow = fgetcsv($fd, 0, $config->fieldSeparator);
-		$firstrow = fgetcsv($fd, 0, $fieldSeparator); //NYSS
+        $firstrow = fgetcsv($fd, 0, $config->fieldSeparator);
         
         // create the column names from the CSV header or as col_0, col_1, etc.
         if ($headers) {
@@ -167,7 +150,6 @@ class CRM_Import_DataSource_CSV extends CRM_Import_DataSource
 
         // the proper approach, but some MySQL installs do not have this enabled
         // $load = "LOAD DATA LOCAL INFILE '$file' INTO TABLE $table FIELDS TERMINATED BY '$config->fieldSeparator' OPTIONALLY ENCLOSED BY '\"'";
-		// $load = "LOAD DATA LOCAL INFILE '$file' INTO TABLE $table FIELDS TERMINATED BY '$fieldSeparator' OPTIONALLY ENCLOSED BY '\"'"; //NYSS
         // if ($headers) $load .= ' IGNORE 1 LINES';
         // $db->query($load);
 
@@ -179,11 +161,10 @@ class CRM_Import_DataSource_CSV extends CRM_Import_DataSource
         $sql = null;
         $first = true;
         $count = 0;
-        //while ($row = fgetcsv($fd, 0, $config->fieldSeparator)) {
-		while ($row = fgetcsv($fd, 0, $fieldSeparator)) { //NYSS
+        while ($row = fgetcsv($fd, 0, $config->fieldSeparator)) {
             // skip rows that dont match column count, else we get a sql error
             if ( count( $row ) != $numColumns ) {
-				continue;
+                continue;
             }
 
             if ( ! $first ) {

@@ -8,11 +8,11 @@
 	<% if(data && data.length && data.length > 0) { %>
 		<% for(i in data) {	%>
 			<div class="instance_file">
-				<div class="line_item left">
+				<div style="width:<%=util.browser.getLeftWidth()%>;" class="line_item">
 					<span class="instance_file_name"><%=data[i].file%></span>
 					<span class="instance_file_date">Created on <%=util.getDate(data[i].time)%></span>
 				</div>
-				<div class="line_item right">
+				<div style="width:<%=util.browser.getRightWidth()%>;" class="line_item">
 					<input action="restore" type="submit" value="Restore From" class="form-submit default nyss_backup-button nyss_backup_action">
 					<input action="delete" type="submit" value="Delete Copy" class="form-submit default nyss_backup-button nyss_backup_action">
 				</div>

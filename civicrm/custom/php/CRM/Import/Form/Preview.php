@@ -252,6 +252,7 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
             'invalidRowCount'   => $this->get('invalidRowCount'),
             'conflictRowCount'  => $this->get('conflictRowCount'),
             'onDuplicate'       => $this->get('onDuplicate'),
+			'dedupe'            => $this->get('dedupe'), //NYSS 3750
             'newGroupName'      => $this->controller->exportValue( $this->_name, 'newGroupName'),
             'newGroupDesc'      => $this->controller->exportValue( $this->_name, 'newGroupDesc'),
             'groups'            => $this->controller->exportValue( $this->_name, 'groups'),
@@ -448,7 +449,10 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
                       $this->get( 'totalRowCount' ),
                       $doGeocodeAddress,
                       CRM_Import_Parser::DEFAULT_TIMEOUT, 
-                      $this->get('contactSubType') );
+                      //$this->get('contactSubType') );
+					  //NYSS 3750
+					  $this->get('contactSubType'),
+ 	 	              $this->get('dedupe') );
         
         // add the new contacts to selected groups
         $contactIds =& $parser->getImportedContacts();

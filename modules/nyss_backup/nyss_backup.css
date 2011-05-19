@@ -63,6 +63,7 @@
 #instance_confirm_action {
 	margin-left:28%;
 	margin-top: 7%;
+	padding-bottom:10px;
 }
 
 #instance_progress_image {
@@ -104,10 +105,11 @@
 	*display:inline;
 }
 
-.left {
-	width:72%;
+.main-container {
+	min-height:200px;
+	height:auto;
 }
 
-.right {
-	width:28%;
+* html .main-container {
+	height:200px;
 }
