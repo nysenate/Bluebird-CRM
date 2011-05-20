@@ -284,7 +284,8 @@
                                         {if $item.phone}
                                         <tr>
                                             <td class="label">{$item.location_type}&nbsp;{$item.phone_type}</td>
-                                            <td {if $item.is_primary eq 1}class="primary"{/if}><span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>{$item.phone}</span></td>
+                                            {*NYSS 3752*}
+                                            <td {if $item.is_primary eq 1}class="primary"{/if}><span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>{$item.phone}{if $item.phone_ext}&nbsp;&nbsp;{ts}ext.{/ts} {$item.phone_ext}{/if}</span></td>
                                         </tr>
                                         {/if}
                                     {/foreach}
