@@ -1,18 +1,58 @@
 <?php 
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
 
+	$headerRemove = array( 'Signature Text',
+	                       'Signature Html',
+						   'Contact Subtype',
+						   'Current Employer ID',
+						   'Geo Code 1',
+						   'Geo Code 2',
+						   'Address Name',
+						   'Master Address ID',
+						   'County',
+						   'World Region',
+						   'Im Service Provider',
+						   'Group(s)',
+						   'Tag(s)',
+						   'Note(s)'
+						 );
+	
 	foreach ( $headerRows as $key => $headerRow ) {
-		if ( $headerRow == 'Signature Text' || $headerRow == 'Signature Html' ) {
+		if ( in_array( $headerRow, $headerRemove ) ) {
 			unset( $headerRows[$key] );
 		}
 	}
-	unset( $sqlColumns['signature_text'] );
-	unset( $sqlColumns['signature_html'] );
-
+	
+	$sqlRemove = array( 'signature_text',
+	                    'signature_html',
+						'contact_sub_type',
+						'current_employer_id',
+						'geo_code_1',
+						'geo_code_2',
+						'address_name',
+						'master_id',
+						'county',
+						'world_region',
+						'provider_id',
+						'groups',
+						'tags',
+						'notes'
+					  );
+	
+	foreach ( $sqlRemove as $sqlField ) {
+		unset( $sqlColumns[$sqlField] );
+	}
+	
+	//debug
 	/*CRM_Core_Error::debug('tt', $exportTempTable);
 	CRM_Core_Error::debug('hr', $headerRows);
 	CRM_Core_Error::debug('sc', $sqlColumns);
 	CRM_Core_Error::debug('em', $exportMode);
 	exit();*/
+	
+	//continue with the export
+	require_once 'CRM/Export/BAO/Export.php';
+	CRM_Export_BAO_Export::writeCSVFromTable( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
+	CRM_Utils_System::civiExit( );
 
 }
