@@ -50,6 +50,7 @@ class CRM_Import_ImportJob {
     protected $_invalidRowCount;
     protected $_conflictRowCount;
     protected $_onDuplicate;
+	protected $_dedupe; //NYSS 3750
     protected $_newGroupName;
     protected $_newGroupDesc;
     protected $_groups;
@@ -266,7 +267,9 @@ class CRM_Import_ImportJob {
                       $this->_totalRowCount,
                       $this->_doGeocodeAddress,
                       CRM_Import_Parser::DEFAULT_TIMEOUT, 
-                      $this->_contactSubType );
+                      $this->_contactSubType,
+ 	 	              $this->_dedupe //NYSS
+ 	 	              );
                       
         $contactIds = $this->_parser->getImportedContacts( );
         

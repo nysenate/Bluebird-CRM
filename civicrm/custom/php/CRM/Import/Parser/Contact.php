@@ -532,7 +532,8 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
                     //if we send external id dedupe will stop.
                     unset( $dedupeParams['external_identifier'] );
                     
-                    $checkDedupe = _civicrm_duplicate_formatted_contact( $dedupeParams );
+                    //$checkDedupe = _civicrm_duplicate_formatted_contact( $dedupeParams );
+					$checkDedupe = _civicrm_duplicate_formatted_contact( $dedupeParams, $this->_dedupeRuleGroupID ); //NYSS
                     if ( civicrm_duplicate( $checkDedupe ) ) {
                         $matchingContactIds = explode( ',', $checkDedupe['error_message']['params'][0] );
                         if ( count( $matchingContactIds ) == 1 ) {
@@ -548,7 +549,7 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
                 }
             }
             
-            $error = _civicrm_duplicate_formatted_contact($formatted);
+            $error = _civicrm_duplicate_formatted_contact($formatted, $this->_dedupeRuleGroupID ); //NYSS
             if ( civicrm_duplicate($error) ) { 
                 $matchedIDs = explode( ',', $error['error_message']['params'][0] );
                 if ( count( $matchedIDs) >= 1 ) {
@@ -581,7 +582,8 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
                                 } else {
                                     
                                     $newContact = $this->createContact( $formatted, $contactFields, 
-                                                                        $onDuplicate, $contactId, false );
+                                                                        $onDuplicate, $contactId, false,
+ 	 	                                                                $this->_dedupeRuleGroupID ); //NYSS
                                     $updateflag = false; 
                                     $this->_retCode = CRM_Import_Parser::VALID;
                                 }
@@ -625,7 +627,8 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
                                 $this->_retCode = CRM_Import_Parser::NO_MATCH;
                             } else {
                                 $newContact = $this->createContact( $formatted, $contactFields, 
-                                                                    $onDuplicate, $params['id'], false );
+                                                                    $onDuplicate, $params['id'], false,
+ 	                                                                $this->_dedupeRuleGroupID ); //NYSS
                                 
                                 $this->_retCode = CRM_Import_Parser::VALID;
                             }
@@ -673,7 +676,12 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
                     }
                 }
             }
-            $newContact = $this->createContact( $formatted, $contactFields, $onDuplicate );
+			//NYSS 3750
+            $newContact = $this->createContact( $formatted,
+ 	 	                                        $contactFields,
+ 	 	                                        $onDuplicate,
+ 	 	                                        null, true,
+ 	 	                                        $this->_dedupeRuleGroupID );
         }
         
         if ( is_object( $newContact ) || ( $newContact instanceof CRM_Contact_BAO_Contact ) ) { 
@@ -1562,7 +1570,13 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
      * 
      * 
      */
-    function createContact( &$formatted, &$contactFields, $onDuplicate, $contactId = null, $requiredCheck = true )
+	//NYSS 3750
+    function createContact( &$formatted,
+ 	 	                    &$contactFields,
+ 	 	                    $onDuplicate,
+ 	 	                    $contactId = null,
+ 	                        $requiredCheck = true,
+ 	                        $dedupeRuleGroupID = null )
     {
         $dupeCheck = false;
         
@@ -1578,7 +1592,12 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
         require_once 'api/v2/Contact.php';
         // setting required check to false, CRM-2839
         // plus we do our own required check in import
-        $error = civicrm_contact_check_params( $formatted, $dupeCheck, true, false );
+        //NYSS 3750
+		$error = civicrm_contact_check_params( $formatted,
+ 	 	                                       $dupeCheck,
+ 	 	                                       true,
+ 	 	                                       false,
+ 	 	                                       $dedupeRuleGroupID );
         
         if ( ( is_null( $error )                                                ) && 
              ( civicrm_error( _civicrm_validate_formatted_contact($formatted) ) ) ) {

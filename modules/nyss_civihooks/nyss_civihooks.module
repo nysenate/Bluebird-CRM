@@ -163,7 +163,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 			}
 		}
 		sort($contactIssueCode_item);
-		$contactIssueCode_list = stripslashes( implode( ', ', $contactIssueCode_item ) );
+		$contactIssueCode_list = stripslashes( implode( ' &#8226; ', $contactIssueCode_item ) );
 		$form->assign( 'contactIssueCode_list', $contactIssueCode_list );
 		
 		//Construct list of Legislative Positions

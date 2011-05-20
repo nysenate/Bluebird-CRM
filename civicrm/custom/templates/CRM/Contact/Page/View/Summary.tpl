@@ -512,7 +512,7 @@
                                     <td class="label">{ts}Email Format{/ts}</td><td>{$preferred_mail_format}</td>
                                 </tr>
                             
-							{if $contact_type neq 'Organization'}
+							{*if $contact_type neq 'Organization'*}{*NYSS 3716*}
                             <tr>
 								<td class="label">{ts}Email Greeting{/ts}{if $email_greeting_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
 								<td>{$email_greeting_display}</td>
@@ -521,7 +521,7 @@
 								<td class="label">{ts}Postal Greeting{/ts}{if $postal_greeting_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
 								<td>{$postal_greeting_display}</td>
 							</tr>
-                            {/if}
+                            {*/if*}
 							<tr>
 								<td class="label">{ts}Addressee{/ts}{if $addressee_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
 								<td>{$addressee_display}</td>

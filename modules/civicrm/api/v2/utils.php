@@ -32,7 +32,7 @@
  * @subpackage API_utils
  * 
  * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: utils.php 31857 2011-01-18 13:20:02Z neha $
+ * @version $Id: utils.php 34259 2011-05-13 21:55:22Z lobo $
  *
  */
 
@@ -520,10 +520,14 @@ function _civicrm_required_formatted_contact(&$params)
 
 /**
  *
- * @param <type> $params
+ * @param array $params
+ * @param int   $dedupeRuleGroupID - the dedupe rule ID to use if present
+ *
  * @return <type>
  */
-function _civicrm_duplicate_formatted_contact(&$params) 
+//NYSS 3750
+function _civicrm_duplicate_formatted_contact( &$params,
+                                               $dedupeRuleGroupID = null )
 {
     $id = CRM_Utils_Array::value( 'id', $params );
     $externalId = CRM_Utils_Array::value( 'external_identifier', $params );
@@ -546,7 +550,13 @@ function _civicrm_duplicate_formatted_contact(&$params)
     } else {
         require_once 'CRM/Dedupe/Finder.php';
         $dedupeParams = CRM_Dedupe_Finder::formatParams($params, $params['contact_type']);
-        $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict');
+        //NYSS 3750
+		//$ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict');
+		$ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams,
+ 	                                            $params['contact_type'],
+ 	                                            'Strict',
+ 	                                            array( ),
+ 	                                            $dedupeRuleGroupID );
             
         if ( !empty($ids) ) {
             $ids = implode( ',', $ids );

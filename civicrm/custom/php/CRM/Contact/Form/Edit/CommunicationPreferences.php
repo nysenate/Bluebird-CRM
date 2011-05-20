@@ -242,10 +242,11 @@ class CRM_Contact_Form_Edit_CommunicationPreferences
                                                                           )
                                );
             
-            if ( $contactType == 'Organization' ) {
+            //NYSS 3716
+			/*if ( $contactType == 'Organization' ) {
                 unset( self::$greetings[$contactType]['email_greeting' ] );
                 unset( self::$greetings[$contactType]['postal_greeting'] );
-            }
+            }*/
         }
         
         return self::$greetings[$contactType];   

@@ -6,11 +6,12 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-12
-# Revised: 2011-05-17
+# Revised: 2011-05-20
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
+script_dir=`cd "$script_dir"; echo $PWD`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 tmpdir=/tmp/dumpInstance_$$
@@ -86,23 +87,26 @@ if [ $no_drup -eq 0 ]; then
 fi
 
 if [ "$archive_dump" ]; then
-  case "$archive_dump" in
-    tgz) file_ext="tar.gz"; arc_cmd="tar zcvf" ;;
-    tbz2) file_ext="tar.bz2"; arc_cmd="tar jcvf" ;;
-    *) file_ext="zip"; arc_cmd="zip" ;;
-  esac
+  if [ $errcode -eq 0 ]; then
+    case "$archive_dump" in
+      tgz) file_ext="tar.gz"; arc_cmd="tar zcvf" ;;
+      tbz2) file_ext="tar.bz2"; arc_cmd="tar jcvf" ;;
+      *) file_ext="zip"; arc_cmd="zip" ;;
+    esac
 
-  todays_date=`date +%Y%m%d`
-  arc_file="${instance}_dump_$todays_date.$file_ext"
-  $arc_cmd $arc_file $civi_file $drup_file
-  popd
-  if [ "$archive_file" ]; then
-    mv "$tmpdir/$arc_file" "$archive_file"
-  else
-    mv "$tmpdir/$arc_file" .
+    todays_date=`date +%Y%m%d`
+    arc_file="${instance}_dump_$todays_date.$file_ext"
+    $arc_cmd $arc_file $civi_file $drup_file || errcode=$(($errcode | 4))
   fi
+  popd
 
-  rm -rf "$tmpdir"
+  if [ $errcode -eq 0 ]; then
+    if [ "$archive_file" ]; then
+      mv "$tmpdir/$arc_file" "$archive_file"
+    else
+      mv "$tmpdir/$arc_file" .
+    fi
+  fi
 fi
 
 exit $errcode

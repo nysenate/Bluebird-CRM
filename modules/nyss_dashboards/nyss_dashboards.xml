@@ -43,4 +43,12 @@
      <adminGroup>Option Lists</adminGroup>
      <weight>375</weight>
   </item>
+  
+  <!--NYSS 3750-->
+  <item>
+     <path>civicrm/ajax/dedupeRules</path>
+     <page_callback>CRM_Contact_Page_AJAX::buildDedupeRules</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
 </menu>
