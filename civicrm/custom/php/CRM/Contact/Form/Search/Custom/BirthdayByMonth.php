@@ -243,7 +243,7 @@ LEFT JOIN civicrm_address addr ON addr.contact_id = contact_a.id AND addr.is_pri
     }
 
     function templateFile( ) {
-		return 'CRM/Contact/Form/Search/Custom.tpl';
+		return 'CRM/Contact/Form/Search/Custom/BirthdayByMonth.tpl';
     }
 
     function setDefaultValues( ) {
