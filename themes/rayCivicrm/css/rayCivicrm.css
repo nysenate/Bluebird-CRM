@@ -1166,7 +1166,7 @@ ul.token-input-list-facebook { width:265px;}
 	width: 400px;
 }
 
-/*advanced search contact tags*/
+/*advanced search contact tags/groups*/
 #advSearchContactTags .contact-issue-codes .label {
 	margin-top: 8px;
 }
@@ -1176,6 +1176,12 @@ ul.token-input-list-facebook { width:265px;}
 }
 #advSearchContactTags ul.token-input-list-facebook {
 	width: 320px;
+}
+#advSearchContactGroups {
+	width: 220px;
+}
+#advSearchContactGroups .crmasmSelect {
+	width: 200px;
 }
 
 /*override tag tree expand/close icons*/

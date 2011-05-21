@@ -30,7 +30,7 @@
             </td>
             <td>
                 <label>{ts}Complete OR Partial Email{/ts}</label><br />
-                {$form.email.html|crmReplace:class:medium}
+                {$form.email.html|crmReplace:class:big}
             </td>
             <td>
                 {if $form.component_mode}  
@@ -52,7 +52,8 @@
         </tr>
 		<tr>
 {if $form.contact_type}
-            <td><label>{ts}Contact Type(s){/ts}</label><br />
+            <td id="advSearchContactTypes">
+                <label>{ts}Contact Type(s){/ts}</label><br />
                 {$form.contact_type.html}
                  {literal}
 					<script type="text/javascript">
@@ -72,7 +73,8 @@
             <td>&nbsp;</td>
 {/if}
 {if $form.group}
-            <td><label>{ts}Group(s){/ts}</label>
+            <td id="advSearchContactGroups">
+                <label>{ts}Group(s){/ts}</label>
                 {$form.group.html}
                 {literal}
                 <script type="text/javascript">

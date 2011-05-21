@@ -255,6 +255,23 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		}
 		//CRM_Core_Error::debug($buttons);
 	}
+	
+	//2503 alpha sort prefix field
+	if ( isset( $form->_elementIndex['prefix_id'] ) ) {
+		require_once 'CRM/Utils/Sort.php';
+		$prefix =& $form->getElement( 'prefix_id' );
+		$prefOptions =& $prefix->_options;
+		uasort( $prefOptions, array('CRM_Utils_Sort', 'cmpText') );
+	}
+	
+	//3493 alpha sort preferred language field
+	if ( isset( $form->_elementIndex['preferred_language'] ) ) {
+		require_once 'CRM/Utils/Sort.php';
+		$preflang =& $form->getElement( 'preferred_language' );
+		$preflangOptions =& $preflang->_options;
+		uasort( $preflangOptions, array('CRM_Utils_Sort', 'cmpText') );
+	}
+	
 	//CRM_Core_Error::debug($form);
 	
 } //close buildForm

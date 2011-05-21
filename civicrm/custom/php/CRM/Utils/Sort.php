@@ -288,9 +288,12 @@ class CRM_Utils_Sort {
         return ( $a['weight'] <= $b['weight'] ) ? -1 : 1;
     }
 	
-	//NYSS usort functions to sort assoc array by title or date values
+	//NYSS usort functions to sort assoc array by various values
 	static function cmpTitle( $a, $b ) {
         return ( $a['title'] <= $b['title'] ) ? -1 : 1;
+    }
+	static function cmpText( $a, $b ) {
+        return ( $a['text'] <= $b['text'] ) ? -1 : 1;
     }
 	static function cmpDate( $a, $b ) {
         return ( strtotime($a['date']) >= strtotime($b['date']) ) ? -1 : 1;
