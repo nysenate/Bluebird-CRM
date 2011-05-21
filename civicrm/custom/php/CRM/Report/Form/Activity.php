@@ -45,6 +45,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     function __construct( ) {
         $config = CRM_Core_Config::singleton( );
         $campaignEnabled = in_array( "CiviCampaign", $config->enableComponents );
+		//NYSS altered titles to be trimmed and consistent
         $this->_columns = array(  
                                 'civicrm_contact'      =>
                                 array( 'dao'     => 'CRM_Contact_DAO_Contact',
@@ -57,17 +58,17 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                     ),
                                              'contact_source'    =>
                                               array( 'name'      => 'display_name' ,
-                                                     'title'     => ts( 'Source Contact Name' ),
+                                                     'title'     => ts( 'Added By' ),
                                                      'alias'     => 'contact_civireport',
                                                      'no_repeat' => true ),
                                               'contact_assignee' =>
                                               array( 'name'      => 'display_name' ,
-                                                     'title'     => ts( 'Assignee Contact Name' ),
+                                                     'title'     => ts( 'Assigned' ),
                                                      'alias'     => 'civicrm_contact_assignee',
                                                      'default'   => true ),
                                               'contact_target'   =>
                                               array( 'name'      => 'display_name' ,
-                                                     'title'     => ts( 'Target Contact Name' ),
+                                                     'title'     => ts( 'Target (With)' ),
                                                      'alias'     => 'civicrm_contact_target',
                                                      'default'   => true ),
                                               ),
@@ -76,19 +77,19 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                        array( 'contact_source'   =>
                                               array('name'       => 'sort_name' ,
                                                     'alias'      => 'contact_civireport',
-                                                    'title'      => ts( 'Source Contact Name' ),
+                                                    'title'      => ts( 'Added By Name' ),
                                                     'operator'   => 'like',
                                                     'type'       => CRM_Report_Form::OP_STRING ),
                                               'contact_assignee' => 
                                               array( 'name'      => 'sort_name' ,
                                                      'alias'     => 'civicrm_contact_assignee',
-                                                     'title'     => ts( 'Assignee Contact Name' ),
+                                                     'title'     => ts( 'Assigned Name' ),
                                                      'operator'  => 'like',
                                                      'type'      => CRM_Report_Form::OP_STRING ),
                                              'contact_target'    => 
                                               array( 'name'      => 'sort_name' ,
                                                      'alias'     => 'civicrm_contact_target',
-                                                     'title'     => ts( 'Target Contact Name' ),
+                                                     'title'     => ts( 'Target Name' ),
                                                      'operator'  => 'like',
                                                      'type'      => CRM_Report_Form::OP_STRING  ) ),
                                        'grouping' => 'contact-fields',
@@ -99,15 +100,15 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                        'fields'  =>
                                        array( 'contact_source_email'   =>
                                               array( 'name'      => 'email' ,
-                                                     'title'     => ts( 'Source Contact Email' ),
+                                                     'title'     => ts( 'Added By Email' ),
                                                      'alias'     => 'civicrm_email_source', ),
                                               'contact_assignee_email' =>
                                               array( 'name'      => 'email' ,
-                                                     'title'     => ts( 'Assignee Contact Email' ),
+                                                     'title'     => ts( 'Assigned Email' ),
                                                      'alias'     => 'civicrm_email_assignee', ),
                                               'contact_target_email'   =>
                                               array( 'name'      => 'email' ,
-                                                     'title'     => ts( 'Target Contact Email' ),
+                                                     'title'     => ts( 'Target Email' ),
                                                      'alias'     => 'civicrm_email_target', ),
                                               ),
                                        ),
@@ -118,15 +119,15 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                        'fields'  =>
                                        array( 'contact_source_phone'   =>
                                               array( 'name'      => 'phone' ,
-                                                     'title'     => ts( 'Source Contact Phone' ),
+                                                     'title'     => ts( 'Added By Phone' ),
                                                      'alias'     => 'civicrm_phone_source', ),
                                               'contact_assignee_phone' =>
                                               array( 'name'      => 'phone' ,
-                                                     'title'     => ts( 'Assignee Contact Phone' ),
+                                                     'title'     => ts( 'Assigned Phone' ),
                                                      'alias'     => 'civicrm_phone_assignee', ),
                                               'contact_target_phone'   =>
                                               array( 'name'      => 'phone' ,
-                                                     'title'     => ts( 'Target Contact Phone' ),
+                                                     'title'     => ts( 'Target Phone' ),
                                                      'alias'     => 'civicrm_phone_target', ),
                                               ),
                                        ),
@@ -139,7 +140,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                       'required'   => true   
                                                       ),
                                                'activity_type_id'  => 
-                                               array( 'title'      => ts( 'Activity Type' ),
+                                               array( 'title'      => ts( 'Type' ),
                                                       'default'    => true,
                                                       'type'       =>  CRM_Utils_Type::T_STRING 
                                                       ),
@@ -167,19 +168,19 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                               array( 'default'      => 'this.month',
                                                      'operatorType' => CRM_Report_Form::OP_DATE),
                                               'activity_subject'    =>
-                                              array( 'title'        => ts( 'Activity Subject' ) ),
+                                              array( 'title'        => ts( 'Subject' ) ),
                                               'activity_type_id'    => 
-                                              array( 'title'        => ts( 'Activity Type' ),
+                                              array( 'title'        => ts( 'Type' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                                      'options'      => CRM_Core_PseudoConstant::activityType( true, false, false, 'label', true ), ), 
                                               'status_id'           => 
-                                              array( 'title'        => ts( 'Activity Status' ),
+                                              array( 'title'        => ts( 'Status' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                                      'options'      => CRM_Core_PseudoConstant::activityStatus(), ),
                                               ),
                                        'group_bys' =>             
                                        array( 'source_contact_id'  =>
-                                              array('title'    => ts( 'Source Contact' ) ),
+                                              array('title'    => ts( 'Added By' ) ),
                                               'activity_date_time' => 
                                               array( 'title'   => ts( 'Activity Date' ) ),
                                               'activity_type_id'   =>
