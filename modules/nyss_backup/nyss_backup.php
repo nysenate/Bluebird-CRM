@@ -107,6 +107,10 @@
 	
 	function get_data_dir() {
 		$instance_config = get_bluebird_instance_config();
+		
+		if(!$instance_config['backup.ui.dirname']) {
+			return NULL;
+		}
 				
 		$data_dir = $instance_config['data.rootdir']
 					.'/'.$instance_config['data_dirname']
@@ -114,7 +118,9 @@
 					.'/';
 					
 		if(!is_dir($data_dir)) {
-			mkdir($data_dir);
+			if(!mkdir($data_dir)) {
+				return NULL;
+			}
 		}
 		
 		return $data_dir;

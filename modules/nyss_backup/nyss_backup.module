@@ -14,36 +14,45 @@ function nyss_backup_menu () {
 }
 
 function nyss_backup_page() {
-	if($_GET['function']) {
-		$app_functions = array(
-			'instance_file_list' => 'nyss_backup_instance_file_list',
-			'delete' => 'nyss_backup_delete_file',
-			'backup' => 'nyss_backup_backup_file',
-			'restore' => 'nyss_backup_restore_from_file',
-		);
+	if(get_data_dir()) {
+		if($_GET['function']) {
+			$app_functions = array(
+				'instance_file_list' => 'nyss_backup_instance_file_list',
+				'delete' => 'nyss_backup_delete_file',
+				'backup' => 'nyss_backup_backup_file',
+				'restore' => 'nyss_backup_restore_from_file',
+			);
 
-		$function = $_GET['function'];
+			$function = $_GET['function'];
 
-		$data = array('error' => 'error');
-		if($app_functions[$function]) {
-			$data = call_user_func($app_functions[$function]);
+			$data = array('error' => 'error');
+			if($app_functions[$function]) {
+				$data = call_user_func($app_functions[$function]);
+			}
+
+			header('Content-type: application/json');
+			print json_encode($data);
+
+			//prevent theme from rendering
+			exit();
 		}
-
-		header('Content-type: application/json');
-		print json_encode($data);
-
-		//prevent theme from rendering
-		exit();
+		else {
+			drupal_add_js(drupal_get_path('module','nyss_backup').'/js/tmpl.js');
+			drupal_add_js(drupal_get_path('module','nyss_backup').'/js/nyss_backup.js');
+			drupal_add_js(drupal_get_path('module','civicrm').'/../packages/jquery/jquery.js');
+			drupal_add_css(drupal_get_path('module','nyss_backup').'/nyss_backup.css');
+			include 'js/templates.html';
+		
+			return "";
+		}
 	}
 	else {
-		drupal_add_js(drupal_get_path('module','nyss_backup').'/js/tmpl.js');
-		drupal_add_js(drupal_get_path('module','nyss_backup').'/js/nyss_backup.js');
-		drupal_add_js(drupal_get_path('module','civicrm').'/../packages/jquery/jquery.js');
-		drupal_add_css(drupal_get_path('module','nyss_backup').'/nyss_backup.css');
-		include 'js/templates.html';
-		
-		return "";
+		return "Please make sure that backup.ui.dirname "
+			."is specified and that apache has write access to "
+			."[data.rootdir]/[data_dirname]/[backup.ui.dirname]";
 	}
+
+
 }
 
 function nyss_backup_instance_file_list() {
