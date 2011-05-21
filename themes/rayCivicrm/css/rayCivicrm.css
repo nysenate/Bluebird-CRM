@@ -1291,3 +1291,9 @@ ul.token-input-list-facebook { width:265px;}
 #BirthdayByMonth .crm-clear-link {
 	margin-left: -0.4em;
 }
+
+/*activity details*/
+#crm-container .crm-activity-form-block-details .view-value,
+#crm-container .crm-activity-form-block-details .view-value p {
+	line-height: 180%;
+}
