@@ -183,10 +183,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	}
 	
-	//set English as default preferred language
-	//set New York as default state
+	//contact form edits
 	if ( $formName == 'CRM_Contact_Form_Contact' ) {
 		
+		//set New York as default state
 		//we could potentially have as many as 6 addresses, so let's set US and NY default for all
 		$i = 1;
 		while ( $i <= 6 ) {
@@ -196,17 +196,26 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 				$defaults['address'][$i]['state_province_id'] = 1031;
 			$i++;
 		}
-        
 		$form->setDefaults( $defaults );
 		
-		//$defaults['address[1][country_id]'] = 1004;
+		//3527 add js action to deceased field
+		if ( isset( $form->_elementIndex['is_deceased'] ) ) {
+			$deceased =& $form->getElement( 'is_deceased' );
+			$js = "showDeceasedDate();processDeceased();";
+			$deceased->_attributes['onclick'] = $js;
+		} //end deceased
 		
 	}
 	
-	//don't set US as default country in advanced search or contacts with no address are excluded
+	//advanced search
 	if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
 	
+		//don't set US as default country in advanced search or contacts with no address are excluded
 		$defaults['country'] = '';
+		
+		//3527 set deceased to no
+		$defaults['is_deceased'] = 0;
+		
 		$form->setDefaults( $defaults );
 	
 	}

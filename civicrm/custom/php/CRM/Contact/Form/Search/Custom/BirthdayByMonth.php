@@ -232,6 +232,10 @@ LEFT JOIN civicrm_address addr ON addr.contact_id = contact_a.id AND addr.is_pri
 			$where[] = "(DATE_FORMAT(NOW(), '%Y') - DATE_FORMAT(birth_date, '%Y') - (DATE_FORMAT(NOW(), '00-%m-%d') < DATE_FORMAT(birth_date, '00-%m-%d')) ) <= $age_end ";
 		}
 		
+		//standard clauses
+		$where[] = "is_deleted = 0 ";
+		$where[] = "is_deceased = 0 ";
+		
 		if ( !empty($where) ) {
 			$whereClause = implode( ' AND ', $where );
 		} else {

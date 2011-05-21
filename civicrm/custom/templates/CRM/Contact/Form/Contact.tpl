@@ -192,7 +192,7 @@
 	    {/if}
     {/foreach}
 <div class="crm-submit-buttons">
-    {include file="CRM/common/formButtons.tpl"}
+    {include file="CRM/common/formButtons.tpl" location="bottom"} {*NYSS ensure unique ids*}
 </div>
 
 </div>
@@ -296,6 +296,28 @@ function highlightTabs( ) {
 	 removeCustomData = false;
      }
 }*/
+
+//NYSS 3527 - set comm preferences
+function processDeceased( ) {
+	if ( cj("#is_deceased").is(':checked') ) {
+		document.getElementById('privacy[do_not_phone]').checked = true;
+		document.getElementById('privacy[do_not_email]').checked = true;
+		document.getElementById('privacy[do_not_mail]').checked  = true;
+		document.getElementById('privacy[do_not_sms]').checked   = true;
+		document.getElementById('is_opt_out').checked            = true;
+		document.getElementById('preferred_communication_method[1]').checked = false;
+		document.getElementById('preferred_communication_method[2]').checked = false;
+		document.getElementById('preferred_communication_method[3]').checked = false;
+		document.getElementById('preferred_communication_method[4]').checked = false;
+		document.getElementById('preferred_communication_method[5]').checked = false;
+    } else {
+		document.getElementById('privacy[do_not_phone]').checked = false;
+		document.getElementById('privacy[do_not_email]').checked = false;
+		document.getElementById('privacy[do_not_mail]').checked  = false;
+		document.getElementById('privacy[do_not_sms]').checked   = false;
+		document.getElementById('is_opt_out').checked            = false;
+    }
+}
  
 </script>
 {/literal}
