@@ -24,7 +24,8 @@ $.fn.tokenInput = function (url, options) {
         contentType: "json",
         queryParam: "name",
         ajaxCallbackFunction: null,
-        onResult: null
+        onResult: null,
+		preventDuplicates: true //NYSS
     }, options);
 
     settings.classes = $.extend({
@@ -353,12 +354,29 @@ $.TokenList = function (input, settings) {
 
       $.data(this_token.get(0), "tokeninput", {"id": id, "name": value});
 
-      return this_token;
+      //NYSS Save this token for duplicate checking
+      saved_tokens.push(this_token);
+      token_count++;
+      
+	  return this_token;
     }
 
     // Add a token to the token list based on user input
     function add_token (item) {
         var li_data = $.data(item.get(0), "tokeninput");
+
+        //NYSS port from more recent versions
+        // See if the token already exists and select it if we don't want duplicates
+        if(token_count > 0 && settings.preventDuplicates) {
+            var idx = find_saved_token(li_data.id);
+            if(idx > -1) {
+                // Don't insert the token, because it already exists
+                select_token(saved_tokens[idx]);
+                input_token.insertAfter(saved_tokens[idx]);
+                input_box.focus();
+                return;
+            }
+        } //NYSS end
         var this_token = insert_token(li_data.id, li_data.name);
 
         // Clear input box and make sure it keeps focus
@@ -389,6 +407,18 @@ $.TokenList = function (input, settings) {
             input_box.hide();
             hide_dropdown();
         }
+    }
+
+    //NYSS Find the index of a saved token
+    function find_saved_token (id) {
+        var idx = -1;
+        for(var i=0; i<saved_tokens.length; i++) {
+            if($.data($(saved_tokens[i]).get(0), "tokeninput").id == id) {
+                idx = i;
+                break;
+            }
+        }
+        return idx;
     }
 
     // Select a token in the token list

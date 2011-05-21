@@ -422,7 +422,11 @@ class CRM_Admin_Page_AJAX
             // if numeric that means existing tag
             // else create new tag
             if ( !$skipTagCreate && $createNewTag ) {
-                $params = array( 'name'      => $tagID, 
+                //NYSS 3667 strip spaces for new tags
+				require_once 'CRM/Utils/String.php';
+				$tagID = CRM_Utils_String::stripSpaces($tagID);
+				
+				$params = array( 'name'      => $tagID, 
                                  'parent_id' => $parentId,
 								 'description' => $bill_url ); //LCD
 
