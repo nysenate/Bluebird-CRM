@@ -71,6 +71,9 @@ packages/jquery/css/dashboard.css
 
 packages/jquery/plugins/jquery.FormNavigate.js
 
+packages/jquery/plugins/jquery.validate.js
+packages/jquery/plugins/jquery.civicrm-validate.js
+
 js/rest.js
 
 js/jquery/jquery.crmaccordions.js

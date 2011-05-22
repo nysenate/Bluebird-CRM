@@ -225,6 +225,9 @@ cj(function( ) {
 	});
 
 	highlightTabs( );
+	
+	//NYSS 1748 call validate plugin
+    cj("#Contact").validate( );
 });
 
 cj('a#expand').click( function( ){
