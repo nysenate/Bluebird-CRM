@@ -46,7 +46,12 @@
 		  $(this).removeClass('crm-tooltip-down');
 		  }
 		)
-	.click(function() {return false});	
+	//NYSS 2406
+	.live('click',
+		function(){
+		  return false;
+		  }
+		);	
 	
 	};
 	})(jQuery);

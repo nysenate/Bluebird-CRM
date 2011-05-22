@@ -368,11 +368,29 @@ $.TokenList = function (input, settings) {
         //NYSS port from more recent versions
         // See if the token already exists and select it if we don't want duplicates
         if(token_count > 0 && settings.preventDuplicates) {
-            var idx = find_saved_token(li_data.id);
+            //ported from v1.3; works, but deferring to the more recent version
+			/*var idx = find_saved_token(li_data.id);
             if(idx > -1) {
                 // Don't insert the token, because it already exists
                 select_token(saved_tokens[idx]);
                 input_token.insertAfter(saved_tokens[idx]);
+                input_box.focus();
+                return;
+            }*/
+		    //ported from v1.4, as it seems to work with existing (non-new) tags added to contact
+            var found_existing_token = null;
+            token_list.children().each(function () {
+                var existing_token = $(this);
+                var existing_data = $.data(existing_token.get(0), "tokeninput");
+                if(existing_data && existing_data.id === li_data.id) {
+                    found_existing_token = existing_token;
+                    return false;
+                }
+            });
+
+            if(found_existing_token) {
+                select_token(found_existing_token);
+                input_token.insertAfter(found_existing_token);
                 input_box.focus();
                 return;
             }
