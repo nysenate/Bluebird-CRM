@@ -453,7 +453,7 @@ function checkPerformAction (fldPrefix, form, taskButton) {
         gotTask = 1;
     } else if (document.forms[form].task.selectedIndex) {
 	//force user to select all search contacts, CRM-3711
-	if ( document.forms[form].task.value == 13 || document.forms[form].task.value == 14 || document.forms[form].task.value == 20 ) {
+	if ( document.forms[form].task.value == 13 || document.forms[form].task.value == 14 ) { //NYSS 3322
 	    var toggleSelect = document.getElementsByName('toggleSelect');
 	    if ( toggleSelect[0].checked || document.forms[form].radio_ts[0].checked ) {
 		return true;

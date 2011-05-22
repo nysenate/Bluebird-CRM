@@ -57,6 +57,8 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         $this->_searchBasedMailing = CRM_Contact_Form_Search::isSearchContext( $this->get( 'context' ) );
         if ( $this->_searchBasedMailing ) {
             $searchParams = $this->controller->exportValues( );
+            // number of records that were selected - All or Few.
+            $this->_resultSelectOption = $searchParams['radio_ts'];
             if ( CRM_Utils_Array::value( 'task', $searchParams ) == 20 ) {
                 parent::preProcess( );
             }
@@ -274,25 +276,50 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         //through search contact-> more action -> send Mailing. CRM-3711
         $groups = array( );
         if ( $this->_searchBasedMailing && $this->_contactIds ) {
-            //get the hidden smart group id.
-            $ssId = $this->get( 'ssID' );
             $session = CRM_Core_Session::singleton( );
-            $hiddenSmartParams = array( 'group_type'       => array( '2' => 1),
-                                        'form_values'      => $this->get( 'formValues' ),
-                                        'saved_search_id'  => $ssId, 
-                                        'search_custom_id' => $this->get( 'customSearchID' ),
-                                        'search_context'   => $this->get( 'context' ),
-                                        );
-            
-            require_once 'CRM/Contact/BAO/Group.php';
-            list( $smartGroupId, $savedSearchId ) = CRM_Contact_BAO_Group::createHiddenSmartGroup( $hiddenSmartParams );
-            
-            //set the saved search id.
-            if ( !$ssId ) {
-                if ( $savedSearchId ) {
-                    $this->set( 'ssID', $savedSearchId );
-                } else {
-                    CRM_Core_Error::fatal( );
+            //NYSS 3322
+            require_once "CRM/Contact/BAO/Group.php";
+
+            if ( $this->_resultSelectOption == 'ts_sel' ) {
+                // create a static grp if only a subset of result set was selected:
+
+                $qfsID    = $session->get('qfSessionID');
+                $grpTitle = "Hidden Group {$qfsID}";
+                $grpID    = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Group', $grpTitle, 'id', 'title' );
+
+                if ( !$grpID ) {
+                    $groupParams = array( 'title'           => $grpTitle,
+                                          'is_active'       => 1,
+                                          'is_hidden'       => 1, 
+                                          'group_type'      => array( '2' => 1 ) );
+
+                    $group = CRM_Contact_BAO_Group::create( $groupParams );
+                    $grpID = $group->id;
+
+                    CRM_Contact_BAO_GroupContact::addContactsToGroup( $this->_contactIds, $group->id );
+                } 
+
+                // note at this point its a static group
+                $smartGroupId = $grpID; 
+            } else {
+                //get the hidden smart group id.
+                $ssId = $this->get( 'ssID' );
+                $hiddenSmartParams = array( 'group_type'       => array( '2' => 1),
+                                            'form_values'      => $this->get( 'formValues' ),
+                                            'saved_search_id'  => $ssId, 
+                                            'search_custom_id' => $this->get( 'customSearchID' ),
+                                            'search_context'   => $this->get( 'context' ),
+                                            );
+                
+                list( $smartGroupId, $savedSearchId ) = CRM_Contact_BAO_Group::createHiddenSmartGroup( $hiddenSmartParams );
+                
+                //set the saved search id.
+                if ( !$ssId ) {
+                    if ( $savedSearchId ) {
+                        $this->set( 'ssID', $savedSearchId );
+                    } else {
+                        CRM_Core_Error::fatal( );
+                    }
                 }
             }
             
