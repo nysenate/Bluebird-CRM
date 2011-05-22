@@ -169,7 +169,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
                 $groupContact->save( );
                 $numContactsAdded++;
             } else {
-                if ($groupContact->status == 'Added') {
+                if ($groupContact->status == $status) { //NYSS 3134
                     $numContactsNotAdded++;
                 } else {
                     $historyParams = array(

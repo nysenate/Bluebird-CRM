@@ -180,7 +180,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
             //get the static groups
             $staticGroups = CRM_Core_PseudoConstant::staticGroup( false, 'Mailing' );
             $this->add( 'select', 'baseGroup',
-                        ts( 'Base Group' ), 
+                        ts( 'Unsubscription Group' ), //NYSS 3134 
                         array(''=>ts( '- select -' )) + $staticGroups,
                         true );
         }
