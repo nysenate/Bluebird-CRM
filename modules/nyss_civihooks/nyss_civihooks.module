@@ -185,6 +185,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	//contact form edits
 	if ( $formName == 'CRM_Contact_Form_Contact' ) {
+		//CRM_Core_Error::debug($form->_elementIndex);
 		
 		//set New York as default state
 		//we could potentially have as many as 6 addresses, so let's set US and NY default for all
@@ -204,6 +205,21 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 			$js = "showDeceasedDate();processDeceased();";
 			$deceased->_attributes['onclick'] = $js;
 		} //end deceased
+		
+		//3530 tweak js to place cursor at end of http in website field (IE8)
+		if ( isset( $form->_elementIndex['website[1][url]'] ) ) {
+			$website =& $form->getElement( 'website[1][url]' );
+			$js = "if(!this.value) { 
+			         this.value='http://';
+			         if (this.createTextRange) {
+                       var FieldRange = this.createTextRange();
+                       FieldRange.moveStart('character', this.value.length);
+                       FieldRange.collapse();
+                       FieldRange.select();
+                     }
+				   } else { return false; }";
+			$website->_attributes['onfocus'] = $js;
+		}
 		
 	}
 	
