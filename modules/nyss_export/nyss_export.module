@@ -1,47 +1,112 @@
 <?php 
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
 
-	$headerRemove = array( 'Signature Text',
-	                       'Signature Html',
-						   'Contact Subtype',
-						   'Current Employer ID',
-						   'Geo Code 1',
-						   'Geo Code 2',
-						   'Address Name',
-						   'Master Address ID',
-						   'County',
-						   'World Region',
-						   'Im Service Provider',
-						   'Group(s)',
-						   'Tag(s)',
-						   'Note(s)'
-						 );
-	
-	foreach ( $headerRows as $key => $headerRow ) {
-		if ( in_array( $headerRow, $headerRemove ) ) {
-			unset( $headerRows[$key] );
+	//field exclusions; only implement for primary export option
+	if ( $_POST['exportOption'] == 1 ) {
+		$headerRemove = array( 'Signature Text',
+		                       'Signature Html',
+							   'Contact Subtype',
+							   'Current Employer ID',
+							   'Geo Code 1',
+							   'Geo Code 2',
+							   'Address Name',
+							   'Master Address ID',
+							   'County',
+							   'World Region',
+							   'Im Service Provider',
+							   'Group(s)',
+							   'Tag(s)',
+							   'Note(s)'
+							 );
+		foreach ( $headerRows as $key => $headerRow ) {
+			if ( in_array( $headerRow, $headerRemove ) ) {
+				unset( $headerRows[$key] );
+			}
 		}
+	
+		$sqlRemove = array( 'signature_text',
+		                    'signature_html',
+							'contact_sub_type',
+							'current_employer_id',
+							'geo_code_1',
+							'geo_code_2',
+							'address_name',
+							'master_id',
+							'county',
+							'world_region',
+							'provider_id',
+							'groups',
+							'tags',
+							'notes'
+						  );
+		foreach ( $sqlRemove as $sqlField ) {
+			unset( $sqlColumns[$sqlField] );
+		}
+	} //end primary export exclusions
+	
+	//3665 mailing exclusions option
+    if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 && 
+	     in_array( 'Last Name', $headerRows ) ) {
+        // exclude contacts where last_name is empty 
+        $query = "
+DELETE FROM $exportTempTable
+WHERE last_name = '' OR last_name IS NULL";
+        CRM_Core_DAO::executeQuery( $query );
+    }
+
+    //3665 code copied from CRM_Export_BAO_Export::writeCSVFromTable, just to modify the order clause
+    $writeHeader = true;
+    $offset = 0;
+    $limit  = 100;
+    
+	//only apply special sort if using primary export, as we know the necessary fields will exist
+	if ( $_POST['exportOption'] == 1 ) { 
+    	$query = "
+SELECT *
+FROM   $exportTempTable
+ORDER BY CASE WHEN $exportTempTable.contact_type='Individual' THEN 1 
+              WHEN $exportTempTable.contact_type='Household'  THEN 2 ELSE 3 END, 
+         CASE WHEN $exportTempTable.gender='Male'   THEN 1  
+              WHEN $exportTempTable.gender='Female' THEN 2 
+              WHEN $exportTempTable.gender='Other'  THEN 3 ELSE 999 END,
+         IFNULL($exportTempTable.birth_date, '9999-01-01')
+";
+	} else {
+		$query = "
+SELECT *
+FROM   $exportTempTable
+";
 	}
 	
-	$sqlRemove = array( 'signature_text',
-	                    'signature_html',
-						'contact_sub_type',
-						'current_employer_id',
-						'geo_code_1',
-						'geo_code_2',
-						'address_name',
-						'master_id',
-						'county',
-						'world_region',
-						'provider_id',
-						'groups',
-						'tags',
-						'notes'
-					  );
-	
-	foreach ( $sqlRemove as $sqlField ) {
-		unset( $sqlColumns[$sqlField] );
-	}
+    require_once 'CRM/Core/Report/Excel.php';
+    require_once 'CRM/Export/BAO/Export.php';
+    while ( 1 ) {
+        $limitQuery = $query . "
+LIMIT $offset, $limit
+";
+        $dao = CRM_Core_DAO::executeQuery( $limitQuery );
+        
+        if ( $dao->N <= 0 ) {
+            break;
+        }
+        
+        $componentDetails = array( );
+        while ( $dao->fetch( ) ) {
+            $row = array( );
+            
+            foreach ( $sqlColumns as $column => $dontCare ) {
+                $row[$column] = $dao->$column;
+            }
+            
+            $componentDetails[] = $row;
+        }
+        CRM_Core_Report_Excel::writeCSVFile( CRM_Export_BAO_Export::getExportFileName( 'csv', $exportMode ), 
+                                             $headerRows, $componentDetails, null, $writeHeader );
+        $writeHeader = false;
+        $offset += $limit;
+    }
+    
+    CRM_Utils_System::civiExit( );
 	
 	//debug
 	/*CRM_Core_Error::debug('tt', $exportTempTable);
@@ -51,8 +116,8 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 	exit();*/
 	
 	//continue with the export
-	require_once 'CRM/Export/BAO/Export.php';
+	/*require_once 'CRM/Export/BAO/Export.php';
 	CRM_Export_BAO_Export::writeCSVFromTable( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
-	CRM_Utils_System::civiExit( );
+	CRM_Utils_System::civiExit( );*/
 
 }
