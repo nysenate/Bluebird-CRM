@@ -1,6 +1,7 @@
 <?php 
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
-
+	//CRM_Core_Error::debug($_POST); exit();
+	
 	//field exclusions; only implement for primary export option
 	if ( $_POST['exportOption'] == 1 ) {
 		$headerRemove = array( 'Signature Text',

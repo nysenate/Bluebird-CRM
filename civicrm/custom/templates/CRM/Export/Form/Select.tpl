@@ -68,12 +68,15 @@
         &nbsp;{$form.merge_same_household.html}
     </div>
     {*NYSS 3665*}
+    <div id="postalMailingExport">
     <br />
     <div class="label crm-label-postalMailingExport">{$form.postal_mailing_export.label}</div>
     <div class="content crm-content-postalMailingExport">
  	    &nbsp;{$form.postal_mailing_export.html}
         {ts}Exclude contacts with "do not mail" privacy, no street address, or who are deceased.{/ts}
  	</div>
+    </div>
+    
  	<br/>
  	<div class="label crm-label-additionalGroup">{$form.additional_group.label}</div>
  	<div class="content crm-content-additionalGroup">
@@ -89,14 +92,17 @@
 </div>
 {literal}
   <script type="text/javascript">
+  //NYSS hide mailing export option when mapping option selected (temp)
      function showMappingOption( )
      {
 	var element = document.getElementsByName("exportOption");
 
 	if ( element[1].checked ) { 
 	  show('map');
+	  hide('postalMailingExport');
         } else {
 	  hide('map');
+	  show('postalMailingExport');
 	}
      } 
    showMappingOption( );

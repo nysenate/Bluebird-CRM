@@ -1423,11 +1423,25 @@ LIMIT $offset, $limit
  	 */
  	function postalMailingFormat( $exportTempTable, $headerRows, $sqlColumns, $exportMode )
  	{
- 	    $query = "
+		$whereClause = array();
+ 	
+ 	    if ( array_key_exists('is_deceased', $sqlColumns) ) {
+ 	        $whereClause[] = 'is_deceased = 1';
+ 	    }
+ 	    if ( array_key_exists('do_not_mail', $sqlColumns) ) {
+ 	        $whereClause[] = 'do_not_mail = 1';
+ 	    }
+ 	    if ( array_key_exists('street_address', $sqlColumns) ) {
+ 	        $whereClause[] = "(street_address IS NULL) OR (street_address = '')";
+ 	    }
+ 	
+ 	    if ( !empty($whereClause) ) {
+ 	        $whereClause = implode( ' OR ', $whereClause );
+ 	        $query = "
 DELETE
 FROM   $exportTempTable
-WHERE  (is_deceased = 1) OR (do_not_mail = 1) OR (street_address IS NULL) OR (street_address = '')";
-
- 	    CRM_Core_DAO::singleValueQuery( $query );
+WHERE  {$whereClause}";
+ 	        CRM_Core_DAO::singleValueQuery( $query );
+ 	    }
  	}	
 }
