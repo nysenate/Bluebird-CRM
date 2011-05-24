@@ -1013,7 +1013,7 @@ ul.token-input-list-facebook { width:265px;}
 	text-shadow:0 1px 0 black;
 }
 #Advanced .advsearch_buttons_top {
-	width: 200px;
+	width: 180px;
 }
 #Advanced .advsearch_buttons_top div {
 	margin-top:1em; 
@@ -1178,10 +1178,10 @@ ul.token-input-list-facebook { width:265px;}
 	width: 320px;
 }
 #advSearchContactGroups {
-	width: 220px;
+	width: 225px;
 }
 #advSearchContactGroups .crmasmSelect {
-	width: 200px;
+	width: 220px;
 }
 
 /*override tag tree expand/close icons*/
