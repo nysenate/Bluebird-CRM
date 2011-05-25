@@ -1177,11 +1177,16 @@ ul.token-input-list-facebook { width:265px;}
 #advSearchContactTags ul.token-input-list-facebook {
 	width: 320px;
 }
-#advSearchContactGroups {
-	width: 225px;
+#advSearchContactTypesGroups .label {
+	margin-top: 8px;
+	width: 20%;
 }
-#advSearchContactGroups .crmasmSelect {
-	width: 220px;
+#advSearchContactTypesGroups .content {
+	margin-left: 21%;
+}
+#advSearchContactTypesGroups .crmasmContainer,
+#advSearchContactTypesGroups .crmasmSelect {
+	width: 300px;
 }
 
 /*override tag tree expand/close icons*/

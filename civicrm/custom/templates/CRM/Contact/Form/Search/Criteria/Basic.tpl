@@ -51,9 +51,13 @@
             </td>       
         </tr>
 		<tr>
-{if $form.contact_type}
-            <td id="advSearchContactTypes">
-                <label>{ts}Contact Type(s){/ts}</label><br />
+{if $form.contact_type || $form.group}
+            <td id="advSearchContactTypesGroups" colspan="2">
+              <div class="crm-section tag-section contact-types">
+              	<div class="label">
+                <label>{ts}Contact Type(s){/ts}</label>
+                </div>
+                <div class="content">
                 {$form.contact_type.html}
                  {literal}
 					<script type="text/javascript">
@@ -68,13 +72,13 @@
 
 						</script>
 					{/literal}
-            </td>
-{else}
-            <td>&nbsp;</td>
-{/if}
-{if $form.group}
-            <td id="advSearchContactGroups">
+                </div>
+              </div>
+              <div class="crm-section tag-section contact-groups">
+                <div class="label">
                 <label>{ts}Group(s){/ts}</label>
+                </div>
+                <div class="content">
                 {$form.group.html}
                 {literal}
                 <script type="text/javascript">
@@ -88,9 +92,9 @@
 
                 </script>
                 {/literal}
+                </div>
+              </div>
             </td>
-{else}
-            <td>&nbsp;</td>
 {/if}
 
 {if $form.contact_tags}
