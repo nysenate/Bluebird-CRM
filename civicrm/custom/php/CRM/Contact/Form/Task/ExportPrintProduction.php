@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.1                                                |
+ | CiviCRM version 3.3                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2010                                |
  +--------------------------------------------------------------------+
@@ -128,11 +128,14 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql = "SELECT c.id, c.contact_type, c.first_name, c.last_name, c.middle_name, c.job_title, c.birth_date, c.organization_name, c.postal_greeting_display, c.addressee_display, c.gender_id, c.prefix_id, c.suffix_id, cr.relationship_type_id, ch.household_name as household_name, ch.nick_name as household_nickname, ch.postal_greeting_display as household_postal_greeting_display, ch.addressee_display as household_Addressee_display, ";
 	$sql .= "congressional_district_46, ny_senate_district_47, ny_assembly_district_48, election_district_49, county_50, county_legislative_district_51, town_52, ward_53, school_district_54, new_york_city_council_55, neighborhood_56, ";
 	$sql .= "street_address, supplemental_address_1, supplemental_address_2, street_number, street_number_suffix, street_name, street_unit, city, postal_code, postal_code_suffix, state_province_id, county_id ";
+	//$sql .= "(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0) as nonPrimaryMailingId, ";
+	//$sql .= "(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = c.id AND pm.is_primary = 1) as primaryId ";
 	
 	$sql .= " FROM civicrm_contact c ";
-	$sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND a.is_primary=1 ";
+			//join with address if primary or BOE mailing and non primary
+	$sql .= " LEFT JOIN civicrm_address a ON a.contact_id=c.id AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = c.id AND pm.is_primary = 1)) ";	
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
-	$sql .= " LEFT  JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7)";
+	$sql .= " LEFT  JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7) ";
     $sql .= " LEFT  JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
 	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
 	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ";
@@ -197,10 +200,17 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $aHeader=array();
 	$firstLine = true;
     $adjusted_count = 0;
+	$nonPrimaryMailing = array();
 	
 	//fetch records
 	while ($dao->fetch()) {
-
+		//CRM_Core_Error::debug($dao);
+		
+		//set ids to have primary address removed if mailing address exists and not primary
+		if ( $dao->addr_location_id == 13 && !$dao->addr_primary ) {
+			$nonPrimaryMailing[] = $dao->id;
+		}
+		
 		//add the issue codes
 		if (!empty($iss[$dao->id])) $dao->issueCodes = implode(',',$iss[$dao->id]);
 
@@ -270,7 +280,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 		$adjusted_count++;
 		
 	} //dao fetch end
-//exit;
+//exit();
 
 	//generate issue code and keyword stats
 	$ic_stats = statsIssueCodes( 'tmpExport'.$rnd );
