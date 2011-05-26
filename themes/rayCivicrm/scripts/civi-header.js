@@ -76,15 +76,23 @@ $(document).ready(function() {
 	var extID = $('#external_identifier').val();
     $('#external_identifier').after(extID).remove();
 	
-	//prevent duplicate form submission with enter key
+	//3674 prevent duplicate form submission with enter key
 	var submitted = false;
 	$('form').submit(function(e){
-		if( submitted && e.keyCode == 13 ) {
-        	return false;
-        } else if ( e.keyCode == 13 ) {
-        	submitted = true;
-        	return true;
-        }
+		if ( submitted ) {
+			return false;
+		} else {
+			submitted = true;
+			return true;
+		}
 	});
-    
+	/*$('form').keypress(function(e){
+		if ( submitted && e.which == 13 ) {
+			e.preventDefault();
+		} else if ( !submitted && e.which == 13 ) {
+			submitted = true;
+		}
+		//return true;
+	});*/
+	
 });
