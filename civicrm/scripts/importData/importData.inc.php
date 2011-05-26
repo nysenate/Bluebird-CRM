@@ -559,7 +559,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       }
 
       //home address (address record + district info record)
-      write_full_address($fout, ++addressID, $contactID, $ctRow, LOC_TYPE_HOME);
+      write_full_address($fout, ++$addressID, $contactID, $ctRow,LOC_TYPE_HOME);
     } //createContact
 
     if ($omis_ext) {
