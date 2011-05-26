@@ -47,7 +47,7 @@ data_basename=`$readConfig --ig $instance data.basename` || data_basename="$inst
 data_dirname="$data_basename.$base_domain"
 
 echo "Clearing CiviCRM database caches"
-sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE civicrm_cache; TRUNCATE civicrm_group_contact_cache; TRUNCATE civicrm_menu; TRUNCATE civicrm_uf_match; TRUNCATE civicrm_task_action_temp; UPDATE civicrm_preferences SET navigation=null; UPDATE civicrm_dashboard SET content = null;"
+sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE civicrm_cache; TRUNCATE civicrm_group_contact_cache; TRUNCATE civicrm_menu; TRUNCATE civicrm_uf_match; TRUNCATE civicrm_task_action_temp; UPDATE civicrm_preferences SET navigation=null; "
 [ $clear_all -eq 1 ] && sql="truncate civicrm_log; $sql"
 ( set -x
   $execSql -i $instance -c "$sql"
@@ -72,6 +72,12 @@ sql="truncate cache; truncate cache_page; truncate cache_form; truncate cache_up
 
 echo "Running Drupal clear-cache for js/css compression clean"
 $drush $instance cc css+js
+
+echo "Clearing dashboard content"
+sql="UPDATE civicrm_dashboard SET content=null;"
+( set -x
+  $execSql -i $instance -c "$sql"
+)
 
 echo "Fixing permissions"
 $script_dir/fixPermissions.sh

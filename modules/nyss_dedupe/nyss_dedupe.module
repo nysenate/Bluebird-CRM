@@ -11,10 +11,15 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 		if ( $o->name=='Level 1 (fname + mname + lname + suffix + street + postal)' ) {
 		//indiv strict rule 1
 		//CREATE INDEX individualStrict1 ON civicrm_contact(first_name,last_name,middle_name,suffix_id);
+			
 			//first unset existing queries
 			foreach ( $tableQueries as $key=>$dontCare ) {
 				unset( $tableQueries[$key] );
 			}
+			
+			//now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
+			$o->threshold = 5;
+			
 			if ( empty($o->params) ) {
 				//run rules
 				$tableQueries['civicrm_contact.last_name.5'] = "
@@ -92,7 +97,7 @@ WHERE t1.contact_type = 'Individual'
 					}
 				}
 				
-				//CRM_Core_Error::debug('o', $o); exit();
+				//CRM_Core_Error::debug('o', $o); //exit();
 				
 				$tableQueries['civicrm_contact.last_name.5'] = "
 SELECT t1.id id1, 5 weight 
@@ -113,10 +118,15 @@ WHERE t1.contact_type     = 'Individual'
 		} elseif ( $o->name=='Level 3 (street + lname + fname + city + suffix)' && empty($o->params) ) {
 		//indiv rule 3
 		//create index individualFuzzy3 on civicrm_contact(first_name,middle_name,last_name,suffix_id);
+			
 			//first unset existing queries
 			foreach ( $tableQueries as $key=>$dontCare ) {
 				unset( $tableQueries[$key] );
 			}
+			
+			//now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
+			$o->threshold = 5;
+			
 			//now set custom query; make sure weight matches what is configured in system
   			$tableQueries['civicrm_contact.last_name.5'] = "
 SELECT t1.id id1, t2.id id2, 5 weight 
