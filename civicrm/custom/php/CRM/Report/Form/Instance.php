@@ -89,7 +89,10 @@ class CRM_Report_Form_Instance {
                                array( '0' => '- Any One -') + CRM_Core_Permission::basicPermissions( ) );
         }
         // navigation field
-        $parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );
+		//NYSS 3643 don't trigger getNavigationList if report is used on dashboard
+		if ( CRM_Utils_Array::value('snippet', $_GET) != 4 ) {
+			$parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );
+		}
        
         $form->add( 'select', 'parent_id', ts( 'Parent Menu' ), array( '' => ts('-- select --') ) + $parentMenu );
         
