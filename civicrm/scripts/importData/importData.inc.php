@@ -320,7 +320,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       //otherwise create a new one
       if (isset($aOrgKey[$orgKey])) {
         $orgID = $aOrgKey[$orgKey];
-      } else {
+      }
+      else {
         //remember this org as a new one by key
         $aOrgKey[$orgKey] = $contactID;
 
@@ -329,26 +330,22 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         //Append "-1" to end of OMIS ID to differentiate from the contact.
         $extID = $sourceDesc.$importID.'-1';
 
-        $params = create_civi_organization($orgID, $sourceDesc, $importID,
-                                           $ctRow['OCOMPANY'], $ctRow['FAM1']);
+        $params = create_civi_organization($orgID,$sourceDesc,$importID,$ctRow);
 
         //write out the contact
         if (!writeToFile($fout['contact'], $params)) {
           exit("Error: I/O failure: contact");
         }
   
-        //work address
-        $params = create_civi_address(++$addressID, $contactID, $ctRow, LOC_TYPE_WORK);
-
-        if (!writeToFile($fout['address'], $params)) {
-          exit("Error: I/O failure: address");
-        }
+        //work address (address record + district info record)
+        write_full_address($fout, ++$addressID, $contactID, $ctRow, LOC_TYPE_WORK);
 
         //increase contactID for individual if we're going to need to create a new one
         if (!empty($ctRow['FIRST']) || !empty($ctRow['LAST'])) {
           ++$contactID;
           $createContact = true;
-        } else {
+        }
+        else {
           $createContact = false;
         }
       }
@@ -426,6 +423,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
         }
       }
     }
+
+    // Create the individual contact record
 
     if ($createContact) {
       $params = array();
@@ -558,6 +557,9 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       if (!writeToFile($fout['contact'], $params)) {
         exit("Error: I/O failure: contact");
       }
+
+      //home address (address record + district info record)
+      write_full_address($fout, ++$addressID, $contactID, $ctRow,LOC_TYPE_HOME);
     } //createContact
 
     if ($omis_ext) {
@@ -597,32 +599,6 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     $params['record_type_61'] = $ctRow['RT'];
     if (!writeToFile($fout['constituentinformation'], $params)) {
       exit("Error: I/O failure: constituentinformation");
-    }
-
-    //home address
-    $params = create_civi_address(++$addressID, $contactID, $ctRow, LOC_TYPE_HOME);
-
-    if (!writeToFile($fout['address'], $params)) {
-      exit("Error: I/O failure: address");
-    }
-
-    $params = array();
-    $params['entityID'] = $addressID;
-    $params['congressional_district_46'] = DBNULL;
-    $params['ny_senate_district_47'] = cleanData($ctRow['SD']);
-    $params['ny_assembly_district_48'] = cleanData($ctRow['AD']);
-    $params['election_district_49'] = cleanData($ctRow['ED']);
-    $params['county_50'] = cleanData($ctRow['CT']);
-    $params['county_legislative_district_51'] = DBNULL;
-    $params['town_52'] = cleanData($ctRow['TN']);
-    $params['ward_53'] = cleanData($ctRow['WD']);
-    $params['school_district_54'] = cleanData($ctRow['SCD']);
-    $params['new_york_city_council_55'] = DBNULL;
-    $params['neighborhood_56'] = DBNULL;
-    $params['last_import_57'] = date("Y-m-d H:i:s");
-
-    if (!writeToFile($fout['district'], $params)) {
-      exit("Error: I/O failure: district");
     }
 
     //non omis work address
@@ -1159,9 +1135,8 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
 
     if (!writeToFile($fout['contact'], $params)) break;
  
-    //add the address
-    $params = create_civi_address(++$addressID, $contactID, $aRel['ctRow'], LOC_TYPE_HOME);
-    if (!writeToFile($fout['address'], $params)) break;
+    // household address (address record + district info record)
+    write_full_address($fout, ++$addressID, $contactID, $aRel['ctRow'], LOC_TYPE_HOME);
 
     $rcode = trim($aRel['ctRow']['RCD']);
     if (empty($rcode)) {
@@ -1422,8 +1397,48 @@ function create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id = LOC_TYPE
 } // create_civi_address()
 
 
-function create_civi_organization($orgid, $src, $omisid, $company, $nickname)
+function create_district_info($addrID, $omis_flds)
 {
+  $distinfo = array(
+    'entityID' => $addrID,
+    'congressional_district_46' => DBNULL,
+    'ny_senate_district_47' => cleanData($omis_flds['SD']),
+    'ny_assembly_district_48' => cleanData($omis_flds['AD']),
+    'election_district_49' => cleanData($omis_flds['ED']),
+    'county_50' => cleanData($omis_flds['CT']),
+    'county_legislative_district_51' => DBNULL,
+    'town_52' => cleanData($omis_flds['TN']),
+    'ward_53' => cleanData($omis_flds['WD']),
+    'school_district_54' => cleanData($omis_flds['SCD']),
+    'new_york_city_council_55' => DBNULL,
+    'neighborhood_56' => DBNULL,
+    'last_import_57' => date("Y-m-d H:i:s")
+  );
+  return $distinfo;
+} // create_district_info()
+
+
+function write_full_address($fout, $addrID, $ctID, $omis_flds, $loc_type_id)
+{
+  $params = create_civi_address($addrID, $ctID, $omis_flds, $loc_type_id);
+  if (!writeToFile($fout['address'], $params)) {
+    exit("Error: I/O failure: address");
+  }
+
+  $params = create_district_info($addrID, $omis_flds);
+  if (!writeToFile($fout['district'], $params)) {
+    exit("Error: I/O failure: district");
+  }
+
+  return true;
+} // write_full_address()
+
+
+function create_civi_organization($orgid, $src, $omisid, $omis_flds)
+{
+  $company = $omis_flds['OCOMPANY'];
+  $nickname = $omis_flds['FAM1'];
+
   $org = array(
     'id' => $orgid,
     'contact_type' => 'Organization',
