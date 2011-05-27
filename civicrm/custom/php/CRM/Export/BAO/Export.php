@@ -1432,7 +1432,7 @@ LIMIT $offset, $limit
  	        $whereClause[] = 'do_not_mail = 1';
  	    }
  	    if ( array_key_exists('street_address', $sqlColumns) ) {
- 	        $whereClause[] = "(street_address IS NULL) OR (street_address = '')";
+ 	        $whereClause[] = "((street_address IS NULL) OR (street_address = '')) AND ((supplemental_address_1 IS NULL) OR (supplemental_address_1 = ''))";
  	    }
  	
  	    if ( !empty($whereClause) ) {

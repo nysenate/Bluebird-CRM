@@ -47,11 +47,12 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 	
 	//3665 mailing exclusions option
     if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 && 
-	     in_array( 'Last Name', $headerRows ) ) {
+	     in_array( 'Last Name', $headerRows ) && 
+		 in_array( 'Contact Type', $headerRows ) ) {
         // exclude contacts where last_name is empty 
         $query = "
 DELETE FROM $exportTempTable
-WHERE last_name = '' OR last_name IS NULL";
+WHERE contact_type = 'Individual' AND ( last_name = '' OR last_name IS NULL )";
         CRM_Core_DAO::executeQuery( $query );
     }
 
