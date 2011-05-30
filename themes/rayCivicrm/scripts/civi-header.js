@@ -77,22 +77,17 @@ $(document).ready(function() {
     $('#external_identifier').after(extID).remove();
 	
 	//3674 prevent duplicate form submission with enter key
+	//exclude export form as it does not redirect and thus the submit buttons should remain active
 	var submitted = false;
 	$('form').submit(function(e){
-		if ( submitted ) {
+		//console.log(e);
+		var fid  = e.target.attributes[1].nodeValue;
+		if ( submitted && fid != 'Select' && fid != 'Map' && fid != 'Label' ) {
 			return false;
 		} else {
 			submitted = true;
 			return true;
 		}
 	});
-	/*$('form').keypress(function(e){
-		if ( submitted && e.which == 13 ) {
-			e.preventDefault();
-		} else if ( !submitted && e.which == 13 ) {
-			submitted = true;
-		}
-		//return true;
-	});*/
 	
 });
