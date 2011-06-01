@@ -54,13 +54,16 @@ WHERE t1.contact_type = 'Individual'
 								  'east'      => 'e',
 								  'north'     => 'n',
 								  'south'     => 's',
-								  'apartment' => '#',
-								  'apt'       => '#',
+								  'apartment' => '',
+								  'apt'       => '',
+								  'place'	  => 'pl',
+								  'penthouse' => 'ph',
 								  '.'         => '',
 								  ','         => '',
 								  '-'         => '',
 								  ':'         => '',
 								  ';'         => '',
+								  ' '         => '',
 								);
 				
 				//first ensure that all match fields exist in the array; construct NULL value if not
@@ -83,8 +86,9 @@ WHERE t1.contact_type = 'Individual'
 					} else {
 						if ( $addressfld == 'street_address' ) {
 							//handle street_address cleaning
+							$regexp = '(?<=[0-9])(?:st|nd|rd|th)';
 							$street_address_sql = 'TRIM(LCASE(street_address))';
-							$street_address_php = trim(strtolower($address[$addressfld]));
+							$street_address_php = preg_replace($regexp, '', trim(strtolower($address[$addressfld])));
 							foreach ( $abbrevs as $longname => $abbrev ) {
 								$street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
 								$street_address_php = str_replace( $longname, $abbrev, $street_address_php );
