@@ -181,6 +181,11 @@ FROM   {$this->_componentTable}
         $this->set( 'exportMode' , $this->_exportMode );
         $this->set( 'componentClause', $this->_componentClause );
         $this->set( 'componentTable', $this->_componentTable );
+		
+		//NYSS 3832 prevent export for volume in excess of 1500
+		if ( $totalSelectedRecords > 1500 ) {
+			CRM_Core_Error::statusBounce( ts('You may not export more than 1,500 records at a time. Please revise your search criteria to reduce the number of contacts for exporting.') );
+		}
     }
 
 
