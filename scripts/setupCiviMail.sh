@@ -58,8 +58,11 @@ $drush $instance user-create mailing_cron      --mail="nyss.mailing.bounce@gmail
 
 ## assign roles to users
 $drush $instance user-add-role "Mailing Creator"   mailing_creator
+$drush $instance user-add-role "Staff"             mailing_creator
 $drush $instance user-add-role "Mailing Scheduler" mailing_scheduler
+$drush $instance user-add-role "Staff"             mailing_scheduler
 $drush $instance user-add-role "Mailing Approver"  mailing_approver
+$drush $instance user-add-role "Staff"             mailing_approver
 $drush $instance user-add-role "Administrator"     mailing_cron
 
 exit 0
