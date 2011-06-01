@@ -6,6 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-30
+# Revised: 2011-06-01
 #
 
 DEFAULT_CONFIG_FILE=/etc/bluebird.cfg
@@ -29,3 +30,13 @@ DEFAULT_BACKUP_ROOTDIR=/crmbackups
 
 DEFAULT_BASE_DOMAIN=crm.nysenate.gov
 
+
+confirm_yes_no() {
+  [ "$1" ] && confirm_msg="$1" || confirm_msg="Proceed with the operation"
+  echo -n "$confirm_msg (N/y)? "
+  read ch
+  case "$ch" in
+    [yY]*) return 0 ;;
+    *) echo "Aborting."; return 1 ;;
+  esac
+}
