@@ -39,7 +39,12 @@ require_once 'CRM/Core/Permission.php';
 class CRM_Report_Form_Instance {
 
     static function buildForm( &$form ) {
-        $attributes = CRM_Core_DAO::getAttribute( 'CRM_Report_DAO_Instance' );
+        //NYSS 3643 we should not build form elements in dashlet mode
+        if ( $form->_section ) {
+            return;
+        }
+
+		$attributes = CRM_Core_DAO::getAttribute( 'CRM_Report_DAO_Instance' );
 
         $form->add( 'text',
                     'title',
@@ -89,10 +94,7 @@ class CRM_Report_Form_Instance {
                                array( '0' => '- Any One -') + CRM_Core_Permission::basicPermissions( ) );
         }
         // navigation field
-		//NYSS 3643 don't trigger getNavigationList if report is used on dashboard
-		if ( CRM_Utils_Array::value('snippet', $_GET) != 4 ) {
-			$parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );
-		}
+		$parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );
        
         $form->add( 'select', 'parent_id', ts( 'Parent Menu' ), array( '' => ts('-- select --') ) + $parentMenu );
         
@@ -124,7 +126,12 @@ class CRM_Report_Form_Instance {
     }
 
     static function setDefaultValues( &$form, &$defaults ) {
-        $instanceID = $form->getVar( '_id' );
+        //NYSS 3643 we should not build form elements in dashlet mode
+        if ( $form->_section ) {
+            return;
+        }
+		
+		$instanceID = $form->getVar( '_id' );
         $navigationDefaults = array();
         require_once 'CRM/Core/Config.php';
         $config = CRM_Core_Config::singleton(); 
