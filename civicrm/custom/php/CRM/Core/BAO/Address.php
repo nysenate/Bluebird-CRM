@@ -789,6 +789,12 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
         // consider remaining string as street name.
         $parseFields['street_name'] = $streetAddress;
         
+		//NYSS run parsed fields through stripSpaces to clean
+		require_once 'CRM/Utils/String.php';
+		foreach ( $parseFields as $parseField=>$value ) {
+			$parseFields[$parseField] = CRM_Utils_String::stripSpaces($value);
+		}
+		
         return $parseFields;
     }
     
