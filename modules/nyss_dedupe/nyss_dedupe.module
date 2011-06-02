@@ -86,9 +86,11 @@ WHERE t1.contact_type = 'Individual'
 					} else {
 						if ( $addressfld == 'street_address' ) {
 							//handle street_address cleaning
-							$regexp = '(?<=[0-9])(?:st|nd|rd|th)';
+							$regexp = "/(?<=[0-9])(?:st|nd|rd|th)/";
 							$street_address_sql = 'TRIM(LCASE(street_address))';
-							$street_address_php = preg_replace($regexp, '', trim(strtolower($address[$addressfld])));
+							$street_address_php = trim(strtolower($address[$addressfld]));
+							$street_address_php = preg_replace($regexp, '', $street_address_php);
+							
 							foreach ( $abbrevs as $longname => $abbrev ) {
 								$street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
 								$street_address_php = str_replace( $longname, $abbrev, $street_address_php );
@@ -100,7 +102,6 @@ WHERE t1.contact_type = 'Individual'
 						}
 					}
 				}
-				
 				//CRM_Core_Error::debug('o', $o); //exit();
 				
 				$tableQueries['civicrm_contact.last_name.5'] = "
@@ -114,9 +115,7 @@ WHERE t1.contact_type     = 'Individual'
   AND t1.suffix_id        $suffix_id
   AND a1.postal_code      $postal_code
   AND $street_address_sql $street_address";
-  				
 				//CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
-
 			}
 
 		} elseif ( $o->name=='Level 3 (street + lname + fname + city + suffix)' && empty($o->params) ) {
