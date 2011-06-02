@@ -14,11 +14,12 @@ script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 force_ok=0
+dry_run=0
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog instanceName" >&2
+  echo "Usage: $prog [--ok] [--dry-run] instanceName" >&2
 }
 
 
@@ -40,7 +41,7 @@ do_field_trim() {
   cnt=`$execSql -q -i $instance -c "$sql;"`
   echo "Records to be trimmed: $cnt"
 
-  if [ $cnt -gt 0 ]; then
+  if [ $cnt -gt 0 -a $dry_run -eq 0 ]; then
     if [ $force_ok -eq 0 ]; then
       confirm_yes_no "Proceed with trim operation" || return 1
     fi
@@ -78,7 +79,7 @@ do_field_space_compress()
   cnt=`$execSql -q -i $instance -c "$sql;"`
   echo "Records to be compressed: $cnt"
 
-  if [ $cnt -gt 0 ]; then
+  if [ $cnt -gt 0 -a $dry_run -eq 0 ]; then
     if [ $force_ok -eq 0 ]; then
       confirm_yes_no "Proceed with space compression operation" || return 1
     fi
@@ -110,6 +111,7 @@ fi
 while [ $# -gt 0 ]; do
   case "$1" in
     --ok) force_ok=1 ;;
+    -n|--dry-run) dry_run=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
