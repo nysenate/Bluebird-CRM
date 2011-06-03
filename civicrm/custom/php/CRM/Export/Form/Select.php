@@ -63,6 +63,12 @@ class CRM_Export_Form_Select extends CRM_Core_Form
         ACTIVITY_EXPORT    = 8;
 
     /**
+     * export limit
+     */
+    const
+        EXPORT_LIMIT       = 20000;
+
+    /**
      * current export mode
      *
      * @var int
@@ -181,11 +187,11 @@ FROM   {$this->_componentTable}
         $this->set( 'exportMode' , $this->_exportMode );
         $this->set( 'componentClause', $this->_componentClause );
         $this->set( 'componentTable', $this->_componentTable );
-		
-		//NYSS 3832 prevent export for volume in excess of 1500
-		if ( $totalSelectedRecords > 1500 ) {
-			CRM_Core_Error::statusBounce( ts('You may not export more than 1,500 records at a time. Please revise your search criteria to reduce the number of contacts for exporting.') );
-		}
+
+        //NYSS 3832 prevent export for volume in excess of NNN records
+        if ( $totalSelectedRecords > self::EXPORT_LIMIT ) {
+            CRM_Core_Error::statusBounce( ts('You may not export more than '.self::EXPORT_LIMIT.' records at a time. Please revise your search criteria to reduce the number of contacts for exporting.') );
+        }
     }
 
 
