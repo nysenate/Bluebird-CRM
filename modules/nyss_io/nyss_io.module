@@ -441,10 +441,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		
 		//import phone details
 		//set key correctly for ref
+		$l['phone_contact_id']=$l['contact_id'];
 		nyss_ioimportData('civicrm_phone', $l, $dryrun, $logFile, $form_state);
 		
 		//import email details
 		//set key correctly for ref
+		$l['email_contact_id']=$l['contact_id'];
 		nyss_ioimportData('civicrm_email', $l, $dryrun, $logFile, $form_state);
 		
 		//import contact source details
@@ -689,7 +691,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
 	//otherwise just insert
 	} else {
-
+		nyss_out('debug', $l, true);
 		$up = array();
 
 		//first set a few additional values required for insert action
@@ -727,12 +729,18 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 				$l['phone_location_type_id'] = 1; //set to home
 			}
 			$l['phone_is_primary'] = 1; //set to primary
+		} else { 
+			//if no phone value, unset the contact_id so empty record is not created; TODO: handle higher in the process
+			unset($l['phone_contact_id']);
 		}
 		if ( array_key_exists('email', $l) ) {
 			if ( !$l['email_location_type_id'] ) {
 				$l['email_location_type_id'] = 1; //set to home
 			}
 			$l['email_is_primary'] = 1; //set to primary
+		} else { 
+			//if no email value, unset the contact_id so empty record is not created; TODO: handle higher in the process
+			unset($l['email_contact_id']);
 		}
 		
 		//nyss_out('debug', $tbl, true);
@@ -776,7 +784,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
 		if ( $insertKeys && $insertData ) {
 			$sqlINSERT = "INSERT INTO {$tbl} (".implode(',',$insertKeys).") VALUES (".implode(',',$insertData).")";
-			//nyss_out('debug', $sqlINSERT, true); exit();
+			nyss_out('debug', $sqlINSERT, true); exit();
 		}
 		
 		if ( !$dryrun ) {

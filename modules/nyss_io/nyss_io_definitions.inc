@@ -137,7 +137,7 @@ $nyss_iofields['civicrm_email'] = array(
 		'fld' => 'id',
 		'PK'=> true,
 	),
-    'contact_id' => array(
+    'email_contact_id' => array(
         'fld' => 'contact_id',
     ),
 	'email' => array(
@@ -157,7 +157,7 @@ $nyss_iofields['civicrm_phone'] = array(
 		'fld' => 'id',
 		'PK'=> true,
 	),
-    'contact_id' => array(
+    'phone_contact_id' => array(
         'fld' => 'contact_id',
     ),
 	'phone' => array(
