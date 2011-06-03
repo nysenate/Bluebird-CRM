@@ -49,16 +49,14 @@
         </tr>
         <tr>
             {if $form.email_greeting_id}
-                <td>egd {$email_greeting_display}
-                    <span id="email_greeting" {if $email_greeting_display and $action eq 2} class="hiddenElement"{/if}>{$form.email_greeting_id.html|crmReplace:class:big}</span>
+                <td><span id="email_greeting" {if $email_greeting_display and $action eq 2} class="hiddenElement"{/if}>{$form.email_greeting_id.html|crmReplace:class:big}</span>
                     {if $email_greeting_display and $action eq 2}
                         <div id="email_greeting_display" class="view-data">{$email_greeting_display}&nbsp;&nbsp;<a href="#" onclick="showGreeting('email_greeting');return false;"><img src="{$config->resourceBase}i/edit.png" border="0" title="{ts}Edit{/ts}"></a></div>
                     {/if}
                 </td>
             {/if}
             {if $form.postal_greeting_id}
-                <td>pgd {$postal_greeting_display}
-                    <span id="postal_greeting" {if $postal_greeting_display and $action eq 2} class="hiddenElement"{/if}>{$form.postal_greeting_id.html|crmReplace:class:big}</span>
+                <td><span id="postal_greeting" {if $postal_greeting_display and $action eq 2} class="hiddenElement"{/if}>{$form.postal_greeting_id.html|crmReplace:class:big}</span>
                     {if $postal_greeting_display and $action eq 2}
                         <div id="postal_greeting_display" class="view-data">{$postal_greeting_display}&nbsp;&nbsp;<a href="#" onclick="showGreeting('postal_greeting');return false;"><img src="{$config->resourceBase}i/edit.png" border="0" title="{ts}Edit{/ts}"></a></div>
                     {/if}
