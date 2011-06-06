@@ -80,7 +80,7 @@ function nyss_ioimport_form() {
    $form['boeimport'] = array(
      '#type' => 'checkbox',
      '#title' => t('Process as a BOE import.'),
-     '#default_value' => 1,
+     '#default_value' => 0,
    );
    
    $form['dedupe'] = array(
@@ -398,18 +398,41 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			if ( !$needle_found ) { $l['street_unit'] = 'Apt. '.$l['street_unit']; }
 		}
 
-		//form the street address; convert proper case first
-		$so = convertProperCase( $l['street_number'], true );
-		$sn = convertProperCase( $l['street_name'], true );
-		$su = convertProperCase( $l['street_unit'], true );
-		$l['street_address'] = $so.' '.$sn;
-		if ( $su ) { $l['street_address'] = $l['street_address'].', '.$su; }
+		//form the street address if we are provided parsed values; convert proper case first
+		if ( !empty($l['street_name']) ) {
+			$so = convertProperCase( $l['street_number'], true );
+			$sn = convertProperCase( $l['street_name'], true );
+			$su = convertProperCase( $l['street_unit'], true );
+			$l['street_address'] = $so.' '.$sn;
+			if ( $su ) { $l['street_address'] = $l['street_address'].', '.$su; }
+		} elseif ( !empty($l['street_address']) ) {
+		//else if we're provided street_address, send through parser
+			require_once 'CRM/Core/BAO/Address.php';
+			$parsedFields = CRM_Core_BAO_Address::parseStreetAddress( $l['street_address'] );
+			//nyss_out('debug', $parsedFields, true); exit();
+			$l['street_number'] = $parsedFields['street_number'];
+			$l['street_name']   = $parsedFields['street_name'];
+			$l['street_unit']   = $parsedFields['street_unit'];
+		}
+		
+		//strip leading/trailing/double spaces for all imported data; escape all single quotes
+		foreach ( $l as $k => $v ) {
+			$v = CRM_Utils_String::stripSpaces($v);
+			$l[$k] = mysql_real_escape_string($v);
+		}
+		
+		//make sure street name is escaped
 
 		//find an address if we don't have an addressID already
 		if (!empty($l['id']) && empty($l['address_id'])) {
-			$sql = "SELECT id AS address_id FROM civicrm_address WHERE contact_id LIKE '{$l['id']}' AND street_number LIKE '{$l['street_number']}' AND street_name LIKE '{$l['street_name']}' AND city LIKE '{$l['city']}' AND ( postal_code LIKE '{$l['postal_cod']}' OR postal_code LIKE '{$l['postal_code']}' )";
+			$sql = "SELECT id AS address_id, is_primary AS address_is_primary FROM civicrm_address WHERE contact_id LIKE '{$l['id']}' AND street_number LIKE '{$l['street_number']}' AND street_name LIKE '{$l['street_name']}' AND city LIKE '{$l['city']}' AND ( postal_code LIKE '{$l['postal_cod']}' OR postal_code LIKE '{$l['postal_code']}' )";
 			$dao = &CRM_Core_DAO::executeQuery( $sql );
-	        if ($dao->fetch()) $l['address_id'] = $dao->address_id;
+	        if ($dao->fetch()) { 
+				$l['address_id']         = $dao->address_id;
+				$l['address_is_primary'] = $dao->address_is_primary;
+				//reset primary flag here to prevent being overwritten by the import file 
+				//due to unexpected lookup/match with existing record
+			}
 			CRM_Core_DAO::freeResult( );
 		}
 		
@@ -419,11 +442,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$dao = &CRM_Core_DAO::executeQuery( $sql );
 	        if ( $dao->fetch() ) $l['districtinfo_id'] = $dao->distinfo_id;
 			CRM_Core_DAO::freeResult( );
-		}
-		
-		//strip leading/trailing/double spaces for all imported data
-		foreach ( $l as $k => $v ) {
-			$l[$k] = CRM_Utils_String::stripSpaces($v);
 		}
 		
 		nyss_out('debug', 'ready to begin importing record...', true);
@@ -710,13 +728,16 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		}
 		
 		//only set these if the corresponding data columns exist in the import file
-		if ( array_key_exists('street_address', $l) && !empty($l['street_address']) ) {
+		if ( ( array_key_exists('street_address', $l) && !empty($l['street_address']) ) ||
+		     ( array_key_exists('supplemental_address_1', $l) && !empty($l['supplemental_address_1']) ) ) {
 			if ( $form_state['values']['boeimport'] ) { 
 				$l['location_type_id'] = 6; //set address type to BOE
 			} elseif ( empty($l['location_type_id']) || !array_key_exists('location_type_id', $l) ) {
 				$l['location_type_id'] = 1; //set address type to Home if not set by importer
 			} //else use as set in the import file
-			$l['address_is_primary'] = 1; //set to primary
+			if ( !$l['address_is_primary'] ) {
+				$l['address_is_primary'] = 1; //set to primary
+			}
 			$l['country_id'] = 1228; //assume US
 		}
 		if ( array_key_exists('phone', $l) ) {
@@ -724,7 +745,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			if ( !$l['phone_location_type_id'] ) {
 				$l['phone_location_type_id'] = 1; //set to home
 			}
-			$l['phone_is_primary'] = 1; //set to primary
+			if ( !$l['phone_is_primary'] ) {
+				$l['phone_is_primary'] = 1; //set to primary
+			}
 		} else { 
 			//if no phone value, unset the contact_id so empty record is not created; TODO: handle higher in the process
 			unset($l['phone_contact_id']);
@@ -733,7 +756,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			if ( !$l['email_location_type_id'] ) {
 				$l['email_location_type_id'] = 1; //set to home
 			}
-			$l['email_is_primary'] = 1; //set to primary
+			if ( !$l['email_is_primary'] ) {
+				$l['email_is_primary'] = 1; //set to primary
+			}
 		} else { 
 			//if no email value, unset the contact_id so empty record is not created; TODO: handle higher in the process
 			unset($l['email_contact_id']);
@@ -770,7 +795,8 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
   			//skip if no data
 			if (empty($data)) continue;
 			
- 			$data = str_replace("'","\'",$data);
+			//removed as we handle escaping earlier in the script
+ 			//$data = str_replace("'","\'",$data);
 
 			$insertKeys[] = "`{$nyss_iofields[$tbl][$key]['fld']}`";
 			$insertData[] = "'{$data}'";
