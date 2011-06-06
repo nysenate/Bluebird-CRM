@@ -116,14 +116,15 @@ function get_bluebird_instance_config($instance = null, $filename = null)
     $default_base_domain = substr($instance, $firstdot + 1);
   }
 
+  $instance_key = 'instance:'.$shortname;
   $bbcfg = array();
   $bbini = get_bluebird_config($filename);
-  if ($bbini) {
+
+  if ($bbini && isset($bbini[$instance_key])) {
     // If successful, merge the globals into the instance-specific params.
     if (isset($bbini['globals'])) {
       $bbcfg = array_merge($bbcfg, $bbini['globals']);
     }
-    $instance_key = 'instance:'.$shortname;
     if (isset($bbini[$instance_key])) {
       $bbcfg = array_merge($bbcfg, $bbini[$instance_key]);
     }
