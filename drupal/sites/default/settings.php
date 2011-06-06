@@ -5,7 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-05-11
+# Revised: 2011-06-06
 #
 # This customized settings.php file takes advantage of the strict CRM
 # hostname naming scheme that we have developed.  Each CRM instance is
@@ -16,7 +16,17 @@
 
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
+# Use Bluebird custom maintenance pages within our own custom theme.
+$conf['maintenance_theme'] = 'rayCivicrm';
+
 $bbconfig = get_bluebird_instance_config();
+
+if ($bbconfig == null) {
+  $GLOBALS['maintenance_message'] = "<br/>There is no such CRM instance:<br/><br/>".$_SERVER['HTTP_HOST'];
+  drupal_maintenance_theme();
+  drupal_site_offline();
+  exit(1);
+}
 
 $db_url = $bbconfig['drupal_db_url'];
 $db_prefix = '';
@@ -58,9 +68,6 @@ $GLOBALS['simpletest_installed'] = TRUE;
 if (preg_match("/^simpletest\d+$/", $_SERVER['HTTP_USER_AGENT'])) {
   $db_prefix = $_SERVER['HTTP_USER_AGENT'];
 }
-
-# Use Bluebird custom maintenance pages within our own custom theme.
-$conf['maintenance_theme'] = 'rayCivicrm';
 
 # Cacherouter: Try to use APC for all local caching
 $cache_engine = 'db';
