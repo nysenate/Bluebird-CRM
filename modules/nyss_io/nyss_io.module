@@ -609,9 +609,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 //nyss_out('debug', $l, true);
 
 		//get the existing data
-		$sql = "SELECT " . $nyss_select[$tbl]['fields'] . " FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
-//nyss_out('debug', $sql, true);
-
+		$sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
 		$dao = &CRM_Core_DAO::executeQuery( $sql );
 
 		if ( !$dao->fetch() ) nyss_out('error','no civirecord found. not importing.',true);
@@ -642,16 +640,14 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			//if the import data doesn't match civi data, update it
 			//if ( isset($dao->$key) && $dao->$key<>$data ) { //this was preventing a fill action - if existing field was null
 			if ( isset($nyss_iofields[$tbl][$key]) && 
-			       ( $dao->$key<>$data ||
-			         ( $form_state['values']['fieldoverride'] /*&& in_array($key, $override)*/ ) 
-				   )
+			     ( $dao->$key<>$data || $form_state['values']['fieldoverride'] )
 			   ) {
 			
 				//escape some sql fields
 	            $data = str_replace("'","\'",$data);
 
 				//add to the update statement
-				if ( !empty($data) || in_array($key, $override) ) {
+				if ( !empty($data) || $form_state['values']['fieldoverride'] ) {
 					if ( empty($data) ) { 
 						$up[] = "{$nyss_iofields[$tbl][$key]['fld']}=NULL";
 					} else {
@@ -691,7 +687,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
 	//otherwise just insert
 	} else {
-		nyss_out('debug', $l, true);
+		//nyss_out('debug', $l, true);
 		$up = array();
 
 		//first set a few additional values required for insert action
@@ -744,9 +740,10 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		}
 		
 		//nyss_out('debug', $tbl, true);
-		//nyss_out('debug', $l, true); //exit();
+		//nyss_out('debug', $l, true); exit();
 		
-		//set up the insert
+		//set up the insert 
+		//nyss_out('status', 'set up the insert', true);
 		foreach($l as $key=>$data) {
 
 			//unset if no data
@@ -760,7 +757,8 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
             //make sure we're only processing the records for that table
             if (!isset($nyss_iofields[$tbl][$key])) continue;
-
+			//echo 'field to be processed: ';
+			//nyss_out('debug', $key, true);
 			$up = array();
 
             //skip if required values not found
@@ -784,10 +782,11 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
 		if ( $insertKeys && $insertData ) {
 			$sqlINSERT = "INSERT INTO {$tbl} (".implode(',',$insertKeys).") VALUES (".implode(',',$insertData).")";
-			nyss_out('debug', $sqlINSERT, true); exit();
+			//nyss_out('debug', $sqlINSERT, true); exit();
 		}
 		
-		if ( !$dryrun ) {
+		//process if sql insert exists and not dryrun
+		if ( !$dryrun && $sqlINSERT ) {
 			$dao = & CRM_Core_DAO::executeQuery( $sqlINSERT, CRM_Core_DAO::$_nullArray );
 	        CRM_Core_DAO::freeResult( );
 
