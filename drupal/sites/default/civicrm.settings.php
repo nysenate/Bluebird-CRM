@@ -5,7 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-05-11
+# Revised: 2011-06-06
 #
 # This customized civicrm.settings.php file takes advantage of the strict
 # CRM hostname naming scheme that we have developed.  Each CRM instance is
@@ -18,6 +18,10 @@
 require_once dirname(__FILE__).'/../../../civicrm/scripts/bluebird_config.php';
 
 $bbconfig = get_bluebird_instance_config();
+
+if ($bbconfig == null) {
+  die("Unable to properly bootstrap the CiviCRM module.\n");
+}
 
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_USE_MEMCACHE', $bbconfig['cache.memcache']);
