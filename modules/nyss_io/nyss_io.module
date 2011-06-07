@@ -90,6 +90,10 @@ function nyss_ioimport_form() {
 	 '#description' => t('When enabled, imported records will be compared and matched with existing contact records using the default individual strict rule. Records should have first name, middle name, last name, suffix, street address, and postal code, in order to effectively match.'),
    );
    
+   civicrm_initialize( );
+   require_once 'CRM/Core/Config.php';
+   $config =& CRM_Core_Config::singleton();
+   
    require_once 'CRM/Core/DAO.php';
    $dedupeoptions = array( );
    $rules = new CRM_Core_DAO();
