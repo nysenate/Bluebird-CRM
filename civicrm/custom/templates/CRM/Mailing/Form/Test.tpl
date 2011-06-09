@@ -23,6 +23,10 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+
+{*NYSS 3880*}
+<script src="{$config->resourceBase}../../../default/themes/rayCivicrm/scripts/jquery.iframe-auto-height.plugin.js" type="text/javascript"></script>
+
 <div class="crm-block crm-form-block crm-mailing-test-form-block">
 {include file="CRM/common/WizardHeader.tpl"}
 <div id="help">
@@ -40,26 +44,7 @@
   </table>
 </fieldset>
 
-{*NYSS - add initials*}
-{if $form.buttons.value._qf_Test_next eq 'Inform Scheduler'}
-<fieldset>
-	<legend>Content Verification</legend>
-    <table class="form-layout">
-    	<tr class="crm-mailing-test-form-block-terms">
-        	<td class="label">Terms</td>
-        	<td><p>You are about to inform the scheduler that an email is ready for review and scheduling. Before doing so, please confirm that the e-mail meets all Senate guidelines.</p>
-            	<p>Once you have reviewed the content, enter your intials below to confirm compliance and grant authorization for scheduling and transmission. Note that both the scheduler and approver will also review the content and may reject it if they believe it does not conform with Senate guidelines and policies.</p>
-            </td>
-        </tr>
-    	<tr class="crm-mailing-test-form-block-creator_initials">
-        	<td class="label">{$form.creator_initials.label}</td>
-            <td>{$form.creator_initials.html}</td>
-        </tr> 
-	</table>
-</fieldset>
-{/if}
-
-<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-closed">
+<div class="crm-accordion-wrapper crm-plain_text_email-accordion crm-accordion-open">
     <div class="crm-accordion-header">
         <div class="icon crm-accordion-pointer"></div> 
         {ts}Preview Mailing{/ts}
@@ -71,10 +56,10 @@
           <tr class="crm-mailing-test-form-block-attachment"><td class="label">{ts}Attachment(s):{/ts}</td><td>{$preview.attachment}</td></tr>
     {/if}
           {if $preview.text_link}{*NYSS alter preview width*}
-          <tr><td class="label">{ts}Text Version:{/ts}</td><td><iframe height="300" src="{$preview.text_link}" width="700px"><a href="{$preview.text_link}" onclick="window.open(this.href); return false;">{ts}Text Version{/ts}</a></iframe></td></tr>
+          <tr><td class="label">{ts}Text Version:{/ts}</td><td><iframe src="{$preview.text_link}" width="700px"><a href="{$preview.text_link}" onclick="window.open(this.href); return false;">{ts}Text Version{/ts}</a></iframe></td></tr>
           {/if}
           {if $preview.html_link}
-          <tr><td class="label">{ts}HTML Version:{/ts}</td><td><iframe height="300" src="{$preview.html_link}" width="700px"><a href="{$preview.html_link}" onclick="window.open(this.href); return false;">{ts}HTML Version{/ts}</a></iframe></td></tr>
+          <tr><td class="label">{ts}HTML Version:{/ts}</td><td><iframe src="{$preview.html_link}" width="700px"><a href="{$preview.html_link}" onclick="window.open(this.href); return false;">{ts}HTML Version{/ts}</a></iframe></td></tr>
           {/if}
         </table>
     </div><!-- /.crm-accordion-body -->
@@ -89,7 +74,8 @@
 {literal}
 <script type="text/javascript">
 cj(function() {
-   cj().crmaccordions(); 
+   cj().crmaccordions();
+   cj('iframe').iframeAutoHeight(); 
 });
 </script>
 {/literal}
