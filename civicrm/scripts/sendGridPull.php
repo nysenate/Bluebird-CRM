@@ -123,7 +123,7 @@ function unsubscribeRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
 
 	$unsubscribeUrl = "https://sendgrid.com/api/unsubscribes.get.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
 	$unsubscribeRetrieve = simplexml_load_file($unsubscribeUrl);
-	CRM_Core_Error::debug('unsubscribeRetrieve', $unsubscribeRetrieve);
+	//CRM_Core_Error::debug('unsubscribeRetrieve', $unsubscribeRetrieve);
 	
 	foreach ( $unsubscribeRetrieve as $unsubscribe ) {
 		//get parameters
