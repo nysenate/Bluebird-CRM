@@ -34,3 +34,30 @@ CKEDITOR.editorConfig = function( config )
     // NYSS ^^^^^^^  -  end modifications: fix editor options buttons - kyle
     ];
 };
+
+//NYSS 3878 remove some unnecessary elements
+CKEDITOR.on( 'dialogDefinition', function( ev )
+{
+    // Take the dialog name and its definition from the event data.
+    var dialogName = ev.data.name;
+    var dialogDefinition = ev.data.definition;
+
+    // Check if the definition is from the dialog we're
+    // interested in (the 'link' dialog).
+    if ( dialogName == 'link' ) {
+        // Remove the 'Advanced' tabs from the 'Link' dialog.
+        dialogDefinition.removeContents( 'advanced' );
+ 
+        // Get a reference to the 'Link Info' tab.
+        var infoTab = dialogDefinition.getContents( 'info' );
+ 
+        // Remove unnecessary widgets from the 'Link Info' tab.         
+        infoTab.remove( 'browse');
+        infoTab.remove( 'protocol');
+		
+    } else if ( dialogName == 'image' ) {
+		// Remove the 'Advanced' tabs from the 'Image Properties' dialog.
+        dialogDefinition.removeContents( 'advanced' );
+	}
+	  
+});
