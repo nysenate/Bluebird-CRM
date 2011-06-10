@@ -1,3 +1,16 @@
 _notes
 _compareTemp
-.gitignore
+
+#ignore all drupal installation sites and uploads
+drupal/upload/*
+drupal/sites/*
+!drupal/sites/all
+!drupal/sites/default
+
+#eclipse project files
+.buildpath
+.project
+.settings
+
+#bluebird.cfg at root is installation specific
+bluebird.cfg
