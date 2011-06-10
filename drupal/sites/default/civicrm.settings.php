@@ -51,8 +51,6 @@ define('CIVICRM_TAG_UNCONFIRMED', 'Unconfirmed');
 define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
 define('CIVICRM_CIVIMAIL_WORKFLOW', 1 );
 
-define('CIVICRM_IMAP_ACCOUNTS', $bbconfig['imap.accounts']);
-
 
 /**
  * 

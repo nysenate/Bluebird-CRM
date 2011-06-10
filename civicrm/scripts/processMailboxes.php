@@ -51,7 +51,8 @@ require_once 'CRM/Core/Error.php';
 ** The user= and pass= command line args can be used to override the IMAP
 ** accounts from the config file.
 */
-$imap_accounts = CIVICRM_IMAP_ACCOUNTS;
+$bbconfig = get_bluebird_instance_config();
+$imap_accounts = $bbconfig['imap.accounts'];
 $site = $optlist['site'];
 $cmd = $optlist['cmd'];
 $imap_server = DEFAULT_IMAP_SERVER;
@@ -110,6 +111,11 @@ $activityType = array_search('Email (incoming)', $aActivityType);
 
 //set the session ID for who created the activity
 $session->set('userID', 1);
+
+if (empty($imap_accounts)) {
+  echo "$prog: No IMAP accounts to process for CRM instance [$site]\n";
+  exit(1);
+}
 
 
 // Iterate over all IMAP accounts associated with the current CRM instance.
