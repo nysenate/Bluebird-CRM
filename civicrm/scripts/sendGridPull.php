@@ -80,7 +80,7 @@ function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
 
 	require_once 'CRM/Core/DAO.php';
 
-	$bounceUrl = "https://sendgrid.com/api/bounces.get.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
+	$bounceUrl = "https://sendgrid.com/apiv2/customer.bounces.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
 	$bounceRetrieve = simplexml_load_file($bounceUrl);
 	//CRM_Core_Error::debug('bounceRetrieve', $bounceRetrieve);
 	
@@ -121,7 +121,7 @@ function unsubscribeRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
 
 	require_once 'CRM/Core/DAO.php';
 
-	$unsubscribeUrl = "https://sendgrid.com/api/unsubscribes.get.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
+	$unsubscribeUrl = "https://sendgrid.com/apiv2/customer.unsubscribes.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
 	$unsubscribeRetrieve = simplexml_load_file($unsubscribeUrl);
 	//CRM_Core_Error::debug('unsubscribeRetrieve', $unsubscribeRetrieve);
 	

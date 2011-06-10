@@ -1,5 +1,7 @@
 <?php 
 
+define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
+
 function nyss_mail_civicrm_alterMailParams( &$params ) {
 //CRM_Core_Error::debug($params); exit();
 
@@ -8,6 +10,27 @@ function nyss_mail_civicrm_alterMailParams( &$params ) {
 	$params['html'] = str_replace( 'crmdev', 'sensquid', $params['html'] );
 
 //CRM_Core_Error::debug($params); exit();
+}
+
+function nyss_mail_civicrm_buildForm( $formName, &$form ) {
+
+	if ( $formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing ) {
+	
+		//get base mailing group, add to option lsit, set as default, then freeze field
+		$params = array ( 'name' => BASE_SUBSCRIPTION_GROUP );
+		$groupObjects = CRM_Contact_BAO_Group::getGroups( $params );
+		
+		$groupID = $groupObjects[0]->id;
+		$groupTitle = $groupObjects[0]->title;
+		$baseGroup =& $form->getElement('baseGroup');
+		$baseGroup->addOption( $groupTitle, $groupID );
+		
+		$defaults['baseGroup'] = $groupID;
+		$form->setDefaults( $defaults );
+		
+		$baseGroup->freeze();
+	
+	}
 }
 
 ?>
