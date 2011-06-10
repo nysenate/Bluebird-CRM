@@ -1,0 +1,8 @@
+<?php
+function nyss_imapper_civicrm_xmlMenu( &$files ) {
+    $files[] =
+        dirname( __FILE__ ) . DIRECTORY_SEPARATOR .
+        'nyss_imapper.xml';
+}
+
+?>

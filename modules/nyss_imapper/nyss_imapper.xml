@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<menu>
+  <item>
+     <path>civicrm/imap/mapper</path>
+     <title>IMAP Mapper</title>
+     <page_callback>CRM_IMAP_Page_Mapper</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
