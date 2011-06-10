@@ -26,9 +26,10 @@
 <div class="crm-block crm-form-block crm-mailing-upload-form-block">
 {include file="CRM/common/WizardHeader.tpl"}
 
-<div id="help">
+{*NYSS*}
+{*<div id="help">
     {ts}You can either <strong>upload</strong> the mailing content from your computer OR <strong>compose</strong> the content on this screen.{/ts} {help id="content-intro"} 
-</div>
+</div>*}
 
 {include file="CRM/Mailing/Form/Count.tpl"}
 
@@ -51,7 +52,8 @@
                         </div>
         </td>
     </tr>
-    <tr class="crm-mailing-upload-form-block-upload_type"><td></td><td colspan="2">{$form.upload_type.label} {$form.upload_type.html} {help id="upload-compose"}</td></tr>
+    {*NYSS hide so we don't have option to upload; use visibility and height so form element retained*}
+    <tr class="crm-mailing-upload-form-block-upload_type" style="visibility:hidden; height:0;"><td></td><td colspan="2">{$form.upload_type.label} {$form.upload_type.html} {help id="upload-compose"}</td></tr>
 </table>
 
 <fieldset id="compose_id"><legend>{ts}Compose On-screen{/ts}</legend>
