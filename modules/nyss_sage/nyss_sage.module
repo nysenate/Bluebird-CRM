@@ -1,0 +1,44 @@
+<?php
+
+function nyss_sage_getAddress( $id ) {
+    if($id) {
+        require_once 'CRM/Core/DAO/Address.php';
+        $old_address = new CRM_Core_DAO_Address();
+        $old_address->id = $id;
+        if($old_address->find(true)){
+            return $old_address;
+        }
+    }
+    return null;
+}
+
+function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
+{
+    //Don't do anything unless we are saving an address that needs fixing
+    if( $objectName == 'Address' && $params['fix_address']) {
+        require_once 'CRM/Utils/SAGE.php';
+        require_once 'CRM/Core/Error.php';
+
+        // If the address already exists, fetch it for comparison
+        // Unless the address is being modified we never overwrite districts
+        $overwrite_districts = false;
+
+        if($old_address = nyss_sage_getAddress(CRM_Utils_Array::value('id',$params))) {
+            //Street Address is all caps in the database, mixed caps in form
+            if( strcmp($old_address->street_address, $params['street_address'])!=0 ||
+                strcmp($old_address->city, $params['city']) != 0 ||
+                strcmp($old_address->postal_code, $params['postal_code']) != 0 ||
+                strcmp($old_address->state_province_id, $params['state_province_id']) != 0 ||
+                strcmp($old_address->country_id, $params['country_id']) != 0 ||
+                strcmp($old_address->supplemental_address_1, $params['supplemental_address_1']) != 0 ) {
+                //We need to update the district information
+                $overwrite_districts = true;
+
+            }
+        }
+        CRM_Utils_SAGE::lookup($params,$overwrite_districts);
+    }
+    return true;
+}
+
+?>
