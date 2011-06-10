@@ -2135,8 +2135,11 @@ SELECT $selectClause
 		
 		//NYSS 3849 unset some tokens to streamline the list
 		//CRM_Core_Error::debug($tokens);
-		$mailingTokensRemove = array ( '{action.unsubscribeUrl}',
+		$mailingTokensRemove = array ( '{action.unsubscribe}',
+		                               '{action.unsubscribeUrl}',
+		                               '{action.resubscribe}',
 		                               '{action.resubscribeUrl}',
+		                               '{action.optOut}',
 		                               '{action.optOutUrl}',
 		                               '{action.forward}',
 		                               '{action.reply}',
