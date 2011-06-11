@@ -9,7 +9,8 @@ CKEDITOR.editorConfig = function( config )
     // config.language = 'fr';
     //config.uiColor = '#AADC6E';
     
-    config.filebrowserBrowseUrl = '/index.php?q=imce&app=ckeditor|url@txtUrl|width@txtWidth|height@txtHeight';
+    //config.filebrowserBrowseUrl = '/index.php?q=imce&app=ckeditor|url@txtUrl|width@txtWidth|height@txtHeight';
+    //config.filebrowserBrowseUrl = '/sites/all/ckfinder/ckfinder.html';
  
     // disable auto spell check
     config.scayt_autoStartup = false;
