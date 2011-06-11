@@ -48,7 +48,7 @@ ini_set('url_rewriter.tags',        '');
 # ini_set('pcre.backtrack_limit', 200000);
 # ini_set('pcre.recursion_limit', 200000);
 
-$cookie_domain = '.nysenate.gov';
+$cookie_domain = $bbconfig['base_domain'];
 
 # $conf = array(
 #   'site_name' => 'My Drupal site',
