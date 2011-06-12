@@ -35,7 +35,7 @@
 
 <table class="form-layout-compressed">
     <tr class="crm-mailing-upload-form-block-from_email_address"><td class="label">{$form.from_email_address.label}</td>
-        <td>{$form.from_email_address.html} {help id ="id-from_email"}</td>
+        <td>{$form.from_email_address.html} {*help id ="id-from_email"*}</td>
     </tr>
     <tr class="crm-mailing-upload-form-block-template">
     	<td class="label">{$form.template.label}</td>
