@@ -141,12 +141,18 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   $drupal_db_url = $db_url.$bbcfg['db.drupal.prefix'].$db_basename;
   $data_basename = isset($bbcfg['data.basename']) ? $bbcfg['data.basename'] : $shortname;
 
+  // Prepend a period on the base_domain if it's not empty.
+  if (!empty($base_domain) && $base_domain[0] != '.') {
+    $base_domain = '.'.$base_domain;
+  }
+
   // Add some extra convenience parameters.
   $bbcfg['civicrm_db_url'] = $civicrm_db_url;
   $bbcfg['drupal_db_url'] = $drupal_db_url;
   $bbcfg['base_dir'] = BASE_DIR;
-  $bbcfg['data_dirname'] = "$data_basename.$base_domain";
-  $bbcfg['servername'] = "$shortname.$base_domain";
+  $bbcfg['base_domain'] = $base_domain;
+  $bbcfg['data_dirname'] = "$data_basename$base_domain";
+  $bbcfg['servername'] = "$shortname$base_domain";
   $bbcfg['shortname'] = $shortname;
   return $bbcfg;
 } // get_bluebird_instance_config()

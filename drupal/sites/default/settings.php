@@ -5,7 +5,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-06-06
+# Revised: 2011-06-11
 #
 # This customized settings.php file takes advantage of the strict CRM
 # hostname naming scheme that we have developed.  Each CRM instance is
@@ -48,7 +48,7 @@ ini_set('url_rewriter.tags',        '');
 # ini_set('pcre.backtrack_limit', 200000);
 # ini_set('pcre.recursion_limit', 200000);
 
-# $cookie_domain = 'example.com';
+$cookie_domain = $bbconfig['base_domain'];
 
 # $conf = array(
 #   'site_name' => 'My Drupal site',
