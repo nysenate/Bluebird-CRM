@@ -419,6 +419,19 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$l['street_unit']   = $parsedFields['street_unit'];
 		}
 		
+		//if street_number set, let's parse into street_number and street_number_suffix
+		//borrowed from CRM_Core_BAO_Address::parseStreetAddress()
+		if ( isset($l['street_number']) && !empty($l['street_number']) ) {
+			$streetNumAndSuffix = $l['street_number'];
+			$matches = array( );
+            if ( preg_match( '/^(\d+)/', $streetNumAndSuffix, $matches ) ) {
+                $l['street_number'] = $matches[0];
+                $suffix = preg_replace( '/^(\d+)/', '', $streetNumAndSuffix );
+                $l['street_number_suffix'] = trim( $suffix );
+                $matches = array( );
+            }
+		}
+		
 		//strip leading/trailing/double spaces for all imported data; escape all single quotes
 		foreach ( $l as $k => $v ) {
 			$v = CRM_Utils_String::stripSpaces($v);

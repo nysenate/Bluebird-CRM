@@ -70,6 +70,9 @@ $nyss_iofields['civicrm_address'] = array(
 	'street_number' => array(
 		'fld' => 'street_number',
 	),
+	'street_number_suffix' => array(
+		'fld' => 'street_number_suffix',
+	),
 	/*'lo' => array(
 		'fld' => 'location_type_id',
 	),*/

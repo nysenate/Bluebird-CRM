@@ -737,7 +737,6 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
                 $parseFields['street_number'] = $matches[0];
                 $suffix = preg_replace( '/^(\d+)/', '', $streetNumAndSuffix );
                 $parseFields['street_number_suffix'] = trim( $suffix );
-                $matches = array( );
             }
             
             // unset from main street address.
