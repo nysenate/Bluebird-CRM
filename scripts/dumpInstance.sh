@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-12
-# Revised: 2011-05-20
+# Revised: 2011-06-13
 #
 
 prog=`basename $0`
@@ -107,6 +107,8 @@ if [ "$archive_dump" ]; then
       mv "$tmpdir/$arc_file" .
     fi
   fi
+
+  rm -rf "$tmpdir"
 fi
 
 exit $errcode
