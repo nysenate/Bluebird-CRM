@@ -294,22 +294,16 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	//add js popup msg to report pdf button
 	if ( $form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName') ) {
 		
-		//if the user has selected more than 
+		//if the user has selected more than 8 fields for display, warn and proceed
 		$form->removeElement($pdfVar);
 		$pdfButton =& $form->getElement($pdfVar);
 		
-		$jsonclick = $pdfButton->_attributes['onclick'];
-		$jsnew = "$('form').submit(function(e){
-    		count = $(':input:checkbox:checked', this);
-    		alert (count.length);
-    		return false;
-			if (count > 5) {alert('The number of field columns you have selected may exceed what will display in the generated PDF file. Consider selecting fewer fields');}
+		$jsold = $pdfButton->_attributes['onclick'];
+		$jsnew = "var flag = false; $('form').submit(function(e){
+    		count = $(':input:checkbox:checked[name*=fields]', this);
+			if (count.length > 8 && flag == false) {alert('The number of field columns you have selected may exceed what will display in the generated PDF file. Consider selecting fewer fields.'); flag = true;}
 		});";
-
-		$pdfButton->setAttribute("onclick", $jsnew.$jsonclick);
-		
-		//CRM_Core_Error::debug($pdfButton);
-		//CRM_Core_Error::debug($form);
+		$pdfButton->setAttribute("onclick", $jsnew.$jsold);
 	}
 	
 	//2503 alpha sort prefix field; reverted and manually reordered
