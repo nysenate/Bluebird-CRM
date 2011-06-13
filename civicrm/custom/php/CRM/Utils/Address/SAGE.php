@@ -27,12 +27,13 @@ class CRM_Utils_Address_SAGE
 {
     static function checkAddress( &$values )
     {
-        if (!isset($values['street_address']) || 
+		if ( !isset($values['street_address']) || 
+		     $values['city'] == null ||
              (!isset($values['city']) &&
               !isset($values['state_province']) &&
-              !isset($values['postal_code']))) {
+              !isset($values['postal_code'])) ) {
             return false;
-        } 
+        }
         
         /*
         ** The UserID will be used as the SAGE API key.
@@ -65,6 +66,8 @@ class CRM_Utils_Address_SAGE
             $session->setStatus(ts('SAGE Warning: Not enough address info.'));
             return false;
         }
+		
+		$addr2_orig = $addr2;
 
         $data = array('addr2' => str_replace(',', '', $addr2),
                       'city' => $values['city'],
@@ -122,6 +125,13 @@ class CRM_Utils_Address_SAGE
             }
             $addr2 = implode(" ", $addr_elems);
         }
+		
+		//compare street_number input to output and retain orig if alphanumeric characters the same
+		if ( preg_match( '/^[A-Za-z0-9]+([\S]+)/', $addr2_orig, $matches ) ) $street_number_in = $matches[0];
+		if ( preg_match( '/^[A-Za-z0-9]+([\S]+)/', $addr2, $matches ) ) $street_number_out = $matches[0];
+		if ( str_replace( '-', '', $street_number_in ) == $street_number_out ) {
+			$addr2 = preg_replace( '/^[A-Za-z0-9]+([\S]+)/', $street_number_in, $addr2 );
+		}
  
         $values[$addr_field] = $addr2;
         $values['city'] = ucwords(strtolower($xml->city));
