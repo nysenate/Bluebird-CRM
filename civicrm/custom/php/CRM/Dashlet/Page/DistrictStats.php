@@ -72,6 +72,14 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		$trashed = CRM_Core_DAO::singleValueQuery( $sql_trashed );
 		$contactTypes['Trashed Contacts'] = $trashed;
 		
+		//get contacts with emails
+		$sql_emails = "SELECT COUNT( c.id ) AS email_count
+					   FROM civicrm_contact c
+					     JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
+					   WHERE is_deleted != 1;";
+		$contactEmails = CRM_Core_DAO::singleValueQuery( $sql_emails );
+		$contactTypes['Contacts with Emails'] = $contactEmails;
+		
 		$this->assign('contactTypes', $contactTypes);
 		//CRM_Core_Error::debug($contactTypes);
 		
