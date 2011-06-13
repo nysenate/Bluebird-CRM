@@ -1,0 +1,66 @@
+<script type="text/html" id="tmpl_email_headers">
+	<div class="left_container_inner" id="left_container_head">Emails</div>
+		<% for(uid in data) { %>
+ 	 		<div id="<%=uid%>" class="left_container_inner email_summary_container">
+ 	 			<div class="email_summary_block">
+  					<span class="email_summary_headers email_summary_from">
+  						<%=tools.get_name(data[uid].from[0])%>
+		  			</span>
+					<span class="email_summary_headers email_summary_time">
+		  				<%=tools.date(data[uid].time_stamp)%>
+		  			</span>
+  				</div>
+  				<div class="email_summary_block">
+  					<div class="email_summary_subject">
+  						<%=data[uid].subject%>
+  					</div>
+  				</div>
+  			</div>
+		<% } %>
+		<div id="page_left" class="paging_buttons">
+  			Back
+  		</div>
+  		<div id="page_right" class="paging_buttons">
+  			Next
+  		</div>
+  	</div>
+</script>
+
+<script type="text/html" id="tmpl_email_long">
+	<div id="email_long">
+		<div id="email_long_body">
+			<div class="email_long_section">
+				<span class="email_long_descriptor email_summary_headers">From</span>
+				<span class="email_long_address">
+					<%=tools.get_long_name(data.from[0]) + " "%>
+				</span>
+			</div>
+			<div class="email_long_section">
+				<span class="email_long_descriptor email_summary_headers">To</span>
+				<% for(i in data.to) { %>
+					<span class="email_long_address">
+						<%=tools.get_long_name(data.to[i]) + " "%>
+					</span>
+				<% } %>
+			</div>
+			<% if(data.cc.length > 0) { %>
+				<div class="email_long_section">
+				<span class="email_long_descriptor email_summary_headers">CC</span>
+				<% for(i in data.cc) { %>
+					<span class="email_long_address">
+						<%=tools.get_long_name(data.cc[i]) + " "%>
+					</span>
+				<% } %>
+				</div>
+			<% } %>
+			<div class="email_long_section">
+				<span class="email_long_descriptor email_summary_headers">Subject</span>
+				<%=data.subject%>
+			</div>
+			<div id="email_long_html_body">
+				<pre><%=body%></pre>
+			</div>
+		</div>
+		<div id="email_long_close">(close)</div>
+	</div>
+</script>

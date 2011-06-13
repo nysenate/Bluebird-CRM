@@ -1,0 +1,144 @@
+body {
+	font-family: Verdana, Sans;
+	font-size: 12px;
+	font-style: normal;
+	font-weight: normal;
+	height: 22px;
+	line-height: 18px;
+}
+
+#main {
+	width: 780px;
+	margin: 0px auto;
+}
+
+#left_container {
+	width: 42%;
+	float: left;
+	background-color: #457AA4;
+	height: 500px;
+	border-radius: 4px;
+}
+
+#left_container_head {
+	text-align: center;
+	color: white;
+}
+
+.left_container_inner {
+	overflow: hidden;
+	margin: 1px 1px 0px 1px;
+	z-index:0;
+}
+
+#right_container {
+	width: 100%; float right;
+	background-color: red;
+}
+
+.email_summary_container {
+	background-color: white;
+	height: 88px;
+}
+
+.email_summary_headers {
+	margin-left: 3px;
+	line-height: 1.9em;
+	padding: 0px 2px 0px 2px;
+	border-radius: 2px;
+	background-color: #E2F3F9;
+	color: #5077A7;
+}
+
+.email_summary_from {
+	margin-left: 3px;
+}
+
+.email_summary_time {
+	margin-left: 5px;
+	text-align: right;
+}
+
+.email_summary_subject {
+	margin: 0px 3px 0px 3px;
+	background-color: #E6E6DC;
+	border-radius: 2px;
+}
+
+.email_summary_block {
+	display: inline;
+}
+
+.paging_buttons {
+	color: white;
+	font-size: 140%;
+	margin-top: 7px;
+	cursor:pointer;
+}
+
+.paging_buttons:hover {
+	background-color:#405362;
+}
+
+.paging_buttons:click {
+	
+}
+
+#page_left {
+	float: left;
+	margin-left: 5px;
+}
+
+#page_right {
+	float: right;
+	margin-right: 5px;
+}
+#email_long {
+	z-index:1;
+	background-color:white;
+	border: 1px solid #457AA4;
+	position: absolute;
+	height:inherit;
+}
+#email_long_body {
+	height:97%;
+	margin: 0px 2px 0px 2px;
+	
+}
+#email_long_close {
+	background-color: #70716B;
+	text-align: center;
+	margin-bottom:0px;
+	color:white;
+	cursor:pointer;
+	height:23px;
+}
+#email_long_close:hover {
+	background-color: #3E3E3E;
+}
+.email_long_descriptor {
+	margin-right: 8px;
+}
+.email_long_section {
+	border-bottom: 1px solid;
+}
+.email_long_address:hover {
+	background-color:#E6E6DC;
+	border-radius: 2px;
+}
+#email_long_html_body {
+	margin-top:3px;
+	overflow:auto;
+	display:block;
+}
+#expand_left_container {
+	background-color:whiteSmoke;
+	z-index:-1;
+	position:absolute;
+	border-radius: 8px;
+	border: 1px solid #457AA4;
+	text-align:right;
+}
+#expand_left_container:hover {
+	background-color:#E6E6DC;
+}
