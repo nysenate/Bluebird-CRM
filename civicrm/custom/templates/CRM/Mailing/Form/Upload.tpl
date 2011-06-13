@@ -56,7 +56,7 @@
     <tr class="crm-mailing-upload-form-block-upload_type" style="visibility:hidden; height:0;"><td></td><td colspan="2">{$form.upload_type.label} {$form.upload_type.html} {help id="upload-compose"}</td></tr>
 </table>
 
-<fieldset id="compose_id"><legend>{ts}Compose On-screen{/ts}</legend>
+<fieldset id="compose_id"><legend>{ts}Compose On-screen{/ts}{help id="id-message-text" file="CRM/Contact/Form/Task/Email.hlp"}</legend>
 {include file="CRM/Contact/Form/Task/EmailCommon.tpl" upload=1 noAttach=1}
 </fieldset>
 
