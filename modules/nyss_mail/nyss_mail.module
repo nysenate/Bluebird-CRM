@@ -8,6 +8,11 @@ function nyss_mail_civicrm_alterMailParams( &$params ) {
 	$params['X-SMTPAPI'] = '{"category" : "bluebird"}';
 	$params['text'] = str_replace( 'crmdev', 'sensquid', $params['text'] );
 	$params['html'] = str_replace( 'crmdev', 'sensquid', $params['html'] );
+	
+	//remove these so that they don't impact processing through sendgrid
+	unset($params['Reply-To']);
+	unset($params['Return-Path']);
+	unset($params['List-Unsubscribe']);
 
 //CRM_Core_Error::debug($params); exit();
 }

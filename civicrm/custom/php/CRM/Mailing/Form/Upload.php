@@ -546,15 +546,16 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form
             $dataErrors = array();
             
             /* First look for missing tokens */
-            $err = CRM_Utils_Token::requiredTokens($str);
-            if ($err !== true) {
+            //NYSS don't require tokens as they are handled by sendgrid
+            /*$err = CRM_Utils_Token::requiredTokens($str);
+			if ($err !== true) {
                 foreach ($err as $token => $desc) {
                     $dataErrors[]   = '<li>' 
                         . ts('This message is missing a required token - {%1}: %2',
                              array(1 => $token, 2 => $desc))
                         . '</li>';
                 }
-            }
+            }*/
 
             /* Do a full token replacement on a dummy verp, the current
              * contact and domain, and the first organization. */
