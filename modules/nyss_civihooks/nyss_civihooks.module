@@ -245,6 +245,12 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	}
 	
+	//set bounce reason default on, bounce report
+	if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
+		$defaults['fields[bounce_reason]'] = 1;
+		$form->setDefaults( $defaults );
+	}
+	
 	//remove primary field export option
 	/*if ( $formName == 'CRM_Export_Form_Select' ) {
 
@@ -294,19 +300,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		
 		$jsonclick = $pdfButton->_attributes['onclick'];
 		$jsnew = "$('form').submit(function(e){
-		
-		//console.log(e);
-		//console.log(this);
-		var chkcount = 0;
-		$(':input:checkbox', this).each(function(){
-		   	//console.log($(this).attr('name'));
-		   	console.log($(this).val);
-			var chkval = $(this).val;
-			if ( chkval ) {
-				chkcount++;
-			}
-       	});
-		//alert( chkcount );
+    		count = $(':input:checkbox:checked', this);
+    		alert (count.length);
+    		return false;
+			if (count > 5) {alert('The number of field columns you have selected may exceed what will display in the generated PDF file. Consider selecting fewer fields');}
 		});";
 
 		$pdfButton->setAttribute("onclick", $jsnew.$jsonclick);
