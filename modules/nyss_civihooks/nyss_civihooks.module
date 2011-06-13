@@ -255,6 +255,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	//3674 add limit submit js to all submit buttons
 	if ( isset( $form->_elementIndex['buttons'] ) ) {
+		//CRM_Core_Error::debug($form);
 		$buttons =& $form->getElement( 'buttons' );
 		$formID = $form->_attributes['id'];
 		$formAction = $form->_attributes['action'];
@@ -276,13 +277,42 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 				$btnValue = $buttons->_elements[$key]->_attributes['value'];
 				if ( !in_array($btnName, $btnExcludeName) &&
 				     !in_array($btnValue, $btnExcludeValue) ) {
-					//$js = "return submitOnce(this,'".$formID."','Processing');";
 					$js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
 					$buttons->_elements[$key]->_attributes['onclick'] = $js;
 				}
 			}
 		}
 		//CRM_Core_Error::debug($buttons);
+	}
+	
+	//add js popup msg to report pdf button
+	if ( $form->getVar('_instanceForm') && $pdfVar = $form->getVar('_pdfButtonName') ) {
+		
+		//if the user has selected more than 
+		$form->removeElement($pdfVar);
+		$pdfButton =& $form->getElement($pdfVar);
+		
+		$jsonclick = $pdfButton->_attributes['onclick'];
+		$jsnew = "$('form').submit(function(e){
+		
+		//console.log(e);
+		//console.log(this);
+		var chkcount = 0;
+		$(':input:checkbox', this).each(function(){
+		   	//console.log($(this).attr('name'));
+		   	console.log($(this).val);
+			var chkval = $(this).val;
+			if ( chkval ) {
+				chkcount++;
+			}
+       	});
+		//alert( chkcount );
+		});";
+
+		$pdfButton->setAttribute("onclick", $jsnew.$jsonclick);
+		
+		//CRM_Core_Error::debug($pdfButton);
+		//CRM_Core_Error::debug($form);
 	}
 	
 	//2503 alpha sort prefix field; reverted and manually reordered
