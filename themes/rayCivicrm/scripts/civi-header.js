@@ -77,12 +77,16 @@ $(document).ready(function() {
     $('#external_identifier').after(extID).remove();
 	
 	//3674 prevent duplicate form submission with enter key
-	//exclude export form as it does not redirect and thus the submit buttons should remain active
+	//exclude export and report form as it does not redirect and thus the submit buttons should remain active
 	var submitted = false;
 	$('form').submit(function(e){
-		//console.log(e);
-		var fid  = e.target.attributes[1].nodeValue;
-		if ( submitted && fid != 'Select' && fid != 'Map' && fid != 'Label' ) {
+		console.log(e);
+		//var fid  = e.target.attributes[1].nodeValue; alert(fid);
+		var fid  = e.target.name; //alert(fid);
+		if ( submitted && fid != 'Select' && 
+			              fid != 'Map' && 
+						  fid != 'Label'
+		   ) {
 			return false;
 		} else {
 			submitted = true;

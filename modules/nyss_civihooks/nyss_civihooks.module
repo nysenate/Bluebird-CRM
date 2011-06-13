@@ -265,13 +265,17 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 			$buttons =& $form->getElement( 'buttons' );
 		}
 		
-		$btnExclude = array();
+		//list of exclusions by name or value
+		$btnExcludeName  = array( );
+		$btnExcludeValue = array( 'PDF' );
 		
 		foreach ( $buttons->_elements as $key=>$button ) {
 			$btnType = $buttons->_elements[$key]->_attributes['type'];
 			if ( $btnType == 'submit' ) {
-				$btnName = $buttons->_elements[$key]->_attributes['name'];
-				if ( !in_array($btnName, $btnExclude) ) {
+				$btnName  = $buttons->_elements[$key]->_attributes['name'];
+				$btnValue = $buttons->_elements[$key]->_attributes['value'];
+				if ( !in_array($btnName, $btnExcludeName) &&
+				     !in_array($btnValue, $btnExcludeValue) ) {
 					//$js = "return submitOnce(this,'".$formID."','Processing');";
 					$js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
 					$buttons->_elements[$key]->_attributes['onclick'] = $js;
