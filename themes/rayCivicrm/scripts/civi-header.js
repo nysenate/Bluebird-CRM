@@ -80,12 +80,15 @@ $(document).ready(function() {
 	//exclude export and report form as it does not redirect and thus the submit buttons should remain active
 	var submitted = false;
 	$('form').submit(function(e){
-		console.log(e);
-		//var fid  = e.target.attributes[1].nodeValue; alert(fid);
-		var fid  = e.target.name; //alert(fid);
-		if ( submitted && fid != 'Select' && 
-			              fid != 'Map' && 
-						  fid != 'Label'
+		//console.log(e);
+		var fname   = e.target.name; //alert(fid); //form name
+		var faction = e.target.action; //action value
+		var factionmatch = faction.search("civicrm/report/instance"); //-1 if not found
+		if ( submitted && 
+			 factionmatch == -1 &&
+			 fname != 'Select' && 
+			 fname != 'Map' && 
+			 fname != 'Label' 
 		   ) {
 			return false;
 		} else {
