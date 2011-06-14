@@ -69,13 +69,13 @@ function updateMailingBackend($dbcon, $civiMailing, $crmhost, $appdir, $datadir,
 	$mb['smtpAuth']     = $smtpAuth;
 	$mb['smtpUsername'] = $smtpSubuser;
 	$mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($smtpSubpass);
-	print_r($mb);
+	//print_r($mb);
 
-  	//$sql = "UPDATE civicrm_preferences SET mailing_backend='".serialize($mb)."' WHERE id=1;";
-  	/*if (!mysql_query($sql, $dbcon)) {
+  	$sql = "UPDATE civicrm_preferences SET mailing_backend='".serialize($mb)."' WHERE id=1;";
+  	if (!mysql_query($sql, $dbcon)) {
     	echo mysql_error($dbcon)."\n";
     	$rc = false;
-  	}*/
+  	}
 
   	return $rc;
 } // updateMailingBackend()
