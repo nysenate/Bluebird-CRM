@@ -44,12 +44,20 @@ CKEDITOR.on( 'dialogDefinition', function( ev )
         // Remove the 'Advanced' tabs from the 'Link' dialog.
         dialogDefinition.removeContents( 'advanced' );
  
-        // Get a reference to the 'Link Info' tab.
+        // Get a reference to the Link Info tab. Remove unnecessary widgets.
         var infoTab = dialogDefinition.getContents( 'info' );
- 
-        // Remove unnecessary widgets from the 'Link Info' tab.         
         infoTab.remove( 'browse');
         infoTab.remove( 'protocol');
+		
+		// Get a reference to the Target tab. Remove items from target type list.
+		var targetTab = dialogDefinition.getContents( 'target' );
+		var targetTypeItems = targetTab.get( 'linkTargetType' ).items;
+		if ( targetTypeItems.length > 0 ) {
+			var items_popup = targetTypeItems.slice(0, 1).concat( targetTypeItems.slice(3, targetTypeItems.length) );
+			targetTab.get( 'linkTargetType' ).items = items_popup;
+		}
+		
+		
         
     } else if ( dialogName == 'image' ) {
         // Remove the 'Advanced' tabs from the 'Image Properties' dialog.
