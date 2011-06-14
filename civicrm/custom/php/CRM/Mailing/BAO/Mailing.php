@@ -2109,7 +2109,14 @@ SELECT $selectClause
 								'{contact.custom_39}',
 								'{contact.custom_40}',
 								'{contact.checksum}',
-								'{contact.contact_id}'
+								'{contact.contact_id}',
+								'{contact.gender}',
+								'{contact.custom_45}',
+								'{contact.preferred_communication_method}',
+								'{contact.preferred_language}',
+								'{contact.preferred_mail_format}',
+								'{contact.custom_63}',
+								'{contact.contact_source}'
 							   );
 		foreach ( $tokens as $token => $dontcare ) { 
 			if ( in_array( $token, $tokensRemove ) ) {
