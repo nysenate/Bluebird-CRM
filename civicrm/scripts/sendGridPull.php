@@ -76,13 +76,13 @@ function getProfile( $smtpuser, $smtppass ) {
 }
 
 //retrieve bounced emails and process
-function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
+function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true ) {
 
     require_once 'CRM/Core/DAO.php';
 
     $bounceUrl = "https://sendgrid.com/apiv2/customer.bounces.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
     $bounceRetrieve = simplexml_load_file($bounceUrl);
-    //CRM_Core_Error::debug('bounceRetrieve', $bounceRetrieve);
+    CRM_Core_Error::debug('bounceRetrieve', $bounceRetrieve);
     
     foreach ( $bounceRetrieve as $bounce ) {
         //get parameters
@@ -109,6 +109,13 @@ function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
                             );
             //print_r($params);
             CRM_Mailing_Event_BAO_Bounce::create($params);
+			
+			if ( $delete ) {
+				$bounceDeleteUrl = "https://sendgrid.com/apiv2/customer.bounces.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete&email=$email";
+				$bounceDelete = simplexml_load_file($bounceDeleteUrl);
+				//echo $bounceDelete;
+			}
+			
         } else {
             echo "No email and/or job found to process. It's possible the email has already been processed.\n\n";
         }
@@ -117,13 +124,13 @@ function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
 } //end bounceRetrieve
 
 //retrieve unsubscribe requests and process as domain level unsubscribe (optout)
-function unsubscribeRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
+function unsubscribeRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true ) {
 
     require_once 'CRM/Core/DAO.php';
 
     $unsubscribeUrl = "https://sendgrid.com/apiv2/customer.unsubscribes.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
     $unsubscribeRetrieve = simplexml_load_file($unsubscribeUrl);
-    //CRM_Core_Error::debug('unsubscribeRetrieve', $unsubscribeRetrieve);
+    CRM_Core_Error::debug('unsubscribeRetrieve', $unsubscribeRetrieve);
     
     foreach ( $unsubscribeRetrieve as $unsubscribe ) {
         //get parameters
@@ -143,7 +150,11 @@ function unsubscribeRetrieve( $smtpuser, $smtppass, $smtpsubuser ) {
             $unsubs = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_domain($queue['jobID'],$queue['queueID'],$queue['hash']);
             if ( !$unsubs ) {
                 return civicrm_create_error( ts( 'Queue event could not be found' ) );
-            }
+            } elseif ( $delete ) {
+				$unsubscribeDeleteUrl = "https://sendgrid.com/apiv2/customer.unsubscribes.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete&email=$email";
+				$unsubscribeDelete = simplexml_load_file($unsubscribeDeleteUrl);
+				//echo $unsubscribeDelete;
+			}
         } else {
             echo "No email and/or job found to process. It's possible the email has already been processed.\n\n";
         }
