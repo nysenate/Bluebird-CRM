@@ -1614,7 +1614,8 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
             }
             $report['jobs'][] = $row;
         }
-        $report['event_totals']['queue'] = self::getRecipientsCount( $mailing_id, false, $mailing_id );
+		//NYSS 3895 fix intended recip count
+        //$report['event_totals']['queue'] = self::getRecipientsCount( $mailing_id, false, $mailing_id );
 
         if (CRM_Utils_Array::value('queue',$report['event_totals'] )) {
             $report['event_totals']['delivered_rate'] = (100.0 * $report['event_totals']['delivered']) / $report['event_totals']['queue'];
@@ -2109,7 +2110,14 @@ SELECT $selectClause
 								'{contact.custom_39}',
 								'{contact.custom_40}',
 								'{contact.checksum}',
-								'{contact.contact_id}'
+								'{contact.contact_id}',
+								'{contact.gender}',
+								'{contact.custom_45}',
+								'{contact.preferred_communication_method}',
+								'{contact.preferred_language}',
+								'{contact.preferred_mail_format}',
+								'{contact.custom_63}',
+								'{contact.contact_source}'
 							   );
 		foreach ( $tokens as $token => $dontcare ) { 
 			if ( in_array( $token, $tokensRemove ) ) {
