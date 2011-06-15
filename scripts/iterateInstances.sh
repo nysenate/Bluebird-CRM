@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-12-03
-# Revised: 2011-03-16
+# Revised: 2011-06-15
 #
 
 prog=`basename $0`
@@ -34,6 +34,7 @@ while [ $# -gt 0 ]; do
     --all) use_all=1 ;;
     --live) use_live=1 ;;
     --locked) instance_set="LOCKED" ;;
+    --civimail) instance_set="civimail" ;;
     --training) instance_set="training" ;;
     --set|-s) shift; instance_set="$1" ;;
     --instance|-i) shift; instances="$instances $1" ;;
