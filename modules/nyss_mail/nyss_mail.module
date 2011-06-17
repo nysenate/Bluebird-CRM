@@ -2,68 +2,71 @@
 
 define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 
-function nyss_mail_civicrm_alterMailParams( &$params ) {
-	//CRM_Core_Error::debug($params); //exit();
+function nyss_mail_civicrm_alterMailParams( &$params )
+{
+    //CRM_Core_Error::debug($params);
 
-	$params['X-SMTPAPI'] = '{"category" : "bluebird"}';
-	$bodyvalues = array( 'text', 'html' );
-	foreach ( $bodyvalues as $bodyvalue ) {
-		$params[$bodyvalue] = str_replace( '.crmtest.nysenate.gov/pubfiles', '/t/pubfiles', $params[$bodyvalue] );
-		$params[$bodyvalue] = str_replace( '.crmdev.nysenate.gov/pubfiles',  '/d/pubfiles', $params[$bodyvalue] );
-		$params[$bodyvalue] = str_replace( '.crm.nysenate.gov/pubfiles',     '/p/pubfiles', $params[$bodyvalue] );
-		$params[$bodyvalue] = preg_replace( '/[a-z0-9]+\.crmtest/i', 'pubfiles', $params[$bodyvalue] );
-		$params[$bodyvalue] = preg_replace( '/[a-z0-9]+\.crmdev/i',  'pubfiles', $params[$bodyvalue] );
-		$params[$bodyvalue] = preg_replace( '/[a-z0-9]+\.crm/i',     'pubfiles', $params[$bodyvalue] );
-	}
-	
-	//remove these so that they don't impact processing through sendgrid
-	unset($params['Reply-To']);
-	unset($params['Return-Path']);
-	unset($params['List-Unsubscribe']);
+    $params['X-SMTPAPI'] = '{"category" : "bluebird"}';
 
-//CRM_Core_Error::debug($params); exit();
+    /* Re-write any URLs in the message body of the form:
+    **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
+    ** into:
+    **   pubfiles.nysenate.gov/crm*/senator/
+    */
+    $bodyvalues = array( 'text', 'html' );
+    foreach ( $bodyvalues as $bodyvalue ) {
+        $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
+    }
+    
+    //remove these so that they don't impact processing through sendgrid
+    unset($params['Reply-To']);
+    unset($params['Return-Path']);
+    unset($params['List-Unsubscribe']);
+
+    //CRM_Core_Error::debug($params); exit();
 }
+
 
 function nyss_mail_civicrm_buildForm( $formName, &$form ) {
 
-	if ( $formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing ) {
-	
-		//get base mailing group, add to option lsit, set as default, then freeze field
-		$params = array ( 'name' => BASE_SUBSCRIPTION_GROUP );
-		$groupObjects = CRM_Contact_BAO_Group::getGroups( $params );
-		
-		$groupID = $groupObjects[0]->id;
-		$groupTitle = $groupObjects[0]->title;
-		$baseGroup =& $form->getElement('baseGroup');
-		$baseGroup->addOption( $groupTitle, $groupID );
-		
-		$defaults['baseGroup'] = $groupID;
-		$form->setDefaults( $defaults );
-		
-		$baseGroup->freeze();
-	
-	}
-	
-	if ( $formName == 'CRM_Mailing_Form_Test' ) {
-		//change button text
-		$buttons =& $form->getElement('buttons');
-		foreach ( $buttons->_elements as $key => $button ) {
-			if ( $button->_attributes['value'] == 'Inform Scheduler' ) {
-				$buttons->_elements[$key]->_attributes['value'] = 'Submit for Scheduling';
-			}
-		}
-	}
-	
-	if ( $formName == 'CRM_Mailing_Form_Schedule' ) {
-		//change button text
-		$buttons =& $form->getElement('buttons');
-		foreach ( $buttons->_elements as $key => $button ) {
-			if ( $button->_attributes['value'] == 'Submit Mailing' ) {
-				$buttons->_elements[$key]->_attributes['value'] = 'Submit for Approval';
-			}
-		}
-	}
-	
+    if ( $formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing ) {
+    
+        //get base mailing group, add to option lsit, set as default, then freeze field
+        $params = array ( 'name' => BASE_SUBSCRIPTION_GROUP );
+        $groupObjects = CRM_Contact_BAO_Group::getGroups( $params );
+        
+        $groupID = $groupObjects[0]->id;
+        $groupTitle = $groupObjects[0]->title;
+        $baseGroup =& $form->getElement('baseGroup');
+        $baseGroup->addOption( $groupTitle, $groupID );
+        
+        $defaults['baseGroup'] = $groupID;
+        $form->setDefaults( $defaults );
+        
+        $baseGroup->freeze();
+    
+    }
+    
+    if ( $formName == 'CRM_Mailing_Form_Test' ) {
+        //change button text
+        $buttons =& $form->getElement('buttons');
+        foreach ( $buttons->_elements as $key => $button ) {
+            if ( $button->_attributes['value'] == 'Inform Scheduler' ) {
+                $buttons->_elements[$key]->_attributes['value'] = 'Submit for Scheduling';
+            }
+        }
+    }
+    
+    if ( $formName == 'CRM_Mailing_Form_Schedule' ) {
+        //change button text
+        $buttons =& $form->getElement('buttons');
+        foreach ( $buttons->_elements as $key => $button ) {
+            if ( $button->_attributes['value'] == 'Submit Mailing' ) {
+                $buttons->_elements[$key]->_attributes['value'] = 'Submit for Approval';
+            }
+        }
+    }
+    
 }
 
 ?>
