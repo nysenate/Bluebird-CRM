@@ -111,6 +111,10 @@ UPDATE civicrm_report_instance SET permission = 'access CiviReport', navigation_
 UPDATE civicrm_report_instance SET permission = 'access CiviReport', navigation_id = 243 WHERE id = 30;"
 $execSql -i $instance -c "$mailreport"
 
+## 3866 rename mailing list group type
+grouptype="UPDATE civicrm_option_value SET label = 'Email List' WHERE label = 'Mailing List' AND option_group_id = 20;"
+$execSql -i $instance -c "$grouptype"
+
 
 ### Cleanup ###
 
