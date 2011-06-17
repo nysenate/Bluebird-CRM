@@ -3,11 +3,18 @@
 define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 
 function nyss_mail_civicrm_alterMailParams( &$params ) {
-//CRM_Core_Error::debug($params); exit();
+	//CRM_Core_Error::debug($params); //exit();
 
 	$params['X-SMTPAPI'] = '{"category" : "bluebird"}';
-	$params['text'] = str_replace( 'crmdev', 'sensquid', $params['text'] );
-	$params['html'] = str_replace( 'crmdev', 'sensquid', $params['html'] );
+	$bodyvalues = array( 'text', 'html' );
+	foreach ( $bodyvalues as $bodyvalue ) {
+		$params[$bodyvalue] = str_replace( '.crmtest.nysenate.gov/pubfiles', '/t/pubfiles', $params[$bodyvalue] );
+		$params[$bodyvalue] = str_replace( '.crmdev.nysenate.gov/pubfiles',  '/d/pubfiles', $params[$bodyvalue] );
+		$params[$bodyvalue] = str_replace( '.crm.nysenate.gov/pubfiles',     '/p/pubfiles', $params[$bodyvalue] );
+		$params[$bodyvalue] = preg_replace( '/[a-z0-9]+\.crmtest/i', 'pubfiles', $params[$bodyvalue] );
+		$params[$bodyvalue] = preg_replace( '/[a-z0-9]+\.crmdev/i',  'pubfiles', $params[$bodyvalue] );
+		$params[$bodyvalue] = preg_replace( '/[a-z0-9]+\.crm/i',     'pubfiles', $params[$bodyvalue] );
+	}
 	
 	//remove these so that they don't impact processing through sendgrid
 	unset($params['Reply-To']);
