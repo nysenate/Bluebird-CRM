@@ -790,7 +790,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		foreach($l as $key=>$data) {
 
 			//unset if no data
-			if ( empty($data) && $data != 0 ) {
+			if ( empty($data) && $data !== 0 ) {
 				unset($l[$key]);
 				continue;
 			}
@@ -811,7 +811,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
             }
 
   			//skip if no data
-			if ( empty($data) && $data != 0 ) continue;
+			if ( empty($data) && $data !== 0 ) continue;
 			
 			//removed as we handle escaping earlier in the script
  			//$data = str_replace("'","\'",$data);
