@@ -2154,6 +2154,8 @@ SELECT $selectClause
 		                               '{action.subscribeUrl}',
 		                               '{domain.phone}',
 		                               '{domain.email}',
+									   '{domain.name}',
+									   '{domain.address}'
 		                             );
 		foreach ( $tokens as $token => $dontcare ) { 
 			if ( in_array( $token, $mailingTokensRemove ) ) {
