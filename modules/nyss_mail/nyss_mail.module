@@ -11,7 +11,7 @@ function nyss_mail_civicrm_alterMailParams( &$params )
     /* Re-write any URLs in the message body of the form:
     **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
     ** into:
-    **   pubfiles.nysenate.gov/crm*/senator/
+    **   pubfiles.nysenate.gov/crm(dev|test)?/senator/
     */
     $bodyvalues = array( 'text', 'html' );
     foreach ( $bodyvalues as $bodyvalue ) {
