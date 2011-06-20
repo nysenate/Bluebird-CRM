@@ -3616,7 +3616,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @return   array of key => value for row
      */
 
-    function toArray($format = '%s', $hideEmpty = false) 
+    function toArray($format = null, $hideEmpty = false) 
     {
         global $_DB_DATAOBJECT;
         $ret = array();
@@ -3630,23 +3630,35 @@ class DB_DataObject extends DB_DataObject_Overload
              
             if (!isset($this->$k)) {
                 if (!$hideEmpty) {
-                    $ret[sprintf($format,$k)] = '';
+                    if ($format===null)
+                        $ret[$k] = '';
+                    else
+                        $ret[sprintf($format,$k)] = '';
                 }
                 continue;
             }
             // call the overloaded getXXXX() method. - except getLink and getLinks
             if (method_exists($this,'get'.$k) && !in_array(strtolower($k),array('links','link'))) {
-                $ret[sprintf($format,$k)] = $this->{'get'.$k}();
+                if ($format===null)
+                    $ret[$k] = $this->{'get'.$k}();
+                else
+                    $ret[sprintf($format,$k)] = $this->{'get'.$k}();
                 continue;
             }
             // should this call toValue() ???
-            $ret[sprintf($format,$k)] = $this->$k;
+            if ($format===null)
+                $ret[$k] = $this->$k;
+            else
+                $ret[sprintf($format,$k)] = $this->$k;
         }
         if (!$this->_link_loaded) {
             return $ret;
         }
         foreach($this->_link_loaded as $k) {
-            $ret[sprintf($format,$k)] = $this->$k->toArray();
+            if ($format===null)
+                $ret[$k] = $this->$k->toArray();
+            else
+                $ret[sprintf($format,$k)] = $this->$k->toArray();
         
         }
         
