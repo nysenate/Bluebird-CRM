@@ -1,0 +1,6 @@
+.imapper-message {margin-bottom:20px;}
+.imapper-date, .imapper-subject {float:left;}
+.imapper-date {width:100px; }
+.imapper-clear {clear:both; }
+
+#city {width:200px;}

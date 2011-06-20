@@ -1,8 +1,13 @@
 <?php
+
+function nyss_imapper_init() {
+    $module_path = drupal_get_path('module', 'nyss_imapper');
+    drupal_add_css($module_path.'/nyss_imapper.css');
+    drupal_add_js($module_path.'/nyss_imapper.js');
+}
+
 function nyss_imapper_civicrm_xmlMenu( &$files ) {
-    $files[] =
-        dirname( __FILE__ ) . DIRECTORY_SEPARATOR .
-        'nyss_imapper.xml';
+    $files[] = dirname(__FILE__).DIRECTORY_SEPARATOR.'nyss_imapper.xml';
 }
 
 ?>
