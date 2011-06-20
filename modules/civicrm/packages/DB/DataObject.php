@@ -558,8 +558,7 @@ class DB_DataObject extends DB_DataObject_Overload
         }
         
         foreach($array as $k=>$v) {
-            $kk = str_replace(".", "_", $k);
-            $kk = str_replace(" ", "_", $kk);
+            $kk = str_replace(array("."," "), "_", $k);
             if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
                 $this->debug("$kk = ". $array[$k], "fetchrow LINE", 3);
             }
