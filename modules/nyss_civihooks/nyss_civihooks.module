@@ -274,7 +274,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		
 		//list of exclusions by name or value
 		$btnExcludeName  = array( '_qf_Select_next', '_qf_Map_next' );
-		$btnExcludeValue = array( 'PDF' );
+		$btnExcludeValue = array( 'PDF', 'Print Contact List' );
 		
 		foreach ( $buttons->_elements as $key=>$button ) {
 			$btnType = $buttons->_elements[$key]->_attributes['type'];

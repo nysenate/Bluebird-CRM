@@ -30,6 +30,7 @@
 <div class="spacer"></div>
 <div>
 <br />
+
 <table>
   <tr class="columnheader">
 {if $id}
@@ -57,14 +58,21 @@
          {/foreach}
 
 {else}
+        {*NYSS 3966*}
+        {assign var='street_address' value='1-street_address'}
+        {assign var='city' value='1-city'}
+        {assign var='state_province' value='1-state_province'}
+        {assign var='postal_code' value='1-postal_code'}
+        {assign var='email' value='1-email'}
+        {assign var='phone' value='1-phone-1'}
         <td>{$row.sort_name}</td>
-        <td>{$row.street_address}</td>
-        <td>{$row.city}</td>
-        <td>{$row.state_province}</td>
-        <td>{$row.postal_code}</td>
+        <td>{$row.$street_address}</td>
+        <td>{$row.$city}</td>
+        <td>{$row.$state_province}</td>
+        <td>{$row.$postal_code}</td>
         {*<td>{$row.country}</td>*}{*NYSS*}
-        <td>{$row.email}</td>
-        <td>{$row.phone}</td>
+        <td>{$row.$email}</td>
+        <td>{$row.$phone}</td>
 {/if}
     </tr>
 {/foreach}
