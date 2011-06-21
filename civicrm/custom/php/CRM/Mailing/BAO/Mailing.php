@@ -1099,7 +1099,7 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
             }
         }
 
-        $headers['To'] = "{$mailParams['toName']} <{$mailParams['toEmail']}>";
+        $headers['To'] = "\"{$mailParams['toName']}\" <{$mailParams['toEmail']}>";
         $headers['Precedence'] = 'bulk';
         // Will test in the mail processor if the X-VERP is set in the bounced email.
         // (As an option to replace real VERP for those that can't set it up)
