@@ -1098,7 +1098,7 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
                                          $attach['cleanName'] );
             }
         }
-
+		//NYSS 3947, 3860
         $headers['To'] = "\"{$mailParams['toName']}\" <{$mailParams['toEmail']}>";
         $headers['Precedence'] = 'bulk';
         // Will test in the mail processor if the X-VERP is set in the bounced email.
