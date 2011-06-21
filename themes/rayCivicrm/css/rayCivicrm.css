@@ -1224,6 +1224,12 @@ ul.token-input-list-facebook { width:265px;}
 	display: none;
 }
 
+/*report settings - hide header and footer*/
+#crm-container .crm-report-instanceForm-form-block-report_header,
+#crm-container .crm-report-instanceForm-form-block-report_footer {
+	display: none;
+}
+
 /*log report*/
 .crm-report-civicrm_contact_touched_display_name_touched a {
 	font-weight: bold;
