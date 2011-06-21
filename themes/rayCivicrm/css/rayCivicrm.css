@@ -1308,3 +1308,8 @@ ul.token-input-list-facebook { width:265px;}
 #crm-container .crm-activity-form-block-details .view-value p {
 	line-height: 180%;
 }
+
+/*ensure tooltip sits above other text*/
+#crm-toolTip {
+	z-index: 1000 !important;
+}
