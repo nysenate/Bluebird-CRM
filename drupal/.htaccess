@@ -13,6 +13,9 @@ Options -Indexes
 # Follow symbolic links in this directory.
 Options +FollowSymLinks
 
+# Do not infer file names.  Users must access files properly.
+Options -MultiViews
+
 # Redirect root to login
 #RedirectMatch 301 ^/$ /user
 
