@@ -139,7 +139,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $sql .= " LEFT  JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
 	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
 	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ";
-	$sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR c.contact_type != 'Individual' ) ";
+	$sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR ( c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Individual' ) ";
 	$sql .= " AND ( ( c.contact_type = 'Organization' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Organization' ) ";
 	$sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
 	$sql .= " AND ( c.birth_date IS NULL OR c.birth_date = '' OR c.birth_date > '1901-01-01' ) ";
