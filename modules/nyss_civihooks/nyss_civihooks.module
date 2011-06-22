@@ -304,6 +304,20 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 			if (count.length > 6 && flag == false) {alert('The number of field columns you have selected may exceed what will display in the generated PDF file. Consider selecting fewer fields.'); flag = true;}
 		});";
 		$pdfButton->setAttribute("onclick", $jsnew.$jsold);
+		
+		//3901 if use selects bar or pie chart, hide pdf and print buttons
+		$submitVals = $form->_submitValues;
+		$paramsVals = $form->getVar('_params');
+		$printVar   = $form->getVar('_printButtonName');
+		if ( ( isset($submitVals['charts']) && 
+		       ($submitVals['charts'] == 'pieChart' || $submitVals['charts'] == 'barChart') ) ||
+		     ( isset($paramsVals['charts']) && 
+		       ($paramsVals['charts'] == 'pieChart' || $paramsVals['charts'] == 'barChart') )
+		   ) {
+			$form->removeElement($pdfVar);
+			$form->removeElement($printVar);
+			$form->removeElement($printVar); //intentionally duplicated
+		}
 	}
 	
 	//2503 alpha sort prefix field; reverted and manually reordered
