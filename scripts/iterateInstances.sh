@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-12-03
-# Revised: 2011-06-15
+# Revised: 2011-06-21
 #
 
 prog=`basename $0`
@@ -27,6 +27,8 @@ use_all=0
 use_live=0
 instance_set=
 instances=
+excludes=
+exclude_set=
 quiet_mode=0
 
 while [ $# -gt 0 ]; do
@@ -38,6 +40,8 @@ while [ $# -gt 0 ]; do
     --training) instance_set="training" ;;
     --set|-s) shift; instance_set="$1" ;;
     --instance|-i) shift; instances="$instances $1" ;;
+    --exclude|-e) shift; excludes="$excludes $1" ;;
+    --exclude-set) shift; exclude_set="$1" ;;
     --quiet|-q) quiet_mode=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) cmd="$1" ;;
@@ -70,11 +74,32 @@ if [ $use_all -eq 1 -o $use_live -eq 1 ]; then
 elif [ "$instance_set" ]; then
   ival=`$readConfig --instance-set "$instance_set"`
   if [ ! "$ival" ]; then
-    echo "$prog: Instance set $instance_set not found" >&2
+    echo "$prog: Instance set [$instance_set] not found" >&2
     exit 1
   fi
   instances="$instances $ival"
 fi
+
+# Now remove excluded instances.
+if [ "$exclude_set" ]; then
+  ival=`$readConfig --instance-set "$exclude_set"`
+  if [ ! "$ival" ]; then
+    echo "$prog: Instance set [$exclude_set] not found for exclusion" >&2
+    exit 1
+  fi
+  excludes="$excludes $ival"
+fi
+
+tmp_instances=
+for instance in $instances; do
+  if echo "$excludes" | egrep -q "(^| )$instance( |$)"; then
+    :
+  else
+    tmp_instances="$tmp_instances $instance"
+  fi
+done
+instances="$tmp_instances"
+
 
 if [ ! "$cmd" ]; then
   echo $instances
