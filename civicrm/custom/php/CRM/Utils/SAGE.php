@@ -31,7 +31,7 @@ class CRM_Utils_SAGE {
 		//get the address and remember where we found it for later
         list($addr_field,$addr2) = self::getAddress($values);
 
-        //Sage throws back a cryptic warning if there is no address
+        //SAGE throws back a cryptic warning if there is no address
         //Check first and use our own more descriptive warning
         if (!$addr2) {
             $session->setStatus(ts('SAGE Warning: Not enough address info.'));
@@ -41,10 +41,10 @@ class CRM_Utils_SAGE {
         #Construct and send the API Request
         $url = 'xml/validate/extended?';
         $params = http_build_query( array(
-        'addr2' => str_replace(',', '', $addr2),
-                'city' => CRM_Utils_Array::value('city',$values,""),
-                'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
-                'state' => CRM_Utils_Array::value('state_province',$values,""),
+                'addr2' => str_replace(',', '', $addr2),
+                'city' => CRM_Utils_Array::value('city', $values, ""),
+                'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
+                'state' => CRM_Utils_Array::value('state_province', $values, ""),
                 'country' => CRM_Utils_Array::value('country', $values, ""),
                 'key' => CRM_Core_BAO_Preferences::value('address_standardization_userid'),
             ),'', '&');
@@ -58,7 +58,7 @@ class CRM_Utils_SAGE {
             return false;
         }
 
-        self::storeAddress($values,$xml,$addr_field);
+        self::storeAddress($values, $xml, $addr_field);
         return true;
 	}
 
@@ -203,7 +203,7 @@ class CRM_Utils_SAGE {
 	    //Historically there have been several address to store the address
 	    //We need to return the address and the source field to store the
 	    //corrected address back into the correct form field.
-	    // QQQ: is supplmental_address_2 now depreciated?
+	    // QQQ: is supplmental_address_2 now deprecated?
 	    $addr2_fields = array('street_address','supplemental_address_1');
 		foreach($addr2_fields as $addr_field)
             if(CRM_Utils_Array::value($addr_field,$values))
@@ -293,7 +293,7 @@ class CRM_Utils_SAGE {
             $addr2_parts = explode(" ", $addr2);
             foreach( $addr2_parts as $part) {
                 //Allowing initial zero is okay because we're already corrected
-                if (!preg_match("/^[0-9]*1st|3rd|2nd|[04-9]th$/", $part)) {
+                if (!preg_match("/^[0-9]*1st|2nd|3rd|[04-9]th$/", $part)) {
                     //pass
                 } elseif (preg_match("/^[1-9][0-9a-zA-Z]+/", $part)) {
                     $part = strtoupper($part);
