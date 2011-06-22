@@ -70,6 +70,10 @@ CKEDITOR.on( 'dialogDefinition', function( ev )
     } else if ( dialogName == 'image' ) {
         // Remove the 'Advanced' tabs from the 'Image Properties' dialog.
         dialogDefinition.removeContents( 'advanced' );
+        
+        // Remove link target dropdown
+        var linkTab = dialogDefinition.getContents( 'Link' );
+        linkTab.remove( 'cmbTarget');
     }
       
 });
