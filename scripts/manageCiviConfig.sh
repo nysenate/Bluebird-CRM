@@ -60,5 +60,5 @@ base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BA
 # Passing a cygwin path to PHP won't work, so expand it to Win32 on Cygwin.
 [ "$OSTYPE" = "cygwin" ] && script_dir=`cygpath --mixed $script_dir`
 
-php "$script_dir/manageCiviConfig.php" $civi_op $dbhost $dbuser $dbpass $dbname $instance.$base_domain "$app_rootdir" "$data_rootdir"
+php "$script_dir/manageCiviConfig.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$instance.$base_domain" "$app_rootdir" "$data_rootdir"
 exit $?
