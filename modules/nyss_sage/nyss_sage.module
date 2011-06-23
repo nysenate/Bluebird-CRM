@@ -1,0 +1,45 @@
+<?php
+
+function nyss_sage_address( $id ) {
+    if($id) {
+        require_once 'CRM/Core/DAO/Address.php';
+        $old_address = new CRM_Core_DAO_Address();
+        $old_address->id = $id;
+        if($old_address->find(true))
+            return $old_address;
+    }
+    return null;
+}
+
+function nyss_sage_compare($old_address, $params, $key) {
+    return strcmp($old_address->$key, $params[$key]) != 0;
+}
+
+function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
+{
+    //Don't do anything unless we are saving an address
+    if( $objectName == 'Address' ) {
+        require_once 'CRM/Utils/SAGE.php';
+
+        // If the address already exists, fetch it and compare with form values
+        // Unless the address is being modified we never overwrite districts
+        $overwrite_districts = false;
+        $old_addr = nyss_sage_address(CRM_Utils_Array::value('id',$params));
+        if($old_addr) {
+            if( nyss_sage_compare($old_addr,$params,'street_address')     ||
+                nyss_sage_compare($old_addr,$params,'city')               ||
+                nyss_sage_compare($old_addr,$params,'postal_code')        ||
+                nyss_sage_compare($old_addr,$params,'state_province_id')  ||
+                nyss_sage_compare($old_addr,$params,'country_id')         ||
+                nyss_sage_compare($old_addr,$params,'supplemental_address_1')) {
+
+                //We need to update the district information
+                $overwrite_districts = true;
+            }
+        }
+        CRM_Utils_SAGE::lookup($params,$overwrite_districts);
+    }
+    return true;
+}
+
+?>
