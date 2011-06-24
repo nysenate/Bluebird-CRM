@@ -24,6 +24,9 @@
  +--------------------------------------------------------------------+
 *}
 
+{*NYSS 3950*}
+<script src="{$config->resourceBase}../../../default/themes/rayCivicrm/scripts/jquery.iframe-auto-height.plugin.js" type="text/javascript"></script>
+
 <div class="crm-block crm-form-block crm-mailing-approve-form-block">
 
 <table class="form-layout">
@@ -52,7 +55,7 @@
           <tr class="crm-mailing-test-form-block-attachment"><td class="label">{ts}Attachment(s):{/ts}</td><td>{$preview.attachment}</td></tr>
     {/if}
           {if $preview.viewURL}
-	  <tr><td class="label">{if $preview.type eq 'html'}{ts}Mailing HTML:{/ts}{else}{ts}Mailing Text:{/ts}{/if}</td><td><iframe height="300" src="{$preview.viewURL}" width="80%"><a href="{$preview.viewURL}" onclick="window.open(this.href); return false;">{ts}Mailing Text:{/ts}</a></iframe></td></tr>
+	  <tr><td class="label">{if $preview.type eq 'html'}{ts}Mailing HTML:{/ts}{else}{ts}Mailing Text:{/ts}{/if}</td><td><iframe src="{$preview.viewURL}" width="700px"><a href="{$preview.viewURL}" onclick="window.open(this.href); return false;">{ts}Mailing Text:{/ts}</a></iframe></td></tr>
           {/if}
         </table>
     </div><!-- /.crm-accordion-body -->
@@ -64,6 +67,7 @@
 <script type="text/javascript">
 cj(function() {
    cj().crmaccordions(); 
+   cj('iframe').iframeAutoHeight({heightOffset: 20});
 });
 </script>
 {/literal}
