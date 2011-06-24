@@ -262,7 +262,7 @@ $nyss_iosuffixes = array(
 	'Sr'	=> 'Sr.',
 );
 
-$nyss_iosuffixes = array(
+$nyss_ioprefixes = array(
 	'Mr' 	=> 'Mr.',
 	'Mrs' 	=> 'Mrs.',
 	'Ms'	=> 'Ms.',
