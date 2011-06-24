@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<menu>
+  <item>
+     <path>civicrm/test/sage</path>
+     <title>SAGE Testing</title>
+     <page_callback>CRM_Test_Page_Sage</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>

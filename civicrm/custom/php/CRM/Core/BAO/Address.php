@@ -150,6 +150,10 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
             CRM_Core_BAO_Address::fixAddress( $params );
         }
 
+        //TODO: get the Address pre-save hook into core
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::pre( 'create', 'Address', null, $params );
+
         $address->copyValues($params);
 
         $address->save( );
@@ -315,34 +319,31 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
         require_once 'CRM/Core/BAO/Preferences.php';
         $asp = CRM_Core_BAO_Preferences::value( 'address_standardization_provider' );
         //NYSS clean up the address via specified web services if enabled
+        //NYSS don't run checkAddress if importing
 		$urlpath = explode( '/', CRM_Utils_System::currentPath() );
-		//NYSS don't run checkAddress if importing
         if ( ! empty( $asp ) && $urlpath[1] != 'import' ) {
-            $rc = include_once "CRM/Utils/Address/$asp.php";
-            if ($rc) {
-                $funcname = "CRM_Utils_Address_$asp::checkAddress";
-                call_user_func_array($funcname, array(&$params));
-				
-				//NYSS 3356/Jira 8077
-				// do street parsing again if enabled, since street address might have changed
- 	            require_once 'CRM/Core/BAO/Preferences.php';
- 	            $parseStreetAddress = CRM_Utils_Array::value( 'street_address_parsing', 
- 	                                                          CRM_Core_BAO_Preferences::valueOptions( 'address_options' ), 
- 	                                                          false );
+            require_once "CRM/Utils/Address/$asp.php";
+            eval( "CRM_Utils_Address_$asp".'::checkAddress( $params )');
+
+            // NYSS 3356/Jira 8077 - Already in core as of 3.3.7
+            // do street parsing again if enabled, since street address might have changed
+ 	        require_once 'CRM/Core/BAO/Preferences.php';
+            $parseStreetAddress = CRM_Utils_Array::value( 'street_address_parsing',
+                                                          CRM_Core_BAO_Preferences::valueOptions( 'address_options' ), 
+                                                          false );
  	
- 	            if ( $parseStreetAddress && !empty( $params['street_address']) ) {
- 	                foreach ( array( 'street_number', 'street_name', 'street_unit', 'street_number_suffix' ) as $fld ) {
- 	                    unset( $params[$fld] );
- 	                }
- 	                // main parse string.
- 	                $parseString  = CRM_Utils_Array::value( 'street_address', $params );
- 	                $parsedFields = CRM_Core_BAO_Address::parseStreetAddress( $parseString );
- 	                
- 	                // merge parse address in to main address block.
- 	                $params = array_merge( $params, $parsedFields );
- 	            }
-				//NYSS end
+            if ( $parseStreetAddress && !empty( $params['street_address']) ) {
+                foreach ( array( 'street_number', 'street_name', 'street_unit', 'street_number_suffix' ) as $fld ) {
+                    unset( $params[$fld] );
+                }
+                // main parse string.
+                $parseString  = CRM_Utils_Array::value( 'street_address', $params );
+                $parsedFields = CRM_Core_BAO_Address::parseStreetAddress( $parseString );
+
+                // merge parse address in to main address block.
+                $params = array_merge( $params, $parsedFields );
             }
+			//NYSS end
         }
         
         // add latitude and longitude and format address if needed
@@ -770,7 +771,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
                                     'STOP', 'STE',        'SUITE', 'UNIT',      '#' );
         
         // overwriting $streetUnitFormats for 'en_CA' and 'fr_CA' locale
-        if ( in_array( $locale, array ( 'en_CA', 'fr_CA') ) ) {   
+        if ( in_array( $locale, array ( 'en_CA', 'fr_CA') ) ) {
             $streetUnitFormats = array( 'APT', 'APP', 'SUITE', 'BUREAU', 'UNIT' );
         }
         
