@@ -128,8 +128,8 @@ fi
 
 if echo $target_fields | grep -q 'street_address'; then
   echo "Re-caching $txt street_address fields..."
-  cond=
-  [ $rebuild_all_recs -eq 0 ] && cond="where isnull(nullif(street_address,''))"
+  cond="where 1=1"
+  [ $rebuild_all_recs -eq 0 ] && cond="$cond and isnull(nullif(street_address,''))"
   [ $rebuild_smart -eq 1 ] && cond="$cond and street_name<>''"
   newval="trim(concat(
                if(street_number>=0,street_number,''),
