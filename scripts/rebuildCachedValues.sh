@@ -30,7 +30,7 @@ dry_run=0
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--field-sortname] [--field-displayname] [--field-streetaddress] [--rebuild-all] [--ok] [--dry-run] instanceName" >&2
+  echo "Usage: $prog [--field-sortname] [--field-displayname] [--field-streetaddress] [--rebuild-all] [--rebuild-smart] [--ok] [--dry-run] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
