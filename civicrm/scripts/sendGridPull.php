@@ -82,7 +82,7 @@ function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true ) {
 
     $bounceUrl = "https://sendgrid.com/apiv2/customer.bounces.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
     $bounceRetrieve = simplexml_load_file($bounceUrl);
-    CRM_Core_Error::debug('bounceRetrieve', $bounceRetrieve);
+    //CRM_Core_Error::debug('bounceRetrieve', $bounceRetrieve);
     
     foreach ( $bounceRetrieve as $bounce ) {
         //get parameters
@@ -130,7 +130,7 @@ function unsubscribeRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true
 
     $unsubscribeUrl = "https://sendgrid.com/apiv2/customer.unsubscribes.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
     $unsubscribeRetrieve = simplexml_load_file($unsubscribeUrl);
-    CRM_Core_Error::debug('unsubscribeRetrieve', $unsubscribeRetrieve);
+    //CRM_Core_Error::debug('unsubscribeRetrieve', $unsubscribeRetrieve);
     
     foreach ( $unsubscribeRetrieve as $unsubscribe ) {
         //get parameters
