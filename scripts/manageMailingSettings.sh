@@ -6,7 +6,7 @@
 # Project: BluebirdCRM
 # Author: Ken Zalewski, Brian Shaughnessy
 # Organization: New York State Senate
-# Date: 2011-06-14
+# Date: 2011-06-24
 #
 
 prog=`basename $0`
@@ -64,5 +64,5 @@ base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BA
 # Passing a cygwin path to PHP won't work, so expand it to Win32 on Cygwin.
 [ "$OSTYPE" = "cygwin" ] && script_dir=`cygpath --mixed $script_dir`
 
-php "$script_dir/manageMailingSettings.php" $civi_op $dbhost $dbuser $dbpass $dbname $smtp_host $smtp_port $smtp_auth $smtp_subuser $smtp_subpass $instance $instance.$base_domain "$app_rootdir" "$data_rootdir"
+php "$script_dir/manageMailingSettings.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$smtp_host" "$smtp_port" "$smtp_auth" "$smtp_subuser" "$smtp_subpass" $instance "$instance.$base_domain" "$app_rootdir" "$data_rootdir"
 exit $?
