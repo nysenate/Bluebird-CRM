@@ -1,55 +1,55 @@
 <div class="crm-content-block">
-	<script>
-		{literal}
-		cj(document).ready(function(){
-			{/literal}
-    		first_names = {$first_names};
-    		last_names = {$last_names};
-    		cities = {$city_names};
-    		{literal}
-
-    		imapper_options = {
-				'matchContains': false,
-				'matchCase': false,
-				'matchSubset': true, //Override the
-				'minChars': 2,
-				'scroll': true,
-    		};
-
-    		cj('#city').autocomplete(cities,imapper_options);
-			cj('#first_name').autocomplete(first_names,imapper_options);
-			cj('#last_name').autocomplete(last_names,imapper_options);
-
-		});
-		{/literal}
+	<script>/*
+		nyss_imapper_first_names = {$first_names};
+		nyss_imapper_last_names = {$last_names};
+		nyss_imapper_city_names = {$city_names};
+		nyss_imapper_street_addresses = {$street_addresses};*/
 	</script>
-	<div class="imapper-filter">
+	<div id="imapper-filter">
+		<div class="imapper-title">Contact Filters</div>
 		<form>
-		{*
-		{$form.street_address.label}{$form.street_address.html}<br/>
-		*}
-		<div>{$form.city.label}{$form.city.html}</div>
-		<div>{$form.first_name.label}{$form.first_name.html}</div>
-		<div>{$form.last_name.label}{$form.last_name.html}</div>
-		{$form.state.label}{$form.state.html}<br/>
+			<div id="reset_container" class="imapper-input-container">
+				<input type="submit" name="reset" value="Reset"  id="reset" class="imapper-submit"/></div>
+    		<div id="first_name_container" class="imapper-input-container">
+    			{$form.first_name.label}<br/>{$form.first_name.html}</div>
+    		<div id="last_name_container" class="imapper-input-container">
+    			{$form.last_name.label}<br/>{$form.last_name.html}</div>
+			<div id="phone_container" class="imapper-input-container">
+    			{$form.phone.label}<br/>{$form.phone.html}</div>
+    		<div id="street_address_container" class="imapper-input-container">
+    			{$form.street_address.label}<br/>{$form.street_address.html}</div>
+    		<div id="city_name_container" class="imapper-input-container">
+    			{$form.city.label}<br/>{$form.city.html}</div>
+    		<div id="state_name_container" class="imapper-input-container">
+    			{$form.state.label}<br/>{$form.state.html}</div>
+			<div id="search_container" class="imapper-input-container">
+				<input type="submit" name="filter" value="Filter" id="filter" class="imapper-submit"/></div>
+			<div class="imapper-clear"></div>
 		</form>
 	</div>
-	<div class="imapper-messages">
-        {foreach from=$messages item=message}
+	<div id="imapper-contacts">
+		<div class="imapper-title">Contacts</div>
+    	{foreach from=$contacts item=contact name=contacts}
+
+    		<div class="imapper-contact imapper-{$contact.type}" id="imapper_contact_{$contact.id}">
+    			<div class="imapper-header">
+    				<span class="imapper-toggle"></span>{$contact.name}
+				</div>
+    			<div class="imapper-body"></div>
+    		</div>
+
+    	{/foreach}
+	</div>
+	<div id="imapper-messages">
+		<div class="imapper-title">Messages</div>
+    	{foreach from=$messages item=message}
         	<div class="imapper-message" id="imapper_message_{$message.uid}">
-        		<div class="imapper-date">{$message.date}</div>
-        		<div class="imapper-subject">{$message.subject}</div>
-        		<div class="imapper-clear"></div>
+        		<div class="imapper-header">
+            		<span class="imapper-toggle"></span>{$message.subject}
+        		</div>
+        		<div class="imapper-body"></div>
         	</div>
         {/foreach}
-    </div>
-	{*
-    <div class="imapper-contacts">
-    	{foreach from=$contacts item=contact}
-    		<div class="imapper-contact" id="imapper_contact_{$contact.id}">
-    			<div class="imapper-name">Name: {$contact.display_name}</div>
-    		</div>
-		{/foreach}
-    </div>
-	*}
+	</div>
+	<div class="imapper-clear"></div>
 </div>

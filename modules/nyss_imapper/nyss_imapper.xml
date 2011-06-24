@@ -7,9 +7,33 @@
      <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-     <path>civicrm/imapper/ajax/autocomplete</path>
-     <page_callback>CRM_IMAP_AJAX::autocomplete</page_callback>
+     <path>civicrm/imap/ajax/contacts</path>
+     <page_callback>CRM_IMAP_AJAX::contacts</page_callback>
      <access_arguments>access CiviCRM</access_arguments>
-     <page_type>3</page_type>
+  </item>
+  <item>
+     <path>civicrm/imap/ajax/messages</path>
+     <page_callback>CRM_IMAP_AJAX::messages</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/imap/ajax/city</path>
+     <page_callback>CRM_IMAP_AJAX::city</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/imap/ajax/first</path>
+     <page_callback>CRM_IMAP_AJAX::first_name</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/imap/ajax/last</path>
+     <page_callback>CRM_IMAP_AJAX::last_name</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/imap/ajax/address</path>
+     <page_callback>CRM_IMAP_AJAX::address</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

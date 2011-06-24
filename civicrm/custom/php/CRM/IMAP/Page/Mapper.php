@@ -2,14 +2,17 @@
 
 require_once 'CRM/Core/Page.php';
 require_once 'CRM/Core/Error.php';
-require_once 'CRM/IMAP/Form/Filter.php';
+require_once 'CRM/Core/Form.php';
 
 class CRM_IMAP_Page_Mapper extends CRM_Core_Page {
 
     function run() {
+
         $start = microtime(true);
-        $server = "{webmail.senate.state.ny.us/imap/notls}";
-        $conn = imap_open($server ,'crmdev','p9x64');
+        //$server = "{webmail.senate.state.ny.us/imap/notls}";
+        //$conn = imap_open($server ,'crmdev','p9x64');
+        $server = '{imap.gmail.com:993/imap/ssl/novalidate-cert/norsh}Inbox';
+        $conn = imap_open($server, 'graylin.kim', 'miknilyarg');
         $ids = imap_search($conn,"ALL",SE_UID);
         $headers = imap_fetch_overview($conn, implode(',',$ids),FT_UID);
         foreach($headers as $header) {
@@ -32,10 +35,13 @@ SELECT
   state.name AS state_name,
   contact.first_name AS first_name,
   contact.last_name AS last_name,
+  contact.display_name AS name,
+  contact.contact_type AS type,
   contact.id AS id,
-  address.city AS city
+  address.city AS city,
+  address.street_address AS street_address
 FROM civicrm_contact AS contact
-  JOIN civicrm_address AS address
+  LEFT JOIN civicrm_address AS address
     ON address.contact_id = contact.id
   LEFT JOIN civicrm_state_province AS state
     ON address.state_province_id=state.id
@@ -49,26 +55,37 @@ ENDQUERY
             $last_names[] = $row['last_name'];
             $city_names[] = $row['city'];
             $state_options[$row['state_id']] = $row['state_name'];
+            $street_addresses[] = $row['street_address'];
         }
-        $first_names_clean = array_values(array_unique(array_filter($first_names)));
-        $last_names_clean = array_values(array_unique(array_filter($last_names)));
+        /*
+        $first_names_clean = array_unique(array_filter($first_names));
+        $last_names_clean = array_unique(array_filter($last_names));
         $city_names_clean = array_unique(array_filter($city_names));
+        $street_addresses_clean = array_unique(array_filter($street_addresses));
         sort($first_names_clean,SORT_STRING);
         sort($last_names_clean,SORT_STRING);
         sort($city_names_clean,SORT_STRING);
+
         $end = microtime(true);
         CRM_Core_Error::debug('Mysqli Layer', $end-$start);
 
-        $this->assign('messages',$messages);
+
         $this->assign('contacts',$contacts);
         $this->assign('first_names',json_encode($first_names_clean));
         $this->assign('last_names',json_encode($last_names_clean));
         $this->assign('city_names',json_encode($city_names_clean));
+        */
+        $this->assign('messages',$messages);
+        //$this->assign('contacts',$contacts);
+        sort($street_addresses_clean,SORT_STRING);
+        $this->assign('street_addresses',json_encode($street_addresses_clean));
 
         $form = new CRM_Core_Form();
         $form->addElement('text','first_name','First Name');
         $form->addElement('text','last_name','Last Name');
         $form->addElement('text','city','City');
+        $form->addElement('text','phone','Phone Number');
+        $form->addElement('text','street_address','Street Address');
         $form->addElement('select','state','State',$state_options);
         $form->setDefaults(array(
         		'state'=>array('1031') //New York

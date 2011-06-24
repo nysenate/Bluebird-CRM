@@ -1,6 +1,25 @@
 .imapper-message {margin-bottom:20px;}
-.imapper-date, .imapper-subject {float:left;}
+.imapper-date, .imapper-subject {display:inline;}
 .imapper-date {width:100px; }
-.imapper-clear {clear:both; }
 
-#city {width:200px;}
+.imapper-header { margin:2px; padding:4px; border-bottom:solid black 1px; font-size:1.2em; }
+.imapper-clear {clear:both; }
+.imapper-toggle { font-size:1.5em; padding:5px; cursor:pointer; }
+
+
+
+#imapper-filter { margin-bottom:20px; }
+	#first_name,#last_name,#phone,#city { width:80px; }
+	#street_address {width:180px;}
+    .imapper-input-container { float:left; padding:5px 10px; }
+    .imapper-submit { padding:5px 0px; margin-top:5px; font-size:1.2em; font-weight:bold; }
+    
+.imapper-title { font-size:1.5em; font-weight:bold; padding:5px 5px 15px 5px; }
+#imapper-messages, #imapper-contacts { width:460px; border:solid black 1px; }
+.imapper-message, .imapper-contact { margin-left:20px; }
+
+#imapper-messages { scrollbar: always; overflow: auto; height:600px;}
+    .imapper-message { }
+
+#imapper-contacts { float:right; overflow: auto; height:600px; }
+    .imapper-contact { }
