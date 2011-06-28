@@ -731,18 +731,37 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
         $matches = array( );
 		//NYSS 3800 alter street number/suffix handling so that we accept -digit
         if ( preg_match( '/^[A-Za-z0-9]+([\S]+)/', $streetAddress, $matches ) ) {
-            $streetNumAndSuffix = $matches[0];
+            /*$streetNumAndSuffix = $matches[0];
             // get street number.
             $matches = array( );
             if ( preg_match( '/^(\d+)/', $streetNumAndSuffix, $matches ) ) {
                 $parseFields['street_number'] = $matches[0];
                 $suffix = preg_replace( '/^(\d+)/', '', $streetNumAndSuffix );
                 $parseFields['street_number_suffix'] = trim( $suffix );
-            }
+            }*/
+           
+            //NYSS 3838
+            // check that $matches[0] is numeric, else assume no street number
+ 	            if ( preg_match( '/^(\d+)/', $matches[0] ) ) {
+ 	                $streetNumAndSuffix = $matches[0];
+ 	
+ 	                // get street number.
+ 	                $matches = array( );
+ 	                if ( preg_match( '/^(\d+)/', $streetNumAndSuffix, $matches ) ) {
+ 	                    $parseFields['street_number'] = $matches[0];
+ 	                    $suffix = preg_replace( '/^(\d+)/', '', $streetNumAndSuffix );
+ 	                    $parseFields['street_number_suffix'] = trim( $suffix );
+ 	                }
             
             // unset from main street address.
-            $streetAddress = preg_replace( '/^[A-Za-z0-9]+([\S]+)/', '', $streetAddress );
-            $streetAddress = trim( $streetAddress );
+            /*$streetAddress = preg_replace( '/^[A-Za-z0-9]+([\S]+)/', '', $streetAddress );
+            $streetAddress = trim( $streetAddress );*/
+            
+			// unset from main street address.
+ 	                $streetAddress = preg_replace( '/^[A-Za-z0-9]+([\S]+)/', '', $streetAddress );
+ 	                $streetAddress = trim( $streetAddress );
+ 	            }
+			
         } else if ( preg_match( '/^(\d+)/', $streetAddress, $matches ) ) {
             $parseFields['street_number'] = $matches[0];
             // unset from main street address.

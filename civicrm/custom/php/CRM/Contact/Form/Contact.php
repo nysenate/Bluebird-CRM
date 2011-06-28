@@ -1180,10 +1180,13 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
                 
                 $parseSuccess[$instance] = $success;
                 
+				//NYSS 3838
                 // reset element values.
-                if ( !$success ) {
-                    $parsedFields = array_fill_keys( array_keys($parsedFields), '' );
-                }
+                //if ( !$success ) {
+                //    $parsedFields = array_fill_keys( array_keys($parsedFields), '' );
+                //}
+                // we do not reset element values, but keep what we've parsed
+                // in case of partial matches: CRM-8378
                 
                 // merge parse address in to main address block.
                 $address = array_merge( $address, $parsedFields );
