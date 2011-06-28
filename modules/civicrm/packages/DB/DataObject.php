@@ -558,9 +558,9 @@ class DB_DataObject extends DB_DataObject_Overload
         }
 
         $keys = str_replace(array("."," "), "_", array_keys($array));
-        for ($i = 0; $i < count($keys); $i++) {
-            $key = $keys[$i];
-            $val = $array[$i];
+        $i = 0;
+        foreach ($array as $val) {
+            $key = $keys[$i++];
             if (!empty($_DB_DATAOBJECT['CONFIG']['debug']))
                 $this->debug("$key = $val", "fetchrow LINE", 3);
             $this->$key = $val;
