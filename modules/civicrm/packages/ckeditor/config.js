@@ -9,8 +9,15 @@ CKEDITOR.editorConfig = function( config )
     // config.language = 'fr';
     //config.uiColor = '#AADC6E';
     
+    // The following line was used to integrate IMCE with CKEditor.
     //config.filebrowserBrowseUrl = '/index.php?q=imce&app=ckeditor|url@txtUrl|width@txtWidth|height@txtHeight';
-    //config.filebrowserBrowseUrl = '/sites/all/ckfinder/ckfinder.html';
+
+    config.filebrowserBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=files';
+    config.filebrowserImageBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=images';
+    config.filebrowserFlashBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=flash';
+    config.filebrowserUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=files';
+    config.filebrowserImageUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=images';
+    config.filebrowserFlashUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=flash';
  
     // disable auto spell check
     config.scayt_autoStartup = false;
