@@ -44,6 +44,7 @@ class CRM_Utils_IMAP {
             foreach ($s->parts as $partno0=>$p)
                 self::getpart($email,$id,$p,$partno0+1);
         }
+        return $email;
     }
 
     private function getpart($email,$id,$p,$partno) {

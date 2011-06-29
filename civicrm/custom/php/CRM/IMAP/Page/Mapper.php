@@ -6,118 +6,50 @@ require_once 'CRM/Core/Form.php';
 
 class CRM_IMAP_Page_Mapper extends CRM_Core_Page {
 
+    private static $server = "{webmail.senate.state.ny.us/imap/notls}";
+    private static $user = 'crmdev';
+    private static $pass = 'p9x64';
+
     function run() {
-
-        $start = microtime(true);
-        //$server = "{webmail.senate.state.ny.us/imap/notls}";
-        //$conn = imap_open($server ,'crmdev','p9x64');
-        $server = '{imap.gmail.com:993/imap/ssl/novalidate-cert/norsh}Inbox';
-        $conn = imap_open($server, 'graylin.kim', 'miknilyarg');
+        //Fetch the IMAP Headers
+        $conn = imap_open(self::$server ,self::$user,self::$pass);
         $ids = imap_search($conn,"ALL",SE_UID);
-        $headers = imap_fetch_overview($conn, implode(',',$ids),FT_UID);
+        $headers = imap_fetch_overview($conn,implode(',',$ids),FT_UID);
         foreach($headers as $header) {
-            $date_parts = explode(" ",$header->date);
-            $messages[$header->uid] = array(
-                    'date' => implode(' ',array($date_parts[0],$date_parts[2],$date_parts[1])),
-                    'subject' => $header->subject,
-                    'uid' => $header->uid,
-                    'from' => $header->from,
-                );
+            if( in_array($header->uid,$ids)) {
+
+                //Clean up the date to Mon DD, YYYY format
+                $date_parts = explode(' ',$header->date);
+                $header->date_fmt = "{$date_parts[2]} {$date_parts[1]}, {$date_parts[3]}";
+
+                //Parse out the name and email portions of the from header argument
+                //Generally these fall into one of the two forms
+                //    crmdev@nysenate.gov
+                //    CRM Dev <crmdev@nysenate.gov>
+                $from_parts = explode(' ',$header->from);
+                if(count($from_parts)==1) {
+                    $header->from_email = $header->from;
+                    $header->from_name = '';
+                } else {
+                    $header->from_email = str_replace(array('<','>'),'',array_pop($from_parts));
+                    $header->from_name = implode(' ',$from_parts);
+                }
+
+                $messages[$header->uid] = $header;
+            }
         }
-        $end = microtime(true);
-        CRM_Core_Error::debug('IMAP Layer', $end-$start);
-
-        $start = microtime(true);
-        $db = new mysqli('localhost','root','windows','senate_c_sd99');
-        $result = $db->query(<<<ENDQUERY
-SELECT
-  state.id AS state_id,
-  state.name AS state_name,
-  contact.first_name AS first_name,
-  contact.last_name AS last_name,
-  contact.display_name AS name,
-  contact.contact_type AS type,
-  contact.id AS id,
-  address.city AS city,
-  address.street_address AS street_address
-FROM civicrm_contact AS contact
-  LEFT JOIN civicrm_address AS address
-    ON address.contact_id = contact.id
-  LEFT JOIN civicrm_state_province AS state
-    ON address.state_province_id=state.id
-WHERE contact.is_deleted=0
-ORDER BY state.name
-ENDQUERY
-);
-        while($row = $result->fetch_assoc()) {
-            $contacts[] = $row;
-            $first_names[] = $row['first_name'];
-            $last_names[] = $row['last_name'];
-            $city_names[] = $row['city'];
-            $state_options[$row['state_id']] = $row['state_name'];
-            $street_addresses[] = $row['street_address'];
-        }
-        /*
-        $first_names_clean = array_unique(array_filter($first_names));
-        $last_names_clean = array_unique(array_filter($last_names));
-        $city_names_clean = array_unique(array_filter($city_names));
-        $street_addresses_clean = array_unique(array_filter($street_addresses));
-        sort($first_names_clean,SORT_STRING);
-        sort($last_names_clean,SORT_STRING);
-        sort($city_names_clean,SORT_STRING);
-
-        $end = microtime(true);
-        CRM_Core_Error::debug('Mysqli Layer', $end-$start);
-
-
-        $this->assign('contacts',$contacts);
-        $this->assign('first_names',json_encode($first_names_clean));
-        $this->assign('last_names',json_encode($last_names_clean));
-        $this->assign('city_names',json_encode($city_names_clean));
-        */
-        $this->assign('messages',$messages);
-        //$this->assign('contacts',$contacts);
-        sort($street_addresses_clean,SORT_STRING);
-        $this->assign('street_addresses',json_encode($street_addresses_clean));
-
+        //Build the filter form
         $form = new CRM_Core_Form();
         $form->addElement('text','first_name','First Name');
         $form->addElement('text','last_name','Last Name');
         $form->addElement('text','city','City');
         $form->addElement('text','phone','Phone Number');
         $form->addElement('text','street_address','Street Address');
-        $form->addElement('select','state','State',$state_options);
-        $form->setDefaults(array(
-        		'state'=>array('1031') //New York
-            ));
+
+        //Assign the variables
+        $this->assign('messages',$messages);
         $this->assign( 'form', $form->toSmarty());
 
         parent::run();
-
-        /* Using DB_DataObject
-        require_once 'DB/DataObject.php';
-        $start = microtime(true);
-        $db = new DB_DataObject();
-        $db->query("SELECT *
-        			FROM civicrm_contact
-        			WHERE is_deleted=0");
-        while($db->fetch()) {
-            //$contacts[] = $db->toArray();
-        }
-        $end = microtime(true);
-        CRM_Core_Error::debug('DB_DataObject Layer', $end-$start);
-		*/
-        /* Using DOA_Contact
-        require_once 'CRM/Contact/DAO/Contact.php';
-        $start = microtime(true);
-        $contact = new CRM_Contact_DAO_Contact();
-        $contact->is_deleted=0;
-        $contact->find();
-        while($contact->fetch())
-            //$contacts[] = $contact->toArray();
-            $contacts[] = clone $contact;
-        $end = microtime(true);
-        CRM_Core_Error::debug('DOA Layer',$end-$start);
-        */
    }
 }
