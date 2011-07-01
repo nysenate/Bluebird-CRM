@@ -695,7 +695,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
        SELECT DISTINCT *  from ( {$sqlClause} )
 as tbl ";
 
-        $query = $query . $groupBy. $order. $limit;
+        $query = $query . $groupBy. $order; //NYSS 4032 limit should only be applied to the final query
 
         $dao = CRM_Core_DAO::executeQuery( $query, $params );
 
@@ -759,6 +759,9 @@ as tbl ";
 LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = {$activityTempTable}.activity_id )
     WHERE  civicrm_case_activity.id IS NULL";
         }
+		
+		//NYSS 4032
+		$query .= $limit;
 
         $dao = CRM_Core_DAO::executeQuery( $query );
                 
