@@ -1313,3 +1313,8 @@ ul.token-input-list-facebook { width:265px;}
 #crm-toolTip {
 	z-index: 1000 !important;
 }
+
+/*4000 add horizontal scroll for search results*/
+#crm-container .crm-search-results {
+	overflow: auto;
+}
