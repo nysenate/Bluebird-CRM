@@ -79,5 +79,19 @@
      <path_arguments>action=add</path_arguments>
      <access_arguments>administer CiviCRM;administer district</access_arguments>
   </item>
+  
+  <!--NYSS 3082 dashboard alterations-->
+  <field>
+	 <name>content</name>
+	 <type>text</type>
+	 <comment>dashlet content</comment>
+	 <add>3.3</add>
+  </field>
+  <field>
+	 <name>created_date</name>
+	 <type>datetime</type>
+	 <comment>When was content populated</comment>
+	 <add>3.3</add>
+  </field>
 
 </menu>
