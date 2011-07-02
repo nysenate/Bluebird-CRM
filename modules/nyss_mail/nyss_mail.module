@@ -6,8 +6,6 @@ function nyss_mail_civicrm_alterMailParams( &$params )
 {
     //CRM_Core_Error::debug($params);
 
-    $params['X-SMTPAPI'] = '{"category" : "bluebird"}';
-
     /* Re-write any URLs in the message body of the form:
     **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
     ** into:
@@ -19,9 +17,13 @@ function nyss_mail_civicrm_alterMailParams( &$params )
     }
     
     //remove these so that they don't impact processing through sendgrid
-    unset($params['Reply-To']);
     unset($params['Return-Path']);
     unset($params['List-Unsubscribe']);
+	
+	//set some values
+	$bbconfig = get_bluebird_instance_config();
+	$params['Reply-To'] = $params['replyTo'] = $bbconfig['smtp.subuser'];
+    //$params['X-SMTPAPI'] = '{"category" : "bluebird"}';
 
     //CRM_Core_Error::debug($params); exit();
 }
