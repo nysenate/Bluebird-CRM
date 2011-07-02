@@ -307,11 +307,13 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		
 		//fix prefixes
 		if ( isset( $l['prefix_id'] ) ) {
+		
+		nyss_out('debug', nyss_ioprefixes, true);
 			$prefix_val = '';
 			if ( array_key_exists( $l['prefix_id'], $aPrefix ) ) { //if a valid value, retain
 				$prefix_val = $l['prefix_id'];
 			} elseif ( array_key_exists( $l['prefix_id'], $nyss_ioprefixes ) ) { //check if in prefix map
-				$prefix_val = $nyss_ioprefixes[$l['prefix_id']];
+				$prefix_val = $nyss_ioprefixes[strtoupper($l['prefix_id'])];
 			} else { //if odd, ignore
 				$prefix_val = '';
 			}
@@ -324,7 +326,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			if ( array_key_exists( $l['suffix_id'], $aSuffix ) ) { //if a valid value, retain
 				$suffix_val = $l['suffix_id'];
 			} elseif ( array_key_exists( $l['suffix_id'], $nyss_iosuffixes ) ) { //check if in suffix map
-				$suffix_val = $nyss_iosuffixes[$l['suffix_id']];
+				$suffix_val = $nyss_iosuffixes[strtoupper($l['suffix_id'])];
 			} else { //if odd, ignore
 				$suffix_val = '';
 			}

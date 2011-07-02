@@ -252,21 +252,23 @@ $nyss_iofields['civicrm_value_constituent_information_1'] = array(
 	),
 );
 
+//key should be all caps as we strtoupper() when comparing
 $nyss_iosuffixes = array(
-	'Jr' 	=> 'Jr.',
-	'2Nd' 	=> 'II',
-	'3Rd'	=> 'III',
-	'4Th'	=> 'IV',
-	'Dr'	=> 'M.D.',
-	's'		=> 'Sr.',
-	'Sr'	=> 'Sr.',
+	'JR' 	=> 'Jr.',
+	'2ND' 	=> 'II',
+	'3RD'	=> 'III',
+	'4TH'	=> 'IV',
+	'DR'	=> 'M.D.',
+	'S'		=> 'Sr.',
+	'SR'	=> 'Sr.',
 );
 
 $nyss_ioprefixes = array(
-	'Mr' 	=> 'Mr.',
-	'Mrs' 	=> 'Mrs.',
-	'Ms'	=> 'Ms.',
-	'Rev'	=> 'Rev.',
+	'MR' 	=> 'Mr.',
+	'MRS' 	=> 'Mrs.',
+	'MS'	=> 'Ms.',
+	'REV'	=> 'Rev.',
+	'DR'    => 'Dr.',
 );
 
 ?>
