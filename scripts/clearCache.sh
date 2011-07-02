@@ -74,7 +74,7 @@ echo "Running Drupal clear-cache for js/css compression clean"
 $drush $instance cc css+js
 
 echo "Clearing dashboard content"
-sql="UPDATE civicrm_dashboard SET content=null;"
+sql="UPDATE civicrm_dashboard_contact SET content=null;"
 ( set -x
   $execSql -i $instance -c "$sql"
 )
