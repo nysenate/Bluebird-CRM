@@ -91,20 +91,25 @@
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>
 {literal}
-  <script type="text/javascript">
-  //NYSS hide mailing export option when mapping option selected (temp)
-     function showMappingOption( )
-     {
-	var element = document.getElementsByName("exportOption");
 
-	if ( element[1].checked ) { 
-	  show('map');
-	  hide('postalMailingExport');
+<script type="text/javascript">
+//NYSS hide mailing export option when mapping option selected (temp)
+    function showMappingOption( ) {
+		var element = document.getElementsByName("exportOption");
+		if ( element[1].checked ) { 
+	  		show('map');
+	  		hide('postalMailingExport');
+			cj('#_qf_Select_next-top').val('Continue >> ');
+			cj('#_qf_Select_next-bottom').val('Continue >> ');
         } else {
-	  hide('map');
-	  show('postalMailingExport');
-	}
-     } 
-   showMappingOption( );
-  </script>
+	  		hide('map');
+	  		show('postalMailingExport');
+			cj('#_qf_Select_next-top').val('Export ');
+			cj('#_qf_Select_next-bottom').val('Export ');
+		}
+	} 
+   	showMappingOption( );
+	cj('#_qf_Select_cancel-top').val('Back');
+	cj('#_qf_Select_cancel-bottom').val('Back');
+</script>
 {/literal}
