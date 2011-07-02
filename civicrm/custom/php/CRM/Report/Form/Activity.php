@@ -490,12 +490,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                     if ( $viewLinks ) {
                         // case activities get a special view link
                         if ( $rows[$rowNum]['civicrm_case_activity_case_id'] ) {
-                            $url = CRM_Utils_System::url( "civicrm/case/activity/view"  , 
+                            $url = CRM_Utils_System::url( "civicrm/case/activity/view", 
                                                           'reset=1&cid=' . $rows[$rowNum]['civicrm_activity_source_contact_id'] .
                                                           '&aid=' . $rows[$rowNum]['civicrm_activity_id'] . '&caseID=' . $rows[$rowNum]['civicrm_case_activity_case_id'],
                                                           $this->_absoluteUrl ); //NYSS 3472
                         } else {
-                            $url = CRM_Utils_System::url( "civicrm/contact/view/activity"  , 
+                            $url = CRM_Utils_System::url( "civicrm/activity/view", //NYSS 3986
                                                           'action=view&reset=1&cid=' . $rows[$rowNum]['civicrm_activity_source_contact_id'] .
                                                           '&id=' . $rows[$rowNum]['civicrm_activity_id'] . '&atype=' . $value ,
                                                           $this->_absoluteUrl ); //NYSS 3472
