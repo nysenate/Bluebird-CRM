@@ -324,6 +324,19 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
             }
             $returnProperties = array_merge( $returnProperties, $moreReturnProperties );
         }
+		
+		//NYSS 3991
+		$exportParams['postal_mailing_export']['temp_columns'] = array( );
+ 	    if ( $exportParams['exportOption'] == 2 && 
+ 	         $exportParams['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+ 	        $postalColumns = array( 'is_deceased', 'do_not_mail', 'street_address', 'supplemental_address_1' );
+ 	        foreach ( $postalColumns as $column ) {
+ 	            if ( ! array_key_exists( $column, $returnProperties ) ) {
+ 	                $returnProperties[$column] = 1;
+ 	                $exportParams['postal_mailing_export']['temp_columns'][$column] = 1;
+ 	            }
+ 	        }
+ 	    }
 
         $query = new CRM_Contact_BAO_Query( 0, $returnProperties, null, false, false, $queryMode );
         list( $select, $from, $where ) = $query->query( );
@@ -848,7 +861,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 		// if postalMailing option is checked, exclude contacts who are deceased, have 
  	 	// "Do not mail" privacy setting, or have no street address
  	 	if ( $exportParams['postal_mailing_export']['postal_mailing_export'] == 1 ) {
- 	 	    self::postalMailingFormat( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
+ 	 	    //self::postalMailingFormat( $exportTempTable, $headerRows, $sqlColumns, $exportMode ); 
+			self::postalMailingFormat( $exportTempTable, $headerRows, $sqlColumns, $exportParams ); //NYSS 3991
  	 	}
 
         // call export hook
@@ -1421,7 +1435,8 @@ LIMIT $offset, $limit
  	 * or have no street address
  	 * 
  	 */
- 	function postalMailingFormat( $exportTempTable, $headerRows, $sqlColumns, $exportMode )
+ 	//function postalMailingFormat( $exportTempTable, $headerRows, $sqlColumns, $exportMode )
+	function postalMailingFormat( $exportTempTable, &$headerRows, &$sqlColumns, $exportParams ) //NYSS 3991
  	{
 		$whereClause = array();
  	
@@ -1458,5 +1473,17 @@ FROM   $exportTempTable
 WHERE  {$whereClause}";
  	        CRM_Core_DAO::singleValueQuery( $query );
  	    }
+		
+		//NYSS 3991
+		// unset temporary columns that were added for postal mailing format
+ 	    if ( ! empty($exportParams['postal_mailing_export']['temp_columns']) ) {
+ 	        $unsetKeys = array_keys( $sqlColumns );
+ 	        foreach ( $unsetKeys as $headerKey => $sqlColKey ) {
+ 	            if ( array_key_exists($sqlColKey, $exportParams['postal_mailing_export']['temp_columns']) ) {
+ 	                unset($sqlColumns[$sqlColKey], $headerRows[$headerKey]);
+ 	            }
+ 	        }
+ 	    }
+			
  	}	
 }
