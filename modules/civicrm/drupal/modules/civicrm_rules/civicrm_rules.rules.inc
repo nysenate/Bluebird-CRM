@@ -358,6 +358,39 @@ function civicrm_rules_data_type_info() {
 }
 
 /**
+ * Implementation of hook_rules_condition_info().
+ */
+function civicrm_rules_condition_info() {
+	return 
+        array(
+              'rules_condition_civicrm_approved' => 
+              array(
+                    'label' => t('Approval Status: Approved'),
+                    'arguments' => array(
+                         'approvalstatus' => array(
+						      'type' => 'mailing',
+                              'label' => t('Approved'), ), ),
+					'module' => 'CiviCRM Mailing',
+                    ),
+              'rules_condition_civicrm_rejected' => 
+              array(
+                    'label' => t('Approval Status: Rejected'),
+                    'arguments' => array(
+                         'approvalstatus' => array(
+						      'type' => 'mailing',
+                              'label' => t('Rejected'), ), ),
+					'module' => 'CiviCRM Mailing',
+                    ),
+			  );
+}
+function rules_condition_civicrm_approved(&$mailing, $settings) {
+    return $mailing->approval_status_id == 1;
+}
+function rules_condition_civicrm_rejected(&$mailing, $settings) {
+    return $mailing->approval_status_id != 1;
+}
+
+/**
  * Defines the user data type
  */
 class rules_data_type_contact extends rules_data_type {
