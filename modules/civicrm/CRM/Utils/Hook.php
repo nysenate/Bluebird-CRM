@@ -571,7 +571,7 @@ class CRM_Utils_Hook {
                   '::invoke( 3, $paymentObj, $rawParams, $cookedParams, $null, $null, \'civicrm_alterPaymentProcessorParams\' );' );
     }
 
-    static function alterMailParams( &$params ) {
+    static function alterMailParams( &$params, $source = 'activity' ) {
         $config = CRM_Core_Config::singleton( );
         require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userHookClass ) . '.php' );
         $null =& CRM_Core_DAO::$_nullObject;
@@ -579,7 +579,7 @@ class CRM_Utils_Hook {
         return   
             eval( 'return ' .
                   $config->userHookClass .
-                  '::invoke( 1, $params, $null, $null, $null, $null, \'civicrm_alterMailParams\' );' );
+                  '::invoke( 2, $params, $source, $null, $null, $null, \'civicrm_alterMailParams\' );' );
     }
 
    /** 

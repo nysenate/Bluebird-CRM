@@ -2,7 +2,7 @@
 
 define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 
-function nyss_mail_civicrm_alterMailParams( &$params )
+function nyss_mail_civicrm_alterMailParams( &$params, $source )
 {
     //CRM_Core_Error::debug($params);
 
@@ -14,18 +14,17 @@ function nyss_mail_civicrm_alterMailParams( &$params )
     $bodyvalues = array( 'text', 'html' );
     foreach ( $bodyvalues as $bodyvalue ) {
         $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
-    }
-    
-    //remove these so that they don't impact processing through sendgrid
-    unset($params['Return-Path']);
-    unset($params['List-Unsubscribe']);
+    }  
 	
-	//set some values
-	$bbconfig = get_bluebird_instance_config();
-	$params['Reply-To'] = $params['replyTo'] = $bbconfig['smtp.subuser'];
-    //$params['X-SMTPAPI'] = '{"category" : "bluebird"}';
+	//set and reset some values if sent from civimail
+	if ( $source = 'civimail' ) {
+		$params['Return-Path'] = '';
+    	$params['List-Unsubscribe'] = '';
+		$params['Reply-To'] = 'no-reply@nysenate.gov';
+    	$params['X-SMTPAPI'] = '{"category" : "bluebird"}';
+	}
 
-    //CRM_Core_Error::debug($params); exit();
+    //CRM_Core_Error::debug($params); //exit();
 }
 
 

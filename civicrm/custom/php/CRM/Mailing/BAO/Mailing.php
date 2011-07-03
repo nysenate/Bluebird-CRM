@@ -1081,7 +1081,16 @@ AND    civicrm_mailing.id = civicrm_mailing_job.mailing_id";
         $mailParams['toEmail'] = $email;
 
         require_once 'CRM/Utils/Hook.php';
-        CRM_Utils_Hook::alterMailParams( $mailParams );
+        CRM_Utils_Hook::alterMailParams( $mailParams, 'civimail' );
+		
+		//NYSS cycle through mailParams and set headers array
+		foreach ( $mailParams as $paramKey => $paramValue ) {
+			//exclude values not intended for the header
+			if ( $paramKey != 'text' && $paramKey != 'html' && $paramKey != 'attachments' ) {
+				$headers[$paramKey] = $paramValue;
+			}
+		}
+		//NYSS end
 
         if ( ! empty( $mailParams['text'] ) ) {
             $message->setTxtBody( $mailParams['text'] );
