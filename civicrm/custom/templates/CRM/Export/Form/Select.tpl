@@ -98,12 +98,12 @@
 		var element = document.getElementsByName("exportOption");
 		if ( element[1].checked ) { 
 	  		show('map');
-	  		hide('postalMailingExport');
+	  		//hide('postalMailingExport');
 			cj('#_qf_Select_next-top').val('Continue >> ');
 			cj('#_qf_Select_next-bottom').val('Continue >> ');
         } else {
 	  		hide('map');
-	  		show('postalMailingExport');
+	  		//show('postalMailingExport');
 			cj('#_qf_Select_next-top').val('Export ');
 			cj('#_qf_Select_next-bottom').val('Export ');
 		}
