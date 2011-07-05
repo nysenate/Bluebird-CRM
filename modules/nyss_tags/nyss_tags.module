@@ -60,9 +60,26 @@ function nyss_tags_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
             	               		'data'          => $logMessage
             	               		);
         		CRM_Core_BAO_Log::add( $logParams );
-			}
-		
+			}	
 		}
 	}
+}
 
+function nyss_tags_civicrm_merge( $type, &$sqls, $fromId, $toId, $tables ) {
+
+	//insert civicrm_log record for every contact, case or activity affected by a tag merge.
+    if ( $type == 'sqls' && 
+         in_array('civicrm_tag', $tables) &&  
+         $_GET['q'] == 'civicrm/ajax/mergeTags' ) {
+        $session = CRM_Core_Session::singleton( );
+        $userID  = $session->get( 'userID' );
+
+        $sql = "
+INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date )
+SELECT et.entity_table, et.entity_id, CONCAT('Merged tag: ', tag.name, ' (', tag.id, ' with ', {$toId}, ')'), {$userID}, NOW() 
+FROM   civicrm_entity_tag et 
+INNER JOIN civicrm_tag tag ON et.tag_id = tag.id
+WHERE tag_id = %2";
+        array_unshift( $sqls, $sql );
+    }
 }
