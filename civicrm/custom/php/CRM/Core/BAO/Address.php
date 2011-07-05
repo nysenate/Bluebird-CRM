@@ -150,10 +150,18 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
             CRM_Core_BAO_Address::fixAddress( $params );
         }
 
-        //TODO: get the Address pre-save hook into core
+		//NYSS 3826 - will be added to core
         require_once 'CRM/Utils/Hook.php';
-        CRM_Utils_Hook::pre( 'create', 'Address', null, $params );
-
+ 	    if ( CRM_Utils_Array::value( 'id', $params ) ) {
+ 	        CRM_Utils_Hook::pre( 'edit', 'Address', $params['id'], $params );
+ 	        $isEdit = true;
+ 	    } else {
+ 	        CRM_Utils_Hook::pre( 'create', 'Address', null, $params ); 
+ 	        $isEdit = false;
+ 	    }
+ 	
+ 	    $config =& CRM_Core_Config::singleton();
+		//NYSS end
         $address->copyValues($params);
 
         $address->save( );
@@ -184,6 +192,15 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
             if ( $address->master_id != 'null' ) {
                 self::processSharedAddressRelationship( $address->master_id, $params );
             }
+			
+			//NYSS 3826 - will be added to core
+			// lets call the post hook only after we've done all the follow on processing
+ 	        if ( $isEdit ) {
+ 	            CRM_Utils_Hook::post( 'edit'  , 'Address', $params['id'], $params );
+ 	        } else {
+ 	            CRM_Utils_Hook::post( 'create', 'Address', null, $params ); 
+ 	        }
+			//NYSS end
         }
 
         return $address;
