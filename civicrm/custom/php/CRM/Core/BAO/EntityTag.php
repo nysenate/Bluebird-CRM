@@ -369,7 +369,46 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
 											   		 'description' => $dao->description );
         }
         return $entityTagDetails;
-    }  
+    }
+	
+	//NYSS 3808
+	/** 
+ 	 * Function to merge tags
+ 	 */
+ 	function mergeTags( $fromId, $toId ) {
+ 	    $queryParams = array( 1 => array($toId,   'Integer'),
+                              2 => array($fromId, 'Integer') );
+ 	
+        // re-compute used_for field
+        $query = "SELECT id, used_for FROM civicrm_tag WHERE id IN (%1, %2)";
+        $dao   = CRM_Core_DAO::executeQuery( $query, $queryParams );
+        $tags  = array( );
+        while( $dao->fetch( ) ) {
+            $tags[$dao->id] = explode( ",", $dao->used_for );
+        }
+        $usedFor = array_merge( $tags[$fromId], $tags[$toId] );
+        $usedFor = implode( ',', array_unique($usedFor) );
+ 	
+        // get all merge queries together
+		$sqls   = array( "UPDATE civicrm_entity_tag SET tag_id = %1 WHERE tag_id = %2",
+  			             "DELETE FROM civicrm_tag WHERE id = %2",
+ 	                     "UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1" );
+        $tables = array( 'civicrm_entity_tag', 'civicrm_tag' );
+
+        // Allow hook_civicrm_merge() to add SQL statements for the merge operation AND / OR 
+        // perform any other actions like logging
+        CRM_Utils_Hook::merge( 'sqls', $sqls, $fromId, $toId, $tables );
+ 	        
+        // call the SQL queries in one transaction
+        require_once 'CRM/Core/Transaction.php';
+        $transaction = new CRM_Core_Transaction( );
+        foreach ( $sqls as $sql ) {
+		    CRM_Core_DAO::executeQuery( $sql, $queryParams, true, null, true );
+        }
+        $transaction->commit( );
+ 	
+        return true;
+ 	}
 
 }
 

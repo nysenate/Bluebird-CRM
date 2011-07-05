@@ -361,6 +361,44 @@ class CRM_Admin_Page_AJAX
         	
         }
     }
+	
+	//NYSS 3808
+	static function mergeTagList( ) {
+        $name   = CRM_Utils_Type::escape( $_GET['s'],      'String' );
+        $fromId = CRM_Utils_Type::escape( $_GET['fromId'], 'Integer' );
+		$limit  = CRM_Utils_Type::escape( $_GET['limit'],  'Integer' );
+ 	        
+        // build used-for clause to be used in main query
+        $usedFor = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Tag', $fromId, 'used_for' );
+        $usedForClause = array();
+        if ( $usedFor ) {
+            $usedArray = explode( ",", $usedFor );
+            foreach( $usedArray as $key => $value ) {
+                $usedForClause[] = "t1.used_for LIKE '%{$value}%'";
+            }
+        }
+        $usedForClause = !empty( $usedForClause ) ? implode( " OR " , $usedForClause ) : '1';
+ 	
+        // query to list mergable tags
+        $query  = "
+SELECT t1.name, t1.id, t1.used_for, t3.name as parent
+FROM   civicrm_tag t1 
+LEFT JOIN civicrm_tag t2 ON t1.id = t2.parent_id
+LEFT JOIN civicrm_tag t3 ON t1.parent_id = t3.id
+WHERE  t2.id IS NULL      AND 
+       t1.id <> {$fromId} AND 
+       t1.name LIKE '%{$name}%' AND
+	   ({$usedForClause})
+LIMIT $limit";
+        $dao    = CRM_Core_DAO::executeQuery( $query );
+ 	        
+        while( $dao->fetch( ) ) {
+            $tag = addcslashes($dao->name, '"') . "|{$dao->id}\n";
+			echo $tag = $dao->parent ? ( addcslashes($dao->parent, '"') . ' :: ' . $tag ) : $tag;
+        }
+        CRM_Utils_System::civiExit( );
+    }
+	//NYSS end
     
     static function processTags( ) {
         $skipTagCreate = $skipEntityAction = $entityId = null;
@@ -466,5 +504,26 @@ class CRM_Admin_Page_AJAX
         
         echo json_encode( $tagInfo );
         CRM_Utils_System::civiExit( );
-    } 
+    }
+	
+	//NYSS 3808
+	static function mergeTags( ) {
+ 	    $fromId = CRM_Utils_Type::escape( $_POST['fromId'], 'Integer' );
+ 	    $toId   = CRM_Utils_Type::escape( $_POST['toId'], 'Integer' );
+ 	        
+        $query = "SELECT id, name FROM civicrm_tag WHERE id IN (%1, %2)";
+        $dao   = CRM_Core_DAO::executeQuery( $query, array( 1 => array($fromId, 'Integer'),
+                                                            2 => array($toId,   'Integer') ) );
+        $result = array( );
+        while( $dao->fetch( ) ) {
+            $result[($dao->id == $fromId ? 'tagA' : 'tagB')] = $dao->name;
+        }
+        
+		require_once 'CRM/Core/BAO/EntityTag.php';
+ 	    $status = CRM_Core_BAO_EntityTag::mergeTags( $fromId, $toId );
+		$result['status'] = $status;
+ 	
+        echo json_encode( $result ); 	
+ 	    CRM_Utils_System::civiExit( );
+ 	}
 }

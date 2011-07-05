@@ -82,6 +82,12 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
                                                                     'qs'    => 'action=delete&id=%%id%%',
                                                                     'title' => ts('Delete Tag'), 
                                                                     ),
+								  //NYSS 3808
+								  CRM_Core_Action::FOLLOWUP => array(
+ 	                                                                'name'  => ts('Merge'),
+ 	                                                                'extra' => 'onclick = "mergeTag( %%id%% );"',
+ 	                                                                'title' => ts('Merge Tag')
+ 	                                                                ),
                                   );
         }
         return self::$_links;
@@ -146,6 +152,19 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
            $adminTagSet = true;
        }
        $this->assign( 'adminTagSet', $adminTagSet );
+	   
+	   //NYSS 3808
+	   $mergeableTags = array();
+       if ( CRM_Core_Permission::check('administer reserved tags') ) {
+           $query = "SELECT t1.name, t1.id
+FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.id = t2.parent_id
+WHERE t2.id IS NULL";
+           $tag = CRM_Core_DAO::executeQuery( $query );
+           while( $tag->fetch( ) ) {           
+               $mergeableTags[$tag->id] = 1;
+           }
+       }
+	   //NYSS end
        
        require_once 'CRM/Core/OptionGroup.php';
        $usedFor = CRM_Core_OptionGroup::values('tag_used_for');
@@ -159,7 +178,7 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
        $tag = CRM_Core_DAO::executeQuery( $query );
        $values = array( );
        
-       $action     = CRM_Core_Action::UPDATE + CRM_Core_Action::DELETE;
+	   $action     = CRM_Core_Action::UPDATE + CRM_Core_Action::DELETE;
        $permission = CRM_Core_Permission::EDIT;
 
        while( $tag->fetch( ) ) {           
@@ -185,6 +204,11 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
            if ( $values[$tag->id]['is_tagset'] && !CRM_Core_Permission::check('administer Tagsets') ) {
                $newAction = 0;
            }
+		   
+		   //NYSS 3808
+		   if ( array_key_exists($tag->id, $mergeableTags) ) {
+ 	           $newAction += CRM_Core_Action::FOLLOWUP;
+ 	       }
 
            // populate action links
            if ( $newAction ) {           

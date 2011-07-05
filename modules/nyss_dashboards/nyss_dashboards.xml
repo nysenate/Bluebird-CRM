@@ -93,5 +93,17 @@
 	 <comment>When was content populated</comment>
 	 <add>3.3</add>
   </field>
+  
+  <!--NYSS 3808-->
+  <item>
+ 	 <path>civicrm/ajax/mergeTags</path>
+ 	 <page_callback>CRM_Admin_Page_AJAX::mergeTags</page_callback>
+ 	 <access_arguments>access CiviCRM,administer reserved tags</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/ajax/mergeTagList</path>
+     <page_callback>CRM_Admin_Page_AJAX::mergeTagList</page_callback>
+     <access_arguments>access CiviCRM,administer reserved tags</access_arguments>
+  </item>
 
 </menu>
