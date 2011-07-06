@@ -1313,3 +1313,10 @@ ul.token-input-list-facebook { width:265px;}
 #crm-toolTip {
 	z-index: 1000 !important;
 }
+
+/*message template page*/
+#crm-container #mainTabContainer #user.ui-tabs-panel,
+#crm-container #mainTabContainer #workflow.ui-tabs-panel {
+	width: auto;
+	margin: 4px 0;
+}
