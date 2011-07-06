@@ -30,6 +30,8 @@ DEFAULT_BACKUP_ROOTDIR=/crmbackups
 
 DEFAULT_BASE_DOMAIN=crm.nysenate.gov
 
+DEFAULT_SENATOR_FORMAL_NAME="Senator"
+
 
 confirm_yes_no() {
   [ "$1" ] && confirm_msg="$1" || confirm_msg="Proceed with the operation"
