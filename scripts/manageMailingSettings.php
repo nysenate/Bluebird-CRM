@@ -7,7 +7,7 @@
 
 function getMailingBackend( $dbcon )
 {
-  $civiconfig = array();
+  $civiMailing = array();
   $sql = "SELECT id, mailing_backend FROM civicrm_preferences WHERE id = 1;";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
@@ -27,6 +27,27 @@ function getMailingBackend( $dbcon )
   return $civiMailing;
 } // getMailingBackend()
 
+function getConfigBackend( $dbcon )
+{
+  $civiConfig = array();
+  $sql = "SELECT id, config_backend FROM civicrm_domain WHERE id = 1;";
+  $result = mysql_query($sql, $dbcon);
+  if (!$result) {
+    echo mysql_error($dbcon)."\n";
+    return false;
+  }
+
+  //get the only row
+  $row = mysql_fetch_assoc($result);
+  if ($row['config_backend']) {
+    $civiConfig['backend'] = unserialize($row['config_backend']);
+  }
+  else {
+    $civiConfig['backend'] = null;
+  }
+
+  return $civiConfig;
+} // getConfigBackend()
 
 function listMailingBackend( $civiMailing )
 {
@@ -45,9 +66,9 @@ function listMailingBackend( $civiMailing )
 } // listMailingBackend()
 
 
-function updateMailingBackend($dbcon, $civiMailing, $crmhost, $appdir, $datadir, 
+function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, 
                               $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass,
-							  $instance) {
+							  $instance, $senator) {
   	$rc = true;
 	//print_r($civiMailing);
 
@@ -59,7 +80,7 @@ function updateMailingBackend($dbcon, $civiMailing, $crmhost, $appdir, $datadir,
 	}
 	
 	//set values
-	//TODO: this is manually set to override directory; revert when core has been updated
+	//TODO this is manually set to override directory; revert when core has been updated
 	require_once $appdir.'/civicrm/custom/php/CRM/Utils/Crypt.php';
 	$mb['smtpServer']   = $smtpHost;
 	$mb['smtpPort']     = $smtpPort;
@@ -73,6 +94,30 @@ function updateMailingBackend($dbcon, $civiMailing, $crmhost, $appdir, $datadir,
     	echo mysql_error($dbcon)."\n";
     	$rc = false;
   	}
+	
+	//enable civimail component
+	$cb = $civiConfig['backend'];
+	$cb['enableComponents'][]   = 'CiviMail';
+	$cb['enableComponentIDs'][] = 4;
+	$sql = "UPDATE civicrm_domain SET config_backend='".serialize($cb)."' WHERE id=1;";
+  	if ( !mysql_query($sql, $dbcon) ) {
+    	echo mysql_error($dbcon)."\n";
+    	$rc = false;
+  	}
+	
+	//enable civimail report menu items
+	$sql = "UPDATE civicrm_navigation SET is_active = 1 WHERE id IN (240, 241, 242, 243)";
+	$nav = mysql_query( $sql, $dbcon );
+	
+	//update the FROM email address
+	$from = "\"$senator\" <$smtpSubuser>";
+	$sql = "UPDATE civicrm_option_value SET label = '{$from}', name = '{$from}' WHERE option_group_id = 30";
+	$from_set   = mysql_query( $sql , $dbcon );
+	
+	//cache cleanup
+	$cache_menu  = mysql_query( "TRUNCATE TABLE civicrm_menu", $dbcon );
+	$cache_cache = mysql_query( "TRUNCATE TABLE civicrm_cache", $dbcon );
+	$cache_nav   = mysql_query( "UPDATE civicrm_preferences SET navigation = null", $dbcon );
 
   	return $rc;
 } // updateMailingBackend()
@@ -119,17 +164,17 @@ function setHeaderFooter( $dbcon, $crmhost, $instance ) {
 	
 }
 
+//run script
 $prog = basename($argv[0]);
+//print_r($argv);
 
-if ($argc != 14 && $argc != 17) {
+if ($argc != 15 && $argc != 18) {
     	
-    echo "Usage: $prog cmd dbhost dbuser dbpass dbname smtphost smtpport smtpauth smtpsubuser smtpsubpass instance [crmhost] [appdir] [datadir]\n";
-    echo "   cmd can be: list, update-config, update-template, set-apps\n";
+    echo "Usage: $prog cmd dbhost dbuser dbpass dbname smtphost smtpport smtpauth smtpsubuser smtpsubpass instance senator [crmhost] [appdir] [datadir]\n";
+    echo "   cmd can be: list, update-config, update-template, set-apps, update-all\n";
     exit(1);
 
 } else {
-	
-	//print_r($argv);
 	
 	$cmd = $argv[1];
     $dbhost = $argv[2];
@@ -144,9 +189,10 @@ if ($argc != 14 && $argc != 17) {
     $smtpSubuser = $argv[11];
     $smtpSubpass = $argv[12];
     $instance = $argv[13];
-    $crmhost = ($argc == 17) ? $argv[14] : "";
-    $appdir = ($argc == 17) ? $argv[15] : "";
-    $datadir = ($argc == 17) ? $argv[16] : "";
+	$senator = $argv[14];
+    $crmhost = ($argc == 18) ? $argv[15] : "";
+    $appdir = ($argc == 18) ? $argv[16] : "";
+    $datadir = ($argc == 18) ? $argv[17] : "";
 
     $dbcon = mysql_connect($dbhost, $dbuser, $dbpass);
     if (!$dbcon) {
@@ -162,6 +208,7 @@ if ($argc != 14 && $argc != 17) {
 
   	$rc = 0;
   	$civiMailing = getMailingBackend($dbcon);
+	$civiConfig  = getConfigBackend($dbcon);
 
   	if ($civiMailing === false) {
     
@@ -172,7 +219,7 @@ if ($argc != 14 && $argc != 17) {
 
     	if ( $cmd == "update-config" ) {
         	echo "Updating the CiviCRM mailing configuration.\n";
-        	if (updateMailingBackend($dbcon, $civiMailing, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance ) === false) {
+        	if (updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $senator ) === false) {
         		$rc = 1;
         	}
 		} elseif ( $cmd == "update-template" ) {
@@ -182,16 +229,19 @@ if ($argc != 14 && $argc != 17) {
 		
 		} elseif ( $cmd == "set-apps" ) {
 			
-			echo "Activating Sendgrid apps.\n";
+			echo "Activating and configuring Sendgrid apps.\n";
 			setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser );
 		
 		} elseif ( $cmd == "update-all" ) {
 			
-			echo "Updating the CiviCRM mailing configuration.\n";
-        	updateMailingBackend($dbcon, $civiMailing, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance);
+			echo "1. Updating the CiviCRM mailing configuration.\n";
+        	updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $senator);
 		
-			echo "Resetting the header and footer to default values.\n";
-			setHeaderFooter( $dbcon, $crmhost );
+			echo "2. Resetting the header and footer to default values.\n";
+			setHeaderFooter( $dbcon, $crmhost, $instance );
+			
+			echo "3. Activating and configuring Sendgrid apps.\n";
+			//setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser );
 		
 		} else {
         	
