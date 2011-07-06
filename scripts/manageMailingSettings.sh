@@ -62,7 +62,7 @@ smtp_user=`$readConfig --ig $instance smtp.user` || smtp_user="$DEFAULT_SMTP_USE
 smtp_pass=`$readConfig --ig $instance smtp.pass` || smtp_pass="$DEFAULT_SMTP_PASS"
 smtp_subuser=`$readConfig --ig $instance smtp.subuser` || smtp_subuser="$DEFAULT_SMTP_USER"
 smtp_subpass=`$readConfig --ig $instance smtp.subpass` || smtp_subpass="$DEFAULT_SMTP_PASS"
-senator=`$readConfig --ig $instance senator` || senator="Senator"
+formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="$DEFAULT_SENATOR_FORMAL_NAME"
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
@@ -70,5 +70,5 @@ base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BA
 # Passing a cygwin path to PHP won't work, so expand it to Win32 on Cygwin.
 [ "$OSTYPE" = "cygwin" ] && script_dir=`cygpath --mixed $script_dir`
 
-php "$script_dir/manageMailingSettings.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$smtp_host" "$smtp_port" "$smtp_auth" "$smtp_user" "$smtp_pass" "$smtp_subuser" "$smtp_subpass" $instance "$senator" "$instance.$base_domain" "$app_rootdir" "$data_rootdir"
+php "$script_dir/manageMailingSettings.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$smtp_host" "$smtp_port" "$smtp_auth" "$smtp_user" "$smtp_pass" "$smtp_subuser" "$smtp_subpass" $instance "$formal_name" "$instance.$base_domain" "$app_rootdir" "$data_rootdir"
 exit $?
