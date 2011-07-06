@@ -31,9 +31,9 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --list) civi_op=list ;;
     --update-config) civi_op=update-config ;;
-	--update-template) civi_op=update-template ;;
-	--set-apps) civi_op=set-apps ;;
-	--update-all) civi_op=update-all ;;
+    --update-template) civi_op=update-template ;;
+    --set-apps) civi_op=set-apps ;;
+    --update-all) civi_op=update-all ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
