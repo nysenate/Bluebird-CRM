@@ -219,7 +219,12 @@ class uploader {
                 if (!is_dir(path::normalize($dir)))
                     @mkdir(path::normalize($dir), $this->config['dirPerms'], true);
 
-                $target = file::getInexistantFilename("$dir{$file['name']}");
+                $filename = $file['name'];
+                if (isset($this->config['filenameChangeChars']) &&
+                    is_array($this->config['filenameChangeChars'])) {
+                  $filename = strtr($filename, $this->config['filenameChangeChars']);
+                }
+                $target = file::getInexistantFilename("$dir$filename");
 
                 if (!@move_uploaded_file($file['tmp_name'], $target) &&
                     !@rename($file['tmp_name'], $target) &&

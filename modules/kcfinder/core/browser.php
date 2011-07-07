@@ -583,7 +583,12 @@ class browser extends uploader {
             return "{$file['name']}: $message";
         }
 
-        $target = "$dir/" . file::getInexistantFilename($file['name'], $dir);
+        $filename = $file['name'];
+        if (isset($this->config['filenameChangeChars']) &&
+            is_array($this->config['filenameChangeChars'])) {
+          $filename = strtr($filename, $this->config['filenameChangeChars']);
+        }
+        $target = "$dir/" . file::getInexistantFilename($filename, $dir);
 
         if (!@move_uploaded_file($file['tmp_name'], $target) &&
             !@rename($file['tmp_name'], $target) &&
