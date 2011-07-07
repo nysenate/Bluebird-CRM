@@ -62,6 +62,10 @@ $_CONFIG = array(
 
     'deniedExts' => "exe com msi bat php phps phtml php3 php4 cgi pl",
 
+    'filenameChangeChars' => array(
+        ' ' => '_'
+    ),
+
     'types' => array(
 
         // CKEditor & FCKEditor types
