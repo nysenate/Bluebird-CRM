@@ -136,10 +136,9 @@ AND    $operationClause
         for($i=0; $i < $count; $i+=self::NUM_CONTACTS_TO_INSERT) {
             CRM_Core_DAO::executeQuery( "
                 INSERT INTO civicrm_acl_contact_cache ( user_id, contact_id, operation )
-                    SELECT $userID as user_id, contact_a.id as contact_id, '$operation' as operation
+                    SELECT DISTINCT $userID as user_id, contact_a.id as contact_id, '$operation' as operation
                     $from
                     WHERE $permission
-                    GROUP BY contact_a.id
                     LIMIT ".self::NUM_CONTACTS_TO_INSERT." OFFSET $i
                 ON DUPLICATE KEY UPDATE
                     user_id=VALUES(user_id),
