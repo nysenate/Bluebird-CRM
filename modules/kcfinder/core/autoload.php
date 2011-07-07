@@ -2,14 +2,21 @@
 
 /** This file is part of KCFinder project
   *
-  *      @desc Autoload classes magic function
+  *      @desc This file is included first, before each other
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
   *   @license http://www.opensource.org/licenses/lgpl-2.1.php LGPLv2
   *      @link http://kcfinder.sunhater.com
+  *
+  * This file is the place you can put any code (at the end of the file),
+  * which will be executed before any other. Suitable for:
+  *     1. Set PHP ini settings using ini_set()
+  *     2. Custom session save handler with session_set_save_handler()
+  *     3. Any custom integration code. If you use any global variables
+  *        here, they can be accessed in config.php via $GLOBALS array.
   */
 
 // PHP VERSION CHECK
@@ -76,5 +83,7 @@ if (!function_exists("json_encode")) {
         return kcfinder_json_string_encode($data);
     }
 }
+
+// PLACE YOUR CUSTOM CODE HERE
 
 ?>

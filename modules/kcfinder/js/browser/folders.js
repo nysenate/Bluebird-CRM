@@ -4,7 +4,7 @@
   *
   *      @desc Folder related functionality
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -31,6 +31,7 @@ browser.initFolders = function() {
         browser.changeDir($(this).parent());
     });
     $('div.folder > a > span.folder').rightClick(function(e) {
+        _.unselect();
         browser.menuDir($(this).parent(), e);
     });
 

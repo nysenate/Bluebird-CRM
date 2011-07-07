@@ -4,7 +4,7 @@
   *
   *      @desc Join all JavaScript files in current directory
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -23,9 +23,8 @@ foreach ($files as $file) {
         $mtime = $fmtime;
 }
 
-httpCache::checkMTime($mtime);
-
 header("Content-Type: text/javascript");
+httpCache::checkMTime($mtime);
 foreach ($files as $file)
     require $file;
 

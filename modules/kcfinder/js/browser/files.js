@@ -4,7 +4,7 @@
   *
   *      @desc File related functionality
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -52,6 +52,7 @@ browser.showFiles = function(callBack, selected) {
     this.fadeFiles();
     setTimeout(function() {
         var html = '';
+        var ts = new Date().getTime();
         $.each(browser.files, function(i, file) {
             if (_.kuki.get('view') == 'list') {
                 if (!i) html += '<table summary="list">';
@@ -69,7 +70,7 @@ browser.showFiles = function(callBack, selected) {
                 if (i == browser.files.length - 1) html += '</table>';
             } else {
                 if (file.thumb)
-                    var icon = browser.baseGetData('thumb') + '&file=' + encodeURIComponent(file.name) + '&dir=' + encodeURIComponent(browser.dir);
+                    var icon = browser.baseGetData('thumb') + '&file=' + encodeURIComponent(file.name) + '&dir=' + encodeURIComponent(browser.dir) + '&ts=' + ts;
                 else if (file.smallThumb) {
                     var icon = browser.uploadURL + '/' + browser.dir + '/' + file.name;
                     icon = _.escapeDirs(icon).replace(/\'/g, "%27");
@@ -484,8 +485,9 @@ browser.menuFile = function(file, e) {
 
     $('.menu a[href="kcact:view"]').click(function() {
         browser.hideDialog();
+        var ts = new Date().getTime();
         var showImage = function(data) {
-            url = _.escapeDirs(browser.uploadURL + '/' + browser.dir + '/' + data.name),
+            url = _.escapeDirs(browser.uploadURL + '/' + browser.dir + '/' + data.name) + '?ts=' + ts,
             $('#loading').html(browser.label("Loading image..."));
             $('#loading').css('display', 'inline');
             var img = new Image();
@@ -540,24 +542,26 @@ browser.menuFile = function(file, e) {
                     if (file.thumb || file.smallThumb)
                         images[images.length] = file;
                 });
-                if (images.length > 1)
+                if (images.length)
                     $.each(images, function(i, image) {
                         if (image.name == data.name) {
                             $(document).unbind('keydown');
                             $(document).keydown(function(e) {
-                                if (!browser.lock && (e.keyCode == 37)) {
-                                    var nimg = i
-                                        ? images[i - 1]
-                                        : images[images.length - 1];
-                                    browser.lock = true;
-                                    showImage(nimg);
-                                }
-                                if (!browser.lock && (e.keyCode == 39)) {
-                                    var nimg = (i >= images.length - 1)
-                                        ? images[0]
-                                        : images[i + 1];
-                                    browser.lock = true;
-                                    showImage(nimg);
+                                if (images.length > 1) {
+                                    if (!browser.lock && (e.keyCode == 37)) {
+                                        var nimg = i
+                                            ? images[i - 1]
+                                            : images[images.length - 1];
+                                        browser.lock = true;
+                                        showImage(nimg);
+                                    }
+                                    if (!browser.lock && (e.keyCode == 39)) {
+                                        var nimg = (i >= images.length - 1)
+                                            ? images[0]
+                                            : images[i + 1];
+                                        browser.lock = true;
+                                        showImage(nimg);
+                                    }
                                 }
                                 if (e.keyCode == 27) {
                                     browser.hideDialog();

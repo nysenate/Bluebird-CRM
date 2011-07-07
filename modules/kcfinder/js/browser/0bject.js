@@ -4,7 +4,7 @@
   *
   *      @desc Base JavaScript object properties
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2

@@ -4,7 +4,7 @@
   *
   *      @desc Uploader class
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -408,10 +408,23 @@ class uploader {
         )
             return true;
 
-        return (
-            $gd->resize_fit($this->config['maxImageWidth'], $this->config['maxImageHeight']) &&
-            $gd->imagejpeg($file, $this->config['jpegQuality'])
-        );
+        if ((!$this->config['maxImageWidth'] || !$this->config['maxImageHeight'])) {
+            if ($this->config['maxImageWidth']) {
+                $width = $this->config['maxImageWidth'];
+                $height = $gd->get_prop_height($width);
+            } else {
+                $height = $this->config['maxImageHeight'];
+                $width = $gd->get_prop_width($height);
+            }
+            if (!$gd->resize($width, $height))
+                return false;
+
+        } elseif (!$gd->resize_fit(
+            $this->config['maxImageWidth'], $this->config['maxImageHeight']
+        ))
+            return false;
+
+        return $gd->imagejpeg($file, $this->config['jpegQuality']);
     }
 
     protected function makeThumb($file, $overwrite=true) {

@@ -2,7 +2,7 @@
   *
   *      @desc Helper object
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -26,6 +26,22 @@ _.unselect = function() {
         if (sel && sel.removeAllRanges)
         sel.removeAllRanges();
     }
+};
+
+_.selection = function(field, start, end) {
+    if (field.createTextRange) {
+        var selRange = field.createTextRange();
+        selRange.collapse(true);
+        selRange.moveStart('character', start);
+        selRange.moveEnd('character', end-start);
+        selRange.select();
+    } else if (field.setSelectionRange) {
+        field.setSelectionRange(start, end);
+    } else if (field.selectionStart) {
+        field.selectionStart = start;
+        field.selectionEnd = end;
+    }
+    field.focus();
 };
 
 _.htmlValue = function(value) {

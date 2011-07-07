@@ -2,9 +2,9 @@
 
 /** This file is part of KCFinder project
   *
-  *      @desc Miscellaneous methods
+  *      @desc Miscellaneous functionality
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -30,7 +30,6 @@ browser.showDialog = function(e) {
         $('#dialog').css('top', parseInt(($(window).height() - $('#dialog').outerHeight()) / 2) + 'px');
         $('#dialog').css('display', 'block');
     }
-
 };
 
 browser.hideDialog = function() {
@@ -107,7 +106,7 @@ browser.fileNameDialog = function(e, post, inputName, inputValue, url, labels, c
                 browser.hideDialog();
             },
             error: function() {
-                alert(browser.label("Unknown error.2"));
+                alert(browser.label("Unknown error."));
             }
         });
         return false;
@@ -117,8 +116,15 @@ browser.fileNameDialog = function(e, post, inputName, inputValue, url, labels, c
     $('#dialog input[type="submit"]').click(function() {
         return $('#dialog form').submit();
     });
-    $('#dialog input[type="text"]').get(0).focus();
-    $('#dialog input[type="text"]').get(0).select();
+    var field = $('#dialog input[type="text"]');
+    var value = field.attr('value');
+    if (/^(.+)\.[^\.]+$/ .test(value)) {
+        value = value.replace(/^(.+)\.[^\.]+$/, "$1");
+        _.selection(field.get(0), 0, value.length);
+    } else {
+        field.get(0).focus();
+        field.get(0).select();
+    }
     $('#dialog input[type="text"]').keypress(function(e) {
         if (e.keyCode == 27) browser.hideDialog();
     });

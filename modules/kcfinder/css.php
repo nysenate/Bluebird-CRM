@@ -4,7 +4,7 @@
   *
   *      @desc Base CSS definitions
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.31
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -12,6 +12,7 @@
   *      @link http://kcfinder.sunhater.com
   */
 
+header("Content-Type: text/css");
 require "core/autoload.php";
 $mtime = @filemtime(__FILE__);
 if ($mtime) httpCache::checkMTime($mtime);
@@ -241,5 +242,4 @@ span.brace.opened, span.brace.closed {
 }
 <?php
 
-header("Content-Type: text/css");
 echo text::compressCSS(ob_get_clean());
