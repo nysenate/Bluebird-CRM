@@ -132,7 +132,7 @@ AND    $operationClause
         require_once "CRM/Contact/BAO/Query.php";
         $from       = CRM_Contact_BAO_Query::fromClause( $whereTables );
 
-        $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) $from WHERE $permission GROUP BY contact_a.id");
+        $count = CRM_Core_DAO::singleValueQuery("SELECT count(DISTINCT contact_a.id) $from WHERE $permission");
         for($i=0; $i < $count; $i+=self::NUM_CONTACTS_TO_INSERT) {
             CRM_Core_DAO::executeQuery( "
                 INSERT INTO civicrm_acl_contact_cache ( user_id, contact_id, operation )
