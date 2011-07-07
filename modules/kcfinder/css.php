@@ -12,7 +12,6 @@
   *      @link http://kcfinder.sunhater.com
   */
 
-header("Content-Type: text/css");
 require "core/autoload.php";
 $mtime = @filemtime(__FILE__);
 if ($mtime) httpCache::checkMTime($mtime);
@@ -241,5 +240,5 @@ span.brace.opened, span.brace.closed {
     filter: alpha(opacity:0);
 }
 <?php
-
+header("Content-Type: text/css");
 echo text::compressCSS(ob_get_clean());
