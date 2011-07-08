@@ -136,15 +136,24 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
  * Enable subscription, click, and open tracking apps
  * Set configuration accordingly
  */
-function setSendgridApps ( $smtpUser, $smtpPass, $smtpSubuser )
+function setSendgridApps ( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass )
 {
   //enable apps
   $apps = array ( 'subscriptiontrack', 'opentrack', 'clicktrack' );
   foreach ( $apps as $app ) {
-    $appsUrl = "https://sendgrid.com/apiv2/customer.apps.xml?api_user=$smtpUser&api_key=$smtpPass&user=$smtpSubuser&task=activate&name=$app";
+  	//uncomment to print existing settings to screen
+	//$appsList = "https://sendgrid.com/api/filter.getsettings.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=$app";
+	//print_r( simplexml_load_file($appsList) );
+	
+    $appsUrl = "https://sendgrid.com/api/filter.activate.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=$app";
     $setApps = simplexml_load_file($appsUrl);
-    echo $setApps."\n\n";
+    echo "Activate: $app\n";
   }
+  
+  //disable domain keys app (to remove on behalf of in from name)
+  $dapps = "https://sendgrid.com/api/filter.deactivate.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=domainkeys";
+  $dk = simplexml_load_file($dapps);
+  echo "Deactivate: Domain keys\n";
   
   //set configuration
 } //setSendgridApps
@@ -249,7 +258,7 @@ else {
       setHeaderFooter( $dbcon, $crmhost, $instance, $fromName );
     } elseif ( $cmd == "set-apps" ) {
       echo "Activating and configuring Sendgrid apps.\n";
-      setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser );
+      setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass );
     } elseif ( $cmd == "update-all" ) {
       echo "1. Updating the CiviCRM mailing configuration.\n";
       updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName, $emailFrom);
@@ -257,7 +266,7 @@ else {
 	  echo "   From Name: ".$fromName."\n";
       setHeaderFooter( $dbcon, $crmhost, $instance, $fromName );
       echo "3. Activating and configuring Sendgrid apps.\n";
-      //setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser );
+      setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass );
     } else {
       listMailingBackend($civiMailing);
     }
