@@ -14,7 +14,7 @@ script_dir=`dirname $0`
 script_dir=`cd "$script_dir"; echo $PWD`
 base_dir=`cd "$script_dir/.."; echo $PWD`
 readConfig="$script_dir/readConfig.sh"
-geoCoder="$base_dir/modules/civicrm/bin/UpdateAddress.php"
+geoCoder="$base_dir/civicrm/scripts/updateAddresses.php"
 app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --global data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 import_rootdir=`$readConfig --global import.rootdir` || data_rootdir="$DEFAULT_IMPORT_ROOTDIR"
