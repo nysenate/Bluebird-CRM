@@ -62,21 +62,21 @@ $_CONFIG = array(
 
     'deniedExts' => "exe com msi bat php phps phtml php3 php4 cgi pl",
 
-    'filenameChangeChars' => array(
-        ' ' => '_'
-    ),
-
     'types' => array(
 
         // CKEditor & FCKEditor types
-        'files'   =>  "",
+        'files'   =>  "*mime ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
         'flash'   =>  "swf",
         'images'  =>  "*img",
 
         // TinyMCE types
-        'file'    =>  "",
+        'file'    =>  "*mime ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
         'media'   =>  "swf flv avi mpg mpeg qt mov wmv asf rm",
         'image'   =>  "*img",
+    ),
+
+    'filenameChangeChars' => array(
+        ' ' => '_'
     ),
 
     'mime_magic' => "",

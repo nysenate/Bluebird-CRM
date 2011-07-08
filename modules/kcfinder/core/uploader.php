@@ -19,7 +19,7 @@ class uploader {
     protected $typeDir;
     protected $typeURL;
     protected $types = array();
-    protected $typeSettings = array('disabled', 'theme', 'dirPerms', 'filePerms', 'denyZipDownload', 'maxImageWidth', 'maxImageHeight', 'thumbWidth', 'thumbHeight', 'jpegQuality', 'access');
+    protected $typeSettings = array('disabled', 'theme', 'dirPerms', 'filePerms', 'denyZipDownload', 'maxImageWidth', 'maxImageHeight', 'thumbWidth', 'thumbHeight', 'jpegQuality', 'access', 'filenameChangeChars');
     protected $charset;
     protected $lang = 'en';
     protected $langInputNames = array('lang', 'langCode', 'lng', 'language', 'lang_code');
@@ -224,7 +224,7 @@ class uploader {
                     is_array($this->config['filenameChangeChars'])) {
                   $filename = strtr($filename, $this->config['filenameChangeChars']);
                 }
-                $target = file::getInexistantFilename("$dir$filename");
+                $target = file::getInexistantFilename($dir . $filename);
 
                 if (!@move_uploaded_file($file['tmp_name'], $target) &&
                     !@rename($file['tmp_name'], $target) &&

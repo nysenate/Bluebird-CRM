@@ -51,20 +51,25 @@ $_CONFIG = array(
     'types' => array(
 
         // CKEditor & FCKEditor types
-        'files'   =>  "",
+        'files'   =>  "*mime ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
         'flash'   =>  "swf",
         'images'  =>  "*img",
 
         // TinyMCE types
-        'file'    =>  "",
+        'file'    =>  "*mine ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
         'media'   =>  "swf flv avi mpg mpeg qt mov wmv asf rm",
         'image'   =>  "*img",
     ),
 
+    'filenameChangeChars' => array(/*
+        ' ' => "_",
+        ':' => "."
+    */),
+
     'mime_magic' => "",
 
-    'maxImageWidth' => 0,
-    'maxImageHeight' => 0,
+    'maxImageWidth' => 800,
+    'maxImageHeight' => 600,
 
     'thumbWidth' => 100,
     'thumbHeight' => 100,
@@ -84,7 +89,7 @@ $_CONFIG = array(
 
     '_sessionVar' => &$_SESSION['KCFINDER'],
     //'_sessionLifetime' => 30,
-    //'_sessionDir' => "/full/directory/path",
+    //'_sessionDir' => "",
 
     //'_sessionDomain' => ".mysite.com",
     //'_sessionPath' => "/my/path",

@@ -12,7 +12,6 @@
   *      @link http://kcfinder.sunhater.com
   */
 
-header("Content-Type: text/javascript");
 require "core/autoload.php";
 if (function_exists('set_magic_quotes_runtime'))
     @set_magic_quotes_runtime(false);
@@ -23,6 +22,7 @@ $files = glob("lang/*.php");
 if (!in_array($file, $files)) die;
 $mtime = @filemtime($file);
 if ($mtime) httpCache::checkMTime($mtime);
+header("Content-Type: text/javascript");
 require $file;
 foreach ($lang as $english => $native)
     if (substr($english, 0, 1) != "_")
