@@ -117,6 +117,7 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
   $nav = mysql_query( $sql, $dbcon );
   
   //update the FROM email address
+  if ( !$emailFrom ) $emailFrom = $smtpSubuser;
   $from = "\"$fromName\" <$emailFrom>";
   $sql = "UPDATE civicrm_option_value SET label = '{$from}', name = '{$from}' WHERE option_group_id = 30";
   $from_set   = mysql_query( $sql , $dbcon );
