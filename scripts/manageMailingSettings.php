@@ -134,12 +134,11 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
 /*
  * We use sendgrid subuser accounts for each district.
  * Enable subscription, click, and open tracking apps
- * Set configuration accordingly
  */
 function setSendgridApps ( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass )
 {
   //enable apps
-  $apps = array ( 'subscriptiontrack', 'opentrack', 'clicktrack' );
+  $apps = array ( 'opentrack', 'clicktrack' );
   foreach ( $apps as $app ) {
   	//uncomment to print existing settings to screen
 	//$appsList = "https://sendgrid.com/api/filter.getsettings.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=$app";
@@ -151,11 +150,14 @@ function setSendgridApps ( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass )
   }
   
   //disable domain keys app (to remove on behalf of in from name)
-  $dapps = "https://sendgrid.com/api/filter.deactivate.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=domainkeys";
-  $dk = simplexml_load_file($dapps);
-  echo "Deactivate: Domain keys\n";
-  
-  //set configuration
+  //also disable subscription tracking as we will handle on a per mailing basis
+  $apps = array ( 'subscriptiontrack', 'domainkeys' );
+  foreach ( $apps as $app ) {
+  	$dapps = "https://sendgrid.com/api/filter.deactivate.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=$app";
+  	$dk = simplexml_load_file($dapps);
+  	echo "Deactivate: $app\n";
+  }
+
 } //setSendgridApps
 
 

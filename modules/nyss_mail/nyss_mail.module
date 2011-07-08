@@ -4,7 +4,8 @@ define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 
 function nyss_mail_civicrm_alterMailParams( &$params, $source )
 {
-    //CRM_Core_Error::debug($params);
+    require_once 'SmtpApiHeader.php';
+	//CRM_Core_Error::debug($params);
 
     /* Re-write any URLs in the message body of the form:
     **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
@@ -14,26 +15,44 @@ function nyss_mail_civicrm_alterMailParams( &$params, $source )
     $bodyvalues = array( 'text', 'html' );
     foreach ( $bodyvalues as $bodyvalue ) {
         $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
-    }  
+    }
 	
-	//set and reset some values if sent from civimail
-	if ( $source = 'civimail' ) {
-		$bbconfig = get_bluebird_instance_config();
-		if ( $bbconfig['senator.email.replyto'] ) {
-			$replyto = $bbconfig['senator.email.replyto'];
-		} elseif ( $bbconfig['senator.email.from'] ) {
-			$replyto = $bbconfig['senator.email.from'];
-		} else {
-			$replyto = $bbconfig['smtp.subuser'];
-		}
-		
-		$params['Return-Path'] = '';
-    	$params['List-Unsubscribe'] = '';
-		$params['Reply-To'] = $replyto;
-    	$params['X-SMTPAPI'] = '{"category" : "bluebird"}';
+	$hdr = new SmtpApiHeader(); 
+	
+	//universal settings
+	$bbconfig = get_bluebird_instance_config();
+	if ( $bbconfig['senator.email.replyto'] ) {
+		$replyto = $bbconfig['senator.email.replyto'];
+	} elseif ( $bbconfig['senator.email.from'] ) {
+		$replyto = $bbconfig['senator.email.from'];
+	} else {
+		$replyto = $bbconfig['smtp.subuser'];
 	}
+		
+	$params['Return-Path'] = '';
+    $params['List-Unsubscribe'] = '';
+	$params['Reply-To'] = $replyto;
+	
+	//set some values based on context
+	if ( $source == 'civimail' ) {
+		
+		$hdr->setCategory("BluebirdMail");
+		$hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
+		$hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>."); 
+		$hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
+		
+	} else {
 
-    //CRM_Core_Error::debug($params); //exit();
+		//disable unsubscribe for non-CiviMail email
+		$hdr->setCategory("Bluebird Activity");
+		$hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
+
+	}
+	
+	$hdr->addFilterSetting('domainkeys', 'enable', 0);
+	$params['X-SMTPAPI'] = $hdr->asJSON();
+
+    //CRM_Core_Error::debug($params); exit();
 }
 
 
