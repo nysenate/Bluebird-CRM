@@ -74,7 +74,7 @@ function listMailingBackend( $civiMailing )
 function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
                               $appdir, $datadir, $smtpHost, $smtpPort,
                               $smtpAuth, $smtpSubuser, $smtpSubpass,
-                              $instance, $fromName)
+                              $instance, $fromName, $emailFrom)
 {
   $rc = true;
   //print_r($civiMailing);
@@ -117,7 +117,7 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
   $nav = mysql_query( $sql, $dbcon );
   
   //update the FROM email address
-  $from = "\"$fromName\" <$smtpSubuser>";
+  $from = "\"$fromName\" <$emailFrom>";
   $sql = "UPDATE civicrm_option_value SET label = '{$from}', name = '{$from}' WHERE option_group_id = 30";
   $from_set   = mysql_query( $sql , $dbcon );
   
@@ -184,9 +184,9 @@ function setHeaderFooter( $dbcon, $crmhost, $instance, $fromName )
 
 //run script
 $prog = basename($argv[0]);
-print_r($argv);
+//print_r($argv);
 
-if ($argc != 15 && $argc != 18) {
+if ($argc != 17 && $argc != 20) {
   echo "Usage: $prog cmd dbhost dbuser dbpass dbname smtphost smtpport smtpauth smtpsubuser smtpsubpass instance fromName [crmhost] [appdir] [datadir]\n";
   echo "   cmd can be: list, update-config, update-template, set-apps, update-all\n";
   exit(1);
@@ -206,9 +206,11 @@ else {
   $smtpSubpass = $argv[12];
   $instance = $argv[13];
   $fromName = $argv[14];
-  $crmhost = ($argc == 18) ? $argv[15] : "";
-  $appdir = ($argc == 18) ? $argv[16] : "";
-  $datadir = ($argc == 18) ? $argv[17] : "";
+  $emailFrom = $argv[15];
+  $emailReplyto = $argv[16];
+  $crmhost = ($argc == 20) ? $argv[17] : "";
+  $appdir = ($argc == 20) ? $argv[18] : "";
+  $datadir = ($argc == 20) ? $argv[19] : "";
 
   $dbcon = mysql_connect($dbhost, $dbuser, $dbpass);
   if (!$dbcon) {
@@ -233,7 +235,7 @@ else {
   else if (is_array($civiMailing)) {
     if ( $cmd == "update-config" ) {
       echo "Updating the CiviCRM mailing configuration.\n";
-      if (updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName) === false) {
+      if (updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName, $emailFrom) === false) {
         $rc = 1;
       }
     } elseif ( $cmd == "update-template" ) {
@@ -244,7 +246,7 @@ else {
       setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser );
     } elseif ( $cmd == "update-all" ) {
       echo "1. Updating the CiviCRM mailing configuration.\n";
-      updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName);
+      updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName, $emailFrom);
       echo "2. Resetting the header and footer to default values.\n";
 	  echo "   From Name: ".$fromName."\n";
       setHeaderFooter( $dbcon, $crmhost, $instance, $fromName );
