@@ -4,7 +4,7 @@
   *
   *      @desc Toolbar functionality
   *   @package KCFinder
-  *   @version 2.31
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -56,7 +56,7 @@ browser.initToolbar = function() {
 
     $('#toolbar a[href="kcact:about"]').click(function() {
         var html = '<div class="box about">' +
-            '<div class="title"><a href="http://kcfinder.sunhater.com" target="_blank">KCFinder</a> 2.31</div>' +
+            '<div class="title"><a href="http://kcfinder.sunhater.com" target="_blank">KCFinder</a> 2.32</div>' +
             '<div>Licenses: GPLv2 & LGPLv2</div>' +
             '<div>Copyright &copy;2010, 2011 Pavel Tzonkov</div>' +
             '<button>' + _.htmlValue(browser.label("OK")) + '</button>' +

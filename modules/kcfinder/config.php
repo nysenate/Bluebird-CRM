@@ -4,7 +4,7 @@
   *
   *      @desc Base configuration file
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -65,17 +65,21 @@ $_CONFIG = array(
     'types' => array(
 
         // CKEditor & FCKEditor types
-        'files'   =>  "*mime ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
+        'files'   =>  "",
         'flash'   =>  "swf",
         'images'  =>  "*img",
 
         // TinyMCE types
-        'file'    =>  "*mime ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
+        'file'    =>  "",
         'media'   =>  "swf flv avi mpg mpeg qt mov wmv asf rm",
         'image'   =>  "*img",
     ),
 
     'filenameChangeChars' => array(
+        ' ' => '_'
+    ),
+
+    'dirnameChangeChars' => array(
         ' ' => '_'
     ),
 

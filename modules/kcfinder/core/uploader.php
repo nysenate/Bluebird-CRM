@@ -4,7 +4,7 @@
   *
   *      @desc Uploader class
   *   @package KCFinder
-  *   @version 2.31
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -19,7 +19,7 @@ class uploader {
     protected $typeDir;
     protected $typeURL;
     protected $types = array();
-    protected $typeSettings = array('disabled', 'theme', 'dirPerms', 'filePerms', 'denyZipDownload', 'maxImageWidth', 'maxImageHeight', 'thumbWidth', 'thumbHeight', 'jpegQuality', 'access', 'filenameChangeChars');
+    protected $typeSettings = array('disabled', 'theme', 'dirPerms', 'filePerms', 'denyZipDownload', 'maxImageWidth', 'maxImageHeight', 'thumbWidth', 'thumbHeight', 'jpegQuality', 'access', 'filenameChangeChars', 'dirnameChangeChars');
     protected $charset;
     protected $lang = 'en';
     protected $langInputNames = array('lang', 'langCode', 'lng', 'language', 'lang_code');
@@ -219,11 +219,7 @@ class uploader {
                 if (!is_dir(path::normalize($dir)))
                     @mkdir(path::normalize($dir), $this->config['dirPerms'], true);
 
-                $filename = $file['name'];
-                if (isset($this->config['filenameChangeChars']) &&
-                    is_array($this->config['filenameChangeChars'])) {
-                  $filename = strtr($filename, $this->config['filenameChangeChars']);
-                }
+                $filename = $this->normalizeFilename($file['name']);
                 $target = file::getInexistantFilename($dir . $filename);
 
                 if (!@move_uploaded_file($file['tmp_name'], $target) &&
@@ -257,6 +253,22 @@ class uploader {
         if (strlen($message) && method_exists($this, 'errorMsg'))
             $this->errorMsg($message);
         $this->callBack($url, $message);
+    }
+
+    protected function normalizeFilename($filename) {
+        if (isset($this->config['filenameChangeChars']) &&
+            is_array($this->config['filenameChangeChars'])
+        )
+            $filename = strtr($filename, $this->config['filenameChangeChars']);
+        return $filename;
+    }
+
+    protected function normalizeDirname($dirname) {
+        if (isset($this->config['dirnameChangeChars']) &&
+            is_array($this->config['dirnameChangeChars'])
+        )
+            $dirname = strtr($dirname, $this->config['dirnameChangeChars']);
+        return $dirname;
     }
 
     protected function checkUploadedFile(array $aFile=null) {

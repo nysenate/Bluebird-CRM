@@ -4,7 +4,7 @@
   *
   *      @desc Browser actions class
   *   @package KCFinder
-  *   @version 2.31
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -186,7 +186,7 @@ class browser extends uploader {
             $this->errorMsg("Unknown error.");
 
         $dir = $this->postDir();
-        $newDir = trim($this->post['newDir']);
+        $newDir = $this->normalizeDirname(trim($this->post['newDir']));
         if (!strlen($newDir))
             $this->errorMsg("Please enter new folder name.");
         if (preg_match('/[\/\\\\]/s', $newDir))
@@ -208,7 +208,7 @@ class browser extends uploader {
             $this->errorMsg("Unknown error.");
 
         $dir = $this->postDir();
-        $newName = trim($this->post['newName']);
+        $newName = $this->normalizeDirname(trim($this->post['newName']));
         if (!strlen($newName))
             $this->errorMsg("Please enter new folder name.");
         if (preg_match('/[\/\\\\]/s', $newName))
@@ -300,7 +300,7 @@ class browser extends uploader {
         )
             $this->errorMsg("Unknown error.");
 
-        $newName = trim($this->post['newName']);
+        $newName = $this->normalizeFilename(trim($this->post['newName']));
         if (!strlen($newName))
             $this->errorMsg("Please enter new file name.");
         if (preg_match('/[\/\\\\]/s', $newName))
@@ -583,11 +583,7 @@ class browser extends uploader {
             return "{$file['name']}: $message";
         }
 
-        $filename = $file['name'];
-        if (isset($this->config['filenameChangeChars']) &&
-            is_array($this->config['filenameChangeChars'])) {
-          $filename = strtr($filename, $this->config['filenameChangeChars']);
-        }
+        $filename = $this->normalizeFilename($file['name']);
         $target = "$dir/" . file::getInexistantFilename($filename, $dir);
 
         if (!@move_uploaded_file($file['tmp_name'], $target) &&

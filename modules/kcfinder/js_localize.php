@@ -4,7 +4,7 @@
   *
   *      @desc Load language labels into JavaScript
   *   @package KCFinder
-  *   @version 2.31
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -18,7 +18,10 @@ if (function_exists('set_magic_quotes_runtime'))
 $input = new input();
 if (!isset($input->get['lng']) || ($input->get['lng'] == 'en')) die;
 $file = "lang/" . $input->get['lng'] . ".php";
-$files = glob("lang/*.php");
+$files = dir::content("lang", array(
+    'types' => "file",
+    'pattern' => '/^.*\.php$/'
+));
 if (!in_array($file, $files)) die;
 $mtime = @filemtime($file);
 if ($mtime) httpCache::checkMTime($mtime);

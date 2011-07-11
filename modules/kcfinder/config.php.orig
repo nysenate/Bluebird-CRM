@@ -4,7 +4,7 @@
   *
   *      @desc Base configuration file
   *   @package KCFinder
-  *   @version 2.31
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -51,12 +51,12 @@ $_CONFIG = array(
     'types' => array(
 
         // CKEditor & FCKEditor types
-        'files'   =>  "*mime ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
+        'files'   =>  "",
         'flash'   =>  "swf",
         'images'  =>  "*img",
 
         // TinyMCE types
-        'file'    =>  "*mine ! application/octet-stream application/x-bzip2 application/x-gzip application/zip",
+        'file'    =>  "",
         'media'   =>  "swf flv avi mpg mpeg qt mov wmv asf rm",
         'image'   =>  "*img",
     ),
@@ -66,10 +66,15 @@ $_CONFIG = array(
         ':' => "."
     */),
 
+    'dirnameChangeChars' => array(/*
+        ' ' => "_",
+        ':' => "."
+    */),
+
     'mime_magic' => "",
 
-    'maxImageWidth' => 800,
-    'maxImageHeight' => 600,
+    'maxImageWidth' => 0,
+    'maxImageHeight' => 0,
 
     'thumbWidth' => 100,
     'thumbHeight' => 100,
@@ -89,7 +94,7 @@ $_CONFIG = array(
 
     '_sessionVar' => &$_SESSION['KCFINDER'],
     //'_sessionLifetime' => 30,
-    //'_sessionDir' => "",
+    //'_sessionDir' => "/full/directory/path",
 
     //'_sessionDomain' => ".mysite.com",
     //'_sessionPath' => "/my/path",
