@@ -104,8 +104,16 @@ class CRM_Contact_Form_Search_Custom_Group
 		//$tags           =& CRM_Core_PseudoConstant::tag( );
 		require_once 'CRM/Core/BAO/Tag.php';
 		$issue_codes = CRM_Core_BAO_Tag::getTags( );
-		$keywords = CRM_Core_BAO_Tag::getTags( 'civicrm_contact', $tags, 296 );
+		$keywords = CRM_Core_BAO_Tag::getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
+                                                      $buildSelect = true,
+                                                      $all = false,
+                                                      $parentId = 296 );
+		
 		if ( $keywords ) {
+			//lets indent keywords
+			foreach ( $keywords as $key => $keyword ) {
+				$keywords[$key] = '&nbsp;&nbsp;'.$keyword;
+			}
 			$tags = $issue_codes + array ('296' => 'Keywords') + $keywords;
 		} else {
 			$tags = $issue_codes;
