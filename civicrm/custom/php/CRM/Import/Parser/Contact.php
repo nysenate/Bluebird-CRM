@@ -1784,12 +1784,27 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
         if ( $relCsType = CRM_Utils_Array::value('contact_sub_type', $formatted) ) {
             $csType = $relCsType;
         }
-        
-        $customFields = CRM_Core_BAO_CustomField::getFields( $formatted['contact_type'], false, false, $csType );
-        
-        $addressCustomFields = CRM_Core_BAO_CustomField::getFields( 'Address' );
-        $customFields = $customFields + $addressCustomFields;
-        
+
+        //Cache the addressCustomFields for speed
+        static $addressCustomFields = null;
+        if($addressCustomFields == null)
+            $addressCustomFields = CRM_Core_BAO_CustomField::getFields( 'Address' );
+
+        //Cache the contactCustomFields for speed, a bit complex because of two degrees of freedom
+        //Might actually be only 1 or 2, I don't know enough about the process yet
+        static $contactCustomFields = null;
+        if($contactCustomFields == null)
+            $contactCustomFields = array();
+        if( !isset($contactCustomFields[$formatted['contact_type']]) )
+            $contactCustomFields[$formatted['contact_type']] = array();
+        if( !isset($contactCustomFields[$formatted['contact_Type']][$csType]) )
+            //Not sure why $csType is an array, this is a hack that seems to work...should ask someone though...
+            $contactCustomFields[$formatted['contact_type']][$csType[0]] = CRM_Core_BAO_CustomField::getFields( $formatted['contact_type'], false, false, $csType );
+
+
+        //Pull the customFields out of the cache!
+        $customFields = $contactCustomFields[$formatted['contact_type']][$csType[0]] + $addressCustomFields;
+
         //if a Custom Email Greeting, Custom Postal Greeting or Custom Addressee is mapped, and no "Greeting / Addressee Type ID" is provided, then automatically set the type = Customized, CRM-4575
         $elements = array( 'email_greeting_custom' => 'email_greeting', 
                            'postal_greeting_custom' => 'postal_greeting', 

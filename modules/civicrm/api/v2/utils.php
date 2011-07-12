@@ -448,7 +448,10 @@ function _civicrm_add_formatted_location_blocks( &$values, &$params )
         }
     }
     //Handle Address Custom data
-    $fields['address_custom'] = CRM_Core_BAO_CustomField::getFields( 'Address' );
+    static $address_custom_fields = null;
+    if($address_custom_fields == null)
+        $address_custom_fields = CRM_Core_BAO_CustomField::getFields( 'Address' );
+    $fields['address_custom'] = $address_custom_fields;
     foreach ( $values as $key => $value ) {
         if ( $customFieldID = CRM_Core_BAO_CustomField::getKeyID( $key ) ) {
             /* check if it's a valid custom field id */
