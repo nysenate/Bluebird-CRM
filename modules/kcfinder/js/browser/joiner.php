@@ -4,7 +4,7 @@
   *
   *      @desc Join all JavaScript files in current directory
   *   @package KCFinder
-  *   @version 2.31
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -15,7 +15,11 @@
 chdir(".."); // For compatibality
 chdir("..");
 require "lib/helper_httpCache.php";
-$files = glob("js/browser/*.js");
+require "lib/helper_dir.php";
+$files = dir::content("js/browser", array(
+    'types' => "file",
+    'pattern' => '/^.*\.js$/'
+));
 
 foreach ($files as $file) {
     $fmtime = filemtime($file);
@@ -23,8 +27,8 @@ foreach ($files as $file) {
         $mtime = $fmtime;
 }
 
-header("Content-Type: text/javascript");
 httpCache::checkMTime($mtime);
+header("Content-Type: text/javascript");
 foreach ($files as $file)
     require $file;
 

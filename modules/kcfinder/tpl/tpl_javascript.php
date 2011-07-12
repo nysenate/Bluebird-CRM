@@ -23,7 +23,7 @@ browser.thumbsURL = browser.uploadURL + "/<?php echo text::jsValue($this->config
 <?php IF (isset($this->get['opener']) && strlen($this->get['opener'])): ?>
 browser.opener.name = "<?php echo text::jsValue($this->get['opener']) ?>";
 <?php ENDIF ?>
-<?php IF (isset($this->opener['CKEditor']['funcNum']) && $this->opener['CKEditor']['funcNum']): ?>
+<?php IF (isset($this->opener['CKEditor']['funcNum']) && preg_match('/^\d+$/', $this->opener['CKEditor']['funcNum'])): ?>
 browser.opener.CKEditor = {};
 browser.opener.CKEditor.funcNum = <?php echo $this->opener['CKEditor']['funcNum'] ?>;
 <?php ENDIF ?>
