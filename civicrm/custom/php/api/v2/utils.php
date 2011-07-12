@@ -133,15 +133,10 @@ function civicrm_error( $params )
 function _civicrm_store_values( &$fields, &$params, &$values ) 
 {
     $valueFound = false;
-    
-    foreach ($fields as $name => $field) {
-        // ignore all ids for now
-        if ( $name === 'id' || substr( $name, -1, 3 ) === '_id' ) {
-            continue;
-        }
-        
-        if ( array_key_exists( $name, $params ) ) {
-            $values[$name] = $params[$name];
+    $keys = array_intersect_key($params,$fields);
+    foreach($keys as $name => $value) {
+        if( $name !== 'id' ) {
+            $values[$name] = $value;
             $valueFound = true;
         }
     }
@@ -453,7 +448,10 @@ function _civicrm_add_formatted_location_blocks( &$values, &$params )
         }
     }
     //Handle Address Custom data
-    $fields['address_custom'] = CRM_Core_BAO_CustomField::getFields( 'Address' );
+    static $address_custom_fields = null;
+    if($address_custom_fields == null)
+        $address_custom_fields = CRM_Core_BAO_CustomField::getFields( 'Address' );
+    $fields['address_custom'] = $address_custom_fields;
     foreach ( $values as $key => $value ) {
         if ( $customFieldID = CRM_Core_BAO_CustomField::getKeyID( $key ) ) {
             /* check if it's a valid custom field id */
