@@ -378,9 +378,7 @@ class CRM_Admin_Page_AJAX
             }
         }
         $usedForClause  = !empty( $usedForClause ) ? implode( " OR " , $usedForClause ) : '1';
-		//$reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : '';
-		$reservedClause = '';
-		//NYSS don't add this restrestriction
+		$reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : '';
  	
         // query to list mergable tags
         $query  = "
