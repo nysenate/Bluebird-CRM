@@ -25,6 +25,7 @@ if ($bbconfig == null) {
 
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_USE_MEMCACHE', $bbconfig['cache.memcache']);
+define('CIVICRM_USE_ARRAYCACHE', $bbconfig['cache.arraycache']);
 define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
 define('CIVICRM_UF_DSN', $bbconfig['drupal_db_url'].'?new_link=true');
 

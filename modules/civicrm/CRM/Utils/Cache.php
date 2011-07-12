@@ -76,6 +76,9 @@ class CRM_Utils_Cache {
             if ( defined( 'CIVICRM_USE_MEMCACHE' ) && CIVICRM_USE_MEMCACHE) {
                 require_once 'CRM/Utils/Cache/Memcache.php';
                 self::$_singleton = new CRM_Utils_Cache_Memcache( $host, $port, $timeout );
+            } else if ( defined( 'CIVICRM_USE_ARRAYCACHE' ) && CIVICRM_USE_ARRAYCACHE) {
+                require_once 'CRM/Utils/Cache/Arraycache.php';
+                self::$_singleton = new CRM_Utils_Cache_Arraycache();
             } else {
                 self::$_singleton = new CRM_Utils_Cache( );
             }
