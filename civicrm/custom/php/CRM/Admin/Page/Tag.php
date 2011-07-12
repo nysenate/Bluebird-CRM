@@ -85,7 +85,8 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
 								  //NYSS 3808
 								  CRM_Core_Action::FOLLOWUP => array(
  	                                                                'name'  => ts('Merge'),
- 	                                                                'extra' => 'onclick = "mergeTag( %%id%% );"',
+ 	                                                                'class' => 'merge_tag',
+																	'url'   => 'javascript:',
  	                                                                'title' => ts('Merge Tag')
  	                                                                ),
                                   );
@@ -154,15 +155,15 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
        $this->assign( 'adminTagSet', $adminTagSet );
 	   
 	   //NYSS 3808
-	   $mergeableTags = array();
-       if ( CRM_Core_Permission::check('administer reserved tags') ) {
-           $query = "SELECT t1.name, t1.id
-FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.id = t2.parent_id
-WHERE t2.id IS NULL";
-           $tag = CRM_Core_DAO::executeQuery( $query );
-           while( $tag->fetch( ) ) {           
-               $mergeableTags[$tag->id] = 1;
-           }
+	   //$reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : ''; //NYSS temp
+ 	   $query = "SELECT t1.name, t1.id
+FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.id = t2.parent_id	   
+WHERE t2.id IS NULL {$reservedClause}";
+ 	   $tag = CRM_Core_DAO::executeQuery( $query );
+ 	
+ 	   $mergeableTags  = array();
+ 	   while( $tag->fetch( ) ) {           
+ 	       $mergeableTags[$tag->id] = 1;
        }
 	   //NYSS end
        

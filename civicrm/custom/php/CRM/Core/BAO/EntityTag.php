@@ -384,7 +384,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
         $dao   = CRM_Core_DAO::executeQuery( $query, $queryParams );
         $tags  = array( );
         while( $dao->fetch( ) ) {
-            $tags[$dao->id] = explode( ",", $dao->used_for );
+            $tags[$dao->id] = $dao->used_for ? explode( ",", $dao->used_for ) : array( );
         }
         $usedFor = array_merge( $tags[$fromId], $tags[$toId] );
         $usedFor = implode( ',', array_unique($usedFor) );
@@ -392,7 +392,12 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
         // get all merge queries together
 		$sqls   = array( "UPDATE civicrm_entity_tag SET tag_id = %1 WHERE tag_id = %2",
   			             "DELETE FROM civicrm_tag WHERE id = %2",
- 	                     "UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1" );
+ 	                     "UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1",
+                         "DELETE et1.* from civicrm_entity_tag et1 
+INNER JOIN ( SELECT * FROM civicrm_entity_tag 
+GROUP BY entity_table, entity_id, tag_id HAVING count(*) > 1 ) et2 ON et1.id = et2.id
+", // remove duplicate records
+);
         $tables = array( 'civicrm_entity_tag', 'civicrm_tag' );
 
         // Allow hook_civicrm_merge() to add SQL statements for the merge operation AND / OR 

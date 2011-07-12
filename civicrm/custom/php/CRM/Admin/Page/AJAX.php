@@ -369,15 +369,18 @@ class CRM_Admin_Page_AJAX
 		$limit  = CRM_Utils_Type::escape( $_GET['limit'],  'Integer' );
  	        
         // build used-for clause to be used in main query
-        $usedFor = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Tag', $fromId, 'used_for' );
+        $usedForTagA   = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Tag', $fromId, 'used_for' );
         $usedForClause = array();
-        if ( $usedFor ) {
-            $usedArray = explode( ",", $usedFor );
-            foreach( $usedArray as $key => $value ) {
-                $usedForClause[] = "t1.used_for LIKE '%{$value}%'";
+        if ( $usedForTagA ) {
+ 	        $usedForTagA = explode( ",", $usedForTagA );
+            foreach( $usedForTagA as $key => $value ) {
+            	$usedForClause[] = "t1.used_for LIKE '%{$value}%'";
             }
         }
-        $usedForClause = !empty( $usedForClause ) ? implode( " OR " , $usedForClause ) : '1';
+        $usedForClause  = !empty( $usedForClause ) ? implode( " OR " , $usedForClause ) : '1';
+		//$reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : '';
+		$reservedClause = '';
+		//NYSS don't add this restrestriction
  	
         // query to list mergable tags
         $query  = "
@@ -389,11 +392,27 @@ WHERE  t2.id IS NULL      AND
        t1.id <> {$fromId} AND 
        t1.name LIKE '%{$name}%' AND
 	   ({$usedForClause})
+	   {$reservedClause}
 LIMIT $limit";
         $dao    = CRM_Core_DAO::executeQuery( $query );
  	        
         while( $dao->fetch( ) ) {
-            $tag = addcslashes($dao->name, '"') . "|{$dao->id}\n";
+            $warning = 0;
+ 	            if ( !empty($dao->used_for) ) {
+ 	                $usedForTagB = explode( ',', $dao->used_for );
+ 	                if ( count($usedForTagA) < count($usedForTagB) ) {
+ 	                    $warning = 1;
+ 	                } else {
+ 	                    sort($usedForTagB);
+ 	                    sort($usedForTagA);
+ 	                    $usedForDiff   = array_diff( $usedForTagB, $usedForTagA );
+ 	                    $usedForInTagB = array_intersect( $usedForDiff, $usedForTagB );
+ 	                    if ( !empty($usedForDiff) && !empty($usedForInTagB) ) {
+ 	                        $warning = 1;
+ 	                    }
+ 	                }
+ 	            }
+ 	            $tag = addcslashes($dao->name, '"') . "|{$dao->id}|{$warning}\n";
 			echo $tag = $dao->parent ? ( addcslashes($dao->parent, '"') . ' :: ' . $tag ) : $tag;
         }
         CRM_Utils_System::civiExit( );
@@ -509,14 +528,22 @@ LIMIT $limit";
 	//NYSS 3808
 	static function mergeTags( ) {
  	    $fromId = CRM_Utils_Type::escape( $_POST['fromId'], 'Integer' );
- 	    $toId   = CRM_Utils_Type::escape( $_POST['toId'], 'Integer' );
+ 	    $toId   = CRM_Utils_Type::escape( $_POST['toId'],   'Integer' );
  	        
-        $query = "SELECT id, name FROM civicrm_tag WHERE id IN (%1, %2)";
+        $query = "SELECT id, name, used_for FROM civicrm_tag WHERE id IN (%1, %2)";
         $dao   = CRM_Core_DAO::executeQuery( $query, array( 1 => array($fromId, 'Integer'),
                                                             2 => array($toId,   'Integer') ) );
         $result = array( );
+		require_once 'CRM/Core/OptionGroup.php';
+		$usedFor = CRM_Core_OptionGroup::values('tag_used_for');
         while( $dao->fetch( ) ) {
             $result[($dao->id == $fromId ? 'tagA' : 'tagB')] = $dao->name;
+			$usedForList = explode( ",", $dao->used_for );
+ 	        foreach ( $usedForList as &$val ) {
+ 	            $val = $usedFor[$val];
+ 	        }
+ 	        $usedForList = implode( ', ', $usedForList );
+ 	        $result[($dao->id == $fromId ? 'tagA_used_for' : 'tagB_used_for')] = $usedForList;
         }
         
 		require_once 'CRM/Core/BAO/EntityTag.php';
