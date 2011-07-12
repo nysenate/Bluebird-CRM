@@ -4,7 +4,7 @@
   *
   *      @desc Base configuration file
   *   @package KCFinder
-  *   @version 2.3
+  *   @version 2.32
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -62,10 +62,6 @@ $_CONFIG = array(
 
     'deniedExts' => "exe com msi bat php phps phtml php3 php4 cgi pl",
 
-    'filenameChangeChars' => array(
-        ' ' => '_'
-    ),
-
     'types' => array(
 
         // CKEditor & FCKEditor types
@@ -77,6 +73,14 @@ $_CONFIG = array(
         'file'    =>  "",
         'media'   =>  "swf flv avi mpg mpeg qt mov wmv asf rm",
         'image'   =>  "*img",
+    ),
+
+    'filenameChangeChars' => array(
+        ' ' => '_'
+    ),
+
+    'dirnameChangeChars' => array(
+        ' ' => '_'
     ),
 
     'mime_magic' => "",

@@ -1,3 +1,12 @@
+VERSION 2.32 - 2010-07-11
+-------------------------
+* 'filenameChangeChars' and 'dirnameChangeChars' config settings added
+* Content-Type header fix for css.php, js_localize.php and
+  js/browser/joiner.php
+* CKEditorFuncNum with index 0 bugfix
+* Session save handler example in core/autoload.php
+
+
 VERSION 2.31 - 2010-07-01
 -------------------------
 * Proportional uploaded image resize bugfix

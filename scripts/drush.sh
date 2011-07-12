@@ -41,6 +41,6 @@ else
   full_uri="http://$instance/"
 fi
 
-drush --root="$drupal_rootdir" --uri="$full_uri" $@
+drush --root="$drupal_rootdir" --uri="$full_uri" "$@"
 
 exit $?
