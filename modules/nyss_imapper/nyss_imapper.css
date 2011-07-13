@@ -1,25 +1,42 @@
-.imapper-message {margin-bottom:20px;}
-.imapper-date, .imapper-subject {display:inline;}
-.imapper-date {width:100px; }
-
-.imapper-header { margin:2px; padding:4px; border-bottom:solid black 1px; font-size:1.2em; }
-.imapper-clear {clear:both; }
-.imapper-toggle { font-size:1.5em; padding:5px; cursor:pointer; }
-
-
-
-#imapper-filter { margin-bottom:20px; }
-	#first_name,#last_name,#phone,#city { width:80px; }
-	#street_address {width:180px;}
-    .imapper-input-container { float:left; padding:5px 10px; }
-    .imapper-submit { padding:5px 0px; margin-top:5px; font-size:1.2em; font-weight:bold; }
-    
-.imapper-title { font-size:1.5em; font-weight:bold; padding:5px 5px 15px 5px; }
-#imapper-messages, #imapper-contacts { width:460px; border:solid black 1px; }
-.imapper-message, .imapper-contact { margin-left:20px; }
-
-#imapper-messages { scrollbar: always; overflow: auto; height:600px;}
-    .imapper-message { }
-
-#imapper-contacts { float:right; overflow: auto; height:600px; }
-    .imapper-contact { }
+.bodyContainer {width: 950px; background-color:#fff;  margin:0 auto; overflow:auto;}
+.header { font-size: 20px; font-weight: bold; padding: 5px 5px 15px;}
+.messages {background-color:#ded; min-height:260px; margin:0 15px;}
+.messagesList {background-color:#fff; height:200px; margin:0 15px; border: 1px solid #ccc; overflow-y:scroll; overflow-x: hidden;}
+.messagesList .emailWrapper {margin: 5px 15px; padding:5px; border-bottom:1px solid red; clear:both; overflow:auto; cursor:pointer;}
+.messagesList .imapper-message-toggle {cursor:pointer;}
+.loadingBox {font-size:18px; text-align:center; padding:5px;}
+.loadingBox span {font-size:24px;}
+.messagesList .emailWrapper.active {background-color: #fbb;}
+.messagesList .emailWrapper .addrBlock {float:left; font-size:11px; font-weight:bold; width:300px;}
+.messagesList .emailWrapper .addrBlock  span {font-weight:normal;}
+.messagesList .emailWrapper .addrBlock  span.email {padding-left:5px; color:#00F; text-decoration:underline;}
+.messagesList .emailWrapper .subject {float:left; width:400px; margin-left:15px; font-size:14px;}
+.messagesList .emailWrapper .date {float:right;}
+.controlsContainer {background-color:#fff; min-height:50px; margin:0 15px;}
+.messageContainer {background-color:#fff; height:425px; margin:0px 10px 15px 15px; float:left; width: 550px;}
+.contactsContainer {background-color:#fff; height:425px; margin:0px 15px 15px 10px; float:left; width: 350px;}
+.controlsContainer .filters {padding: 4px 10px;float:left;}
+.controlsContainer .filters form .formColumn div {float:left;}
+.controlsContainer .filters form .formColumn.button { }
+.controlsContainer .filters form .button div {margin-top: 13px; margin-left:10px;}
+.controlsContainer .filters form .imapper-input-container label {font-size:11px; padding-left:5px;}
+.messageContainer .messageBody { margin:10px; background-color:#fff; border: 1px solid #333; height:405px;}
+.contactsContainer .contactsBody { margin:10px; background-color:#fff; border: 1px solid #333; height:405px;}
+.linkContact {border-bottom:1px solid #333; height:40px; line-height:40px; display:none;}
+.linkContact span {margin-left:15px;}
+.linkContact .button {background: url('imapimgs/unlinked.png') no-repeat 0px 0;; height:25px; width:40px; float:right; margin-right:25px; margin-top:10px; cursor:default;}
+.linkContact .button.linked {background: url('imapimgs/linked.png') no-repeat 0px 0;}
+.linkContact input.linkContactButton {display:none; float:right; margin-right:15px; margin-top:10px; width:50px;}
+.linkContact input.linkContactButton.visible {display:inline;}
+.contactsBody .showContactNumResult {font-style:italic; text-align: center; border-bottom:1px solid #000; display:none;}
+.contactsBody .showContactNumResult span {font-style:normal; font-weight:bold;}
+.contactList {height:345px; overflow:auto;  display:none;}
+.contactList .loadingBox {border-bottom: 1px solid #000;}
+.contactList .contactItem {border-bottom: 1px solid #000; padding:5px 8px;font-size:11px;clear:both;overflow:auto;}
+.contactList .contactItem.active {background:#d99;}
+.contactList .contactItem.hover {background:#ff8;}
+.contactList .contactItem.active.hover {background:#f96;}
+.contactList .contactItem input {float:left;margin:5px;}
+.contactList .contactItem .left {float:left; cursor:pointer;}
+.contactList .contactItem .left div {font-size:10px;}
+.contactList .contactItem .right {float:right; margin-top:5px;}
