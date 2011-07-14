@@ -98,7 +98,7 @@ WHERE t1.contact_type = 'Individual'
                     $street_address_php = str_replace(array_keys($abbrevs),array_values($abbrevs),$street_address_php);
 
                     //Build the sql representation
-                    $street_address_sql = "TRIM(LCASE(a1.street_address))";
+                    $street_address_sql = "preg_replace('$regexp','',TRIM(LCASE(a1.street_address)))";
                     foreach ( $abbrevs as $longname => $abbrev )
                         $street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
 
