@@ -1,43 +1,41 @@
-<?php 
+<?php
 
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 //CRM_Core_Error::debug('o', $o); exit();
 //CRM_Core_Error::debug('table', $table);
 //CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
+    //don't run these during user account/contact creation
+    if ( !$o->noRules && $table == 'table' ) {
+        if ( $o->name=='Level 1 (fname + mname + lname + suffix + street + postal)' ) {
+        //indiv strict rule 1
+        //CREATE INDEX individualStrict1 ON civicrm_contact(first_name,last_name,middle_name,suffix_id);
 
-	//don't run these during user account/contact creation
-	if ( !$o->noRules && $table == 'table' ) {
-	
-		if ( $o->name=='Level 1 (fname + mname + lname + suffix + street + postal)' ) {
-		//indiv strict rule 1
-		//CREATE INDEX individualStrict1 ON civicrm_contact(first_name,last_name,middle_name,suffix_id);
-			
-			//first unset existing queries
-			foreach ( $tableQueries as $key=>$dontCare ) {
-				unset( $tableQueries[$key] );
-			}
-			
-			//now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
-			$o->threshold = 5;
-			
-			if ( empty($o->params) ) {
-				//run rules
-				$tableQueries['civicrm_contact.last_name.5'] = "
-SELECT t1.id id1, t2.id id2, 5 weight 
-FROM civicrm_contact t1 
+            //first unset existing queries
+            foreach ( $tableQueries as $key=>$dontCare ) {
+                unset( $tableQueries[$key] );
+            }
+
+            //now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
+            $o->threshold = 5;
+
+            if ( empty($o->params) ) {
+                //run rules
+                $tableQueries['civicrm_contact.last_name.5'] = "
+SELECT t1.id id1, t2.id id2, 5 weight
+FROM civicrm_contact t1
   JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
                                t1.last_name = t2.last_name AND
                                IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
-                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) ) 
-  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id 
-  INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND 
+                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
+  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
+  INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND
              a1.postal_code = a2.postal_code AND
-	         a1.street_address = a2.street_address
-WHERE t1.contact_type = 'Individual' 
-  AND t2.contact_type = 'Individual' 
-  AND t1.id <> t2.id 
-  AND t1.last_name IS NOT NULL 
-  AND t1.first_name IS NOT NULL 
+         a1.street_address = a2.street_address
+WHERE t1.contact_type = 'Individual'
+  AND t2.contact_type = 'Individual'
+  AND t1.id <> t2.id
+  AND t1.last_name IS NOT NULL
+  AND t1.first_name IS NOT NULL
   AND a1.postal_code IS NOT NULL
   AND a1.street_address IS NOT NULL";
             } else {
@@ -133,21 +131,21 @@ FROM civicrm_contact t1
   JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
                                t1.last_name = t2.last_name AND
                                IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
-                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) ) 
-  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id 
+                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
+  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
   INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.street_address=a2.street_address AND a1.city=a2.city
-WHERE t1.contact_type = 'Individual' 
-  AND t2.contact_type = 'Individual' 
-  AND t1.id <> t2.id  
-  AND t1.last_name IS NOT NULL 
-  AND t1.first_name IS NOT NULL 
+WHERE t1.contact_type = 'Individual'
+  AND t2.contact_type = 'Individual'
+  AND t1.id <> t2.id
+  AND t1.last_name IS NOT NULL
+  AND t1.first_name IS NOT NULL
   AND a1.street_address IS NOT NULL
   AND a1.city IS NOT NULL";
 
-		} 
-		//CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
-	
-	}
+        }
+        //CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
 
-//CRM_Core_Error::debug($o);exit();	
+    }
+
+//CRM_Core_Error::debug($o);exit();
 }
