@@ -373,36 +373,43 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
 	
 	//NYSS 3808
 	/** 
- 	 * Function to merge tags
+ 	 * Function to merge two tags: tag B into tag A.
  	 */
- 	function mergeTags( $fromId, $toId ) {
- 	    $queryParams = array( 1 => array($toId,   'Integer'),
-                              2 => array($fromId, 'Integer') );
+ 	function mergeTags( $tagAId, $tagBId ) {
+ 	    $queryParams = array( 1 => array($tagBId, 'Integer'),
+                              2 => array($tagAId, 'Integer') );
  	
         // re-compute used_for field
-        $query = "SELECT id, used_for FROM civicrm_tag WHERE id IN (%1, %2)";
+        $query = "SELECT id, name, used_for FROM civicrm_tag WHERE id IN (%1, %2)";
         $dao   = CRM_Core_DAO::executeQuery( $query, $queryParams );
         $tags  = array( );
         while( $dao->fetch( ) ) {
-            $tags[$dao->id] = $dao->used_for ? explode( ",", $dao->used_for ) : array( );
+            $label = ( $dao->id == $tagAId ) ? 'tagA' : 'tagB';
+			$tags[$label] = $dao->name;
+			$tags["{$label}_used_for"]  = $dao->used_for ? explode( ",", $dao->used_for ) : array( );
         }
-        $usedFor = array_merge( $tags[$fromId], $tags[$toId] );
+        $usedFor = array_merge( $tags["tagA_used_for"], $tags["tagB_used_for"] );
         $usedFor = implode( ',', array_unique($usedFor) );
+		$tags["tagB_used_for"] = explode( ",", $usedFor );
  	
         // get all merge queries together
-		$sqls   = array( "UPDATE civicrm_entity_tag SET tag_id = %1 WHERE tag_id = %2",
-  			             "DELETE FROM civicrm_tag WHERE id = %2",
- 	                     "UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1",
-                         "DELETE et1.* from civicrm_entity_tag et1 
+		$sqls   = array(
+                        // 1. update entity tag entries
+ 	                    "UPDATE civicrm_entity_tag SET tag_id = %1 WHERE tag_id = %2",
+						// 2. update used_for info for tag B
+						"UPDATE civicrm_tag SET used_for = '{$usedFor}' WHERE id = %1",
+						// 3. remove tag A, if tag A is getting merged into B
+						"DELETE FROM civicrm_tag WHERE id = %2",
+						// 4. remove duplicate entity tag records
+						"DELETE et1.* from civicrm_entity_tag et1  
 INNER JOIN ( SELECT * FROM civicrm_entity_tag 
-GROUP BY entity_table, entity_id, tag_id HAVING count(*) > 1 ) et2 ON et1.id = et2.id
-", // remove duplicate records
-);
+GROUP BY entity_table, entity_id, tag_id HAVING count(*) > 1 ) et2 ON et1.id = et2.id",
+					    );
         $tables = array( 'civicrm_entity_tag', 'civicrm_tag' );
 
         // Allow hook_civicrm_merge() to add SQL statements for the merge operation AND / OR 
         // perform any other actions like logging
-        CRM_Utils_Hook::merge( 'sqls', $sqls, $fromId, $toId, $tables );
+        CRM_Utils_Hook::merge( 'sqls', $sqls, $tagAId, $tagBId, $tables );
  	        
         // call the SQL queries in one transaction
         require_once 'CRM/Core/Transaction.php';
@@ -412,7 +419,8 @@ GROUP BY entity_table, entity_id, tag_id HAVING count(*) > 1 ) et2 ON et1.id = e
         }
         $transaction->commit( );
  	
-        return true;
+        $tags['status'] = true;
+		return $tags;
  	}
 
 }
