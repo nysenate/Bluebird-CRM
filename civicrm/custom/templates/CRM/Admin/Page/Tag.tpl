@@ -121,7 +121,7 @@ function mergeTag( fromId ) {
 	
 	cj("#mergeTagDialog").show( );
         cj("#mergeTagDialog").dialog({
-                title: "Merge tag into '" + fromTag + "'",
+                title: "Merge tag '" + fromTag + "' into:",
                 modal: true,
                 bgiframe: true, 
                 close: function(event, ui) { cj("#tag_name").unautocomplete( ); },
@@ -147,7 +147,7 @@ function mergeTag( fromId ) {
                         cj("#tag_name").result(function(event, data, formatted) {
                                 cj("input[id=tag_name_id]").val(data[1]);
 								if ( data[2] == 1 ) {
-	                                cj('#used_for_warning').html("Warning: Selected tag has additional used-for options which would be merged into '" + fromTag + "'. Click ok to proceed.");
+	                                cj('#used_for_warning').html("Warning: '" + fromTag + "' has different used-for options than the selected tag, which would be merged into the selected tag. Click Ok to proceed.");
 	                            } else {
 	                                cj('#used_for_warning').html('');
 	                            }
@@ -177,7 +177,7 @@ function mergeTag( fromId ) {
                                               if ( values.status == true ) {
  	                            cj('#tag_row_' + toId).children('td.crm-tag-used_for').text(values.tagB_used_for);
  	                            var msg = "'" + values.tagA + "' has been merged with '" + values.tagB + "'. All records previously tagged with '" + values.tagA + "' are now tagged with '" + values.tagB + "'.";
- 	                            cj('#tag_row_' + fromId).html('<td colspan="8"><div class="status message">' + msg + '</div></td>'); 
+ 	                            cj('#tag_row_' + fromId).html('<td colspan="8"><div class="status message"><div class="icon inform-icon"></div>' + msg + '</div></td>'); 
  	                        }
  	                      }
  	                });

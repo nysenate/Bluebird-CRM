@@ -154,18 +154,16 @@ class CRM_Admin_Page_Tag extends CRM_Core_Page_Basic
        }
        $this->assign( 'adminTagSet', $adminTagSet );
 	   
-	   //NYSS 3808
-	   $reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : ''; //NYSS temp
- 	   $query = "SELECT t1.name, t1.id
-FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.id = t2.parent_id	   
-WHERE t2.id IS NULL {$reservedClause}";
- 	   $tag = CRM_Core_DAO::executeQuery( $query );
- 	
- 	   $mergeableTags  = array();
- 	   while( $tag->fetch( ) ) {           
- 	       $mergeableTags[$tag->id] = 1;
-       }
-	   //NYSS end
+	   $reservedClause = !CRM_Core_Permission::check('administer reserved tags') ? "AND t1.is_reserved != 1" : '';
+	   $query = "SELECT t1.name, t1.id
+	FROM civicrm_tag t1 LEFT JOIN civicrm_tag t2 ON t1.id = t2.parent_id
+	WHERE t2.id IS NULL {$reservedClause}";
+	   $tag = CRM_Core_DAO::executeQuery( $query );
+	
+	   $mergeableTags  = array();
+	   while( $tag->fetch( ) ) {          
+	       $mergeableTags[$tag->id] = 1;
+	   }
        
        require_once 'CRM/Core/OptionGroup.php';
        $usedFor = CRM_Core_OptionGroup::values('tag_used_for');
@@ -208,8 +206,8 @@ WHERE t2.id IS NULL {$reservedClause}";
 		   
 		   //NYSS 3808
 		   if ( array_key_exists($tag->id, $mergeableTags) ) {
- 	           $newAction += CRM_Core_Action::FOLLOWUP;
- 	       }
+               $newAction += CRM_Core_Action::FOLLOWUP;
+           }
 
            // populate action links
            if ( $newAction ) {           
