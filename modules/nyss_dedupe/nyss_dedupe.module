@@ -40,103 +40,98 @@ WHERE t1.contact_type = 'Individual'
   AND t1.first_name IS NOT NULL 
   AND a1.postal_code IS NOT NULL
   AND a1.street_address IS NOT NULL";
-  			} else {
-				//inline and import
-				
-				//construct abbreviation and punctuation replacements list for street_address
-				$abbrevs = array( ' street '    => ' st ',
-								  ' road '      => ' rd ',
-								  ' boulevard ' => ' blvd ',
-								  ' avenue '    => ' ave ',
-								  ' terrace '   => ' ter ',
-								  ' parkway '   => ' pkwy ',
-								  ' west '      => ' w ',
-								  ' east '      => ' e ',
-								  ' north '     => ' n ',
-								  ' south '     => ' s ',
-								  ' apartment ' => ' ',
-								  ' apt '       => ' ',
-								  ' place '	    => ' pl ',
-								  ' penthouse ' => ' ph ',
-								  '.'         => '',
-								  ','         => '',
-								  '-'         => '',
-								  ':'         => '',
-								  ';'         => '',
-								  '#'         => '',
-								  ' '         => '',
-								);
-				
-				//first ensure that all match fields exist in the array; construct NULL value if not
-				$contact =& $o->params['civicrm_contact'];
-				$contactflds = array ( 'first_name', 'middle_name', 'last_name', 'suffix_id' );
-				foreach ( $contactflds as $contactfld ) {
-					if ( !array_key_exists($contactfld, $contact) ) {
-						$contact[$contactfld] = "IS NULL";
-						$$contactfld = "IS NULL";
-					} else {
-						$$contactfld = "= '$contact[$contactfld]'";
-					}
-				}
-				$address =& $o->params['civicrm_address'];
-				$addressflds = array ( 'street_address', 'postal_code' );
-				foreach ( $addressflds as $addressfld ) {
-					if ( !array_key_exists($addressfld, $address) ) {
-						$address[$addressfld] = "IS NULL";
-						$$addressfld = "IS NULL";
-					} else {
-						if ( $addressfld == 'street_address' ) {
-							//handle street_address cleaning
-							$regexp = "/(?<=[0-9])(?:st|nd|rd|th)/";
-							$street_address_sql = 'TRIM(LCASE(street_address))';
-							$street_address_php = trim(strtolower($address[$addressfld]));
-							$street_address_php = preg_replace($regexp, '', $street_address_php);
-							
-							foreach ( $abbrevs as $longname => $abbrev ) {
-								$street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
-								$street_address_php = str_replace( $longname, $abbrev, $street_address_php );
-							}
-							
-							$$addressfld = "= '$street_address_php'";
-						} else {
-							$$addressfld = "= '$address[$addressfld]'";
-						}
-					}
-				}
-				//CRM_Core_Error::debug('o', $o); //exit();
-				
-				$tableQueries['civicrm_contact.last_name.5'] = "
-SELECT t1.id id1, 5 weight 
-FROM civicrm_contact t1 
-  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id 
-WHERE t1.contact_type     = 'Individual'
-  AND t1.last_name        $last_name 
-  AND t1.first_name       $first_name
-  AND t1.middle_name      $middle_name
-  AND t1.suffix_id        $suffix_id
-  AND a1.postal_code      $postal_code
-  AND $street_address_sql $street_address";
-				//CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
-			}
+            } else {
+                //inline and import
 
-		} elseif ( $o->name=='Level 3 (street + lname + fname + city + suffix)' && empty($o->params) ) {
-		//indiv rule 3
-		//create index individualFuzzy3 on civicrm_contact(first_name,middle_name,last_name,suffix_id);
-			
-			//first unset existing queries
-			foreach ( $tableQueries as $key=>$dontCare ) {
-				unset( $tableQueries[$key] );
-			}
-			
-			//now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
-			$o->threshold = 5;
-			
-			//now set custom query; make sure weight matches what is configured in system
-  			$tableQueries['civicrm_contact.last_name.5'] = "
-SELECT t1.id id1, t2.id id2, 5 weight 
-FROM civicrm_contact t1 
-  JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND 
-                               t1.last_name = t2.last_name AND 
+                //construct abbreviation and punctuation replacements list for street_address
+                $abbrevs = array( ' street '    => ' st ',
+                                  ' road '      => ' rd ',
+                                  ' boulevard ' => ' blvd ',
+                                  ' avenue '    => ' ave ',
+                                  ' terrace '   => ' ter ',
+                                  ' parkway '   => ' pkwy ',
+                                  ' west '      => ' w ',
+                                  ' east '      => ' e ',
+                                  ' north '     => ' n ',
+                                  ' south '     => ' s ',
+                                  ' apartment ' => ' ',
+                                  ' apt '       => ' ',
+                                  ' place '     => ' pl ',
+                                  ' penthouse ' => ' ph ',
+                                  '.'         => '',
+                                  ','         => '',
+                                  '-'         => '',
+                                  ':'         => '',
+                                  ';'         => '',
+                                  '#'         => '',
+                                  ' '         => '',
+                                );
+                //Build some dynamic SQL!
+                $where = "WHERE t1.contact_type = 'Individual'";
+
+                //Add contact field filters
+                $contact =& $o->params['civicrm_contact'];
+
+                if( array_key_exists('last_name',$contact) && $value=$contact['last_name'] )
+                    $where .= " AND t1.last_name = '$value'\n";
+
+                if( array_key_exists('first_name',$contact) && $value=$contact['first_name'] )
+                    $where .= " AND t1.first_name = '$value'\n";
+
+                if( array_key_exists('middle_name',$contact) && $value=$contact['middle_name'] )
+                    $where .= " AND t1.middle_name = '$value'\n";
+
+                if( array_key_exists('suffix_id',$contact) && $value=$contact['suffix_id'] )
+                    $where .= " AND t1.suffix_id = '$value'\n";
+
+                //Add address field filters
+                $address =& $o->params['civicrm_address'];
+
+                if( array_key_exists('postal_code',$address) && $value=$address['postal_code'] )
+                    $where .= " AND a1.postal_code = '$value'\n";
+
+                if( array_key_exists('street_address',$address) && $value=$address['street_address'] ) {
+                    //Build the php representation
+                    $regexp = "/(?<=[0-9])(?:st|nd|rd|th)/";
+                    $street_address_php = trim(strtolower($value));
+                    $street_address_php = preg_replace($regexp, '', $street_address_php);
+                    $street_address_php = str_replace(array_keys($abbrevs),array_values($abbrevs),$street_address_php);
+
+                    //Build the sql representation
+                    $street_address_sql = "TRIM(LCASE(a1.street_address))";
+                    foreach ( $abbrevs as $longname => $abbrev )
+                        $street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
+
+                    $where .= " AND $street_address_sql = '$street_address_php'";
+                }
+
+                $tableQueries['civicrm_contact.last_name.5'] = "
+                    SELECT t1.id id1, 10 weight
+                    FROM civicrm_contact t1
+                      INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
+                    $where
+                ";
+
+                //echo $tableQueries['civicrm_contact.last_name.5']; exit();
+            }
+        } elseif ( $o->name=='Level 3 (street + lname + fname + city + suffix)' && empty($o->params) ) {
+        //indiv rule 3
+        //create index individualFuzzy3 on civicrm_contact(first_name,middle_name,last_name,suffix_id);
+
+            //first unset existing queries
+            foreach ( $tableQueries as $key=>$dontCare ) {
+                unset( $tableQueries[$key] );
+            }
+
+            //now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
+            $o->threshold = 5;
+
+            //now set custom query; make sure weight matches what is configured in system
+            $tableQueries['civicrm_contact.last_name.5'] = "
+SELECT t1.id id1, t2.id id2, 5 weight
+FROM civicrm_contact t1
+  JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
+                               t1.last_name = t2.last_name AND
                                IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
                                IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) ) 
   INNER JOIN civicrm_address a1 on t1.id=a1.contact_id 
