@@ -72,7 +72,7 @@
 		{elseif strpos( $key, '_date' ) !== false }
                     {$value|crmDate}
                 {else}
-                    {$value|truncate:26:"...":true}{*NYSS*}
+                    {$value|truncate:26:"...":true}{*NYSS 4019*}
                 {/if}
                      &nbsp;
                 </td>
