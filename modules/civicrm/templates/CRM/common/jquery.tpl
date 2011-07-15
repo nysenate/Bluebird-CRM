@@ -78,6 +78,9 @@
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.validate.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.civicrm-validate.js"></script>
 
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery-fieldselection.js"></script>
+{*NYSS 3524*}
+
 <script type="text/javascript" src="{$config->resourceBase}js/rest.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmaccordions.js"></script>
