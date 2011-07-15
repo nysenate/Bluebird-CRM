@@ -74,6 +74,8 @@ packages/jquery/plugins/jquery.FormNavigate.js
 packages/jquery/plugins/jquery.validate.js
 packages/jquery/plugins/jquery.civicrm-validate.js
 
+packages/jquery/plugins/jquery-fieldselection.js {*NYSS 3524*}
+
 js/rest.js
 
 js/jquery/jquery.crmaccordions.js

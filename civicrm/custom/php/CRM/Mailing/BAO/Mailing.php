@@ -2142,7 +2142,7 @@ SELECT $selectClause
                     array(
                           'size'     => "5",
                           'multiple' => true,
-                          'onchange' => "return tokenReplText(this);"
+                          'onclick'  => "return tokenReplText(this);" //NYSS 3524
                           )
                     );
         
@@ -2183,7 +2183,7 @@ SELECT $selectClause
                     array(
                           'size'     => "5",
                           'multiple' => true,
-                          'onchange' => "return tokenReplText(this);"
+                          'onclick'  => "return tokenReplText(this);" //NYSS 3524
                           )
                     );
         
@@ -2192,7 +2192,7 @@ SELECT $selectClause
                     array(
                           'size'     => "5",
                           'multiple' => true,
-                          'onchange' => "return tokenReplHtml(this);"
+                          'onclick'  => "return tokenReplHtml(this);" //NYSS 3524
                           )
                     );
         
