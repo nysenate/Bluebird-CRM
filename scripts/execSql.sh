@@ -16,7 +16,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-i instance] [-h host] [-u user] [-p password] [--quiet|-q] [--create] [--drupal] [dbName]" >&2
+  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--quiet|-q] [--create] [--drupal] [dbName]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -27,6 +27,7 @@ fi
 sqlfile=
 sqlcmd=
 dump_db=0
+tabname=
 instance=
 dbhost=
 dbuser=
@@ -42,6 +43,7 @@ while [ $# -gt 0 ]; do
     -f|--sqlfile) shift; sqlfile="$1" ;;
     -c|--cmd) shift; sqlcmd="$1" ;;
     -d|--dump) dump_db=1 ;;
+    -t|--dump-table) shift; tabname="$1"; dump_db=1 ;;
     -i|--instance) shift; instance="$1" ;;
     -h|--host) shift; dbhost="$1" ;;
     -u|--user) shift; dbuser="$1" ;;
@@ -82,7 +84,7 @@ fi
 
 if [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
-  mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname
+  mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname $tabname
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
