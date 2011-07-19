@@ -107,8 +107,8 @@ class CRM_Core_IDS {
     html[]              = intro
     html[]              = thankyou_text
     html[]              = intro_text
-    html[]              = body_text
-    html[]              = footer_text
+    exceptions[]        = body_text
+    exceptions[]        = footer_text
     html[]              = thankyou_text
     html[]              = thankyou_footer
     html[]              = thankyou_footer_text
