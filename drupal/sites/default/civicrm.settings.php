@@ -26,7 +26,7 @@ if ($bbconfig == null) {
 define('CIVICRM_UF', 'Drupal');
 define('CIVICRM_USE_MEMCACHE', $bbconfig['cache.memcache']);
 define('CIVICRM_MEMCACHE_TIMEOUT', $bbconfig['cache.memcache.timeout']);
-define('CIVICRM_MEMCACHE_PREFIX', md5($_SERVER['HTTP_HOST']));
+define('CIVICRM_MEMCACHE_PREFIX', $bbconfig['serverhost']);
 
 define('CIVICRM_USE_ARRAYCACHE', $bbconfig['cache.arraycache']);
 define('CIVICRM_DSN', $bbconfig['civicrm_db_url'].'?new_link=true');
