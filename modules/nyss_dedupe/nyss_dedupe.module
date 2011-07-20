@@ -42,7 +42,13 @@ WHERE t1.contact_type = 'Individual'
                 //inline and import
 
                 //construct abbreviation and punctuation replacements list for street_address
-                $abbrevs = array( ' street '    => ' st ',
+                $abbrevs = array( ','         => ' ',
+                                  '.'         => ' ',
+                                  '-'         => ' ',
+                                  ':'         => ' ',
+                                  ';'         => ' ',
+                                  '#'         => ' ',
+                				  ' street '    => ' st ',
                                   ' road '      => ' rd ',
                                   ' boulevard ' => ' blvd ',
                                   ' avenue '    => ' ave ',
@@ -56,12 +62,6 @@ WHERE t1.contact_type = 'Individual'
                                   ' apt '       => ' ',
                                   ' place '     => ' pl ',
                                   ' penthouse ' => ' ph ',
-                                  '.'         => '',
-                                  ','         => '',
-                                  '-'         => '',
-                                  ':'         => '',
-                                  ';'         => '',
-                                  '#'         => '',
                                   ' '         => '',
                                 );
                 //Build some dynamic SQL!
@@ -92,11 +92,11 @@ WHERE t1.contact_type = 'Individual'
                     //Build the php representation
                     $regexp = "/(?<=[0-9])(?:st|nd|rd|th)/";
                     $street_address_php = trim(strtolower($value));
-                    $street_address_php = preg_replace($regexp, '', $street_address_php);
+                    $street_address_php = preg_replace($regexp, '', $street_address_php.' '); #Eliminate a bunch of edge cases around replacement
                     $street_address_php = str_replace(array_keys($abbrevs),array_values($abbrevs),$street_address_php);
 
                     //Build the sql representation
-                    $street_address_sql = "preg_replace('$regexp','',TRIM(LCASE(a1.street_address)))";
+                    $street_address_sql = "preg_replace('$regexp','',CONCAT(TRIM(LCASE(a1.street_address)),' '))";
                     foreach ( $abbrevs as $longname => $abbrev )
                         $street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
 
