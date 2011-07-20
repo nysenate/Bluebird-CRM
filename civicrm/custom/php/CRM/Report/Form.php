@@ -917,6 +917,7 @@ class CRM_Report_Form extends CRM_Core_Form {
                 
         case 'in':
             if ( $value !== null && is_array( $value ) && count( $value ) > 0 ) {
+			    $value  = CRM_Utils_Type::escape( $value, $type ); //NYSS
                 $sqlOP  = self::getSQLOperator( $op );
                 if ( CRM_Utils_Array::value( 'type', $field ) == CRM_Utils_Type::T_STRING ) {
                     $clause = "( {$field['dbAlias']} $sqlOP ( '" . implode( "' , '", $value ) . "') )" ;
