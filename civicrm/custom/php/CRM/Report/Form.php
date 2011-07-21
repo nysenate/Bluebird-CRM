@@ -638,7 +638,7 @@ class CRM_Report_Form extends CRM_Core_Form {
 
     function addChartOptions( ) {
         if ( !empty( $this->_charts ) ) {
-            $this->addElement( 'select', "charts", ts( 'Chart' ), $this->_charts );
+            $this->addElement( 'select', "charts", ts( 'Chart' ), $this->_charts, array('onchange' => 'disablePrintPDFButtons(this.value);' ) ); //NYSS 3976
             $this->assign( 'charts', $this->_charts );
 			//NYSS 3896
             $this->addElement('submit', $this->_chartButtonName, ts('View'), array('onclick' => 'form.setAttribute("target", "_self");') );
@@ -1293,6 +1293,9 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
             require_once 'CRM/Utils/OpenFlashChart.php';
             $this->buildChart( $rows );
             $this->assign( 'chartEnabled', true );
+			//NYSS 3976
+			$this->_chartId = "{$this->_params['charts']}_" . ($this->_id ? $this->_id : substr(get_class($this), 16)) . '_' . session_id( );
+			$this->assign('chartId',  $this->_chartId);
         }
         
         // unset columns not to be displayed.
@@ -1742,7 +1745,6 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
 			require_once 'CRM/Core/Config.php';
         	$config = CRM_Core_Config::singleton();
 			$this->_formValues['report_header'] = str_replace( '</head>', '<style type="text/css">@import url('.$config->userFrameworkBaseURL.'sites/default/themes/rayCivicrm/css/printCivicrm.css);</style></head>', $this->_formValues['report_header'] );
-            
             $content = $this->_formValues['report_header'] .
                 CRM_Core_Form::$_template->fetch( $templateFile ) .      
                 $this->_formValues['report_footer'] ;
@@ -1767,12 +1769,12 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                 if( $chartType =  CRM_Utils_Array::value( 'charts', $this->_params ) ) {
                     $config    =& CRM_Core_Config::singleton();
                     //get chart image name
-                    $chartImg  = $chartType . '_' . $this->_id . '.png';
+                    $chartImg  = $this->_chartId . '.png'; //NYSS 3976
                     //get image url path
-                    $uploadUrl  = str_replace( 'persist/contribute', 'upload/openFlashChart', $config->imageUploadURL );
+                    $uploadUrl  = str_replace( 'persist/contribute', 'templates_c/en_US/openFlashChart', $config->imageUploadURL ); //NYSS 3976
                     $uploadUrl .= $chartImg;
                     //get image doc path to overwrite
-                    $uploadImg = $config->uploadDir . 'openFlashChart/' . $chartImg;
+                    $uploadImg = $config->templateCompileDir . 'openFlashChart/' . $chartImg; //NYSS 3976
                     //Load the image
                     $chart = imagecreatefrompng( $uploadUrl );
                     //convert it into formattd png

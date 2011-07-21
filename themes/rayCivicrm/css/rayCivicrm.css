@@ -1320,3 +1320,11 @@ ul.token-input-list-facebook { width:265px;}
 	width: auto;
 	margin: 4px 0;
 }
+
+/*3976*/
+#crm-container .crm-flashchart {
+    overflow: scroll;
+}
+#crm-container .button-disabled {
+    color: #CFCEC3!important;
+}
