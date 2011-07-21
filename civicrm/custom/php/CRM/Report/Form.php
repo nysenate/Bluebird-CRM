@@ -1771,10 +1771,10 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                     //get chart image name
                     $chartImg  = $this->_chartId . '.png'; //NYSS 3976
                     //get image url path
-                    $uploadUrl  = str_replace( 'persist/contribute', 'templates_c/en_US/openFlashChart', $config->imageUploadURL ); //NYSS 3976
+                    $uploadUrl  = str_replace( '/persist/contribute/', '/persist/', $config->imageUploadURL ) . 'openFlashChart/'; //NYSS 3976
                     $uploadUrl .= $chartImg;
                     //get image doc path to overwrite
-                    $uploadImg = $config->templateCompileDir . 'openFlashChart/' . $chartImg; //NYSS 3976
+                    $uploadImg = str_replace( '/persist/contribute/', '/persist/', $config->imageUploadDir ) . 'openFlashChart/' . $chartImg; //NYSS 3976
                     //Load the image
                     $chart = imagecreatefrompng( $uploadUrl );
                     //convert it into formattd png

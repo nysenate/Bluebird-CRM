@@ -207,8 +207,7 @@ class CRM_Report_Form_Instance {
         $dashletParams = array( );
         if ( CRM_Utils_Array::value( 'addToDashboard', $params ) ) {
             $dashletParams = array( 'label'     =>  $params['title'],
-                                    'is_active' => 1,
-                                    'content'   => 'NULL');
+                                    'is_active' => 1, ); //NYSS 4125
                                 
             $permission = CRM_Utils_Array::value( 'permission', $params );
             if ( $permission ) {

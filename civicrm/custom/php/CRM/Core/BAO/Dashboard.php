@@ -381,7 +381,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard
         }
         $dashlet->copyValues( $params );
         
-        $dashlet->created_date = date( "YmdHis" );
+       /* $dashlet->created_date = date( "YmdHis" );*/ //NYSS 4125
         $dashlet->domain_id = CRM_Core_Config::domainID( );
         
         $dashlet->save( );
