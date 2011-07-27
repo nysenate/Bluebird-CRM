@@ -431,7 +431,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
                 if ( $empty ) {
                     self::$_columnHeaders = array( );
                 } else {
-                    self::$_columnHeaders[] = array('desc' => ts('Actions'));
+                    //self::$_columnHeaders[] = array('desc' => ts('Actions'));
+					self::$_columnHeaders[] = array('desc' => ts('Actions'), 'name' => ts('Action') ); //NYSS 3973
                 }
             }
             return self::$_columnHeaders;
@@ -687,7 +688,7 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
 
                 if ( CRM_Utils_Array::value( 'deleted_contacts', $this->_formValues ) 
                      && CRM_Core_Permission::check( 'access deleted contacts' ) ) {
-                    $row['is_deleted'] = true;
+                    //$row['is_deleted'] = true; //NYSS 3973
                     $links = array(
                                    array(
                                          'name'  => ts('View'),
