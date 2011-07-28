@@ -1328,3 +1328,8 @@ ul.token-input-list-facebook { width:265px;}
 #crm-container .button-disabled {
     color: #CFCEC3!important;
 }
+
+/*hide profile search option in adv search*/
+.advsearch_profile {
+	visibility: hidden;
+}

@@ -39,7 +39,7 @@
                     &nbsp;
                 {/if}
             </td>
-            <td>
+            <td class="advsearch_profile">
                 {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
             </td>
             <td class="advsearch_buttons_top">
