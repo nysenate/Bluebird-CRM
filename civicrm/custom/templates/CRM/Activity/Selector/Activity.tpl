@@ -49,16 +49,18 @@
       {/foreach}
       </tr>
 {*NYSS 4019 truncate long values for key columns*}
+{capture assign=pattern}{literal}/(?<=(\w{20}))(\w*)/{/literal}{/capture}
+{assign var=repl value='..'}
       {counter start=0 skip=1 print=false}
       {foreach from=$rows item=row}
       <tr class="{cycle values="odd-row,even-row"} {$row.class} crm-activity crm-activity_status-{$row.activity_status_id} crm-activity-type_{$row.activity_type_id}" id="crm-activity_{$row.activity_id}">
         <td class="crm-activity-type crm-activity-type_{$row.activity_type_id}">{$row.activity_type}</td>
-      	<td class="crm-activity-subject">{$row.subject|truncate:22:"...":true}</td>
+      	<td class="crm-activity-subject">{$row.subject|regex_replace:$pattern:$repl}</td>
         <td class="crm-activity-source_contact_name">
         {if $contactId == $row.source_contact_id}
-          {$row.source_contact_name|truncate:22:"...":true}
+          {$row.source_contact_name|regex_replace:$pattern:$repl}
         {elseif $row.source_contact_id}
-          <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.source_contact_id`"}" title="{ts}View contact{/ts}">{$row.source_contact_name|truncate:22:"...":true}</a>
+          <a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.source_contact_id`"}" title="{ts}View contact{/ts}">{$row.source_contact_name|regex_replace:$pattern:$repl}</a>
         {else}
           <em>n/a</em>
         {/if}			
@@ -68,14 +70,14 @@
         {if $row.mailingId}
           <a href="{$row.mailingId}" title="{ts}View Mailing Report{/ts}">{$row.recipients|truncate:26:"...":true}</a>
         {elseif $row.recipients}
-          {$row.recipients|truncate:22:"...":true}
+          {$row.recipients|regex_replace:$pattern:$repl}
         {elseif !$row.target_contact_name}
           <em>n/a</em>
         {elseif $row.target_contact_name}
             {assign var="showTarget" value=0}
             {foreach from=$row.target_contact_name item=targetName key=targetID}
                 {if $showTarget < 5}
-                    {if $showTarget};&nbsp;{/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$targetID`"}" title="{ts}View contact{/ts}">{$targetName|truncate:20:"...":true}</a>
+                    {if $showTarget};&nbsp;{/if}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$targetID`"}" title="{ts}View contact{/ts}">{$targetName|regex_replace:$pattern:$repl}</a>
                     {assign var="showTarget" value=$showTarget+1}
                 {/if}
             {/foreach}
