@@ -25,7 +25,7 @@
     {/literal}{if $tagset.entityTags}{literal}
         eval( 'contactEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
     {/literal}{/if}{literal}
-    var hintText = "{/literal}{ts}Type in a partial or complete name of an existing tag.{/ts}{literal}";
+    var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}"; //NYSS
     
     cj( ".contact-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
         .addClass("contact-taglist_{/literal}{$tagset.parentID}{literal}");
@@ -105,7 +105,7 @@
     {/literal}{if $tagset.entityTags}{literal}
         eval( 'activityEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
     {/literal}{/if}{literal}
-    var hintText = "{/literal}{ts}Type in a partial or complete name of an existing tag.{/ts}{literal}";
+    var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}"; //NYSS
     
     cj( ".activity-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
         .addClass("activity-taglist_{/literal}{$tagset.parentID}{literal}");
@@ -184,7 +184,7 @@
     {/literal}{if $tagset.entityTags}{literal}
         eval( 'caseEntityTags = ' + {/literal}'{$tagset.entityTags}'{literal} );
     {/literal}{/if}{literal}
-    var hintText = "{/literal}{ts}Type in a partial or complete name of an existing tag.{/ts}{literal}";
+    var hintText = "{/literal}{ts}Begin typing a tag name.{/ts}{literal}"; //NYSS
     
     cj( ".case-tagset-{/literal}{$tagset.parentID}{literal}-section:not(.crm-processed-input) input")
         .addClass("case-taglist_{/literal}{$tagset.parentID}{literal}");
