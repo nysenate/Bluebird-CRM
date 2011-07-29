@@ -770,6 +770,8 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = {$acti
         $mailingIDs =& CRM_Mailing_BAO_Mailing::mailingACLIDs( );
         $accessCiviMail = ( ( CRM_Core_Permission::check( 'access CiviMail' ) ) || ( CRM_Mailing_Info::workflowEnabled( ) && CRM_Core_Permission::check( 'create mailings' ) ) );
         
+		require_once 'api/v2/File.php'; //NYSS 2423
+		
         $values = array( );
         while( $dao->fetch() ) {
             $activityID = $dao->activity_id;
@@ -801,6 +803,10 @@ LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = {$acti
                     $values[$activityID]['assignee_contact_name'] = '';
                 }
             }
+			
+			//NYSS 2423 find out if activity has any attachments
+			$attachments = array_shift(civicrm_files_by_entity_get( $activityID, 'civicrm_activity' ));
+			if ( $attachments['id'] ) $values[$activityID]['subject'] .= '<span class="icon attachment-icon"></span>';
         }
 
         // add info on whether the related contacts are deleted (CRM-5673)
