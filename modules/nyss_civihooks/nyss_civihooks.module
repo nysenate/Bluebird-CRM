@@ -338,6 +338,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		uasort( $preflangOptions, array('CRM_Utils_Sort', 'cmpText') );
 	}*/
 	
+	//2539 require content in activity email
+	if ( $formName == 'CRM_Contact_Form_Task_Email' ) {
+		
+		if ( empty($form->_submitValues['html_message']) && empty($form->_submitValues['text_message']) ) {
+			$form->addRule('html_message', ts('Please enter content in either the html or text message fields.'), 'required');
+		}
+	}
+	
+	//CRM_Core_Error::debug($formName);
 	//CRM_Core_Error::debug($form);
 	
 } //close buildForm
