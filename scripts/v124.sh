@@ -48,7 +48,9 @@ UPDATE civicrm_option_value SET value = 'DVM', name = 'DVM' WHERE option_group_i
 ;"
 $execSql -i $instance -c "$suffix"
 
-
+## 3869 add college
+loctype="INSERT IGNORE INTO civicrm_location_type VALUES (14, 'College', '', '', NULL, 1, 0);"
+$execSql -i $instance -c "$loctype"
 
 
 
