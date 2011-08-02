@@ -175,3 +175,22 @@ function get_key_value($ini, $instance, $keyname)
     return false;
   }
 } // get_key_value()
+
+
+/*
+** Return an array value with the provided key.  If the key does not exist,
+** return the provided default value.  If no default value is given,
+** return NULL.
+*/
+function get_config_value($cfgset, $key, $defval)
+{
+  if (isset($cfgset[$key])) {
+    return $cfgset[$key];
+  }
+  else if ($defval !== null) {
+    return $defval;
+  }
+  else {
+    return null;
+  }
+} // get_config_value()
