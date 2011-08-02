@@ -49,7 +49,7 @@
       {/foreach}
       </tr>
 {*NYSS 4019 truncate long values for key columns*}
-{capture assign=pattern}{literal}/(?<=(\w{20}))(\w*)/{/literal}{/capture}
+{capture assign=pattern}{literal}/(?<=(\w{16}))(\w*)/{/literal}{/capture}
 {assign var=repl value='..'}
       {counter start=0 skip=1 print=false}
       {foreach from=$rows item=row}
