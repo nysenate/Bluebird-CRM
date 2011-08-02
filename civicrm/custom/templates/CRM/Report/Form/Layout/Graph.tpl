@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{assign var=uploadURL value=$config->imageUploadURL|replace:'persist/contribute':'templates_c/en_US/openFlashChart'}{*NYSS 3976*}
+{assign var=uploadURL value=$config->imageUploadURL|replace:'/persist/contribute/':'/persist/'|cat:'openFlashChart/'}{*NYSS 3976*}
 {* Display weekly,Quarterly,monthly and yearly contributions using pChart (Bar and Pie) *}
 {if $chartEnabled and $chartSupported}
 <div class='crm-flashchart'>{*NYSS 3976*}
@@ -40,6 +40,7 @@
 </table>
 </div>{*NYSS 3976*}
 
+{if !$printOnly} {* NO print section starts *}
 {if !$section}
         {include file="CRM/common/openFlashChart.tpl"}
 {/if}
@@ -51,7 +52,7 @@
       
       var resourceURL = "{/literal}{$config->userFrameworkResourceURL}{literal}";
       var uploadURL   = "{/literal}{$uploadURL|cat:$chartId}{literal}.png";
-      var uploadDir   = "{/literal}{$config->templateCompileDir}openFlashChart/{literal}"; //NYSS 3976 
+      var uploadDir   = "{/literal}{$config->imageUploadDir|replace:'/persist/contribute/':'/persist/'|cat:'openFlashChart/'}{literal}"; //NYSS 3976 
 
       cj("input[id$='submit_print'],input[id$='submit_pdf']").bind('click', function(){ 
         var url = resourceURL +'packages/OpenFlashChart/php-ofc-library/ofc_upload_image.php';  // image creator php file path
@@ -82,4 +83,5 @@
   }  
 </script>
 {/literal}
+{/if}
 {/if}
