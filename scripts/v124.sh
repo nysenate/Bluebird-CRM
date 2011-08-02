@@ -52,5 +52,7 @@ $execSql -i $instance -c "$suffix"
 loctype="INSERT IGNORE INTO civicrm_location_type VALUES (14, 'College', '', '', NULL, 1, 0);"
 $execSql -i $instance -c "$loctype"
 
-
+## 4140 autocomplete search options
+autocomplete="UPDATE civicrm_preferences SET contact_autocomplete_options = '125' WHERE id = 1;"
+$execSql -i $instance -c "$autocomplete"
 
