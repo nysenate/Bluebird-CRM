@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2011-05-02
-# Revised: 2011-05-04
+# Revised: 2011-08-05
 #
 
 prog=`basename $0`
@@ -16,12 +16,13 @@ execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 archive_file=
 force_ok=0
+ignore_mismatch=0
 tmpdir="/tmp/restoreInstance_$$"
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--ok] {--archive-file file} instanceName" >&2
+  echo "Usage: $prog [--ok] [--ignore-mismatch] {--archive-file file} instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -33,6 +34,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -f|--archive-file) shift; archive_file="$1" ;;
     --ok) force_ok=1 ;;
+    -i|--ignore-mismatch) ignore_mismatch=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -62,9 +64,6 @@ db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
 
-civi_file=$db_civi_prefix$db_basename.sql
-drup_file=$db_drup_prefix$db_basename.sql
-
 errcode=0
 
 archive_ext=${archive_file##*.}
@@ -81,6 +80,14 @@ pushd $tmpdir/
 $unarc_cmd $archive_file || exit 1
 
 # Sanity check.  Make sure the SQL dump files are named exactly as we expect.
+
+if [ $ignore_mismatch -eq 1 ]; then
+  civi_file=$(echo $db_civi_prefix*.sql)
+  drup_file=$(echo $db_drup_prefix*.sql)
+else
+  civi_file=$db_civi_prefix$db_basename.sql
+  drup_file=$db_drup_prefix$db_basename.sql
+fi
 
 if [ ! -r "$civi_file" ]; then
   echo "$prog: $civi_file: CiviCRM database file not found in archive." >&2
