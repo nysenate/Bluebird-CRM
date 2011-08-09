@@ -92,4 +92,10 @@
      <access_arguments>access CiviCRM</access_arguments>
   </item>
 
+  <!--  Tagging Interface -->
+  <item>
+    <path>civicrm/ajax/tag/tree</path>
+    <page_callback>CRM_Tag_AJAX::tag_tree</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
