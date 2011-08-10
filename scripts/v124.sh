@@ -38,13 +38,13 @@ base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BA
 
 ## 3837 update suffix values
 suffix="
-UPDATE civicrm_option_value SET value = 'MD',  name = 'MD'  WHERE option_group_id = 7 AND name = 'M.D.';
-UPDATE civicrm_option_value SET value = 'PhD', name = 'PhD' WHERE option_group_id = 7 AND name = 'Ph.D.';
-UPDATE civicrm_option_value SET value = 'DDS', name = 'DDS' WHERE option_group_id = 7 AND name = 'D.D.S.';
-UPDATE civicrm_option_value SET value = 'RN',  name = 'RN'  WHERE option_group_id = 7 AND name = 'R.N.';
-UPDATE civicrm_option_value SET value = 'DC',  name = 'DC'  WHERE option_group_id = 7 AND name = 'D.C.';
-UPDATE civicrm_option_value SET value = 'PE',  name = 'PE'  WHERE option_group_id = 7 AND name = 'P.E.';
-UPDATE civicrm_option_value SET value = 'DVM', name = 'DVM' WHERE option_group_id = 7 AND name = 'D.V.M.';
+UPDATE civicrm_option_value SET label = 'MD',  name = 'MD'  WHERE option_group_id = 7 AND name = 'M.D.';
+UPDATE civicrm_option_value SET label = 'PhD', name = 'PhD' WHERE option_group_id = 7 AND name = 'Ph.D.';
+UPDATE civicrm_option_value SET label = 'DDS', name = 'DDS' WHERE option_group_id = 7 AND name = 'D.D.S.';
+UPDATE civicrm_option_value SET label = 'RN',  name = 'RN'  WHERE option_group_id = 7 AND name = 'R.N.';
+UPDATE civicrm_option_value SET label = 'DC',  name = 'DC'  WHERE option_group_id = 7 AND name = 'D.C.';
+UPDATE civicrm_option_value SET label = 'PE',  name = 'PE'  WHERE option_group_id = 7 AND name = 'P.E.';
+UPDATE civicrm_option_value SET label = 'DVM', name = 'DVM' WHERE option_group_id = 7 AND name = 'D.V.M.';
 ;"
 $execSql -i $instance -c "$suffix"
 
@@ -52,5 +52,7 @@ $execSql -i $instance -c "$suffix"
 loctype="INSERT IGNORE INTO civicrm_location_type VALUES (14, 'College', '', '', NULL, 1, 0);"
 $execSql -i $instance -c "$loctype"
 
-
+## 4140 autocomplete search options
+autocomplete="UPDATE civicrm_preferences SET contact_autocomplete_options = '125' WHERE id = 1;"
+$execSql -i $instance -c "$autocomplete"
 

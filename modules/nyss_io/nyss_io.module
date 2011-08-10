@@ -110,6 +110,13 @@ function nyss_ioimport_form() {
 	 '#description' => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Level 1 rule.'),
    );
    
+   $form['parsename'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Parse full name'),
+     '#default_value' => 0,
+	 '#description' => t('Enable this option if your import file contains a full_name field that you want to parse into first/middle/last name. Note, if you enable this option, parsed field names will be ignored.'),
+   );
+   
    $form['fieldoverride'] = array(
      '#type' => 'checkbox',
      '#title' => t('Null/empty override'),
@@ -250,6 +257,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			nyss_out('status',"groupID: {$groupID}.",true);
 		}
 	}
+	
+	//include parsename helper if set
+	$parse = $form_state['values']['parsename'];
+	if ( $parse ) {
+		require_once( dirname(__FILE__).'/nameparse.php' );
+	}
 
   	while ($l = $fo->getLine()) {
 
@@ -305,14 +318,22 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			}
 		}
 		
+		//4107 parse name
+		if ( $parse && isset($l['full_name']) ) {
+			$parsedValues = parse_name( $l['full_name'] );
+			$l['prefix_id']   = $parsedValues['title'];
+			$l['first_name']  = $parsedValues['first'];
+			$l['middle_name'] = $parsedValues['middle'];
+			$l['last_name']   = $parsedValues['last'];
+			$l['suffix_id']   = $parsedValues['suffix'];
+		}
+		
 		//fix prefixes
 		if ( isset( $l['prefix_id'] ) ) {
-		
-		nyss_out('debug', nyss_ioprefixes, true);
 			$prefix_val = '';
 			if ( array_key_exists( $l['prefix_id'], $aPrefix ) ) { //if a valid value, retain
 				$prefix_val = $l['prefix_id'];
-			} elseif ( array_key_exists( $l['prefix_id'], $nyss_ioprefixes ) ) { //check if in prefix map
+			} elseif ( array_key_exists( strtoupper($l['prefix_id']), $nyss_ioprefixes ) ) { //check if in prefix map
 				$prefix_val = $nyss_ioprefixes[strtoupper($l['prefix_id'])];
 			} else { //if odd, ignore
 				$prefix_val = '';
@@ -325,7 +346,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$suffix_val = '';
 			if ( array_key_exists( $l['suffix_id'], $aSuffix ) ) { //if a valid value, retain
 				$suffix_val = $l['suffix_id'];
-			} elseif ( array_key_exists( $l['suffix_id'], $nyss_iosuffixes ) ) { //check if in suffix map
+			} elseif ( array_key_exists( strtoupper($l['suffix_id']), $nyss_iosuffixes ) ) { //check if in suffix map
 				$suffix_val = $nyss_iosuffixes[strtoupper($l['suffix_id'])];
 			} else { //if odd, ignore
 				$suffix_val = '';
@@ -738,12 +759,13 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
 			$l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
 			//need to propercase these values before constructing display and sort name
-			$fnc = convertProperCase( $l['first_name'], true );
-			$mnc = convertProperCase( $l['middle_name'], true );
-			$lnc = convertProperCase( $l['last_name'], true );
-			$display_name = $prefixes[$l['prefix_id']].' '.$fnc.' '.$mnc.' '.$lnc.$suffix;
+			$fnc = trim(convertProperCase( $l['first_name'], true ));
+			$mnc = trim(convertProperCase( $l['middle_name'], true ));
+			$fnc = ( $mnc ) ? $fnc.' ' : $fnc;
+			$lnc = trim(convertProperCase( $l['last_name'], true ));
+			$display_name = $prefixes[$l['prefix_id']].' '.$fnc.$mnc.' '.$lnc.$suffix;
 			$l['display_name'] = nyss_stripSpaces( $display_name );
-			if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.' '.$mnc.' '.$suffix;
+			if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
 		}
 		
 		//only set these if the corresponding data columns exist in the import file

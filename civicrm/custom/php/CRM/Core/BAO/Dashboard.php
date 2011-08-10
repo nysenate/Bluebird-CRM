@@ -232,6 +232,10 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard
  	    $dao = new CRM_Contact_DAO_DashboardContact( );
  	    $dao->dashboard_id = $dashletID;
 		
+		$session   = CRM_Core_Session::singleton( );
+        $contactID = $session->get('userID');
+		$dao->contact_id = $contactID;
+		
         $dao->find( true );
 
         //reset content based on the cache time set in config
