@@ -281,7 +281,18 @@ function selectValue( val ) {
     });
 
     {/literal}{include file="CRM/common/Filter.tpl"}{literal}
+    
+    var getStartPosition = 0;
+    var getEndPosition = 0;
+    
     function showToken(element, id ) {
+    
+    	//this is for field selection in IE8 for tokens... NYSS 4073
+    	var getStartPosition = cj('#text_message.form-textarea').focus().getSelection().start;
+    	var getEndPosition = cj('#text_message.form-textarea').focus().getSelection().end;
+    	$('.positionplace').remove();
+    	$('body').append('<div id="gSP" class="positionplace" style="display:none">' + getStartPosition + '</div>');
+    	$('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
 	initFilter(id);
 	cj("#token"+id).css({"width":"290px", "size":"8"});
 	var tokenTitle = {/literal}'{ts}Select Token{/ts}'{literal};
