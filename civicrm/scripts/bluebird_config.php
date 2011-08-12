@@ -80,21 +80,11 @@ function get_bluebird_config($filename = null)
 */
 function get_bluebird_instance_config($instance = null, $filename = null)
 {
-  static $bbcfg = null;
+  static $s_bbcfg = null;
   static $s_instance = null;
   static $s_filename = null;
 
   $shortname = null;
-
-  /* Do not re-read the configuration file within the same HTTP request,
-  ** unless a different instance or config file is specified.
-  */
-  if ($bbcfg && $s_instance == $instance && $s_filename == $filename) {
-    return $bbcfg;
-  }
-
-  $s_instance = $instance;
-  $s_filename = $filename;
 
   if ($instance == null) {
     if (isset($_SERVER['HTTP_HOST'])) {
@@ -105,6 +95,17 @@ function get_bluebird_instance_config($instance = null, $filename = null)
       return null;
     }
   }
+
+  /* Do not re-read the configuration file within the same HTTP request,
+  ** unless a different instance or config file is specified.
+  */
+  if ($s_bbcfg && $s_instance == $instance && $s_filename == $filename) {
+    return $s_bbcfg;
+  }
+
+  $s_bbcfg = array();
+  $s_instance = $instance;
+  $s_filename = $filename;
 
   $firstdot = strpos($instance, '.');
   if ($firstdot === false) {
@@ -117,16 +118,15 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   }
 
   $instance_key = 'instance:'.$shortname;
-  $bbcfg = array();
   $bbini = get_bluebird_config($filename);
 
   if ($bbini && isset($bbini[$instance_key])) {
     // If successful, merge the globals into the instance-specific params.
     if (isset($bbini['globals'])) {
-      $bbcfg = array_merge($bbcfg, $bbini['globals']);
+      $s_bbcfg = array_merge($s_bbcfg, $bbini['globals']);
     }
     if (isset($bbini[$instance_key])) {
-      $bbcfg = array_merge($bbcfg, $bbini[$instance_key]);
+      $s_bbcfg = array_merge($s_bbcfg, $bbini[$instance_key]);
     }
   }
   else {
@@ -134,12 +134,12 @@ function get_bluebird_instance_config($instance = null, $filename = null)
     return null;
   }
 
-  $db_url = 'mysql://'.$bbcfg['db.user'].':'.$bbcfg['db.pass'].'@'.$bbcfg['db.host'].'/';
-  $db_basename = isset($bbcfg['db.basename']) ? $bbcfg['db.basename'] : $shortname;
-  $base_domain = isset($bbcfg['base.domain']) ? $bbcfg['base.domain'] : $default_base_domain;
-  $civicrm_db_url = $db_url.$bbcfg['db.civicrm.prefix'].$db_basename;
-  $drupal_db_url = $db_url.$bbcfg['db.drupal.prefix'].$db_basename;
-  $data_basename = isset($bbcfg['data.basename']) ? $bbcfg['data.basename'] : $shortname;
+  $db_url = 'mysql://'.$s_bbcfg['db.user'].':'.$s_bbcfg['db.pass'].'@'.$s_bbcfg['db.host'].'/';
+  $db_basename = isset($s_bbcfg['db.basename']) ? $s_bbcfg['db.basename'] : $shortname;
+  $base_domain = isset($s_bbcfg['base.domain']) ? $s_bbcfg['base.domain'] : $default_base_domain;
+  $civicrm_db_url = $db_url.$s_bbcfg['db.civicrm.prefix'].$db_basename;
+  $drupal_db_url = $db_url.$s_bbcfg['db.drupal.prefix'].$db_basename;
+  $data_basename = isset($s_bbcfg['data.basename']) ? $s_bbcfg['data.basename'] : $shortname;
 
   // Prepend a period on the base_domain if it's not empty.
   if (!empty($base_domain) && $base_domain[0] != '.') {
@@ -147,14 +147,14 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   }
 
   // Add some extra convenience parameters.
-  $bbcfg['civicrm_db_url'] = $civicrm_db_url;
-  $bbcfg['drupal_db_url'] = $drupal_db_url;
-  $bbcfg['base_dir'] = BASE_DIR;
-  $bbcfg['base_domain'] = $base_domain;
-  $bbcfg['data_dirname'] = "$data_basename$base_domain";
-  $bbcfg['servername'] = "$shortname$base_domain";
-  $bbcfg['shortname'] = $shortname;
-  return $bbcfg;
+  $s_bbcfg['civicrm_db_url'] = $civicrm_db_url;
+  $s_bbcfg['drupal_db_url'] = $drupal_db_url;
+  $s_bbcfg['base_dir'] = BASE_DIR;
+  $s_bbcfg['base_domain'] = $base_domain;
+  $s_bbcfg['data_dirname'] = "$data_basename$base_domain";
+  $s_bbcfg['servername'] = "$shortname$base_domain";
+  $s_bbcfg['shortname'] = $shortname;
+  return $s_bbcfg;
 } // get_bluebird_instance_config()
 
 
