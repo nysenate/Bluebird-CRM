@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2011-04-12
-# Revised: 2011-06-23
+# Revised: 2011-08-15
 #
 
 prog=`basename $0`
@@ -53,7 +53,10 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-if ! $readConfig --instance $instance --quiet; then
+if [ ! "$instance" ]; then
+  echo "$prog: Must specify a CRM instance." >&2
+  exit 1
+elif ! $readConfig --instance $instance --quiet; then
   echo "$prog: $instance: Instance not found in config file" >&2
   exit 1
 fi
@@ -78,14 +81,17 @@ if echo $target_fields | grep -q 'sort_name'; then
   cond="where contact_type='Individual'"
   [ $rebuild_all_recs -eq 0 ] && cond="$cond and isnull(nullif(sort_name,''))"
   [ $rebuild_smart -eq 1 ] && cond="$cond and last_name<>''"
-  newval="trim(concat(
-               ifnull(last_name,''), ',',
-               if(first_name<>'',concat(' ',first_name),''),
-               if(middle_name<>'',concat(' ',middle_name),''),
-               ifnull(
-                 (select if(label<>'',concat(', ', label),'')
-                 from civicrm_option_value
-                 where value=suffix_id and option_group_id=7),'') ))"
+  newval="trim(if(last_name<>'' or first_name<>'',
+               concat(
+                 ifnull(last_name,''), ',',
+                 if(first_name<>'',concat(' ',first_name),''),
+                 if(middle_name<>'',concat(' ',middle_name),''),
+                 ifnull(
+                   (select if(label<>'',concat(', ', label),'')
+                   from civicrm_option_value
+                   where value=suffix_id and option_group_id=7),'') ),
+               (select email from civicrm_email
+                where contact_id=civicrm_contact.id and is_primary=1)))"
 
   if [ $dry_run -eq 1 ]; then
     sql="select id, sort_name, first_name, middle_name, last_name, $newval from civicrm_contact $cond"
@@ -103,17 +109,20 @@ if echo $target_fields | grep -q 'display_name'; then
   cond="where contact_type='Individual'"
   [ $rebuild_all_recs -eq 0 ] && cond="$cond and isnull(nullif(display_name,''))"
   [ $rebuild_smart -eq 1 ] && cond="$cond and last_name<>''"
-  newval="trim(concat(
-               ifnull(
-                 (select if(label<>'',label,'') from civicrm_option_value
-                  where value=prefix_id and option_group_id=6),''),
-               if(first_name<>'',concat(' ',first_name),''),
-               if(middle_name<>'',concat(' ',middle_name),''),
-               if(last_name<>'',concat(' ',last_name),''),
-               ifnull(
-                 (select if(label<>'',concat(', ', label),'')
-                  from civicrm_option_value
-                  where value=suffix_id and option_group_id=7),'') ))"
+  newval="trim(if(last_name<>'' or first_name<>'',
+               concat(
+                 ifnull(
+                   (select if(label<>'',label,'') from civicrm_option_value
+                    where value=prefix_id and option_group_id=6),''),
+                 if(first_name<>'',concat(' ',first_name),''),
+                 if(middle_name<>'',concat(' ',middle_name),''),
+                 if(last_name<>'',concat(' ',last_name),''),
+                 ifnull(
+                   (select if(label<>'',concat(', ', label),'')
+                    from civicrm_option_value
+                    where value=suffix_id and option_group_id=7),'') ),
+               (select email from civicrm_email
+                where contact_id=civicrm_contact.id and is_primary=1)))"
 
   if [ $dry_run -eq 1 ]; then
     sql="select id, display_name, first_name, middle_name, last_name, $newval from civicrm_contact $cond"
