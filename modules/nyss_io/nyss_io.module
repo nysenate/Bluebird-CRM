@@ -46,6 +46,12 @@ function nyss_ioimport_form() {
      '#size' => 40,
    );
 
+   $form['emailimport'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Perform an email only import'),
+     '#default_value' => 0,
+   );
+
    $form['sendemail'] = array(
      '#type' => 'checkbox',
      '#title' => t('Send summary email'),
@@ -92,13 +98,17 @@ function nyss_ioimport_form() {
    
    civicrm_initialize( );
    require_once 'CRM/Core/Config.php';
-   $config =& CRM_Core_Config::singleton();
-   
    require_once 'CRM/Core/DAO.php';
-   $dedupeoptions = array( );
+   require_once 'api/v2/Group.php';
+   require_once 'api/v2/GroupContact.php';
+
+   $config =& CRM_Core_Config::singleton();
+
    $rules = new CRM_Core_DAO();
    $rules->query("SELECT name, id FROM civicrm_dedupe_rule_group WHERE contact_type = 'Individual' ORDER BY name;");
-   while ($rules->fetch()) {		
+
+  $dedupeoptions = array( );
+   while ($rules->fetch()) {
 	   $dedupeoptions[$rules->id] = $rules->name;
    }
    
@@ -229,9 +239,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	//also create group here if set in form
 	$groupID = '';
 	if ( !empty($form_state['values']['addtogroup']) ) {
-		require_once 'api/v2/Group.php';
-		require_once 'api/v2/GroupContact.php';
-		
 		$groupname = $form_state['values']['addtogroup'];
 		$groupparams = array( 'title' => $groupname );
     	$get_group =& civicrm_group_get( $groupparams );
@@ -264,33 +271,38 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		require_once( dirname(__FILE__).'/nameparse.php' );
 	}
 
-  	while ($l = $fo->getLine()) {
+	//initialize arrays to be populated with contact id's during import
+	$imported_contacts = array();
+	$updated_contacts = array();
+	$new_contacts = array();
 
-		//nyss_out('debug', $l, true); exit();
+    while ($l = $fo->getLine()) {
 
-		//seconds to process each row
-		set_time_limit (30);
+        //nyss_out('debug', $l, true); exit();
 
-		//increase line number
-		++$nyss_ioline;
+        //seconds to process each row
+        set_time_limit (30);
 
-		if(is_numeric($runnum)) {
-			if($form_state['values']['runnum']<=$nyss_ioline) {
-				nyss_out('debug',"Stopping at {$nyss_ioline} lines.", true);
-				break;
-			}
-		}
-		
-		if ($nyss_ioline%20==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
+        //increase line number
+        ++$nyss_ioline;
 
-		//fix the gender entries
-		if ( isset($l['gender']) || isset($l['gender_id']) ) {
-			$l['gender'] = ( $l['gender'] ) ? $l['gender'] : $l['gender_id'];
-			if ($l['gender']=='M') $l['gender'] = 'Male';
-        	if ($l['gender']=='F') $l['gender'] = 'Female';
-			$l['gender_id'] = $aGender[$l['gender']];
-			unset($l['gender']); //remove text value
-		}
+        if(is_numeric($runnum)) {
+            if($form_state['values']['runnum']<=$nyss_ioline) {
+                nyss_out('debug',"Stopping at {$nyss_ioline} lines.", true);
+                break;
+            }
+        }
+
+        if ($nyss_ioline%20==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
+
+        //fix the gender entries
+        if ( isset($l['gender']) || isset($l['gender_id']) ) {
+            $l['gender'] = ( $l['gender'] ) ? $l['gender'] : $l['gender_id'];
+            if ($l['gender']=='M') $l['gender'] = 'Male';
+            if ($l['gender']=='F') $l['gender'] = 'Female';
+            $l['gender_id'] = $aGender[$l['gender']];
+            unset($l['gender']); //remove text value
+        }
 
 		//fix birthdate
 		if ( isset( $l['birth_date'] ) ) {
@@ -374,7 +386,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			} else {
 				$params['civicrm_address']['street_address'] = $l['street_number'].' '.$l['street_name'].' '.$l['street_unit'];
 			}
-			
+
+            if ( array_key_exists('email',$l) && !empty($l['email']) ) {
+                $params['civicrm_email']['email'] = $l['email'];
+            }
+
 			$params = CRM_Dedupe_Finder::formatParams($params, 'Individual');
 			$params['check_permission'] = 0;
 			$dupeIDs = CRM_Dedupe_Finder::dupesByParams($params, 'Individual', 'Strict', array(), $form_state['values']['deduperule'] );
@@ -460,8 +476,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$v = CRM_Utils_String::stripSpaces($v);
 			$l[$k] = mysql_real_escape_string($v);
 		}
-		
-		//make sure street name is escaped
 
 		//find an address if we don't have an addressID already
 		if (!empty($l['id']) && empty($l['address_id'])) {
@@ -490,7 +504,23 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		/*------NOW IMPORT THE DATA-------------------------------------*/
 
 		//import contact details
+		$new_contact = (!array_key_exists('id',$l) || empty($l['id']));
 		nyss_ioimportData('civicrm_contact', $l, $dryrun, $logFile, $form_state);
+
+        //sort the contacts into groups for later use
+        if (!$dryrun) {
+            $imported_contacts[] = $l['id'];
+            if ($new_contact)
+                $new_contacts[] = $l['id'];
+            else
+                $updated_contacts[] = $l['id'];
+        } else {
+            $imported_contacts[] = 0;
+            if ($new_contact)
+                $new_contacts[] = 0;
+            else
+                $updated_contacts[] = 0;
+        }
 
 		//import address details
 		//set key correctly for ref
@@ -593,8 +623,41 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 				//nyss_out('debug', $groupcontact, true);
 			}
 		}
-		
 	}
+
+
+	//Add all new contacts to the email only exclusion group
+    if ($form_state['values']['emailimport']==1) {
+
+        //Create the group if it doesn't already exist
+        $email_group_id = '';
+        $groupparams = array( 'title' => 'Email Only' );
+        $get_group =& civicrm_group_get( $groupparams );
+        if ( $get_group['is_error'] ) {
+            if (!$dryrun ) {
+                $params = array( 'title' => 'Email Only', 'is_active' => 1 );
+                $group = civicrm_group_add( $params );
+                $email_group_id = $group['result'];
+            } else {
+                nyss_out('status',"The 'Email Only' group does not exist; it will be created during import.",true);
+            }
+        } else {
+            $group = array_keys($get_group);
+            $email_group_id = $group[0];
+        }
+
+        //Loop through and add each contact
+        //TODO: there really should be a way to add a list of contacts at once.
+        foreach($new_contacts as $contact_id) {
+            if (!$dryrun) {
+                $params = array( 'contact_id' => $contact_id, 'group_id' => $email_group_id);
+                $groupcontact = civicrm_group_contact_add( $params );
+            } else {
+                nyss_out('status',"Adding contact $contact_id to the email only group",true);
+            }
+        }
+    }
+
 
 	if ($form_state['values']['sendmail']==1) {
 
@@ -609,6 +672,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
    		drupal_mail_send($message);
   	}
 
+    $num_updated = count($updated_contacts);
+    $num_created = count($new_contacts);
+    nyss_out('status',"$num_updated updated, $num_created created.", true);
   	nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
 
   	nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
