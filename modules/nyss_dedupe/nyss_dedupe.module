@@ -1,151 +1,151 @@
 <?php
 
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
-//CRM_Core_Error::debug('o', $o); exit();
-//CRM_Core_Error::debug('table', $table);
-//CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
+
     //don't run these during user account/contact creation
-    if ( !$o->noRules && $table == 'table' ) {
-        if ( $o->name=='Level 1 (fname + mname + lname + suffix + street + postal)' ) {
-        //indiv strict rule 1
-        //CREATE INDEX individualStrict1 ON civicrm_contact(first_name,last_name,middle_name,suffix_id);
+    if( $o->noRules || $table != 'table')
+        return;
 
-            //first unset existing queries
-            foreach ( $tableQueries as $key=>$dontCare ) {
-                unset( $tableQueries[$key] );
-            }
+    // All of our dedupe methods essentially wipe the ruleset clean and insert our own
+    // more expressive set of rule logic and thresholds.
+    $o->threshold = 5;
+    foreach(array_keys($tableQueries) as $key)
+        unset($tableQueries[$key]);
 
-            //now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
-            $o->threshold = 5;
+    if ($o->name=='Level 1 (fname + mname + lname + suffix + street + postal)') {
+        // The primary strict dedupe rule can be used with different behavior in two different scenarios
+        //
+        // 1) No parameters are passed in. Contruct query to dedupe internally against other contacts
+        if (empty($o->params)) {
+            nyss_dedupe_strict_default_internal($o, $table, $tableQueries);
 
-            if ( empty($o->params) ) {
-                //run rules
-                $tableQueries['civicrm_contact.last_name.5'] = "
-SELECT t1.id id1, t2.id id2, 5 weight
-FROM civicrm_contact t1
-  JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
-                               t1.last_name = t2.last_name AND
-                               IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
-                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
-  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
-  INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND
-             a1.postal_code = a2.postal_code AND
-         a1.street_address = a2.street_address
-WHERE t1.contact_type = 'Individual'
-  AND t2.contact_type = 'Individual'
-  AND t1.id <> t2.id
-  AND t1.last_name IS NOT NULL
-  AND t1.first_name IS NOT NULL
-  AND a1.postal_code IS NOT NULL
-  AND a1.street_address IS NOT NULL";
-            } else {
-                //inline and import
-
-                //construct abbreviation and punctuation replacements list for street_address
-                $abbrevs = array( ','         => ' ',
-                                  '.'         => ' ',
-                                  '-'         => ' ',
-                                  ':'         => ' ',
-                                  ';'         => ' ',
-                                  '#'         => ' ',
-                				  ' street '    => ' st ',
-                                  ' road '      => ' rd ',
-                                  ' boulevard ' => ' blvd ',
-                                  ' avenue '    => ' ave ',
-                                  ' terrace '   => ' ter ',
-                                  ' parkway '   => ' pkwy ',
-                                  ' west '      => ' w ',
-                                  ' east '      => ' e ',
-                                  ' north '     => ' n ',
-                                  ' south '     => ' s ',
-                                  ' apartment ' => ' ',
-                                  ' apt '       => ' ',
-                                  ' place '     => ' pl ',
-                                  ' penthouse ' => ' ph ',
-                                  ' '         => '',
-                                );
-                //Build some dynamic SQL!
-                $where = "WHERE t1.contact_type = 'Individual'";
-
-                //Add contact field filters
-                $contact =& $o->params['civicrm_contact'];
-
-                if( array_key_exists('last_name',$contact) && $value=$contact['last_name'] )
-                    $where .= " AND t1.last_name = '$value'\n";
-
-                if( array_key_exists('first_name',$contact) && $value=$contact['first_name'] )
-                    $where .= " AND t1.first_name = '$value'\n";
-
-                if( array_key_exists('middle_name',$contact) && $value=$contact['middle_name'] )
-                    $where .= " AND t1.middle_name = '$value'\n";
-
-                if( array_key_exists('suffix_id',$contact) && $value=$contact['suffix_id'] )
-                    $where .= " AND t1.suffix_id = '$value'\n";
-
-                //Add address field filters
-                $address =& $o->params['civicrm_address'];
-
-                if( array_key_exists('postal_code',$address) && $value=$address['postal_code'] )
-                    $where .= " AND a1.postal_code = '$value'\n";
-
-                if( array_key_exists('street_address',$address) && $value=$address['street_address'] ) {
-                    //Build the php representation
-                    $regexp = "/(?<=[0-9])(?:st|nd|rd|th)/";
-                    $street_address_php = trim(strtolower($value));
-                    $street_address_php = preg_replace($regexp, '', $street_address_php.' '); #Eliminate a bunch of edge cases around replacement
-                    $street_address_php = str_replace(array_keys($abbrevs),array_values($abbrevs),$street_address_php);
-
-                    //Build the sql representation
-                    $street_address_sql = "preg_replace('$regexp','',CONCAT(TRIM(LCASE(a1.street_address)),' '))";
-                    foreach ( $abbrevs as $longname => $abbrev )
-                        $street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
-
-                    $where .= " AND $street_address_sql = '$street_address_php'";
-                }
-
-                $tableQueries['civicrm_contact.last_name.5'] = "
-                    SELECT t1.id id1, 10 weight
-                    FROM civicrm_contact t1
-                      INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
-                    $where
-                ";
-
-                //echo $tableQueries['civicrm_contact.last_name.5']; exit();
-            }
-        } elseif ( $o->name=='Level 3 (street + lname + fname + city + suffix)' && empty($o->params) ) {
-        //indiv rule 3
-        //create index individualFuzzy3 on civicrm_contact(first_name,middle_name,last_name,suffix_id);
-
-            //first unset existing queries
-            foreach ( $tableQueries as $key=>$dontCare ) {
-                unset( $tableQueries[$key] );
-            }
-
-            //now set threshold; this is done through the interface, but we reset it here to make sure it matches our rule
-            $o->threshold = 5;
-
-            //now set custom query; make sure weight matches what is configured in system
-            $tableQueries['civicrm_contact.last_name.5'] = "
-SELECT t1.id id1, t2.id id2, 5 weight
-FROM civicrm_contact t1
-  JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
-                               t1.last_name = t2.last_name AND
-                               IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
-                               IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
-  INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
-  INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.street_address=a2.street_address AND a1.city=a2.city
-WHERE t1.contact_type = 'Individual'
-  AND t2.contact_type = 'Individual'
-  AND t1.id <> t2.id
-  AND t1.last_name IS NOT NULL
-  AND t1.first_name IS NOT NULL
-  AND a1.street_address IS NOT NULL
-  AND a1.city IS NOT NULL";
+        // 2) We have parameters. Construct a dedupe query with the given parameters that
+        //    produces no false positives. False negatives can be dealth with during manual dedupe.
+        } else {
+            nyss_dedupe_strict_default_record($o, $table, $tableQueries);
 
         }
-        //CRM_Core_Error::debug('tableQueries', $tableQueries); exit();
+
+    } elseif($o->name=='Level 3 (street + lname + fname + city + suffix)') {
+        // The primary fuzzy rule gets called internally when X, Y, and Z happen.
+        // CiviCRM handles the record dedupe well enough, only override the internal dedupe for now...
+        if (empty($o->params)) {
+            nyss_dedupe_fuzzy_default_internal($o, $table, $tableQueries);
+        }
 
     }
+}
 
-//CRM_Core_Error::debug($o);exit();
+function nyss_dedupe_strict_default_internal($o, $table, &$tableQueries) {
+    $tableQueries['civicrm_contact.last_name.5'] = "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
+                                       t1.last_name = t2.last_name AND
+                                       IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
+                                       IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
+          INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND
+                     a1.postal_code = a2.postal_code AND
+                 a1.street_address = a2.street_address
+        WHERE t1.contact_type = 'Individual'
+          AND t2.contact_type = 'Individual'
+          AND t1.id <> t2.id
+          AND t1.last_name IS NOT NULL
+          AND t1.first_name IS NOT NULL
+          AND a1.postal_code IS NOT NULL
+          AND a1.street_address IS NOT NULL
+    ";
+}
+
+function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
+    //now set custom query; make sure weight matches what is configured in system
+    $tableQueries['civicrm_contact.last_name.5'] = "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
+                                       t1.last_name = t2.last_name AND
+                                       IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
+                                       IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
+          INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.street_address=a2.street_address AND a1.city=a2.city
+        WHERE t1.contact_type = 'Individual'
+          AND t2.contact_type = 'Individual'
+          AND t1.id <> t2.id
+          AND t1.last_name IS NOT NULL
+          AND t1.first_name IS NOT NULL
+          AND a1.street_address IS NOT NULL
+          AND a1.city IS NOT NULL";
+}
+
+function nyss_dedupe_strict_default_record($o, $table, &$tableQueries) {
+    // construct abbreviation and punctuation replacements list for street_address
+    // the idea here is to replicate the behavior of the USPS API as closely as possible.
+    $abbrevs = array( ','           => ' ',
+                      '.'           => ' ',
+                      '-'           => ' ',
+                      ':'           => ' ',
+                      ';'           => ' ',
+                      '#'           => ' ',
+                      ' street '    => ' st ',
+                      ' road '      => ' rd ',
+                      ' boulevard ' => ' blvd ',
+                      ' avenue '    => ' ave ',
+                      ' terrace '   => ' ter ',
+                      ' parkway '   => ' pkwy ',
+                      ' west '      => ' w ',
+                      ' east '      => ' e ',
+                      ' north '     => ' n ',
+                      ' south '     => ' s ',
+                      ' apartment ' => ' ',
+                      ' apt '       => ' ',
+                      ' place '     => ' pl ',
+                      ' penthouse ' => ' ph ',
+                      ' '         => '',
+                    );
+
+    //Build some dynamic SQL!
+    $where = "WHERE t1.contact_type = 'Individual'\n";
+
+    //Add contact field filters
+    $contact = $o->params['civicrm_contact'];
+    foreach(array('last_name','first_name','middle_name','suffix_id') as $key) {
+        if( array_key_exists($key, $contact) && $value=$contact[$key])
+            $value = "'$value'";
+        else
+            $value = "NULL";
+        $where .= " AND t1.$key = $value\n";
+    }
+
+    //Add address field filters
+    $address =& $o->params['civicrm_address'];
+
+    if( array_key_exists('postal_code',$address) && $value=$address['postal_code'])
+        $where .= " AND a1.postal_code = '$value'\n";
+    else
+        $where .= " AND a1.postal_code = NULL\n";
+
+    if( array_key_exists('street_address',$address) && $value=$address['street_address']) {
+        //Build the php representation
+        $regexp = "/(?<=[0-9])(?:st|nd|rd|th)/";
+        $street_address_php = trim(strtolower($value));
+        $street_address_php = preg_replace($regexp, '', ' '.$street_address_php.' '); #Eliminate a bunch of edge cases around replacement
+        $street_address_php = str_replace(array_keys($abbrevs),array_values($abbrevs),$street_address_php);
+
+        //Build the sql representation
+        $street_address_sql = "preg_replace('$regexp','',CONCAT(TRIM(LCASE(a1.street_address)),' '))";
+        foreach ( $abbrevs as $longname => $abbrev )
+            $street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
+
+        $where .= " AND $street_address_sql = '$street_address_php'";
+    } else
+        $where .= " AND a1.street_address = NULL";
+
+
+    $tableQueries['civicrm_contact.last_name.5'] = "
+        SELECT t1.id id1, 10 weight
+        FROM civicrm_contact t1
+          INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
+        $where
+    ";
 }
