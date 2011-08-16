@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -228,7 +228,7 @@ class CRM_Admin_Form_Options extends CRM_Admin_Form
         }
         
         //fix for CRM-3552, CRM-4575
-        if ( in_array( $this->_gName, array('email_greeting', 'postal_greeting', 'addressee', 'from_email_address') ) ) {
+        if ( in_array( $this->_gName, array('email_greeting', 'postal_greeting', 'addressee', 'from_email_address', 'case_status', 'encounter_medium') ) ) {
             $this->assign( 'showDefault', true );
             $this->add('checkbox', 'is_default', ts('Default Option?'));
         }

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -101,8 +101,6 @@ class CRM_Contact_Form_Task_AddToTag extends CRM_Contact_Form_Task {
     public function postProcess() {
         //get the submitted values in an array
         $params = $this->controller->exportValues( $this->_name );
-		//CRM_Core_Error::debug($params);exit();
-
         $contactTags = $tagList = array( );
 
         // check if contact tags exists
@@ -111,26 +109,31 @@ class CRM_Contact_Form_Task_AddToTag extends CRM_Contact_Form_Task {
         }
         
         // check if tags are selected from taglists
-        if ( CRM_Utils_Array::value( 'contact_taglist', $params ) ) { //NYSS
-			foreach( $params['contact_taglist'] as $tagids ) { //NYSS
-			  foreach ( explode( ',', $tagids ) as $val ) {
+        if ( CRM_Utils_Array::value( 'contact_taglist', $params ) ) {
+            foreach( $params['contact_taglist'] as $val ) {
                 if ( $val ) {
                     if ( is_numeric( $val ) ) {
                         $tagList[ $val ] = 1;
-                    } /*else {
-                        list( $label, $tagID ) = explode( ',', $val );
-                        $tagList[ $tagID ] = 1;
-                    }*/
+                    } else {
+                        $tagIDs  = explode( ',', $val );
+                        if ( !empty( $tagIDs ) ) {
+                            foreach( $tagIDs as $tagID ) {
+                                if ( is_numeric( $tagID ) ) {
+                                    $tagList[ $tagID ] = 1;
+                                }
+                            }
+                        }
+                    }
                 }
-              } //end foreach
-			}
+            }
         }
-		
+        
         $tagSets = CRM_Core_BAO_Tag::getTagsUsedFor( 'civicrm_contact', false, true);
-                
+
         foreach ( $tagSets as $key => $value ) {
             $this->_tags[$key] = $value['name'];
         }
+
         // merge contact and taglist tags
         $allTags = CRM_Utils_Array::crmArrayMerge( $contactTags, $tagList );        
         
