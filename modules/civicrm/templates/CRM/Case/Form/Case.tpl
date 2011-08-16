@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -123,7 +123,7 @@ cj("select[multiple]").crmasmSelect({
     </tr>
 {/if}
 
-<tr class="crm-case-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl"}</td></tr>	     
+<tr class="crm-case-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl" tagsetType='case'}</td></tr>	     
 
 </table>
 {/if}	

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -193,7 +193,7 @@ WHERE     %2.id = %1";
                                    'price_field_value_id' => $oid,
                                    'label'                => $options[$oid]['label'],
                                    'field_title'          => $fieldTitle,
-                                   'description'          => $options[$oid]['description'],
+                                   'description'          => CRM_Utils_Array::value('description', $options[$oid]),
                                    'qty'                  => $qty,
                                    'unit_price'           => $price,
                                    'line_total'           => $qty * $price,

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +29,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
 require_once 'CRM/Core/Page.php';
+require_once 'CRM/Core/BAO/UFGroup.php';
 
 /**
  * Create a page for displaying CiviCRM Profile Fields.
@@ -84,7 +85,20 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
      */
     protected $_profileIds = array( );
 
-   
+    /**
+     * Contact profile having activity fields?
+     *
+     * @var string
+     */
+    protected $_isContactActivityProfile = false;
+
+    /**
+     * Activity Id connected to the profile
+     *
+     * @var string
+     */
+    protected $_activityId = null;
+    
     /**
      * class constructor
      *
@@ -95,6 +109,8 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
      * @access public
      */
     function __construct( $id, $gid, $restrict, $skipPermission = false, $profileIds = null ) {
+        parent::__construct( );
+
         $this->_id       = $id;
         $this->_gid      = $gid;
         $this->_restrict = $restrict;
@@ -104,7 +120,10 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
         } else {
             $this->_profileIds = array( $gid );
         }
-        parent::__construct( );
+
+        $this->_activityId = CRM_Utils_Request::retrieve('aid', 'Positive', $this, false, 0, 'GET');
+        require_once 'CRM/Core/BAO/UFField.php';
+        $this->_isContactActivityProfile = CRM_Core_BAO_UFField::checkContactActivityProfileType( $this->_gid );
     }
 
     /**
@@ -148,24 +167,44 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
                 }
             }
             
-            require_once 'CRM/Core/BAO/UFGroup.php';
             $values = array( );
             $fields = CRM_Core_BAO_UFGroup::getFields( $this->_profileIds, false, CRM_Core_Action::VIEW,
                                                        null, null, false, $this->_restrict,
                                                        $this->_skipPermission, null,
                                                        CRM_Core_Permission::VIEW );
+            
+            if ( $this->_isContactActivityProfile && $this->_gid ) {
+                require_once 'CRM/Profile/Form.php';
+                $errors = CRM_Profile_Form::validateContactActivityProfile($this->_activityId, $this->_id, $this->_gid);
+                if ( !empty($errors) ) {
+                    CRM_Core_Error::fatal( ts(array_pop($errors)) );
+                }
+            }
 
-
+            $session  = CRM_Core_Session::singleton( ); 
+            $userID = $session->get( 'userID' );
+            
+            $this->_isPermissionedChecksum = false;
+            require_once 'CRM/Contact/BAO/Contact/Utils.php';
             require_once 'CRM/Contact/BAO/Contact/Permission.php';
+            if ( $this->_id != $userID ) {
+                // do not allow edit for anon users in joomla frontend, CRM-4668, unless u have checksum CRM-5228
+                require_once 'CRM/Contact/BAO/Contact/Permission.php';
+                if ( $config->userFrameworkFrontend ) {
+                    $this->_isPermissionedChecksum = CRM_Contact_BAO_Contact_Permission::validateOnlyChecksum( $this->_id, $this, false );
+                } else {
+                    $this->_isPermissionedChecksum = CRM_Contact_BAO_Contact_Permission::validateChecksumContact( $this->_id, $this, false );
+                }
+            }
             
             // make sure we dont expose all fields based on permission
             $admin = false; 
-            $session  = CRM_Core_Session::singleton( ); 
             if ( ( ! $config->userFrameworkFrontend &&
                    ( CRM_Core_Permission::check( 'administer users' )  ||
                      CRM_Core_Permission::check( 'view all contacts' ) ||
                      CRM_Contact_BAO_Contact_Permission::allow( $this->_id, CRM_Core_Permission::VIEW ) ) ) ||
-                 $this->_id == $session->get( 'userID' ) ) {
+                 $this->_id == $userID ||
+                 $this->_isPermissionedChecksum ) {
                 $admin = true; 
             }
 
@@ -177,7 +216,25 @@ class CRM_Profile_Page_Dynamic extends CRM_Core_Page {
                     }
                 }
             }
-            CRM_Core_BAO_UFGroup::getValues( $this->_id, $fields, $values );
+            
+            if ( $this->_isContactActivityProfile ) {
+                $contactFields = $activityFields = array( );
+
+                foreach ( $fields as $fieldName => $field ) {
+                    if ( CRM_Utils_Array::value('field_type', $field) == 'Activity' ) {
+                        $activityFields[$fieldName] = $field;
+                    } else {
+                        $contactFields[$fieldName]  = $field;
+                    }
+                }
+                
+                CRM_Core_BAO_UFGroup::getValues( $this->_id, $contactFields, $values );
+                if ( $this->_activityId ) {
+                    CRM_Core_BAO_UFGroup::getValues( null, $activityFields, $values, true, array( array( 'activity_id', '=', $this->_activityId, 0, 0 ) ) );
+                }
+            } else {
+                CRM_Core_BAO_UFGroup::getValues( $this->_id, $fields, $values );
+            }
             
             // $profileFields array can be used for customized display of field labels and values in Profile/View.tpl
             $profileFields = array( );

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -55,7 +55,6 @@ class CRM_Admin_Form_Setting_UF extends CRM_Admin_Form_Setting
         CRM_Utils_System::setTitle( ts( 'Settings - %1 Integration',
                                         array( 1 => $uf ) ) );
 
-        $this->addElement('text','userFrameworkVersion' ,ts('%1 Version', array( 1 => $uf )));  
         $this->addElement('text','userFrameworkUsersTableName', ts('%1 Users Table Name', array( 1 => $uf )));
         if ( function_exists('module_exists') &&
              module_exists('views')           &&
@@ -64,7 +63,7 @@ class CRM_Admin_Form_Setting_UF extends CRM_Admin_Form_Setting
             $tableNames    = CRM_Core_DAO::GetStorageValues(null, 0, 'Name');
             $tablePrefixes = '$db_prefix = array(';
             foreach ( $tableNames as $tableName => $value ) {
-                $tablePrefixes .= "\n  '" . str_pad($tableName . "'", 41) . " => '{$dsnArray['database']}.',";
+                $tablePrefixes .= "\n  '" . str_pad($tableName . "'", 41) . " => '`{$dsnArray['database']}`.',";
             }
             $tablePrefixes .= "\n);";
             $this->assign('tablePrefixes', $tablePrefixes);

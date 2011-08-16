@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -54,8 +54,8 @@ class CRM_Report_Form_Case_TimeSpent extends CRM_Report_Form {
                                                     'no_display' => true, 
                                                     'required'   => true, 
                                                     ),
-                                             'display_name'    =>
-                                              array( 'title'     => ts('Display Name') ,
+                                             'sort_name'    =>
+                                              array( 'title'     => ts('Contact Name') ,
                                                      'required'  => true,
                                                      'no_repeat' => true ),
                                               ),
@@ -165,8 +165,8 @@ class CRM_Report_Form_Case_TimeSpent extends CRM_Report_Form {
                        ) {
 
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = $field['no_display'];
+                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = CRM_Utils_Array::value( 'title', $field );
+                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = CRM_Utils_Array::value( 'no_display', $field );
                          	
                         if ( $fieldName == 'activity_type_id') {
                         	$this->has_activity_type = true;
@@ -215,7 +215,7 @@ class CRM_Report_Form_Case_TimeSpent extends CRM_Report_Form {
 
                 foreach ( $table['filters'] as $fieldName => $field ) {
                     $clause = null;
-                    if ( $field['type'] & CRM_Utils_Type::T_DATE ) {
+                    if ( CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE ) {
                         $relative = CRM_Utils_Array::value( "{$fieldName}_relative", $this->_params );
                         $from     = CRM_Utils_Array::value( "{$fieldName}_from"    , $this->_params );
                         $to       = CRM_Utils_Array::value( "{$fieldName}_to"      , $this->_params );
@@ -268,7 +268,11 @@ $this->_groupBy .= "civicrm_activity_activity_date_time
 ";
         }
     }
-    
+
+    function orderBy( ) {
+        $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact']}.id";
+    }
+
     function postProcess( ) {
         parent::postProcess();
     }
@@ -289,33 +293,29 @@ $this->_groupBy .= "civicrm_activity_activity_date_time
         $entryFound     = false;
         foreach ( $rows as $rowNum => $row ) {
             
-            if ( array_key_exists('civicrm_activity_activity_type_id', $row ) ) {
+            if ( isset($row['civicrm_activity_activity_type_id']) ) {
                 $entryFound = true;
-                if ( $value = $row['civicrm_activity_activity_type_id'] ) {
-                    $rows[$rowNum]['civicrm_activity_activity_type_id'] = $this->activityTypes[$value];
-                }
+                $val = $row['civicrm_activity_activity_type_id'];
+                $rows[$rowNum]['civicrm_activity_activity_type_id'] =
+                  isset($this->activityTypes[$val]) ? $this->activityTypes[$val] : '';
             }
             
-            if ( array_key_exists('civicrm_activity_status_id', $row ) ) {
+            if ( isset($row['civicrm_activity_status_id']) ) {
                 $entryFound = true;
-                if ( $value = $row['civicrm_activity_status_id'] ) {
-                    $rows[$rowNum]['civicrm_activity_status_id'] = $this->activityStatuses[$value];
-                }
+                $val = $row['civicrm_activity_status_id'];
+                $rows[$rowNum]['civicrm_activity_status_id'] =
+                  isset($this->activityStatuses[$val]) ? $this->activityStatuses[$val] : '';
             }
 
             // The next two make it easier to make pivot tables after exporting to Excel
-            if ( array_key_exists('civicrm_activity_duration', $row ) ) {
+            if ( isset($row['civicrm_activity_duration']) ) {
                 $entryFound = true;
-                if ( $row['civicrm_activity_duration'] == '' ) {
-                    $rows[$rowNum]['civicrm_activity_duration'] = '0';
-                }
+                $rows[$rowNum]['civicrm_activity_duration'] = (int) $row['civicrm_activity_duration'];
             }
 
-            if ( array_key_exists('civicrm_case_activity_case_id', $row ) ) {
+            if ( isset($row['civicrm_case_activity_case_id']) ) {
                 $entryFound = true;
-                if ( $row['civicrm_case_activity_case_id'] == '' ) {
-                    $rows[$rowNum]['civicrm_case_activity_case_id'] = '0';
-                }
+                $rows[$rowNum]['civicrm_case_activity_case_id'] = (int) $row['civicrm_case_activity_case_id'];
             }
             
             if ( !$entryFound ) {

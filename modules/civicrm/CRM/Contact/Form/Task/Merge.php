@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -52,8 +52,8 @@ class CRM_Contact_Form_Task_Merge extends CRM_Contact_Form_Task {
         $statusMsg  = null;
         $contactIds = array( );
         if ( is_array( $this->_contactIds ) ) $contactIds = array_unique( $this->_contactIds );
-        if ( count( $contactIds ) < 2 ) {
-            $statusMsg = ts( 'Minimum two contact records are required to perform merge operation.' );
+        if ( count( $contactIds ) != 2 ) {
+            $statusMsg = ts( 'Merge operation requires selecting two contacts.' );
         }
         
         // do check for same contact type.
@@ -65,46 +65,24 @@ class CRM_Contact_Form_Task_Merge extends CRM_Contact_Form_Task {
                 $contactTypes[$contact->contact_type] = true;
                 if ( count( $contactTypes ) > 1 ) break;
             }
-            if ( count( $contactTypes ) > 1 ) $statusMsg = ts( 'Please select same contact type records.' ); 
+            if ( count( $contactTypes ) > 1 ) $statusMsg = ts( 'Selected records must all be the same contact type (i.e. all Individuals).' ); 
         }
         if ( $statusMsg ) CRM_Core_Error::statusBounce( $statusMsg );
         
-        $url = null;
         // redirect to merge form directly.
-        if ( count( $contactIds ) == 2 ) {
-            $cid = $contactIds[0];
-            $oid = $contactIds[1];
+        $cid = $contactIds[0];
+        $oid = $contactIds[1];
             
-            //don't allow to delete logged in user.
-            $session = CRM_Core_Session::singleton( );
-            if ( $oid == $session->get('userID') ) {
-                $oid = $cid;
-                $cid = $session->get('userID');
-            }
-            
-            $url = CRM_Utils_System::url( 'civicrm/contact/merge', "reset=1&cid={$cid}&oid={$oid}" );
-        } else {
-            $level = 'Fuzzy';
-            $cType = key( $contactTypes );
-            
-            require_once 'CRM/Dedupe/DAO/RuleGroup.php';
-            $rgBao = new CRM_Dedupe_DAO_RuleGroup();
-            $rgBao->level        = $level;
-            $rgBao->is_default   = 1;
-            $rgBao->contact_type = $cType;
-            if ( !$rgBao->find (true ) ) {
-                CRM_Core_Error::statusBounce("You can not merge contact records because $level rule for $cType does not exist.");
-            }
-            $ruleGroupID = $rgBao->id;
-            $session = CRM_Core_Session::singleton( );
-            $session->set( 'selectedSearchContactIds', $contactIds );
-            
-            // create a hidden group and poceed to merge
-            $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', 
-                                          "reset=1&action=update&rgid={$ruleGroupID}&context=search" );
+        //don't allow to delete logged in user.
+        $session = CRM_Core_Session::singleton( );
+        if ( $oid == $session->get('userID') ) {
+            $oid = $cid;
+            $cid = $session->get('userID');
         }
+            
+        $url = CRM_Utils_System::url( 'civicrm/contact/merge', "reset=1&cid={$cid}&oid={$oid}" );
         
         // redirect to merge page.
-        if ( $url ) CRM_Utils_System::redirect( $url );
+        CRM_Utils_System::redirect( $url );
     }
 }

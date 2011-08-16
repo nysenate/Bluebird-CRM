@@ -239,7 +239,7 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
             }
         }
 
-        $this->loadObjects( $input, $ids, $objects );
+        $this->loadObjects( $input, $ids, $objects, true );
 
         require_once 'CRM/Core/Transaction.php';
         $transaction = new CRM_Core_Transaction( );

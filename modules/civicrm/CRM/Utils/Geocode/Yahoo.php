@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -55,11 +55,12 @@ class CRM_Utils_Geocode_Yahoo {
     static protected $_uri = '/MapsService/V1/geocode';
 
     /**
-     * function that takes an address object and gets the latitude / longitude for this
-     * address. Note that at a later stage, we could make this function also clean up
-     * the address into a more valid format
+     * function that takes an address array and gets the latitude / longitude 
+     * and postal code for this address. Note that at a later stage, we could
+     * make this function also clean up the address into a more valid format
      *
-     * @param object $address
+     * @param array $values associative array of address data: country, street_address, city, state_province, postal code
+     * @param boolean $stateName this parameter currently has no function
      *
      * @return boolean true if we modified the address, false otherwise
      * @static
@@ -128,13 +129,54 @@ class CRM_Utils_Geocode_Yahoo {
             $result = get_object_vars($xml->Result);
 
             foreach ( $result as $key => $val ) {
-                if (strlen($val)) $ret[(string)$key] =  (string)$val;
+                if (is_scalar( $val ) &&
+                    strlen($val)) {
+                    $ret[(string)$key] =  (string)$val;
+                }
             }
 
             $values['geo_code_1'] = $ret['Latitude' ];
             $values['geo_code_2'] = $ret['Longitude'];
+                    
+            if ( $ret['Zip'] ) {
+                $current_pc = CRM_Utils_Array::value( 'postal_code', $values );
+                $skip_zip = false;
+
+                if ( $current_pc ) {
+                    $current_pc_suffix = CRM_Utils_Array::value( 'postal_code_suffix', $values );
+                    $current_pc_complete = $current_pc . $current_pc_suffix;
+                    $new_pc_complete = preg_replace("/[+-]/", '', $ret['Zip']);
+
+                    // if a postal code was already entered, don't change it, except to make it more precise
+                    if ( strpos( $new_pc_complete, $current_pc_complete ) !== 0) {
+                        $msg = ts( 'The Yahoo Geocoding system returned a different postal code (%1) than the one you entered (%2). If you want the Yahoo value, please delete the current postal code and save again.',
+                                   array( 1 => $ret['Zip'],
+                                          2 => $current_pc . $current_pc_suffix ? "-$current_pc_suffix" : '' ) );
+                        CRM_Core_Session::setStatus( $msg );
+                        $skip_zip = true;
+                    }
+                }
+
+                if ( ! $skip_zip ) {
+                    $values['postal_code'] = $ret['Zip'];
+
+                    /* the following logic to split the string was borrowed from
+                       CRM/Core/BAO/Address.php -- CRM_Core_BAO_Address::fixAddress.
+                       This is actually the function that calls the geocoding
+                       script to begin with, but the zipcode business takes
+                       place before geocoding gets called.
+                    */
+                    if ( preg_match('/^(\d{4,5})[+-](\d{4})$/',
+                              $ret['Zip'],
+                              $match) ) {
+                        $values['postal_code']        = $match[1];
+                        $values['postal_code_suffix'] = $match[2];
+                    }
+                }
+            }
             return true;
         }
+
         // reset the geo code values if we did not get any good values
         $values['geo_code_1'] = $values['geo_code_2'] = 'null';
         return false;

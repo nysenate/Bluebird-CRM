@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -49,3 +49,10 @@
 {/foreach}
 
 {include file="CRM/common/customData.tpl"}
+ <script type="text/javascript">
+  {literal}
+       cj(function() {
+           cj().crmaccordions(); 
+        });        
+  {/literal}
+ </script>

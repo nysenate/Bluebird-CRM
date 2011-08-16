@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -53,7 +53,7 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website
      */
     static function add( &$params ) 
     {
-        $website =& new CRM_Core_DAO_Website();
+        $website = new CRM_Core_DAO_Website();
         $website->copyValues($params);
         return $website->save( );
     }
@@ -128,7 +128,7 @@ class CRM_Core_BAO_Website extends CRM_Core_DAO_Website
      */
     static function &getValues( &$params, &$values ) {
         $websites = array( );
-        $website =& new CRM_Core_DAO_Website();
+        $website = new CRM_Core_DAO_Website();
         $website->contact_id = $params['contact_id'];
         $website->find( );
         

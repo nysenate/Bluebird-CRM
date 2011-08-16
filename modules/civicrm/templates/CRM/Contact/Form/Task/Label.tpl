@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,11 +24,12 @@
  +--------------------------------------------------------------------+
 *}
 <div class="crm-block crm-form-block crm-contact-task-mailing-label-form-block">
+<div class="messages status">{include file="CRM/Contact/Form/Task.tpl"}</div>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 <table class="form-layout-compressed"> 
-     <tr class="crm-contact-task-mailing-label-form-block-label_id">
-        <td class="label">{$form.label_id.label}</td>
-        <td>{$form.label_id.html}</td>
+     <tr class="crm-contact-task-mailing-label-form-block-label_name">
+        <td class="label">{$form.label_name.label}</td>
+        <td>{$form.label_name.html} {help id="id-select-label" file="CRM/Contact/Form/Task/Label.hlp"}</td>
      </tr>
      <tr class="crm-contact-task-mailing-label-form-block-location_type_id">
         <td class="label">{$form.location_type_id.label}</td>
@@ -43,7 +44,6 @@
      <tr class="crm-contact-task-mailing-label-form-block-merge_same_household">
         <td></td><td>{$form.merge_same_household.html} {$form.merge_same_household.label}</td>
      </tr>
-     <tr><td></td><td>{include file="CRM/Contact/Form/Task.tpl"}</td></tr>
 </table>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

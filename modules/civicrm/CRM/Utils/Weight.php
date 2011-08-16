@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -45,8 +45,13 @@ class CRM_Utils_Weight {
         $groupBy     = "$weightField having dupeCount>1";
         
         $minDupeID =& CRM_Utils_Weight::query( 'SELECT', $daoName, $fieldValues, $selectField, null, null, $groupBy );
-        $minDupeID->fetch();
-        
+
+        // return early if query returned empty
+        // CRM-8043
+        if ( ! $minDupeID->fetch() ) {
+            return true;
+        }
+
         if ( $minDupeID->dupeId ) {
             $additionalWhere = "id !=". $minDupeID->dupeId . " AND $weightField >= " . $minDupeID->dupeWeight;
             $update = "$weightField = $weightField + 1";

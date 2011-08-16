@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  * This is a part of CiviCRM extension management functionality.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -149,7 +149,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic
     {
 
         $this->assign('extEnabled', FALSE );
-        if( self::$_extensions ) {
+        if ( self::$_extensions ) {
             $this->assign('extEnabled', TRUE );
         } else {
             return;
@@ -166,7 +166,7 @@ class CRM_Admin_Page_Extensions extends CRM_Core_Page_Basic
             // installed (they have option_value table id)
             // It's totally unlikely, that installed extensions will
             // have ids below 50.
-            if( $obj->id ) {
+            if ( isset( $obj->id ) ) {
                 $id = $obj->id;
             } else {
                 $id = $fid++;

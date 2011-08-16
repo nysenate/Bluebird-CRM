@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,12 +25,12 @@
 *}
 <div class="contactCardRight">
     {if $contact_type eq 'Individual' AND $showDemographics}
-    <table>
+    <table class="crm-contact-page-demographics">
         <tr>
-            <td class="label">{ts}Gender{/ts}</td><td>{$gender_display}</td>
+            <td class="label">{ts}Gender{/ts}</td><td class="crm-contact-gender_display">{$gender_display}</td>
         </tr>
         <tr>
-            <td class="label">{ts}Date of birth{/ts}</td><td>
+            <td class="label">{ts}Date of birth{/ts}</td><td class="crm-contact-birth_date_display">
             {if $birthDateViewFormat}	 
                 {$birth_date_display|crmDate:$birthDateViewFormat}
             {else}
@@ -41,18 +41,18 @@
         <tr>
         {if $is_deceased eq 1}
            {if $deceased_date}<td class="label">{ts}Date Deceased{/ts}</td>
-             <td>
+             <td class="crm-contact-deceased_date_display">
              {if $birthDateViewFormat}          
 		        {$deceased_date_display|crmDate:$birthDateViewFormat}
              {else}
                 {$deceased_date_display|crmDate}
              {/if}
              </td>
-           {else}<td class="label" colspan=2><span class="font-red upper">{ts}Contact is Deceased{/ts}</span></td>
+           {else}<td class="label crm-contact-deceased_message" colspan=2><span class="font-red upper">{ts}Contact is Deceased{/ts}</span></td>
            {/if}
          {else}
             <td class="label">{ts}Age{/ts}</td>
-            <td>{if $age.y}{ts count=$age.y plural='%count years'}%count year{/ts}{elseif $age.m}{ts count=$age.m plural='%count months'}%count month{/ts}{/if} </td>
+            <td class="crm-contact-age_display">{if $age.y}{ts count=$age.y plural='%count years'}%count year{/ts}{elseif $age.m}{ts count=$age.m plural='%count months'}%count month{/ts}{/if} </td>
          {/if}
         </tr>
     </table>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,6 +24,11 @@
  +--------------------------------------------------------------------+
 *}
 {if $recaptchaHTML}
+{literal}
+<script type="text/javascript">
+var RecaptchaOptions = {{/literal}{$recaptchaOptions}{literal}};
+</script>
+{/literal}
 <div class="crm-section recaptcha-section">
     <table class="form-layout-compressed">
         <tr>

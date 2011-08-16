@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: attribute_translator.cls.php,v 1.8 2006/07/07 21:31:02 benjcarson Exp $ */
+/* $Id: attribute_translator.cls.php 346 2011-01-09 13:23:22Z fabien.menager $ */
 
 /**
  * Translates HTML 4.0 attributes into CSS rules
@@ -51,195 +51,186 @@ class Attribute_Translator {
   // http://www.w3.org/TR/REC-html40/index/attributes.html
   //
   // thank you var_export() :D
-  static private $__ATTRIBUTE_LOOKUP =
-    array (//'caption' => array ( 'align' => '', ),
-           'img_inner' =>  // img tags actually end up wrapping img_inner elements
-           array ('align' => array('bottom' => 'vertical-align: baseline;',
-                                   'middle' => 'vertical-align: middle;',
-                                   'top' => 'vertical-align: top;',
-                                   'left' => 'float: left;',
-                                   'right' => 'float: right;'),
-                  'border' => 'border-width: %0.2f px;',
-                  'height' => 'height: %s;',
-                  'hspace' => 'padding-left: %0.2f px; padding-right: %0.2f px;',
-                  'vspace' => 'padding-top: %0.2f px; padding-bottom: %0.2f px;',
-                  'width' => 'width: %s;',
-                  ),
-           'table' => 
-           array ("align" => array(//'left' => '',
-                        'center' => 'margin-left: auto; margin-right: auto;',
-                        //'right' => ''
-                        ),
-                  'bgcolor' => 'background-color: %s;',
-                  'border' => '!set_table_border',
-                  'cellpadding' => '!set_table_cellpadding',
-                  'cellspacing' => 'border-spacing: %0.2f; border-collapse: separate;',
-                  'frame' => array('void' => 'border-style: none;',
-                                   'above' => 'border-top-style: solid;',
-                                   'below' => 'border-bottom-style: solid;',
-                                   'hsides' => 'border-left-style: solid; border-right-style: solid;',
-                                   'vsides' => 'border-top-style: solid; border-bottom-style: solid;',
-                                   'lhs' => 'border-left-style: solid;',
-                                   'rhs' => 'border-right-style: solid;',
-                                   'box' => 'border-style: solid;',
-                                   'border' => 'border-style: solid;'),
-                  'rules' => '!set_table_rules',
-                  'width' => 'width: %s;',
-                  ),
-           'hr' => 
-           array (
-                  'align' => '!set_hr_align', // Need to grab width to set 'left' & 'right' correctly
-                  'noshade' => 'border-style: solid;',
-                  'size' => 'border-width: %0.2f px;',
-                  'width' => 'width: %s;',
-                  ),
-           'div' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-           'h1' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-           'h2' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-           'h3' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-           'h4' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-           'h5' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-           'h6' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-           'p' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  ),
-//            'col' => 
-//            array (
-//                   'align' => '',
-//                   'valign' => '',
-//                   ),
-//            'colgroup' => 
-//            array (
-//                   'align' => '',
-//                   'valign' => '',
-//                   ),
-           'tbody' => 
-           array (
-                  'align' => '!set_table_row_align',
-                  'valign' => '!set_table_row_valign',
-                  ),
-           'td' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  'bgcolor' => 'background-color: %s;',
-                  'height' => 'height: %s;',
-                  'nowrap' => 'white-space: nowrap;',
-                  'valign' => 'vertical-align: %s;',
-                  'width' => 'width: %s;',
-                  ),
-           'tfoot' => 
-           array (
-                  'align' => '!set_table_row_align',
-                  'valign' => '!set_table_row_valign',
-                  ),
-           'th' => 
-           array (
-                  'align' => 'text-align: %s;',
-                  'bgcolor' => 'background-color: %s;',
-                  'height' => 'height: %s;',
-                  'nowrap' => 'white-space: nowrap;',
-                  'valign' => 'vertical-align: %s;',
-                  'width' => 'width: %s;',
-                  ),
-           'thead' => 
-           array (
-                  'align' => '!set_table_row_align',
-                  'valign' => '!set_table_row_valign',
-                  ),
-           'tr' => 
-           array (
-                  'align' => '!set_table_row_align',
-                  'bgcolor' => '!set_table_row_bgcolor',
-                  'valign' => '!set_table_row_valign',
-                  ),
-           'body' => 
-           array (
-                  'background' => 'background-image: url(%s);',
-                  'bgcolor' => 'background-color: %s;',
-                  'link' => '!set_body_link',
-                  'text' => 'color: %s;',
-                  ),
-           'br' => 
-           array (
-                  'clear' => 'clear: %s;',
-                  ),
-           'basefont' => 
-           array (
-                  'color' => 'color: %s;',
-                  'face' => 'font-family: %s;',
-                  'size' => '!set_basefont_size',
-                  ),
-           'font' => 
-           array (
-                  'color' => 'color: %s;',
-                  'face' => 'font-family: %s;',
-                  'size' => '!set_font_size',
-                  ),
-           'dir' => 
-           array (
-                  'compact' => 'margin: 0.5em 0;',
-                  ),
-           'dl' => 
-           array (
-                  'compact' => 'margin: 0.5em 0;',
-                  ),
-           'menu' => 
-           array (
-                  'compact' => 'margin: 0.5em 0;',
-                  ),
-           'ol' => 
-           array (
-                  'compact' => 'margin: 0.5em 0;',
-                  'start' => 'counter-reset: -dompdf-default-counter %d;',
-                  'type' => 'list-style-type: %s;',
-                  ),
-           'ul' => 
-           array (
-                  'compact' => 'margin: 0.5em 0;',
-                  'type' => 'list-style-type: %s;',
-                  ),
-           'li' => 
-           array (
-                  'type' => 'list-style-type: %s;',
-                  'value' => 'counter-reset: -dompdf-default-counter %d;',
-                  ),
-           'pre' => 
-           array (
-                  'width' => 'width: %s;',
-                  ),
-           );
+  static private $__ATTRIBUTE_LOOKUP = array(
+    //'caption' => array ( 'align' => '', ),
+    'img' => array(
+      'align' => array(
+        'bottom' => 'vertical-align: baseline;',
+        'middle' => 'vertical-align: middle;',
+        'top'    => 'vertical-align: top;',
+        'left'   => 'float: left;',
+        'right'  => 'float: right;'
+      ),
+      'border' => 'border-width: %0.2F px;',
+      'height' => 'height: %s px;',
+      'hspace' => 'padding-left: %1$0.2F px; padding-right: %1$0.2F px;',
+      'vspace' => 'padding-top: %1$0.2F px; padding-bottom: %1$0.2F px;',
+      'width'  => 'width: %s px;',
+    ),
+    'table' => array(
+      'align' => array(
+        'left'   => 'margin-left: 0; margin-right: auto;',
+        'center' => 'margin-left: auto; margin-right: auto;',
+        'right'  => 'margin-left: auto; margin-right: 0;'
+      ),
+      'bgcolor' => 'background-color: %s;',
+      'border' => '!set_table_border',
+      'cellpadding' => '!set_table_cellpadding',
+      'cellspacing' => 'border-spacing: %0.2F; border-collapse: separate;',
+      'frame' => array(
+        'void'   => 'border-style: none;',
+        'above'  => 'border-top-style: solid;',
+        'below'  => 'border-bottom-style: solid;',
+        'hsides' => 'border-left-style: solid; border-right-style: solid;',
+        'vsides' => 'border-top-style: solid; border-bottom-style: solid;',
+        'lhs'    => 'border-left-style: solid;',
+        'rhs'    => 'border-right-style: solid;',
+        'box'    => 'border-style: solid;',
+        'border' => 'border-style: solid;'
+      ),
+      'rules' => '!set_table_rules',
+      'width' => 'width: %s;',
+    ),
+    'hr' => array(
+      'align' => '!set_hr_align', // Need to grab width to set 'left' & 'right' correctly
+      'noshade' => 'border-style: solid;',
+      'size' => 'border-width: %0.2F px;',
+      'width' => 'width: %s;',
+    ),
+    'div' => array(
+      'align' => 'text-align: %s;',
+    ),
+    'h1' => array(
+      'align' => 'text-align: %s;',
+    ),
+    'h2' => array(
+      'align' => 'text-align: %s;',
+    ),
+    'h3' => array(
+      'align' => 'text-align: %s;',
+    ),
+    'h4' => array(
+      'align' => 'text-align: %s;',
+    ),
+    'h5' => array(
+      'align' => 'text-align: %s;',
+    ),
+    'h6' => array(
+      'align' => 'text-align: %s;',
+    ),
+    'p' => array(
+      'align' => 'text-align: %s;',
+    ),
+//    'col' => array(
+//      'align'  => '',
+//      'valign' => '',
+//    ),
+//    'colgroup' => array(
+//      'align'  => '',
+//      'valign' => '',
+//    ),
+    'tbody' => array(
+      'align'  => '!set_table_row_align',
+      'valign' => '!set_table_row_valign',
+    ),
+    'td' => array(
+      'align'   => 'text-align: %s;',
+      'bgcolor' => 'background-color: %s;',
+      'height'  => 'height: %s;',
+      'nowrap'  => 'white-space: nowrap;',
+      'valign'  => 'vertical-align: %s;',
+      'width'   => 'width: %s;',
+    ),
+    'tfoot' => array(
+      'align'   => '!set_table_row_align',
+      'valign'  => '!set_table_row_valign',
+    ),
+    'th' => array(
+      'align'   => 'text-align: %s;',
+      'bgcolor' => 'background-color: %s;',
+      'height'  => 'height: %s;',
+      'nowrap'  => 'white-space: nowrap;',
+      'valign'  => 'vertical-align: %s;',
+      'width'   => 'width: %s;',
+    ),
+    'thead' => array(
+      'align'   => '!set_table_row_align',
+      'valign'  => '!set_table_row_valign',
+    ),
+    'tr' => array(
+      'align'   => '!set_table_row_align',
+      'bgcolor' => '!set_table_row_bgcolor',
+      'valign'  => '!set_table_row_valign',
+    ),
+    'body' => array(
+      'background' => 'background-image: url(%s);',
+      'bgcolor'    => 'background-color: %s;',
+      'link'       => '!set_body_link',
+      'text'       => 'color: %s;',
+    ),
+    'br' => array(
+      'clear' => 'clear: %s;',
+    ),
+    'basefont' => array(
+      'color' => 'color: %s;',
+      'face'  => 'font-family: %s;',
+      'size'  => '!set_basefont_size',
+    ),
+    'font' => array(
+      'color' => 'color: %s;',
+      'face'  => 'font-family: %s;',
+      'size'  => '!set_font_size',
+    ),
+    'dir' => array(
+      'compact' => 'margin: 0.5em 0;',
+    ),
+    'dl' => array(
+      'compact' => 'margin: 0.5em 0;',
+    ),
+    'menu' => array(
+      'compact' => 'margin: 0.5em 0;',
+    ),
+    'ol' => array(
+      'compact' => 'margin: 0.5em 0;',
+      'start'   => 'counter-reset: -dompdf-default-counter %d;',
+      'type'    => 'list-style-type: %s;',
+    ),
+    'ul' => array(
+      'compact' => 'margin: 0.5em 0;',
+      'type'    => 'list-style-type: %s;',
+    ),
+    'li' => array(
+      'type'    => 'list-style-type: %s;',
+      'value'   => 'counter-reset: -dompdf-default-counter %d;',
+    ),
+    'pre' => array(
+      'width' => 'width: %s;',
+    ),
+  );
 
   
   static protected $_last_basefont_size = 3;
-  static protected $_font_size_lookup = array(1=>"xx-small",
-                                              2=>"x-small",
-                                              3=>"medium",
-                                              4=>"large",
-                                              5=>"x-large",
-                                              6=>"xx-large",
-                                              7=>"300%");
+  static protected $_font_size_lookup = array(
+    // For basefont support
+    -3 => "4pt", 
+    -2 => "5pt", 
+    -1 => "6pt", 
+     0 => "7pt", 
+    
+     1 => "8pt",
+     2 => "10pt",
+     3 => "12pt",
+     4 => "14pt",
+     5 => "18pt",
+     6 => "24pt",
+     7 => "34pt",
+     
+    // For basefont support
+     8 => "48pt", 
+     9 => "44pt", 
+    10 => "52pt", 
+    11 => "60pt", 
+  );
   
   
   static function translate_attributes($frame) {
@@ -266,7 +257,7 @@ class Attribute_Translator {
       // Look up $value in $target, if $target is an array:
       if ( is_array($target) ) {
 
-        if ( isset($target[$value]) ) 
+        if ( isset($target[$value]) )
           $style .= " " . self::_resolve_target($node, $target[$value], $value);
 
       } else {
@@ -282,19 +273,18 @@ class Attribute_Translator {
   }
 
   static protected function _resolve_target($node, $target, $value) {
-    if ( $target{0} == "!" ) {
+    if ( $target[0] === "!" ) {
       // Function call
       $func = "_" . mb_substr($target, 1);
       return self::$func($node, $value);
     }
-
+    
     return $value ? sprintf($target, $value) : "";
   }
 
   //.....................................................................
-  
-  static protected function _set_table_cellpadding($node, $value) {
 
+  static protected function _set_table_cellpadding($node, $value) {
     $td_list = $node->getElementsByTagName("td");
     foreach ($td_list as $td) {
       $style = rtrim($td->getAttribute("style"), ";");
@@ -308,21 +298,38 @@ class Attribute_Translator {
   static protected function _set_table_border($node, $value) {
     $td_list = $node->getElementsByTagName("td");
     foreach ($td_list as $td) {
-      $style = rtrim($td->getAttribute("style"), ";");
-      $style .= "; border-width: $value" . "px; border-style: ridge;";
+      $style = $td->getAttribute("style");
+      if ( strpos($style, "border") !== false )
+        continue;
+      $style = rtrim($style, ";");
+      $style .= "; border-width: " . ($value > 0 ? 1 : 0) . "pt; border-style: inset;";
       $style = ltrim($style, ";");
       $td->setAttribute("style", $style);
     }
-    return null;
+    
+    $th_list = $node->getElementsByTagName("th");
+    foreach ($th_list as $th) {
+      $style = $th->getAttribute("style");
+      if ( strpos($style, "border") !== false )
+        continue;
+      $style = rtrim($style, ";");
+      $style .= "; border-width: " . ($value > 0 ? 1 : 0) . "pt; border-style: inset;";
+      $style = ltrim($style, ";");
+      $th->setAttribute("style", $style);
+    }
+    
+    $style = rtrim($node->getAttribute("style"),";");
+    $style .= "; border-width: $value" . "px; ";
+    return ltrim($style, "; ");
   }
 
   static protected function _set_table_cellspacing($node, $value) {
-    $style = rtrim($td->getAttribute($style), ";");
+    $style = rtrim($node->getAttribute($style), ";");
 
-    if ( $value == 0 ) 
+    if ( $value == 0 )
       $style .= "; border-collapse: collapse;";
       
-    else 
+    else
       $style = "; border-collapse: separate;";
       
     return ltrim($style, ";");
@@ -367,7 +374,6 @@ class Attribute_Translator {
   }
 
   static protected function _set_hr_align($node, $value) {
-
     $style = rtrim($node->getAttribute("style"),";");
     $width = $node->getAttribute("width");
     if ( $width == "" )
@@ -392,7 +398,6 @@ class Attribute_Translator {
       return null;
     }
     return ltrim($style, "; ");
-    
   }
 
   static protected function _set_table_row_align($node, $value) {
@@ -461,7 +466,7 @@ class Attribute_Translator {
   static protected function _set_font_size($node, $value) {
     $style = $node->getAttribute("style");
 
-    if ( $value{0} == "-" || $value{0} == "+" )
+    if ( $value[0] === "-" || $value[0] === "+" )
       $value = self::$_last_basefont_size + (int)$value;
 
     if ( isset(self::$_font_size_lookup[$value]) )
@@ -474,5 +479,3 @@ class Attribute_Translator {
   }
 
 }
-
-?>

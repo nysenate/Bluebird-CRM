@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -170,9 +170,9 @@ class CRM_Core_Payment_BaseIPN {
                 //get payment processor id from recur object.
                 $paymentProcessorID = $recur->payment_processor_id;
             }
-            
+
             //for normal contribution get the payment processor id.
-            if ( !$paymentProcessorID ) {
+            if ( ! $paymentProcessorID ) {
                 if ( $contribution->contribution_page_id ) {
                     // get the payment processor id from contribution page
                     $paymentProcessorID = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage',
@@ -350,7 +350,7 @@ class CRM_Core_Payment_BaseIPN {
             if ( CRM_Utils_Array::value( 'is_email_receipt', $values ) ) {
                 $contribution->receipt_date = self::$_now;
             }
-            
+
             if ( $membership ) {
                 $format       = '%Y%m%d';
                 require_once 'CRM/Member/BAO/MembershipType.php';  
@@ -358,6 +358,21 @@ class CRM_Core_Payment_BaseIPN {
                 $currentMembership =  CRM_Member_BAO_Membership::getContactMembership( $membership->contact_id, 
                                                                                        $membership->membership_type_id, 
                                                                                        $membership->is_test, $membership->id );
+            	                                                                       
+                // CRM-8141 update the membership type with the value recorded in log when membership created/renewed
+                // this picks up membership type changes during renewals
+                $sql = "SELECT membership_type_id FROM civicrm_membership_log WHERE membership_id=$membership->id ORDER BY id DESC LIMIT 1;";
+                require_once 'CRM/Core/DAO.php';
+                $dao = new CRM_Core_DAO;
+                $dao->query( $sql );
+                if ( $dao->fetch( ) ) {
+                	if ( ! empty( $dao->membership_type_id ) ) {
+                        $membership->membership_type_id = $dao->membership_type_id;
+                        $membership->save( );
+                    } // else fall back to using current membership type
+                } // esle fall back to using current membership type
+                $dao->free();
+                
                 if ( $currentMembership ) {
                     /*
                      * Fixed FOR CRM-4433
@@ -368,9 +383,7 @@ class CRM_Core_Payment_BaseIPN {
                     
                     $dates = CRM_Member_BAO_MembershipType::getRenewalDatesForMembershipType( $membership->id , 
                                                                                               $changeToday );
-                    
                     $dates['join_date'] =  CRM_Utils_Date::customFormat($currentMembership['join_date'], $format );
-                    
                 } else {
                     $dates = CRM_Member_BAO_MembershipType::getDatesForMembershipType($membership->membership_type_id);
                 }
@@ -391,7 +404,6 @@ class CRM_Core_Payment_BaseIPN {
                 //we might be renewing membership, 
                 //so make status override false.  
                 $formatedParams['is_override'] = false;
-
                 $membership->copyValues( $formatedParams );
                 $membership->save( );
 
@@ -409,6 +421,7 @@ class CRM_Core_Payment_BaseIPN {
                 $membershipLog['membership_id'] = $membership->id;
                 $membershipLog['modified_id']   = $membership->contact_id;
                 $membershipLog['modified_date'] = date('Ymd');
+                $membershipLog['membership_type_id'] = $membership->membership_type_id;
                 
                 require_once 'CRM/Member/BAO/MembershipLog.php';
                 CRM_Member_BAO_MembershipLog::add( $membershipLog, CRM_Core_DAO::$_nullArray);
@@ -455,13 +468,16 @@ class CRM_Core_Payment_BaseIPN {
             $participant->status_id = 1;
             $participant->save( );
         }
-        if ( $input['net_amount'] == 0 && $input['fee_amount'] != 0 ) {
+
+        if ( CRM_Utils_Array::value( 'net_amount', $input, 0 ) == 0 && 
+             CRM_Utils_Array::value( 'fee_amount', $input, 0 ) != 0 ) {
             $input['net_amount'] = $input['amount'] - $input['fee_amount'];
         }
+
         $contribution->contribution_status_id  = 1;
         $contribution->is_test      = $input['is_test'];
-        $contribution->fee_amount   = $input['fee_amount'];
-        $contribution->net_amount   = $input['net_amount'];
+        $contribution->fee_amount   = CRM_Utils_Array::value( 'fee_amount', $input, 0 );
+        $contribution->net_amount   = CRM_Utils_Array::value( 'net_amount', $input, 0 );
         $contribution->trxn_id      = $input['trxn_id'];
         $contribution->receive_date = CRM_Utils_Date::isoToMysql($contribution->receive_date);
         $contribution->cancel_date  = 'null';
@@ -546,6 +562,8 @@ class CRM_Core_Payment_BaseIPN {
         // get the billing location type
         require_once "CRM/Core/PseudoConstant.php";
         $locationTypes  =& CRM_Core_PseudoConstant::locationType( );
+        // CRM-8108 remove the ts around the Billing locationtype
+        //$ids['billing'] =  array_search( ts('Billing'),  $locationTypes );
         $ids['billing'] =  array_search( 'Billing',  $locationTypes );
         if ( ! $ids['billing'] ) {
             CRM_Core_Error::debug_log_message( ts( 'Please set a location type of %1', array( 1 => 'Billing' ) ) );
@@ -568,6 +586,14 @@ class CRM_Core_Payment_BaseIPN {
                 require_once 'CRM/Contribute/BAO/ContributionPage.php';
                 if ( isset( $contribution->contribution_page_id ) ) {
                     CRM_Contribute_BAO_ContributionPage::setValues( $contribution->contribution_page_id, $values );
+
+                    if ( $contribution->contribution_page_id ) {
+                        // CRM-8254
+                        $config = CRM_Core_Config::singleton( );
+                        $config->defaultCurrency = CRM_Utils_Array::value( 'currency', 
+                                                                           $values, 
+                                                                           $config->defaultCurrency );
+                    }
                 } else {
                     // Handle re-print receipt for offline contributions (call from PDF.php - no contribution_page_id)
                     $values['is_email_receipt'] = 1;

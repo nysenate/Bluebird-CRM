@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,12 +27,16 @@
 {* You can add the following additional event elements to this tpl as needed: $ev.end_date, $ev.location, $ev.description, $ev.contact_email *}
 {* Change truncate:80 to a larger or smaller value to show more or less of the summary. Remove it to show complete summary. *}
 <div id="crm-event-block">
-{foreach from=$eventBlock item=ev}
-    <p>
-    <a href="{$ev.url}">{$ev.title}</a><br />
-    {$ev.start_date|truncate:10:""|crmDate}<br />
-    {assign var=evSummary value=$ev.summary|truncate:80:""}
-    <em>{$evSummary}{if $ev.summary|count_characters:true GT 80}  (<a href="{$ev.url}">{ts}more{/ts}...</a>){/if}</em>
-    </p>
-{/foreach}
+     {if $eventBlock}
+     	 {foreach from=$eventBlock item=ev}
+     	     <p>
+    	     <a href="{$ev.url}">{$ev.title}</a><br />
+    	     {$ev.start_date|truncate:10:""|crmDate}<br />
+    	     {assign var=evSummary value=$ev.summary|truncate:80:""}
+    	     <em>{$evSummary}{if $ev.summary|count_characters:true GT 80}  (<a href="{$ev.url}">{ts}more{/ts}...</a>){/if}</em>
+    	     </p>
+         {/foreach} 
+     {else}
+	 <p>{ts}There are no upcoming events.{/ts}</p>
+     {/if}
 </div>

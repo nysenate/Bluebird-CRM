@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -83,6 +83,8 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
      * @access protected  
      */  
     protected $_priceSetID = null;
+
+    protected $_values;
     
     /**
      * Function to set variables up before form is built
@@ -105,26 +107,33 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
         if ( $this->_id ) {
             $title = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage', $this->_id, 'title' );
             
-            $url = CRM_Utils_System::url( 'civicrm/admin/contribute', 
-                                          "action=update&reset=1&id={$this->_id}" ); 
-            
-            $breadCrumb = array( array('title' => ts('Configure Contribution Page'), 
-                                       'url'   => $url ) );
-            CRM_Utils_System::appendBreadCrumb( $breadCrumb );
             if ($this->_action == CRM_Core_Action::UPDATE) {
                 $this->_single = true;
             }
-            
-            $session = CRM_Core_Session::singleton( ); 
-            $session->pushUserContext( $url );
         }
+
+        // set up tabs
+        require_once 'CRM/Contribute/Form/ContributionPage/TabHeader.php';
+        CRM_Contribute_Form_ContributionPage_TabHeader::build( $this );
+         
         if ($this->_action == CRM_Core_Action::UPDATE) {
             CRM_Utils_System::setTitle(ts('Configure Page - %1', array(1 => $title)));
         } else if ($this->_action == CRM_Core_Action::VIEW) {
             CRM_Utils_System::setTitle(ts('Preview Page - %1', array(1 => $title)));
         } else if ($this->_action == CRM_Core_Action::DELETE) {
             CRM_Utils_System::setTitle(ts('Delete Page - %1', array(1 => $title)));
-        } 
+        }
+
+        //cache values.
+        $this->_values = $this->get( 'values' );
+        if ( !is_array( $this->_values ) ) {
+            $this->_values = array( );
+            if ( isset( $this->_id ) && $this->_id ) {
+                $params = array('id' => $this->_id );
+                CRM_Core_DAO::commonRetrieve( 'CRM_Contribute_DAO_ContributionPage', $params, $this->_values );
+            }
+            $this->set( 'values', $this->_values );
+        }
     }
 
     /**
@@ -137,12 +146,28 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
     {
         $this->applyFilter('__ALL__', 'trim');
 
+        $session =& CRM_Core_Session::singleton( );
+        $this->_cancelURL = CRM_Utils_Array::value( 'cancelURL', $_POST );
+        
+        if ( !$this->_cancelURL ) {
+            $this->_cancelURL = CRM_Utils_System::url( 'civicrm/admin/contribute', 'reset=1' );
+        }
+        
+        if ( $this->_cancelURL ) {
+            $this->addElement( 'hidden', 'cancelURL', $this->_cancelURL );
+        }
+        
+
         if ( $this->_single ) {
             $this->addButtons(array(
                                     array ( 'type'      => 'next',
                                             'name'      => ts('Save'),
                                             'spacing'   => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
                                             'isDefault' => true   ),
+                                    array ( 'type'      => 'upload',
+                                            'name'      => ts('Save and Done'),
+                                            'spacing'   => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+                                            'subName'   => 'done'   ),
                                     array ( 'type'      => 'cancel',
                                             'name'      => ts('Cancel') ),
                                     )
@@ -164,6 +189,7 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
             $this->addButtons( $buttons );
         }
 
+        $session->replaceUserContext( $this->_cancelURL );
         // views are implemented as frozen form
         if ($this->_action & CRM_Core_Action::VIEW) {
             $this->freeze();
@@ -179,12 +205,21 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
      * @return void
      */
     function setDefaultValues()
-    {
-        $defaults = array();
+    {        
+        //some child classes calling setdefaults directly w/o preprocess.
+        $this->_values = $this->get( 'values' );
+        if ( !is_array( $this->_values ) ) {
+            $this->_values = array( );
+            if ( isset( $this->_id ) && $this->_id ) {
+                $params = array('id' => $this->_id );
+                CRM_Core_DAO::commonRetrieve( 'CRM_Contribute_DAO_ContributionPage', $params, $this->_values );
+            }
+            $this->set( 'values', $this->_values );
+        }
+        $defaults = $this->_values;
+        
         $config   = CRM_Core_Config::singleton();
         if (isset($this->_id)) {
-            $params = array('id' => $this->_id);
-            CRM_Core_DAO::commonRetrieve( 'CRM_Contribute_DAO_ContributionPage', $params, $defaults);
             
             //set defaults for pledgeBlock values.
             require_once 'CRM/Pledge/BAO/PledgeBlock.php';
@@ -203,7 +238,7 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
             require_once 'CRM/Core/BAO/CustomOption.php';
             if ( CRM_Utils_Array::value( 'pledge_frequency_unit', $pledgeBlockDefaults ) ) {
                 $defaults['pledge_frequency_unit'] = 
-                    array_fill_keys( explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, 
+                    array_fill_keys( explode( CRM_Core_DAO::VALUE_SEPARATOR,
                                               $pledgeBlockDefaults['pledge_frequency_unit'] ), '1' );
             }
 
@@ -238,7 +273,7 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
         if ( CRM_Utils_Array::value( 'recur_frequency_unit',$defaults ) ) {
             require_once 'CRM/Core/BAO/CustomOption.php';
             $defaults['recur_frequency_unit'] = 
-                array_fill_keys( explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, 
+                array_fill_keys( explode( CRM_Core_DAO::VALUE_SEPARATOR,
                                           $defaults['recur_frequency_unit'] ), '1' );
         } else {
             require_once 'CRM/Core/OptionGroup.php';
@@ -268,8 +303,48 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
         //page is newly created.
         if ( $pageId && !$this->_id ) {
             $session = CRM_Core_Session::singleton( );
-            $session->pushUserContext( CRM_Utils_System::url( 'civicrm/admin/contribute', 
-                                                              "action=update&reset=1&id={$pageId}" ) );
+            $session->pushUserContext( CRM_Utils_System::url( 'civicrm/admin/contribute', 'reset=1' ) );
+        }
+    }
+
+    function endPostProcess( )
+    {
+        // make submit buttons keep the current working tab opened.
+        if ( $this->_action & CRM_Core_Action::UPDATE ) {
+            $className = CRM_Utils_String::getClassName( $this->_name );
+            if ( $className == 'ThankYou' ) {
+                $subPage = 'thankYou';
+            } else if ( $className == 'Contribute' ) {
+                $subPage = 'friend';
+            } else if ( $className == 'MembershipBlock' ) {
+                $subPage = 'membership';
+            } else {
+                $subPage = strtolower( $className );
+            }
+                        
+            CRM_Core_Session::setStatus( ts("'%1' information has been saved.", 
+                                            array( 1 => ( $subPage == 'friend' ) ? 'Friend' : $className ) ) );
+
+            $this->postProcessHook( );
+            
+            if ( $this->controller->getButtonName('submit') == "_qf_{$className}_next" ) {
+                CRM_Utils_System::redirect( CRM_Utils_System::url( "civicrm/admin/contribute/{$subPage}",
+                                                                   "action=update&reset=1&id={$this->_id}" ) );
+            } else {
+                CRM_Utils_System::redirect( CRM_Utils_System::url( "civicrm/admin/contribute", 'reset=1' ) );
+            }
+        }
+    }
+
+    function getTemplateFileName( )
+    {
+        if ( $this->controller->getPrint( ) == CRM_Core_Smarty::PRINT_NOFORM ||
+             $this->getVar( '_id' ) <= 0 ||
+             ( $this->_action & CRM_Core_Action::DELETE ) || 
+             ( CRM_Utils_String::getClassName( $this->_name ) == 'AddProduct' ) ) {
+            return parent::getTemplateFileName( );
+        } else {
+            return 'CRM/Contribute/Form/ContributionPage/Tab.tpl';
         }
     }
 }

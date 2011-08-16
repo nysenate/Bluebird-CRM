@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -51,11 +51,12 @@ class CRM_Mailing_Page_AJAX
         $messageTemplate = new CRM_Core_DAO_MessageTemplates( );
         $messageTemplate->id = $templateId;
         $messageTemplate->selectAdd( );
-        $messageTemplate->selectAdd( 'msg_text, msg_html, msg_subject' );
+        $messageTemplate->selectAdd( 'msg_text, msg_html, msg_subject, pdf_format_id' );
         $messageTemplate->find( true );
         $messages = array( 'subject'  => $messageTemplate->msg_subject,
                            'msg_text' =>  $messageTemplate->msg_text,
-                           'msg_html' =>  $messageTemplate->msg_html
+                           'msg_html' =>  $messageTemplate->msg_html,
+                           'pdf_format_id' => $messageTemplate->pdf_format_id,
                            );
                             
         echo json_encode( $messages );

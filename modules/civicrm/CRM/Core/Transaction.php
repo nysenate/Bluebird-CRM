@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * @copyright David Strauss <david@fourkitchens.com> (c) 2007
  * $Id$
  *
@@ -44,6 +44,14 @@
  */
 
 class CRM_Core_Transaction {
+
+    /**
+     * These constants represent phases at which callbacks can be invoked
+     */
+    const PHASE_PRE_COMMIT = 1;
+    const PHASE_POST_COMMIT = 2;
+    const PHASE_PRE_ROLLBACK = 4;
+    const PHASE_POST_ROLLBACK = 8;
 
     /**
      * Keep track of the number of opens and close
@@ -65,6 +73,13 @@ class CRM_Core_Transaction {
      * @var object
      */
     private static $_dao = null;
+    
+    /**
+     * Array of callbacks to invoke when the transaction commits or rolls back.
+     * Array keys are phase constants. 
+     * Array values are arrays of callbacks.
+     */
+    private static $_callbacks = null;
 
     /**
      * Whether commit() has been called on this instance
@@ -79,6 +94,12 @@ class CRM_Core_Transaction {
 
         if ( self::$_count == 0 ) {
             self::$_dao->query( 'BEGIN' );
+            self::$_callbacks = array(
+              self::PHASE_PRE_COMMIT => array(),
+              self::PHASE_POST_COMMIT => array(),
+              self::PHASE_PRE_ROLLBACK => array(),
+              self::PHASE_POST_ROLLBACK => array(),
+            );
         }
 
         self::$_count++;
@@ -94,10 +115,20 @@ class CRM_Core_Transaction {
             self::$_count--;
             
             if ( self::$_count == 0 ) {
+
+                // It's possible that, say, a POST_COMMIT callback creates another
+                // transaction. That transaction will need its own list of callbacks.
+                $oldCallbacks = self::$_callbacks;
+                self::$_callbacks = null;
+
                 if ( self::$_doCommit ) {
+                    self::invokeCallbacks(self::PHASE_PRE_COMMIT, $oldCallbacks);
                     self::$_dao->query( 'COMMIT' );
+                    self::invokeCallbacks(self::PHASE_POST_COMMIT, $oldCallbacks);
                 } else {
+                    self::invokeCallbacks(self::PHASE_PRE_ROLLBACK, $oldCallbacks);
                     self::$_dao->query( 'ROLLBACK' );
+                    self::invokeCallbacks(self::PHASE_POST_ROLLBACK, $oldCallbacks);
                 }
                 // this transaction is complete, so reset doCommit flag
                 self::$_doCommit = true;
@@ -128,7 +159,11 @@ class CRM_Core_Transaction {
      */
     static public function forceRollbackIfEnabled( ) {
         if (self::$_count > 0) {
+            $oldCallbacks = self::$_callbacks;
+            self::$_callbacks = null;
+            self::invokeCallbacks(self::PHASE_PRE_ROLLBACK, $oldCallbacks);
             self::$_dao->query( 'ROLLBACK' );
+            self::invokeCallbacks(self::PHASE_POST_ROLLBACK, $oldCallbacks);
             self::$_count = 0;
             self::$_doCommit = true;
         }
@@ -138,6 +173,32 @@ class CRM_Core_Transaction {
         return self::$_doCommit;
     }
 
+    /**
+     * Determine whether there is a pending transaction
+     */
+    static public function isActive( ) {
+      return (self::$_count > 0);
+    }
+    
+    /**
+     * Add a transaction callback
+     *
+     * Pre-condition: isActive()
+     *
+     * @param $phase A constant; one of: self::PHASE_{PRE,POST}_{COMMIT,ROLLBACK}
+     * @param $callback A PHP callback
+     */
+    static public function addCallback($phase, $callback) {
+      self::$_callbacks[$phase][] = $callback;
+    }
+    
+    static protected function invokeCallbacks($phase, $callbacks) {
+      if (is_array($callbacks[$phase])) {
+        foreach ($callbacks[$phase] as $cb) {
+          call_user_func($cb);
+        }
+      }
+    }
 }
 
 

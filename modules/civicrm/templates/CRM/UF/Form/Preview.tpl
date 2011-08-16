@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -61,6 +61,10 @@
         {/if}
         <table class="form-layout-compressed" id="table-1">
     {/if}
+    {* Show explanatory text for field if not in 'view' mode *}
+        {if $field.help_pre && $action neq 4}
+            <tr><td>&nbsp;</td><td class="description">{$field.help_pre}</td></tr>
+        {/if}
     {assign var=n value=$field.name}
     {if $field.options_per_line }
 	<tr>
@@ -101,7 +105,7 @@
         {elseif $n eq 'email_greeting' or  $n eq 'postal_greeting' or $n eq 'addressee'}
                {include file="CRM/Profile/Form/GreetingType.tpl"}  
         {elseif ( $field.data_type eq 'Date' AND $element.skip_calendar NEQ true ) or
-                ( $n eq 'birth_date' ) or ( $n eq 'deceased_date' ) or ( $field.name eq 'activity_date_time' )  } 
+                ( $n|substr:-5:5 eq '_date' ) or ( $field.name eq 'activity_date_time' )  } 
                {include file="CRM/common/jcalendar.tpl" elementName=$form.$n.name}
         {else}
             {if $n|substr:0:4 eq 'url-'}

@@ -1,7 +1,7 @@
 <?php
   /*
    +--------------------------------------------------------------------+
-   | CiviCRM version 3.3                                                |
+   | CiviCRM version 3.4                                                |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -45,13 +45,14 @@ class JElementCiviContribPages extends JElement
 		$config =& CRM_Core_Config::singleton( );
         
         $options = array();
-        $options[] = JHTML::_('select.option', '', JText::_('- Select Contribution Page -') );
+        $options[] = JHTML::_('select.option', '0', JText::_('- Select Contribution Page -') );
         $query = 'SELECT id,title  FROM civicrm_contribution_page WHERE is_active = 1 ORDER BY title';
         $dao = CRM_Core_DAO::executeQuery( $query );
         while ( $dao->fetch( ) ) {
             $options[] = JHTML::_( 'select.option', $dao->id, $dao->title ); 
         }
-        return JHTML::_( 'select.genericlist', $options, 'params[id]', null, 'value', 'text', $value );
+        return JHTML::_( 'select.genericlist', $options, $control_name .'[' . $name . ']', 
+                         null, 'value', 'text', $value, $control_name.$name );
 	}
 }
 ?>

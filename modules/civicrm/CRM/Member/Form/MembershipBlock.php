@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -132,7 +132,9 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             }
             
             $this->assign( 'is_recur', $isRecur );
-            $this->assign( 'auto_renew',$this->_renewOption );
+            if ( isset( $this->_renewOption ) ) {
+                $this->assign( 'auto_renew', $this->_renewOption );
+            }
             $this->addGroup($membership, 'membership_type', ts('Membership Types'));
             $this->addGroup($membershipDefault, 'membership_type_default', ts('Membership Types Default'));
             
@@ -241,7 +243,7 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             if ( is_array($params['membership_type']) ) {
                 foreach( $params['membership_type'] as $k => $v) {
                     if ( $v ) {
-                        $membershipTypes[$k] =  $params["auto_renew_$k"];
+                        $membershipTypes[$k] = CRM_Utils_Array::value( "auto_renew_$k", $params );
                     }
                 }
             }
@@ -259,6 +261,7 @@ class CRM_Member_Form_MembershipBlock extends CRM_Contribute_Form_ContributionPa
             $dao->copyValues($params);
             $dao->save();
         }
+        parent::endPostProcess( );
     }
     
     /** 

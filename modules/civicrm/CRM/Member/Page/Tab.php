@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -84,20 +84,27 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
         $allStatus        = CRM_Member_PseudoConstant::membershipStatus( );
         $deceasedStatusId = array_search( 'Deceased', $allStatus );
 
+        //get all campaigns.
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        $allCampaigns = CRM_Campaign_BAO_Campaign::getCampaigns( null, null, false, false, false, true );
+        
         //checks membership of contact itself
         while ($dao->fetch()) {
             $membership[$dao->id] = array();
             CRM_Core_DAO::storeValues( $dao, $membership[$dao->id]); 
             
+            //carry campaign.
+            $membership[$dao->id]['campaign'] = CRM_Utils_Array::value( $dao->campaign_id, $allCampaigns );
+            
             //get the membership status and type values.
-            $statusANDType = CRM_Member_BAO_Membership::getStatusANDTypeVaues( $dao->id );
+            $statusANDType = CRM_Member_BAO_Membership::getStatusANDTypeValues( $dao->id );
             foreach ( array( 'status', 'membership_type' ) as $fld ) {
                 $membership[$dao->id][$fld] = CRM_Utils_Array::value( $fld, $statusANDType[$dao->id] );
             }
             if ( CRM_Utils_Array::value( 'is_current_member', $statusANDType[$dao->id] ) ) {
                 $membership[$dao->id]['active'] = true;
             }
-            if ( ! $dao->owner_membership_id ) {
+            if ( empty($dao->owner_membership_id) ) {
                 // unset renew and followup link for deceased membership
                 $currentMask = $mask;
                 if ( $dao->status_id == $deceasedStatusId ) { 
@@ -126,7 +133,7 @@ class CRM_Member_Page_Tab extends CRM_Core_Page {
             //does membership is auto renew CRM-7137.
             if ( $isCancelSupported ) {
                 $membership[$dao->id]['auto_renew'] = CRM_Utils_Array::value( 'contribution_recur_id', 
-                                                                              $membership[$dao->id] ); 
+                                                                              $membership[$dao->id] );
             }
         }
         

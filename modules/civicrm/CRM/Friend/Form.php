@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -64,6 +64,8 @@ class CRM_Friend_Form extends CRM_Core_Form
      */
     protected $_entityTable;
 
+    protected $_campaignId;
+    
     /**
      * the contact ID
      *
@@ -78,25 +80,44 @@ class CRM_Friend_Form extends CRM_Core_Form
         $this->_entityId = CRM_Utils_Request::retrieve( 'eid'   , 'Positive', $this, true );       
         
         $page = CRM_Utils_Request::retrieve( 'page', 'String', $this, true );
-        if ( $page == 'contribution' ) {
+        
+        if ( in_array( $page, array( 'contribution', 'event' ) ) ) {
+            $values = array( );
+            $params = array( 'id' => $this->_entityId );
+            CRM_Core_DAO::commonRetrieve( 'CRM_Contribute_DAO_ContributionPage', 
+                                          $params, $values, array( 'title', 'campaign_id' ) );
+            $this->_title      = CRM_Utils_Array::value( 'title',       $values );
+            $this->_campaignId = CRM_Utils_Array::value( 'campaign_id', $values );
             $this->_entityTable = 'civicrm_contribution_page';
-            $this->_title = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionPage', $this->_entityId, 'title');
-        } elseif ( $page == 'event' ) {
-            $this->_entityTable = 'civicrm_event';
-            $this->_title = CRM_Core_DAO::getFieldValue( 'CRM_Event_DAO_Event', $this->_entityId, 'title' );            
-        } elseif ( $page == 'pcp' ) {
+            if ( $page == 'event' ) $this->_entityTable = 'civicrm_event'; 
+        } else if ( $page == 'pcp' ) {
             $this->_pcpBlockId = CRM_Utils_Request::retrieve( 'blockId', 'Positive', $this, true ); 
             
-            CRM_Core_DAO::commonRetrieveAll( 'CRM_Contribute_DAO_PCPBlock', 'id', 
-                                             $this->_pcpBlockId, $pcpBlock, array( 'is_tellfriend_enabled', 'tellfriend_limit' ) );
+            $values = array( );
+            $params = array( 'id' => $this->_pcpBlockId );
+            CRM_Core_DAO::commonRetrieve( 'CRM_Contribute_DAO_PCPBlock', 
+                                          $params, $values, array( 'is_tellfriend_enabled', 'tellfriend_limit' ) );
             
-            if ( ! CRM_Utils_Array::value( 'is_tellfriend_enabled', $pcpBlock[$this->_pcpBlockId] ) ) { 
+            if ( ! CRM_Utils_Array::value( 'is_tellfriend_enabled', $values ) ) { 
                 CRM_Core_Error::fatal( ts( 'Tell Friend is disable for this Personal Campaign Page' ) );
             }
             
-            $this->_mailLimit = $pcpBlock[$this->_pcpBlockId]['tellfriend_limit'];
+            $this->_mailLimit   = $values['tellfriend_limit'];
             $this->_entityTable = 'civicrm_pcp';
-            $this->_title = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_PCP', $this->_entityId, 'title');
+            
+            $sql = '
+   SELECT  pcp.title, 
+           contrib.campaign_id
+     FROM  civicrm_pcp pcp
+LEFT JOIN  civicrm_contribution_page contrib ON ( pcp.contribution_page_id = contrib.id )  
+    WHERE  pcp.id = %1';
+            $pcp = CRM_Core_DAO::executeQuery( $sql, array( 1 => array( $this->_entityId, 'Positive' ) ) );
+            while ( $pcp->fetch( ) ) {
+                $this->_title      = $pcp->title;
+                $this->_campaignId = $pcp->campaign_id;
+                $pcp->free( );
+            }
+            
             $this->assign('context', 'pcp');
             $this->assign('pcpTitle', $this->_title);
         } else {
@@ -247,12 +268,13 @@ class CRM_Friend_Form extends CRM_Core_Form
     {
         // get the submitted form values.  
         $formValues = $this->controller->exportValues( $this->_name );
-               
+        
         $formValues['entity_id'        ]  = $this->_entityId;
         $formValues['entity_table'     ]  = $this->_entityTable;
         $formValues['source_contact_id']  = $this->_contactID;      
         $formValues['is_test'          ]  = $this->_action ? 1 : 0 ;
         $formValues['title'            ]  = $this->_title;
+        $formValues['campaign_id'      ]  = $this->_campaignId;
 
         CRM_Friend_BAO_Friend::create( $formValues );
 

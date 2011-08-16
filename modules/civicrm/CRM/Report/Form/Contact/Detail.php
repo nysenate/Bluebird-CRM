@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -56,7 +56,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             array( 'civicrm_contact' =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'display_name' => 
+                          array( 'sort_name' => 
                                  array( 'title' => ts( 'Contact Name' ),
                                         'required'  => true,
                                         'no_repeat' => true ),
@@ -67,7 +67,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                           array( 'id'           => 
                                  array( 'title'      => ts( 'Contact ID' ),
                                         'no_display' => true ),
-                                 'display_name' =>
+                                 'sort_name' =>
                                  array( 'title'      => ts( 'Contact Name' ),),),
                           'grouping'  => 'contact-fields',
                           ),
@@ -471,6 +471,10 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         $this->_where .= " GROUP BY {$this->_aliases['civicrm_contact']}.id ";
     }
 
+    function orderBy( ) {
+        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_contact']}.sort_name ";
+    }
+
     function clauseComponent( ) {
         $selectedContacts = implode( ',', $this->_contactSelected );
         $contribution = $membership =  $participant = null;
@@ -684,14 +688,14 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
             // make count columns point to detail report
             
             // change contact name with link
-            if ( array_key_exists('civicrm_contact_display_name', $row) && 
+            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
                  array_key_exists('civicrm_contact_id', $row) ) {
                 
                 $url = CRM_Utils_System::url( "civicrm/contact/view",  
                                               'reset=1&cid=' . $row['civicrm_contact_id'],
                                               $this->_absoluteUrl );
-                $rows[$rowNum]['civicrm_contact_display_name_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_hover'] = 
+                $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_hover'] = 
                     ts("View Contact Summary for this Contact");
                 $entryFound = true;
             }
@@ -721,7 +725,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     function alterComponentDisplay( &$componentRows ) {
         // custom code to alter rows
         require_once 'CRM/Core/PseudoConstant.php';
-        $activityTypes  = CRM_Core_PseudoConstant::activityType( true, false );
+        $activityTypes  = CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true);
         $activityStatus = CRM_Core_PseudoConstant::activityStatus();
 
         $entryFound = false;

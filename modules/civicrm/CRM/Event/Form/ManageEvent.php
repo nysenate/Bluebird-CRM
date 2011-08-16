@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -302,11 +302,7 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form
             
             CRM_Core_Session::setStatus( ts("'%1' information has been saved.", array(1 => ( $subPage == 'friend' )?'Friend':$className ) ) );
             
-            // we need to call the hook manually here since we redirect and never 
-            // go back to CRM/Core/Form.php
-            // A better way might have been to setUserContext so the framework does the rediret
-            CRM_Utils_Hook::postProcess( get_class( $this ),
-                                         $this );
+            $this->postProcessHook( );
             
             if ( $this->controller->getButtonName('submit') == "_qf_{$className}_upload_done" ) {
                 if ( $this->_isTemplate ) {

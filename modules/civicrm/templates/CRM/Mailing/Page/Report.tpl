@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -79,6 +79,25 @@
 {strip}
 <table class="crm-info-panel">
 {foreach from=$report.group.exclude item=group}
+<tr class="{cycle values="odd-row,even-row"}">
+<td>
+{if $group.mailing}
+{ts 1=$group.link 2=$group.name}Recipients of <a href="%1">%2</a>{/ts}
+{else}
+{ts 1=$group.link 2=$group.name}Members of <a href="%1">%2</a>{/ts}
+{/if}
+</td>
+</tr>
+{/foreach}
+</table>
+{/strip}
+{/if}
+
+{if $report.group.base|@count}
+<span class="label">{ts}Unsubscription Groups{/ts}</span>
+{strip}
+<table class="crm-info-panel">
+{foreach from=$report.group.base item=group}
 <tr class="{cycle values="odd-row,even-row"}">
 <td>
 {if $group.mailing}
@@ -175,6 +194,11 @@
 
 <tr><td class="label">{ts}Open tracking{/ts}</td><td>{if $report.mailing.open_tracking}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>
 <tr><td class="label">{ts}URL Click-through tracking{/ts}</td><td>{if $report.mailing.url_tracking}{ts}On{/ts}{else}{ts}Off{/ts}{/if}</td></tr>
+
+{if $report.mailing.campaign}
+<tr><td class="label">{ts}Campaign{/ts}</td><td>{$report.mailing.campaign}</td></tr>
+{/if}
+
 </table>
 {/strip}
 </fieldset>

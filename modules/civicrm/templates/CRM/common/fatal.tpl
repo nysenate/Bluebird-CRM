@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,6 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* error.tpl: Display page for fatal errors. Provides complete HTML doc.*}
+{if $config->userFramework != 'Joomla'}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 
@@ -37,6 +38,12 @@
 </head>
 <body>
 <div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
+{else}
+<div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
+  <style type="text/css" media="screen">@import url({$config->resourceBase}css/civicrm.css);</style>
+  <style type="text/css" media="screen">@import url({$config->resourceBase}css/extras.css);</style>
+  <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmaccordions.js"></script>
+{/if}
 <div class="messages status">  <div class="icon red-icon alert-icon"></div>
  <span class="status-fatal">{ts}Sorry. A non-recoverable error has occurred.{/ts}</span>
     <div class="crm-section crm-error-message">{$message}</div>
@@ -73,5 +80,7 @@ cj(function() {
 });
 </script>
 {/literal}
+{if $config->userFramework != 'Joomla'}
 </body>
 </html>
+{/if}

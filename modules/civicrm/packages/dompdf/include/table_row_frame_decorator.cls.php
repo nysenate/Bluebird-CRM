@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: table_row_frame_decorator.cls.php,v 1.4 2006/07/07 21:31:04 benjcarson Exp $ */
+/* $Id: table_row_frame_decorator.cls.php 216 2010-03-11 22:49:18Z ryan.masten $ */
 
 /**
  * Decorates Frames for table row layout
@@ -68,7 +68,7 @@ class Table_Row_Frame_Decorator extends Frame_Decorator {
     foreach ($this->get_children() as $child) {      
       $display = $child->get_style()->display;
 
-      if ( $display != "table-cell" )
+      if ( $display !== "table-cell" )
         $erroneous_frames[] = $child;
     }
     
@@ -79,4 +79,3 @@ class Table_Row_Frame_Decorator extends Frame_Decorator {
   
   
 }
-?>

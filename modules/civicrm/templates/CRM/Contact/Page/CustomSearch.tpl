@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,6 +25,10 @@
 *}
 {strip}
 <fieldset>
+<div id="help">
+    <div class="icon info-icon"></div>&nbsp;
+    {ts}Custom searches are developed and contributed by members of the CiviCRM community.{/ts} {help id="id-custom-searches"}
+</div>
 {if $rows}
     {foreach from=$rows item=customTitle key=csid}
         <div class="action-link">

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -91,7 +91,7 @@ class CRM_UF_Form_Preview extends CRM_Core_Form
             }
             $name = $fieldDAO->field_name;
             // preview for field
-            $specialFields = array ('street_address','supplemental_address_1', 'supplemental_address_2', 'city', 'postal_code', 'postal_code_suffix', 'geo_code_1', 'geo_code_2', 'state_province', 'country', 'county', 'phone', 'email', 'im' );
+            $specialFields = array ('address_name', 'street_address','supplemental_address_1', 'supplemental_address_2', 'city', 'postal_code', 'postal_code_suffix', 'geo_code_1', 'geo_code_2', 'state_province', 'country', 'county', 'phone', 'email', 'im' );
             
             if ($fieldDAO->location_type_id) {
                 $name .= '-' . $fieldDAO->location_type_id;
@@ -140,7 +140,7 @@ class CRM_UF_Form_Preview extends CRM_Core_Form
             }
 
             //CRM-5403
-            if ( ( substr($name,0,14) === 'state_province') || ( substr($name,0,7) === 'country' ) ) {
+            if ( ( substr($name,0,14) === 'state_province') || ( substr($name,0,7) === 'country' ) || ( substr($name,0,6) === 'county' ) ) {
                 list( $fieldName, $index ) = CRM_Utils_System::explode( '-', $name, 2 );
                 if ( ! array_key_exists( $index, $stateCountryMap ) ) {
                     $stateCountryMap[$index] = array( );

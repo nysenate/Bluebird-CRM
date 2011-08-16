@@ -5,13 +5,11 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 
 CKEDITOR.editorConfig = function( config )
 {
-    // Define changes to default configuration here. For example:
-    // config.language = 'fr';
-    //config.uiColor = '#AADC6E';
-    
-    // The following line was used to integrate IMCE with CKEditor.
-    //config.filebrowserBrowseUrl = '/index.php?q=imce&app=ckeditor|url@txtUrl|width@txtWidth|height@txtHeight';
+	// Define changes to default configuration here. For example:
+	// config.language = 'fr';
+	//config.uiColor = '#AADC6E';
 
+    //NYSS integrate kcfinder
     config.filebrowserBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=files';
     config.filebrowserImageBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=images';
     config.filebrowserFlashBrowseUrl = '/sites/all/modules/kcfinder/browse.php?type=flash';
@@ -21,22 +19,21 @@ CKEDITOR.editorConfig = function( config )
  
     // disable auto spell check
     config.scayt_autoStartup = false;
-
+    
     // This is actually the default value.
     config.toolbar_Full =
     [
         ['Bold','Italic','Underline'],
         ['Font','FontSize'],
-        //['TextColor','BGColor'],   
+        //['TextColor','BGColor'], //NYSS
         ['Link','Unlink'],
-        ['Image'],
-        ['NumberedList','BulletedList'],     
-        ['PasteText','PasteFromWord'],
+        ['Image'], //NYSS
+        ['NumberedList','BulletedList'], //NYSS
+        ['PasteText','PasteFromWord'], //NYSS
         ['RemoveFormat'],
-        ['Source'],
+        ['Source'], //NYSS
     ];
 };
-
 
 //NYSS 3878 remove some unnecessary elements
 CKEDITOR.on( 'dialogDefinition', function( ev )

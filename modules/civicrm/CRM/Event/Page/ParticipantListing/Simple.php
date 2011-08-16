@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -64,7 +64,8 @@ class CRM_Event_Page_ParticipantListing_Simple extends CRM_Core_Page {
 
         $fromClause  = "
 FROM       civicrm_contact
-INNER JOIN civicrm_participant ON civicrm_contact.id = civicrm_participant.contact_id 
+INNER JOIN civicrm_participant ON ( civicrm_contact.id = civicrm_participant.contact_id 
+           AND civicrm_contact.is_deleted = 0 )  
 INNER JOIN civicrm_event       ON civicrm_participant.event_id = civicrm_event.id
 LEFT JOIN  civicrm_email       ON ( civicrm_contact.id = civicrm_email.contact_id AND civicrm_email.is_primary = 1 )
 ";

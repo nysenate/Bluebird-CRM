@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -388,7 +388,7 @@ WHERE     ct.id = cp.contribution_type_id AND
      * @param int $setId - price set id whose details are needed
      * @return array $setTree - array consisting of field details
      */
-    public static function getSetDetail( $setID, $required = true ) 
+    public static function getSetDetail( $setID, $required = true, $validOnly = false ) 
     {
         // create a new tree
         $setTree = array();
@@ -400,10 +400,15 @@ WHERE     ct.id = cp.contribution_type_id AND
                              'label',
                              'html_type',
                              'is_enter_qty',
+                             'help_pre',
                              'help_post',
+                             'weight',
                              'is_display_amounts',
                              'options_per_line',
                              'is_active',
+                             'active_on',
+                             'expire_on',
+                             'javascript',
                              'visibility_id'
                              );
         if ( $required == true ) {
@@ -420,10 +425,18 @@ WHERE     ct.id = cp.contribution_type_id AND
 WHERE price_set_id = %1
 AND is_active = 1
 ';
+        $dateSelect = '';
+        if ( $validOnly ) {
+            $currentTime = date( 'YmdHis' );
+            $dateSelect = "
+AND ( active_on IS NULL OR active_on <= {$currentTime} )
+AND ( expire_on IS NULL OR expire_on >= {$currentTime} )
+";
+        }
 
         $orderBy = ' ORDER BY weight';
 
-        $sql = $select . $from . $where . $orderBy;
+        $sql = $select . $from . $where . $dateSelect . $orderBy;
 
         $dao =& CRM_Core_DAO::executeQuery( $sql, $params );
 
@@ -462,7 +475,7 @@ WHERE  id = %1";
         return $setTree;
     }
 
-    static function initSet( &$form, $id, $entityTable = 'civicrm_event' ) 
+    static function initSet( &$form, $id, $entityTable = 'civicrm_event', $validOnly = false ) 
     {
         // get price info
         if ( $priceSetId = self::getFor( $entityTable, $id ) ) {
@@ -497,7 +510,7 @@ WHERE  id = %1";
             }
 
             $form->_priceSetId    = $priceSetId;
-            $priceSet             = self::getSetDetail($priceSetId, $required);
+            $priceSet             = self::getSetDetail($priceSetId, $required, $validOnly);
             $form->_priceSet      = CRM_Utils_Array::value($priceSetId,$priceSet);
             $form->_values['fee'] = CRM_Utils_Array::value( 'fields', $form->_priceSet );
             
@@ -509,10 +522,12 @@ WHERE  id = %1";
                 $form->_priceSet['optionsCountTotal'] = self::getPricesetCount( $priceSetId );
                 if ( $form->_priceSet['optionsCountTotal'] ) {
                     $optionsCountDeails = array( );
-                    foreach ( $form->_priceSet['fields'] as $field ) {
-                        foreach ( $field['options'] as $option ){
-                            $count = CRM_Utils_Array::value( 'count', $option, 0 );
-                            $optionsCountDeails['fields'][$field['id']]['options'][$option['id']] = $count;
+                    if ( !empty( $form->_priceSet['fields'] ) ) {
+                        foreach ( $form->_priceSet['fields'] as $field ) {
+                            foreach ( $field['options'] as $option ){
+                                $count = CRM_Utils_Array::value( 'count', $option, 0 );
+                                $optionsCountDeails['fields'][$field['id']]['options'][$option['id']] = $count;
+                            }
                         }
                     }
                     $form->_priceSet['optionsCountDetails'] = $optionsCountDeails;
@@ -521,13 +536,17 @@ WHERE  id = %1";
                 //get option max value info.
                 $optionsMaxValueTotal   = 0;
                 $optionsMaxValueDetails = array( );
-                foreach ( $form->_priceSet['fields'] as $field ) {
-                    foreach ( $field['options'] as $option ){
-                        $maxVal = CRM_Utils_Array::value( 'max_value', $option, 0 );
-                        $optionsMaxValueDetails['fields'][$field['id']]['options'][$option['id']] = $maxVal;
-                        $optionsMaxValueTotal += $maxVal; 
+                
+                if ( !empty($form->_priceSet['fields']) ) {
+                    foreach ( $form->_priceSet['fields'] as $field ) {
+                        foreach ( $field['options'] as $option ){
+                            $maxVal = CRM_Utils_Array::value( 'max_value', $option, 0 );
+                            $optionsMaxValueDetails['fields'][$field['id']]['options'][$option['id']] = $maxVal;
+                            $optionsMaxValueTotal += $maxVal; 
+                        }
                     }
                 }
+                
                 $form->_priceSet['optionsMaxValueTotal'] = $optionsMaxValueTotal;
                 if ( $optionsMaxValueTotal ) {
                     $form->_priceSet['optionsMaxValueDetails'] = $optionsMaxValueDetails; 
@@ -640,9 +659,9 @@ WHERE  id = %1";
         
         require_once 'CRM/Core/BAO/CustomOption.php';
         $params['amount_level'] =
-            CRM_Core_BAO_CustomOption::VALUE_SEPERATOR .
-            implode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $amount_level ) . $displayParticipantCount .
-            CRM_Core_BAO_CustomOption::VALUE_SEPERATOR; 
+            CRM_Core_DAO::VALUE_SEPARATOR .
+            implode( CRM_Core_DAO::VALUE_SEPARATOR, $amount_level ) . $displayParticipantCount .
+            CRM_Core_DAO::VALUE_SEPARATOR; 
         $params['amount']       = $totalPrice;
     }
     
@@ -659,7 +678,13 @@ WHERE  id = %1";
         
         if ( !$priceSetId ) return;
         
-        $priceSet = self::getSetDetail( $priceSetId, true );
+          
+        $validFieldsOnly = true;
+        if ( CRM_Utils_System::getClassName($form) == 'CRM_Contribute_Form_Contribution' ) {
+            $validFieldsOnly = false;
+        }
+
+        $priceSet = self::getSetDetail( $priceSetId, true, $validFieldsOnly );
         $form->_priceSet = CRM_Utils_Array::value( $priceSetId, $priceSet );
         $form->assign( 'priceSet',  $form->_priceSet );
         require_once 'CRM/Core/PseudoConstant.php';

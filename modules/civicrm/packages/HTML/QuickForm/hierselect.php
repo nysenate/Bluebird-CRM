@@ -153,7 +153,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
             // check if all elements have been created
             $totalNbElements = count($this->_options);
             for ($i = $this->_nbElements; $i < $totalNbElements; $i ++) {
-                $this->_elements[] =& new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
+                $this->_elements[] = new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
                 $this->_nbElements++;
             }
         }
@@ -207,7 +207,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
             // check if all elements have been created
             $totalNbElements = 2;
             for ($i = $this->_nbElements; $i < $totalNbElements; $i ++) {
-                $this->_elements[] =& new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
+                $this->_elements[] = new HTML_QuickForm_select($i, null, array(), $this->getAttributes());
                 $this->_nbElements++;
             }
         }
@@ -285,7 +285,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
                 $attributes['id'] = "{$id}_{$i}";
             }
 
-            $this->_elements[] =& new HTML_QuickForm_select($i, null, array(), $attributes);
+            $this->_elements[] = new HTML_QuickForm_select($i, null, array(), $attributes);
         }
     } // end func _createElements
 
@@ -440,7 +440,7 @@ class HTML_QuickForm_hierselect extends HTML_QuickForm_group
             }
         }
         include_once('HTML/QuickForm/Renderer/Default.php');
-        $renderer =& new HTML_QuickForm_Renderer_Default();
+        $renderer = new HTML_QuickForm_Renderer_Default();
         $renderer->setElementTemplate('{element}');
         parent::accept($renderer);
         $result = null;

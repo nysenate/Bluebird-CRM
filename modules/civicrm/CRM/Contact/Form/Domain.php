@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -127,8 +127,10 @@ class CRM_Contact_Form_Domain extends CRM_Core_Form {
                     CRM_Contact_Form_Edit_Address::fixStateSelect( $this,
                                                               "address[$key][country_id]",
                                                               "address[$key][state_province_id]",
+                                                              "address[$key][county_id]",
                                                               CRM_Utils_Array::value( 'country_id', $value,
-                                                                                      $config->defaultContactCountry ) );
+                                                                                      $config->defaultContactCountry ),
+                                                              CRM_Utils_Array::value( 'state_province_id', $value ) );
                 }
             }
         }
@@ -151,7 +153,7 @@ class CRM_Contact_Form_Domain extends CRM_Core_Form {
         $this->add('text', 'email_name', ts('FROM Name'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email','email'), true);
 
         $this->add('text', 'email_address', ts('FROM Email Address'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Email','email'), true);
-        $this->addRule( "email_address", ts('Domain Email Address must use a valid email address format (e.g. \'info@example.org\').'), 'email' );
+        $this->addRule( 'email_address', ts('Domain Email Address must use a valid email address format (e.g. \'info@example.org\').'), 'email' );
 
         //build location blocks.
         CRM_Contact_Form_Location::buildQuickForm( $this );

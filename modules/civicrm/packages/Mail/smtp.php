@@ -352,7 +352,7 @@ class Mail_smtp extends Mail {
         }
 
         include_once 'Net/SMTP.php';
-        $this->_smtp = &new Net_SMTP($this->host,
+        $this->_smtp = new Net_SMTP($this->host,
                                      $this->port,
                                      $this->localhost);
 

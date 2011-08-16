@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,10 +29,8 @@
             {include file="CRM/common/pager.tpl" location="top" noForm=0}
         </div>
     {/if}
-    {include file="CRM/common/jsortable.tpl"}
     <table class="report-layout display">
-        <thead class="sticky">
-        <tr> 
+        {capture assign="tableHeader"}
             {foreach from=$columnHeaders item=header key=field}
                 {assign var=class value=""}
                 {if $header.type eq 1024 OR $header.type eq 1}
@@ -55,10 +53,48 @@
                    {if $skipMade >= $skipCount}{assign var=skip value=false}{/if}
                 {/if}
             {/foreach}
+        {/capture}
+
+        {if !$sections} {* section headers and sticky headers aren't playing nice yet *}
+            <thead class="sticky">
+            <tr>
+                {$tableHeader}
         </tr>          
         </thead>
+        {/if}
        
+        {* pre-compile section header here, rather than doing it every time under foreach *}
+        {capture assign=sectionHeaderTemplate}
+            {assign var=columnCount value=$columnHeaders|@count}
+            {assign var=l value=$smarty.ldelim}
+            {assign var=r value=$smarty.rdelim}
+            {foreach from=$sections item=section key=column name=sections}
+                {counter assign="h"}
+                {$l}isValueChange value=$row.{$column} key="{$column}" assign=isValueChanged{$r}
+                {$l}if $isValueChanged{$r}
+
+                    {$l}if $sections.{$column}.type & 4{$r}
+                        {$l}assign var=printValue value=$row.{$column}|crmDate{$r}
+                    {$l}elseif $sections.{$column}.type eq 1024{$r}
+                        {$l}assign var=printValue value=$row.{$column}|crmMoney{$r}
+                    {$l}else{$r}
+                        {$l}assign var=printValue value=$row.{$column}{$r}
+                    {$l}/if{$r}
+
+                    <tr><th colspan="{$columnCount}">
+                        <h{$h}>{$section.title}: {$l}$printValue|default:"<em>none</em>"{$r}
+                            ({$l}sectionTotal key=$row.{$column} depth={$smarty.foreach.sections.index}{$r})
+                        </h{$h}>
+                    </th></tr>
+                    {if $smarty.foreach.sections.last}
+                        <tr>{$l}$tableHeader{$r}</tr>
+                    {/if}
+                {$l}/if{$r}
+            {/foreach}
+        {/capture}
+
         {foreach from=$rows item=row key=rowid}
+           {eval var=$sectionHeaderTemplate}
             <tr  class="{cycle values="odd-row,even-row"} crm-report" id="crm-report_{$rowid}">
                 {foreach from=$columnHeaders item=header key=field}
                     {assign var=fieldLink value=$field|cat:"_link"}

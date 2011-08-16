@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,9 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-
-{* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
-{include file="CRM/common/WizardHeader.tpl"}
+{capture assign=managePremiumsURL}{crmURL p='civicrm/admin/contribute/managePremiums' q="reset=1"}{/capture}
 <div id="help">
     {if $action eq 1024}
         {ts}This is a preview of this product as it will appear on your Contributions page(s).{/ts}
@@ -46,7 +44,7 @@
   {else}
   <table class="form-layout-compressed"> 
     <tr class="crm-contribution-form-block-product_id"><td class="label">{$form.product_id.label}</td><td class="html-adjust">{$form.product_id.html}<br />
-    <span class="description">{ts 1=$mngPremURL}Pick a premium to include on this Contribution Page. Use <a href='%1'>Manage Premiums</a> to create or enable additional premium choices for your site.{/ts}</span></td></tr>
+    <span class="description">{ts 1=$managePremiumsURL}Pick a premium to include on this Contribution Page. Use <a href='%1'>Manage Premiums</a> to create or enable additional premium choices for your site.{/ts}</span></td></tr>
     <tr class="crm-contribution-form-block-weight"><td class="label">{$form.weight.label}</td><td class="html-adjust">{$form.weight.html}<br />
      <span class="description">{ts}Weight controls the order that premiums are displayed on the Contribution Page.{/ts}</span></td></tr>
     </table>

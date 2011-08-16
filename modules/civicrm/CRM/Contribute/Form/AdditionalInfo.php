@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -253,6 +253,7 @@ class CRM_Contribute_Form_AdditionalInfo
                          'net_amount',
                          'trxn_id',
                          'invoice_id',
+                         'campaign_id',
                          'honor_type_id',
                          'contribution_page_id'
                          );
@@ -314,12 +315,17 @@ class CRM_Contribute_Form_AdditionalInfo
             $paymentInstrument = CRM_Contribute_PseudoConstant::paymentInstrument( );
             $params['paidBy']  = $paymentInstrument[$params['payment_instrument_id']];
         }
+
         // retrieve individual prefix value for honoree
         if ( CRM_Utils_Array::value( 'hidden_Honoree', $params ) ) {
             $individualPrefix       = CRM_Core_PseudoConstant::individualPrefix();
             $honor                  = CRM_Core_PseudoConstant::honor( ); 
-            $params['honor_prefix'] = CRM_Utils_Array::value( $params['honor_prefix_id'], $individualPrefix );
-            $params["honor_type"]   = CRM_Utils_Array::value( $params["honor_type_id"], $honor );
+            $params['honor_prefix'] = CRM_Utils_Array::value(  CRM_Utils_Array::value( 'honor_prefix_id',
+                                                                                       $params ),
+                                                               $individualPrefix );
+            $params["honor_type"]   = CRM_Utils_Array::value( CRM_Utils_Array::value( 'honor_type_id',
+                                                                                      $params ),
+                                                              $honor );
         }
         
         // retrieve premium product name and assigned fulfilled
@@ -373,8 +379,6 @@ class CRM_Contribute_Form_AdditionalInfo
                            CRM_Utils_System::mungeCreditCard( $params['credit_card_number'] ) );
         } else {
             //offline contribution
-            //Retrieve the name and email from receipt is to be send
-            $params['from_email_id'] = $form->fromEmailId;
             // assigned various dates to the templates
             $form->assign('receipt_date',  CRM_Utils_Date::processDate( $params['receipt_date'] ) );
             $form->assign('cancel_date',   CRM_Utils_Date::processDate( $params['cancel_date']  ) );
@@ -431,7 +435,7 @@ class CRM_Contribute_Form_AdditionalInfo
                 'groupName' => 'msg_tpl_workflow_contribution',
                 'valueName' => 'contribution_offline_receipt',
                 'contactId' => $params['contact_id'],
-                'from'      => $params['from_email_id'],
+                'from'      => $params['from_email_address'],
                 'toName'    => $contributorDisplayName,
                 'toEmail'   => $contributorEmail,
                 'isTest'    => $form->_mode == 'test',

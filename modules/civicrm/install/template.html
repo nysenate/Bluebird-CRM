@@ -16,8 +16,8 @@ function hide(id) {
 
 <body>
 <div id="All">
-<p style="float: right"><b>Version <?php echo $civicrm_version ?></b></p>
-<h1><?php global $installType; if($installType == 'standalone') echo 'Standalone '?>CiviCRM Installer</h1>
+<p style="float: right"><b>Version <?php echo "{$civicrm_version['version']} {$civicrm_version['cms']}" ?></b></p>
+<h1>CiviCRM Installer</h1>
 <p>Thanks for choosing to use CiviCRM!  Please follow the instructions below to get CiviCRM
 installed.</p>
 
@@ -95,8 +95,7 @@ create the database for you; otherwise, you must give the name of a database tha
 <span class="testResults">
   <?php
     if (count($langs) < 2) {
-      $parts = explode(' ', $civicrm_version);
-      echo "(download the civicrm-{$parts[0]}-l10n.tar.gz file and unzip into CiviCRM’s directory to add languages here)";
+      echo "(download the civicrm-{$civicrm_version['version']}-l10n.tar.gz file and unzip into CiviCRM’s directory to add languages here)";
     }
   ?>
 </span><br />

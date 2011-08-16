@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -48,8 +48,8 @@
     </thead>
     {foreach from=$rows item=row}
     	<tr id="row_{$row.id}" class="{cycle values="odd-row,even-row"} {$row.class} crm-contactType {if NOT $row.is_active} disabled{/if}">
-        <td class="crm-contactType-label">{$row.label}</td>
-        <td class="crm-contactType-parent">{if $row.parent}{$row.parent_label}{else}{ts}(built-in){/ts}{/if}</td>
+        <td class="crm-contactType-label">{ts}{$row.label}{/ts}</td>
+        <td class="crm-contactType-parent">{if $row.parent}{ts}{$row.parent_label}{/ts}{else}{ts}(built-in){/ts}{/if}</td>
         <td class="crm-contactType-description">{$row.description}</td>
         <td>{$row.action|replace:'xx':$row.id}</td>
     </tr>

@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | eWAY Core Payment Module for CiviCRM version 3.3 & 1.9             |
+ | eWAY Core Payment Module for CiviCRM version 3.4 & 1.9             |
  +--------------------------------------------------------------------+
  | Licensed to CiviCRM under the Academic Free License version 3.0    |
  |                                                                    |
@@ -240,7 +240,10 @@ class CRM_Core_Payment_eWAY extends CRM_Core_Payment
        $eWAYRequest->EwayOption1(          $txtOptions                   );  //  255 Chars - ewayOption1
        $eWAYRequest->EwayOption2(          $txtOptions                   );  //  255 Chars - ewayOption2
        $eWAYRequest->EwayOption3(          $txtOptions                   );  //  255 Chars - ewayOption3
-       
+
+       $eWAYRequest->CustomerIPAddress (   $params['ip_address']);
+       $eWAYRequest->CustomerBillingCountry($params['country']);
+
        // Allow further manipulation of the arguments via custom hooks ..
        CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $eWAYRequest );
 
@@ -379,7 +382,11 @@ class CRM_Core_Payment_eWAY extends CRM_Core_Payment
        //=============
        // Success !
        //=============
-       $params['trxn_result_code'] = $eWAYResponse->Status();
+       $beaglestatus = $eWAYResponse->BeagleScore();
+       if ( !empty( $beaglestatus ) ) {
+           $beaglestatus = ": ". $beaglestatus;
+       }
+       $params['trxn_result_code'] = $eWAYResponse->Status() . $beaglestatus;
        $params['gross_amount']     = $eWAYResponse->Amount();
        $params['trxn_id']          = $eWAYResponse->TransactionNumber();
        

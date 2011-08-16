@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,9 +27,11 @@
 <div id="help">
 {ts}Click <strong>Merge</strong> to move data from the Duplicate Contact on the left into the Main Contact. In addition to the contact data (address, phone, email...), you may choose to move all or some of the related activity records (groups, contributions, memberships, etc.).{/ts} {help id="intro"}
 </div>
-<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+
+<div class="crm-submit-buttons">{if $prev}<a href="{$prev}" class="button"><span>{ts}<< Prev{/ts}</span></a>{/if}{include file="CRM/common/formButtons.tpl" location="top"}{if $next}<a href="{$next}" class="button"><span>{ts}Next >>{/ts}</span></a>{/if}</div>
+
 <div class="action-link">
-    	<a href="{crmURL q="reset=1&cid=$other_cid&oid=$main_cid"}">&raquo; {ts}Flip between original and duplicate contacts.{/ts}</a>
+    	<a href="{$flip}">&raquo; {ts}Flip between original and duplicate contacts.{/ts}</a>
 </div>
 
 <div class="action-link">
@@ -102,7 +104,8 @@
       <p><strong>The duplicate contact (the one that will be deleted) is a <em>{$other_contact_subtype}</em>. Any data related to this will be lost forever (there is no undo) if you complete the merge.</strong></p>
     {/if}
 </div>
-<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
+
+<div class="crm-submit-buttons">{if $prev}<a href="{$prev}" class="button"><span>{ts}<< Prev{/ts}</span></a>{/if}{include file="CRM/common/formButtons.tpl" location="bottom"}{if $next}<a href="{$next}" class="button"><span>{ts}Next >>{/ts}</span></a>{/if}</div>
 </div>
 
 {literal}

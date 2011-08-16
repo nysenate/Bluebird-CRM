@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -128,15 +128,10 @@ WHERE  inst.report_id = %1";
         return $count;
     }
 
-    static function mailReport( $fileContent, $instanceID = null, $outputMode = 'html' ) {
+    static function mailReport( $fileContent, $instanceID = null, $outputMode = 'html', $attachments = array() ) {
         if ( ! $instanceID ) {
             return false;
         }
-
-        $url = CRM_Utils_System::url("civicrm/report/instance/{$instanceID}", 
-                                     "reset=1", true);
-        $url = "Report Url: {$url} ";
-        $fileContent = $url . $fileContent;
 
         require_once 'CRM/Core/BAO/Domain.php';
         list( $domainEmailName, 
@@ -155,7 +150,10 @@ WHERE  inst.report_id = %1";
         $params['toEmail'    ] = CRM_Utils_Array::value( 'email_to', $instanceInfo );
         $params['cc'         ] = CRM_Utils_Array::value( 'email_cc', $instanceInfo );
         $params['subject'    ] = CRM_Utils_Array::value( 'email_subject', $instanceInfo );
-        $params['attachments'] = CRM_Utils_Array::value( 'attachments', $instanceInfo );
+        if ( !is_array($instanceInfo['attachments']) ) {
+            $instanceInfo['attachments'] = array();
+        }
+        $params['attachments'] = array_merge(CRM_Utils_Array::value( 'attachments', $instanceInfo ), $attachments);
         $params['text'       ] = '';
         $params['html'       ] = $fileContent;
 
@@ -169,11 +167,20 @@ WHERE  inst.report_id = %1";
 
         //Force a download and name the file using the current timestamp.
         header('Content-Disposition: attachment; filename=Report_' . $_SERVER['REQUEST_TIME'] . '.csv');
-                  
+        echo self::makeCsv( $form, $rows );
+        CRM_Utils_System::civiExit( );
+    }
+
+    /**
+     * Utility function for export2csv and CRM_Report_Form::endPostProcess
+     * - make CSV file content and return as string.
+     */
+    static function makeCsv( &$form, &$rows ) {
         require_once 'CRM/Utils/Money.php';
         $config    = CRM_Core_Config::singleton( );
+        $csv       = '';
           
-        //Output headers if this is the first row.
+        // Add headers if this is the first row.
         $columnHeaders = array_keys( $form->_columnHeaders );
 
         // Replace internal header names with friendly ones, where available.
@@ -182,8 +189,8 @@ WHERE  inst.report_id = %1";
                 $headers[] = '"'. html_entity_decode(strip_tags($form->_columnHeaders[$header]['title'])) . '"';
             }
         }
-        //Output the headers.
-        echo implode(',', $headers) . "\n";
+        // Add the headers.
+        $csv .= implode(',', $headers) . "\n";
 
         $displayRows = array();
         $value       = null;
@@ -201,7 +208,7 @@ WHERE  inst.report_id = %1";
                         } elseif ( CRM_Utils_Array::value( 'group_by', $form->_columnHeaders[$v] ) == 'YEAR' ) {
                             $value =  CRM_Utils_Date::customFormat( $value, $config->dateformatYear );
                         } else {
-                            $value =  CRM_Utils_Date::customFormat( $value,'%Y%m%d' );
+                            $value =  CRM_Utils_Date::customFormat( $value,'%Y-%m-%d' );
                         }
                     } else if ( CRM_Utils_Array::value( 'type', $form->_columnHeaders[$v] ) == 1024 ) {
                         $value =  CRM_Utils_Money::format( $value );
@@ -211,10 +218,11 @@ WHERE  inst.report_id = %1";
                     $displayRows[$v] = " "; 
                 }  
             }
-            //Output the data row.
-            echo implode(',', $displayRows) . "\n";
+            // Add the data row.
+            $csv .= implode(',', $displayRows) . "\n";
         }
-        CRM_Utils_System::civiExit( );
+
+        return $csv;
     }
 
     static function add2group( &$form , $groupID ) {

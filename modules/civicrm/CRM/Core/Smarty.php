@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -150,8 +150,6 @@ class CRM_Core_Smarty extends Smarty {
 
         $this->register_function ( 'crmURL' , array( 'CRM_Utils_System', 'crmURL' ) );
 
-        $printerFriendly = CRM_Utils_System::makeURL( 'snippet', false, false ) . '2';
-        $this->assign ( 'printerFriendly', $printerFriendly );
     }
 
     /**

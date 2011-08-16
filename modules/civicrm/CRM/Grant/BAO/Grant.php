@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -40,24 +40,11 @@ class CRM_Grant_BAO_Grant extends CRM_Grant_DAO_Grant
 {
 
     /**
-        * the name of option value group from civicrm_option_group table
-        * that stores grant statuses
-        */
-    static $statusGroupName = 'grant_status';    
-
-    /**
-        * the name of option value group from civicrm_option_group table
-        * that stores grant statuses
-        */
-    static $typeGroupName = 'grant_type';
-
-    /**
         * static field for all the grant information that we can potentially export
         * @var array
         * @static
         */
     static $_exportableFields = null;
-
 
     /**
         * class constructor
@@ -127,37 +114,6 @@ class CRM_Grant_BAO_Grant extends CRM_Grant_DAO_Grant
         return $og;
     }
 
-    static function getGrantStatuses( ) 
-    {
-        $og = CRM_Grant_BAO_Grant::getGrantStatusOptGroup();
-
-        require_once 'CRM/Core/BAO/OptionValue.php';
-        $dao = new CRM_Core_DAO_OptionValue( );
-
-        $dao->option_group_id = $og->id;
-        $dao->find();
-
-        $statuses = array();
-
-        while ( $dao->fetch( ) ) {
-            $statuses[$dao->id] = $dao->label;
-        }
-
-        return $statuses;
-    }
-
-    /**
-        * Function to retrieve grant types.
-        * 
-        * @static
-        * @return array Array of grant summary statistics
-        */
-    static function getGrantTypes( )
-    {
-        require_once 'CRM/Core/BAO/OptionValue.php';
-        return CRM_Core_OptionGroup::values( CRM_Grant_BAO_Grant::$typeGroupName );
-    }
-
     /**
      * Function to retrieve statistics for grants.
      * 
@@ -207,13 +163,13 @@ class CRM_Grant_BAO_Grant extends CRM_Grant_DAO_Grant
     static function add( &$params, &$ids )
     {
         require_once 'CRM/Utils/Hook.php';
-
+        
         if ( CRM_Utils_Array::value( 'grant', $ids ) ) {
             CRM_Utils_Hook::pre( 'edit', 'Grant', $ids['grant_id'], $params );
         } else {
             CRM_Utils_Hook::pre( 'create', 'Grant', null, $params ); 
         }
-
+        
         // first clean up all the money fields
         $moneyFields = array( 'amount_total',
                               'amount_granted',
@@ -223,28 +179,39 @@ class CRM_Grant_BAO_Grant extends CRM_Grant_DAO_Grant
                 $params[$field] = CRM_Utils_Rule::cleanMoney( $params[$field] );
             }
         }
+        // convert dates to mysql format
+        $dates = array( 'application_received_date',
+                        'decision_date',
+                        'money_transfer_date',
+                        'grant_due_date' );
+        
+        foreach ( $dates as $d ) {
+            if ( isset( $params[$d] ) ) {
+                $params[$d] = CRM_Utils_Date::processDate( $params[$d], null, true );
+            }
+        }           
         $grant = new CRM_Grant_DAO_Grant( );
         $grant->id = CRM_Utils_Array::value( 'grant', $ids );
-
+        
         $grant->copyValues( $params );
-
-	// set currency for CRM-1496
-	if ( ! isset( $grant->currency ) ) {
-	  $config =& CRM_Core_Config::singleton( );
-	  $grant->currency = $config->defaultCurrency;
-	}
-
+        
+        // set currency for CRM-1496
+        if ( ! isset( $grant->currency ) ) {
+            $config =& CRM_Core_Config::singleton( );
+            $grant->currency = $config->defaultCurrency;
+        }
+        
         $result = $grant->save( );
-
+        
         require_once 'CRM/Utils/Recent.php';
         require_once 'CRM/Grant/PseudoConstant.php';
         require_once 'CRM/Contact/BAO/Contact.php';
         $url = CRM_Utils_System::url( 'civicrm/contact/view/grant', 
                                       "action=view&reset=1&id={$grant->id}&cid={$grant->contact_id}&context=home" );
-
+        
         $grantTypes = CRM_Grant_PseudoConstant::grantType();
         $title = CRM_Contact_BAO_Contact::displayName( $grant->contact_id ) . ' - ' . ts('Grant') . ': ' . $grantTypes[$grant->grant_type_id];
-
+        
         $recentOther = array( );
         if ( CRM_Core_Permission::checkActionPermission( 'CiviGrant', CRM_Core_Action::UPDATE ) ) {
             $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/contact/view/grant', 
@@ -370,6 +337,9 @@ class CRM_Grant_BAO_Grant extends CRM_Grant_DAO_Grant
         */
     static function del( $id )
     { 
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::pre( 'delete', 'Grant', $id, CRM_Core_DAO::$_nullArray );
+
         require_once 'CRM/Grant/DAO/Grant.php';
         $grant     = new CRM_Grant_DAO_Grant( );
         $grant->id = $id; 
@@ -384,8 +354,10 @@ class CRM_Grant_BAO_Grant extends CRM_Grant_DAO_Grant
                             );
         CRM_Utils_Recent::del( $grantRecent );
 
-        while ( $grant->fetch() ) {
-            return $grant->delete();
+        if ( $grant->fetch() ) {
+            $results = $grant->delete();
+            CRM_Utils_Hook::post( 'delete', 'Grant', $grant->id, $grant );
+            return $results;
         }
         return false;
     }

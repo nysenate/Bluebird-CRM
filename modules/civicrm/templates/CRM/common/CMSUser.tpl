@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,29 +37,39 @@
 	 {ts 1=$loginUrl}If you already have an account, <a href='%1'>please login</a> before completing this form.{/ts}
       </div>
       <div>{$form.cms_create_account.html} {$form.cms_create_account.label}</div>
-     <div id="details" class="crm_user_signup-section">
-	 <table class="form-layout-compressed">
-	    <tr class="cms_name-section">
-	       <td>{$form.cms_name.label}</td>
-	       <td>{$form.cms_name.html} <a id="checkavailability" href="#" onClick="return false;">{ts}<strong>Check Availability</strong>{/ts}</a>
-	          <span id="msgbox" style="display:none"></span><br />
-	          <span class="description">{ts}Your preferred username; punctuation is not allowed except for periods, hyphens, and underscores.{/ts}</span>
-	       </td>
-	    </tr>
-    
-	    {if $form.cms_pass}
-	       <tr class="cms_pass-section">
-	          <td>{$form.cms_pass.label}</td>
-	          <td>{$form.cms_pass.html}</td>
-	       </tr>        
-	       <tr class="crm_confirm_pass-section">
-	          <td>{$form.cms_confirm_pass.label}</td>
-	          <td>{$form.cms_confirm_pass.html}<br />
-	             <span class="description">{ts}Provide a password for the new account in both fields.{/ts}
-	          </td>
-	       </tr>
-	    {/if}
-	 </table>        
+      <div id="details" class="crm_user_signup-section">
+
+         <div class="form-layout-compressed">
+           <div class="crm-section cms_name-section">
+             <div class="label">
+               <label for="cms_name">{$form.cms_name.label}</label>
+             </div>
+             <div class="content">
+               {$form.cms_name.html} <a id="checkavailability" href="#" onClick="return false;">{ts}<strong>Check Availability</strong>{/ts}</a>
+               <span id="msgbox" style="display:none"></span><br />
+               <span class="description">{ts}Your preferred username; punctuation is not allowed except for periods, hyphens, and underscores.{/ts}</span>
+             </div>
+           </div>
+
+           {if $form.cms_pass}
+           <div class="crm-section cms_pass-section">
+             <div class="label">
+               <label for="cms_pass">{$form.cms_pass.label}</label>
+             </div>
+             <div class="content">
+               {$form.cms_pass.html}
+             </div>
+             <div class="label">
+               <label for="crm_confirm_pass-section">{$form.cms_confirm_pass.label}</label>
+             </div>
+             <div class="content">
+               {$form.cms_confirm_pass.html}<br/>
+               <span class="description">{ts}Provide a password for the new account in both fields.{/ts}</span>
+             </div>
+           </div>
+           {/if}
+         </div>
+
      </div>
    </fieldset>
 

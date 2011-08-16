@@ -48,7 +48,7 @@ SELECT @max_weight      := MAX(ROUND(weight)) FROM civicrm_option_value WHERE op
 INSERT INTO civicrm_option_value
   (option_group_id, {localize field='label'}label{/localize}, value, name, grouping, filter, is_default, weight,{localize field='description'} description{/localize}, is_optgroup,is_reserved, is_active, component_id, visibility_id ) 
 VALUES
-    (@ogrID  , '{ts escape="sql"}Grant Report (Statistics){/ts}', 'grant/statistics', 'CRM_Report_Form_Grant_Statistics', NULL, 0, 0,  @max_weight+1, '{ts escape="sql"}Shows statistics for Grants{/ts}', 0, 0, 1, @grantCompId, NULL);
+    (@ogrID  , {localize}'{ts escape="sql"}Grant Report (Statistics){/ts}'{/localize}, 'grant/statistics', 'CRM_Report_Form_Grant_Statistics', NULL, 0, 0,  @max_weight+1, {localize}'{ts escape="sql"}Shows statistics for Grants{/ts}'{/localize}, 0, 0, 1, @grantCompId, NULL);
  
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)

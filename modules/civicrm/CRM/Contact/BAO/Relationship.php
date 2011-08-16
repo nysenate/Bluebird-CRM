@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -351,6 +351,10 @@ class CRM_Contact_BAO_Relationship extends CRM_Contact_DAO_Relationship
             // (i.e. the relationship is bi-directional)
             $relationshipType = array_unique( $relationshipType );
         }
+        
+        // sort the relationshipType in ascending order CRM-7736
+        asort( $relationshipType ); 
+
         return $relationshipType;
     }
 
@@ -1029,7 +1033,7 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
         $status = self::CURRENT;
         
         if ( ! empty( $params['end_date'] ) ) {
-            $endDate = CRM_Utils_Date::setDateDefaults( $params['end_date'], null, 'Ymd' );
+            $endDate = CRM_Utils_Date::setDateDefaults( CRM_Utils_Date::format( $params['end_date'] ), null, 'Ymd' );
             $today   = date('Ymd' );
             
             if ( $today > $endDate ) {
@@ -1045,7 +1049,7 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
             return;
         }
         
-        $rel = explode( "_", $params['relationship_type_id'] );
+        $rel = explode( '_', $params['relationship_type_id'] );
         
         $relTypeId     = $rel[0];
         $relDirection  = "_{$rel[1]}_{$rel[2]}";
@@ -1124,6 +1128,7 @@ LEFT JOIN  civicrm_country ON (civicrm_address.country_id = civicrm_country.id)
             
             require_once 'CRM/Member/BAO/MembershipType.php';
             foreach ( $details['memberships'] as $membershipId => $membershipValues ) {
+                $relTypeIds = array( );
                 if ( $action & CRM_Core_Action::DELETE ) {                   
                     // Delete memberships of the related contacts only if relationship type exists for membership type
                     $query = "
@@ -1162,7 +1167,7 @@ SELECT relationship_type_id, relationship_direction
                 $relTypeIds    = explode( CRM_Core_DAO::VALUE_SEPARATOR,$membershipType['relationship_type_id'] );
                 $relDirections = explode( CRM_Core_DAO::VALUE_SEPARATOR,$membershipType['relationship_direction'] );
                 foreach( $relTypeIds as $key => $value ) {
-                    $relTypeDirs[] = $value."_".$relDirections[$key];
+                    $relTypeDirs[] = $value.'_'.$relDirections[$key];
                 }
                 $relTypeDir = $details['relationshipTypeId'].$details['relationshipTypeDirection'];
                 if ( in_array( $relTypeDir, $relTypeDirs ) ) {
@@ -1196,10 +1201,41 @@ SELECT relationship_type_id, relationship_direction
                     // membership=>relationship then we need to
                     // delete the membership record created for
                     // previous relationship.
-                    CRM_Member_BAO_Membership::deleteRelatedMemberships( $membershipId, $mainRelatedContactId );
+
+                    if ( self::isDeleteRelatedMembership( $relTypeIds, $contactId, $mainRelatedContactId, $relTypeId, CRM_Utils_Array::value('relationship_ids', $params) ) ) {
+                        CRM_Member_BAO_Membership::deleteRelatedMemberships( $membershipId, $mainRelatedContactId );
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Helper function to check whether to delete the membership or
+     * not.
+     *
+     */
+    function isDeleteRelatedMembership( $relTypeIds, $contactId, $mainRelatedContactId, $relTypeId, $relIds ) {
+        if ( in_array($relTypeId, $relTypeIds ) ||
+             empty($relIds) ) {
+            return true;
+        }
+        
+        $relParamas = array( 1 => array( $contactId, 'Integer' ),
+                             2 => array( $mainRelatedContactId, 'Integer' )
+                             );
+        
+        if ( $contactId == $mainRelatedContactId ) {
+            $recordsFound = (int)CRM_Core_DAO::singleValueQuery( "SELECT COUNT(*) FROM civicrm_relationship WHERE relationship_type_id IN ( ". implode(',', $relTypeIds) ." )  AND contact_id_a IN ( %1 ) OR contact_id_b IN ( %1 ) AND id IN (". implode( ',', $relIds ) .")", $relParamas);
+            if ( $recordsFound ) return false;
+            return true;
+        }
+        
+        $recordsFound = (int)CRM_Core_DAO::singleValueQuery( "SELECT COUNT(*) FROM civicrm_relationship WHERE relationship_type_id IN ( ". implode(',', $relTypeIds) ." ) AND contact_id_a IN ( %1, %2 ) AND contact_id_b IN ( %1, %2 ) AND id NOT IN (". implode( ',', $relIds ) . ")", $relParamas );
+        
+        if ( $recordsFound ) return false;
+        
+        return true;
     }
 
     /**

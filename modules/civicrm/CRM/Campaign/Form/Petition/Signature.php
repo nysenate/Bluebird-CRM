@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -327,23 +327,24 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form
      */
     public function postProcess() 
     {		
-    
+       
 		if (defined('CIVICRM_TAG_UNCONFIRMED')) {
 			// Check if contact 'email confirmed' tag exists, else create one
 			// This should be in the petition module initialise code to create a default tag for this
-			require_once 'api/v2/Tag.php';	
 			$tag_params['name'] = CIVICRM_TAG_UNCONFIRMED;
-			$tag = civicrm_tag_get($tag_params); 
-			if ($tag['is_error'] == 1) {				
+			$tag_params['version'] = 3;
+			$tag = civicrm_api('tag','get',$tag_params); 
+			if ($tag['count'] == 0) {				
 				//create tag
 				$tag_params['description'] = CIVICRM_TAG_UNCONFIRMED;
 				$tag_params['is_reserved'] = 1;
 				$tag_params['used_for'] = 'civicrm_contact';
-				$tag = civicrm_tag_create($tag_params); 
+				$tag = civicrm_api('tag', 'create', $tag_params); 
 				$this->_tagId = $tag['tag_id'];
 			} else {
 				$this->_tagId = $tag['id'];
 			}
+
 		}
 		
 		// export the field values to be used for saving the profile form
@@ -408,7 +409,7 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form
 				// dedupe matched single contact, check for 'unconfirmed' tag				
 				if (defined('CIVICRM_TAG_UNCONFIRMED')) {
 					require_once 'CRM/Core/DAO/EntityTag.php';
-					$tag =& new CRM_Core_DAO_EntityTag( );
+					$tag = new CRM_Core_DAO_EntityTag( );
 					$tag->entity_id  = $this->_contactId;
 					$tag->tag_id     = $this->_tagId;
 					
@@ -434,7 +435,7 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form
 				$this->redirectIfSigned($params);
 				if (defined('CIVICRM_TAG_UNCONFIRMED')) {
 					require_once 'CRM/Core/DAO/EntityTag.php';
-					$tag =& new CRM_Core_DAO_EntityTag( );
+					$tag = new CRM_Core_DAO_EntityTag( );
 					$tag->entity_id  = $this->_contactId;
 					$tag->tag_id     = $this->_tagId;
 					
@@ -501,12 +502,11 @@ class CRM_Campaign_Form_Petition_Signature extends CRM_Core_Form
 				
 				case self::EMAIL_CONFIRM:
 					// set 'Unconfirmed' tag for this new contact
-					if (defined('CIVICRM_TAG_UNCONFIRMED')) {	
-						require_once 'api/v2/EntityTag.php';
+					if (defined('CIVICRM_TAG_UNCONFIRMED')) {
 						unset($tag_params);
 						$tag_params['contact_id'] = $this->_contactId;
 						$tag_params['tag_id'] = $this->_tagId;
-						$tag_value = civicrm_entity_tag_add($tag_params);					
+						$tag_value = civicrm_api('entity_tag', 'create', $tag_params);					
 					}
 					break;
 			}

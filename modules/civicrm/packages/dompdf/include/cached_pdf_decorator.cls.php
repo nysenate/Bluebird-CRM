@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: cached_pdf_decorator.cls.php,v 1.3 2006/07/07 21:31:02 benjcarson Exp $ */
+/* $Id: cached_pdf_decorator.cls.php 216 2010-03-11 22:49:18Z ryan.masten $ */
 
 /**
  * Caching canvas implementation
@@ -128,6 +128,14 @@ class Cached_PDF_Decorator extends CPDF_Adapter implements Canvas {
     $this->_pdf->reopen_object($this->_current_page_id);
   }
   
+  function page_script($script, $type = 'text/php') {
+    
+    // We want to remove this from cached pages since it may not be correct
+    $this->_pdf->close_object();
+    $this->_pdf->page_script($script, $type);
+    $this->_pdf->reopen_object($this->_current_page_id);
+  }
+  
   function new_page() {
     $this->_pdf->close_object();
 
@@ -176,5 +184,3 @@ class Cached_PDF_Decorator extends CPDF_Adapter implements Canvas {
   function get_messages() { return $this->_pdf->get_messages(); }
   
 }
-
-?>

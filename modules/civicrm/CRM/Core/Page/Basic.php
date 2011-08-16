@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -167,6 +167,7 @@ abstract class CRM_Core_Page_Basic extends CRM_Core_Page {
              ( CRM_Core_Action::VIEW   | 
                CRM_Core_Action::ADD    |
                CRM_Core_Action::UPDATE |
+               CRM_Core_Action::COPY   |
                CRM_Core_Action::DELETE ) ) {
             $this->edit($this->_action, $id);                               // use edit form for view, add or update or delete
         } else {

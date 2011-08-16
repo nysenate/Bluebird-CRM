@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,6 @@
 *}
 <div class="crm-block crm-form-block crm-miscellaneous-form-block">
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
-<fieldset>
     <table class="form-layout">
         <tr class="crm-miscellaneous-form-block-dashboardCacheTimeout">
             <td class="label">{$form.dashboardCacheTimeout.label}</td>
@@ -33,9 +32,7 @@
                 <span class="description">{ts}The number of minutes to cache dashlet content on dashboard.{/ts}</span></td>
         </tr>
     </table>
-</fieldset>
 
-<fieldset>
     <table class="form-layout">
         <tr class="crm-miscellaneous-form-block-contactUndelete">
           <td class="label">{$form.contactUndelete.label}</td>
@@ -56,6 +53,12 @@
            {/if}
           </td>
         </tr>
+        <tr class="crm-miscellaneous-form-block-doNotAttachPDFReceipt">
+            <td class="label">{$form.doNotAttachPDFReceipt.label}</td>
+            <td>{$form.doNotAttachPDFReceipt.html}<br />
+                <p class="description">{ts}If enabled, CiviCRM sends PDF receipt as an attachment during event signup or online contribution.{/ts}</p>
+            </td>
+        </tr>
         <tr class="crm-miscellaneous-form-block-versionCheck">
             <td class="label">{$form.versionCheck.label}</td>
             <td>{$form.versionCheck.html}<br />
@@ -73,10 +76,9 @@
                 <span class="description">{ts}Maximum Size of file (documents, images, etc.) which can attached to emails or activities.<br />Note: php.ini should support this file size.{/ts}</span></td>
         </tr>
     </table>
-</fieldset>
-<fieldset><legend>{ts}reCAPTCHA Keys{/ts}</legend>
+<h3>{ts}reCAPTCHA Keys{/ts}</h3>
     <div class="description">
-        {ts}reCAPTCHA is a free service that helps prevent automated abuse of your site. To use reCAPTCHA on public-facing CiviCRM forms: sign up at <a href="http://recaptcha.net">recaptcha.net</a>; enter the provided public and private reCAPTCHA keys here; then enable reCAPTCHA under Advanced Settings in any Profile.{/ts}
+        {ts}reCAPTCHA is a free service that helps prevent automated abuse of your site. To use reCAPTCHA on public-facing CiviCRM forms: sign up at <a href="http://recaptcha.net" "target=_blank">recaptcha.net</a>; enter the provided public and private reCAPTCHA keys here; then enable reCAPTCHA under Advanced Settings in any Profile.{/ts}
     </div>
     <table class="form-layout">
         <tr class="crm-miscellaneous-form-block-recaptchaPublicKey">
@@ -87,7 +89,11 @@
             <td class="label">{$form.recaptchaPrivateKey.label}</td>
             <td>{$form.recaptchaPrivateKey.html}</td>
         </tr>
+        <tr class="crm-miscellaneous-form-block-recaptchaOptions">
+            <td class="label">{$form.recaptchaOptions.label}</td>
+            <td>{$form.recaptchaOptions.html}<br />
+                <span class="description">{ts}You can specify the reCAPTCHA theme options as an comma seperated data.(eg: theme:'blackglass', lang : 'fr' ).<br />You can check the available options for reCAPTCHA here <a href="http://code.google.com/apis/recaptcha/docs/customization.html" "target=_blank">Customizing the Look and Feel of reCAPTCHA</a>.{/ts}</span></td>
+        </tr>
         </table>
            <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-    </fieldset>
 </div>

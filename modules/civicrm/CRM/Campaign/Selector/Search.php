@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -171,13 +171,16 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
         $this->_context = $context;
         
         $this->_campaignClause = $surveyClause;
+        $this->_campaignFromClause  = CRM_Utils_Array::value( 'fromClause',  $surveyClause );
+        $this->_campaignWhereClause = CRM_Utils_Array::value( 'whereClause', $surveyClause );
         
         // type of selector
         $this->_action = $action;
         
         $this->_query = new CRM_Contact_BAO_Query( $this->_queryParams, 
                                                    null, null, false, false,
-                                                   CRM_Contact_BAO_Query::MODE_CAMPAIGN );
+                                                   CRM_Contact_BAO_Query::MODE_CAMPAIGN,
+                                                   true );
     }//end of constructor
     
     /**
@@ -223,9 +226,10 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
     {
         return $this->_query->searchQuery( 0, 0, null,
                                            true, false, 
-                                           false, false, 
-                                           false, 
-                                           $this->_campaignClause );
+                                           false, false, false, 
+                                           $this->_campaignWhereClause, 
+                                           null,
+                                           $this->_campaignFromClause );
     }
     
     /**
@@ -245,9 +249,9 @@ class CRM_Campaign_Selector_Search extends CRM_Core_Selector_Base implements CRM
         $result = $this->_query->searchQuery( $offset, $rowCount, $sort,
                                               false, false, 
                                               false, false, 
-                                              false, 
-                                              $this->_campaignClause
-                                              );
+                                              false, $this->_campaignWhereClause, 
+                                              null,
+                                              $this->_campaignFromClause );
         
         require_once 'CRM/Contact/BAO/Contact/Utils.php';
         

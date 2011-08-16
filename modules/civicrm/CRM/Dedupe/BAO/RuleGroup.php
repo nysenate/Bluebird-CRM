@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -354,5 +354,35 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup
         }
         
         return array($ruleFields, $rgBao->threshold);
+    }
+
+    /**
+     * Get an array of rule group id to rule group name
+     * for all th groups for that contactType. If contactType
+     * not specified, do it for all
+     *
+     * @param string $contactType Individual, Household or Organization
+     * 
+     * @static
+     * @return array id => "nice name" of rule group
+     */
+    static function getByType( $contactType = null ) {
+        $dao = new CRM_Dedupe_DAO_RuleGroup( );
+
+        if ( $contactType ) {
+            $dao->contact_type = $contactType;
+        }
+        
+        $dao->find( );
+        $result = array( );
+        while ( $dao->fetch( ) ) {
+            if ( ! empty( $dao->name ) ) {
+                $name = "{$dao->name} - {$dao->level}" ;
+            } else {
+                $name = "{$dao->contact_type} - {$dao->level}";
+            }
+            $result[$dao->id] = $name;
+        }
+        return $result;
     }
 }

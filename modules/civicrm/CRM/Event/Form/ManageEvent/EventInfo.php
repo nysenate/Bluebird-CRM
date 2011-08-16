@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -202,6 +202,14 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent
                    array('' => ts('- select -')) + $event,
                    true, 
                    array('onChange' => "buildCustomData( 'Event', this.value );") );
+
+        //CRM-7362 --add campaigns.
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        $campaignId = null;
+        if ( $this->_id ) {
+            $campaignId = CRM_Core_DAO::getFieldValue( 'CRM_Event_DAO_Event', $this->_id, 'campaign_id' ); 
+        }
+        CRM_Campaign_BAO_Campaign::addCampaign( $this, $campaignId );
         
         $participantRole = CRM_Core_OptionGroup::values('participant_role');
         $this->add('select',
@@ -290,7 +298,9 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent
         
         //format params
         $params['start_date']      = CRM_Utils_Date::processDate( $params['start_date'], $params['start_date_time'] );
-        $params['end_date'  ]      = CRM_Utils_Date::processDate( $params['end_date'], $params['end_date_time'], true );
+        $params['end_date'  ]      = CRM_Utils_Date::processDate( CRM_Utils_Array::value( 'end_date', $params ),
+                                                                  CRM_Utils_Array::value( 'end_date_time', $params ),
+                                                                  true );
         $params['has_waitlist']    = CRM_Utils_Array::value('has_waitlist', $params, false);
         $params['is_map'    ]      = CRM_Utils_Array::value('is_map', $params, false);
         $params['is_active' ]      = CRM_Utils_Array::value('is_active', $params, false);
@@ -298,12 +308,7 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent
         $params['default_role_id'] = CRM_Utils_Array::value('default_role_id', $params, false);
         $params['id']              = $this->_id;
 
-        //new event, so lets set the created_id
-        if ( $this->_action & CRM_Core_Action::ADD ) { 
-            $session = CRM_Core_Session::singleton( );
-            $params['created_id']   = $session->get( 'userID' );
-            $params['created_date'] = date('YmdHis');
-        }   
+  
         
         $customFields = CRM_Core_BAO_CustomField::getFields( 'Event', false, false, 
                                                              CRM_Utils_Array::value( 'event_type_id', $params ) );
@@ -382,7 +387,10 @@ class CRM_Event_Form_ManageEvent_EventInfo extends CRM_Event_Form_ManageEvent
                 $tafParams['entity_id'] = $params['template_id'];
                 if (CRM_Friend_BAO_Friend::getValues($tafParams)) {
                     $tafParams['entity_id'] = $event->id;
-                    CRM_Friend_BAO_Friend::addTellAFriend($tafParams);
+                    if ( isset( $tafParams['id'] ) ) {
+                        unset( $tafParams['id'] );
+                    }
+                    CRM_Friend_BAO_Friend::addTellAFriend( $tafParams );
                 }
             }
         }

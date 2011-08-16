@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,7 +36,7 @@ require_once 'CRM/Core/Extensions/ExtensionType.php';
  * information on single extension's operations.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -112,13 +112,26 @@ class CRM_Core_Extensions
         if( isset( $config->extensionsDir ) ) {
             $this->_extDir = $config->extensionsDir;
         }
-        if( ! empty( $this->_extDir ) ) {
+
+        if ( ! empty( $this->_extDir ) ) {
             $this->enabled = TRUE;
             $tmp = $this->_extDir . DIRECTORY_SEPARATOR . 'tmp';
             $cache = $this->_extDir . DIRECTORY_SEPARATOR . 'cache';
             require_once 'CRM/Utils/File.php';
-            if( !file_exists( $tmp ) ) { CRM_Utils_File::createDir( $tmp ); }
-            if( !file_exists( $cache ) ) { CRM_Utils_File::createDir( $cache ); }
+            if( is_writable( $this->_extDir ) ) {
+                if ( !file_exists( $tmp ) ) { 
+                    CRM_Utils_File::createDir( $tmp );
+                }
+                if ( !file_exists( $cache ) ) {
+                    CRM_Utils_File::createDir( $cache );
+                }
+            } else {
+                $url = CRM_Utils_System::url( 'civicrm/admin/setting/path', 'reset=1&destination=/civicrm/admin/extensions?reset=1' );
+                CRM_Core_Session::setStatus( ts('Your extensions directory: %1 is not web server writable. Please go to the <a href="%2">path setting page</a> and correct it.',
+                                             array( 1 => $this->_extDir,
+                                                    2 => $url ) ) );
+                $this->_extDir = null;
+            }
         }
     }
 
@@ -233,9 +246,11 @@ class CRM_Core_Extensions
 
         // now those which are available on public directory
         $remote = $this->_discoverRemote();
-        
-        foreach( $remote as $dc => $e ) {
-            $exts[$e->key] = $e;
+
+        if ( is_array( $remote ) ) { 
+            foreach( $remote as $dc => $e ) {
+                $exts[$e->key] = $e;
+            }
         }
         
         // get installed extensions at the end, they overwrite everything
@@ -318,7 +333,7 @@ class CRM_Core_Extensions
         $tsPath = $config->extensionsDir . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'timestamp.txt';
         $timestamp = false;
 
-        if( file_exists( $tsPath ) ) {
+        if ( file_exists( $tsPath ) ) {
             $timestamp =  file_get_contents( $tsPath );
         }
 
@@ -333,17 +348,20 @@ class CRM_Core_Extensions
             $cached = true;
         }
 
-            require_once 'CRM/Core/Extensions/Extension.php';
-            foreach( $remoties as $id => $rext ) {
-                $ext = new CRM_Core_Extensions_Extension( $rext['key'] );
-                $ext->setRemote();
-                $xml = $this->grabRemoteInfoFile( $rext['key'], $cached );
-                if( $xml != false ) {
-                    $ext->readXMLInfo( $xml );
-                    $this->_remotesDiscovered[] = $ext;
-                }
+        require_once 'CRM/Core/Extensions/Extension.php';
+        foreach( $remoties as $id => $rext ) {
+            $ext = new CRM_Core_Extensions_Extension( $rext['key'] );
+            $ext->setRemote();
+            $xml = $this->grabRemoteInfoFile( $rext['key'], $cached );
+            if( $xml != false ) {
+                $ext->readXMLInfo( $xml );
+                $this->_remotesDiscovered[] = $ext;
             }
+        }
+
+        if ( file_exists( $tsPath ) ) {
             file_put_contents( $tsPath, (string) time() );
+        }
 
         return $this->_remotesDiscovered;
     }
@@ -360,15 +378,17 @@ class CRM_Core_Extensions
     private function _discoverAvailable() {
         require_once 'CRM/Core/Extensions/Extension.php';
         $result = array();
-        $e = scandir( $this->_extDir );
-        foreach( $e as $dc => $name ) {
-            $dir = $this->_extDir . DIRECTORY_SEPARATOR . $name;
-            $infoFile = $dir . DIRECTORY_SEPARATOR . self::EXT_INFO_FILENAME;
-            if( is_dir( $dir ) && file_exists( $infoFile ) ) {
-                $ext = new CRM_Core_Extensions_Extension( $name );
-                $ext->setLocal();
-                $ext->readXMLInfo();
-                $result[] = $ext;
+        if ( $this->_extDir ) {
+            $e = scandir( $this->_extDir );
+            foreach( $e as $dc => $name ) {
+                $dir = $this->_extDir . DIRECTORY_SEPARATOR . $name;
+                $infoFile = $dir . DIRECTORY_SEPARATOR . self::EXT_INFO_FILENAME;
+                if( is_dir( $dir ) && file_exists( $infoFile ) ) {
+                    $ext = new CRM_Core_Extensions_Extension( $name );
+                    $ext->setLocal();
+                    $ext->readXMLInfo();
+                    $result[] = $ext;
+                }
             }
         }
         return $result;
@@ -597,23 +617,40 @@ class CRM_Core_Extensions
      */
     public function grabRemoteKeyList( ) {
 
-        $handl = fopen ( self::PUBLIC_EXTENSIONS_REPOSITORY , "r");
+        require_once 'CRM/Utils/VersionCheck.php';
+        ini_set('default_socket_timeout', CRM_Utils_VersionCheck::CHECK_TIMEOUT);
+        set_error_handler(array('CRM_Utils_VersionCheck', 'downloadError'));
+        
+        if ( !ini_get('allow_url_fopen') ) {
+            ini_set( 'allow_url_fopen', 1 );
+        }
 
-        while (!feof ($handl)) {
-            $ln = fgets ($handl, 2048);
+        $extdir = file_get_contents( self::PUBLIC_EXTENSIONS_REPOSITORY );
+
+        if( $extdir === FALSE ) {
+            CRM_Core_Error::fatal('Public directory down or too slow - please contact CiviCRM team on forums.');
+        }
+
+        $lines = explode( "\n", $extdir );
+        
+        foreach( $lines as $ln ) {
             if (preg_match ("@\<li\>(.*)\</li\>@i", $ln, $out)) {
                 $extsRaw[] = $out;// success
                 $key = strip_tags($out[1]);
                 if( substr( $key, -4 ) == '.xml' ) {
                     $exts[] = array( 'key' => trim( $key, '.xml' ) );
                 }
-                
-            } else {
-                //fail
             }
         }
 
-        fclose($handl);
+        if( empty( $exts ) ) {
+            CRM_Core_Error::fatal('Malformed extensions list on public directory - please contact CiviCRM team on forums.');
+        }
+
+        ini_restore('allow_url_fopen');
+        ini_restore('default_socket_timeout');
+
+        restore_error_handler();
         
         return $exts;
     }
@@ -626,23 +663,26 @@ class CRM_Core_Extensions
         $filename = $path . DIRECTORY_SEPARATOR . $key . '.xml';
         $url = self::PUBLIC_EXTENSIONS_REPOSITORY . '/' . $key . '.xml';
 
-        if( ! $cached ) {
-            file_put_contents( $filename, file_get_contents( $url ) );
-        }
 
-        $contents = file_get_contents( $filename );
-
-        //parse just in case
-        $check = simplexml_load_string( $contents );
-
-        if (!$check) {
-            foreach(libxml_get_errors() as $error) {
-                CRM_Core_Error::debug( 'xmlError', $error );
+        if ( file_exists( $filename ) ) {
+            if ( !$cached ) {
+                file_put_contents( $filename, file_get_contents( $url ) );
             }
-            return;
+
+            $contents = file_get_contents( $filename );
+
+            //parse just in case
+            $check = simplexml_load_string( $contents );
+
+            if (!$check) {
+                foreach(libxml_get_errors() as $error) {
+                    CRM_Core_Error::debug( 'xmlError', $error );
+                }
+                return;
+            }
+
+            return $contents;
         }
-        
-        return $contents;
     }
 
 }

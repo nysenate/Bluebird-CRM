@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -75,9 +75,10 @@ class CRM_Bridge_OG_Drupal {
                 $params['group_type'] = $groupType;
             }
             
+
             $group = civicrm_group_add( $params );
             if ( ! civicrm_error( $group ) ) {
-                $params['group_id'] = $group['result'];
+                $params['group_id'] = $group['result']->id;
             }
         } else {
             // do this only if we have a valid id

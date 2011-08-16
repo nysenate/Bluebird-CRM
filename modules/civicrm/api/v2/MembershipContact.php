@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,8 +33,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Membership
  *  
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: MembershipContact.php 30171 2010-10-14 09:11:27Z mover $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: MembershipContact.php 34667 2011-06-06 12:11:23Z kurund $
  */
 
 /**
@@ -70,7 +70,7 @@ function civicrm_membership_contact_create(&$params)
         return $error;
     }
 
-    $params = array_merge($values,$params);
+    $params = array_merge( $params, $values );
     
     require_once 'CRM/Core/Action.php';
     $action = CRM_Core_Action::ADD;
@@ -272,11 +272,17 @@ function _civicrm_membership_format_params( &$params, &$values, $create=false)
             unset($values['membership_contact_id']);
             break;
         case 'join_date':
+        case 'start_date':
+        case 'end_date':    
         case 'membership_start_date':
         case 'membership_end_date':
             if (!CRM_Utils_Rule::date($value)) {
                 return civicrm_create_error("$key not a valid date: $value");
             }
+            
+            // make sure we format dates to mysql friendly format 
+            $values[$key] = CRM_Utils_Date::processDate( $value, null, false, 'Ymd' );
+
             break;
         case 'membership_type_id':
             if ( !CRM_Utils_Array::value( $value, CRM_Member_PseudoConstant::membershipType( ) ) ) {

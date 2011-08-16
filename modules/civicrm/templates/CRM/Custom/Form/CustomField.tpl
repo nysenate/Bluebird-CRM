@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -82,7 +82,7 @@
                         <span class="html-adjust"><br />
                             &nbsp;{ts}Attached File{/ts}: &nbsp;
                             {if $element.element_value.displayURL }
-                                <a href="javascript:popUp('{$element.element_value.displayURL}')" ><img src="{$element.element_value.displayURL}" height = "{$element.element_value.imageThumbHeight}" width="{$element.element_value.imageThumbWidth}"></a>
+                                <a href="javascript:popUp('{$element.element_value.imageURL}')" ><img src="{$element.element_value.displayURL}" height = "{$element.element_value.imageThumbHeight}" width="{$element.element_value.imageThumbWidth}"></a>
                             {else}
                                 <a href="{$element.element_value.fileURL}">{$element.element_value.fileName}</a>
                             {/if}

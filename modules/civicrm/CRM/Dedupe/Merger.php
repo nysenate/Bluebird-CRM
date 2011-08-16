@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -484,15 +484,14 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
      */
     function findDifferences($mainId, $otherId)
     {
-        require_once 'api/v2/Contact.php';
-        $mainParams  = array('contact_id' => (int) $mainId);
-        $otherParams = array('contact_id' => (int) $otherId);
+        $mainParams  = array('contact_id' => (int) $mainId,  'version' => 2);
+        $otherParams = array('contact_id' => (int) $otherId, 'version' => 2);
         // API 2 has to have the requested fields spelt-out for it
         foreach (self::$validFields as $field) {
             $mainParams["return.$field"] = $otherParams["return.$field"] = 1;
         }
-        $main  =& civicrm_contact_get($mainParams);
-        $other =& civicrm_contact_get($otherParams);
+        $main  =& civicrm_api('contact', 'get', $mainParams);
+        $other =& civicrm_api('contact', 'get', $otherParams);
         
         //CRM-4524
         $main  = reset( $main );

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -284,14 +284,7 @@ class CRM_Grant_Form_Grant extends CRM_Core_Form
         
         $params['contact_id'] = $this->_contactID;
 
-        $dates = array( 'application_received_date',
-                        'decision_date',
-                        'money_transfer_date',
-                        'grant_due_date' );
         
-        foreach ( $dates as $d ) {
-            $params[$d] = CRM_Utils_Date::processDate( $params[$d], null, true );
-        }
      
         $ids['note'] = array( );
         if ( $this->_noteId ) {

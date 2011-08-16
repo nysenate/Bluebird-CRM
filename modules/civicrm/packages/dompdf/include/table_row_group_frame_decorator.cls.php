@@ -28,15 +28,15 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004-6 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
  */
 
-/* $Id */
+/* $Id: table_row_group_frame_decorator.cls.php 317 2010-10-06 13:06:57Z fabien.menager $ */
 
 /**
  * Table row group decorator
@@ -63,7 +63,7 @@ class Table_Row_Group_Frame_Decorator extends Frame_Decorator {
    *
    * @param Frame $child
    */
-  function split($child = null) {
+  function split($child = null, $force_pagebreak = false) {
 
     if ( is_null($child) ) {
       parent::split();
@@ -94,4 +94,3 @@ class Table_Row_Group_Frame_Decorator extends Frame_Decorator {
   }
 }
  
-?>

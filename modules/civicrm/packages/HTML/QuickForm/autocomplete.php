@@ -124,7 +124,7 @@ class HTML_QuickForm_autocomplete extends HTML_QuickForm_text
         $arrayName = str_replace(array('[', ']'), array('__', ''), $this->getName()) . '_values';
 
         $this->updateAttributes(array(
-            'onkeypress' => 'return window.autocomplete(this, event, ' . $arrayName . ');'
+            'onkeypress' => 'return window.autocomplete(this, event, ' . $arrayName . ');' //NYSS
         ));
         if ($this->_flagFrozen) {
             $js = '';

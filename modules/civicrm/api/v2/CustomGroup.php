@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,8 +32,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_CustomGroup
  *
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: CustomGroup.php 30758 2010-11-15 15:09:56Z neha $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: CustomGroup.php 32998 2011-03-14 22:00:35Z kurund $
  */
 
 /**
@@ -229,13 +229,13 @@ function civicrm_custom_field_delete( $params )
         return civicrm_create_error( 'Params is not an array' );
     }
     
-    if ( ! CRM_Utils_Array::value( 'customFieldId', $params['result'] ) ) {
+    if ( ! CRM_Utils_Array::value( 'id', $params ) ) {
         return civicrm_create_error( 'Invalid or no value for Custom Field ID' );
     }
 
     require_once 'CRM/Core/DAO/CustomField.php';
     $field = new CRM_Core_DAO_CustomField( );
-    $field->id = $params['result']['customFieldId'];
+    $field->id = $params['id'];
     $field->find(true);
     
     require_once 'CRM/Core/BAO/CustomField.php';

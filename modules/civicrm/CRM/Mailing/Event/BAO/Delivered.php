@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -55,11 +55,14 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
      */
     public static function &create(&$params) {
         $q =& CRM_Mailing_Event_BAO_Queue::verify($params['job_id'],
-            $params['event_queue_id'], $params['hash']);
+                                                  $params['event_queue_id'],
+                                                  $params['hash']);
+
         if (! $q) {
             return null;
         }
-        $q->free( ); 
+        $q->free( );
+
         $delivered = new CRM_Mailing_Event_BAO_Delivered();
         $delivered->time_stamp = date('YmdHis');
         $delivered->copyValues($params);
@@ -224,6 +227,26 @@ class CRM_Mailing_Event_BAO_Delivered extends CRM_Mailing_Event_DAO_Delivered {
         }
         return $results;
     }
+
+    static function bulkCreate( $eventQueueIDs, $time = null ) {
+        if ( ! $time ) {
+            $time = date( 'YmdHis' );
+        }
+
+        // construct a bulk insert statement
+        $values = array( );
+        foreach ( $eventQueueIDs as $eqID ) {
+            $values[] = "( $eqID, '{$time}' )";
+        }
+
+        while ( ! empty( $values ) ) {
+            $input = array_splice( $values, 0, CRM_Core_DAO::BULK_INSERT_COUNT );
+            $str   = implode( ',', $input );
+            $sql = "INSERT INTO civicrm_mailing_event_delivered ( event_queue_id, time_stamp ) VALUES $str;";
+            CRM_Core_DAO::executeQuery( $sql );
+        }
+    }
+
 }
 
 

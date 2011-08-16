@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -247,7 +247,7 @@ class CRM_Event_Form_Search extends CRM_Core_Form
          */ 
         $rows = $this->get( 'rows' );
         if ( is_array( $rows ) ) {
-            $lineItems = $participantIds = array( );
+            $lineItems = $eventIds = array( );
             require_once 'CRM/Event/BAO/Event.php';
             require_once 'CRM/Event/BAO/Participant.php';
             if ( !$this->_single ) {
@@ -258,11 +258,11 @@ class CRM_Event_Form_Search extends CRM_Core_Form
                                    array( 'onclick' => "toggleTaskAction( true ); return toggleCheckboxVals('mark_x_',this);" ) ); 
             }
             foreach ( $rows as $row ) { 
-                $participantIds[] = $row['participant_id'];
+                $eventIds[$row['event_id']] = $row['event_id'];
                 if ( !$this->_single ) {
                     $this->addElement( 'checkbox', $row['checkbox'], 
                                        null, null, 
-                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "', '" . $this->getName() . "');" )
+                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "');" )
                                        ); 
                 }
                 if ( CRM_Event_BAO_Event::usesPriceSet( $row['event_id'] ) ) {
@@ -272,10 +272,30 @@ class CRM_Event_Form_Search extends CRM_Core_Form
                 }
             }
             
-            $participantCount = CRM_Event_BAO_Participant::totalEventSeats( $participantIds ); 
+            //get actual count only when we are dealing w/ single event.
+            $participantCount = 0;
+            if ( count( $eventIds ) == 1 ) {
+                //convert form values to clause.
+                $seatClause = array( );
+                $clauseParams = array( 'participant_status_id', 'participant_role_id' );
+                if ( CRM_Utils_Array::value( 'participant_status_id', $this->_formValues ) ) {
+                    $statuses = array_keys( $this->_formValues['participant_status_id'] );
+                    
+                    $seatClause[] = '( participant.status_id IN ( ' .implode( ' , ', $statuses ) .' ) )';
+                }
+                if ( CRM_Utils_Array::value( 'participant_role_id', $this->_formValues ) ) {
+                    $roles = array_keys( $this->_formValues['participant_role_id'] );
+                    $seatClause[] = '( participant.status_id IN ( ' .implode( ' , ', $roles ) .' ) )';
+                }
+                $clause = null;
+                if ( !empty( $seatClause ) ) {
+                    $clause = implode( ' AND ', $seatClause );
+                }
+                $participantCount = CRM_Event_BAO_Event::eventTotalSeats( array_pop( $eventIds ), $clause );
+            }
             $this->assign( 'participantCount', $participantCount );
             $this->assign( 'lineItems', $lineItems );
-
+            
             $total = $cancel = 0;
 
             require_once "CRM/Core/Permission.php";
@@ -306,8 +326,10 @@ class CRM_Event_Form_Search extends CRM_Core_Form
                               'onclick' => "return checkPerformAction('mark_x', '".$this->getName()."', 1);" ) ); 
             
             // need to perform tasks on all or selected items ? using radio_ts(task selection) for it 
-            $this->addElement('radio', 'radio_ts', null, '', 'ts_sel', array( 'checked' => 'checked') ); 
-            $this->addElement('radio', 'radio_ts', null, '', 'ts_all', array( 'onclick' => $this->getName().".toggleSelect.checked = false; toggleCheckboxVals('mark_x_',this); toggleTaskAction( true );" ) );
+            $this->addElement('radio', 'radio_ts', null, '', 'ts_sel',
+                              array( 'checked' => 'checked') ); 
+            $this->addElement('radio', 'radio_ts', null, '', 'ts_all',
+                              array( 'onclick' => $this->getName().".toggleSelect.checked = false; toggleCheckboxVals('mark_x_',this); toggleTaskAction( true );" ) );
         }
         
         // add buttons 

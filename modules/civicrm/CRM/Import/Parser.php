@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -247,13 +247,21 @@ abstract class CRM_Import_Parser {
      */
 
     public $_contactType;
+
     /**
      * on duplicate
      *
      * @var int
      */
     public $_onDuplicate;
-    
+
+    /**
+     * dedupe rule group id to use if set
+     *
+     * @var int
+     */
+    public $_dedupeRuleGroupID = null;
+
     function __construct() {
         $this->_maxLinesToProcess = 0;
         $this->_maxErrorCount = self::MAX_ERRORS;
@@ -272,11 +280,13 @@ abstract class CRM_Import_Parser {
                   $totalRowCount = null,
                   $doGeocodeAddress = false,
                   $timeout = CRM_Import_Parser::DEFAULT_TIMEOUT,
-                  $contactSubType = null ) {
-        
+                  $contactSubType = null,
+                  $dedupeRuleGroupID = null ) {
+
         // TODO: Make the timeout actually work
         $this->_onDuplicate = $onDuplicate;
-        
+        $this->_dedupeRuleGroupID = $dedupeRuleGroupID;
+
         switch ($contactType) {
         case CRM_Import_Parser::CONTACT_INDIVIDUAL :
             $this->_contactType = 'Individual';
@@ -331,7 +341,9 @@ abstract class CRM_Import_Parser {
             $status = "<div class='description'>&nbsp; " . ts('No processing status reported yet.') . "</div>";
             require_once 'Services/JSON.php';
             $json = new Services_JSON( ); 
-            $contents = $json->encode( array( 0, $status ) );
+            
+            //do not force the browser to display the save dialog, CRM-7640 
+            $contents = $json->encodeUnsafe( array( 0, $status ) );
 
             file_put_contents( $statusFile, $contents );
 
@@ -400,7 +412,7 @@ abstract class CRM_Import_Parser {
 ";
 
                     $json = new Services_JSON( ); 
-                    $contents = $json->encode( array( $processedPercent, $status ) );
+                    $contents = $json->encodeUnsafe( array( $processedPercent, $status ) );
 
                     file_put_contents( $statusFile, $contents );
 

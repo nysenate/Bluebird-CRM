@@ -157,8 +157,20 @@
      <path>civicrm/activity/add</path>
      <path_arguments>action=add</path_arguments>
      <title>Activities</title>
-     <page_callback>CRM_Activity_Page_Tab</page_callback>
+     <page_callback>CRM_Activity_Form_Activity</page_callback>
   </item>
+   <item>
+     <path>civicrm/activity/email/add</path>
+     <path_arguments>action=add</path_arguments>
+     <title>Activities</title>
+     <page_callback>CRM_Contact_Form_Task_Email</page_callback>
+  </item>
+  <item>
+     <path>civicrm/activity/pdf/add</path>
+     <path_arguments>action=add</path_arguments>
+     <title>Activities</title>
+     <page_callback>CRM_Contact_Form_Task_PDF</page_callback>
+  </item> 
   <item>
      <path>civicrm/contact/view/rel</path>
      <path_arguments>cid=%%cid%%</path_arguments>
@@ -307,6 +319,16 @@
      <access_arguments>access CiviCRM</access_arguments>
 </item>
 <item>
+     <path>civicrm/ajax/pdfFormat</path>
+     <page_callback>CRM_Contact_Page_AJAX::pdfFormat</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+</item>
+<item>
+     <path>civicrm/ajax/paperSize</path>
+     <page_callback>CRM_Contact_Page_AJAX::paperSize</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
+</item>
+<item>
    <path>civicrm/dashlet/myCases</path>
    <title>Case Dashlet</title>
    <page_callback>CRM_Dashlet_Page_MyCases</page_callback>
@@ -334,10 +356,20 @@
    <access_arguments>merge duplicate contacts</access_arguments>
 </item>
 <item>
+   <path>civicrm/ajax/dedupefind</path>
+   <page_callback>CRM_Contact_Page_AJAX::getDedupes</page_callback>
+   <access_arguments>merge duplicate contacts</access_arguments>
+</item>
+<item>
    <path>civicrm/dedupe/exception</path>
    <title>Dedupe Exceptions</title>
    <adminGroup>Manage</adminGroup>
    <page_callback>CRM_Contact_Page_DedupeException</page_callback>
    <weight>110</weight>
+</item>
+<item>
+     <path>civicrm/ajax/dedupeRules</path>
+     <page_callback>CRM_Contact_Page_AJAX::buildDedupeRules</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
 </item>
 </menu>

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -192,7 +192,7 @@ class CRM_Case_XMLProcessor_Report extends CRM_Case_XMLProcessor {
         foreach ( $coreActivityTypes as $aType ) {
             $map[$aType['id']] = $aType;
         }               
-                
+        
         $activityTypeIDs = implode( ',', array_keys( $map ) );
         $query = "
 SELECT a.*, c.id as caseID
@@ -289,7 +289,8 @@ WHERE      a.id = %1
         if ( $clientID ) {
             $clientID = CRM_Utils_Type::escape($clientID, 'Integer');
             if ( !in_array( $activityTypeInfo['name'], array( 'Email', 'Inbound Email' ) ) ) {
-                $activity['editURL'] = CRM_Utils_System::url( 'civicrm/case/activity',                                          "reset=1&cid={$clientID}&caseid={$activityDAO->caseID}&action=update&atype={$activityDAO->activity_type_id}&id={$activityDAO->id}" );
+                $activity['editURL'] = CRM_Utils_System::url( 'civicrm/case/activity',
+                                                              "reset=1&cid={$clientID}&caseid={$activityDAO->caseID}&action=update&atype={$activityDAO->activity_type_id}&id={$activityDAO->id}" );
             } else {
                 $activity['editURL'] = '';
             }
@@ -395,7 +396,6 @@ WHERE      a.id = %1
                                        'value' => $this->redact( $reporter ),
                                        'type'  => 'String' );
         
-       
         if ( $activityDAO->assigneeID ) {
             //allow multiple assignee contacts.CRM-4503.
             require_once 'CRM/Activity/BAO/ActivityAssignment.php';
@@ -477,12 +477,18 @@ WHERE      a.id = %1
                     
                     // Note: this is already taken care in getDisplayValue above, but sometimes 
                     // strings like '^A^A' creates problem. So to fix this special case -
-                    if ( strstr($value, CRM_Core_BAO_CustomOption::VALUE_SEPERATOR) ) {
-                        $value = trim($value, CRM_Core_BAO_CustomOption::VALUE_SEPERATOR);
+                    if ( strstr($value, CRM_Core_DAO::VALUE_SEPARATOR) ) {
+                        $value = trim($value, CRM_Core_DAO::VALUE_SEPARATOR);
                     }
                     if ( CRM_Utils_Array::value('type', $typeValue) == 'String' ||
                          CRM_Utils_Array::value('type', $typeValue) == 'Memo' ) {
                         $value = $this->redact($value );
+                    } else if ( CRM_Utils_Array::value( 'type', $typeValue ) == 'File' ) {
+                        require_once 'CRM/Core/BAO/File.php';
+                        $tableName = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_EntityFile', $value, 'entity_table' );
+                        $value     = CRM_Core_BAO_File::attachmentInfo( $tableName, $activityDAO->id );
+                    } else if ( CRM_Utils_Array::value( 'type', $typeValue ) == 'Link' ) {
+                        $value = CRM_Utils_System::formatWikiURL( $value );
                     }
 
                     //$typeValue
@@ -499,6 +505,10 @@ WHERE      a.id = %1
     
     function getActivityTypeCustomSQL( $activityTypeID, $dateFormat = null ) {
         static $cache = array( );
+
+        if ( is_null( $activityTypeID  ) ) {
+            $activityTypeID = 0;
+        }
         
         if ( ! isset( $cache[$activityTypeID] ) ) {
             $query = "
@@ -514,9 +524,13 @@ SELECT cg.title           as groupTitle,
 FROM   civicrm_custom_group cg,
        civicrm_custom_field cf
 WHERE  cf.custom_group_id = cg.id
-AND    cg.extends = 'Activity'
-AND    cg.extends_entity_column_value LIKE '" . CRM_Core_DAO::VALUE_SEPARATOR . "%1" . CRM_Core_DAO::VALUE_SEPARATOR . "'
-";
+AND    cg.extends = 'Activity'";
+
+            if ( $activityTypeID ) {
+                $query .= "AND ( cg.extends_entity_column_value IS NULL OR cg.extends_entity_column_value LIKE '%" . CRM_Core_DAO::VALUE_SEPARATOR . "%1" . CRM_Core_DAO::VALUE_SEPARATOR . "%' )";
+            } else {
+                $query .= "AND cg.extends_entity_column_value IS NULL";
+            }
             $params = array( 1 => array( $activityTypeID,
                                          'Integer' ) );
             $dao = CRM_Core_DAO::executeQuery( $query, $params );
@@ -674,7 +688,6 @@ LIMIT  1
         $includeActivities = CRM_Utils_Request::retrieve( 'all'    , 'Positive', CRM_Core_DAO::$_nullObject );
         $params = $otherRelationships = $globalGroupInfo = array();
         $report = new CRM_Case_XMLProcessor_Report( $isRedact );
-        
         if ( $includeActivities ) {
             $params['include_activities'] = 1;
         } 

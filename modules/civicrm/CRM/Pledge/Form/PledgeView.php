@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -118,7 +118,14 @@ class CRM_Pledge_Form_PledgeView extends CRM_Core_Form
                                null,
                                $recentOther
                                );
-             
+        
+        //do check for campaigns
+        if ( $campaignId = CRM_Utils_Array::value( 'campaign_id', $values ) ) {
+            require_once 'CRM/Campaign/BAO/Campaign.php';
+            $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns( $campaignId );
+            $values['campaign'] = $campaigns[$campaignId];
+        }
+        
         $this->assign( $values );
     }
 

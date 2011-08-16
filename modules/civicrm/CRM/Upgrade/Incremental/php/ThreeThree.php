@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -111,7 +111,7 @@ WHERE id = %2
         }
         $ufGroup->free( );
         
-        $upgrade =& new CRM_Upgrade_Form( );
+        $upgrade = new CRM_Upgrade_Form( );
         $upgrade->processSQL( $rev );
 
         // now modify the config so that the directories are stored in option group/value
@@ -123,7 +123,7 @@ WHERE id = %2
     
     function upgrade_3_3_beta1( $rev ) 
     {
-        $upgrade =& new CRM_Upgrade_Form( );
+        $upgrade = new CRM_Upgrade_Form( );
         $upgrade->processSQL( $rev );
 
         // CRM-6902
@@ -144,7 +144,7 @@ WHERE id = %2
         $ids = array( );
         while( $priceFieldDAO->fetch( ) ) {
             
-            $opGroupDAO  = new CRM_Core_DAO_OptionGroup();
+            $opGroupDAO = new CRM_Core_DAO_OptionGroup();
             $opGroupDAO->name = 'civicrm_price_field.amount.'.$priceFieldDAO->id;
             
             if ( !$opGroupDAO->find(true) ) {
@@ -267,13 +267,13 @@ WHERE id = %2
             CRM_Core_DAO::executeQuery( $sql );
         }
 
-        $upgrade =& new CRM_Upgrade_Form( );
+        $upgrade = new CRM_Upgrade_Form( );
         $upgrade->processSQL( $rev );
     }
      
     function upgrade_3_3_0( $rev ) 
     {        
-        $upgrade =& new CRM_Upgrade_Form( );
+        $upgrade = new CRM_Upgrade_Form( );
         $upgrade->processSQL( $rev );
         
         //CRM-7123 -lets activate needful languages.
@@ -344,9 +344,45 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id )
             db_query( "UPDATE {permission} SET perm = REPLACE( perm, 'access CiviMail', 'access CiviMail, create mailings, approve mailings, schedule mailings' )" );
         }
 
-        $upgrade =& new CRM_Upgrade_Form( );
+        $upgrade = new CRM_Upgrade_Form( );
         $upgrade->assign( 'dropMailingIndex', $dropMailingIndex );
         $upgrade->processSQL( $rev );
     }
     
+    function upgrade_3_3_7( $rev ) 
+    {        
+        require_once 'CRM/Contact/DAO/Contact.php';
+        $dao = new CRM_Contact_DAO_Contact( );
+        $dbName = $dao->_database;
+
+        $chkExtQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %1
+                        AND TABLE_NAME = 'civicrm_phone' AND COLUMN_NAME = 'phone_ext'";
+        $extensionExists = CRM_Core_DAO::singleValueQuery( $chkExtQuery,
+                                                          array( 1 => array( $dbName,    'String' ) ),
+                                                          true, false );
+        
+        if ( !$extensionExists ) {
+            $colQuery = 'ALTER TABLE `civicrm_phone` ADD `phone_ext` VARCHAR( 16 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL AFTER `phone` ';
+            CRM_Core_DAO::executeQuery( $colQuery );
+        }
+
+        // handle db changes done for CRM-8218
+        $alterContactDashboard = false;
+        require_once 'CRM/Contact/DAO/DashboardContact.php';
+        $dao = new CRM_Contact_DAO_DashboardContact( );
+        $dbName = $dao->_database;
+
+        $chkContentQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %1
+                        AND TABLE_NAME = 'civicrm_dashboard_contact' AND COLUMN_NAME = 'content'";
+        $contentExists = CRM_Core_DAO::singleValueQuery( $chkContentQuery,
+                                                          array( 1 => array( $dbName, 'String' ) ),
+                                                          true, false );
+        if ( !$contentExists ) {
+            $alterContactDashboard = true; 
+        }
+
+        $upgrade = new CRM_Upgrade_Form( );
+        $upgrade->assign( 'alterContactDashboard', $alterContactDashboard );
+        $upgrade->processSQL( $rev );
+    }
   }

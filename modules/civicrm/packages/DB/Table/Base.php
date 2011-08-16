@@ -99,7 +99,7 @@ class DB_Table_Base
     * at instantiation time.  To check if there was an instantiation error...
     *
     * <code>
-    * $obj =& new DB_Table_*();
+    * $obj = new DB_Table_*();
     * if ($obj->error) {
     *     // ... error handling code here ...
     * }

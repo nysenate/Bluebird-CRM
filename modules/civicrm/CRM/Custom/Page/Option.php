@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -136,7 +136,7 @@ class CRM_Custom_Page_Option extends CRM_Core_Page {
         } else {
             CRM_Core_Error::fatal( );
         }
-        $defVal = explode(CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+        $defVal = explode(CRM_Core_DAO::VALUE_SEPARATOR,
                           substr( $defaultValue, 1, -1 ) );
 
         // get the option group id

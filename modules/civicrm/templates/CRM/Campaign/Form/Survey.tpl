@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,6 +24,9 @@
  +--------------------------------------------------------------------+
 *}
 
+{if $cdType }
+   {include file="CRM/Custom/Form/CustomData.tpl"}
+{else}
 <div class="crm-block crm-form-block crm-campaign-survey-form-block">
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 {if $action eq 8}
@@ -100,58 +103,25 @@
            <td class="view-value">{$form.is_default.html}
 	       <div class="description">{ts}Is this the default survey?{/ts}</div></td>
        </tr>
+       <tr class="crm-campaign-form-block-custom_data">
+           <td colspan="2">
+               <div id="customData"></div>
+           </td>
+       </tr>
       </table>
 {/if}
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
-
 </div>
 
-{if $context eq 'dialog'}
+{include file="CRM/common/customData.tpl"}
 {literal}
-<script type="text/javascript">
-
-   var options = { 
-        beforeSubmit:  showRequest  // pre-submit callback  
-   }; 
-
-   // bind form using 'ajaxForm'
-   cj('form#Survey').ajaxForm( options );
-
-   // pre-submit function
-   function showRequest(formData, jqForm, options) { 
-        var queryString = cj.param(formData); 
-        queryString = queryString + '&snippet=5';
-        var postUrl = {/literal}"{crmURL p='civicrm/survey/add' q='context=dialog' h=0 }"{literal}; 
-        var response = cj.ajax({
-           type: "POST",
-           url: postUrl,
-           async: false,
-           data: queryString,
-           dataType: "json",
-           success: function( response ) {
-               if ( response.returnSuccess ) {
-                   cj("#survey-dialog").dialog("close");
-		   
-		   // reload page to show updated data
-		   document.location = {/literal}'{crmURL p="civicrm/campaign" q="reset=1&subPage=survey" h=0 }'{literal};
-               }
-           }
-         }).responseText;
-	 
-         cj("#survey-dialog").html( response );
-	 
-        // here we could return false to prevent the form from being submitted; 
-        // returning anything other than false will allow the form submit to continue 
-        return false; 
-    }
- 
-   // hide hidden elements on form
-   cj(document).ready( function() {
-     cj('input.hiddenElement').each( function() {
-     	 cj(this).attr('style','display:none' );
-      });
-   });
-
-</script>
+  <script type="text/javascript">
+    cj(document).ready(function() {
+      {/literal}
+        buildCustomData( 'Survey' );
+      {literal}
+    });
+  </script>
 {/literal}
+
 {/if}

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -169,7 +169,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
                 $groupContact->save( );
                 $numContactsAdded++;
             } else {
-                if ($groupContact->status == 'Added') {
+                if ($groupContact->status == $status) {
                     $numContactsNotAdded++;
                 } else {
                     $historyParams = array(
@@ -235,7 +235,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
         $numContactsRemoved    = 0;
         $numContactsNotRemoved = 0;
         
-        require_once "CRM/Contact/DAO/Group.php";
+        require_once 'CRM/Contact/DAO/Group.php';
         $group = new CRM_Contact_DAO_Group();
         $group->id = $groupId;
         $group->find(true);
@@ -356,6 +356,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
                     civicrm_group.visibility as visibility,
                     civicrm_group_contact.status as status, 
                     civicrm_group.id as group_id,
+                    civicrm_group.is_hidden as is_hidden,
                     civicrm_subscription_history.date as date,
                     civicrm_subscription_history.method as method';
         }
@@ -409,6 +410,7 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
                 $values[$id]['group_id']       = $dao->group_id;
                 $values[$id]['title']          = $dao->group_title;
                 $values[$id]['visibility']     = $dao->visibility;
+                $values[$id]['is_hidden']      = $dao->is_hidden;
                 switch($dao->status) { 
                 case 'Added': 
                     $prefix = 'in_'; 
@@ -421,11 +423,11 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
                 } 
                 $values[$id][$prefix . 'date']            = $dao->date; 
                 $values[$id][$prefix . 'method']          = $dao->method; 
-                if ( $status == "Removed" ) {
+                if ( $status == 'Removed' ) {
                     $query = "SELECT `date` as `date_added` FROM civicrm_subscription_history WHERE id = (SELECT max(id) FROM civicrm_subscription_history WHERE contact_id = %1 AND status = \"Added\" AND group_id = $dao->group_id )";
                     $dateDAO =& CRM_Core_DAO::executeQuery( $query, $params );
                     if ($dateDAO->fetch() ) {
-                        $values[$id]["date_added"]          = $dateDAO->date_added; 
+                        $values[$id]['date_added']          = $dateDAO->date_added; 
                     }
                     
                 }
@@ -640,11 +642,13 @@ AND civicrm_group_contact.group_id = %2";
     {
         $contactIds = array();
         $contactIds[] = $contactId;
+
         //if $visibility is true we are coming in via profile mean $method = 'Web'
         $ignorePermission = false; 
         if ( $visibility ) {
             $ignorePermission = true; 
         }
+
         if ($contactId) {
             $contactGroupList =& CRM_Contact_BAO_GroupContact::getContactGroup( $contactId, 'Added',
                                                                                 null, false, $ignorePermission );
@@ -688,11 +692,12 @@ AND civicrm_group_contact.group_id = %2";
             return false;
         }
 
-        $params = array( 'group'      => array( $groupID => 1 ),
-                         'contact_id' => $contactID,
-                         'return.contact_id' => 1 );
-        require_once 'api/v2/Contact.php';
-        $contacts = civicrm_contact_search( $params );
+        require_once 'CRM/Contact/BAO/Query.php';
+        $params = array(
+            array('group',      'IN', array($groupID => 1), 0, 0),
+            array('contact_id', '=',  $contactID,           0, 0),
+        );
+        list($contacts, $_) = CRM_Contact_BAO_Query::apiQuery($params, array('contact_id'));
 
         if ( ! empty( $contacts ) ) {
             return true;

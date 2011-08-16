@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,8 +31,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Relationship
  * 
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Relationship.php 30462 2010-11-02 06:56:52Z yashodha $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: Relationship.php 34327 2011-05-17 14:37:50Z ashwini $
  *
  */
 
@@ -70,11 +70,13 @@ function civicrm_relationship_create( &$params ) {
     }
 
     $ids = array( );
+    $action = CRM_Core_Action::ADD;
     require_once 'CRM/Utils/Array.php';
 
     if( CRM_Utils_Array::value( 'id', $params ) ) {
         $ids['relationship']  = $params['id'];
         $ids['contactTarget'] = $params['contact_id_b'];
+        $action               = CRM_Core_Action::UPDATE;
     }
 
     $values['relationship_type_id'] = $params['relationship_type_id'].'_a_b';
@@ -90,6 +92,7 @@ function civicrm_relationship_create( &$params ) {
     } else if ( $relationshipBAO[2] ) {
         return civicrm_create_error( 'Relationship already exists' );
     }
+    CRM_Contact_BAO_Relationship::relatedMemberships( $params['contact_id_a'], $values, $ids, $action );
 
     return civicrm_create_success( array( 'id' => implode( ',', $relationshipBAO[4] ) ) );
 }
@@ -308,7 +311,7 @@ function _civicrm_relationship_format_params( &$params, &$values ) {
     $fields =& CRM_Contact_DAO_Relationship::fields( );
     _civicrm_store_values( $fields, $params, $values );
 
-    $relationTypes = CRM_Core_PseudoConstant::relationshipType( 'name' );
+    $relationTypes = CRM_Core_PseudoConstant::relationshipType( 'name', true );
     
     foreach ($params as $key => $value) {
         // ignore empty values or empty arrays etc
@@ -422,6 +425,11 @@ function _civicrm_relationship_check_params( &$params ) {
         $relation->id = $params['id'];
         if ( !$relation->find( true ) ) {
             return civicrm_create_error( 'Relationship id is not valid' );
+        } else {
+            if ( ( $params['contact_id_a'] != $relation->contact_id_a ) ||
+                 ( $params['contact_id_b'] != $relation->contact_id_b ) ) {
+                return civicrm_create_error( 'Cannot change the contacts once relationship has been created' );
+            }
         }
     }
     

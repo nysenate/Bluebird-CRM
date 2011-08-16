@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -44,7 +44,7 @@ class CRM_Utils_Crypt {
         if ( function_exists( 'mcrypt_module_open' ) &&
              defined( 'CIVICRM_SITE_KEY' ) ) {
             $td = mcrypt_module_open(MCRYPT_RIJNDAEL_256, '', MCRYPT_MODE_ECB, '');
-            $iv = mcrypt_create_iv( 32 );
+            $iv = '00000000000000000000000000000000'; // ECB mode - iv not needed - CRM-8198
             $ks = mcrypt_enc_get_key_size($td);
             $key = substr( sha1( CIVICRM_SITE_KEY ), 0, $ks );
             
@@ -66,7 +66,7 @@ class CRM_Utils_Crypt {
         if ( function_exists( 'mcrypt_module_open' ) &&
              defined( 'CIVICRM_SITE_KEY' ) ) {
             $td = mcrypt_module_open(MCRYPT_RIJNDAEL_256, '', MCRYPT_MODE_ECB, '');
-            $iv = mcrypt_create_iv( 32 );
+            $iv = '00000000000000000000000000000000'; // ECB mode - iv not needed - CRM-8198
             $ks = mcrypt_enc_get_key_size($td);
             $key = substr( sha1( CIVICRM_SITE_KEY ), 0, $ks );
             

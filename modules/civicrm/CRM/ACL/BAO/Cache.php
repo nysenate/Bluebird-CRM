@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -134,9 +134,16 @@ WHERE contact_id = %1
         $smartGroupCacheTimeout = 
             isset( $config->smartGroupCacheTimeout ) && 
             is_numeric(  $config->smartGroupCacheTimeout ) ? $config->smartGroupCacheTimeout : 0;
+
+        //make sure to give original timezone settings again.
+        $originalTimezone = date_default_timezone_get( );
+        date_default_timezone_set('UTC');
+        $now = date( 'YmdHis' );
+        date_default_timezone_set( $originalTimezone );
+        
         $query  = "
 DELETE FROM civicrm_acl_cache 
-WHERE  modified_date IS NULL OR (TIMESTAMPDIFF(MINUTE, modified_date, NOW()) >= $smartGroupCacheTimeout)
+WHERE  modified_date IS NULL OR (TIMESTAMPDIFF(MINUTE, modified_date, $now) >= $smartGroupCacheTimeout)
 ";
         CRM_Core_DAO::singleValueQuery( $query );
 

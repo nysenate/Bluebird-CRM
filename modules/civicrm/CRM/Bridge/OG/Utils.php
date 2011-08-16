@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -44,11 +44,18 @@ class CRM_Bridge_OG_Utils {
         return self::aclEnabled;
     }
 
+    /**
+     * Switch to stop synchronization from CiviCRM
+     * This was always false before, and is always true
+     * now.  Most likely, this needs to be a setting.
+     */
     static function syncFromCiviCRM( ) {
         // make sure that acls are not enabled
-        return ! self::aclEnabled & self::syncFromCiviCRM;
+        //RMT -- the following makes no f**king sense...
+        //return ! self::aclEnabled & self::syncFromCiviCRM;
+        return TRUE;
     }
-    
+
     static function ogSyncName( $ogID ) {
         return "OG Sync Group :{$ogID}:";
     }
@@ -83,11 +90,13 @@ class CRM_Bridge_OG_Utils {
 
         // else create a contact for this user
         $user = user_load( array( 'uid' => $ufID ) );
-        $params = array( 'contact_type' => 'Individual',
-                         'email'        => $user->mail, );
+        $params = array(
+            'contact_type' => 'Individual',
+            'email'        => $user->mail,
+            'version'      => 3,
+        );
 
-        require_once 'api/v2/Contact.php';
-        $values = civicrm_contact_add( $params );
+        $values = civicrm_api('contact', 'create', $params );
         if ( $values['is_error'] ) {
             CRM_Core_Error::fatal( );
         }
@@ -105,7 +114,7 @@ SELECT id
             $query .= " OR title = %2";
             $params[2] = array( $title, 'String' );
         }
-                         
+
         $groupID = CRM_Core_DAO::singleValueQuery( $query, $params );
         if ( $abort &&
              ! $groupID ) {
@@ -117,5 +126,3 @@ SELECT id
 
 
 }
-
-

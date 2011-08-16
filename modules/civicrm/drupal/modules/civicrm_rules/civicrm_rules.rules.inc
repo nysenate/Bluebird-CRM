@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +29,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
 require_once 'utils.inc';
+require_once 'civicrm_rules_entities.rules.inc';
 
 /**
  * Implementation of hook_rules_event_info().
@@ -82,7 +83,7 @@ function civicrm_rules_event_info( ) {
                                              'module'    => 'CiviCRM Mailing',
                                              'arguments' => rules_events_hook_civicrm_arguments( t( 'Mailing content uploaded' ),
                                                                                                  'mailing' ),
-                                              ),
+                                             ),
                  'mailing_scheduled' => array(
                                               'label'     => t( 'Mailing has been scheduled' ),
                                               'module'    => 'CiviCRM Mailing',
@@ -90,17 +91,17 @@ function civicrm_rules_event_info( ) {
                                                                                                   'mailing' ),
                                               ),
                  'mailing_approved' => array(
-                                              'label'     => t( 'Mailing has been approved/rejected' ),
-                                              'module'    => 'CiviCRM Mailing',
-                                              'arguments' => rules_events_hook_civicrm_arguments( t( 'Approved mailing' ),
-                                                                                                  'mailing' ),
-                                              ),
+                                             'label'     => t( 'Mailing has been approved/rejected' ),
+                                             'module'    => 'CiviCRM Mailing',
+                                             'arguments' => rules_events_hook_civicrm_arguments( t( 'Approved mailing' ),
+                                                                                                 'mailing' ),
+                                             ),
                  'mailing_inform'     => array(
                                                'label'     => t( 'Inform scheduler about the mailing' ),
                                                'module'    => 'CiviCRM Mailing',
                                                'arguments' => rules_events_hook_civicrm_arguments( t( 'Inform Mailing' ),
                                                                                                    'mailing' ),
-                                             ),
+                                               ),
                  'mailing_queued' => array(
                                            'label'     => t( 'Mailing has been queued' ),
                                            'module'    => 'CiviCRM Mailing',
@@ -113,7 +114,66 @@ function civicrm_rules_event_info( ) {
                                              'arguments' => rules_events_hook_civicrm_arguments( t( 'Completed mailing' ),
                                                                                                  'mailing' ),
                                              )
-                 );
+                 )+ civicrm_rules_entities_event_info();
+               
+}
+
+
+function civicrm_rules_condition_info() {
+   return  array(
+                 'rules_condition_civicrm_mailing_approved' => 
+                 array(
+                       'label' => t('Approval Status: Approved'),
+                       'arguments' => array(
+                                            'approvalstatus' => array(
+                                                                      'type' => 'mailing',
+                                                                      'label' => t('Approved'), ), ),
+                       'module' => 'CiviCRM Mailing',
+                       ),
+                 'rules_condition_civicrm_mailing_rejected' => 
+                 array(
+                       'label' => t('Approval Status: Rejected'),
+                       'arguments' => array(
+                                            'approvalstatus' => array(
+                                                                      'type' => 'mailing',
+                                                                      'label' => t('Rejected'), ), ),
+                       'module' => 'CiviCRM Mailing',
+                       ),
+                 ) + civicrm_rules_entities_condition_info();
+}
+
+function rules_condition_civicrm_mailing_approved(&$mailing, $settings) {
+    return $mailing->approval_status_id == 1;
+}
+
+function rules_condition_civicrm_mailing_rejected(&$mailing, $settings) {
+    return $mailing->approval_status_id != 1;
+}
+
+/*
+ * Implementation of hook_token_list().
+ */
+function civicrm_rules_token_list($type = 'all') {
+    $tokens['civicrm_event']['creator_drupal_id'] = t('The user ID of the creator');
+    $tokens['civicrm_event']['creator_drupal_id'] = t('The user ID of the creator');
+    return $tokens;
+}
+
+/**
+ * Implementation of hook_token_values().
+ */
+function civicrm_rules_token_values($type, $object = NULL) {
+    switch ($type) {
+    case 'civicrm_event':
+     
+        if (!empty($object)) {
+            $values['creator drupal id'] = 1;
+        }
+        break;
+    }
+    if (!empty($values) && is_array($values)){
+      return $values;
+    }
 }
 
 /**
@@ -136,6 +196,7 @@ function civicrm_rules_action_info() {
               'rules_action_civicrm_add_to_group' => 
               array(
                     'label' => t('Add Contact to CiviCRM Group'),
+                    'description' => t('Add Contact to CiviCRM Group.'),
                     'arguments' => array(
                                          'contact' => array('type' => 'contact',
                                                             'label' => t('Contact who should be added to the group')),
@@ -146,6 +207,7 @@ function civicrm_rules_action_info() {
               'rules_action_civicrm_remove_from_group' =>
               array(
                     'label' => t('Remove Contact from CiviCRM Group'),
+                    'description' => t('Remove Contact from CiviCRM Group.'),
                     'arguments' => array(
                                          'contact' => array('type' => 'contact',
                                                             'label' => t('Contact who should be removed from the group')),
@@ -156,6 +218,7 @@ function civicrm_rules_action_info() {
               'rules_action_civicrm_contact_send_email' => 
               array(
                     'label' => t('Send Email'),
+                    'description' => t('Send Email to a CiviCRM Contact.'),
                     'arguments' => array(
                                          'contact' => array('type' => 'contact',
                                                             'label' => t('Send Email'))
@@ -166,6 +229,7 @@ function civicrm_rules_action_info() {
               'rules_action_civicrm_mailing_send_email' =>
               array(
                     'label' => t('Send Email'),
+                    'description' => t('Send Email to a CiviCRM Mailing.'),
                     'arguments' => array(
                                          'mailing' => array('type' => 'mailing',
                                                             'label' => t('Send Email'))
@@ -175,6 +239,8 @@ function civicrm_rules_action_info() {
               
               );
 }
+
+
 
 function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
     if( $mailing->id ) {
@@ -327,8 +393,7 @@ function rules_action_civicrm_contact_create($first_name, $last_name, $email) {
                      'last_name'  => $last_name ,
                      'email'      => $email );
     
-    require_once 'api/v2/Contact.php';
-    $contact = civicrm_contact_create( $params );
+    $contact = civicrm_api('contact', 'create', $params);
 
     if ( ! $contact['is_error'] ) {
         return array( 'contact' => _civicrm_rules_load_contact( $contact['id'] ) );
@@ -354,9 +419,12 @@ function civicrm_rules_data_type_info() {
                                     'savable' => FALSE,
                                     'identifiable' => TRUE,
                                     ),
-                 );
+                 )+ civicrm_rules_entities_data_type_info();
+                 
+
 }
 
+//NYSS
 /**
  * Implementation of hook_rules_condition_info().
  */
@@ -390,6 +458,7 @@ function rules_condition_civicrm_rejected(&$mailing, $settings) {
     return $mailing->approval_status_id != 1;
 }
 
+
 /**
  * Defines the user data type
  */
@@ -412,5 +481,25 @@ class rules_data_type_mailing extends rules_data_type {
     function get_identifier() {
         $mailing = $this->get();
         return $mailing->id;
+    }
+}
+
+class rules_data_type_civicrm_event extends rules_data_type {
+    function load($id) {
+
+    }
+    
+    function get_identifier() {
+
+    }
+}
+
+class rules_data_type_civicrm_participant extends rules_data_type {
+    function load($id) {
+
+    }
+    
+    function get_identifier() {
+
     }
 }

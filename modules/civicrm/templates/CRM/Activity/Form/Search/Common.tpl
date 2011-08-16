@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -37,9 +37,16 @@
   {else}
       <td>&nbsp;</td>
   {/if} 
- {if $form.activity_survey_id }
-    <td><label>{$form.activity_survey_id.label}</label> 
-    {$form.activity_survey_id.html}</td>
+  {if $form.activity_survey_id || $buildEngagementLevel}
+    <td>
+        {if $form.activity_survey_id}
+            <label>{$form.activity_survey_id.label}</label><br />{$form.activity_survey_id.html}
+        {/if}
+        {if $buildEngagementLevel}
+            <br/ ><br />
+            <label>{$form.activity_engagement_level.label}</label><br />{$form.activity_engagement_level.html}
+        {/if}
+    </td>
   {/if} 
 
   {if $form.activity_tags }
@@ -86,6 +93,13 @@
           {$form.activity_status.html} 
    </td>
 </tr>
+
+<tr><td colspan="3">{include file="CRM/common/Tag.tpl" tagsetType='activity'}</td></tr>
+
+{* campaign in activity search *}
+{include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
+
 {if $activityGroupTree}
 <tr id="activityCustom">
    <td id="activityCustomData" colspan="2">

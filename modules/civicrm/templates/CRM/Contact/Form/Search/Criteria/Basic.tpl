@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,14 +33,19 @@
                 {$form.email.html|crmReplace:class:medium}
             </td>
             <td>
+                {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
+            </td>
+            <td>
                 {if $form.component_mode}  
-                    {$form.component_mode.label} {help id="id-display-results"}<br />{$form.component_mode.html}
+                    {$form.component_mode.label} {help id="id-display-results"}
+                    <br />
+                    {$form.component_mode.html}
+{if $form.display_relationship_type}
+            <span id="crm-display_relationship_type">{$form.display_relationship_type.html}</span>
+{/if}
                 {else}
                     &nbsp;
                 {/if}
-            </td>
-            <td>
-                {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
             </td>
             <td class="label"><div class="crm-submit-buttons" style="margin-top:1em;">{$form.buttons.html}</div></td>       
         </tr>
@@ -86,7 +91,7 @@
 {/if}
 
 {if $form.contact_tags}
-            <td colspan="3"><label>{ts}Tag(s){/ts}</label>
+            <td><label>{ts}Tag(s){/ts}</label>
                 {$form.contact_tags.html}
                 {literal}
                 <script type="text/javascript">
@@ -99,12 +104,14 @@
                     respectParents: true
                 });
 
+
                 </script>
                 {/literal}   
             </td>
 {else}
-            <td colspan="3">&nbsp;</td>
+            <td>&nbsp;</td>
 {/if}
+            <td colspan="2">{$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}</td>
 	    </tr>
         <tr>
             <td>

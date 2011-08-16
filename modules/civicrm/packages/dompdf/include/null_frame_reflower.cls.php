@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: null_frame_reflower.cls.php,v 1.2 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: null_frame_reflower.cls.php 357 2011-01-30 20:56:46Z fabien.menager $ */
 
 /**
  * Dummy reflower
@@ -49,7 +49,6 @@ class Null_Frame_Reflower extends Frame_Reflower {
 
   function __construct(Frame $frame) { parent::__construct($frame); }
 
-  function reflow() { return; }
+  function reflow(Frame_Decorator $block = null) { return; }
   
 }
-?>

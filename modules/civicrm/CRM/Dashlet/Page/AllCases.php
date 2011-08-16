@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -50,6 +50,9 @@ class CRM_Dashlet_Page_AllCases extends CRM_Core_Page
      * @access public
      */
     function run( ) {
+        $context = CRM_Utils_Request::retrieve( 'context', 'String', $this, false, 'dashlet' );
+        $this->assign('context', $context );
+ 
         require_once 'CRM/Case/BAO/Case.php';
         //check for civicase access.
         if ( !CRM_Case_BAO_Case::accessCiviCase( ) ) {
@@ -59,7 +62,7 @@ class CRM_Dashlet_Page_AllCases extends CRM_Core_Page
         require_once 'CRM/Core/OptionGroup.php';
         $session  = CRM_Core_Session::singleton();
         $userID   = $session->get('userID');        
-        $upcoming = CRM_Case_BAO_Case::getCases( true, $userID, 'upcoming');
+        $upcoming = CRM_Case_BAO_Case::getCases( true, $userID, 'upcoming', $context );
 
         if ( !empty( $upcoming ) ) {
             $this->assign('AllCases', $upcoming);

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,8 +23,6 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
-{include file="CRM/common/WizardHeader.tpl"}
 {capture assign='reqMark'}<span class="marker"  title="{ts}This field is required.{/ts}">*</span>{/capture}
 <div class="crm-block crm-form-block crm-contribution-contributionpage-thankyou-form-block">
 <div id="help">
@@ -39,13 +37,13 @@
        </td>
     </tr>
     <tr class="crm-contribution-contributionpage-thankyou-form-block-thankyou_text">
-       <td class="label">{$form.thankyou_text.label}</td>
+       <td class="label">{$form.thankyou_text.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='thankyou_text' id=$contributionPageID}{/if}</td>
        <td class="html-adjust">{$form.thankyou_text.html}<br />
        	   <span class="description">{ts}Enter text (and optional HTML layout tags) for the thank-you message that will appear at the top of the confirmation page.{/ts}</span>
        </td>
     </tr>
     <tr class="crm-contribution-contributionpage-thankyou-form-block-thankyou_footer">
-       <td class="label">{$form.thankyou_footer.label}</td>
+       <td class="label">{$form.thankyou_footer.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contribution_page' field='thankyou_footer' id=$contributionPageID}{/if}</td>
        <td class="html-adjust">{$form.thankyou_footer.html}<br />
        	   <span class="description">{ts}Enter link(s) and/or text that you want to appear at the bottom of the thank-you page. You can use this content area to encourage contributors to visit a tell-a-friend page or take some other action.{/ts}</span>
        </td>

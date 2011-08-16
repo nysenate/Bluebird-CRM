@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -92,9 +92,6 @@ class CRM_Campaign_Form_Task_Release extends CRM_Campaign_Form_Task {
             $this->_interviewerId = CRM_Utils_Array::value( 'survey_interviewer_id', $this->get( 'formValues' ) );
         }
         
-        $activityStatus = CRM_Core_PseudoConstant::activityStatus( 'name' );
-        $surveyActType  = CRM_Campaign_BAO_Survey::getSurveyActivityType( );
-        
         if ( !$this->_surveyId ) {
             CRM_Core_Error::statusBounce( ts( "Please search with 'Survey', to apply this action.") );
         }
@@ -128,7 +125,7 @@ class CRM_Campaign_Form_Task_Release extends CRM_Campaign_Form_Task {
         
         //append breadcrumb to survey dashboard.
         require_once 'CRM/Campaign/BAO/Campaign.php';
-        if ( CRM_Campaign_BAO_Campaign::accessCampaignDashboard( ) ) {
+        if ( CRM_Campaign_BAO_Campaign::accessCampaign( ) ) {
             $url = CRM_Utils_System::url( 'civicrm/campaign', 'reset=1&subPage=survey' );
             CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('Survey(s)'), 'url' => $url ) ) );
         }

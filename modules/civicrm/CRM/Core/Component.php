@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,7 +31,7 @@
  * CiviCRM components
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -49,13 +49,13 @@ class CRM_Core_Component
 
     static $_contactSubTypes = null;
 
-    private function &_info( ) {
-        if( self::$_info == null ) {
+    private static function &_info( $force = false ) {
+        if( self::$_info == null || $force ) {
             self::$_info = array( );
             $c = array();
             
             $config = CRM_Core_Config::singleton( );
-            $c      =& self::getComponents();
+            $c      = self::getComponents();
 
             foreach( $c as $name => $comp ) {
                 if ( in_array( $name, $config->enableComponents ) ) {
@@ -76,7 +76,7 @@ class CRM_Core_Component
         return $comp;
     }
 
-    public function &getComponents( $force = false )
+    public static function &getComponents( $force = false )
     {
         static $_cache = null;
 
@@ -101,9 +101,9 @@ class CRM_Core_Component
         return $_cache;
     }
 
-    public function &getEnabledComponents( )
+    public function &getEnabledComponents( $force = false )
     {
-        return self::_info();
+        return self::_info( $force );
     }
 
     public function &getNames( $translated = false )
@@ -123,7 +123,7 @@ class CRM_Core_Component
     
     static function invoke( &$args, $type ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
         $config = CRM_Core_Config::singleton( );
 
         $firstArg  = CRM_Utils_Array::value( 1, $args, '' ); 
@@ -145,7 +145,7 @@ class CRM_Core_Component
                         CRM_Utils_System::addHTMLHead( $styleSheet );
                     }
                 }
-                $inv =& $comp->getInvokeObject();
+                $inv = $comp->getInvokeObject();
                 $inv->$type( $args );
                 return true;
             }
@@ -156,7 +156,7 @@ class CRM_Core_Component
     static function xmlMenu( ) {
 
         // lets build the menu for all components
-        $info =& self::getComponents( true );
+        $info = self::getComponents( true );
 
         $files = array( );
         foreach( $info as $name => $comp ) {
@@ -169,10 +169,10 @@ class CRM_Core_Component
 
     static function &menu( ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
         $items = array( );
         foreach( $info as $name => $comp ) {
-            $mnu   =& $comp->getMenuObject( );
+            $mnu   = $comp->getMenuObject( );
 
             $ret   = $mnu->permissioned( );
             $items = array_merge( $items, $ret );
@@ -185,23 +185,23 @@ class CRM_Core_Component
 
     static function addConfig( &$config, $oldMode = false ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         foreach( $info as $name => $comp ) {
-            $cfg =& $comp->getConfigObject( );
+            $cfg = $comp->getConfigObject( );
             $cfg->add( $config, $oldMode );
         }
         return;
     }
 
     static function getComponentID( $componentName ) {
-        $info =& self::_info( );
+        $info = self::_info( );
         
         return $info[$componentName]->componentID;
     }
     
     static function getComponentName( $componentID ) {
-        $info =& self::_info( );
+        $info = self::_info( );
         
         $componentName = null;
         foreach ( $info as $compName => $component ) {
@@ -216,12 +216,12 @@ class CRM_Core_Component
     
     static function &getQueryFields( ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
         $fields = array( );
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
-                $flds =& $bqr->getFields( );
+                $bqr = $comp->getBAOQueryObject( );
+                $flds = $bqr->getFields( );
                 $fields = array_merge( $fields, $flds );
             }
         }
@@ -230,11 +230,11 @@ class CRM_Core_Component
 
     static function alterQuery( &$query, $fnName ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
+                $bqr = $comp->getBAOQueryObject( );
                 $bqr->$fnName( $query );
             }
         }
@@ -242,12 +242,12 @@ class CRM_Core_Component
 
     static function from( $fieldName, $mode, $side ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         $from = null;
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
+                $bqr = $comp->getBAOQueryObject( );
                 $from = $bqr->from( $fieldName, $mode, $side );
                 if( $from ) {
                     return $from;
@@ -259,13 +259,13 @@ class CRM_Core_Component
 
     static function &defaultReturnProperties( $mode ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         $properties = null;
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
-                $properties =& $bqr->defaultReturnProperties( $mode );
+                $bqr = $comp->getBAOQueryObject( );
+                $properties = $bqr->defaultReturnProperties( $mode );
                 if( $properties ) {
                     return $properties;
                 }
@@ -276,11 +276,11 @@ class CRM_Core_Component
 
     static function &buildSearchForm( &$form ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
+                $bqr = $comp->getBAOQueryObject( );
                 $bqr->buildSearchForm( $form );
             }
         }
@@ -288,11 +288,11 @@ class CRM_Core_Component
 
     static function &addShowHide( &$showHide ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
+                $bqr = $comp->getBAOQueryObject( );
                 $bqr->addShowHide( $showHide );
             }
         }
@@ -300,11 +300,11 @@ class CRM_Core_Component
 
     static function searchAction( &$row, $id ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
+                $bqr = $comp->getBAOQueryObject( );
                 $bqr->searchAction( $row, $id );
             }
         }
@@ -334,7 +334,7 @@ class CRM_Core_Component
     
     static function &contactSubTypeProperties( $subType, $op ) 
     {
-        $properties =& self::contactSubTypes( );
+        $properties = self::contactSubTypes( );
         if( array_key_exists( $subType, $properties ) &&
              array_key_exists( $op, $properties[$subType] ) ) {
             return $properties[$subType][$op];
@@ -344,7 +344,7 @@ class CRM_Core_Component
 
     static function &taskList( ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
         
         $tasks = array( );
         foreach( $info as $name => $value ) {
@@ -366,11 +366,11 @@ class CRM_Core_Component
      */
     static function tableNames( &$tables ) 
     {
-        $info =& self::_info( );
+        $info = self::_info( );
 
         foreach( $info as $name => $comp ) {
             if( $comp->usesSearch( ) ) {
-                $bqr =& $comp->getBAOQueryObject( );
+                $bqr = $comp->getBAOQueryObject( );
                 $bqr->tableNames( $tables );
             }
         }

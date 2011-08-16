@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,16 +29,18 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
 require_once 'CRM/Core/Form.php';
+require_once 'CRM/Core/BAO/CustomField.php';
 require_once 'CRM/Campaign/BAO/Campaign.php';
+require_once 'CRM/Custom/Form/CustomData.php';
 require_once 'CRM/Campaign/PseudoConstant.php';
 require_once 'CRM/Campaign/DAO/CampaignGroup.php';
-     
+
 /**
  * This class generates form components for processing a campaign 
  * 
@@ -61,6 +63,13 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
     protected $_context;
     
     /**
+     * object values.
+     *
+     * @var array
+     */
+    protected $_values;
+    
+    /**
      * the id of the campaign we are proceessing
      *
      * @var int
@@ -71,32 +80,62 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
     public function preProcess()
     {
         require_once 'CRM/Campaign/BAO/Campaign.php';
-        if ( !CRM_Campaign_BAO_Campaign::accessCampaignDashboard( ) ) {
+        if ( !CRM_Campaign_BAO_Campaign::accessCampaign( ) ) {
             CRM_Utils_System::permissionDenied( );
         }
-
+        
+        //check for custom data type.
+        $this->_cdType = CRM_Utils_Array::value( 'type', $_GET );
+        $this->assign( 'cdType', false );
+        if ( $this->_cdType ) {
+            $this->assign( 'cdType', true );
+            return CRM_Custom_Form_CustomData::preProcess( $this );
+        }
+        
         $this->_context = CRM_Utils_Request::retrieve( 'context', 'String', $this );
         
         if ( $this->_context ) {
             $this->assign( 'context', $this->_context );
         }
-
-        $this->_action = CRM_Utils_Request::retrieve('action', 'String', $this );
         
-        if ( $this->_action & ( CRM_Core_Action::UPDATE | $this->_action & CRM_Core_Action::DELETE ) ) {
-            $this->_campaignId = CRM_Utils_Request::retrieve('id', 'Positive', $this , true);
-
-            if ( $this->_action & CRM_Core_Action::UPDATE ) {
-                CRM_Utils_System::setTitle( ts('Edit Campaign') ); 
-            } else {
-                CRM_Utils_System::setTitle( ts('Delete Campaign') ); 
-            }
-        }
+        $this->_action     = CRM_Utils_Request::retrieve('action', 'String', $this );
+        $this->_campaignId = CRM_Utils_Request::retrieve('id', 'Positive', $this );
+        
+        $title = null;
+        if ( $this->_action & CRM_Core_Action::UPDATE ) $title = ts('Edit Campaign');
+        if ( $this->_action & CRM_Core_Action::DELETE ) $title = ts('Delete Campaign');
+        if ( $title ) CRM_Utils_System::setTitle( $title );
         
         $session = CRM_Core_Session::singleton();
         $session->pushUserContext( CRM_Utils_System::url('civicrm/campaign', 'reset=1&subPage=campaign') );
-
         $this->assign( 'action', $this->_action );
+
+        //load the values;
+        $this->_values = $this->get( 'values' );
+        if ( !is_array( $this->_values ) ) {
+            $this->_values = array( );
+            
+            // if we are editing
+            if ( isset( $this->_campaignId ) && $this->_campaignId ) {
+                $params = array( 'id' => $this->_campaignId );
+                CRM_Campaign_BAO_Campaign::retrieve( $params, $this->_values );
+            }
+            
+            //lets use current object session.
+            $this->set( 'values', $this->_values );
+        }
+        
+        // when custom data is included in form.
+        if ( CRM_Utils_Array::value( 'hidden_custom', $_POST ) ) {
+            $this->set('type',     'Campaign');
+            $this->set('subType',  CRM_Utils_Array::value( 'campaign_type_id', $_POST ) );
+            $this->set('entityId', $this->_campaignId );
+            
+            CRM_Custom_Form_Customdata::preProcess( $this );
+            CRM_Custom_Form_Customdata::buildQuickForm( $this );
+            CRM_Custom_Form_Customdata::setDefaultValues( $this );
+        }
+        
     }
     
     /**
@@ -108,13 +147,11 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
      */
     function setDefaultValues( ) 
     {
-        $defaults = array();
+        $defaults = $this->_values;
         
-        // if we are editing
-        if ( isset( $this->_campaignId ) ) {
-            $params = array( 'id' => $this->_campaignId );
-            require_once 'CRM/Campaign/BAO/Campaign.php';
-            CRM_Campaign_BAO_Campaign::retrieve( $params, $defaults );
+        //load only custom data defaults.
+        if ( $this->_cdType ) {
+            return CRM_Custom_Form_CustomData::setDefaultValues( $this );
         }
         
         if ( isset( $defaults['start_date'] ) ) { 
@@ -173,8 +210,21 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
         }
 
         $this->applyFilter('__ALL__','trim');
+
+        if ( $this->_cdType ) {
+            return CRM_Custom_Form_CustomData::buildQuickForm( $this );
+        }
+        
+        //campaign types.
+        $campaignTypes = CRM_Campaign_PseudoConstant::campaignType( );
+        
+        //lets assign custom data type and subtype.
+        $this->assign( 'customDataType',    'Campaign' );
+        $this->assign( 'entityID',          $this->_campaignId );
+        $this->assign( 'customDataSubType', CRM_Utils_Array::value('campaign_type_id', $this->_values) );
+        
         $attributes = CRM_Core_DAO::getAttribute('CRM_Campaign_DAO_Campaign');
-       
+        
         // add comaign title.
         $this->add('text', 'title', ts('Title'), $attributes['title'], true );
         
@@ -188,12 +238,14 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
         $this->addDateTime('end_date', ts('End Date'), false, array( 'formatType' => 'activityDateTime') );
         
         // add campaign type
-        $campaignType = CRM_Campaign_PseudoConstant::campaignType();
-        $this->add('select', 'campaign_type_id', ts('Campaign Type'), array( '' => ts( '- select -' ) ) + $campaignType, true );
+        $this->add('select', 'campaign_type_id', ts('Campaign Type'), 
+                   array( '' => ts( '- select -' ) ) + $campaignTypes, true,
+                   array( 'onChange' => "buildCustomData( 'Campaign', this.value );") );
         
         // add campaign status
         $campaignStatus = CRM_Campaign_PseudoConstant::campaignStatus();
-        $this->addElement('select', 'status_id', ts('Campaign Status'), array('' => ts( '- select -' )) + $campaignStatus );
+        $this->addElement('select', 'status_id', ts('Campaign Status'), 
+                          array('' => ts( '- select -' )) + $campaignStatus );
            
         // add External Identifire Element
         $this->add('text', 'external_identifier', ts('External Id'), 
@@ -201,9 +253,9 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
         
         // add Campaign Parent Id
         require_once 'CRM/Campaign/BAO/Campaign.php';
-        $campaigns = CRM_Campaign_BAO_Campaign::getAllCampaign( $this->_campaignId );
-        
-        if ( $campaigns ) {
+        $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns( CRM_Utils_Array::value( 'parent_id', $this->_values ), 
+                                                              $this->_campaignId );
+        if ( !empty( $campaigns ) ) {
             $this->addElement('select', 'parent_id', ts('Parent Id'), 
                               array('' => ts( '- select Parent -' )) + $campaigns );
         }
@@ -221,30 +273,26 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
         $inG->setButtonAttributes ('add'   , array('value' => ts('Add >>'   )));
         $inG->setButtonAttributes ('remove', array('value' => ts('<< Remove')));
         
+        $this->addWysiwyg( 'goal_general', ts( 'Campaign Goals' ), array( 'rows' => 2, 'cols' => 40 ) );
+        $this->add('text', 'goal_revenue', ts('Revenue Goal'), array( 'size' => 8, 'maxlength' => 12 ) ); 
+        require_once 'CRM/Utils/Money.php';
+        $this->addRule('goal_revenue', ts('Please enter a valid money value (e.g. %1).', 
+                                          array(1 => CRM_Utils_Money::format('99.99', ' '))), 'money');
+        
         // is this Campaign active
         $this->addElement('checkbox', 'is_active', ts('Is Active?') );
         
-        if ( $this->_context == 'dialog' )  {
-            $this->addButtons(array(
+        $this->addButtons(array(
                                 array ('type'      => 'next',
                                        'name'      => ts('Save'),
                                        'isDefault' => true),
-                                array ('type'      => 'cancel',
-                                       'name'      => ts('Cancel'),
-                                       'js'        => array( 'onclick' => "cj('#campaign-dialog').dialog('close'); return false;" ) ) ) );
-        } else {
-            $this->addButtons(array(
-                                    array ('type'      => 'next',
-                                           'name'      => ts('Save'),
-                                           'isDefault' => true),
-                                    array ('type'      => 'next',
-                                           'name'      => ts('Save and New'),
+                                array ('type'      => 'next',
+                                       'name'      => ts('Save and New'),
                                        'subName'   => 'new'),
-                                    array ('type'      => 'cancel',
-                                           'name'      => ts('Cancel')),
-                                    )
-                              ); 
-        }
+                                array ('type'      => 'cancel',
+                                       'name'      => ts('Cancel')),
+                                )
+                          );
         
     }
     
@@ -315,6 +363,14 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
             $dao->delete( );
         }
         
+        //process custom data.
+        $customFields = CRM_Core_BAO_CustomField::getFields( 'Campaign', false, false, 
+                                                             CRM_Utils_Array::value( 'campaign_type_id', $params ) );
+        $params['custom'] = CRM_Core_BAO_CustomField::postProcess( $params,
+                                                                   $customFields,
+                                                                   $this->_campaignId,
+                                                                   'Campaign' );
+        
         require_once 'CRM/Campaign/BAO/Campaign.php';
         $result = CRM_Campaign_BAO_Campaign::create( $params );
         
@@ -323,12 +379,6 @@ class CRM_Campaign_Form_Campaign extends CRM_Core_Form
             $session->pushUserContext(CRM_Utils_System::url('civicrm/campaign', 'reset=1&subPage=campaign'));
         }
         
-        if ( $this->_context == 'dialog' )  {
-            $returnArray = array( 'returnSuccess' => true );
-            echo json_encode( $returnArray );
-            CRM_Utils_System::civiExit( );
-        }
-
         $buttonName = $this->controller->getButtonName( );
         if ( $buttonName == $this->getButtonName( 'next', 'new' ) ) {
             CRM_Core_Session::setStatus(ts(' You can add another Campaign.'));

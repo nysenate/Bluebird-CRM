@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -170,6 +170,18 @@ class CRM_Campaign_DAO_Campaign extends CRM_Core_DAO
      * @var datetime
      */
     public $last_modified_date;
+    /**
+     * General goals for Campaign.
+     *
+     * @var text
+     */
+    public $goal_general;
+    /**
+     * The target revenue for this campaign.
+     *
+     * @var float
+     */
+    public $goal_revenue;
     /**
      * class constructor
      *
@@ -339,6 +351,16 @@ class CRM_Campaign_DAO_Campaign extends CRM_Core_DAO
                     'name' => 'last_modified_date',
                     'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
                     'title' => ts('Last Modified Date') ,
+                ) ,
+                'goal_general' => array(
+                    'name' => 'goal_general',
+                    'type' => CRM_Utils_Type::T_TEXT,
+                    'title' => ts('Campaign Goals') ,
+                ) ,
+                'goal_revenue' => array(
+                    'name' => 'goal_revenue',
+                    'type' => CRM_Utils_Type::T_MONEY,
+                    'title' => ts('Goal Revenue') ,
                 ) ,
             );
         }

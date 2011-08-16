@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
  | Copyright U.S. PIRG Education Fund (c) 2007                        |
  | Licensed to CiviCRM under the Academic Free License version 3.0.   |
@@ -102,7 +102,7 @@ class CRM_Contact_BAO_GroupNesting extends CRM_Contact_DAO_GroupNesting implemen
              ! $this->_alreadyStyled ) {
             $styledGroup = clone( $this->_current );
             $nestingLevel = $this->getCurrentNestingLevel( );
-            $indent = "";
+            $indent = '';
             while ( $nestingLevel-- ) {
                 $indent .= "&nbsp;--&nbsp;";
             }
@@ -122,7 +122,7 @@ class CRM_Contact_BAO_GroupNesting extends CRM_Contact_DAO_GroupNesting implemen
         }
         $key = implode( '-', $ids );
         if ( strlen( $key ) > 0 ) {
-            $key .= "-";
+            $key .= '-';
         }
         $key .= $group->id;
         return $key;
@@ -169,7 +169,7 @@ class CRM_Contact_BAO_GroupNesting extends CRM_Contact_DAO_GroupNesting implemen
         require_once 'CRM/Contact/BAO/Group.php';
         $lastParentlessGroup = $this->_lastParentlessGroup;
         $nextGroup = new CRM_Contact_BAO_Group( );
-        $nextGroup->order_by = "title " . self::$_sortOrder;
+        $nextGroup->order_by = 'title ' . self::$_sortOrder;
         $nextGroup->find( );
         if ( $group == null ) {
             $sawLast = true;

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
  *
  * @package CiviCRM_APIv2
  * @subpackage API_Case
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  *
  */
 
@@ -81,7 +81,7 @@ function civicrm_case_create( &$params )
     }
     
     // format input with value separators
-    $sep = CRM_Case_BAO_Case::VALUE_SEPERATOR;
+    $sep = CRM_Core_DAO::VALUE_SEPARATOR;
     $newParams = array( 'case_type_id'  => $sep . $params['case_type_id'] . $sep,
                         'creator_id'    => $params['creator_id'],
                         'status_id'     => $params['status_id'],
@@ -427,7 +427,7 @@ function _civicrm_case_read( $caseId ) {
         _civicrm_object_to_array( $dao, $case );
 		
 		//handle multi-value case type
-		$sep = CRM_Case_BAO_Case::VALUE_SEPERATOR;
+		$sep = CRM_Core_DAO::VALUE_SEPARATOR;
 		$case['case_type_id'] = trim( str_replace($sep, ',', $case['case_type_id']), ',');
 		
         return $case;

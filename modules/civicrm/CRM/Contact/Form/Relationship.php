@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -159,7 +159,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
         if ( !$this->_rtype ) {
             $this->_rtype = str_replace( $this->_relationshipTypeId . '_', '', $this->_rtypeId );
         }
-        $this->assign( "rtype", $this->_rtype );
+        $this->assign( 'rtype', $this->_rtype );
         
         require_once 'CRM/Core/PseudoConstant.php';
         
@@ -167,7 +167,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
         $this->_allRelationshipNames = CRM_Core_PseudoConstant::relationshipType( 'name' );
         
         // when custom data is included in this page
-        if ( CRM_Utils_Array::value( "hidden_custom", $_POST ) ) {
+        if ( CRM_Utils_Array::value( 'hidden_custom', $_POST ) ) {
             CRM_Custom_Form_Customdata::preProcess( $this );
             CRM_Custom_Form_Customdata::buildQuickForm( $this );
             CRM_Custom_Form_Customdata::setDefaultValues( $this );
@@ -239,6 +239,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             $defaults['relationship_type_id'] = $this->_rtypeId;
         }
 
+        $this->_enabled = $defaults['is_active'];
         return $defaults;
     }
     
@@ -333,13 +334,13 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
                           );
 
         // add a ajax facility for searching contacts
-		$dataUrl = CRM_Utils_System::url( "civicrm/ajax/search", "reset=1", true, null, false );
+		$dataUrl = CRM_Utils_System::url( 'civicrm/ajax/search', 'reset=1', true, null, false );
 		$this->assign('dataUrl',$dataUrl );
         $this->add('text', 'rel_contact', ts('Find Target Contact') );
-        $this->add('hidden', "rel_contact_id" );
+        $this->add('hidden', 'rel_contact_id' );
         $this->addDate( 'start_date', ts('Start Date'), false, array( 'formatType' => 'searchDate' ) );
         $this->addDate( 'end_date'  , ts('End Date')  , false, array( 'formatType' => 'searchDate' ) );
-        $this->addElement('advcheckbox', 'is_active', ts('Enabled?'), null, 'setChecked()');
+        $this->addElement('checkbox', 'is_active', ts('Enabled?'), null, 'setChecked()');
         
         $this->addElement('checkbox', 'is_permission_a_b', ts( 'Permission for contact a to view and update information for contact b' ) , null);
         $this->addElement('checkbox', 'is_permission_b_a', ts( 'permission for contact b to view and update information for contact a' ) , null);
@@ -442,9 +443,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
                                           'name'      => ts('Cancel') ),
                                   )
                            );
-        
     }
-
        
     /**
      *  This function is called when the form is submitted 
@@ -518,10 +517,10 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             }
         } elseif ( $quickSave ) {
             if ( $params['add_current_employee'] &&
-                 $this->_allRelationshipNames[$relationshipTypeId]["name_a_b"] == 'Employee of' ) {
+                 $this->_allRelationshipNames[$relationshipTypeId]['name_a_b'] == 'Employee of' ) {
                 $params['employee_of'] = $params['rel_contact_id'];
             } elseif ( $params['add_current_employer'] &&
-                       $this->_allRelationshipNames[$relationshipTypeId]["name_b_a"] == 'Employer of' ) {
+                       $this->_allRelationshipNames[$relationshipTypeId]['name_b_a'] == 'Employer of' ) {
                 $params['employer_of'] = array( $params['rel_contact_id'] => 1 );
             }
             if ( !$this->_rtype ) {
@@ -529,6 +528,9 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             }
         }
 
+        if ( !$params['note'] ) {
+            $params['note'] = 'null';
+        }
         $params['start_date'] = CRM_Utils_Date::processDate( $params['start_date'], null, true );
         $params['end_date']   = CRM_Utils_Date::processDate( $params['end_date'], null, true );
 
@@ -545,7 +547,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
         // if this is called from case view, 
         //create an activity for case role removal.CRM-4480
         if ( $this->_caseId ) {
-            require_once "CRM/Case/BAO/Case.php";
+            require_once 'CRM/Case/BAO/Case.php';
             CRM_Case_BAO_Case::createCaseRoleActivity( $this->_caseId, $relationshipIds , $params['contact_check'], $this->_contactId );
         }
 
@@ -563,31 +565,42 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             $status .= ts('Relationship record has been updated.');
         }
         
-        $note = new CRM_Core_DAO_Note( );
-        $note->entity_id = $relationshipIds[0];
-        $note->entity_table = 'civicrm_relationship';
-        $noteIds = array();
-        if ( $note->find(true) ) {
-            $id            = $note->id;    
-            $noteIds["id"] = $id;
+        if ( !empty( $relationshipIds ) ) {
+            $note = new CRM_Core_DAO_Note( );
+            $note->entity_id = $relationshipIds[0];
+            $note->entity_table = 'civicrm_relationship';
+            $noteIds = array();
+            if ( $note->find(true) ) {
+                $id            = $note->id;    
+                $noteIds['id'] = $id;
+            }
+            
+            $noteParams = array(
+                                'entity_id'     => $relationshipIds[0],
+                                'entity_table'  => 'civicrm_relationship',
+                                'note'          => $params['note'],
+                                'contact_id'    => $this->_contactId
+                                );
+            CRM_Core_BAO_Note::add( $noteParams , $noteIds );
+            
+            $params['relationship_ids'] = $relationshipIds;
         }
-        
-        $noteParams = array(
-                            'entity_id'     => $relationshipIds[0],
-                            'entity_table'  => 'civicrm_relationship',
-                            'note'          => $params['note'],
-                            'contact_id'    => $this->_contactId
-                            );
-        CRM_Core_BAO_Note::add( $noteParams , $noteIds );
-        
-        
+
         // Membership for related contacts CRM-1657
         if ( CRM_Core_Permission::access( 'CiviMember' ) && ( !$duplicate ) ) {
-            CRM_Contact_BAO_Relationship::relatedMemberships( $this->_contactId, 
-                                                              $params, $ids, 
-                                                              $this->_action );
+            if ($this->_action & CRM_Core_Action::ADD ) {
+                CRM_Contact_BAO_Relationship::relatedMemberships( $this->_contactId, 
+                                                                  $params, $ids, 
+                                                                  $this->_action );
+            } elseif ( $this->_action & CRM_Core_Action::UPDATE ) {
+                //fixes for CRM-7985
+                //only if the relationship has been toggled to enable /disable
+                if ( CRM_Utils_Array::value( 'is_active', $params ) != $this->_enabled ) {
+                    $active = CRM_Utils_Array::value( 'is_active', $params ) ? CRM_Core_Action::ENABLE : CRM_Core_Action::DISABLE;
+                    CRM_Contact_BAO_Relationship::disableEnableRelationship( $this->_relationshipId, $active );
+                }
+            }
         }
-        
         //handle current employee/employer relationship, CRM-3532
         if ( $this->_allRelationshipNames[$relationshipTypeId]["name_{$this->_rtype}"] == 'Employee of' ) {
             $orgId = null;
@@ -606,6 +619,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
                     require_once 'CRM/Contact/BAO/Contact/Utils.php';
                     CRM_Contact_BAO_Contact_Utils::clearCurrentEmployer( $this->_contactId );
                 }
+              
             }
             
             //set current employer

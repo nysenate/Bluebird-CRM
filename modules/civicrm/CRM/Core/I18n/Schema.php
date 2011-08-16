@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -68,7 +68,7 @@ class CRM_Core_I18n_Schema
      * @param $locale string  the first locale to create (migrate to)
      * @return void
      */
-    function makeMultilingual($locale)
+    static function makeMultilingual($locale)
     {
         $domain = new CRM_Core_DAO_Domain();
         $domain->find(true);
@@ -120,7 +120,7 @@ class CRM_Core_I18n_Schema
      * @param $retain string  the locale to retain
      * @return void
      */
-    function makeSinglelingual($retain)
+    static function makeSinglelingual($retain)
     {
         $domain = new CRM_Core_DAO_Domain;
         $domain->find(true);
@@ -129,46 +129,10 @@ class CRM_Core_I18n_Schema
         // break early if the db is already single-lang
         if (!$locales) return;
 
-        // build the column-dropping SQL queries
-        $columns =& CRM_Core_I18n_SchemaStructure::columns();
-        $indices =& CRM_Core_I18n_SchemaStructure::indices();
-        $queries = array();
-        foreach ($columns as $table => $hash) {
-            // drop old indices
-            if (isset($indices[$table])) {
-                foreach ($indices[$table] as $index) {
-                    foreach ($locales as $loc) {
-                        $queries[] = "DROP INDEX {$index['name']}_{$loc} ON {$table}";
-                    }
-                }
-            }
-
-            // drop triggers
-            $queries[] = "DROP TRIGGER IF EXISTS {$table}_before_insert";
-            $queries[] = "DROP TRIGGER IF EXISTS {$table}_before_update";
-
-            // deal with columns
-            foreach ($hash as $column => $type) {
-                $queries[] = "ALTER TABLE {$table} ADD {$column} {$type}";
-                $queries[] = "UPDATE {$table} SET {$column} = {$column}_{$retain}";
-                foreach ($locales as $loc) {
-                    $queries[] = "ALTER TABLE {$table} DROP {$column}_{$loc}";
-                }
-            }
-
-            // drop views
-            foreach ($locales as $loc) {
-                $queries[] = "DROP VIEW {$table}_{$loc}";
-            }
-
-            // add original indices
-            $queries = array_merge($queries, self::createIndexQueries(null, $table));
-        }
-
-        // execute the queries without i18n rewriting
-        $dao = new CRM_Core_DAO;
-        foreach ($queries as $query) {
-            $dao->query($query, false);
+        // turn subsequent tables singlelingual
+        $tables =& CRM_Core_I18n_SchemaStructure::tables();
+        foreach ($tables as $table) {
+            self::makeSinglelingualTable($retain, $table);
         }
 
         // update civicrm_domain.locales
@@ -181,6 +145,64 @@ class CRM_Core_I18n_Schema
     }
 
     /**
+     * Switch a given table from multi-lang to single (by retaining only the selected locale).
+     *
+     * @param $retain string  the locale to retain
+     * @param $table  string  the table containing the column
+     * @param $class  string  schema structure class to use to recreate indices
+     * @return void
+     */
+    static function makeSinglelingualTable($retain, $table, $class = 'CRM_Core_I18n_SchemaStructure')
+    {
+        $domain = new CRM_Core_DAO_Domain;
+        $domain->find(true);
+        $locales = explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales);
+
+        // break early if the db is already single-lang
+        if (!$locales) return;
+
+        eval("\$columns =& $class::columns();");
+        eval("\$indices =& $class::indices();");
+        $queries = array();
+
+        // drop indices
+        if (isset($indices[$table])) {
+            foreach ($indices[$table] as $index) {
+                foreach ($locales as $loc) {
+                    $queries[] = "DROP INDEX {$index['name']}_{$loc} ON {$table}";
+                }
+            }
+        }
+
+        // drop triggers
+        $queries[] = "DROP TRIGGER IF EXISTS {$table}_before_insert";
+        $queries[] = "DROP TRIGGER IF EXISTS {$table}_before_update";
+
+        // deal with columns
+        foreach ($columns[$table] as $column => $type) {
+            $queries[] = "ALTER TABLE {$table} ADD {$column} {$type}";
+            $queries[] = "UPDATE {$table} SET {$column} = {$column}_{$retain}";
+            foreach ($locales as $loc) {
+                $queries[] = "ALTER TABLE {$table} DROP {$column}_{$loc}";
+            }
+        }
+
+        // drop views
+        foreach ($locales as $loc) {
+            $queries[] = "DROP VIEW {$table}_{$loc}";
+        }
+
+        // add original indices
+        $queries = array_merge($queries, self::createIndexQueries(null, $table));
+
+        // execute the queries without i18n rewriting
+        $dao = new CRM_Core_DAO;
+        foreach ($queries as $query) {
+            $dao->query($query, false);
+        }
+    }
+
+    /**
      * Add a new locale to a multi-lang db, setting 
      * its values to the current default locale.
      *
@@ -188,7 +210,7 @@ class CRM_Core_I18n_Schema
      * @param $source string  the locale to copy from
      * @return void
      */
-    function addLocale($locale, $source)
+    static function addLocale($locale, $source)
     {
         // get the current supported locales 
         $domain = new CRM_Core_DAO_Domain();
@@ -207,6 +229,8 @@ class CRM_Core_I18n_Schema
         foreach ($columns as $table => $hash) {
             // add new columns
             foreach ($hash as $column => $type) {
+                // CRM-7854: skip existing columns
+                if (CRM_Core_DAO::checkFieldExists($table, "{$column}_{$locale}", false)) continue;
                 $queries[] = "ALTER TABLE {$table} ADD {$column}_{$locale} {$type}";
                 $queries[] = "UPDATE {$table} SET {$column}_{$locale} = {$column}_{$source}";
             }
@@ -338,7 +362,7 @@ class CRM_Core_I18n_Schema
      * @param $class string   schema structure class to use
      * @return array          array of CREATE INDEX queries
      */
-    private function createIndexQueries($locale, $table, $class = 'CRM_Core_I18n_SchemaStructure')
+    private static function createIndexQueries($locale, $table, $class = 'CRM_Core_I18n_SchemaStructure')
     {
         eval("\$indices =& $class::indices();");
         eval("\$columns =& $class::columns();");
@@ -354,6 +378,8 @@ class CRM_Core_I18n_Schema
             $cols = implode(', ', $index['field']);
             $name = $index['name'];
             if ($locale) $name .= '_' . $locale;
+            // CRM-7854: skip existing indices
+            if (CRM_Core_DAO::checkConstraintExists($table, $name)) continue;
             $queries[$index['name']] = "CREATE {$unique} INDEX {$name} ON {$table} ({$cols})";
         }
         return $queries;
@@ -367,41 +393,40 @@ class CRM_Core_I18n_Schema
      * @param $class string   schema structure class to use
      * @return array          array of CREATE TRIGGER queries
      */
-    private function createTriggerQueries($locales, $locale, $class = 'CRM_Core_I18n_SchemaStructure')
+    private static function createTriggerQueries($locales, $locale, $class = 'CRM_Core_I18n_SchemaStructure')
     {
         eval("\$columns =& $class::columns();");
         $queries = array();
-        $namesTrigger = array();
-        $individualNamesTrigger = array();
         
-        foreach (array_merge($locales, array($locale)) as $loc) {
-            $namesTrigger[] = "IF NEW.contact_type = 'Household' THEN";
-            $namesTrigger[] = "SET NEW.display_name_{$loc} = NEW.household_name_{$loc};";
-            $namesTrigger[] = "SET NEW.sort_name_{$loc} = NEW.household_name_{$loc};";
+        // CRM-7786: there are cases where the INSERT happens early, so UPDATEs need to cater for NULL *_xx_YY fields
+        // FIXME: merge this and the below foreach loops
+        foreach ($columns as $table => $hash) {
+            $queries[] = "DROP TRIGGER IF EXISTS {$table}_before_update";
 
-            $namesTrigger[] = "ELSEIF NEW.contact_type = 'Organization' THEN";
-            $namesTrigger[] = "SET NEW.display_name_{$loc} = NEW.organization_name_{$loc};";
-            $namesTrigger[] = "SET NEW.sort_name_{$loc} = NEW.organization_name_{$loc};";
+            $trigger = array();
+            $trigger[] = "CREATE TRIGGER {$table}_before_update BEFORE UPDATE ON {$table} FOR EACH ROW BEGIN";
 
-            $namesTrigger[] = "ELSEIF NEW.contact_type = 'Individual' THEN";
-            $namesTrigger[] = "SET @prefix := NULL;";
-            $namesTrigger[] = "SET @suffix := NULL;";
-            $namesTrigger[] = "IF NEW.prefix_id IS NOT NULL THEN SELECT v.label_{$loc} INTO @prefix FROM civicrm_option_value v JOIN civicrm_option_group g ON (v.option_group_id = g.id) WHERE g.name = 'individual_prefix' AND v.value = NEW.prefix_id; END IF;";
-            $namesTrigger[] = "IF NEW.suffix_id IS NOT NULL THEN SELECT v.label_{$loc} INTO @suffix FROM civicrm_option_value v JOIN civicrm_option_group g ON (v.option_group_id = g.id) WHERE g.name = 'individual_suffix' AND v.value = NEW.suffix_id; END IF;";
-            $namesTrigger[] = 'END IF;';
-            $individualNamesTrigger[] = "IF NEW.contact_type = 'Individual' THEN";
-            $individualNamesTrigger[] = "SET NEW.display_name_{$loc} = TRIM(REPLACE(CONCAT_WS(' ', @prefix, NEW.first_name_{$loc}, NEW.middle_name_{$loc}, NEW.last_name_{$loc}, @suffix), '  ', ' '));";
-            $individualNamesTrigger[] = "SET NEW.sort_name_{$loc} = TRIM(', ' FROM CONCAT_WS(', ', NEW.last_name_{$loc}, NEW.first_name_{$loc}));";
-            $individualNamesTrigger[] = 'END IF;';
-            $individualNamesTrigger[] = "SELECT email INTO @email FROM civicrm_email WHERE is_primary = 1 AND contact_id = NEW.id LIMIT 1;";
-            $individualNamesTrigger[] = "IF NEW.display_name_{$loc} = '' THEN SET NEW.display_name_{$loc} = @email; END IF;";
-            $individualNamesTrigger[] = "IF NEW.sort_name_{$loc}    = '' THEN SET NEW.sort_name_{$loc}    = @email; END IF;";
+            if ($locales) {
+                foreach ($hash as $column => $_) {
+                    $trigger[] = "IF NEW.{$column}_{$locale} IS NOT NULL THEN";
+                    foreach ($locales as $old) {
+                        $trigger[] = "IF NEW.{$column}_{$old} IS NULL THEN SET NEW.{$column}_{$old} = NEW.{$column}_{$locale}; END IF;";
+                    }
+                    foreach ($locales as $old) {
+                        $trigger[] = "ELSEIF NEW.{$column}_{$old} IS NOT NULL THEN";
+                        foreach (array_merge($locales, array($locale)) as $loc) {
+                            if ($loc == $old) continue;
+                            $trigger[] = "IF NEW.{$column}_{$loc} IS NULL THEN SET NEW.{$column}_{$loc} = NEW.{$column}_{$old}; END IF;";
+                        }
+                    }
+                    $trigger[] = 'END IF;';
+                }
+            }
+
+            $trigger[] = 'END';
+
+            $queries[] = implode(' ', $trigger);
         }
-        
-        $beforeUpdateNamesTrigger = implode(' ', $namesTrigger) . implode(' ', $individualNamesTrigger );
-        // ...for UPDATE it's a separate trigger, for INSERT it has to be merged into the below, general one
-        $queries[] = "DROP TRIGGER IF EXISTS civicrm_contact_before_update";
-        $queries[] = "CREATE TRIGGER civicrm_contact_before_update BEFORE UPDATE ON civicrm_contact FOR EACH ROW BEGIN " . $beforeUpdateNamesTrigger . ' END';
         
         // take care of the ON INSERT triggers
         foreach ($columns as $table => $hash) {
@@ -412,10 +437,6 @@ class CRM_Core_I18n_Schema
 
             if ($locales) {
                 foreach ($hash as $column => $_) {
-                    if ($table == 'civicrm_contact' and ($column == 'display_name' or $column == 'sort_name')) {
-                        // {display,sort}_name are handled by $individualNamesTrigger and shouldn't be copied between languages
-                        continue;
-                    }
                     $trigger[] = "IF NEW.{$column}_{$locale} IS NOT NULL THEN";
                     foreach ($locales as $old) {
                         $trigger[] = "SET NEW.{$column}_{$old} = NEW.{$column}_{$locale};";
@@ -431,9 +452,6 @@ class CRM_Core_I18n_Schema
                 }
             }
 
-            if ($table == 'civicrm_contact') {
-                $trigger = array_merge($trigger, $namesTrigger, $individualNamesTrigger);
-            }
             $trigger[] = 'END';
 
             $queries[] = implode(' ', $trigger);
@@ -450,7 +468,7 @@ class CRM_Core_I18n_Schema
      * @param $class string   schema structure class to use
      * @return array          array of CREATE INDEX queries
      */
-    private function createViewQuery($locale, $table, &$dao, $class = 'CRM_Core_I18n_SchemaStructure')
+    private static function createViewQuery($locale, $table, &$dao, $class = 'CRM_Core_I18n_SchemaStructure')
     {
         eval("\$columns =& $class::columns();");
         $cols = array();

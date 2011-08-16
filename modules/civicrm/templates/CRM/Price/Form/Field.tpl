@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -92,7 +92,7 @@
     <div id="price-block" {if $action eq 2 && $form.html_type.value.0 eq 'Text'} class="show-block" {else} class="hide-block" {/if}>
         <table class="form-layout">
             <tr class="crm-price-field-form-block-price">
-               <td class="label">{$form.price.label}</td>
+               <td class="label">{$form.price.label} <span class="crm-marker" title="{ts}This field is required.{/ts}">*</span></td>
                <td>{$form.price.html}
                {if $action neq 4}
                     <br /><span class="description">{ts}Unit price.{/ts}</span> {help id="id-negative"}
@@ -157,29 +157,23 @@
               </td>
            </tr>
 
-<!-- Dates price field is available feature - not implemented yet. dgg
         <tr class="crm-price-field-form-block-active_on">
            <td class="label">{$form.active_on.label}</td>
-           <td>{$form.active_on.html}</td>
+           <td>{include file="CRM/common/jcalendar.tpl" elementName=active_on}
+           {if $action neq 4}
+               <br /><span class="description">{ts}Date this field becomes effective (optional).  Used for price set fields that are made available starting on a specific date.{/ts}</span>
+           {/if}
+           </td>
         </tr>
-        {if $action neq 4}
-        <tr>
-           <td>&nbsp;</td>
-           <td class="description">{ts}Date this field becomes effective (optional){/ts}</td>
-        </tr>
-        {/if}
 
         <tr class="crm-price-field-form-block-expire_on">
-           <td class="label">{$form.expire_on.label}</td>
-           <td>{$form.expire_on.html}</td>
+            <td class="label">{$form.expire_on.label}</td>
+            <td>{include file="CRM/common/jcalendar.tpl" elementName=expire_on}
+            {if $action neq 4}
+                <br /><span class="description">{ts}Date this field expires (optional).  Used for price set fields that are no longer available after a specific date (e.g. early-bird pricing).{/ts}</span>
+            {/if}
+            </td>
         </tr>
-        {if $action neq 4}
-        <tr>
-           <td>&nbsp;</td>
-           <td class="description">{ts}Date this field expires (optional){/ts}</td>
-        </td>
-        {/if}
--->
 
         <tr class="crm-price-field-form-block-is_required">
            <td class="label">{$form.is_required.label}</td>

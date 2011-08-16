@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -55,8 +55,8 @@
 		<div class="clear"></div> 
       {/if}
   </div>
-  
-  {if $taskName eq 'Export Contacts'}
+
+  {if $taskName eq 'Export Contacts' OR $component eq false}
   <div class="crm-section crm-export-mergeOptions-section">
     <div class="label crm-label-mergeOptions">{ts}Merge Options{/ts} {help id="id-export_merge_options"}</div>
     <div class="content crm-content-mergeSameAddress">
@@ -64,6 +64,17 @@
     </div>
     <div class="content crm-content-mergeSameHousehold">
         &nbsp;{$form.merge_same_household.html}
+    </div>
+    <br/>
+    <div class="label crm-label-postalMailingExport">{$form.postal_mailing_export.label}</div>
+    <div class="content crm-content-postalMailingExport">
+        &nbsp;{$form.postal_mailing_export.html}
+        {ts}Exclude contacts with "do not mail" privacy, no street address, or who are deceased.{/ts}
+    </div>
+    <br/>
+    <div class="label crm-label-additionalGroup">{$form.additional_group.label}</div>
+    <div class="content crm-content-additionalGroup">
+        &nbsp;{$form.additional_group.html}
     </div>
 	<div class="clear"></div> 
   </div>

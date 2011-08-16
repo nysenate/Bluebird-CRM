@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,8 +32,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Membership
  *
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Membership.php 30533 2010-11-04 13:16:35Z mover $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: Membership.php 32998 2011-03-14 22:00:35Z kurund $
  *
  */
 
@@ -96,6 +96,13 @@ function civicrm_contact_memberships_get(&$contactID)
  */
 function civicrm_contact_membership_create(&$params)
 {
+    return civicrm_membership_contact_create($params);
+}
+
+/**
+ * wrapper function according to new api standards 
+ */
+function civicrm_membership_create( &$params ) {
     return civicrm_membership_contact_create($params);
 }
 

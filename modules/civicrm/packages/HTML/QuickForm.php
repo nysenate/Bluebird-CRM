@@ -57,6 +57,7 @@ $GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'] =
             'ckeditor'      =>array('HTML/QuickForm/ckeditor.php','HTML_QuickForm_CKEditor'),
             'tinymce'       =>array('HTML/QuickForm/tinymce.php','HTML_QuickForm_TinyMCE'),
             'joomlaeditor'  =>array('HTML/QuickForm/joomlaeditor.php','HTML_QuickForm_JoomlaEditor'),
+            'drupalwysiwyg' =>array('HTML/QuickForm/drupalwysiwyg.php', 'HTML_QuickForm_DrupalWysiwyg'),
             'link'          =>array('HTML/QuickForm/link.php','HTML_QuickForm_link'),
             'advcheckbox'   =>array('HTML/QuickForm/advcheckbox.php','HTML_QuickForm_advcheckbox'),
             'date'          =>array('HTML/QuickForm/date.php','HTML_QuickForm_date'),
@@ -599,7 +600,7 @@ class HTML_QuickForm extends HTML_Common
         $className = $GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'][$type][1];
         $includeFile = $GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'][$type][0];
         include_once($includeFile);
-        $elementObject =& new $className();
+        $elementObject = new $className();
         for ($i = 0; $i < 5; $i++) {
             if (!isset($args[$i])) {
                 $args[$i] = null;
@@ -1718,7 +1719,7 @@ class HTML_QuickForm extends HTML_Common
     {
         if (!isset($GLOBALS['_HTML_QuickForm_default_renderer'])) {
             include_once('HTML/QuickForm/Renderer/Default.php');
-            $GLOBALS['_HTML_QuickForm_default_renderer'] =& new HTML_QuickForm_Renderer_Default();
+            $GLOBALS['_HTML_QuickForm_default_renderer'] = new HTML_QuickForm_Renderer_Default();
         }
         return $GLOBALS['_HTML_QuickForm_default_renderer'];
     } // end func defaultRenderer
@@ -1875,7 +1876,7 @@ class HTML_QuickForm extends HTML_Common
     function toArray($collectHidden = false)
     {
         include_once 'HTML/QuickForm/Renderer/Array.php';
-        $renderer =& new HTML_QuickForm_Renderer_Array($collectHidden);
+        $renderer = new HTML_QuickForm_Renderer_Array($collectHidden);
         $this->accept($renderer);
         return $renderer->toArray();
      } // end func toArray
@@ -1981,8 +1982,16 @@ class HTML_QuickForm extends HTML_Common
 					//filter the value across XSS vulnerability issues.
 					$fldName = $this->_elements[$key]->_attributes['name'];                
 				}
-                if ( in_array( $this->_elements[$key]->_type, array('text', 'textarea') ) 
-                     && !in_array( $fldName, $skipFields ) ) {
+                if (
+                    // if not a text/textarea…
+                    !in_array($this->_elements[$key]->_type, array('text', 'textarea'))
+                    // …or should be skipped…
+                    or in_array($fldName, $skipFields)
+                    // …or is multilingual and after cutting off _xx_YY should be skipped (CRM-7230)…
+                    or (preg_match('/_[a-z][a-z]_[A-Z][A-Z]$/', $fldName) and in_array(substr($fldName, 0, -6), $skipFields))
+                ) {
+                    // …don’t filter, otherwise filter (else clause below)
+                } else {
                     //here value might be array or single value.
                     //so we should iterate and get filtered value.
                     $this->filterValue( $value );

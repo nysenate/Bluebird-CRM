@@ -28,21 +28,21 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: canvas.cls.php,v 1.7 2006/07/07 21:31:02 benjcarson Exp $ */
+/* $Id: canvas.cls.php 357 2011-01-30 20:56:46Z fabien.menager $ */
 
 /**
  * Main rendering interface
  *
- * Currently only {@link CPDF_Adapter} and {@link PDFLib_Adapter}
+ * Currently {@link CPDF_Adapter}, {@link PDFLib_Adapter}, {@link TCPDF_Adapter}, and {@link GD_Adapter}
  * implement this interface.
  *
  * Implementations should measure x and y increasing to the left and down,
@@ -123,6 +123,56 @@ interface Canvas {
   function filled_rectangle($x1, $y1, $w, $h, $color);
 
   /**
+   * Starts a clipping rectangle at x1,y1 with width w and height h
+   *
+   * @param float $x1
+   * @param float $y1
+   * @param float $w
+   * @param float $h
+   */   
+  function clipping_rectangle($x1, $y1, $w, $h);
+  
+  /**
+   * Ends the last clipping shape
+   */  
+  function clipping_end();
+  
+  /**
+   * Save current state
+   */
+  function save();
+  
+  /**
+   * Restore last state
+   */
+  function restore();
+  
+  /**
+   * Rotate
+   */
+  function rotate($angle, $x, $y);
+  
+  /**
+   * Skew
+   */
+  function skew($angle_x, $angle_y, $x, $y);
+  
+  /**
+   * Scale
+   */
+  function scale($s_x, $s_y, $x, $y);
+  
+  /**
+   * Translate
+   */
+  function translate($t_x, $t_y);
+  
+  /**
+   * Transform
+   */
+  function transform($a, $b, $c, $d, $e, $f);
+  
+  /**
    * Draws a polygon
    *
    * The polygon is formed by joining all the points stored in the $points
@@ -191,9 +241,11 @@ interface Canvas {
    * @param string $font the font file to use
    * @param float $size the font size, in points
    * @param array $color
-   * @param float $adjust word spacing adjustment
+   * @param float $word_space word spacing adjustment
+   * @param float $char_space whar spacing adjustment
+   * @param float $angle angle
    */
-  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $adjust = 0);
+  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $word_space = 0, $char_space = 0, $angle = 0);
 
   /**
    * Add a named destination (similar to <a name="foo">...</a> in html)
@@ -214,6 +266,14 @@ interface Canvas {
   function add_link($url, $x, $y, $width, $height);
   
   /**
+   * Add meta information to the pdf
+   * 
+   * @param string $label  label of the value (Creator, Producer, etc.)
+   * @param string $value  the text to set
+   */
+  function add_info($name, $value);
+  
+  /**
    * Calculates text size, in points
    *
    * @param string $text the text to be sized
@@ -222,7 +282,7 @@ interface Canvas {
    * @param float  $spacing word spacing, if any
    * @return float
    */
-  function get_text_width($text, $font, $size, $spacing = 0);
+  function get_text_width($text, $font, $size, $word_spacing = 0, $char_spacing = 0);
 
   /**
    * Calculates font height, in points
@@ -232,7 +292,15 @@ interface Canvas {
    * @return float
    */
   function get_font_height($font, $size);
-
+  
+  /**
+   * Sets the opacity
+   *
+   * @param float $opacity
+   * @param string $mode
+   * @return float
+   */
+  function set_opacity($opacity, $mode = "Normal");
   
   /**
    * Starts a new page
@@ -258,4 +326,3 @@ interface Canvas {
   function output($options = null);
   
 }
-?>

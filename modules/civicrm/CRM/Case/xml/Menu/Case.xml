@@ -93,6 +93,17 @@
      <weight>400</weight>
   </item>
   <item>
+     <path>civicrm/admin/options/encounter_medium</path>
+     <title>Encounter Mediums</title>
+     <desc>List of encounter mediums.</desc>
+     <path_arguments>group=encounter_medium</path_arguments>
+     <page_callback>CRM_Admin_Page_Options</page_callback>
+     <access_arguments>administer CiviCase</access_arguments>
+     <adminGroup>CiviCase</adminGroup>
+     <icon>admin/small/case_type.png</icon>
+     <weight>400</weight>
+  </item>  
+  <item>
      <path>civicrm/case/report/print</path>
      <page_callback>CRM_Case_XMLProcessor_Report::printCaseReport</page_callback>
      <access_arguments>access all cases and activities</access_arguments>

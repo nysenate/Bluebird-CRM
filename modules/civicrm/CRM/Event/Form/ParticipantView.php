@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -134,6 +134,14 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form
         if ( ! CRM_Utils_Array::value( 'event', $values[$participantID] ) ) {
             $values[$participantID]['event'] = $eventTitle;
         }
+        
+        //do check for campaigns
+        if ( $campaignId = CRM_Utils_Array::value( 'campaign_id', $values[$participantID] ) ) {
+            require_once 'CRM/Campaign/BAO/Campaign.php';
+            $campaigns = CRM_Campaign_BAO_Campaign::getCampaigns( $campaignId );
+            $values[$participantID]['campaign'] = $campaigns[$campaignId];
+        }
+        
         $this->assign( $values[$participantID] );
         
         // add viewed participant to recent items list
@@ -166,7 +174,8 @@ class CRM_Event_Form_ParticipantView extends CRM_Core_Form
         }
         $this->assign( 'displayName', $displayName );
          
-        $title = $displayName . ' (' . $participantRoles[$values[$participantID]['role_id']] . ' - ' . $eventTitle . ')' ;
+        $roleId = CRM_Utils_Array::value( 'role_id', $values[$participantID] );
+        $title = $displayName . ' (' . CRM_Utils_Array::value( $roleId, $participantRoles ) . ' - ' . $eventTitle . ')';
         
         require_once 'CRM/Core/DAO.php';
         $sep = CRM_Core_DAO::VALUE_SEPARATOR;

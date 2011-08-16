@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -103,26 +103,26 @@ class CRM_Core_IDS {
     exceptions[]        = msg_text
     exceptions[]        = msg_subject
     exceptions[]        = description
-    html[]              = intro
-    html[]              = thankyou_text
-    html[]              = intro_text
-    html[]              = body_text
-    html[]              = footer_text
-    html[]              = thankyou_text
-    html[]              = thankyou_footer
-    html[]              = thankyou_footer_text
-    html[]              = new_text
-    html[]              = renewal_text
-    html[]              = help_pre
-    html[]              = help_post
-    html[]              = confirm_title
-    html[]              = confirm_text
-    html[]              = confirm_footer_text
-    html[]              = confirm_email_text
-    html[]              = report_header
-    html[]              = report_footer
-    html[]              = data
-    html[]              = instructions
+    exceptions[]        = intro
+    exceptions[]        = thankyou_text
+    exceptions[]        = intro_text
+    exceptions[]        = body_text
+    exceptions[]        = footer_text
+    exceptions[]        = thankyou_text
+    exceptions[]        = thankyou_footer
+    exceptions[]        = thankyou_footer_text
+    exceptions[]        = new_text
+    exceptions[]        = renewal_text
+    exceptions[]        = help_pre
+    exceptions[]        = help_post
+    exceptions[]        = confirm_title
+    exceptions[]        = confirm_text
+    exceptions[]        = confirm_footer_text
+    exceptions[]        = confirm_email_text
+    exceptions[]        = report_header
+    exceptions[]        = report_footer
+    exceptions[]        = data
+    exceptions[]        = instructions
 ";
             if ( file_put_contents( $configFile, $contents ) === false ) {
                 require_once 'CRM/Core/Error.php';
@@ -184,13 +184,13 @@ class CRM_Core_IDS {
      * @return boolean
      */
     private function log($result, $reaction = 0) {
-
-        $ip = ($_SERVER['SERVER_ADDR'] != '127.0.0.1') ?
+        $ip = (isset($_SERVER['SERVER_ADDR']) &&
+               $_SERVER['SERVER_ADDR'] != '127.0.0.1') ?
             $_SERVER['SERVER_ADDR'] :
             (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ?
              $_SERVER['HTTP_X_FORWARDED_FOR'] :
              '127.0.0.1');
-
+        
         $data = array( );
         $session = CRM_Core_Session::singleton( );
         foreach ($result as $event) {

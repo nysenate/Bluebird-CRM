@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -212,10 +212,11 @@ class CRM_Core_BAO_PaymentProcessor extends CRM_Core_DAO_PaymentProcessor
      */
     static function getProcessorForEntity( $entityID, $component = 'contribute', $type = 'id' ) 
     {
+        $result = null;
         if ( ! in_array( $component, array('membership', 'contribute') ) ) {
-            return null;
+            return $result;
         }
-
+        
         if ( $component == 'membership' ) {
             $sql = " 
     SELECT cr.payment_processor_id as ppID1, cp.payment_processor_id as ppID2, con.is_test 
@@ -225,7 +226,6 @@ INNER JOIN civicrm_contribution       con ON ( mp.contribution_id = con.id )
  LEFT JOIN civicrm_contribution_recur cr  ON ( mem.contribution_recur_id = cr.id )
  LEFT JOIN civicrm_contribution_page  cp  ON ( con.contribution_page_id  = cp.id )
      WHERE mp.membership_id = %1";
-
         } else if ( $component == 'contribute' ) {
             $sql = " 
     SELECT cr.payment_processor_id as ppID1, cp.payment_processor_id as ppID2, con.is_test 
@@ -234,22 +234,26 @@ INNER JOIN civicrm_contribution       con ON ( mp.contribution_id = con.id )
  LEFT JOIN civicrm_contribution_page  cp  ON ( con.contribution_page_id  = cp.id )
      WHERE con.id = %1";
         }
-
+        
+        //we are interesting in single record.
+        $sql .= ' LIMIT 1'; 
+        
         $params = array( 1 => array( $entityID, 'Integer' ) );
-        $dao    = CRM_Core_DAO::executeQuery( $sql, $params );
-        $dao->fetch();
-
+        $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+        
+        if ( !$dao->fetch( ) ) return $result;
+        
         $ppID = $dao->ppID1 ? $dao->ppID1 : $dao->ppID2;
         $mode = ( $dao->is_test ) ? 'test' : 'live';
-
         if ( !$ppID || $type == 'id' ) {
-            return $ppID;
+            $result = $ppID;
         } else if ( $type == 'info' ) {
-            return CRM_Core_BAO_PaymentProcessor::getPayment( $ppID, $mode );
+            $result = CRM_Core_BAO_PaymentProcessor::getPayment( $ppID, $mode );
         } else if ( $type == 'obj' ) {
             $payment = CRM_Core_BAO_PaymentProcessor::getPayment( $ppID, $mode );
-            return CRM_Core_Payment::singleton( $mode, $payment );
+            $result  = CRM_Core_Payment::singleton( $mode, $payment );
         }
-        return null;
+        
+        return $result;
     }
 }

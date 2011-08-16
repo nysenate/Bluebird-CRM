@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
  * machine. Each form can also operate in various modes
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -249,9 +249,20 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
     function mainProcess() {
         $this->postProcess( );
 
+        $this->postProcessHook( );
+    }
+
+    /**
+     * The postProcess hook is typically called by the framework
+     * However in a few cases, the form exits or redirects early in which 
+     * case it needs to call this function so other modules can do the needful
+     * Calling this function directly should be avoided if possible. In general a
+     * better way is to do setUserContext so the framework does the redirect
+     *
+     */
+    function postProcessHook( ) {
         CRM_Utils_Hook::postProcess( get_class( $this ),
                                      $this );
-
     }
 
     /**
@@ -787,6 +798,10 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
             $editor = 'joomlaeditor';
         }
         
+        if ( $editor == 'drupal default editor' ) {
+            $editor = 'drupalwysiwyg';
+        }
+        
         $this->addElement( $editor, $name, $label, $attributes );
         $this->assign('editor', $editor);
     }    
@@ -954,7 +969,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
      *  @param string $label  label of the element
      *  @param array  $attributes key / value pair 
      *                
-     *  $arrtibutes = array ( 'addTime' => true, // if you need time 
+     *  $attributes = array ( 'addTime' => true, // if you need time 
      *                        'formatType' => 'relative' or 'birth' etc check advanced date settings    
      *                      );            
      *  @param boolean $required  true if required
@@ -991,8 +1006,6 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
             $attributes['endOffset']   = 10; 
         }
         
-        $attributes['readonly'] = true;
-        
         $this->add('text', $name, $label, $attributes );
 
         if ( CRM_Utils_Array::value( 'addTime', $attributes ) || 
@@ -1015,7 +1028,7 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
                 //in either flat string or an array format. 
                 $elementName = $name.'_time';
                 if ( substr( $name, -1 ) == ']' ) {
-                    $elementName = substr( $name, 0, $name.length - 1).'_time]';
+                    $elementName = substr( $name, 0, strlen($name) - 1).'_time]';
                 }
                 
                 $this->add('text', $elementName, ts('Time'), array( 'timeFormat' => $show24Hours ) );
@@ -1024,8 +1037,8 @@ class CRM_Core_Form extends HTML_QuickForm_Page {
         
         if ( $required ) {
             $this->addRule( $name, ts('Please select %1', array(1 => $label)), 'required');
-            if ( CRM_Utils_Array::value( 'addTime', $attributes ) ) {
-                $this->addRule( $elementName, ts('Please select Time'), 'required'); 
+            if ( CRM_Utils_Array::value( 'addTime', $attributes ) && CRM_Utils_Array::value( 'addTimeRequired', $attributes ) ) {
+                $this->addRule( $elementName, ts('Please enter a time.'), 'required'); 
             }
         }
     }

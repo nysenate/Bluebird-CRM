@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -43,6 +43,10 @@
         {if $mode ne 8 && $action ne 1028 && $action ne 4} 
             <fieldset><legend>{$field.groupTitle}</legend> 
         {/if} 
+
+	{if $form.formName eq 'Confirm' OR $form.formName eq 'ThankYou'}
+	   <div class="header-dark">{$field.groupTitle} </div>
+        {/if}
         {assign var=fieldset  value=`$field.groupTitle`} 
         {assign var=groupHelpPost  value=`$field.groupHelpPost`} 
         {if $field.groupHelpPre && $action neq 4 && $action neq 1028} 
@@ -53,8 +57,12 @@
     {assign var=n value=$field.name} 
 
     {if $field.options_per_line != 0} 
-        <div class="crm-section {$form.$n.id}-section"> 
-        <div class="label option-label">{$form.$n.label}</div> 
+        <div class="crm-section {$n}-section">
+        {* Show explanatory text for field if not in 'view' or 'preview' modes *} 
+             {if $field.help_pre && $action neq 4 && $action neq 1028}
+                &nbsp;&nbsp;<span class="description">{$field.help_pre}</span> 
+             {/if} 
+	    <div class="label option-label">{$form.$n.label}</div> 
         <div class="content 3"> 
              {assign var="count" value="1"} 
             {strip} 
@@ -86,25 +94,32 @@
         </div>
         <div class="clear"></div> 
         </div> 
-    {else} 
-        <div class="crm-section {$form.$n.id}-section"> 
-           <div class="label">{$form.$n.label}</div>
+    {else}
+        <div class="crm-section {$n}-section"> 
+           {* Show explanatory text for field if not in 'view' or 'preview' modes *} 
+             {if $field.help_pre && $action neq 4 && $action neq 1028}
+                &nbsp;&nbsp;<span class="description">{$field.help_pre}</span> 
+             {/if} 
+	       <div class="label">{$form.$n.label}</div>
            <div class="content">
              {if $n|substr:0:3 eq 'im-'}
                {assign var="provider" value=$n|cat:"-provider_id"}
                {$form.$provider.html}&nbsp;
-             {else if $n|substr:0:4 eq 'url-'}
+             {elseif $n|substr:0:4 eq 'url-'}
                {assign var="websiteType" value=$n|cat:"-website_type_id"}
                {$form.$websiteType.html}&nbsp;
              {/if}
+	     
              {if $n eq 'email_greeting' or  $n eq 'postal_greeting' or $n eq 'addressee'}
                 {include file="CRM/Profile/Form/GreetingType.tpl"}  
              {elseif $n eq 'group'} 
-				<table id="selector" class="selector" style="width:auto;">
+				<table id="selector" class="selector crm-profile-tagsandgroups" style="width:auto;">
 					<tr><td>{$form.$n.html}{* quickform add closing </td> </tr>*}
 				</table>
-             {elseif ( $field.data_type eq 'Date' or 
-                      ( ( ( $n eq 'birth_date' ) or ( $n eq 'deceased_date' ) ) ) ) }
+             {elseif ( ( $field.data_type eq 'Date' ) or 
+	     	     ( $n|substr:-5:5 eq '_date' ) ) AND
+		     ( $form.formName neq 'Confirm' )  AND
+		     ( $form.formName neq 'ThankYou' ) }
                       {include file="CRM/common/jcalendar.tpl" elementName=$n}
    	    	 {else}
                {$form.$n.html}
@@ -112,6 +127,7 @@
                   <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('{$n}', '{$form.formName}');return false;">{ts}clear{/ts}</a>)</span>
                {/if}
              {/if}
+
              {*CRM-4564*}
              {if $field.html_type eq 'Radio' && $form.$fieldName.frozen neq true && $field.is_required neq 1}
                  <span style="line-height: .75em; margin-top: 1px;">
@@ -120,6 +136,7 @@
              {elseif $field.html_type eq 'Autocomplete-Select'}
                  {include file="CRM/Custom/Form/AutoComplete.tpl" element_name = $n }
              {/if}  
+	 
              {* Show explanatory text for field if not in 'view' or 'preview' modes *} 
              {if $field.help_post && $action neq 4 && $action neq 1028}
                 <br /><span class="description">{$field.help_post}</span> 

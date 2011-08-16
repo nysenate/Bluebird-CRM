@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -73,7 +73,7 @@ class CRM_Core_I18n
 
         if (!$all) {
             require_once 'CRM/Core/I18n/PseudoConstant.php';
-            $all = CRM_Core_I18n_PseudoConstant::languages(); //NYSS 3273
+            $all = CRM_Core_I18n_PseudoConstant::languages();
 
             // check which ones are available; add them to $all if not there already
             $config = CRM_Core_Config::singleton();

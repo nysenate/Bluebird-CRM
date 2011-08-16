@@ -76,3 +76,18 @@
       <tr><td>{ts}This query can be against a different database, but that database has to be on the same database server and the CiviCRM database user has to have the SELECT privilege (and any other privileges required to execute the query).{/ts}</td></tr>
     </table>
 {/htxt}
+
+{htxt id='id-dedupe_rule'}
+{ts}If you have selected one of the dedupe options besides "no duplicate checking," CiviCRM will use a
+predefined dedupe rule to determine possible matches for your imported records. Existing dedupe rules
+may be reviewed, and new rules created, by visiting Contacts > Find and Merge Duplicate Contacts. When
+selecting a dedupe rule, be sure to choose one that includes fields contained in your import file.
+Also be aware that the update and fill options could have significant impact on your existing data.
+You should define and select a rule that is strict enough to ensure there are no false positive matches.{/ts}
+{/htxt}
+
+{htxt id='id-fieldSeparator'}
+{ts}Enter the character used to separate data columns in your import file. By default, the field
+will populate with the separator defined in your global settings. Common values include a comma, semicolon,
+or pipe character. To import a tab separated file, enter "tab" (without quotes) in the field. {/ts}
+{/htxt}

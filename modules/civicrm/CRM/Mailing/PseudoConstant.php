@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -194,6 +194,33 @@ class CRM_Mailing_PseudoConstant extends CRM_Core_PseudoConstant
             self::$approvalStatus = CRM_Core_OptionGroup::values('mail_approval_status');
         }
         return self::$approvalStatus;
+    }
+
+    /**
+     * Labels for advanced search against mailing summary.
+     * 
+     * @param $field
+     * @return unknown_type
+     */
+    public static function &yesNoOptions($field) {
+        static $options;
+        if (! $options) {
+            $options = array(
+                'bounce'  => array( 
+                    'N' => ts('Successful '), 'Y' => ts('Bounced '), 
+                ),
+                'open' => array( 
+                    'Y' => ts('Opened '), 'N' => ts('Unopened/Hidden '),
+                ),
+                'click'  => array( 
+                    'Y' => ts('Clicked '), 'N' => ts('Not Clicked '),
+                ),
+                'reply' => array(
+                     'Y' => ts('Replied '), 'N' => ts('No Reply '),
+                ),
+            );
+        }
+        return $options[$field];
     }
 
 }

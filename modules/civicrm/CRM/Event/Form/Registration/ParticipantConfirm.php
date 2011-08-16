@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                               |
+ | CiviCRM version 3.4                                               |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -179,14 +179,18 @@ class CRM_Event_Form_Registration_ParticipantConfirm extends CRM_Event_Form_Regi
             //lets get contact id in session.
             $session = CRM_Core_Session::singleton( );
             $session->set( 'userID', $this->_csContactID );
-            
+
+            $this->postProcessHook( );
+
             //check user registration status is from pending class
-            $url = CRM_Utils_System::url( 'civicrm/event/register', "reset=1&id={$eventId}&participantId={$participantId}" );
+            $url = CRM_Utils_System::url( 'civicrm/event/register',
+                                          "reset=1&id={$eventId}&participantId={$participantId}" );
             CRM_Utils_System::redirect( $url );
         } else if ( $buttonName == '_qf_ParticipantConfirm_submit' ) {
             //need to registration status to 'cancelled'.
             require_once 'CRM/Event/PseudoConstant.php';
             require_once 'CRM/Event/BAO/Participant.php';
+
             $cancelledId = array_search( 'Cancelled', CRM_Event_PseudoConstant::participantStatus( null, "class = 'Negative'" ) );
             $additionalParticipantIds = CRM_Event_BAO_Participant::getAdditionalParticipantIds( $participantId );
             
@@ -198,14 +202,19 @@ class CRM_Event_Form_Registration_ParticipantConfirm extends CRM_Event_Form_Regi
             } else {
                 $statusMessage = ts( "Your event registration has been cancelled." );
             }
+
             if ( CRM_Utils_Array::value( 'mailedParticipants', $results ) ) {
                 foreach ( $results['mailedParticipants'] as $key => $displayName ) {
                     $statusMessage .=  "<br />" . ts( "Email has been sent to : %1", array( 1 => $displayName ) );
                 }
             }
-            
-            CRM_Core_Error::statusBounce( $statusMessage, CRM_Utils_System::url( 'civicrm/event/info',"reset=1&id={$this->_eventId}&noFullMsg=1",
-                                                                                 false, null, false, true ) );
+           
+            $this->postProcessHook( );
+
+            CRM_Core_Error::statusBounce( $statusMessage,
+                                          CRM_Utils_System::url( 'civicrm/event/info',
+                                                                 "reset=1&id={$this->_eventId}&noFullMsg=1",
+                                                                 false, null, false, true ) );
         }
     }
 }

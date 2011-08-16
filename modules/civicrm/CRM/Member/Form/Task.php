@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -93,7 +93,7 @@ class CRM_Member_Form_Task extends CRM_Core_Form
     {
         $form->_memberIds = array();
 
-        $values = $form->controller->exportValues( 'Search' );
+        $values = $form->controller->exportValues( $form->get( 'searchFormName' ) );
         
         $form->_task = $values['task'];
         $memberTasks = CRM_Member_Task::tasks();
@@ -133,8 +133,14 @@ class CRM_Member_Form_Task extends CRM_Core_Form
         require_once 'CRM/Utils/Rule.php';
         $urlParams = 'force=1';
         if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams .= "&qfKey=$qfKey";
-        
-        $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/member/search', $urlParams ) );
+
+        $searchFormName = strtolower( $form->get( 'searchFormName' ) );
+        if ( $searchFormName == 'search' ) {
+            $session->replaceUserContext( CRM_Utils_System::url( 'civicrm/member/search', $urlParams ) );
+        } else {
+            $session->replaceUserContext( CRM_Utils_System::url( "civicrm/contact/search/$searchFormName",
+                                                                 $urlParams ) );
+        }
     }
 
     /**

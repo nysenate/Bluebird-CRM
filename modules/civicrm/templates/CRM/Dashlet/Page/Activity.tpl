@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,4 +24,4 @@
  +--------------------------------------------------------------------+
 *}
 {* include activity selector*}
-{include file="CRM/Activity/Selector/Activity.tpl" noFieldSet=true}
+{include file="CRM/Activity/Selector/Selector.tpl"}

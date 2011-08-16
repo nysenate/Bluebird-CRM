@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -45,7 +45,7 @@ class CRM_Admin_Page_Admin extends CRM_Core_Page
     {
         // ensure that all CiviCRM tables are InnoDB, else abort
         if ( CRM_Core_DAO::isDBMyISAM( ) ) {
-            $errorMessage = 'Your database is configured to use the MyISAM database engine. CiviCRM  requires InnoDB. You will need to convert any MyISAM tables in your database to InnoDB. Using MyISAM tables will result in data integrity issues. This will be a fatal error in CiviCRM v2.1.';
+            $errorMessage = 'Your database is configured to use the MyISAM database engine. CiviCRM  requires InnoDB. You will need to convert any MyISAM tables in your database to InnoDB. Using MyISAM tables will result in data integrity issues. This will be a fatal error in CiviCRM v4.1.';
             require_once 'CRM/Core/Session.php';
             CRM_Core_Session::setStatus( $errorMessage );
         }
@@ -59,31 +59,31 @@ class CRM_Admin_Page_Admin extends CRM_Core_Page
                          'Option Lists' => ts( 'Option Lists' ) );
 
         $config = CRM_Core_Config::singleton( );
-        if ( in_array("CiviContribute", $config->enableComponents) ) {
+        if ( in_array('CiviContribute', $config->enableComponents) ) {
             $groups['CiviContribute'] = ts( 'CiviContribute' );
         }
         
-        if ( in_array("CiviMember", $config->enableComponents) ) {
+        if ( in_array('CiviMember', $config->enableComponents) ) {
             $groups['CiviMember'] = ts( 'CiviMember' );
         }
 
-        if ( in_array("CiviEvent", $config->enableComponents) ) {
+        if ( in_array('CiviEvent', $config->enableComponents) ) {
             $groups['CiviEvent'] = ts( 'CiviEvent' );
         }
 
-        if ( in_array("CiviMail", $config->enableComponents) ) {
+        if ( in_array('CiviMail', $config->enableComponents) ) {
             $groups['CiviMail'] = ts( 'CiviMail' );
         }
 
-        if ( in_array("CiviCase", $config->enableComponents) ) {
+        if ( in_array('CiviCase', $config->enableComponents) ) {
             $groups['CiviCase'] = ts( 'CiviCase' );
         }
         
-        if ( in_array("CiviReport", $config->enableComponents) ) {
+        if ( in_array('CiviReport', $config->enableComponents) ) {
             $groups['CiviReport'] = ts( 'CiviReport' );
         }
 
-        if ( in_array("CiviCampaign", $config->enableComponents) ) {
+        if ( in_array('CiviCampaign', $config->enableComponents) ) {
             $groups['CiviCampaign'] = ts( 'CiviCampaign' );
         }
 

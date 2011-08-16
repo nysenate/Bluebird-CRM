@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -77,7 +77,8 @@ class CRM_Profile_Form_Edit extends CRM_Profile_Form
         if ( $this->_blockNo ) {
             $this->assign( 'blockNo', $this->_blockNo );
         }
-
+        $this->assign( 'createCallback', CRM_Utils_Request::retrieve( 'createCallback', 'String', $this ) );
+        
         if ( $this->get( 'skipPermission' ) ) {
             $this->_skipPermission = true;
         }
@@ -167,8 +168,15 @@ SELECT module
                 if ( $this->_context == 'Search' ) {
                     $this->_postURL = CRM_Utils_System::url( 'civicrm/contact/search' );
                 } elseif ( $this->_id && $this->_gid ) {
-                   $this->_postURL = CRM_Utils_System::url('civicrm/profile/view',
-                                                            "reset=1&id={$this->_id}&gid={$gidString}" );
+                    $urlParams = "reset=1&id={$this->_id}&gid={$gidString}";
+                    if ( $this->_isContactActivityProfile && $this->_activityId ) {
+                        $urlParams .= "&aid={$this->_activityId}";  
+                    }
+                    // get checksum if present
+                    if ( $this->get( 'cs' ) ) {
+                        $urlParams .= "&cs=" . $this->get( 'cs' );
+                    }
+                    $this->_postURL = CRM_Utils_System::url('civicrm/profile/view', $urlParams);
                 }
             }
             
@@ -261,8 +269,28 @@ SELECT module
                 $gidString = implode( ',', $this->_profileIds );
             }
 
-            $url = CRM_Utils_System::url( 'civicrm/profile/view',
-                                          "reset=1&id={$this->_id}&gid={$gidString}" );
+            $urlParams = "reset=1&id={$this->_id}&gid={$gidString}";
+            if ( $this->_isContactActivityProfile && $this->_activityId ) {
+                $urlParams .= "&aid={$this->_activityId}";  
+            }
+            // get checksum if present
+            if ( $this->get( 'cs' ) ) {
+                $urlParams .= "&cs=" . $this->get( 'cs' );
+            }
+            $url = CRM_Utils_System::url( 'civicrm/profile/view', $urlParams );
+        } else {
+            // Replace tokens from post URL
+            $contactParams  = array( 'contact_id' => $this->_id );
+            require_once 'api/v2/Contact.php';
+            $contact =& civicrm_contact_get($contactParams);
+            
+            require_once 'CRM/Mailing/BAO/Mailing.php';
+            $dummyMail = new CRM_Mailing_BAO_Mailing(); 
+            $dummyMail->body_text = $this->_postURL;
+            $tokens = $dummyMail->getTokens();
+            
+            require_once 'CRM/Utils/Token.php';
+            $url = CRM_Utils_Token::replaceContactTokens($this->_postURL, $contact[$this->_id], false, CRM_Utils_Array::value('text', $tokens));
         }
 
         $session->replaceUserContext( $url );

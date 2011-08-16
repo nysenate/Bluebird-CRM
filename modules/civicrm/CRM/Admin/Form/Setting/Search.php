@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -70,7 +70,7 @@ class CRM_Admin_Form_Setting_Search extends  CRM_Admin_Form_Setting
         require_once 'CRM/Core/OptionGroup.php';
         $options = array( ts('Contact Name') => 1 ) + array_flip( CRM_Core_OptionGroup::values( 'contact_autocomplete_options', 
                                                                                                 false, false, true ) );
-        $this->addCheckBox( 'autocompleteContactSearch', 'Autocomplete Contact Search', $options, 
+        $this->addCheckBox( 'autocompleteContactSearch', ts('Autocomplete Contact Search'), $options, 
                             null, null, null, null, array( '&nbsp;&nbsp;' ) );
         $element = $this->getElement( 'autocompleteContactSearch' );
         $element->_elements[0]->_flagFrozen = true;

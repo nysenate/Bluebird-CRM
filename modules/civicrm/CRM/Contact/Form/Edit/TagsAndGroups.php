@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,16 +29,11 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
-/*
- * variable to assign value to tpl
- *
- */
-$_tagGroup = null;
 
 class CRM_Contact_Form_Edit_TagsandGroups
 {
@@ -68,15 +63,18 @@ class CRM_Contact_Form_Edit_TagsandGroups
      * @access public
      */
     static function buildQuickForm(&$form,
-                                       $contactId = 0,
-                                       $type = CRM_Contact_Form_Edit_TagsandGroups::ALL,
-                                       $visibility = false,
-                                       $isRequired = null,
-                                       $groupName = 'Group(s)',
-                                       $tagName   = 'Tag(s)',
-                                       $fieldName = null ) 
+                                   $contactId = 0,
+                                   $type = CRM_Contact_Form_Edit_TagsandGroups::ALL,
+                                   $visibility = false,
+                                   $isRequired = null,
+                                   $groupName = 'Group(s)',
+                                   $tagName   = 'Tag(s)',
+                                   $fieldName = null ) 
     {
-        
+        if ( ! isset( $form->_tagGroup ) ) {
+            $form->_tagGroup = array( );
+        }
+
         $type = (int ) $type;
         if ( $type & CRM_Contact_Form_Edit_TagsandGroups::GROUP ) {
 
@@ -185,7 +183,7 @@ class CRM_Contact_Form_Edit_TagsandGroups
             $contactGroup =& CRM_Contact_BAO_GroupContact::getContactGroup( $id, 'Added', null, false, true );  
             if ( $contactGroup ) {  
                 foreach ( $contactGroup as $group ) {  
-                    $defaults[$fName ."[". $group['group_id'] ."]"] = 1;  
+                    $defaults[$fName .'['. $group['group_id'] .']'] = 1;  
                 } 
             }
         }
@@ -200,7 +198,7 @@ class CRM_Contact_Form_Edit_TagsandGroups
             $contactTag =& CRM_Core_BAO_EntityTag::getTag($id);  
             if ( $contactTag ) {  
                 foreach ( $contactTag as $tag ) {  
-                    $defaults[$fName ."[" . $tag . "]" ] = 1;  
+                    $defaults[$fName .'[' . $tag . ']' ] = 1;  
                 }  
             }  
         }

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,11 +29,8 @@
  * html profile etc
  *}
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/jquery.js"></script>
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/jquery-ui-1.8.5/js/jquery-ui-1.8.5.custom.min.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/jquery-ui-1.8.5/css/custom-theme/jquery-ui-1.8.5.custom.css");</style>
-
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/flexigrid.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/flexigrid.css");</style>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/jquery-ui-1.8.11/js/jquery-ui-1.8.11.custom.min.js"></script>
+<style type="text/css">@import url("{$config->resourceBase}packages/jquery/jquery-ui-1.8.11/css/smoothness/jquery-ui-1.8.11.custom.css");</style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.autocomplete.js"></script>
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/jquery.autocomplete.css");</style>
@@ -70,22 +67,23 @@
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.toolTip.js"></script>
 
-<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/DataTables-1.7.2/media/js/jquery.dataTables.min.js"></script>
-<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/DataTables-1.7.2/media/css/demo_table_jui.css");</style>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/DataTables-1.7.6/media/js/jquery.dataTables.min.js"></script>
+<style type="text/css">@import url("{$config->resourceBase}packages/jquery/plugins/DataTables-1.7.6/media/css/demo_table_jui.css");</style>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.FormNavigate.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.validate.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.civicrm-validate.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.ui.datepicker.validation.pack.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery-fieldselection.js"></script>
-{*NYSS 3524*}
 
 <script type="text/javascript" src="{$config->resourceBase}js/rest.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmaccordions.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmasmselect.js"></script>
 <script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmtooltip.js"></script>
+<script type="text/javascript" src="{$config->resourceBase}js/jquery/jquery.crmrowhighlighter.js"></script>
 
 <script type="text/javascript" src="{$config->resourceBase}packages/jquery/plugins/jquery.dashboard.js"></script>
 <style type="text/css">@import url("{$config->resourceBase}packages/jquery/css/dashboard.css");</style>

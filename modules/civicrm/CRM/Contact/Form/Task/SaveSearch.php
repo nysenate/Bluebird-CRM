@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -104,7 +104,15 @@ class CRM_Contact_Form_Task_SaveSearch extends CRM_Contact_Form_Task {
         $groupTypes = CRM_Core_OptionGroup::values( 'group_type', true );
         unset( $groupTypes['Access Control'] );
         if ( ! CRM_Core_Permission::access( 'CiviMail' ) ) {
-            unset( $groupTypes['Mailing List'] );
+            require_once 'CRM/Mailing/Info.php';
+            $isWorkFlowEnabled = CRM_Mailing_Info::workflowEnabled( );
+            if ( $isWorkFlowEnabled && 
+                 !CRM_Core_Permission::check( 'create mailings' ) &&
+                 !CRM_Core_Permission::check( 'schedule mailings' ) &&
+                 !CRM_Core_Permission::check( 'approve mailings' )
+                 ) {
+                unset( $groupTypes['Mailing List'] );
+            }
         }
 
         if ( ! empty( $groupTypes ) ) {
@@ -185,7 +193,8 @@ class CRM_Contact_Form_Task_SaveSearch extends CRM_Contact_Form_Task {
         $params = array( );
         $params['title'      ]     = $formValues['title'];
         $params['description']     = $formValues['description'];
-        if ( is_array( $formValues['group_type'] ) ) {
+        if ( isset( $formValues['group_type'] ) &&
+             is_array( $formValues['group_type'] ) ) {
             $params['group_type'] =
                 CRM_Core_DAO::VALUE_SEPARATOR . 
                 implode( CRM_Core_DAO::VALUE_SEPARATOR,

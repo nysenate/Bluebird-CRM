@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -49,7 +49,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
             array( 'civicrm_contact' =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'display_name' => 
+                          array( 'sort_name' => 
                                  array( 'title'     => ts( 'Modified By' ),
                                         'required'  => true,),
                                  'id'           => 
@@ -57,7 +57,8 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                         'required'  => true, ), ),
                           'filters'   =>             
                           array( 'sort_name'    => 
-                                 array( 'title'      => ts( 'Modified By' )  ),
+                                 array( 'title'      => ts( 'Modified By' ),
+                                        'type'       => CRM_Utils_Type::T_STRING ),
                           ),
                           'grouping'  => 'contact-fields',
                         ),
@@ -65,9 +66,9 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                    'civicrm_contact_touched' =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'display_name_touched' => 
+                          array( 'sort_name_touched' => 
                                  array( 'title'     => ts( 'Touched Contact' ),
-                                        'name'      => 'display_name',
+                                        'name'      => 'sort_name',
                                         'required'  => true,),
                                  'id'       => 
                                  array( 'no_display'=> true,
@@ -76,6 +77,7 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                           array( 'sort_name_touched'    => 
                                  array( 'title'      => ts( 'Touched Contact' ),
                                         'name'       => 'sort_name',
+                                        'type'       => CRM_Utils_Type::T_STRING
                                       ),
                                 ),
                           'grouping'  => 'contact-fields',
@@ -203,48 +205,33 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
     
     function orderBy( ) {
         $this->_orderBy = "
-ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC
+ORDER BY {$this->_aliases['civicrm_log']}.modified_date DESC, {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact_touched']}.sort_name
 ";
     }
-    
-/*    function postProcess( ) {
-
-        $this->beginPostProcess( );
-
-        $sql  = $this->buildQuery( true );
-//CRM_Core_Error::debug('sql', $sql);             
-        $rows = $graphRows = array();
-        $this->buildRows ( $sql, $rows );
-        
-        $this->formatDisplay( $rows );
-        $this->doTemplateAssignment( $rows );
-        $this->endPostProcess( $rows );	
-    }
-*/
     
     function alterDisplay( &$rows ) {
         // custom code to alter rows
         $entryFound = false;
         foreach ( $rows as $rowNum => $row ) {
             // convert display name to links
-            if ( array_key_exists('civicrm_contact_display_name', $row) && 
+            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
                  array_key_exists('civicrm_contact_id', $row) ) {
                 $url = CRM_Utils_System::url( 'civicrm/contact/view', 
                                               'reset=1&cid=' . $row['civicrm_contact_id'],
                                               $this->_absoluteUrl );
-                $rows[$rowNum]['civicrm_contact_display_name_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_hover'] = ts("View Contact details for this contact.");
+                $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_hover'] = ts("View Contact details for this contact.");
                 $entryFound = true;
             }
 
-            if ( array_key_exists('civicrm_contact_touched_display_name_touched', $row) && 
+            if ( array_key_exists('civicrm_contact_touched_sort_name_touched', $row) && 
                  array_key_exists('civicrm_contact_touched_id', $row) &&
-                 $row['civicrm_contact_touched_display_name_touched'] !== '' ) {
+                 $row['civicrm_contact_touched_sort_name_touched'] !== '' ) {
                 $url = CRM_Utils_System::url( 'civicrm/contact/view', 
                                               'reset=1&cid=' . $row['civicrm_contact_touched_id'],
                                               $this->_absoluteUrl );
-                $rows[$rowNum]['civicrm_contact_touched_display_name_touched_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_touched_display_name_touched_hover'] = ts("View Contact details for this contact.");
+                $rows[$rowNum]['civicrm_contact_touched_sort_name_touched_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_touched_sort_name_touched_hover'] = ts("View Contact details for this contact.");
                 $entryFound = true;
             }
 

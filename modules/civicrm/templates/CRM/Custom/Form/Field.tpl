@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -140,6 +140,11 @@ function custom_option_html_type( ) {
                 {if $action neq 4 and $action neq 2}
                     <br /><span class="description">{ts}Select the type of data you want to collect and store for this contact. Then select from the available HTML input field types (choices are based on the type of data being collected).{/ts}</span>
                 {/if}
+		{if $action eq 2 and $changeFieldType}
+		<br />
+		( <a href='{crmURL p="civicrm/admin/custom/group/field/changetype" q="reset=1&id=`$id`"}'>{ts}Change Input Field Type{/ts}</a> )
+		<div class='clear'></div>
+		{/if}
             </td>
         </tr>
         <tr class="crm-custom-field-form-block-text_length"  id="textLength" {if !( $action eq 1 || $action eq 2 ) && ($form.data_type.value.0.0 != 0)}class="hide-block"{/if}>
@@ -203,13 +208,18 @@ function custom_option_html_type( ) {
             <td class="label">{$form.help_post.label} {if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_custom_field' field='help_post' id=$id}{/if}</td>
             <td class="html-adjust">{$form.help_post.html|crmReplace:class:huge}
                 {if $action neq 4}
-                    <span class="description">{ts}Explanatory text displayed for this field. Pre help is displayed inline on the form (above the field). Post help is displayed in a pop-up - users click the help balloon to view help text.{/ts}</span>
+                    <span class="description">{ts}Explanatory text displayed on back-end forms. Pre help is displayed inline on the form (above the field). Post help is displayed in a pop-up - users click the help balloon to view help text.{/ts}</span>
                 {/if}
             </td>
         </tr>
         <tr class="crm-custom-field-form-block-is_required">
             <td class="label">{$form.is_required.label}</td>
-            <td class="html-adjust">{$form.is_required.html}</td>
+            <td class="html-adjust">{$form.is_required.html}
+            {if $action neq 4}
+                <br /><span class="description">{ts}Do not make custom fields required unless you want to force all users to enter a value anytime they add or edit this type of record.
+                You can always make the field required when used in a specific Profile form.{/ts}</span>
+            {/if}
+            </td>
         </tr>
         <tr id ="searchable" class="crm-custom-field-form-block-is_searchable">
             <td class="label">{$form.is_searchable.label}</td>
@@ -248,11 +258,11 @@ function custom_option_html_type( ) {
 
     function showSearchRange(chkbox) {
         var html_type = document.getElementsByName("data_type[1]")[0].value;
-	var data_type = document.getElementsByName("data_type[0]")[0].value;
+	    var data_type = document.getElementsByName("data_type[0]")[0].value;
 
         if ( ((data_type == 1 || data_type == 2 || data_type == 3) && (html_type == "Text")) || data_type == 5) {
             if (chkbox.checked) {
-		document.getElementsByName("is_search_range")[0].checked = true;
+		        document.getElementsByName("is_search_range")[0].checked = true;
                 cj("#searchByRange").show();
             } else {
                 clearSearchBoxes( );
@@ -263,7 +273,7 @@ function custom_option_html_type( ) {
     //should not clear search boxes for update mode. 
     function clearSearchBoxes( ) {
     	document.getElementsByName("is_searchable")[0].checked   = false; 
-	document.getElementsByName("is_search_range")[1].checked = true;
+	    document.getElementsByName("is_search_range")[1].checked = true;
         cj("#searchByRange").hide();
     }
 </script>

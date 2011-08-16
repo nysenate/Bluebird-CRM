@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -64,7 +64,7 @@ class CRM_Contact_BAO_Individual extends CRM_Contact_DAO_Contact
             return;
         }
 
-        $sortName   = $displayName = "";
+        $sortName   = $displayName = '';
         $firstName  = CRM_Utils_Array::value('first_name'   , $params, '');
         $middleName = CRM_Utils_Array::value('middle_name'  , $params, '');
         $lastName   = CRM_Utils_Array::value('last_name'    , $params, '');
@@ -269,7 +269,7 @@ class CRM_Contact_BAO_Individual extends CRM_Contact_DAO_Contact
             } else if ( in_array( $format, array( 'yy-mm' ) ) ) {
                 $date = $date .'-01';
             } else if ( in_array( $format, array( 'M yy' ) ) ) {
-                $date = '01 '.$date;
+                $date = $date. '-01';
             } else if ( in_array( $format, array( 'yy' ) ) ) {
                 $date = $date.'-01-01';
             }
@@ -288,7 +288,7 @@ class CRM_Contact_BAO_Individual extends CRM_Contact_DAO_Contact
             } else if ( in_array( $format, array( 'yy-mm' ) ) ) {
                 $date = $date .'-01'; 
             } else if ( in_array( $format, array( 'M yy' ) ) ) {
-                $date = '01 '.$date;
+                $date = $date. '-01';
             } else if ( in_array( $format, array( 'yy' ) ) ) {
                 $date = $date.'-01-01';
             }

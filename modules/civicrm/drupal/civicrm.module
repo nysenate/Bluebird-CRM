@@ -23,7 +23,7 @@
  * Drupal module file.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -62,7 +62,7 @@ function civicrm_html_head()
         
         // add localized calendar js
         $localisation     = explode( '_', $config->lcMessages );
-        $localizationFile = drupal_get_path('module', 'civicrm' ) . '/../packages/jquery/jquery-ui-1.8.5/development-bundle/ui/i18n/jquery.ui.datepicker-'. $localisation[0] . '.js';
+        $localizationFile = drupal_get_path('module', 'civicrm' ) . '/../packages/jquery/jquery-ui-1.8.11/development-bundle/ui/i18n/jquery.ui.datepicker-'. $localisation[0] . '.js';
         
         if ( file_exists( $localizationFile ) ) {
             drupal_add_js( $localizationFile );
@@ -289,6 +289,14 @@ function civicrm_initialize( )
       
         // Add module-specific header elements
         drupal_set_html_head(civicrm_html_head());
+        require_once 'CRM/Core/BAO/Preferences.php';
+        if (CRM_Core_BAO_Preferences::value( 'editor_id' ) == 4) { //drupal wysiwyg
+            //we have to ensure that wysiwyg is loaded since 
+            $formats = filter_formats();
+            foreach ($formats as $id => $format) {
+                wysiwyg_get_profile($id);
+            }
+        }
     }
 
     return true;
@@ -472,6 +480,11 @@ function civicrm_user( $type, &$edit, &$user, $category = NULL )
 	case 'delete':
         require_once 'CRM/Core/BAO/UFMatch.php';
         return CRM_Core_BAO_UFMatch::deleteUser( $user->uid );
+        
+    case 'logout':
+        $session = CRM_Core_Session::singleton();
+        $session->reset();
+        return;
     }
 
 }
@@ -894,3 +907,61 @@ function civicrm_preprocess_page(&$variables) {
 }
 
 
+/**
+ * Supporting functions to allow using drupal input formats and WYSIWYG API 
+ * as a CiviCRM rich text editor. This code is in the Drupal module because it's
+ * Drupal-version dependent.
+ * 
+ */
+function civicrm_drupal_get_wysiwyg_html($attributes, $value='', $format = FILTER_FORMAT_DEFAULT) {
+    $form = drupal_get_form('civicrm_drupal_wysiwyg_form', $attributes, $value, $format);
+    $embed_prefix = "\n<!--//--><![CDATA[//><!--\n";
+    $embed_suffix = "\n//--><!]]>\n";
+    $script = drupal_add_js();
+    return $form . '<script type="text/javascript">' . $embed_prefix . 'jQuery.extend(Drupal.settings, ' . drupal_to_js(call_user_func_array('array_merge_recursive', $script['setting'])) . ");" . $embed_suffix . "</script>\n";
+}
+
+function civicrm_drupal_wysiwyg_form($form_state, $attributes, $value='', $format = FILTER_FORMAT_DEFAULT) {
+    $id = $attributes['id'];
+    $form = array();
+    $form[$id] = array();
+    $form[$id][$id] = array(
+        '#type' => 'textarea',
+        '#title' => '', //$attributes['label'],  //title comes from quickform output
+        '#default_value' => $value,
+        '#rows' => $attributes['rows'],
+        '#cols' => $attributes['cols'],
+        '#id' => $attributes['id'],
+        '#name' => $attributes['name'],
+    );
+    $form[$id]['format'] = filter_form($format);
+    foreach (element_children($form[$id]['format']) as $index) {
+        if (isset($form[$id]['format'][$index]['#id'])) {
+            $form[$id]['format'][$index]['#id'] = 'edit-' . $attributes['id'] . '-format-' . $index;
+            $form[$id]['format'][$index]['#name'] =  $attributes['id'] . '-format';
+        }
+    }
+    $form['#printed'] = true;
+    return $form;
+}
+
+function civicrm_drupal_wysiwyg_update_value($element, $caller) {
+    $format = $element->getAttribute('name') . '_format';
+    // get the format value
+    if (isset($caller->_submitValues['format'])) {
+        $caller->set($format, check_plain($caller->_submitValues['format']));
+        $element->format = $caller->get($format);
+    }
+    // constant values override both default and submitted ones
+    // default values are overriden by submitted
+    $value = $element->_findValue($caller->_constantValues);
+    if (null === $value) {
+        $value = $element->_findValue($caller->_submitValues);
+        if (null === $value) {
+            $value = $element->_findValue($caller->_defaultValues);
+        }
+    }
+    if (null !== $value) {
+        $element->setValue(check_markup($value, $element->format));
+    }
+}

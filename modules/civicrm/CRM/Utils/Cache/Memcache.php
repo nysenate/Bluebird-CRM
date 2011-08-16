@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -89,15 +89,13 @@ class CRM_Utils_Cache_Memcache {
                           $port      = 11211,
                           $timeout   = 3600,
                           $prefix    = '' ) {
-
         $this->_host    = $host;
         $this->_port    = $port;
         $this->_timeout = $timeout;
-
         $this->_prefix  = $prefix;
 
         $this->_cache = new Memcache( );
-
+        
         if ( ! $this->_cache->connect( $this->_host, $this->_port ) ) {
             // dont use fatal here since we can go in an infinite loop
             echo 'Could not connect to Memcached server';
@@ -106,7 +104,10 @@ class CRM_Utils_Cache_Memcache {
     }
 
     function set( $key, &$value ) {
-        return $this->_cache->set( $this->_prefix . $key, $value, false, $this->_timeout );
+        if ( ! $this->_cache->set( $this->_prefix . $key, $value, false, $this->_timeout ) ) {
+            return false;
+        }
+        return true;
     }
 
     function &get( $key ) {
@@ -121,7 +122,7 @@ class CRM_Utils_Cache_Memcache {
     function flush( ) {
         return $this->_cache->flush( );
     }
-
+        
 }
 
 

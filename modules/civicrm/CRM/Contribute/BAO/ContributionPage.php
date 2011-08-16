@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -111,8 +111,8 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
      * @access public
      * @static
      */
-    static function sendMail( $contactID, &$values, $isTest = false, $returnMessageText = false ) 
-    { 
+    static function sendMail( $contactID, &$values, $isTest = false, $returnMessageText = false, $fieldTypes = null ) 
+    {
         require_once "CRM/Core/BAO/UFField.php";
         $gIds = array( );
         $params = array( );
@@ -138,6 +138,14 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
             $gIds['custom_post_id'] = $values['custom_post_id'];
         }
         
+        if ( CRM_Utils_Array::value( 'is_for_organization', $values ) ) {
+            if ( CRM_Utils_Array::value( 'membership_id', $values ) ) {
+                $params['onbehalf_profile'] = array( array( 'membership_id', '=', $values['membership_id'], 0, 0 ) );
+            } else if ( CRM_Utils_Array::value( 'contribution_id', $values ) ) {
+                $params['onbehalf_profile'] = array( array( 'contribution_id', '=', $values['contribution_id'], 0, 0 ) ); 
+            }
+        }
+        
         //check whether it is a test drive
         if ( $isTest && !empty( $params['custom_pre_id'] ) ) {
             $params['custom_pre_id'][] = array( 'contribution_test', '=', 1, 0, 0 );
@@ -150,10 +158,12 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
             //send notification email if field values are set (CRM-1941)
             require_once 'CRM/Core/BAO/UFGroup.php';
             foreach ( $gIds as $key => $gId ) {
-                $email = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', $gId, 'notify' );
-                if ( $email ) {
-                    $val = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues( $gId, $contactID, $params[$key] );
-                    CRM_Core_BAO_UFGroup::commonSendMail($contactID, $val); 
+                if ( $gId ) {
+                    $email = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', $gId, 'notify' );
+                    if ( $email ) {
+                        $val = CRM_Core_BAO_UFGroup::checkFieldsEmptyValues( $gId, $contactID, $params[$key] );
+                        CRM_Core_BAO_UFGroup::commonSendMail($contactID, $val); 
+                    }
                 }
             }
         }
@@ -182,6 +192,11 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
             // get primary location email if no email exist( for billing location).
             if ( !$email ) {
                 list( $displayName, $email ) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $contactID );
+            }
+            
+            if ( empty( $displayName ) ) {
+                require_once 'CRM/Contact/BAO/Contact.php';
+                $displayName = CRM_Contact_BAO_Contact::displayName( $contactID );
             }
             
             //for display profile need to get individual contact id,  
@@ -214,7 +229,7 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
                 }
                 self::buildCustomDisplay( $postID, 'customPost', $userID, $template, $params['custom_post_id'] );
             }
-            
+
             // set email in the template here
             $tplParams = array(
                 'email'            => $email,
@@ -230,6 +245,10 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
                 $tplParams['contributionTypeId']   = $contributionTypeId;
                 $tplParams['contributionTypeName'] = CRM_Core_DAO::getFieldValue( 'CRM_Contribute_DAO_ContributionType',
                                                                                   $contributionTypeId );
+            }
+
+            if ( $contributionPageId = CRM_Utils_Array::value('id', $values ) ) {
+                $tplParams['contributionPageId']   = $contributionPageId;
             }
                         
             // address required during receipt processing (pdf and email receipt)
@@ -257,16 +276,20 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
 
                 $tplParams['onBehalfName']  = $displayName;
                 $tplParams['onBehalfEmail'] = $email;
+
+                $profileId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', 'on_behalf_organization', 'id', 'name' );
+                self::buildCustomDisplay( $profileId, 'onBehalfProfile' , $userID, $template,
+                                          $params['onbehalf_profile'], $fieldTypes );
             }
             
             // use either the contribution or membership receipt, based on whether it’s a membership-related contrib or not
             $sendTemplateParams = array(
-                'groupName' => $tplParams['membershipID'] ? 'msg_tpl_workflow_membership' : 'msg_tpl_workflow_contribution',
-                'valueName' => $tplParams['membershipID'] ? 'membership_online_receipt'   : 'contribution_online_receipt',
-                'contactId' => $contactID,
-                'tplParams' => $tplParams,
-                'isTest'    => $isTest,
-            	'PDFFilename' => 'civicrm.pdf',
+                'groupName'   => $tplParams['membershipID'] ? 'msg_tpl_workflow_membership' : 'msg_tpl_workflow_contribution',
+                'valueName'   => $tplParams['membershipID'] ? 'membership_online_receipt'   : 'contribution_online_receipt',
+                'contactId'   => $contactID,
+                'tplParams'   => $tplParams,
+                'isTest'      => $isTest,
+            	'PDFFilename' => 'receipt.pdf',
             );
 
             require_once 'CRM/Core/BAO/MessageTemplates.php';
@@ -391,21 +414,26 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
      * @access public
      * @static  
      */ 
-    function buildCustomDisplay( $gid, $name, $cid, &$template, &$params ) 
+    function buildCustomDisplay( $gid, $name, $cid, &$template, &$params, $fieldTypes = null ) 
     {
         if ( $gid ) {
             require_once 'CRM/Core/BAO/UFGroup.php';
             if ( CRM_Core_BAO_UFGroup::filterUFGroups($gid, $cid) ){
                 $values = array( );
                 $groupTitle = null;
-                $fields = CRM_Core_BAO_UFGroup::getFields( $gid, false, CRM_Core_Action::VIEW );
-
+                $fields = CRM_Core_BAO_UFGroup::getFields( $gid, false, CRM_Core_Action::VIEW, null, null, false,
+                                                           null, false, null, CRM_Core_Permission::CREATE, null );
                 foreach ( $fields as $k => $v  ) {
                     if ( ! $groupTitle ) { 
                         $groupTitle = $v["groupTitle"];
                     }
                     // suppress all file fields from display
                     if ( CRM_Utils_Array::value( 'data_type', $v, '' ) == 'File' || CRM_Utils_Array::value( 'name', $v, '' ) == 'image_URL' ) {
+                        unset( $fields[$k] );
+                    }
+
+                    if ( !empty( $fieldTypes ) &&
+                         ( !in_array( $v['field_type'], $fieldTypes ) ) ) {
                         unset( $fields[$k] );
                     }
                 }

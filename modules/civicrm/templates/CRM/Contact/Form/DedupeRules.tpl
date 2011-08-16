@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,8 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 
+<h3>{ts 1=$contact_type}Matching Rule for %1 Contacts{/ts}</h3>
 <div class="crm-block crm-form-block crm-dedupe-rules-form-block">
-  <h2>{ts 1=$contact_type}Matching Rules for %1 Contacts{/ts}</h2>
     <div id="help">
         {ts}Configure up to five fields to evaluate when searching for 'suspected' duplicate contact records.{/ts} {help id="id-rules"}
     </div>
@@ -33,7 +33,12 @@
   <table class="form-layout-compressed">
      <tr class="crm-dedupe-rules-form-block-label">
         <td class="label">{$form.name.label}</td>
-        <td>{$form.name.html}</td>
+        <td>
+            {$form.name.html}
+            <div class="description">
+                {ts}Enter a unique descriptive name for this matching rule.{/ts}
+            </div>
+        </td>
      </tr>
      <tr class="crm-dedupe-rules-form-block-level">
         <td class="label">{$form.level.label}</td>

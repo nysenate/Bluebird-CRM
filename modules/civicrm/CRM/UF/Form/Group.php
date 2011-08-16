@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -351,14 +351,15 @@ class CRM_UF_Form_Group extends CRM_Core_Form
             }
         
             if ( $this->_action & CRM_Core_Action::UPDATE ) {
+                $url = CRM_Utils_System::url( 'civicrm/admin/uf/group', 'reset=1&action=browse');
                 CRM_Core_Session::setStatus(ts("Your CiviCRM Profile '%1' has been saved.", array(1 => $ufGroup->title)));
             } else {
                 $url = CRM_Utils_System::url( 'civicrm/admin/uf/group/field/add', 'reset=1&action=add&gid=' . $ufGroup->id);
                 CRM_Core_Session::setStatus(ts('Your CiviCRM Profile \'%1\' has been added. You can add fields to this profile now.',
                                                array(1 => $ufGroup->title)));
-                $session = CRM_Core_Session::singleton( );
-                $session->replaceUserContext($url);
             }
+            $session = CRM_Core_Session::singleton( );
+            $session->replaceUserContext($url);
         }
 
         // update cms integration with registration / my account

@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: frame_tree.cls.php,v 1.10 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: frame_tree.cls.php 332 2010-11-27 14:06:34Z fabien.menager $ */
 
 /**
  * Represents an entire document as a tree of frames
@@ -76,6 +76,13 @@ class Frame_Tree {
   protected $_root;
 
   /**
+   * Subtrees of absolutely positioned elements
+   *
+   * @var array of Frames
+   */
+  protected $_absolute_frames;
+
+  /**
    * A mapping of {@link Frame} objects to DomNode objects
    *
    * @var array
@@ -92,6 +99,10 @@ class Frame_Tree {
     $this->_dom = $dom;
     $this->_root = null;
     $this->_registry = array();
+  }
+  
+  function __destruct() {
+    clear_object($this);
   }
 
   /**
@@ -169,48 +180,51 @@ class Frame_Tree {
       $children[] = $node->childNodes->item($i);
 
     foreach ($children as $child) {
+      $node_name = mb_strtolower($child->nodeName);
+      
       // Skip non-displaying nodes
-      if ( in_array( mb_strtolower($child->nodeName), self::$_HIDDEN_TAGS) )  {
-        if ( mb_strtolower($child->nodeName) != "head" &&
-             mb_strtolower($child->nodeName) != "style" ) 
+      if ( in_array($node_name, self::$_HIDDEN_TAGS) )  {
+        if ( $node_name !== "head" &&
+             $node_name !== "style" ) 
           $child->parentNode->removeChild($child);
         continue;
       }
 
       // Skip empty text nodes
-      if ( $child->nodeName == "#text" && $child->nodeValue == "" ) {
+      if ( $node_name === "#text" && $child->nodeValue == "" ) {
+        $child->parentNode->removeChild($child);
+        continue;
+      }
+
+      // Skip empty image nodes
+      if ( $node_name === "img" && $child->getAttribute("src") == "" ) {
         $child->parentNode->removeChild($child);
         continue;
       }
       
-      // Add a container frame for images
-      if ( $child->nodeName == "img" ) {
-        $img_node = $child->ownerDocument->createElement("img_inner");
-     
-        // Move attributes to inner node        
-        foreach ( $child->attributes as $attr => $attr_node ) {
-          // Skip style, but move all other attributes
-          if ( $attr == "style" )
-            continue;
-       
-          $img_node->setAttribute($attr, $attr_node->value);
-        }
-
-        foreach ( $child->attributes as $attr => $node ) {
-          if ( $attr == "style" )
-            continue;
-          $child->removeAttribute($attr);
-        }
-
-        $child->appendChild($img_node);
-      }
-   
       $frame->append_child($this->_build_tree_r($child), false);
-
     }
     
     return $frame;
   }
+  
+  public function insert_node(DOMNode $node, DOMNode $new_node, $pos) {
+    if ($pos === "after" || !$node->firstChild)
+      $node->appendChild($new_node);
+    else 
+      $node->insertBefore($new_node, $node->firstChild);
+    
+    $this->_build_tree_r($new_node);
+    
+    $frame_id = $new_node->getAttribute("frame_id");
+    $frame = $this->get_frame($frame_id);
+    
+    $parent_id = $node->getAttribute("frame_id");
+    $parent = $this->get_frame($parent_id);
+    
+    if ($pos === "before")
+      $parent->prepend_child($frame, false);
+    else 
+      $parent->append_child($frame, false);
+  }
 }
-
-?>

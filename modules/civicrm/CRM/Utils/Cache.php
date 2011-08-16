@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -61,29 +61,22 @@ class CRM_Utils_Cache {
     /**
      * singleton function used to manage this object
      *
-     * @param string  $host      the memcached server host
-     * @param int     $port      the memcached server port
-     * @param int     $timeout   the default timeout
-     *
      * @return object
      * @static
      *
      */
     static function &singleton( ) {
         if (self::$_singleton === null ) {
-            if ( defined( 'CIVICRM_USE_MEMCACHE' ) && CIVICRM_USE_MEMCACHE) {
+            if ( defined( 'CIVICRM_USE_MEMCACHE' ) && CIVICRM_USE_MEMCACHE ) {
                 require_once 'CRM/Utils/Cache/Memcache.php';
                 $settings = self::getCacheSettings( );
                 self::$_singleton = new CRM_Utils_Cache_Memcache( $settings['host'],
                                                                   $settings['port'],
                                                                   $settings['timeout'],
                                                                   $settings['prefix'] );
-
-            } else if ( defined( 'CIVICRM_USE_ARRAYCACHE' ) && CIVICRM_USE_ARRAYCACHE) {
+            } else if ( defined( 'CIVICRM_USE_ARRAYCACHE' ) && CIVICRM_USE_ARRAYCACHE) { //NYSS
                 require_once 'CRM/Utils/Cache/Arraycache.php';
                 self::$_singleton = new CRM_Utils_Cache_Arraycache();
-            } else {
-                self::$_singleton = new CRM_Utils_Cache( );
             }
         }
         return self::$_singleton;
@@ -135,6 +128,7 @@ class CRM_Utils_Cache {
         return null;
     }
 
+
     function delete( $key ) {
         return false;
     }
@@ -144,5 +138,3 @@ class CRM_Utils_Cache {
     }
 
 }
-
-

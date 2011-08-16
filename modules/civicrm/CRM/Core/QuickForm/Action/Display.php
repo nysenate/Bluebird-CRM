@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  * Redefine the display action.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -127,9 +127,13 @@ class CRM_Core_QuickForm_Action_Display extends CRM_Core_QuickForm_Action {
         }
 
         $template->assign( 'action' , $page->getAction( ) );
-        $template->assign( 'tplFile', $page->getTemplateFileName() ); 
+
+        $pageTemplateFile = $page->getTemplateFileName( );
+        $template->assign( 'tplFile', $pageTemplateFile );
 
         $content = $template->fetch( $controller->getTemplateFile( ) );
+
+        CRM_Utils_System::appendTPLFile( $pageTemplateFile, $content );
 
         $print = $controller->getPrint( );
         if ( $print ) {
@@ -145,7 +149,8 @@ class CRM_Core_QuickForm_Action_Display extends CRM_Core_QuickForm_Action {
         if ( $print ) {
             if ( $print == CRM_Core_Smarty::PRINT_PDF ) {
                 require_once 'CRM/Utils/PDF/Utils.php';
-                CRM_Utils_PDF_Utils::domlib( $content, "{$page->_name}.pdf" );
+                CRM_Utils_PDF_Utils::html2pdf( $content, "{$page->_name}.pdf", false,
+                                               array( 'paper_size' => 'a3', 'orientation' => 'landscape' ) );
             } else {
                 echo $html;
             }

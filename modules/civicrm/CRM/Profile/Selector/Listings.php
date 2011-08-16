@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -193,7 +193,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         $returnProperties['contact_type']     = 1;
         $returnProperties['contact_sub_type'] = 1;
         $returnProperties['sort_name'   ]     = 1;
-            
+
         $queryParams =& CRM_Contact_BAO_Query::convertFormValues( $this->_params, 1 );            
         $this->_query   = new CRM_Contact_BAO_Query( $queryParams, $returnProperties, $this->_fields );
         $this->_options =& $this->_query->_options;
@@ -406,7 +406,7 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
                 $fieldType = CRM_Utils_Array::value('2',$fieldArray);
                 if ( is_numeric(CRM_Utils_Array::value('1',$fieldArray) ) ) {
                     if ( !in_array( $fieldType, $multipleFields ) ) {
-                        $locationType = & new CRM_Core_DAO_LocationType();
+                        $locationType = new CRM_Core_DAO_LocationType();
                         $locationType->id = $fieldArray[1];
                         $locationType->find(true);
                         if ($fieldArray[0] == 'email' || $fieldArray[0] == 'im' || $fieldArray[0] == 'phone') {
@@ -504,7 +504,11 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
         if ( $this->_linkToUF ) {
             require_once 'api/v2/UFGroup.php';
         }
-        
+
+        // we need to determine of overlay profile should be shown
+        require_once 'CRM/Core/BAO/UFGroup.php';
+        $showProfileOverlay = CRM_Core_BAO_UFGroup::showOverlayProfile( );
+
         $imProviders  = CRM_Core_PseudoConstant::IMProvider( );
         $websiteTypes = CRM_Core_PseudoConstant::websiteType( );
         $languages    = CRM_Core_PseudoConstant::languages( );
@@ -520,7 +524,8 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
             $row[] = CRM_Contact_BAO_Contact_Utils::getImage( $result->contact_sub_type ? 
                                                               $result->contact_sub_type : $result->contact_type,
                                                               false,
-                                                              $result->contact_id );
+                                                              $result->contact_id,
+                                                              $showProfileOverlay );
             if ( $result->sort_name ) {
                 $row['sort_name'] = $result->sort_name;
                 $empty            = false;
@@ -541,6 +546,8 @@ class CRM_Profile_Selector_Listings extends CRM_Core_Selector_Base implements CR
                     $typeName = $websiteTypes[$result->$typeId];
                     if ( $typeName ) { 
                         $row[] = "<a href=\"$url\">{$result->$name} (${typeName})</a>";
+                    } else {
+                        $row[] = "<a href=\"$url\">{$result->$name}</a>";
                     }
                 } else if ( $name == 'preferred_language' ) {
                     $row[] = $languages[$result->$name];

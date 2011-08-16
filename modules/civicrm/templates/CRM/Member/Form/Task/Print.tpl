@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,7 +26,7 @@
 <p>
 {if $rows } 
 <div class="form-item">
-     <span class="element-right">{include file="CRM/common/formButtons.tpl"}</span>
+     <span class="element-right">{include file="CRM/common/formButtons.tpl" location="top"}</span>
 </div>
 <div class="spacer"></div>
 <br />
@@ -55,7 +55,7 @@
 </table>
 
 <div class="form-item">
-     <span class="element-right">{include file="CRM/common/formButtons.tpl"}</span>
+     <span class="element-right">{include file="CRM/common/formButtons.tpl" location="bottom"}</span>
 </div>
 
 {else}

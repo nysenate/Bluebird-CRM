@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,10 +29,11 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
+
 
 /**
  * Drupal specific stuff goes here
@@ -166,6 +167,9 @@ class CRM_Utils_System_Drupal {
                  $frontend = false ) {
         $config = CRM_Core_Config::singleton( );
         $script =  'index.php';
+
+        require_once 'CRM/Utils/String.php';
+        $path = CRM_Utils_String::stripPathChars( $path );
 
         if (isset($fragment)) {
             $fragment = '#'. $fragment;
@@ -349,16 +353,29 @@ class CRM_Utils_System_Drupal {
     
     static function cmsRootPath( ) 
     {
-        $cmsRoot  = $valid = null;
-        $pathVars = explode( '/', str_replace( '\\', '/', $_SERVER['SCRIPT_FILENAME'] ) );
+        $cmsRoot = $valid = null;
         
-        //might be windows installation.
+        $path = $_SERVER['SCRIPT_FILENAME'];
+        if ( function_exists( 'drush_get_context' ) ) {
+            // drush anyway takes care of multisite install etc
+            return drush_get_context('DRUSH_DRUPAL_ROOT');
+        }
+        // CRM-7582
+        $pathVars = explode( '/', 
+                             str_replace('//', '/', 
+                                         str_replace( '\\', '/', $path ) ) );
+        
+        //lets store first var,
+        //need to get back for windows.
         $firstVar = array_shift( $pathVars );
-        if ( $firstVar ) $cmsRoot = $firstVar;
         
-        //start w/ csm dir search.
-        foreach ( $pathVars as $var ) {
-            $cmsRoot .= "/$var";
+        //lets remove sript name to reduce one iteration.
+        array_pop( $pathVars );
+        
+        //CRM-7429 --do check for upper most 'includes' dir,
+        //which would effectually work for multisite installation.
+        do {
+            $cmsRoot = $firstVar . '/'.implode( '/', $pathVars );
             $cmsIncludePath = "$cmsRoot/includes";
             //stop as we found bootstrap.
             if ( @opendir( $cmsIncludePath ) && 
@@ -366,9 +383,11 @@ class CRM_Utils_System_Drupal {
                 $valid = true;
                 break;
             }
-        }
+            //remove one directory level.
+            array_pop( $pathVars );
+        } while ( count( $pathVars ) ); 
         
-        return ( $valid ) ? $cmsRoot : null; 
+        return ( $valid ) ? $cmsRoot : null;
     }
     
     /**

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,13 +26,13 @@
 <tr><td colspan="3" style="padding:0;">
 <table style="border:none;">
 <tr>
-   {if $form.address.$blockId.country_id}
+   {if !empty($form.address.$blockId.country_id)}
      <td>
         {$form.address.$blockId.country_id.label}<br />
         {$form.address.$blockId.country_id.html}
      </td>
    {/if}
-   {if $form.address.$blockId.state_province_id} 
+   {if !empty($form.address.$blockId.state_province_id)} 
      <td>
         {$form.address.$blockId.state_province_id.label}<br />
         {$form.address.$blockId.state_province_id.html}

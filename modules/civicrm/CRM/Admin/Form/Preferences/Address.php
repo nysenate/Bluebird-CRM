@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -163,9 +163,36 @@ class CRM_Admin_Form_Preferences_Address extends CRM_Admin_Form_Preferences
         
         $this->_config->copyValues( $this->_params );
 
-        
+        // check if county option has been set
+        $options = CRM_Core_OptionGroup::values( 'address_options', false, false, true );
+        foreach ($options as $key => $title ) {
+            if ( $title == ts( 'County' ) ) {
+                // check if the $key is present in $this->_params
+                if ( isset( $this->_params['address_options' ] ) &&
+                     ! empty( $this->_params['address_options' ][$key] ) ) {
+                    // print a status message to the user if county table seems small
+                    $sql = "
+SELECT count(*)
+FROM   civicrm_county
+";
+                    $countyCount = CRM_Core_DAO::singleValueQuery( $sql );
+                    if ( $countyCount < 10 ) {
+                        global $civicrm_root;
+                        $sqlFilePath = 
+                            $civicrm_root . DIRECTORY_SEPARATOR .
+                            'sql'         . DIRECTORY_SEPARATOR .
+                            'counties.US.sql.gz';
+                        
+                        require_once 'CRM/Core/Session.php';
+                        CRM_Core_Session::setStatus( ts( 'You have enabled the County option. Please ensure you populate the county table in your CiviCRM Database. You can find a list of US counties (in gzip format) in your distribution at: <em>%1</em>',
+                                                         array( 1 => $sqlFilePath ) ) );
+                    }
+                }
+            }
+        }
+
         parent::postProcess( );
-    }//end of function
+    } //end of function
 
 }
 

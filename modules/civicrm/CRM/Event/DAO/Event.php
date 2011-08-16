@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -410,6 +410,12 @@ class CRM_Event_DAO_Event extends CRM_Core_DAO
      */
     public $currency;
     /**
+     * The campaign for which this event has been created.
+     *
+     * @var int unsigned
+     */
+    public $campaign_id;
+    /**
      * class constructor
      *
      * @access public
@@ -432,6 +438,7 @@ class CRM_Event_DAO_Event extends CRM_Core_DAO
                 'payment_processor_id' => 'civicrm_payment_processor:id',
                 'loc_block_id' => 'civicrm_loc_block:id',
                 'created_id' => 'civicrm_contact:id',
+                'campaign_id' => 'civicrm_campaign:id',
             );
         }
         return self::$_links;
@@ -798,6 +805,11 @@ class CRM_Event_DAO_Event extends CRM_Core_DAO
                     'headerPattern' => '/cur(rency)?/i',
                     'dataPattern' => '/^[A-Z]{3}$/i',
                     'export' => true,
+                ) ,
+                'campaign_id' => array(
+                    'name' => 'campaign_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'FKClassName' => 'CRM_Campaign_DAO_Campaign',
                 ) ,
             );
         }

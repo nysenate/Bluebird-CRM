@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -192,27 +192,65 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
                              $separator = '&nbsp;&nbsp;', 
                              $flatlist = true )
     {
-        $parentClause = '';
-        if ( $parentId ) {
-            $separator .= '&nbsp;&nbsp;';
-            $parentClause = " parent_id = {$parentId}";
-        } else {
-            $separator = '';
-            $parentClause = ' is_tagset = 0 AND parent_id IS NULL';
-        }
-        
-        $query = "SELECT id, name, parent_id 
+        // We need to build a list of tags ordered by hierarchy and sorted by
+        // name. The heirarchy will be communicated by an accumulation of
+        // '&nbsp;&nbsp;' in front of the name to give it a visual offset.
+        // Instead of recursively making mysql queries, we'll make one big
+        // query and build the heirarchy with the algorithm below.
+        $query = "SELECT id, name, parent_id, is_tagset
                   FROM civicrm_tag 
-                  WHERE {$parentClause} AND used_for LIKE '%{$usedFor}%' ORDER BY name";
-        
+                  WHERE used_for LIKE '%{$usedFor}%' ORDER BY name";
         $dao = CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray, true, null, false, false );
-        
-        while( $dao->fetch( ) ) {
-            $tags[$dao->id] = $separator . $dao->name;
-            self::getTags( $usedFor, $tags, $dao->id, $separator );
+
+        // Sort the tags into the correct storage by the parent_id/is_tagset
+        // filter the filter was in place previously, we're just reusing it.
+        // $roots represents the current leaf nodes that need to be checked for
+        // children. $rows represents the unplaced nodes, not all of much
+        // are necessarily placed.
+        $roots = $rows = array( );
+        while ($dao->fetch()) {
+            if (!$dao->parent_id && $dao->is_tagset==0) {
+                $roots[] = array('id'=> $dao->id,'prefix'=>'','name'=> $dao->name);
+            } else {
+                $rows[] = array('id'=> $dao->id,'prefix'=>'','name'=> $dao->name, 'parent_id'=> $dao->parent_id);
+            }
         }
-        
-        return $tags;        
+
+        // While we have nodes left to build, shift the first (alphabetically)
+        // node of the list, place it in our tags list and loop through the
+        // list of unplaced nodes to find its children. We make a copy to
+        // iterate through because we must modify the unplaced nodes list
+        // during the loop.
+        while (count($roots)) {
+            $new_roots = array();
+            $current_rows = $rows;
+            $root = array_shift($roots);
+            $tags[$root['id']] = array($root['prefix'],$root['name']);
+
+            // As you find the children, append them to the end of the new set
+            // of roots (maintain alphabetical ordering). Also remove the node
+            // from the set of unplaced nodes.
+            if ( is_array( $current_rows ) ) {
+                foreach ($current_rows as $key=>$row) {
+                    if ( $row['parent_id']==$root['id'] ) {
+                        $new_roots[] = array('id' => $row['id'],'prefix' => $tags[$root['id']][0].$separator, 'name' => $row['name']);
+                        unset($rows[$key]);
+                    }
+                }
+            }
+
+            //As a group, insert the new roots into the beginning of the roots
+            //list. This maintains the hierarchical ordering of the tags.
+            $roots = array_merge($new_roots,$roots);
+        }
+
+        // Prefix each name with the calcuated spacing to give the visual
+        // appearance of ordering when transformed into HTML in the form layer.
+        foreach ($tags as &$tag) {
+            $tag = $tag[0].$tag[1];
+        }
+
+        return $tags;
     }
     
     /**
@@ -289,6 +327,13 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
             CRM_Utils_Hook::pre( 'edit', 'Tag', $tag->id, $tag );
         } else {
             CRM_Utils_Hook::pre( 'create', 'Tag', null, $tag );
+        }
+    
+        // save creator id and time
+        if ( !$tag->id ) {
+            $session =& CRM_Core_Session::singleton( );
+            $tag->created_id   = $session->get('userID');
+            $tag->created_date = date('YmdHis'); 
         }
 
         $tag->save( );

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -262,7 +262,7 @@ class CRM_Member_Import_Form_MapField extends CRM_Core_Form {
             $this->assign('loadedMapping', $mappingDetails->name);
             $this->set('loadedMapping', $savedMapping);
             
-            $getMappingName =&  new CRM_Core_DAO_Mapping();
+            $getMappingName = new CRM_Core_DAO_Mapping();
             $getMappingName->id = $savedMapping;
             $getMappingName->mapping_type = 'Import Memberships';
             $getMappingName->find();
@@ -458,10 +458,16 @@ class CRM_Member_Import_Form_MapField extends CRM_Core_Form {
                              in_array('membership_id', $importKeys) ) {
                             continue;    
                         } else {
+                            if ( !isset($errors['_qf_default']) ) {
+                                $errors['_qf_default'] = '';
+                            }
                             $errors['_qf_default'] .= ts('Missing required contact matching fields.') . " $fieldMessage " . ts('(Sum of all weights should be greater than or equal to threshold: %1).',array(1 => $threshold)) . ' ' . ts('(OR Membership ID if update mode.)') . '<br />';
                         }
                         
                     } else {
+                        if ( !isset($errors['_qf_default']) ) {
+                            $errors['_qf_default'] = '';
+                        }
                         $errors['_qf_default'] .= ts('Missing required field: %1', array(1 => $title)) . '<br />';
                     }
                 }

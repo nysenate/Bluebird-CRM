@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -48,7 +48,7 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                   'civicrm_contact'=>
                   array( 'dao'     => 'CRM_Contact_DAO_Contact',
                          'fields'  =>
-                         array( 'display_name' => 
+                         array( 'sort_name' => 
                                 array( 'title'     => ts( 'Contact Name' ),
                                        'required'  => true,
                                        'no_repeat' => true ),
@@ -59,7 +59,7 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                                 ),
                          'grouping'=> 'contact-fields',
                          'filters' =>             
-                         array('display_name'     => 
+                         array('sort_name'     => 
                                array( 'title'      => ts( 'Contact Name' ),
                                       'operator'   => 'like' ), 
                                'gender_id' => 
@@ -99,9 +99,9 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                                      'name'      => 'status_id' ,
                                      'title'     => ts( 'Grant Status' ),
                                       ),
-                               'amount_requested'   =>
+                               'amount_total'   =>
                                array( 
-                                     'name'      => 'amount_requested' ,
+                                     'name'      => 'amount_total' ,
                                      'title'     => ts( 'Amount Requested' ),
                                      'type'      => CRM_Utils_Type::T_MONEY
                                       ),
@@ -113,7 +113,7 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                                'application_received_date'=>
                                array( 
                                      'name'      => 'application_received_date' ,
-                                     'title'     => ts( 'Application Received Date' ),
+                                     'title'     => ts( 'Application Received' ),
                                      'default'=>true
                                       ),
                                'money_transfer_date'=>
@@ -125,7 +125,7 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                                'grant_due_date'=>
                                array( 
                                      'name'      => 'grant_due_date' ,
-                                     'title'     => ts( 'Grant Due Date' ),
+                                     'title'     => ts( 'Grant Report Due' ),
                                      'type' => CRM_Utils_Type::T_DATE
                                       ),
                                'rationale'=>
@@ -155,13 +155,13 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                                array(
                                      'title'        => ts('Amount Granted') ,
                                      'operatorType' => CRM_Report_Form::OP_INT,),
-                               'amount_requested'   =>
+                               'amount_total'   =>
                                array(
                                      'title'        => ts('Amount Requested') ,
                                      'operatorType' => CRM_Report_Form::OP_INT,),
                                'application_received_date'=>
                                array(
-                                     'title'        => ts('Application Received Date'),
+                                     'title'        => ts('Application Received'),
                                      'operatorType' => CRM_Report_Form::OP_DATE ),
                                'money_transfer_date'=>
                                array(
@@ -169,7 +169,7 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                                      'operatorType' => CRM_Report_Form::OP_DATE ),
                                'grant_due_date'=>
                                array(
-                                     'title'        => ts('Grant Due Date'),
+                                     'title'        => ts('Grant Report Due'),
                                      'operatorType' => CRM_Report_Form::OP_DATE,
                                      'type' => CRM_Report_Form::OP_DATE),
                                
@@ -182,7 +182,7 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
                                'status_id'  => 
                                array( 
                                      'title'        => ts('Grant Status' )),
-                               'amount_requested'   =>
+                               'amount_total'   =>
                                array(
                                      'title'        => ts('Amount Requested')),
                                'amount_granted'   =>
@@ -240,6 +240,7 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
     }
     function where( ) {
         $clauses = array( );
+        $this->_where = '';
         foreach ( $this->_columns as $tableName => $table ) {
             if ( array_key_exists('filters', $table) ) { 
                 foreach ( $table['filters'] as $fieldName => $field ) {
@@ -290,20 +291,23 @@ class CRM_Report_Form_Grant_Detail extends CRM_Report_Form {
         } 
         if ( !empty( $this->_groupBy ) ) {
             $this->_groupBy = "ORDER BY " . implode( ', ', $this->_groupBy )  . ", {$this->_aliases['civicrm_contact']}.sort_name";
-        } 
+        } else {
+            $this->_groupBy = "ORDER BY {$this->_aliases['civicrm_contact']}.sort_name";
+        }
     }
+
     function alterDisplay( &$rows ) {
         // custom code to alter rows
         $entryFound = false;
         foreach ( $rows as $rowNum => $row ) {
             // convert display name to links
-            if ( array_key_exists( 'civicrm_contact_display_name', $row ) && 
+            if ( array_key_exists( 'civicrm_contact_sort_name', $row ) && 
                  array_key_exists( 'civicrm_contact_id', $row ) ) {
                 $url = CRM_Utils_System::url( 'civicrm/contact/view', 
                                               'reset=1&cid=' . 
                                               $row['civicrm_contact_id'] );
-                $rows[$rowNum]['civicrm_contact_display_name_link'] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_hover'] = 
+                $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_hover'] = 
                     ts("View contact details for this record.");
                 $entryFound = true;
             }

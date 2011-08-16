@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -248,11 +248,13 @@ class CRM_Custom_Page_Group extends CRM_Core_Page {
         require_once "CRM/Member/BAO/MembershipType.php";
 		require_once "CRM/Event/PseudoConstant.php";
         require_once 'CRM/Contact/BAO/ContactType.php';
-                
-        $subTypes['Activity']     = CRM_Core_PseudoConstant::activityType( false, true );
+        require_once 'CRM/Campaign/PseudoConstant.php';
+        
+        $subTypes['Activity']     = CRM_Core_PseudoConstant::activityType( false, true, false, 'label', true );
         $subTypes['Contribution'] = CRM_Contribute_PseudoConstant::contributionType( );
         $subTypes['Membership']   = CRM_Member_BAO_MembershipType::getMembershipTypes( false );
         $subTypes['Event']        = CRM_Core_OptionGroup::values('event_type');
+        $subTypes['Campaign']     = CRM_Campaign_PseudoConstant::campaignType( );
         $subTypes['Participant']  = array( );
 		$subTypes['ParticipantRole'     ] = CRM_Core_OptionGroup::values( 'participant_role' );;
 	    $subTypes['ParticipantEventName'] = CRM_Event_PseudoConstant::event( );
@@ -289,6 +291,9 @@ class CRM_Custom_Page_Group extends CRM_Core_Page {
         }
 
         $subTypes['Contact']  =  $contactSubTypes;
+
+        CRM_Core_BAO_CustomGroup::getExtendedObjectTypes( $subTypes );
+
         foreach ($customGroup as $key => $values ) {
             $subValue = CRM_Utils_Array::value( 'extends_entity_column_value', $customGroup[$key] );
 			$subName  = CRM_Utils_Array::value( 'extends_entity_column_id', $customGroup[$key] );
@@ -317,8 +322,8 @@ class CRM_Custom_Page_Group extends CRM_Core_Page {
                                     $subTypes[$type][$sub.'_b_a'] : $subTypes[$type][$sub.'_b_a'];
                             }
                         } else {
-                            $colValue = $colValue ? $colValue . ', ' . 
-                                $subTypes[$type][$sub] : $subTypes[$type][$sub];
+                            $colValue = $colValue ? ( $colValue . ( isset($subTypes[$type][$sub]) ? ', '. $subTypes[$type][$sub] : '' ) ) :
+                                ( isset($subTypes[$type][$sub]) ? $subTypes[$type][$sub] : '' );
                         } 
                     }
                 }

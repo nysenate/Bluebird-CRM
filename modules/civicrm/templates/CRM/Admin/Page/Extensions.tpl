@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,19 +27,15 @@
 {if $action eq 1 or $action eq 2 or $action eq 8}
    {include file="CRM/Admin/Form/Extensions.tpl"}
 {else}
-    {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&destination=$returnURL"}{/capture}
-    {if not $extEnabled}
+    {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&destination=/civicrm/admin/extensions?reset=1"}{/capture}
+    {if !$extEnabled }
       <div class="crm-content-block crm-block">
         <div class="messages status">
              <div class="icon inform-icon"></div>
-             {capture assign='returnURL'}{crmURL p='civicrm/admin/extensions' q='reset=1'}{/capture}
-             {ts 1=$adminURL}Your extensions directory is not set. Click <a href='%1'>here</a> to set the extension directory.{/ts}
+             {ts 1=$adminURL}Your extensions directory is not set or is not writable. Click <a href='%1'>here</a> to set the extension directory.{/ts}
         </div>
       </div>
     {else} {* extEnabled *}
-
-
-
       {if $action ne 1 and $action ne 2}
           <div class="action-link">
               <a href="{crmURL q="reset=1"}" id="new" class="button"><span><div class="icon refresh-icon"></div>{ts}Refresh{/ts}</span></a>
@@ -61,7 +57,7 @@
             <thead>
               <tr>
                 <th>{ts}Extension name (key){/ts}</th>
-		<th>{ts}Status{/ts}</th>
+                <th>{ts}Status{/ts}</th>
                 <th>{ts}Version{/ts}</th>
                 <th>{ts}Enabled?{/ts}</th>
                 <th>{ts}Type{/ts}</th>
@@ -95,7 +91,7 @@
       {else}
         <div class="messages status">
              <div class="icon inform-icon"></div>
-            {ts}You have no locally aavailable extensions and didn't download any information about publically available extensions from our server. Please click "Refresh" to update information about available extensions.{/ts}
+            {ts}You have no locally available extensions and didn't download any information about publically available extensions from our server. Please click "Refresh" to update information about available extensions.{/ts}
         </div>    
       {/if}
 

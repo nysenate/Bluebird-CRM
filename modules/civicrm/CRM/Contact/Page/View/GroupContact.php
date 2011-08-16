@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -110,6 +110,10 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
      */
     function run( ) {
         $this->preProcess( );
+
+        require_once 'CRM/Contact/BAO/Contact.php';
+        $displayName = CRM_Contact_BAO_Contact::displayName( $this->_contactId );
+        $this->assign( 'displayName', $displayName );
 
         if ( $this->_action == CRM_Core_Action::DELETE ) {
             $groupContactId = CRM_Utils_Request::retrieve( 'gcid', 'Positive',

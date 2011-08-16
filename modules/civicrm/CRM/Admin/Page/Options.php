@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -108,10 +108,10 @@ class CRM_Admin_Page_Options extends CRM_Core_Page_Basic
                                        'url'   => CRM_Utils_System::url( 'civicrm/admin/access', 
                                                                          'reset=1' )) );
             CRM_Utils_System::appendBreadCrumb( $breadCrumb ); 
-       } else {
-            CRM_Utils_System::setTitle(ts('%1 Options', array(1 => self::$_GName)));
+        } else {
+            CRM_Utils_System::setTitle(ts("%1 Options", array(1 => self::$_GName)));
         }
-        if ( in_array( self::$_gName, array('from_email_address', 'email_greeting', 'postal_greeting', 'addressee') ) ) {
+        if ( in_array( self::$_gName, array('from_email_address', 'email_greeting', 'postal_greeting', 'addressee', 'case_status', 'encounter_medium') ) ) {
             $this->assign( 'showIsDefault', true );
         }
         if ( self::$_gName == 'participant_status' ) {

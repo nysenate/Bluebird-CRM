@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -189,7 +189,7 @@ class CRM_Profile_Page_Listings extends CRM_Core_Page {
             } else if ( CRM_Utils_Array::value( 'html_type', $field ) == 'Multi-Select State/Province' 
                         || CRM_Utils_Array::value( 'html_type', $field ) == 'Multi-Select Country') {
                 $value = CRM_Utils_Request::retrieve( $name, 'String', $this, false, null, 'REQUEST' );
-                if ( ! is_array($value) ) $value = explode(CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, substr($value,1,-1));
+                if ( ! is_array($value) ) $value = explode(CRM_Core_DAO::VALUE_SEPARATOR, substr($value,1,-1));
             } else {
                 $value = CRM_Utils_Request::retrieve( $name, 'String',
                                                       $this, false, null, 'REQUEST' );

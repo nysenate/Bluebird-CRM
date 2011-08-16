@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
  * it need to be defined here first.
  * 
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -238,7 +238,7 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
      * Default user framework
      */
     public $userFramework               = 'Drupal';
-    public $userFrameworkVersion        = 6.3;
+    public $userFrameworkVersion        = 'Unknown';
     public $userFrameworkUsersTableName = 'users';
     public $userFrameworkClass          = 'CRM_Utils_System_Drupal';
     public $userHookClass               = 'CRM_Utils_Hook_Drupal';
@@ -278,7 +278,7 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
      * @var string
      */
     public $mapAPIKey = null;
-    
+
     /**
      * Geocoding Provider 
      *
@@ -292,13 +292,13 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
      * @var string
      */
     public $geoAPIKey = null;
-    
+	    
     /**
      * How should we get geo code information if google map support needed
      *
      * @var string
      */
-    public $geocodeMethod = '';
+    public $geocodeMethod    = '';
     
     /**
      *
@@ -435,6 +435,10 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
      */
     public $componentRegistry  = null;
 
+    /**
+     * PDF reciept as attachment is disabled by default (CRM-8350) 
+     */
+    public $doNotAttachPDFReceipt = false;
 
     /**
      * Provide addressSequence
@@ -479,9 +483,12 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
      */
     public function defaultContactCountry( ) {
         static $cachedContactCountry = null;
-        if ( ! $cachedContactCountry ) {
+        
+        if ( ! empty ($this->defaultContactCountry) &&
+             ! $cachedContactCountry ) {
             $countryIsoCodes = CRM_Core_PseudoConstant::countryIsoCode( );
-            $cachedContactCountry = $countryIsoCodes[$this->defaultContactCountry];
+            $cachedContactCountry = CRM_Utils_Array::value( $this->defaultContactCountry,
+                                                            $countryIsoCodes );
         }
         return $cachedContactCountry;
     }

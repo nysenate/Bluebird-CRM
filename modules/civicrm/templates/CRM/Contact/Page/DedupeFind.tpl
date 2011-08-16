@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,30 +25,12 @@
 *}
 {if $action eq 2 || $action eq 16}
 <div class="form-item">
-  <table>
-    <tr class="columnheader"><th>{ts}Contact{/ts} 1</th><th>{ts}Contact{/ts} 2 ({ts}Duplicate{/ts})</th><th>{ts}Threshold{/ts}</th><th>&nbsp;</th></tr>
-    {foreach from=$main_contacts item=main key=main_id}
-        {capture assign=srcLink}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$main.srcID`"}">{$main.srcName}</a>{/capture}
-        {capture assign=dstLink}<a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$main.dstID`"}">{$main.dstName}</a>{/capture}
-	{assign var="qParams" value="reset=1&cid=`$main.srcID`&oid=`$main.dstID`&action=update&rgid=`$rgid`"}
-	{if $gid}{assign var="qParams" value="$qParams&gid=`$gid`"}{/if}
-        {capture assign=merge}<a href="{crmURL p='civicrm/contact/merge' q="`$qParams`"}">{ts}merge{/ts}</a>{/capture}
-        <tr id="dupeRow_{$main.srcID}_{$main.dstID}" class="{cycle values="odd-row,even-row"}">
-          <td>{$srcLink}</td>
-          <td>{$dstLink}</td>
-          <td>{$main.weight}</td>
-          <td style="text-align: right;">
-	  {if $main.canMerge}
-              {$merge}
-	      &nbsp;|&nbsp;
-	      <a id='notDuplicate' href="#" title={ts}not a duplicate{/ts} onClick="processDupes( {$main.srcID}, {$main.dstID}, 'dupe-nondupe', 'dupe-listing' );return false;">{ts}not a duplicate{/ts}</a>
-	  {else}
-	       <em>{ts}Insufficient access rights - cannot merge{/ts}</em>
-	  {/if}
-	  </td>
-        </tr>
-    {/foreach}
+  <table class='pagerDisplay'>
+    <thead>
+    <tr class="columnheader"><th id="nosort">{ts}Contact{/ts} 1</th><th id="nosort">{ts}Contact{/ts} 2 ({ts}Duplicate{/ts})</th><th id="nosort">{ts}Threshold{/ts}</th><th id="nosort">&nbsp;</th></tr>
+    </thead>
   </table>
+  {include file="CRM/common/jsortable.tpl" sourceUrl=$sourceUrl useAjax=1 }
   {if $cid}
     <table style="width: 45%; float: left; margin: 10px;">
       <tr class="columnheader"><th colspan="2">{ts 1=$main_contacts[$cid]}Merge %1 with{/ts}</th></tr>
@@ -80,3 +62,8 @@
 
 {* process the dupe contacts *}
 {include file='CRM/common/dedupe.tpl'}
+{literal}
+<script type="text/javascript">
+var oTable = null;
+</script>
+{/literal}

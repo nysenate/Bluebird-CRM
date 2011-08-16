@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -45,5 +45,10 @@
             </div>
         </td>
     </tr>
+
+    {* campaign in contribution page search *}
+    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+    campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
+
  </table>
 </div>

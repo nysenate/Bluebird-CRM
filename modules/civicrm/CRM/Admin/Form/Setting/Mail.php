@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -53,6 +53,8 @@ class CRM_Admin_Form_Setting_Mail extends CRM_Admin_Form_Setting
         $this->addElement('text','verpSeparator', ts('VERP Separator'));
         $this->addElement('text','mailerBatchLimit', ts('Mailer Batch Limit'));
         $this->addElement('text','mailerJobSize', ts('Mailer Job Size'));
+        $this->addElement( 'advcheckbox', 'replyTo', ts( 'Enable Custom Reply-To' ) );
+        $this->addElement('text','mailerJobsMax', ts('Mailer CRON job limit'));
         $check = true;
         
         // redirect to Administer Section After hitting either Save or Cancel button.

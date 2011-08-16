@@ -62,7 +62,7 @@
 {/htxt}
 
 {htxt id='id-post_URL'}
-{ts}If you are using this profile as a contact signup or edit form, and want to redirect the user to a static URL after they've submitted the form - enter the complete URL here. If this field is left blank, the built-in Profile form will be redisplayed with a generic status message - 'Your contact information has been saved.'{/ts}
+{ts}If you are using this profile as a contact signup or edit form, and want to redirect the user to a static URL after they've submitted the form, you can also use contact tokens in URL - enter the complete URL here. If this field is left blank, the built-in Profile form will be redisplayed with a generic status message - 'Your contact information has been saved.'{/ts}
 {/htxt}
 
 {htxt id='id-cancel_URL'}
@@ -93,6 +93,8 @@
 {htxt id='id-is_update_dupe'}
 <p>{ts}If you are using the profile as a contact signup and editing form - this option controls what happens if the data matches an existing contact record. Using this option user can update the matching record or create a duplicate record or otherwise he will get a 'duplicate record' warning, and their input will not be saved. Contact matching is based on your configured 'Strict' rule for identifying duplicate contacts.{/ts} {docURL page="Find and Merge Duplicate Contacts"}</p>
 <p>{ts}This setting is ignored if the profile is embedded in an online contribution, membership signup or event registration form. In this case a contact match always results in the transaction being linked to the matching contact.</p>{/ts}
+<p>{ts}In all cases, the check for an existing matching contact uses the default "Individual Strict Duplicate Matching Rule" (match on email address). If you are concerned with existing contact data being over-written by anonymous visitors, you can modify this rule to make matches less likely (or even impossible).
+For example, if you NEVER want anonymous input to match (i.e. always create a new contact record) - edit that rule and set the 'weight threshold' higher than 10. You will then need to run Find Duplicates periodically using a different rule, and merge any duplicate records with their associated memberships, contributions, etc.{/ts}</p>
 <p>{ts}NOTE: If there are multiple matching contacts, the first matching record is used.{/ts}</p>
 {/htxt}
 

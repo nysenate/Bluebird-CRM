@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -101,7 +101,7 @@ class CRM_Core_DAO_CustomGroup extends CRM_Core_DAO
     /**
      * Type of object this group extends (can add other options later e.g. contact_address, etc.).
      *
-     * @var enum('Contact', 'Individual', 'Household', 'Organization', 'Location', 'Address', 'Contribution', 'Activity', 'Relationship', 'Group', 'Membership', 'Participant', 'Event', 'Grant', 'Pledge', 'Case')
+     * @var string
      */
     public $extends;
     /**
@@ -250,12 +250,11 @@ class CRM_Core_DAO_CustomGroup extends CRM_Core_DAO
                 ) ,
                 'extends' => array(
                     'name' => 'extends',
-                    'type' => CRM_Utils_Type::T_ENUM,
+                    'type' => CRM_Utils_Type::T_STRING,
                     'title' => ts('Extends') ,
+                    'maxlength' => 255,
+                    'size' => CRM_Utils_Type::HUGE,
                     'default' => 'Contact',
-                    'enumValues' => 'Contact, Individual, Household, Organization, Location, Address,
-       Contribution, Activity, Relationship, Group, Membership, Participant,
-       Event, Grant, Pledge, Case',
                 ) ,
                 'extends_entity_column_id' => array(
                     'name' => 'extends_entity_column_id',
@@ -420,7 +419,6 @@ class CRM_Core_DAO_CustomGroup extends CRM_Core_DAO
     static function &getEnums()
     {
         static $enums = array(
-            'extends',
             'style',
         );
         return $enums;
@@ -438,24 +436,6 @@ class CRM_Core_DAO_CustomGroup extends CRM_Core_DAO
         static $translations = null;
         if (!$translations) {
             $translations = array(
-                'extends' => array(
-                    'Contact' => ts('Contact') ,
-                    'Individual' => ts('Individual') ,
-                    'Household' => ts('Household') ,
-                    'Organization' => ts('Organization') ,
-                    'Location' => ts('Location') ,
-                    'Address' => ts('Address') ,
-                    'Contribution' => ts('Contribution') ,
-                    'Activity' => ts('Activity') ,
-                    'Relationship' => ts('Relationship') ,
-                    'Group' => ts('Group') ,
-                    'Membership' => ts('Membership') ,
-                    'Participant' => ts('Participant') ,
-                    'Event' => ts('Event') ,
-                    'Grant' => ts('Grant') ,
-                    'Pledge' => ts('Pledge') ,
-                    'Case' => ts('Case') ,
-                ) ,
                 'style' => array(
                     'Tab' => ts('Tab') ,
                     'Inline' => ts('Inline') ,

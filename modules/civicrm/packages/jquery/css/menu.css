@@ -59,6 +59,8 @@ html>body .innerbox
 	background:#5D5D5D repeat-x;
 	color: white;
 	cursor: default;
+    font-size: 12px;
+    font-family: Tahoma, Verdana, Arial, Sans;
 }
 
 #civicrm-menu {
@@ -68,9 +70,7 @@ html>body .innerbox
     background:#1B1B1B repeat-x;
     width:100%;
     height:23px;
-    z-index:9000;
-    font-size: 12px;
-    font-family: Tahoma, Verdana, Arial, Sans;
+    z-index:1000;
     overflow: hidden;
 }
 

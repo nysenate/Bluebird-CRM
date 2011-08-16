@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -83,7 +83,7 @@ class CRM_Campaign_Form_Gotv extends CRM_Core_Form
         $this->assign( 'searchParams',   json_encode( $this->get( 'searchParams' ) ) );
         $this->assign( 'buildSelector',  $this->_search );
         $this->assign( 'searchVoterFor', $this->_searchVoterFor );
-        $this->assign( 'doNotReloadCRMAccordion', $this->get( 'doNotReloadCRMAccordion' ) );
+        $this->set(    'searchVoterFor', $this->_searchVoterFor );
         
         $surveyTitle = null;
         if ( $this->_surveyId ) {
@@ -93,7 +93,7 @@ class CRM_Campaign_Form_Gotv extends CRM_Core_Form
         
         //append breadcrumb to survey dashboard.
         require_once 'CRM/Campaign/BAO/Campaign.php';
-        if ( CRM_Campaign_BAO_Campaign::accessCampaignDashboard( ) ) {
+        if ( CRM_Campaign_BAO_Campaign::accessCampaign( ) ) {
             $url = CRM_Utils_System::url( 'civicrm/campaign', 'reset=1&subPage=survey' );
             CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('Survey(s)'), 'url' => $url ) ) );
         }
@@ -120,6 +120,7 @@ class CRM_Campaign_Form_Gotv extends CRM_Core_Form
         $this->_searchParams = array( );
         foreach  ( $this->_elements as $element ) {
             $name = $element->_attributes['name'];
+            if ( $name == 'qfKey' ) continue;
             $this->_searchParams[$name] = $name;
         }
         $this->set( 'searchParams',    $this->_searchParams );
@@ -128,7 +129,7 @@ class CRM_Campaign_Form_Gotv extends CRM_Core_Form
         $defaults = array( );
         
         if ( !$this->_surveyId ) {
-            $this->_surveyId = key( CRM_Campaign_BAO_Survey::getSurvey( false, null, true ) );
+            $this->_surveyId = key( CRM_Campaign_BAO_Survey::getSurveys( true, true ) );
         }
         
         if ( $this->_force || $this->_votingTab ) {
@@ -163,7 +164,7 @@ class CRM_Campaign_Form_Gotv extends CRM_Core_Form
         }
         
         require_once 'CRM/Campaign/BAO/Survey.php';
-        $surveys = CRM_Campaign_BAO_Survey::getSurveyList( );
+        $surveys = CRM_Campaign_BAO_Survey::getSurveys( );
         if ( empty( $surveys ) ) {
             $errorMessages[] = ts( "Oops, It looks like there is no survey created. <a href='%1'>Click here to create new.</a>", array( 1 => CRM_Utils_System::url( 'civicrm/survey/add', 'reset=1&action=add'  ) ) );
         }

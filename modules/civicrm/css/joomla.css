@@ -91,7 +91,7 @@ td.active {
 }
 /* Tab navigation */
 #crm-container .tabs {
-  margin: 0 0 0.5 0.5em;
+  margin: 0 0 0.5em 0.5em;
 }
 #crm-container ul.primary {
   border-collapse: collapse;

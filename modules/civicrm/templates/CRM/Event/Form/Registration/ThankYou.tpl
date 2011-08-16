@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,6 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
+
 {if $action & 1024}
     {include file="CRM/Event/Form/Registration/PreviewHeader.tpl"}
 {/if}
@@ -57,7 +58,7 @@
                 <span class="bold">{ts}Your registration has been submitted.{/ts}
                 {ts}Once your registration has been reviewed, you will receive an email with a link to a web page where you can complete the registration process.{/ts}</span>
             </p>
-        {elseif $is_pay_later and $paidEvent}
+        {elseif $is_pay_later and $paidEvent and !$isAmountzero}
             <div class="bold">{$pay_later_receipt}</div>
             {if $is_email_confirm}
                 <p>{ts 1=$email}An email with event details has been sent to %1.{/ts}</p>
@@ -171,63 +172,52 @@
     {/if}
 
     {if $customPre}
-        {foreach from=$customPre item=field key=customName}
-            {if $field.groupTitle}
-                {assign var=groupTitlePre  value=$field.groupTitle} 
-            {/if}
-        {/foreach}
-    	<div class="crm-group {$groupTitlePre}-group">
-            <div class="header-dark">
-    	        {$groupTitlePre}
-            </div>
             <fieldset class="label-left">
                 {include file="CRM/UF/Form/Block.tpl" fields=$customPre}
             </fieldset>
-        </div>
     {/if}
 
     {if $customPost}
-        {foreach from=$customPost item=field key=customName}
-            {if $field.groupTitle}
-                {assign var=groupTitlePost  value=$field.groupTitle} 
-            {/if}
-        {/foreach}
-    	<div class="crm-group {$groupTitlePost}-group">
-            <div class="header-dark">
-                {$groupTitlePost}
-            </div>
             <fieldset class="label-left">  
                 {include file="CRM/UF/Form/Block.tpl" fields=$customPost}
             </fieldset>
-        </div>
     {/if}
 
-    {*display Additional Participant Info*}
-    {if $customProfile}
-        {foreach from=$customProfile item=value key=customName}
+    {*display Additional Participant Profile Information*}
+    {if $addParticipantProfile}
+        {foreach from=$addParticipantProfile item=participant key=participantNo}
             <div class="crm-group participant_info-group">
                 <div class="header-dark">
-                    {ts 1=$customName+1}Participant Information - Participant %1{/ts}	
+                    {ts 1=$participantNo+1}Participant Information - Participant %1{/ts}	
                 </div>
-                {foreach from=$value item=val key=field}
-                    {if $field eq additionalCustomPre or $field eq additionalCustomPost }
-                        {if $field eq 'additionalCustomPre' }
-                            <fieldset class="label-left"><legend>{$value.additionalCustomPre_grouptitle}</legend>
-                        {else}
-                            <fieldset class="label-left"><legend>{$value.additionalCustomPost_grouptitle}</legend>
-                        {/if}
-                        <table class="form-layout-compressed">	
-                        {foreach from=$val item=v key=f}
-                            <tr>
-                                <td class="label twenty">{$f}</td><td class="view-value">{$v}</td>
-                            </tr>
+                {if $participant.additionalCustomPre}
+		    <fieldset class="label-left"><div class="header-dark">{$participant.additionalCustomPreGroupTitle}</div>	
+                        {foreach from=$participant.additionalCustomPre item=value key=field}
+                            <div class="crm-section {$field}-section">
+                                <div class="label">{$field}</div>
+                                <div class="content">{$value}</div>
+                                <div class="clear"></div>
+                            </div>
                         {/foreach}
-                        </table>
-                        </fieldset>
-                    {/if}
-                <div>
-            {/foreach}
-            <div class="spacer"></div>  
+                    </fieldset>
+                {/if}
+
+                {if $participant.additionalCustomPost}
+		{foreach from=$participant.additionalCustomPost item=value key=field}
+		<fieldset class="label-left"><div class="header-dark">{$participant.additionalCustomPostGroupTitle.$field.groupTitle}</div>
+                        {foreach from=$participant.additionalCustomPost.$field item=value key=field}
+                            <div class="crm-section {$field}-section">
+                                <div class="label">{$field}</div>
+                                <div class="content">{$value}</div>
+                                <div class="clear"></div>
+                            </div>
+                        {/foreach}		 
+		{/foreach}		
+
+                    </fieldset>
+                {/if}
+            </div>
+        <div class="spacer"></div>
         {/foreach}
     {/if}
 

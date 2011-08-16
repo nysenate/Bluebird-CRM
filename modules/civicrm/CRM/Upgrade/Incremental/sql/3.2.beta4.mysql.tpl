@@ -7,6 +7,9 @@
   {foreach from=$locales item=loc}
     ALTER TABLE civicrm_membership_status ADD label_{$loc} VARCHAR(128) COMMENT 'Label for Membership Status';
     UPDATE      civicrm_membership_status SET label_{$loc} = name_{$loc};
+  {/foreach}
+  -- drop the column separately. 
+  {foreach from=$locales item=loc}
     ALTER TABLE civicrm_membership_status DROP name_{$loc};
   {/foreach}
 {else}

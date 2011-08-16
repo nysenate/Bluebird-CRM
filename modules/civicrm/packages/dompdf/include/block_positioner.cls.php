@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: block_positioner.cls.php,v 1.2 2006/07/07 21:31:02 benjcarson Exp $ */
+/* $Id: block_positioner.cls.php 356 2011-01-28 08:56:10Z fabien.menager $ */
 
 /**
  * Positions block frames
@@ -53,20 +53,34 @@ class Block_Positioner extends Positioner {
   //........................................................................
 
   function position() {
-    $cb = $this->_frame->get_containing_block();
-
-    $p = $this->_frame->find_block_parent();
+    $frame = $this->_frame;
+    $style = $frame->get_style();
+    $cb = $frame->get_containing_block();
+    $p = $frame->find_block_parent();
     
     if ( $p ) {
-      $p->add_line();
+      $float = $style->float;
+      if ( !DOMPDF_ENABLE_CSS_FLOAT || !$float || $float === "none" ) {
+        $p->add_line();
+      }
       $y = $p->get_current_line("y");
       
     } else
       $y = $cb["y"];
 
     $x = $cb["x"];
+
+    // Relative positionning
+    if ( $style->position === "relative" ) {
+      $top =    $style->length_in_pt($style->top,    $cb["h"]);
+      //$right =  $style->length_in_pt($style->right,  $cb["w"]);
+      //$bottom = $style->length_in_pt($style->bottom, $cb["h"]);
+      $left =   $style->length_in_pt($style->left,   $cb["w"]);
+      
+      $x += $left;
+      $y += $top;
+    }
     
-    $this->_frame->set_position($x, $y);
+    $frame->set_position($x, $y);
   }
 }
-?>

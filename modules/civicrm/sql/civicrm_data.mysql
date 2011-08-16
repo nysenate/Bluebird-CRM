@@ -1,7 +1,7 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -285,9 +285,9 @@ INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated
 INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated) VALUES("1245", "Guernsey", "GG", "99", "0");
 INSERT INTO civicrm_country (id, name,iso_code,region_id,is_province_abbreviated) VALUES("1246", "Isle of Man", "IM", "99", "0");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -4079,11 +4079,15 @@ INSERT INTO civicrm_state_province (id, country_id, abbreviation, name) VALUES
 (NULL, 1050, "17", "Haut-Lomami"),
 (NULL, 1050, "18", "Lualaba"),
 (NULL, 1050, "19", "Haut-Katanga"),
-(NULL, 1050, "20", "Tanganyika");
+(NULL, 1050, "20", "Tanganyika"),
+
+-- CRM-8009 Added Missing Provinces for Spain
+(NULL, 1198, 'TO', 'Toledo' ),
+(NULL, 1198, 'CO', 'Córdoba' );
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -4291,9 +4295,9 @@ INSERT INTO civicrm_currency (id, name, symbol, numeric_code, full_name) VALUES
 (184, "ZMK", NULL, "894", "Zambian Kwacha"),
 (185, "ZWD", "Z$", "716", "Zimbabwe Dollar");
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -4475,8 +4479,13 @@ VALUES
    ('system_extensions'             , 'CiviCRM Extensions'                 , 0, 1),
    ('directory_preferences'         , 'Directory Preferences'              , 0, 1),
    ('url_preferences'               , 'URL Preferences'                    , 0, 1),
-   ('mail_approval_status'          , 'CiviMail Approval Status'           , 0, 1);
-
+   ('mail_approval_status'          , 'CiviMail Approval Status'           , 0, 1),
+   ('engagement_index'              , 'Engagement Index'                   , 0, 1),
+   ('cg_extend_objects'             , 'Objects a custom group extends to'  , 0, 1),
+   ('paper_size'                    , 'Paper Size'                         , 0, 1),
+   ('pdf_format'                    , 'PDF Page Format'                    , 0, 1),
+   ('label_format'                  , 'Mailing Label Format'               , 0, 1),
+   ('activity_contacts'             , 'Activity Contacts'                  , 0, 1);
    
 SELECT @option_group_id_pcm            := max(id) from civicrm_option_group where name = 'preferred_communication_method';
 SELECT @option_group_id_act            := max(id) from civicrm_option_group where name = 'activity_type';
@@ -4534,6 +4543,11 @@ SELECT @option_group_id_extensions     := max(id) from civicrm_option_group wher
 SELECT @option_group_id_directory_pref := max(id) from civicrm_option_group where name = 'directory_preferences';
 SELECT @option_group_id_url_pref       := max(id) from civicrm_option_group where name = 'url_preferences';
 SELECT @option_group_id_mail_approval_status := max(id) from civicrm_option_group where name = 'mail_approval_status';
+SELECT @option_group_id_engagement_index := max(id) from civicrm_option_group where name = 'engagement_index';
+SELECT @option_group_id_cgeo           := max(id) from civicrm_option_group where name = 'cg_extend_objects';
+SELECT @option_group_id_paperSize      := max(id) from civicrm_option_group where name = 'paper_size';
+SELECT @option_group_id_label          := max(id) from civicrm_option_group where name = 'label_format';
+SELECT @option_group_id_aco            := max(id) from civicrm_option_group where name = 'activity_contacts';
 
 SELECT @contributeCompId := max(id) FROM civicrm_component where name = 'CiviContribute';
 SELECT @eventCompId      := max(id) FROM civicrm_component where name = 'CiviEvent';
@@ -4582,11 +4596,14 @@ VALUES
    (@option_group_id_act, 'Reassigned Case',                    24, 'Reassigned Case', NULL, 0,  NULL, 24, '', 0, 1, 1, @caseCompId, NULL ),
    (@option_group_id_act, 'Link Cases',                         25, 'Link Cases', NULL, 0,  NULL, 25, '', 0, 1, 1, @caseCompId, NULL ),
    (@option_group_id_act, 'Change Case Tags',                   26, 'Change Case Tags', NULL,0, 0, 26, '', 0, 1, 1, @caseCompId, NULL),
-   (@option_group_id_act, 'Survey',                             27, 'Survey', NULL,0, 0, 27, '', 0, 1, 1, @campaignCompId, NULL),
-   (@option_group_id_act, 'Canvass',                            28, 'Canvass', NULL,0, 0, 28, '', 0, 1, 1, @campaignCompId, NULL),
-   (@option_group_id_act, 'PhoneBank',                          29, 'PhoneBank', NULL,0, 0, 29, '', 0, 1, 1, @campaignCompId, NULL),
-   (@option_group_id_act, 'WalkList',                           30, 'WalkList', NULL,0, 0, 30, '', 0, 1, 1, @campaignCompId, NULL),
-   (@option_group_id_act, 'Petition',                           31, 'Petition', NULL,0, 0, 31, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'Add Client To Case',                 27, 'Add Client To Case', NULL,0, 0, 26, '', 0, 1, 1, @caseCompId, NULL),
+
+-- Activity Types for CiviCampaign
+   (@option_group_id_act, 'Survey',                             28, 'Survey', NULL,0, 0, 27, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'Canvass',                            29, 'Canvass', NULL,0, 0, 28, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'PhoneBank',                          30, 'PhoneBank', NULL,0, 0, 29, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'WalkList',                           31, 'WalkList', NULL,0, 0, 30, '', 0, 1, 1, @campaignCompId, NULL),
+   (@option_group_id_act, 'Petition',                           32, 'Petition', NULL,0, 0, 31, '', 0, 1, 1, @campaignCompId, NULL),
 
    (@option_group_id_gender, 'Female',      1, 'Female',      NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
    (@option_group_id_gender, 'Male',        2, 'Male',        NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL),
@@ -4626,10 +4643,10 @@ VALUES
    (@option_group_id_acc, 'Discover'  ,  4, 'Discover'  , NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL),
 
   (@option_group_id_pi, 'Credit Card',  1, 'Credit Card', NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL),
-  (@option_group_id_pi, 'Debit Card',  2, 'Debit Card', NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL),
-  (@option_group_id_pi, 'Cash',  3, 'Cash', NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL),
-  (@option_group_id_pi, 'Check',  4, 'Check', NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL),
-  (@option_group_id_pi, 'EFT',  5, 'EFT', NULL, 0, NULL, 5, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_pi, 'Debit Card',   2, 'Debit Card',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_pi, 'Cash',         3, 'Cash',        NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_pi, 'Check',        4, 'Check',       NULL, 0, NULL, 4, NULL, 0, 1, 1, NULL, NULL),
+  (@option_group_id_pi, 'EFT',          5, 'EFT',         NULL, 0, NULL, 5, NULL, 0, 0, 1, NULL, NULL),
 
   (@option_group_id_cs, 'Completed'  , 1, 'Completed'  , NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_cs, 'Pending'    , 2, 'Pending'    , NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
@@ -4697,6 +4714,7 @@ VALUES
   (@option_group_id_asOpt, 'Contact Type'            ,  16, 'contactType', NULL, 0, NULL, 18, NULL, 0, 0, 1, NULL, NULL),
   (@option_group_id_asOpt, 'Groups'                  ,  17, 'groups', NULL, 0, NULL, 19, NULL, 0, 0, 1, NULL, NULL),
   (@option_group_id_asOpt, 'Tags'                    ,  18, 'tags', NULL, 0, NULL, 20, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_asOpt, 'Mailing'                 ,  19, 'CiviMail', NULL, 0, NULL, 21, NULL, 0, 0, 1, NULL, NULL),
 
   (@option_group_id_udOpt, 'Groups'                     , 1, 'Groups', NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
   (@option_group_id_udOpt, 'Contributions'              , 2, 'CiviContribute', NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL),
@@ -4756,8 +4774,8 @@ VALUES
   (@option_group_id_report , 'Constituent Report (Summary)',            'contact/summary',                'CRM_Report_Form_Contact_Summary',                NULL, 0, NULL, 1,  'Provides a list of address and telephone information for constituent records in your system.', 0, 0, 1, NULL, NULL),
   (@option_group_id_report , 'Constituent Report (Detail)',             'contact/detail',                 'CRM_Report_Form_Contact_Detail',                 NULL, 0, NULL, 2,  'Provides contact-related information on contributions, memberships, events and activities.',   0, 0, 1, NULL, NULL),
   (@option_group_id_report , 'Activity Report',                         'activity',                       'CRM_Report_Form_Activity',                       NULL, 0, NULL, 3,  'Provides a list of constituent activity including activity statistics for one/all contacts during a given date range(required)', 0, 0, 1, NULL, NULL),
-  (@option_group_id_report , 'Walk / Phone List Report',                'walklist',                       'CRM_Report_Form_Walklist',                       NULL, 0, NULL, 4,  'Provides a detailed report for your walk/phonelist for targetted contacts', 0, 0, 0, NULL, NULL),
-  (@option_group_id_report , 'Current Employer Report',                 'contact/currentEmployer',        'CRM_Report_Form_Contact_CurrentEmployer',        NULL, 0, NULL, 5,  'Provides detail list of employer employee relationships along with employment details Ex Join Date', 0, 0, 0, NULL, NULL),
+  (@option_group_id_report , 'Walk / Phone List Report',                'walklist',                       'CRM_Report_Form_Walklist_Walklist',                       NULL, 0, NULL, 4,  'Provides a detailed report for your walk/phonelist for targetted contacts', 0, 0, 0, NULL, NULL),
+  (@option_group_id_report , 'Current Employer Report',                 'contact/currentEmployer',        'CRM_Report_Form_Contact_CurrentEmployer',        NULL, 0, NULL, 5,  'Provides detail list of employer employee relationships along with employment details Ex Join Date', 0, 0, 1, NULL, NULL),
   (@option_group_id_report , 'Donor Report (Summary)',                  'contribute/summary',             'CRM_Report_Form_Contribute_Summary',             NULL, 0, NULL, 6,  'Shows contribution statistics by month / week / year .. country / state .. type.', 0, 0, 1, @contributeCompId, NULL),
   (@option_group_id_report , 'Donor Report (Detail)',                   'contribute/detail',              'CRM_Report_Form_Contribute_Detail',              NULL, 0, NULL, 7,  'Lists detailed contribution(s) for one / all contacts. Contribution summary report points to this report for specific details.', 0, 0, 1, @contributeCompId, NULL),
   (@option_group_id_report , 'Donation Summary Report (Repeat)',        'contribute/repeat',              'CRM_Report_Form_Contribute_Repeat',              NULL, 0, NULL, 8,  'Given two date ranges, shows contacts (and their contributions) who contributed in both the date ranges with percentage increase / decrease.', 0, 0, 1, @contributeCompId, NULL),
@@ -4773,7 +4791,7 @@ VALUES
   (@option_group_id_report , 'Event Participant Report (List)',         'event/participantListing',       'CRM_Report_Form_Event_ParticipantListing',       NULL, 0, NULL, 18, 'Provides lists of participants for an event.', 0, 0, 1, @eventCompId, NULL),
   (@option_group_id_report , 'Event Income Report (Summary)',           'event/summary',                  'CRM_Report_Form_Event_Summary',                  NULL, 0, NULL, 19, 'Provides an overview of event income. You can include key information such as event ID, registration, attendance, and income generated to help you determine the success of an event.', 0, 0, 1, @eventCompId, NULL),			
   (@option_group_id_report , 'Event Income Report (Detail)',            'event/income',                   'CRM_Report_Form_Event_Income',                   NULL, 0, NULL, 20, 'Helps you to analyze the income generated by an event. The report can include details by participant type, status and payment method.', 0, 0, 1, @eventCompId, NULL),
-  (@option_group_id_report , 'Pledge Report',                           'pledge/summary',                 'CRM_Report_Form_Pledge_Summary',                 NULL, 0, NULL, 21, 'Pledge Report', 0, 0, 1, @pledgeCompId, NULL),			
+  (@option_group_id_report , 'Pledge Report',                           'pledge/detail',                 'CRM_Report_Form_Pledge_Detail',                 NULL, 0, NULL, 21, 'Pledge Report', 0, 0, 1, @pledgeCompId, NULL),			
   (@option_group_id_report , 'Pledged But not Paid Report',             'pledge/pbnp',                    'CRM_Report_Form_Pledge_Pbnp',                    NULL, 0, NULL, 22, 'Pledged but not Paid Report', 0, 0, 1, @pledgeCompId, NULL),  
   (@option_group_id_report , 'Relationship Report',                     'contact/relationship',           'CRM_Report_Form_Contact_Relationship',           NULL, 0, NULL, 23, 'Relationship Report', 0, 0, 1, NULL, NULL),
   (@option_group_id_report , 'Case Summary Report',                     'case/summary',                   'CRM_Report_Form_Case_Summary',                   NULL, 0, NULL, 24, 'Provides a summary of cases and their duration by date range, status, staff member and / or case role.', 0, 0, 1, @caseCompId, NULL),
@@ -4792,7 +4810,12 @@ VALUES
   (@option_group_id_report, 'Mail Clickthrough Report', 'Mailing/clicks', 'CRM_Report_Form_Mailing_Clicks', NULL, 0, NULL, 37, 'Display clicks from each mailing', 0, 0, 1, @mailCompId, NULL),
   (@option_group_id_report, 'Contact Logging Report (Summary)', 'logging/contact/summary', 'CRM_Report_Form_Contact_LoggingSummary', NULL, 0, NULL, 38, 'Contact modification report for the logging infrastructure (summary).', 0, 0, 0, NULL, NULL),
   (@option_group_id_report, 'Contact Logging Report (Detail)', 'logging/contact/detail', 'CRM_Report_Form_Contact_LoggingDetail', NULL, 0, NULL, 39, 'Contact modification report for the logging infrastructure (detail).', 0, 0, 0, NULL, NULL),
-  (@option_group_id_report, 'Grant Report (Statistics)', 'grant/statistics', 'CRM_Report_Form_Grant_Statistics', NULL, 0, NULL, 40, 'Shows statistics for Grants.', 0, 0, 1, @grantCompId, NULL),
+  (@option_group_id_report, 'Contribute Logging Report (Summary)', 'logging/contribute/summary', 'CRM_Report_Form_Contribute_LoggingSummary', NULL, 0, NULL, 40, 'Contribute modification report for the logging infrastructure (summary).', 0, 0, 0, @contributeCompId, NULL),
+  (@option_group_id_report, 'Contribute Logging Report (Detail)', 'logging/contribute/detail', 'CRM_Report_Form_Contribute_LoggingDetail', NULL, 0, NULL, 41, 'Contribute modification report for the logging infrastructure (detail).', 0, 0, 0, @contributeCompId, NULL),
+  (@option_group_id_report, 'Grant Report (Statistics)', 'grant/statistics', 'CRM_Report_Form_Grant_Statistics', NULL, 0, NULL, 42, 'Shows statistics for Grants.', 0, 0, 1, @grantCompId, NULL),
+  (@option_group_id_report, 'Survey Report (Detail)',    'survey/detail', 'CRM_Report_Form_Campaign_SurveyDetails',  NULL, 0, NULL, 43, 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 0, 0, 1, @campaignCompId, NULL),
+  (@option_group_id_report, 'Personal Campaign Page Report', 'contribute/pcp', 'CRM_Report_Form_Contribute_PCP', NULL, 0, NULL, 44, 'Shows Personal Campaign Page Report', 0, 0, 1, @contributeCompId, NULL),
+  (@option_group_id_report , 'Pledge Summary Report', 'pledge/summary', 'CRM_Report_Form_Pledge_Summary', NULL, 0, NULL, 45, 'Pledge Summary Report', 0, 0, 1, @pledgeCompId, NULL),			
   (@option_group_id_acs, 'Scheduled',  1, 'Scheduled',  NULL, 0, 1,    1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Completed',  2, 'Completed',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Cancelled',  3, 'Cancelled',  NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL),
@@ -4826,7 +4849,8 @@ VALUES
   (@option_group_id_we, 'TinyMCE'    , 1, NULL, NULL, 0, NULL, 1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_we, 'CKEditor'  , 2, NULL, NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_we, 'Joomla Default Editor'  , 3, NULL, NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL), 
-
+  (@option_group_id_we, 'Drupal Default Editor',  4, NULL, NULL, 0, NULL, 4, NULL, 0, 1, 1, NULL, NULL), 
+ 
   (@option_group_id_mt, 'Search Builder',      1, 'Search Builder',      NULL, 0, 0,    1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_mt, 'Import Contact',      2, 'Import Contact',      NULL, 0, 0,    2, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_mt, 'Import Activity',     3, 'Import Activity',     NULL, 0, 0,    3, NULL, 0, 1, 1, NULL, NULL),
@@ -4919,9 +4943,10 @@ VALUES
    (@option_group_id_currency, 'USD ($)',      'USD',     'USD',       NULL, 0, 1, 1, NULL, 0, 0, 1, NULL, NULL),
 
 -- event name badges
-  (@option_group_id_eventBadge, 'Name Only'     , 1, 'CRM_Event_Badge_Simple',  NULL, 0, 0, 1, 'Simple Event Name Badge', 0, 1, 1, NULL, NULL),
-  (@option_group_id_eventBadge, 'Name Tent'     , 2, 'CRM_Event_Badge_NameTent',  NULL, 0, 0, 2, 'Name Tent', 0, 1, 1, NULL, NULL),
-  (@option_group_id_eventBadge , 'With Logo'    , 3, 'CRM_Event_Badge_Logo', NULL, 0, 0, 3, 'You can set your own background image',  0, 1, 1, NULL, NULL ),
+  (@option_group_id_eventBadge,  'Name Only'     , 1, 'CRM_Event_Badge_Simple'  ,  NULL, 0, 0, 1, 'Simple Event Name Badge', 0, 1, 1, NULL, NULL),
+  (@option_group_id_eventBadge,  'Name Tent'     , 2, 'CRM_Event_Badge_NameTent',  NULL, 0, 0, 2, 'Name Tent', 0, 1, 1, NULL, NULL),
+  (@option_group_id_eventBadge , 'With Logo'     , 3, 'CRM_Event_Badge_Logo'    ,  NULL, 0, 0, 3, 'You can set your own background image',                               0, 1, 1, NULL, NULL ),
+  (@option_group_id_eventBadge , '5395 with Logo', 4, 'CRM_Event_Badge_Logo5395',  NULL, 0, 0, 4, 'Avery 5395 compatible labels with logo (4 up by 2, 59.2mm x 85.7mm)', 0, 1, 1, NULL, NULL ),
 
 -- note privacy levels
   (@option_group_id_notePrivacy, 'None'           , 0, '',  NULL, 0, 1, 1, NULL, 0, 1, 1, NULL, NULL),
@@ -4936,7 +4961,96 @@ VALUES
   (@option_group_id_campaignStatus, 'Planned', 1, 'Planned',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL), 
   (@option_group_id_campaignStatus, 'In Progress', 2, 'In Progress',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
   (@option_group_id_campaignStatus, 'Completed', 3, 'Completed',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
-  (@option_group_id_campaignStatus, 'Cancelled', 4, 'Cancelled',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL);
+  (@option_group_id_campaignStatus, 'Cancelled', 4, 'Cancelled',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
+
+-- Engagement Level
+  (@option_group_id_engagement_index, '1', 1, '1',  NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL ),
+  (@option_group_id_engagement_index, '2', 2, '2',  NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL ),
+  (@option_group_id_engagement_index, '3', 3, '3',  NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL ),
+  (@option_group_id_engagement_index, '4', 4, '4',  NULL, 0, NULL, 4, NULL, 0, 0, 1, NULL, NULL ),
+  (@option_group_id_engagement_index, '5', 5, '5',  NULL, 0, NULL, 5, NULL, 0, 0, 1, NULL, NULL ),
+
+-- Paper Sizes
+  (@option_group_id_paperSize, 'Letter',          '{"metric":"in","width":8.5,"height":11}',          'letter',      NULL, NULL, 1, 1,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Legal',           '{"metric":"in","width":8.5,"height":14}',          'legal',       NULL, NULL, 0, 2,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Ledger',          '{"metric":"in","width":17,"height":11}',           'ledger',      NULL, NULL, 0, 3,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Tabloid',         '{"metric":"in","width":11,"height":17}',           'tabloid',     NULL, NULL, 0, 4,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Executive',       '{"metric":"in","width":7.25,"height":10.5}',       'executive',   NULL, NULL, 0, 5,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Folio',           '{"metric":"in","width":8.5,"height":13}',          'folio',       NULL, NULL, 0, 6,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope #9',     '{"metric":"pt","width":638.93,"height":278.93}',   'envelope-9',  NULL, NULL, 0, 7,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope #10',    '{"metric":"pt","width":684,"height":297}',         'envelope-10', NULL, NULL, 0, 8,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope #11',    '{"metric":"pt","width":747,"height":324}',         'envelope-11', NULL, NULL, 0, 9,  NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope #12',    '{"metric":"pt","width":792,"height":342}',         'envelope-12', NULL, NULL, 0, 10, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope #14',    '{"metric":"pt","width":828,"height":360}',         'envelope-14', NULL, NULL, 0, 11, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO B4', '{"metric":"pt","width":1000.63,"height":708.66}',  'envelope-b4', NULL, NULL, 0, 12, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO B5', '{"metric":"pt","width":708.66,"height":498.9}',    'envelope-b5', NULL, NULL, 0, 13, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO B6', '{"metric":"pt","width":498.9,"height":354.33}',    'envelope-b6', NULL, NULL, 0, 14, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO C3', '{"metric":"pt","width":1298.27,"height":918.42}',  'envelope-c3', NULL, NULL, 0, 15, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO C4', '{"metric":"pt","width":918.42,"height":649.13}',   'envelope-c4', NULL, NULL, 0, 16, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO C5', '{"metric":"pt","width":649.13,"height":459.21}',   'envelope-c5', NULL, NULL, 0, 17, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO C6', '{"metric":"pt","width":459.21,"height":323.15}',   'envelope-c6', NULL, NULL, 0, 18, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'Envelope ISO DL', '{"metric":"pt","width":623.622,"height":311.811}', 'envelope-dl', NULL, NULL, 0, 19, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A0',          '{"metric":"pt","width":2383.94,"height":3370.39}', 'a0',          NULL, NULL, 0, 20, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A1',          '{"metric":"pt","width":1683.78,"height":2383.94}', 'a1',          NULL, NULL, 0, 21, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A2',          '{"metric":"pt","width":1190.55,"height":1683.78}', 'a2',          NULL, NULL, 0, 22, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A3',          '{"metric":"pt","width":841.89,"height":1190.55}',  'a3',          NULL, NULL, 0, 23, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A4',          '{"metric":"pt","width":595.28,"height":841.89}',   'a4',          NULL, NULL, 0, 24, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A5',          '{"metric":"pt","width":419.53,"height":595.28}',   'a5',          NULL, NULL, 0, 25, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A6',          '{"metric":"pt","width":297.64,"height":419.53}',   'a6',          NULL, NULL, 0, 26, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A7',          '{"metric":"pt","width":209.76,"height":297.64}',   'a7',          NULL, NULL, 0, 27, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A8',          '{"metric":"pt","width":147.4,"height":209.76}',    'a8',          NULL, NULL, 0, 28, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A9',          '{"metric":"pt","width":104.88,"height":147.4}',    'a9',          NULL, NULL, 0, 29, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO A10',         '{"metric":"pt","width":73.7,"height":104.88}',     'a10',         NULL, NULL, 0, 30, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B0',          '{"metric":"pt","width":2834.65,"height":4008.19}', 'b0',          NULL, NULL, 0, 31, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B1',          '{"metric":"pt","width":2004.09,"height":2834.65}', 'b1',          NULL, NULL, 0, 32, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B2',          '{"metric":"pt","width":1417.32,"height":2004.09}', 'b2',          NULL, NULL, 0, 33, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B3',          '{"metric":"pt","width":1000.63,"height":1417.32}', 'b3',          NULL, NULL, 0, 34, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B4',          '{"metric":"pt","width":708.66,"height":1000.63}',  'b4',          NULL, NULL, 0, 35, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B5',          '{"metric":"pt","width":498.9,"height":708.66}',    'b5',          NULL, NULL, 0, 36, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B6',          '{"metric":"pt","width":354.33,"height":498.9}',    'b6',          NULL, NULL, 0, 37, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B7',          '{"metric":"pt","width":249.45,"height":354.33}',   'b7',          NULL, NULL, 0, 38, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B8',          '{"metric":"pt","width":175.75,"height":249.45}',   'b8',          NULL, NULL, 0, 39, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B9',          '{"metric":"pt","width":124.72,"height":175.75}',   'b9',          NULL, NULL, 0, 40, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO B10',         '{"metric":"pt","width":87.87,"height":124.72}',    'b10',         NULL, NULL, 0, 41, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C0',          '{"metric":"pt","width":2599.37,"height":3676.54}', 'c0',          NULL, NULL, 0, 42, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C1',          '{"metric":"pt","width":1836.85,"height":2599.37}', 'c1',          NULL, NULL, 0, 43, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C2',          '{"metric":"pt","width":1298.27,"height":1836.85}', 'c2',          NULL, NULL, 0, 44, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C3',          '{"metric":"pt","width":918.43,"height":1298.27}',  'c3',          NULL, NULL, 0, 45, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C4',          '{"metric":"pt","width":649.13,"height":918.43}',   'c4',          NULL, NULL, 0, 46, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C5',          '{"metric":"pt","width":459.21,"height":649.13}',   'c5',          NULL, NULL, 0, 47, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C6',          '{"metric":"pt","width":323.15,"height":459.21}',   'c6',          NULL, NULL, 0, 48, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C7',          '{"metric":"pt","width":229.61,"height":323.15}',   'c7',          NULL, NULL, 0, 49, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C8',          '{"metric":"pt","width":161.57,"height":229.61}',   'c8',          NULL, NULL, 0, 50, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C9',          '{"metric":"pt","width":113.39,"height":161.57}',   'c9',          NULL, NULL, 0, 51, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO C10',         '{"metric":"pt","width":79.37,"height":113.39}',    'c10',         NULL, NULL, 0, 52, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO RA0',         '{"metric":"pt","width":2437.8,"height":3458.27}',  'ra0',         NULL, NULL, 0, 53, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO RA1',         '{"metric":"pt","width":1729.13,"height":2437.8}',  'ra1',         NULL, NULL, 0, 54, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO RA2',         '{"metric":"pt","width":1218.9,"height":1729.13}',  'ra2',         NULL, NULL, 0, 55, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO RA3',         '{"metric":"pt","width":864.57,"height":1218.9}',   'ra3',         NULL, NULL, 0, 56, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO RA4',         '{"metric":"pt","width":609.45,"height":864.57}',   'ra4',         NULL, NULL, 0, 57, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO SRA0',        '{"metric":"pt","width":2551.18,"height":3628.35}', 'sra0',        NULL, NULL, 0, 58, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO SRA1',        '{"metric":"pt","width":1814.17,"height":2551.18}', 'sra1',        NULL, NULL, 0, 59, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO SRA2',        '{"metric":"pt","width":1275.59,"height":1814.17}', 'sra2',        NULL, NULL, 0, 60, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO SRA3',        '{"metric":"pt","width":907.09,"height":1275.59}',  'sra3',        NULL, NULL, 0, 61, NULL, 0, 0, 1, NULL, NULL),
+  (@option_group_id_paperSize, 'ISO SRA4',        '{"metric":"pt","width":637.8,"height":907.09}',    'sra4',        NULL, NULL, 0, 62, NULL, 0, 0, 1, NULL, NULL),
+
+-- activity_contacts 
+   (@option_group_id_aco, 'Activity Assignees', 1, 'Activity Assignees', NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL),
+   (@option_group_id_aco, 'Activity Source', 2, 'Activity Source', NULL, 0, NULL, 2, NULL, 0, 0, 1, NULL, NULL),
+   (@option_group_id_aco, 'Activity Targets', 3, 'Activity Targets', NULL, 0, NULL, 3, NULL, 0, 0, 1, NULL, NULL),
+
+-- Label Formats
+  (@option_group_id_label, 'Avery 3475', '{"paper-size":"a4","orientation":"portrait","font-name":"helvetica","font-size":10,"font-style":"","metric":"mm","lMargin":0,"tMargin":5,"NX":3,"NY":8,"SpaceX":0,"SpaceY":0,"width":70,"height":36,"lPadding":5.08,"tPadding":5.08}',                   '3475',  'Avery', NULL, 0, 1,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery 5160', '{"paper-size":"letter","orientation":"portrait","font-name":"helvetica","font-size":8,"font-style":"","metric":"in","lMargin":0.21975,"tMargin":0.5,"NX":3,"NY":10,"SpaceX":0.14,"SpaceY":0,"width":2.5935,"height":1,"lPadding":0.20,"tPadding":0.20}', '5160',  'Avery', NULL, 0, 2,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery 5161', '{"paper-size":"letter","orientation":"portrait","font-name":"helvetica","font-size":8,"font-style":"","metric":"in","lMargin":0.175,"tMargin":0.5,"NX":2,"NY":10,"SpaceX":0.15625,"SpaceY":0,"width":4,"height":1,"lPadding":0.20,"tPadding":0.20}',     '5161',  'Avery', NULL, 0, 3,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery 5162', '{"paper-size":"letter","orientation":"portrait","font-name":"helvetica","font-size":8,"font-style":"","metric":"in","lMargin":0.1525,"tMargin":0.88,"NX":2,"NY":7,"SpaceX":0.195,"SpaceY":0,"width":4,"height":1.33,"lPadding":0.20,"tPadding":0.20}',   '5162',  'Avery', NULL, 0, 4,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery 5163', '{"paper-size":"letter","orientation":"portrait","font-name":"helvetica","font-size":8,"font-style":"","metric":"in","lMargin":0.18,"tMargin":0.5,"NX":2,"NY":5,"SpaceX":0.14,"SpaceY":0,"width":4,"height":2,"lPadding":0.20,"tPadding":0.20}',          '5163',  'Avery', NULL, 0, 5,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery 5164', '{"paper-size":"letter","orientation":"portrait","font-name":"helvetica","font-size":12,"font-style":"","metric":"in","lMargin":0.156,"tMargin":0.5,"NX":2,"NY":3,"SpaceX":0.1875,"SpaceY":0,"width":4,"height":3.33,"lPadding":0.20,"tPadding":0.20}',   '5164',  'Avery', NULL, 0, 6,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery 8600', '{"paper-size":"letter","orientation":"portrait","font-name":"helvetica","font-size":8,"font-style":"","metric":"mm","lMargin":7.1,"tMargin":19,"NX":3,"NY":10,"SpaceX":9.5,"SpaceY":3.1,"width":66.6,"height":25.4,"lPadding":5.08,"tPadding":5.08}',    '8600',  'Avery', NULL, 0, 7,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery L7160', '{"paper-size":"a4","orientation":"portrait","font-name":"helvetica","font-size":9,"font-style":"","metric":"in","lMargin":0.28,"tMargin":0.6,"NX":3,"NY":7,"SpaceX":0.1,"SpaceY":0,"width":2.5,"height":1.5,"lPadding":0.20,"tPadding":0.20}',          'L7160', 'Avery', NULL, 0, 8,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery L7161', '{"paper-size":"a4","orientation":"portrait","font-name":"helvetica","font-size":9,"font-style":"","metric":"in","lMargin":0.28,"tMargin":0.35,"NX":3,"NY":6,"SpaceX":0.1,"SpaceY":0,"width":2.5,"height":1.83,"lPadding":0.20,"tPadding":0.20}',        'L7161', 'Avery', NULL, 0, 9,  NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery L7162', '{"paper-size":"a4","orientation":"portrait","font-name":"helvetica","font-size":9,"font-style":"","metric":"in","lMargin":0.18,"tMargin":0.51,"NX":2,"NY":8,"SpaceX":0.1,"SpaceY":0,"width":3.9,"height":1.33,"lPadding":0.20,"tPadding":0.20}',        'L7162', 'Avery', NULL, 0, 10, NULL, 0, 1, 1, NULL, NULL), 
+  (@option_group_id_label, 'Avery L7163', '{"paper-size":"a4","orientation":"portrait","font-name":"helvetica","font-size":9,"font-style":"","metric":"in","lMargin":0.18,"tMargin":0.6,"NX":2,"NY":7,"SpaceX":0.1,"SpaceY":0,"width":3.9,"height":1.5,"lPadding":0.20,"tPadding":0.20}',          'L7163', 'Avery', NULL, 0, 11, NULL, 0, 1, 1, NULL, NULL);
 
 -- Now insert option values which require domainID
 --
@@ -4969,8 +5083,10 @@ VALUES
 -- Mail Approval Status Preferences
   (@option_group_id_mail_approval_status, 'Approved' , 1, 'Approved', NULL, 0, 1, 1, NULL, 0, 1, 1, @mailCompId, @domainID, NULL),
   (@option_group_id_mail_approval_status, 'Rejected' , 2, 'Rejected', NULL, 0, 0, 2, NULL, 0, 1, 1, @mailCompId, @domainID, NULL),
-  (@option_group_id_mail_approval_status, 'None' , 3, 'None', NULL, 0, 0, 3, NULL, 0, 1, 1, @mailCompId, @domainID, NULL);
+  (@option_group_id_mail_approval_status, 'None' , 3, 'None', NULL, 0, 0, 3, NULL, 0, 1, 1, @mailCompId, @domainID, NULL),
 
+-- Survey custom group object
+  (@option_group_id_cgeo, 'Survey', 'Survey', 'civicrm_survey', NULL, 0, NULL, 1, NULL, 0, 0, 1, NULL, NULL, NULL);
 
 -- CRM-6138
 -- CRM-6138
@@ -5045,6 +5161,7 @@ VALUES
   (@option_group_id_languages, 0, 0, 'gl_ES', 'gl', 'Galician', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'ka_GE', 'ka', 'Georgian', @counter := @counter + 1),
   (@option_group_id_languages, 0, 1, 'de_DE', 'de', 'German', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'de_CH', 'de', 'German (Swiss)', @counter := @counter + 1),
   (@option_group_id_languages, 0, 1, 'el_GR', 'el', 'Greek, Modern', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'gn_PY', 'gn', 'Guaraní', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'gu_IN', 'gu', 'Gujarati', @counter := @counter + 1),
@@ -5118,7 +5235,7 @@ VALUES
   (@option_group_id_languages, 0, 0, 'os_GE', 'os', 'Ossetian, Ossetic', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'pa_IN', 'pa', 'Panjabi, Punjabi', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'pi_KH', 'pi', 'Pāli', @counter := @counter + 1),
-  (@option_group_id_languages, 0, 0, 'fa_IR', 'fa', 'Persian', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 0, 'fa_IR', 'fa', 'Persian (Iran)', @counter := @counter + 1),
   (@option_group_id_languages, 0, 1, 'pl_PL', 'pl', 'Polish', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'ps_AF', 'ps', 'Pashto, Pushto', @counter := @counter + 1),
   (@option_group_id_languages, 0, 1, 'pt_BR', 'pt', 'Portuguese (Brazil)', @counter := @counter + 1),
@@ -5144,6 +5261,7 @@ VALUES
   (@option_group_id_languages, 0, 0, 'st_ZA', 'st', 'Southern Sotho', @counter := @counter + 1),
   (@option_group_id_languages, 0, 1, 'es_ES', 'es', 'Spanish; Castilian (Spain)', @counter := @counter + 1),
   (@option_group_id_languages, 0, 1, 'es_MX', 'es', 'Spanish; Castilian (Mexico)', @counter := @counter + 1),
+  (@option_group_id_languages, 0, 1, 'es_PR', 'es', 'Spanish; Castilian (Puerto Rico)', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'su_ID', 'su', 'Sundanese', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'sw_TZ', 'sw', 'Swahili', @counter := @counter + 1),
   (@option_group_id_languages, 0, 0, 'ss_ZA', 'ss', 'Swati', @counter := @counter + 1),
@@ -5247,38 +5365,38 @@ VALUES
 
 
 -- the fuzzy default dedupe rules
-INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default) VALUES ('Individual', 20, 'Fuzzy', true);
+INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default, name) VALUES ('Individual', 20, 'Fuzzy', true, 'Individual-Fuzzy');
 SELECT @drgid := MAX(id) FROM civicrm_dedupe_rule_group;
 INSERT INTO civicrm_dedupe_rule (dedupe_rule_group_id, rule_table, rule_field, rule_weight)
 VALUES (@drgid, 'civicrm_contact', 'first_name', 5),
        (@drgid, 'civicrm_contact', 'last_name',  7),
        (@drgid, 'civicrm_email'  , 'email',     10);
 
-INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default) VALUES ('Organization', 10, 'Fuzzy', true);
+INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default, name) VALUES ('Organization', 10, 'Fuzzy', true, 'Organization-Fuzzy');
 SELECT @drgid := MAX(id) FROM civicrm_dedupe_rule_group;
 INSERT INTO civicrm_dedupe_rule (dedupe_rule_group_id, rule_table, rule_field, rule_weight)
 VALUES (@drgid, 'civicrm_contact', 'organization_name', 10),
        (@drgid, 'civicrm_email'  , 'email',             10);
 
-INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default) VALUES ('Household', 10, 'Fuzzy', true);
+INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default, name) VALUES ('Household', 10, 'Fuzzy', true, 'Household-Fuzzy');
 SELECT @drgid := MAX(id) FROM civicrm_dedupe_rule_group;
 INSERT INTO civicrm_dedupe_rule (dedupe_rule_group_id, rule_table, rule_field, rule_weight)
 VALUES (@drgid, 'civicrm_contact', 'household_name', 10),
        (@drgid, 'civicrm_email'  , 'email',          10);
 
 -- the strict dedupe rules
-INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default) VALUES ('Individual', 10, 'Strict', true);
+INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default, name) VALUES ('Individual', 10, 'Strict', true, 'Individual-Strict');
 SELECT @drgid := MAX(id) FROM civicrm_dedupe_rule_group;
 INSERT INTO civicrm_dedupe_rule (dedupe_rule_group_id, rule_table, rule_field, rule_weight)
 VALUES (@drgid, 'civicrm_email', 'email', 10);
 
-INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default) VALUES ('Organization', 10, 'Strict', true);
+INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default, name) VALUES ('Organization', 10, 'Strict', true, 'Organization-Strict');
 SELECT @drgid := MAX(id) FROM civicrm_dedupe_rule_group;
 INSERT INTO civicrm_dedupe_rule (dedupe_rule_group_id, rule_table, rule_field, rule_weight)
 VALUES (@drgid, 'civicrm_contact', 'organization_name', 10),
        (@drgid, 'civicrm_email'  , 'email',             10);
 
-INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default) VALUES ('Household', 10, 'Strict', true);
+INSERT INTO civicrm_dedupe_rule_group (contact_type, threshold, level, is_default, name) VALUES ('Household', 10, 'Strict', true, 'Household-Strict');
 SELECT @drgid := MAX(id) FROM civicrm_dedupe_rule_group;
 INSERT INTO civicrm_dedupe_rule (dedupe_rule_group_id, rule_table, rule_field, rule_weight)
 VALUES (@drgid, 'civicrm_contact', 'household_name', 10),
@@ -5527,7 +5645,9 @@ INSERT INTO civicrm_uf_group
     (5,  'new_organization',   'Organization,Contact','New Organization'  , 0,           1,           NULL),
     (6,  'new_household',      'Household,Contact',   'New Household'     , 0,           1,           NULL),
     (7,  'summary_overlay',    'Contact',   		  'Summary Overlay'   , 0,           1,           NULL),
-    (8,  'shared_address',     'Contact',   		  'Shared Address'    , 0,           1,           NULL);
+    (8,  'shared_address',     'Contact',   		  'Shared Address'    , 0,           1,           NULL),
+    (9,  'on_behalf_organization', 'Contact,Organization,Contribution,Membership', 
+    'On Behalf Of Organization'    , 0,           1,           NULL);
 
 INSERT INTO civicrm_uf_join
    (is_active,module,entity_table,entity_id,weight,uf_group_id)
@@ -5540,7 +5660,8 @@ VALUES
    (1, 'Profile', NULL, NULL, 4, 5),
    (1, 'Profile', NULL, NULL, 5, 6),
    (1, 'Profile', NULL, NULL, 6, 7),
-   (1, 'Profile', NULL, NULL, 7, 8);
+   (1, 'Profile', NULL, NULL, 7, 8),
+   (1, 'Profile', NULL, NULL, 8, 9);
    
 INSERT INTO civicrm_uf_field
        (id, uf_group_id, field_name,              is_required, is_reserved, weight, visibility,                  in_selector, is_searchable, location_type_id, label,                                         		field_type,    help_post, phone_type_id ) VALUES
@@ -5554,7 +5675,7 @@ INSERT INTO civicrm_uf_field
        (8,  2,           'first_name',            1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'First Name',            		'Individual',  NULL,  NULL),
        (9,  2,           'last_name',             1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Last Name',             		'Individual',  NULL,  NULL),
        (10, 2,           'email',                 1,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL,  NULL),
-       (11, 3,           'participant_status_id', 1,           1,           1,      'User and User Admin Only',  0,           0,             NULL,             'Participant Status',    		'Participant', NULL,  NULL),
+       (11, 3,           'participant_status', 1,           1,           1,      'User and User Admin Only',  0,           0,             NULL,             'Participant Status',    		'Participant', NULL,  NULL),
        (12, 4,           'first_name',            1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'First Name',            		'Individual',  NULL,  NULL),
        (13, 4,           'last_name',             1,           0,           2,      'User and User Admin Only',  0,           0,             NULL,             'Last Name',             		'Individual',  NULL,  NULL),
        (14, 4,           'email',                 0,           0,           3,      'User and User Admin Only',  0,           0,             NULL,             'Email Address',         		'Contact',     NULL,  NULL),
@@ -5577,7 +5698,15 @@ INSERT INTO civicrm_uf_field
        (31,  8,           'city',                  1,           1,           2,      'User and User Admin Only',  0,           0,             1,                'City (Home)',           		'Contact',     NULL,  NULL),
        (32,  8,           'postal_code',           0,           0,           3,      'User and User Admin Only',  0,           0,             1,                'Postal Code (Home)',    		'Contact',     NULL,  NULL),
        (33,  8,           'country',               0,           0,           4,      'Public Pages and Listings', 0,           1,             1,                'Country (Home)',        		'Contact',     NULL,  NULL),
-       (34,  8,           'state_province',        0,           0,           5,      'Public Pages and Listings', 1,           1,             1,                'State (Home)',          		'Contact',     NULL,  NULL);
+       (34,  8,           'state_province',        0,           0,           5,      'Public Pages and Listings', 1,           1,             1,                'State (Home)',          		'Contact',     NULL,  NULL),
+       (35,  9,           'organization_name',     1,           0,           1,      'User and User Admin Only',  0,           0,             NULL,             'Organization Name',              'Organization',NULL,  NULL),
+       (36,  9,           'phone',                 1,           0,           2,      'User and User Admin Only',  0,           0,             3,             'Phone (Main) ',                  'Contact',    NULL,   1),
+       (37,  9,           'email',                 1,           0,           3,      'User and User Admin Only',  0,           0,             3,             'Email (Main) ',                  'Contact',    NULL,   NULL),
+       (38,  9,           'street_address',        1,           0,           4,      'User and User Admin Only',  0,           0,             3,             'Street Address',                 'Contact',    NULL,   NULL),
+       (39,  9,           'city',                  1,           0,           5,      'User and User Admin Only',  0,           0,             3,             'City',                           'Contact',    NULL,   NULL),
+       (40,  9,           'postal_code',           1,           0,           6,      'User and User Admin Only',  0,           0,             3,             'Postal Code',                    'Contact',    NULL,   NULL),
+       (41,  9,           'country',               1,           0,           7,      'User and User Admin Only',  0,           0,             3,             'Country',                        'Contact',    NULL,   NULL),
+       (42,  9,           'state_province',        1,           0,           8,      'User and User Admin Only',  0,           0,             3,             'State / Province',               'Contact',    NULL,   NULL);
 
 INSERT INTO civicrm_participant_status_type
   (id, name,                                  label,                                                       class,      is_reserved, is_active, is_counted, weight, visibility_id) VALUES
@@ -5594,6 +5723,13 @@ INSERT INTO civicrm_participant_status_type
   (11, 'Rejected',                            'Rejected',                            'Negative', 1,           0,         0,          11,     2            ),
   (12, 'Expired',                             'Expired',                             'Negative', 1,           1,         0,          12,     2            );
 
+-- CRM-8150
+INSERT INTO civicrm_action_mapping
+(entity, entity_value, entity_value_label, entity_status, entity_status_label, entity_date_start, entity_date_end, entity_recipient) 
+VALUES
+( 'civicrm_activity', 'activity_type', 'Activity Type', 'activity_status', 'Activity Status', 'activity_date_time', NULL, 'activity_contacts');
+
+
 INSERT INTO `civicrm_contact_type`
   (`id`, `name`, `label`,`image_URL`, `parent_id`, `is_active`,`is_reserved`)
  VALUES
@@ -5602,9 +5738,9 @@ INSERT INTO `civicrm_contact_type`
   ( 3, 'Organization', 'Organization', NULL, NULL, 1, 1);
 
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -6984,16 +7120,14 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {if $pcp_personal_note}{ts}Personal Note{/ts}: {$pcp_personal_note}{/if}
 
 {/if}
-{if $onBehalfName}
+{if $onBehalfProfile}
 ===========================================================
 {ts}On Behalf Of{/ts}
 
 ===========================================================
-{$onBehalfName}
-{$onBehalfAddress}
-
-{$onBehalfEmail}
-
+{foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+{$onBehalfName}: {$onBehalfValue}
+{/foreach}
 {/if}
 
 {if !( $contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\' ) and $is_monetary}
@@ -7096,7 +7230,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
 <center>
- <table width="620" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
+ <table width="500" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
 
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -7119,9 +7253,8 @@ rule for Organizations to find the potential duplicates and merge them if approp
 
    </td>
   </tr>
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+  </table>
+  <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
 
      {if $amount}
 
@@ -7287,19 +7420,22 @@ rule for Organizations to find the potential duplicates and merge them if approp
       {/if}
      {/if}
 
-     {if $onBehalfName}
+     {if $onBehalfProfile}
       <tr>
        <th {$headerStyle}>
-        {ts}On Behalf Of{/ts}
+        {$onBehalfProfile_grouptitle}
        </th>
       </tr>
-      <tr>
-       <td colspan="2" {$valueStyle}>
-        {$onBehalfName}<br />
-        {$onBehalfAddress|nl2br}<br />
-        {$onBehalfEmail}
-       </td>
-      </tr>
+      {foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+        <tr>
+         <td {$labelStyle}>
+          {$onBehalfName}
+         </td>
+         <td {$valueStyle}>
+          {$onBehalfValue}
+         </td>
+        </tr>
+      {/foreach}
      {/if}
 
      {if ! ($contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\') and $is_monetary}
@@ -7458,11 +7594,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
       {/foreach}
      {/if}
 
-    </table>
-   </td>
-  </tr>
-
- </table>
+  </table>
 </center>
 
 </body>
@@ -7547,16 +7679,14 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {if $pcp_personal_note}{ts}Personal Note{/ts}: {$pcp_personal_note}{/if}
 
 {/if}
-{if $onBehalfName}
+{if $onBehalfProfile}
 ===========================================================
 {ts}On Behalf Of{/ts}
 
 ===========================================================
-{$onBehalfName}
-{$onBehalfAddress}
-
-{$onBehalfEmail}
-
+{foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+{$onBehalfName}: {$onBehalfValue}
+{/foreach}
 {/if}
 
 {if !( $contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\' ) and $is_monetary}
@@ -7659,7 +7789,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
 <center>
- <table width="620" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
+ <table width="500" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
 
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -7682,9 +7812,8 @@ rule for Organizations to find the potential duplicates and merge them if approp
 
    </td>
   </tr>
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+  </table>
+  <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
 
      {if $amount}
 
@@ -7850,19 +7979,22 @@ rule for Organizations to find the potential duplicates and merge them if approp
       {/if}
      {/if}
 
-     {if $onBehalfName}
+     {if $onBehalfProfile}
       <tr>
        <th {$headerStyle}>
-        {ts}On Behalf Of{/ts}
+        {$onBehalfProfile_grouptitle}
        </th>
       </tr>
-      <tr>
-       <td colspan="2" {$valueStyle}>
-        {$onBehalfName}<br />
-        {$onBehalfAddress|nl2br}<br />
-        {$onBehalfEmail}
-       </td>
-      </tr>
+      {foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+        <tr>
+         <td {$labelStyle}>
+          {$onBehalfName}
+         </td>
+         <td {$valueStyle}>
+          {$onBehalfValue}
+         </td>
+        </tr>
+      {/foreach}
      {/if}
 
      {if ! ($contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\') and $is_monetary}
@@ -8021,11 +8153,7 @@ rule for Organizations to find the potential duplicates and merge them if approp
       {/foreach}
      {/if}
 
-    </table>
-   </td>
-  </tr>
-
- </table>
+  </table>
 </center>
 
 </body>
@@ -10574,7 +10702,7 @@ registration process.{/ts}
 {/if}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{elseif $is_pay_later}
+{elseif $is_pay_later && !$isAmountzero}
 
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
@@ -10754,59 +10882,56 @@ registration process.{/ts}
 {/if}
 {/if} {* End of conditional section for Paid events *}
 
+
 {if $customPre}
+{foreach from=$customPre item=customPr key=i}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{$customPre_grouptitle}
+{$customPre_grouptitle.$i}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{foreach from=$customPre item=value key=customName}
+{foreach from=$customPr item=customValue key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-{$customName}: {$value}
+ {$customName}: {$customValue}
 {/if}
+{/foreach}
 {/foreach}
 {/if}
 
 {if $customPost}
+{foreach from=$customPost item=customPos key=j}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{$customPost_grouptitle}
+{$customPost_grouptitle.$j} 
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{foreach from=$customPost item=value key=customName}
+{foreach from=$customPos item=customValue key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-{$customName}: {$value}
+ {$customName}: {$customValue}
 {/if}
+{/foreach}
 {/foreach}
 {/if}
 {if $customProfile}
 
-{foreach from=$customProfile item=value key=customName}
+{foreach from=$customProfile.profile item=eachParticipant key=participantID}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{ts 1=$customName+1}Participant Information - Participant %1{/ts}
+{ts 1=$participantID+2}Participant Information - Participant %1{/ts}
 
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{foreach from=$value item=val key=field}
-{if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\' }
-{if $field eq \'additionalCustomPre\' }
+{foreach from=$eachParticipant item=eachProfile key=pid}
 ----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
-{$additionalCustomPre_grouptitle}
+{$customProfile.title.$pid}
 ----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
-{else}
-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
-
-{$additionalCustomPost_grouptitle}
-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
-
-{/if}
+{foreach from=$eachProfile item=val key=field}
 {foreach from=$val item=v key=f}
-{$f}: {$v}
+{$field}: {$v}
 {/foreach}
-{/if}
+{/foreach}
 {/foreach}
 {/foreach}
 {/if}
@@ -10835,7 +10960,7 @@ registration process.{/ts}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
 <center>
- <table width="620" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
+ <table width="500" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
 
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -10863,7 +10988,7 @@ a link to a web page where you can complete your registration.{/ts}</p>
 an email with a link to a web page where you can complete the
 registration process.{/ts}</p>
      {/if}
-    {elseif $is_pay_later}
+    {elseif $is_pay_later && !$isAmountzero}
      <p>{$pay_later_receipt}</p> {* FIXME: this might be text rather than HTML *}
     {else}
      <p>{ts}Please print this confirmation for your records.{/ts}</p>
@@ -10871,9 +10996,8 @@ registration process.{/ts}</p>
 
    </td>
   </tr>
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+ </table>
+    <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
      <tr>
       <th {$headerStyle}>
        {ts}Event Information and Location{/ts}
@@ -11175,78 +11299,49 @@ registration process.{/ts}</p>
 
      {/if} {* End of conditional section for Paid events *}
 
-     {if $customPre}
-      <tr>
-       <th {$headerStyle}>
-        {$customPre_grouptitle}
-       </th>
-      </tr>
-      {foreach from=$customPre item=value key=customName}
-       {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-        <tr>
-         <td {$labelStyle}>
-          {$customName}
-         </td>
-         <td {$valueStyle}>
-          {$value}
-         </td>
-        </tr>
-       {/if}
-      {/foreach}
-     {/if}
+{if $customPre}
+{foreach from=$customPre item=customPr key=i}
+   <tr> <th {$headerStyle}>{$customPre_grouptitle.$i}</th></tr>
+   {foreach from=$customPr item=customValue key=customName}
+   {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
+     <tr>
+         <td {$labelStyle}>{$customName}</td>
+         <td {$valueStyle}>{$customValue}</td>
+     </tr>
+   {/if}
+   {/foreach}
+{/foreach}
+{/if}
 
-     {if $customPost}
-      <tr>
-       <th {$headerStyle}>
-        {$customPost_grouptitle}
-       </th>
-      </tr>
-      {foreach from=$customPost item=value key=customName}
-       {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-        <tr>
-         <td {$labelStyle}>
-          {$customName}
-         </td>
-         <td {$valueStyle}>
-          {$value}
-         </td>
-        </tr>
-       {/if}
-      {/foreach}
-     {/if}
+{if $customPost}
+{foreach from=$customPost item=customPos key=j}
+   <tr> <th {$headerStyle}>{$customPost_grouptitle.$j}</th></tr>
+   {foreach from=$customPos item=customValue key=customName}
+   {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
+     <tr>
+         <td {$labelStyle}>{$customName}</td>
+         <td {$valueStyle}>{$customValue}</td>
+     </tr>
+{/if}
+{/foreach}
+{/foreach}
+{/if}
 
-     {if $customProfile}
-      {foreach from=$customProfile item=value key=customName}
-       <tr>
-        <th {$headerStyle}>
-         {ts 1=$customName+1}Participant Information - Participant %1{/ts}
-        </th>
-       </tr>
-       {foreach from=$value item=val key=field}
-        {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\'}
-         <tr>
-          <td colspan="2" {$labelStyle}>
-           {if $field eq \'additionalCustomPre\'}
-            {$additionalCustomPre_grouptitle}
-           {else}
-            {$additionalCustomPost_grouptitle}
-           {/if}
-          </td>
-         </tr>
-         {foreach from=$val item=v key=f}
-          <tr>
-           <td {$labelStyle}>
-            {$f}
-           </td>
-           <td {$valueStyle}>
-            {$v}
-           </td>
-          </tr>
+{if $customProfile}
+{foreach from=$customProfile.profile item=eachParticipant key=participantID}
+     <tr><th {$headerStyle}>{ts 1=$participantID+2}Participant Information - Participant %1{/ts} </th></tr>
+     {foreach from=$eachParticipant item=eachProfile key=pid}
+     <tr><th {$headerStyle}>{$customProfile.title.$pid}</th></tr>
+     {foreach from=$eachProfile item=val key=field}
+     <tr>{foreach from=$val item=v key=f}
+         <td {$labelStyle}>{$field}</td> 
+         <td {$valueStyle}>{$v}</td> 
          {/foreach}
-        {/if}
-       {/foreach}
-      {/foreach}
-     {/if}
+     </tr>
+     {/foreach}
+{/foreach}
+{/foreach}
+{/if}
 
      {if $customGroup}
       {foreach from=$customGroup item=value key=customName}
@@ -11268,11 +11363,7 @@ registration process.{/ts}</p>
       {/foreach}
      {/if}
 
-    </table>
-   </td>
-  </tr>
-
- </table>
+  </table>
 </center>
 
 </body>
@@ -11307,7 +11398,7 @@ registration process.{/ts}
 {/if}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{elseif $is_pay_later}
+{elseif $is_pay_later && !$isAmountzero}
 
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
@@ -11487,59 +11578,56 @@ registration process.{/ts}
 {/if}
 {/if} {* End of conditional section for Paid events *}
 
+
 {if $customPre}
+{foreach from=$customPre item=customPr key=i}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{$customPre_grouptitle}
+{$customPre_grouptitle.$i}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{foreach from=$customPre item=value key=customName}
+{foreach from=$customPr item=customValue key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-{$customName}: {$value}
+ {$customName}: {$customValue}
 {/if}
+{/foreach}
 {/foreach}
 {/if}
 
 {if $customPost}
+{foreach from=$customPost item=customPos key=j}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{$customPost_grouptitle}
+{$customPost_grouptitle.$j} 
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{foreach from=$customPost item=value key=customName}
+{foreach from=$customPos item=customValue key=customName}
 {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-{$customName}: {$value}
+ {$customName}: {$customValue}
 {/if}
+{/foreach}
 {/foreach}
 {/if}
 {if $customProfile}
 
-{foreach from=$customProfile item=value key=customName}
+{foreach from=$customProfile.profile item=eachParticipant key=participantID}
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{ts 1=$customName+1}Participant Information - Participant %1{/ts}
+{ts 1=$participantID+2}Participant Information - Participant %1{/ts}
 
 ==========================================================={if $pricesetFieldsCount }===================={/if}
 
-{foreach from=$value item=val key=field}
-{if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\' }
-{if $field eq \'additionalCustomPre\' }
+{foreach from=$eachParticipant item=eachProfile key=pid}
 ----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
-{$additionalCustomPre_grouptitle}
+{$customProfile.title.$pid}
 ----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
 
-{else}
-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
-
-{$additionalCustomPost_grouptitle}
-----------------------------------------------------------{if $pricesetFieldsCount }--------------------{/if}
-
-{/if}
+{foreach from=$eachProfile item=val key=field}
 {foreach from=$val item=v key=f}
-{$f}: {$v}
+{$field}: {$v}
 {/foreach}
-{/if}
+{/foreach}
 {/foreach}
 {/foreach}
 {/if}
@@ -11568,7 +11656,7 @@ registration process.{/ts}
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
 <center>
- <table width="620" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
+ <table width="500" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
 
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -11596,7 +11684,7 @@ a link to a web page where you can complete your registration.{/ts}</p>
 an email with a link to a web page where you can complete the
 registration process.{/ts}</p>
      {/if}
-    {elseif $is_pay_later}
+    {elseif $is_pay_later && !$isAmountzero}
      <p>{$pay_later_receipt}</p> {* FIXME: this might be text rather than HTML *}
     {else}
      <p>{ts}Please print this confirmation for your records.{/ts}</p>
@@ -11604,9 +11692,8 @@ registration process.{/ts}</p>
 
    </td>
   </tr>
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+ </table>
+    <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
      <tr>
       <th {$headerStyle}>
        {ts}Event Information and Location{/ts}
@@ -11908,78 +11995,49 @@ registration process.{/ts}</p>
 
      {/if} {* End of conditional section for Paid events *}
 
-     {if $customPre}
-      <tr>
-       <th {$headerStyle}>
-        {$customPre_grouptitle}
-       </th>
-      </tr>
-      {foreach from=$customPre item=value key=customName}
-       {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-        <tr>
-         <td {$labelStyle}>
-          {$customName}
-         </td>
-         <td {$valueStyle}>
-          {$value}
-         </td>
-        </tr>
-       {/if}
-      {/foreach}
-     {/if}
+{if $customPre}
+{foreach from=$customPre item=customPr key=i}
+   <tr> <th {$headerStyle}>{$customPre_grouptitle.$i}</th></tr>
+   {foreach from=$customPr item=customValue key=customName}
+   {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
+     <tr>
+         <td {$labelStyle}>{$customName}</td>
+         <td {$valueStyle}>{$customValue}</td>
+     </tr>
+   {/if}
+   {/foreach}
+{/foreach}
+{/if}
 
-     {if $customPost}
-      <tr>
-       <th {$headerStyle}>
-        {$customPost_grouptitle}
-       </th>
-      </tr>
-      {foreach from=$customPost item=value key=customName}
-       {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
-        <tr>
-         <td {$labelStyle}>
-          {$customName}
-         </td>
-         <td {$valueStyle}>
-          {$value}
-         </td>
-        </tr>
-       {/if}
-      {/foreach}
-     {/if}
+{if $customPost}
+{foreach from=$customPost item=customPos key=j}
+   <tr> <th {$headerStyle}>{$customPost_grouptitle.$j}</th></tr>
+   {foreach from=$customPos item=customValue key=customName}
+   {if ( $trackingFields and ! in_array( $customName, $trackingFields ) ) or ! $trackingFields}
+     <tr>
+         <td {$labelStyle}>{$customName}</td>
+         <td {$valueStyle}>{$customValue}</td>
+     </tr>
+{/if}
+{/foreach}
+{/foreach}
+{/if}
 
-     {if $customProfile}
-      {foreach from=$customProfile item=value key=customName}
-       <tr>
-        <th {$headerStyle}>
-         {ts 1=$customName+1}Participant Information - Participant %1{/ts}
-        </th>
-       </tr>
-       {foreach from=$value item=val key=field}
-        {if $field eq \'additionalCustomPre\' or $field eq \'additionalCustomPost\'}
-         <tr>
-          <td colspan="2" {$labelStyle}>
-           {if $field eq \'additionalCustomPre\'}
-            {$additionalCustomPre_grouptitle}
-           {else}
-            {$additionalCustomPost_grouptitle}
-           {/if}
-          </td>
-         </tr>
-         {foreach from=$val item=v key=f}
-          <tr>
-           <td {$labelStyle}>
-            {$f}
-           </td>
-           <td {$valueStyle}>
-            {$v}
-           </td>
-          </tr>
+{if $customProfile}
+{foreach from=$customProfile.profile item=eachParticipant key=participantID}
+     <tr><th {$headerStyle}>{ts 1=$participantID+2}Participant Information - Participant %1{/ts} </th></tr>
+     {foreach from=$eachParticipant item=eachProfile key=pid}
+     <tr><th {$headerStyle}>{$customProfile.title.$pid}</th></tr>
+     {foreach from=$eachProfile item=val key=field}
+     <tr>{foreach from=$val item=v key=f}
+         <td {$labelStyle}>{$field}</td> 
+         <td {$valueStyle}>{$v}</td> 
          {/foreach}
-        {/if}
-       {/foreach}
-      {/foreach}
-     {/if}
+     </tr>
+     {/foreach}
+{/foreach}
+{/foreach}
+{/if}
 
      {if $customGroup}
       {foreach from=$customGroup item=value key=customName}
@@ -12001,11 +12059,7 @@ registration process.{/ts}</p>
       {/foreach}
      {/if}
 
-    </table>
-   </td>
-  </tr>
-
- </table>
+  </table>
 </center>
 
 </body>
@@ -14150,16 +14204,14 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {if $pcp_personal_note}{ts}Personal Note{/ts}: {$pcp_personal_note}{/if}
 
 {/if}
-{if $onBehalfName}
+{if $onBehalfProfile}
 ===========================================================
 {ts}On Behalf Of{/ts}
 
 ===========================================================
-{$onBehalfName}
-{$onBehalfAddress}
-
-{$onBehalfEmail}
-
+{foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+{$onBehalfName}: {$onBehalfValue}
+{/foreach}
 {/if}
 
 {if !( $contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\' ) and $is_monetary}
@@ -14262,7 +14314,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
 <center>
- <table width="620" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
+ <table width="500" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
 
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -14285,9 +14337,8 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
    </td>
   </tr>
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+  </table>
+  <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
 
      {if $membership_assign}
       <tr>
@@ -14552,21 +14603,24 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/if}
      {/if}
 
-     {if $onBehalfName}
+     {if $onBehalfProfile}
       <tr>
        <th {$headerStyle}>
-        {ts}On Behalf Of{/ts}
+        {$onBehalfProfile_grouptitle}
        </th>
       </tr>
-      <tr>
-       <td colspan="2" {$valueStyle}>
-        {$onBehalfName}<br />
-        {$onBehalfAddress|nl2br}<br />
-        {$onBehalfEmail}
-       </td>
-      </tr>
+      {foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+        <tr>
+         <td {$labelStyle}>
+          {$onBehalfName}
+         </td>
+         <td {$valueStyle}>
+          {$onBehalfValue}
+         </td>
+        </tr>
+      {/foreach}
      {/if}
-
+     
      {if ! ($contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\') and $is_monetary}
       {if $is_pay_later}
        <tr>
@@ -14723,11 +14777,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/foreach}
      {/if}
 
-    </table>
-   </td>
-  </tr>
-  
- </table>
+  </table>
 </center>
 
 </body>
@@ -14840,16 +14890,14 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {if $pcp_personal_note}{ts}Personal Note{/ts}: {$pcp_personal_note}{/if}
 
 {/if}
-{if $onBehalfName}
+{if $onBehalfProfile}
 ===========================================================
 {ts}On Behalf Of{/ts}
 
 ===========================================================
-{$onBehalfName}
-{$onBehalfAddress}
-
-{$onBehalfEmail}
-
+{foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+{$onBehalfName}: {$onBehalfValue}
+{/foreach}
 {/if}
 
 {if !( $contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\' ) and $is_monetary}
@@ -14952,7 +15000,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {capture assign=valueStyle }style="padding: 4px; border-bottom: 1px solid #999;"{/capture}
 
 <center>
- <table width="620" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
+ <table width="500" border="0" cellpadding="0" cellspacing="0" id="crm-event_receipt" style="font-family: Arial, Verdana, sans-serif; text-align: left;">
 
   <!-- BEGIN HEADER -->
   <!-- You can add table row(s) here with logo or other header elements -->
@@ -14975,9 +15023,8 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
    </td>
   </tr>
-  <tr>
-   <td>
-    <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+  </table>
+  <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
 
      {if $membership_assign}
       <tr>
@@ -15242,21 +15289,24 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/if}
      {/if}
 
-     {if $onBehalfName}
+     {if $onBehalfProfile}
       <tr>
        <th {$headerStyle}>
-        {ts}On Behalf Of{/ts}
+        {$onBehalfProfile_grouptitle}
        </th>
       </tr>
-      <tr>
-       <td colspan="2" {$valueStyle}>
-        {$onBehalfName}<br />
-        {$onBehalfAddress|nl2br}<br />
-        {$onBehalfEmail}
-       </td>
-      </tr>
+      {foreach from=$onBehalfProfile item=onBehalfValue key=onBehalfName}
+        <tr>
+         <td {$labelStyle}>
+          {$onBehalfName}
+         </td>
+         <td {$valueStyle}>
+          {$onBehalfValue}
+         </td>
+        </tr>
+      {/foreach}
      {/if}
-
+     
      {if ! ($contributeMode eq \'notify\' OR $contributeMode eq \'directIPN\') and $is_monetary}
       {if $is_pay_later}
        <tr>
@@ -15413,11 +15463,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
       {/foreach}
      {/if}
 
-    </table>
-   </td>
-  </tr>
-  
- </table>
+  </table>
 </center>
 
 </body>
@@ -16360,9 +16406,9 @@ Email confirmation page: <a href="{$petition.confirmUrl} ">{$petition.confirmUrl
 <p>If you did not sign this petition, please ignore this message.</p>
 ', @tpl_ovid_petition_confirmation_needed, 0,          1) ;
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -16391,7 +16437,7 @@ SELECT @domainID := id FROM civicrm_domain where name = 'Default Domain Name';
 INSERT INTO 
      civicrm_preferences(domain_id, contact_id, is_domain, contact_view_options, contact_edit_options, advanced_search_options, user_dashboard_options, address_options, address_format, mailing_format, display_name_format, sort_name_format, address_standardization_provider, address_standardization_userid, address_standardization_url, editor_id, mailing_backend, contact_autocomplete_options )
 VALUES 
-     (@domainID,NULL,1,'123456789101113','1234567891011','1234567891011121315161718','1234578','123456891011','{contact.address_name}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.supplemental_address_2}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.addressee}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.supplemental_address_2}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.individual_prefix}{ }{contact.first_name}{ }{contact.last_name}{ }{contact.individual_suffix}','{contact.last_name}{, }{contact.first_name}',NULL,NULL,NULL,2,'a:1:{s:15:"outBound_option";s:1:"3";}','12');
+     (@domainID,NULL,1,'123456789101113','1234567891011','123456789101112131516171819','1234578','123456891011','{contact.address_name}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.supplemental_address_2}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.addressee}\n{contact.street_address}\n{contact.supplemental_address_1}\n{contact.supplemental_address_2}\n{contact.city}{, }{contact.state_province}{ }{contact.postal_code}\n{contact.country}','{contact.individual_prefix}{ }{contact.first_name}{ }{contact.last_name}{ }{contact.individual_suffix}','{contact.last_name}{, }{contact.first_name}',NULL,NULL,NULL,2,'a:1:{s:15:"outBound_option";s:1:"3";}','12');
 
 
 -- mail settings 
@@ -16401,11 +16447,11 @@ INSERT INTO civicrm_mail_settings (domain_id, name, is_default, domain) VALUES (
 -- activity and case dashlets 
 
 INSERT INTO `civicrm_dashboard` 
-    ( `domain_id`, `label`, `url`, `content`, `permission`, `permission_operator`, `column_no`, `is_minimized`, `is_active`, `weight`, `created_date`, `is_fullscreen`, `is_reserved`) 
+    ( `domain_id`, `label`, `url`, `permission`, `permission_operator`, `column_no`, `is_minimized`, `is_active`, `weight`, `fullscreen_url`, `is_fullscreen`, `is_reserved`) 
     VALUES 
-    ( @domainID, 'Activities', 'civicrm/dashlet/activity&reset=1&snippet=4', NULL, 'access CiviCRM', NULL, 0, 0, 1, 1, NULL, 1, 1),
-    ( @domainID, 'My Cases', 'civicrm/dashlet/myCases&reset=1&snippet=4', NULL, 'access my cases and activities', NULL , 0, 0, 1, 2, NULL, 1, 1),
-    ( @domainID, 'All Cases', 'civicrm/dashlet/allCases&reset=1&snippet=4', NULL, 'access all cases and activities', NULL , 0, 0, 1, 3, NULL, 1, 1);
+    ( @domainID, 'Activities', 'civicrm/dashlet/activity&reset=1&snippet=4', 'access CiviCRM', NULL, 0, 0, 1, 1, 'civicrm/dashlet/activity&reset=1&snippet=4&context=dashletFullscreen', 1, 1),
+    ( @domainID, 'My Cases', 'civicrm/dashlet/myCases&reset=1&snippet=4', 'access my cases and activities', NULL , 0, 0, 1, 2, 'civicrm/dashlet/myCases&reset=1&snippet=4&context=dashletFullscreen', 1, 1),
+    ( @domainID, 'All Cases', 'civicrm/dashlet/allCases&reset=1&snippet=4', 'access all cases and activities', NULL , 0, 0, 1, 3, 'civicrm/dashlet/allCases&reset=1&snippet=4&context=dashletFullscreen', 1, 1);
 
 -- navigation 
 
@@ -16417,7 +16463,7 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    (  @domainID, NULL, 'Search',  'Search...',    NULL, '',  NULL, '1', NULL, 1 );
+    (  @domainID, NULL, 'Search',  'Search...',    NULL, '',  NULL, '1', NULL, 10 );
 
 SET @searchlastID:=LAST_INSERT_ID();
     
@@ -16439,21 +16485,12 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, 'civicrm/contact/search/custom/list&reset=1',              'Custom Searches...', 'Custom Searches...', NULL, '',                 @searchlastID, '1', NULL, 12 );
-
-SET @customSearchlastID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, 'civicrm/contact/search/custom&reset=1&csid=8',            'Activity Search',                  'Activity Search',                  NULL, '', @customSearchlastID, '1', NULL, 1 ), 
-    ( @domainID, 'civicrm/contact/search/custom&reset=1&csid=11',           'Contacts by Date Added',           'Contacts by Date Added',           NULL, '', @customSearchlastID, '1', NULL, 2 ), 
-    ( @domainID, 'civicrm/contact/search/custom&reset=1&csid=2',            'Contributors by Aggregate Totals', 'Contributors by Aggregate Totals', NULL, '', @customSearchlastID, '1', NULL, 3 ),
-    ( @domainID, 'civicrm/contact/search/custom&reset=1&csid=6',            'Proximity Search',                 'Proximity Search',                 NULL, '', @customSearchlastID, '1', NULL, 4 );
+    ( @domainID, 'civicrm/contact/search/custom/list&reset=1',              'Custom Searches', 'Custom Searches', NULL, '',                 @searchlastID, '1', NULL, 12 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES 
-    ( @domainID, NULL,  'Contacts', 'Contacts', NULL, '', NULL, '1', NULL, 3 );
+    ( @domainID, NULL,  'Contacts', 'Contacts', NULL, '', NULL, '1', NULL, 20 );
 
 SET @contactlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16468,7 +16505,7 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
     ( @domainID, 'civicrm/activity&reset=1&action=add&context=standalone',  'New Activity',           'New Activity',         NULL,               '',             @contactlastID, '1', NULL,  4 ), 
-    ( @domainID, 'civicrm/activity/add&atype=3&action=add&reset=1&context=standalone', 'New Email',   'New Email',            NULL,               '',             @contactlastID, '1', '1',   5 ), 
+    ( @domainID, 'civicrm/activity/email/add&atype=3&action=add&reset=1&context=standalone', 'New Email',   'New Email',      NULL,               '',             @contactlastID, '1', '1',   5 ), 
     ( @domainID, 'civicrm/import/contact&reset=1',                          'Import Contacts',        'Import Contacts',      'import contacts',  '',             @contactlastID, '1', NULL,  6 ), 
     ( @domainID, 'civicrm/import/activity&reset=1',                         'Import Activities',      'Import Activities',    'import contacts',  '',             @contactlastID, '1', '1',   7 ), 
     ( @domainID, 'civicrm/group/add&reset=1',                               'New Group',              'New Group',            'edit groups',      '',             @contactlastID, '1', NULL,  8 ), 
@@ -16480,7 +16517,7 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, NULL,  'Contributions', 'Contributions', 'access CiviContribute', '',      NULL,           '1', NULL,  4 );
+    ( @domainID, NULL,  'Contributions', 'Contributions', 'access CiviContribute', '',      NULL,           '1', NULL,  30 );
 
 SET @contributionlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16513,7 +16550,7 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, NULL, 'Events',  'Events', 'access CiviEvent', '', NULL, '1', NULL, 5 );
+    ( @domainID, NULL, 'Events',  'Events', 'access CiviEvent', '', NULL, '1', NULL, 40 );
 
 SET @eventlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16523,16 +16560,16 @@ VALUES
     ( @domainID, 'civicrm/participant/add&reset=1&action=add&context=standalone', 'Register Event Participant', 'Register Event Participant', 'access CiviEvent,edit event participants', 'AND', @eventlastID, '1', NULL, 2 ), 
     ( @domainID, 'civicrm/event/search&reset=1',                            'Find Participants',  'Find Participants',    'access CiviEvent', '',    @eventlastID, '1', NULL, 3 ), 
     ( @domainID, 'civicrm/event/import&reset=1',                            'Import Participants','Import Participants',  'access CiviEvent,edit event participants', 'AND',    @eventlastID, '1', '1',  4 ), 
-    ( @domainID, 'civicrm/event/add&reset=1&action=add',                    'New Event',          'New Event',            'access CiviEvent,administer CiviCRM', 'AND',    @eventlastID, '1', NULL, 5 ), 
-    ( @domainID, 'civicrm/event/manage&reset=1',                            'Manage Events',      'Manage Events',        'access CiviEvent,administer CiviCRM', 'AND',    @eventlastID, '1', 1, 6 ), 
-    ( @domainID, 'civicrm/admin/eventTemplate&reset=1',                     'Event Templates',    'Event Templates',      'access CiviEvent,administer CiviCRM', 'AND',    @eventlastID, '1', 1, 7 ), 
-    ( @domainID, 'civicrm/admin/price&reset=1&action=add',                  'New Price Set',      'New Price Set',        'access CiviEvent,administer CiviCRM', 'AND',    @eventlastID, '1', NULL, 8 ), 
-    ( @domainID, 'civicrm/admin/price&reset=1',                             'Manage Price Sets',  'Manage Price Sets',    'access CiviEvent,administer CiviCRM', 'AND',    @eventlastID, '1', NULL, 9 );
+    ( @domainID, 'civicrm/event/add&reset=1&action=add',                    'New Event',          'New Event',            'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', NULL, 5 ), 
+    ( @domainID, 'civicrm/event/manage&reset=1',                            'Manage Events',      'Manage Events',        'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', 1, 6 ), 
+    ( @domainID, 'civicrm/admin/eventTemplate&reset=1',                     'Event Templates',    'Event Templates',      'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', 1, 7 ), 
+    ( @domainID, 'civicrm/admin/price&reset=1&action=add',                  'New Price Set',      'New Price Set',        'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', NULL, 8 ), 
+    ( @domainID, 'civicrm/admin/price&reset=1',                             'Manage Price Sets',  'Manage Price Sets',    'access CiviEvent,edit all events', 'AND',    @eventlastID, '1', NULL, 9 );
     
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES 
-    ( @domainID, NULL, 'Mailings', 'Mailings', 'access CiviMail,create mailings,approve mailings,schedule mailings', 'OR', NULL, '1', NULL, 6 );
+    ( @domainID, NULL, 'Mailings', 'Mailings', 'access CiviMail,create mailings,approve mailings,schedule mailings', 'OR', NULL, '1', NULL, 50 );
 
 SET @mailinglastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16549,7 +16586,7 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES 
-    ( @domainID, NULL, 'Memberships', 'Memberships', 'access CiviMember', '', NULL, '1', NULL, 7 );
+    ( @domainID, NULL, 'Memberships', 'Memberships', 'access CiviMember', '', NULL, '1', NULL, 60 );
 
 SET @memberlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16562,8 +16599,34 @@ VALUES
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, NULL, 'Campaigns', 'Campaigns', 'interview campaign contacts,release campaign contacts,reserve campaign contacts,manage campaign,administer CiviCampaign,gotv campaign contacts', 'OR', NULL, '1', NULL, 70 );
+
+SET @campaignlastID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, 'civicrm/campaign&reset=1',        'Dashboard', 'Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 1 );
+SET @campaigndashboardlastID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, 'civicrm/campaign&reset=1&subPage=survey',        'Surveys', 'Survey Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 1 ), 
+    ( @domainID, 'civicrm/campaign&reset=1&subPage=petition',        'Petitions', 'Petition Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 2 ), 
+    ( @domainID, 'civicrm/campaign&reset=1&subPage=campaign',        'Campaigns', 'Campaign Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 3 ), 
+    ( @domainID, 'civicrm/campaign/add&reset=1',        'New Campaign', 'New Campaign', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 2 ), 
+    ( @domainID, 'civicrm/survey/add&reset=1',        'New Survey', 'New Survey', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/petition/add&reset=1',        'New Petition', 'New Petition', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 4 ),
+    ( @domainID, 'civicrm/survey/search&reset=1&op=reserve', 'Reserve Respondents', 'Reserve Respondents', 'administer CiviCampaign,manage campaign,reserve campaign contacts', 'OR', @campaignlastID, '1', NULL, 5 ),
+    ( @domainID, 'civicrm/survey/search&reset=1&op=interview', 'Interview Respondents', 'Interview Respondents', 'administer CiviCampaign,manage campaign,interview campaign contacts', 'OR', @campaignlastID, '1', NULL, 6 ),
+    ( @domainID, 'civicrm/survey/search&reset=1&op=release', 'Release Respondents', 'Release Respondents', 'administer CiviCampaign,manage campaign,release campaign contacts', 'OR', @campaignlastID, '1', NULL, 7 ),
+    ( @domainID, 'civicrm/campaign/gotv&reset=1', 'GOTV (Voter Tracking)', 'Voter Listing', 'administer CiviCampaign,manage campaign,release campaign contacts,gotv campaign contacts', 'OR', @campaignlastID, '1', NULL, 8 ),
+    ( @domainID, 'civicrm/campaign/vote&reset=1', 'Conduct Survey', 'Conduct Survey', 'administer CiviCampaign,manage campaign,reserve campaign contacts,interview campaign contacts', 'OR', @campaignlastID, '1', NULL, 9 );
+
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, NULL, 'Other', 'Other', 'access CiviGrant,administer CiviCase,access my cases and activities,access all cases and activities,administer CiviCampaign,manage campaign,reserve campaign contacts,release campaign contacts,interview campaign contacts,gotv campaign contacts', 'OR', NULL, '1', NULL, 9 );
+    ( @domainID, NULL, 'Other', 'Other', 'access CiviGrant,administer CiviCase,access my cases and activities,access all cases and activities', 'OR', NULL, '1', NULL, 90 );
     
 SET @otherlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16595,35 +16658,8 @@ VALUES
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES
-    ( @domainID, NULL, 'Campaigns', 'Campaigns', 'interview campaign contacts,release campaign contacts,reserve campaign contacts,manage campaign,administer CiviCampaign,gotv campaign contacts', 'OR', @otherlastID, '1', NULL, 3 );
-
-SET @campaignlastID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, 'civicrm/campaign&reset=1',        'Dashboard', 'Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 1 );
-SET @campaigndashboardlastID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, 'civicrm/campaign&reset=1&subPage=survey',        'Surveys', 'Survey Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 1 ), 
-    ( @domainID, 'civicrm/campaign&reset=1&subPage=petition',        'Petitions', 'Petition Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 2 ), 
-    ( @domainID, 'civicrm/campaign&reset=1&subPage=campaign',        'Campaigns', 'Campaign Dashboard', 'manage campaign,administer CiviCampaign', 'OR', @campaigndashboardlastID, '1', NULL, 3 ), 
-    ( @domainID, 'civicrm/campaign/add&reset=1',        'New Campaign', 'New Campaign', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 2 ), 
-    ( @domainID, 'civicrm/survey/add&reset=1',        'New Survey', 'New Survey', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 3 ),
-    ( @domainID, 'civicrm/petition/add&reset=1',        'New Petition', 'New Petition', 'manage campaign,administer CiviCampaign', 'OR', @campaignlastID, '1', NULL, 4 ),
-    ( @domainID, 'civicrm/survey/search&reset=1&op=reserve', 'Reserve Respondents', 'Reserve Respondents', 'administer CiviCampaign,manage campaign,reserve campaign contacts', 'OR', @campaignlastID, '1', NULL, 5 ),
-    ( @domainID, 'civicrm/survey/search&reset=1&op=interview', 'Interview Respondents', 'Interview Respondents', 'administer CiviCampaign,manage campaign,interview campaign contacts', 'OR', @campaignlastID, '1', NULL, 6 ),
-    ( @domainID, 'civicrm/survey/search&reset=1&op=release', 'Release Respondents', 'Release Respondents', 'administer CiviCampaign,manage campaign,release campaign contacts', 'OR', @campaignlastID, '1', NULL, 7 ),
-    ( @domainID, 'civicrm/campaign/gotv&reset=1', 'GOTV (Voter Tracking)', 'Voter Listing', 'administer CiviCampaign,manage campaign,release campaign contacts,gotv campaign contacts', 'OR', @campaignlastID, '1', NULL, 8 ),
-    ( @domainID, 'civicrm/campaign/vote&reset=1', 'Conduct Survey', 'Conduct Survey', 'administer CiviCampaign,manage campaign,reserve campaign contacts,interview campaign contacts', 'OR', @campaignlastID, '1', NULL, 9 );
-
-    
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES 
-    ( @domainID, NULL, 'Administer', 'Administer', 'administer CiviCRM', '', NULL, '1', NULL, 10 );
+    ( @domainID, NULL, 'Administer', 'Administer', 'administer CiviCRM', '', NULL, '1', NULL, 100 );
 
 SET @adminlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16687,7 +16723,10 @@ VALUES
     ( @domainID, 'civicrm/admin/messageTemplates&reset=1',             'Message Templates',      'Message Templates',        'administer CiviCRM', '', @configurelastID, '1', NULL, 4 ), 
     ( @domainID, 'civicrm/admin/domain&action=update&reset=1',         'Domain Information',     'Domain Information',       'administer CiviCRM', '', @configurelastID, '1', NULL, 5 ), 
     ( @domainID, 'civicrm/admin/options/from_email_address&group=from_email_address&reset=1', 'FROM Email Addresses', 'FROM Email Addresses',    'administer CiviCRM', '', @configurelastID, '1', NULL, 6 ), 
-    ( @domainID, 'civicrm/admin/setting/updateConfigBackend&reset=1',  'Update Directory Path and URL', 'Update Directory Path and URL',         'administer CiviCRM', '', @configurelastID, '1', NULL, 7 );
+    ( @domainID, 'civicrm/admin/setting/updateConfigBackend&reset=1',  'Update Directory Path and URL', 'Update Directory Path and URL',         'administer CiviCRM', '', @configurelastID, '1', NULL, 7 ),
+    ( @domainID, 'civicrm/admin/pdfFormats&reset=1',                   'PDF Page Formats',       'PDF Page Formats',         'administer CiviCRM', '', @configurelastID, '1', NULL, 8 ), 
+    ( @domainID, 'civicrm/admin/labelFormats&reset=1',                 'Mailing Label Formats',  'Mailing Label Formats',    'administer CiviCRM', '', @configurelastID, '1', NULL, 9 ),
+   ( @domainID, 'civicrm/admin/scheduleReminders&reset=1',              'Schedule Reminders',    'Schedule Reminders',       'administer CiviCRM', '', @configurelastID, '1', NULL, 10 );
 
     
 INSERT INTO civicrm_navigation
@@ -16740,7 +16779,8 @@ INSERT INTO civicrm_navigation
 VALUES    
     ( @domainID, 'civicrm/admin/options/case_type&group=case_type&reset=1',            'Case Types',      'Case Types',      'administer CiviCase', NULL, @adminCaselastID, '1', NULL, 1 ), 
     ( @domainID, 'civicrm/admin/options/redaction_rule&group=redaction_rule&reset=1',  'Redaction Rules', 'Redaction Rules', 'administer CiviCase', NULL, @adminCaselastID, '1', NULL, 2 ),
-    ( @domainID, 'civicrm/admin/options/case_status&group=case_status&reset=1',  'Case Statuses', 'Case Statuses', 'administer CiviCase', NULL, @adminCaselastID, '1', NULL, 3 );
+    ( @domainID, 'civicrm/admin/options/case_status&group=case_status&reset=1',  'Case Statuses', 'Case Statuses', 'administer CiviCase', NULL, @adminCaselastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/admin/options/encounter_medium&group=encounter_medium&reset=1',  'Encounter Medium', 'Encounter Medium', 'administer CiviCase', NULL, @adminCaselastID, '1', NULL, 4 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16843,12 +16883,13 @@ INSERT INTO civicrm_navigation
 VALUES     
     ( @domainID, 'civicrm/admin/campaign/surveyType&reset=1',                            'Survey Types',  'Survey Types', 'administer CiviCampaign',    '', @adminCampaignlastID, '1', NULL, 1 ),
     ( @domainID, 'civicrm/admin/options/campaign_type&group=campaign_type&reset=1',      'Campaign Types',  'Campaign Types', 'administer CiviCampaign',    '', @adminCampaignlastID, '1', NULL, 2 ),
-    ( @domainID, 'civicrm/admin/options/campaign_status&group=campaign_status&reset=1',      'Campaign Status',  'Campaign Status', 'administer CiviCampaign',    '', @adminCampaignlastID, '1', NULL, 3 );
+    ( @domainID, 'civicrm/admin/options/campaign_status&group=campaign_status&reset=1',      'Campaign Status',  'Campaign Status', 'administer CiviCampaign',    '', @adminCampaignlastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/admin/options/engagement_index&group=engagement_index&reset=1', 'Engagement Index',  'Engagement Index', 'administer CiviCampaign', '', @adminCampaignlastID, '1', NULL, 4 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, NULL, 'Help', 'Help', NULL, '',  NULL, '1', NULL, 11);
+    ( @domainID, NULL, 'Help', 'Help', NULL, '',  NULL, '1', NULL, 110);
 
 SET @adminHelplastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16862,7 +16903,7 @@ VALUES
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
-    ( @domainID, NULL, 'Reports', 'Reports', 'access CiviReport', '',  NULL, '1', NULL, 8 );
+    ( @domainID, NULL, 'Reports', 'Reports', 'access CiviReport', '',  NULL, '1', NULL, 80 );
 
 SET @reportlastID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
@@ -16880,96 +16921,210 @@ VALUES
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
-    (  @domainID, 'Constituent Report (Summary)', 'contact/summary', 'Provides a list of address and telephone information for constituent records in your system.', 'administer CiviCRM', 'a:21:{s:6:"fields";a:4:{s:12:"display_name";s:1:"1";s:14:"street_address";s:1:"1";s:4:"city";s:1:"1";s:10:"country_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:92:"Provides a list of address and telephone information for constituent records in your system.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";}');
+    (  @domainID, 'Constituent Report (Summary)', 'contact/summary', 'Provides a list of address and telephone information for constituent records in your system.', 'administer CiviCRM', 'a:31:{s:6:"fields";a:4:{s:9:"sort_name";s:1:"1";s:14:"street_address";s:1:"1";s:4:"city";s:1:"1";s:10:"country_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:92:"Provides a list of address and telephone information for constituent records in your system.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Constituent Report (Summary)',       'Constituent Report (Summary)',     'administer CiviCRM',       '',  @reportlastID,  '1', NULL, 3 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Constituent Report (Summary)',       'Constituent Report (Summary)',     'administer CiviCRM',       '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
-    ( @domainID, 'Constituent Report (Detail)', 'contact/detail', 'Provides contact-related information on contributions, memberships, events and activities.', 'administer CiviCRM', 'a:19:{s:6:"fields";a:30:{s:12:"display_name";s:1:"1";s:10:"country_id";s:1:"1";s:15:"contribution_id";s:1:"1";s:12:"total_amount";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:12:"receive_date";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:13:"membership_id";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:20:"membership_status_id";s:1:"1";s:14:"participant_id";s:1:"1";s:8:"event_id";s:1:"1";s:21:"participant_status_id";s:1:"1";s:7:"role_id";s:1:"1";s:25:"participant_register_date";s:1:"1";s:9:"fee_level";s:1:"1";s:10:"fee_amount";s:1:"1";s:15:"relationship_id";s:1:"1";s:20:"relationship_type_id";s:1:"1";s:12:"contact_id_b";s:1:"1";s:2:"id";s:1:"1";s:16:"activity_type_id";s:1:"1";s:7:"subject";s:1:"1";s:17:"source_contact_id";s:1:"1";s:18:"activity_date_time";s:1:"1";s:18:"activity_status_id";s:1:"1";s:17:"target_contact_id";s:1:"1";s:19:"assignee_contact_id";s:1:"1";}s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"display_name_op";s:3:"has";s:18:"display_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:90:"Provides contact-related information on contributions, memberships, events and activities.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+    ( @domainID, 'Constituent Report (Detail)', 'contact/detail', 'Provides contact-related information on contributions, memberships, events and activities.', 'administer CiviCRM', 'a:25:{s:6:"fields";a:30:{s:9:"sort_name";s:1:"1";s:10:"country_id";s:1:"1";s:15:"contribution_id";s:1:"1";s:12:"total_amount";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:12:"receive_date";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:13:"membership_id";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:20:"membership_status_id";s:1:"1";s:14:"participant_id";s:1:"1";s:8:"event_id";s:1:"1";s:21:"participant_status_id";s:1:"1";s:7:"role_id";s:1:"1";s:25:"participant_register_date";s:1:"1";s:9:"fee_level";s:1:"1";s:10:"fee_amount";s:1:"1";s:15:"relationship_id";s:1:"1";s:20:"relationship_type_id";s:1:"1";s:12:"contact_id_b";s:1:"1";s:2:"id";s:1:"1";s:16:"activity_type_id";s:1:"1";s:7:"subject";s:1:"1";s:17:"source_contact_id";s:1:"1";s:18:"activity_date_time";s:1:"1";s:18:"activity_status_id";s:1:"1";s:17:"target_contact_id";s:1:"1";s:19:"assignee_contact_id";s:1:"1";}s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:90:"Provides contact-related information on contributions, memberships, events and activities.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Constituent Report (Detail)',        'Constituent Report (Detail)',      'administer CiviCRM',       '',  @reportlastID,  '1', NULL, 4 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Constituent Report (Detail)',        'Constituent Report (Detail)',      'administer CiviCRM',       '',  @reportlastID,  '1', NULL, @instanceID+2  );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES    
+    ( @domainID, 'Activity Report ', 'activity', 'Provides a list of constituent activity including activity statistics for one/all contacts during a given date range(required)', 'administer CiviCRM', 'a:26:{s:6:"fields";a:6:{s:16:"contact_assignee";s:1:"1";s:14:"contact_target";s:1:"1";s:16:"activity_type_id";s:1:"1";s:16:"activity_subject";s:1:"1";s:18:"activity_date_time";s:1:"1";s:9:"status_id";s:1:"1";}s:17:"contact_source_op";s:3:"has";s:20:"contact_source_value";s:0:"";s:19:"contact_assignee_op";s:3:"has";s:22:"contact_assignee_value";s:0:"";s:17:"contact_target_op";s:3:"has";s:20:"contact_target_value";s:0:"";s:15:"current_user_op";s:2:"eq";s:18:"current_user_value";s:1:"0";s:27:"activity_date_time_relative";s:10:"this.month";s:23:"activity_date_time_from";s:0:"";s:21:"activity_date_time_to";s:0:"";s:19:"activity_subject_op";s:3:"has";s:22:"activity_subject_value";s:0:"";s:19:"activity_type_id_op";s:2:"in";s:22:"activity_type_id_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:11:"description";s:126:"Provides a list of constituent activity including activity statistics for one/all contacts during a given date range(required)";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";s:9:"group_bys";N;s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Activity Report',                    'activity',                                            'administer CiviCRM',       '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    (`domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES
+    ( @domainID, 'Current Employer Report', 'contact/currentEmployer', 'Provides detail list of employer employee relationships along with employment details.', 'administer CiviCRM', 'a:33:{s:6:"fields";a:5:{s:17:"organization_name";s:1:"1";s:9:"sort_name";s:1:"1";s:9:"job_title";s:1:"1";s:10:"start_date";s:1:"1";s:5:"email";s:1:"1";}s:20:"organization_name_op";s:3:"has";s:23:"organization_name_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:19:"start_date_relative";s:1:"0";s:15:"start_date_from";s:0:"";s:13:"start_date_to";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:98:"Provides detail list of employer employee relationships along with employment details Ex Join Date";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Current Employer Report',                    'Current Employer Report',  'administer CiviCRM',       '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
-    ( @domainID, 'Donor Report (Summary)', 'contribute/summary', 'Shows contribution statistics by month / week / year .. country / state .. type.', 'access CiviContribute', 'a:38:{s:6:"fields";a:1:{s:12:"total_amount";s:1:"1";}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:13:"total_sum_min";s:0:"";s:13:"total_sum_max";s:0:"";s:12:"total_sum_op";s:3:"lte";s:15:"total_sum_value";s:0:"";s:15:"total_count_min";s:0:"";s:15:"total_count_max";s:0:"";s:14:"total_count_op";s:3:"lte";s:17:"total_count_value";s:0:"";s:13:"total_avg_min";s:0:"";s:13:"total_avg_max";s:0:"";s:12:"total_avg_op";s:3:"lte";s:15:"total_avg_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:9:"group_bys";a:1:{s:12:"receive_date";s:1:"1";}s:14:"group_bys_freq";a:1:{s:12:"receive_date";s:5:"MONTH";}s:11:"description";s:80:"Shows contribution statistics by month / week / year .. country / state .. type.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";s:6:"charts";s:0:"";}');
+    ( @domainID, 'Relationship Report', 'contact/relationship', 'Gives relationship details between two contacts', 'administer CiviCRM', 'a:28:{s:6:"fields";a:4:{s:11:"sort_name_a";s:1:"1";s:11:"sort_name_b";s:1:"1";s:9:"label_a_b";s:1:"1";s:9:"label_b_a";s:1:"1";}s:14:"sort_name_a_op";s:3:"has";s:17:"sort_name_a_value";s:0:"";s:14:"sort_name_b_op";s:3:"has";s:17:"sort_name_b_value";s:0:"";s:17:"contact_type_a_op";s:2:"in";s:20:"contact_type_a_value";a:0:{}s:17:"contact_type_b_op";s:2:"in";s:20:"contact_type_b_value";a:0:{}s:12:"is_active_op";s:2:"eq";s:15:"is_active_value";s:0:"";s:23:"relationship_type_id_op";s:2:"eq";s:26:"relationship_type_id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:19:"Relationship Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Donor Report (Summary)',             'Donor Report (Summary)',           'access CiviContribute',    '',  @reportlastID,  '1', NULL, 5 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Relationship Report',                'Relationship Report',                                 'administer CiviCRM',       '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
-    ( @domainID, 'Donor Report (Detail)', 'contribute/detail', 'Lists detailed contribution(s) for one / all contacts. Contribution summary report points to this report for specific details.', 'access CiviContribute', 'a:31:{s:6:"fields";a:6:{s:12:"display_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";s:10:"country_id";s:1:"1";s:12:"total_amount";s:1:"1";s:12:"receive_date";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:13:"ordinality_op";s:2:"in";s:16:"ordinality_value";a:0:{}s:11:"description";s:126:"Lists detailed contribution(s) for one / all contacts. Contribution summary report points to this report for specific details.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";}');
+    ( @domainID, 'Donor Report (Summary)', 'contribute/summary', 'Shows contribution statistics by month / week / year .. country / state .. type.', 'access CiviContribute', 'a:42:{s:6:"fields";a:1:{s:12:"total_amount";s:1:"1";}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:13:"total_sum_min";s:0:"";s:13:"total_sum_max";s:0:"";s:12:"total_sum_op";s:3:"lte";s:15:"total_sum_value";s:0:"";s:15:"total_count_min";s:0:"";s:15:"total_count_max";s:0:"";s:14:"total_count_op";s:3:"lte";s:17:"total_count_value";s:0:"";s:13:"total_avg_min";s:0:"";s:13:"total_avg_max";s:0:"";s:12:"total_avg_op";s:3:"lte";s:15:"total_avg_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:9:"group_bys";a:1:{s:12:"receive_date";s:1:"1";}s:14:"group_bys_freq";a:1:{s:12:"receive_date";s:5:"MONTH";}s:11:"description";s:80:"Shows contribution statistics by month / week / year .. country / state .. type.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Donor Report (Detail)',              'Donor Report (Detail)',            'access CiviContribute',    '',  @reportlastID,  '1', NULL, 6 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Donor Report (Summary)',             'Donor Report (Summary)',           'access CiviContribute',    '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
-    ( @domainID, 'Donation Summary Report (Repeat)', 'contribute/repeat', 'Given two date ranges, shows contacts (and their contributions) who contributed in both the date ranges with percentage increase / decrease.', 'access CiviContribute', 'a:26:{s:6:"fields";a:3:{s:12:"display_name";s:1:"1";s:13:"total_amount1";s:1:"1";s:13:"total_amount2";s:1:"1";}s:22:"receive_date1_relative";s:13:"previous.year";s:18:"receive_date1_from";s:0:"";s:16:"receive_date1_to";s:0:"";s:22:"receive_date2_relative";s:9:"this.year";s:18:"receive_date2_from";s:0:"";s:16:"receive_date2_to";s:0:"";s:17:"total_amount1_min";s:0:"";s:17:"total_amount1_max";s:0:"";s:16:"total_amount1_op";s:3:"lte";s:19:"total_amount1_value";s:0:"";s:17:"total_amount2_min";s:0:"";s:17:"total_amount2_max";s:0:"";s:16:"total_amount2_op";s:3:"lte";s:19:"total_amount2_value";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:9:"group_bys";a:1:{s:2:"id";s:1:"1";}s:11:"description";s:140:"Given two date ranges, shows contacts (and their contributions) who contributed in both the date ranges with percentage increase / decrease.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";}');
+    ( @domainID, 'Donor Report (Detail)', 'contribute/detail', 'Lists detailed contribution(s) for one / all contacts. Contribution summary report points to this report for specific details.', 'access CiviContribute', 'a:34:{s:6:"fields";a:7:{s:9:"sort_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";s:10:"country_id";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:12:"receive_date";s:1:"1";s:12:"total_amount";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:13:"ordinality_op";s:2:"in";s:16:"ordinality_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:126:"Lists detailed contribution(s) for one / all contacts. Contribution summary report points to this report for specific details.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Donation Summary Report (Repeat)',   'Donation Summary Report (Repeat)', 'access CiviContribute',    '',  @reportlastID,  '1', NULL, 7 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Donor Report (Detail)',              'Donor Report (Detail)',            'access CiviContribute',    '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES
-    ( @domainID, 'SYBUNT Report', 'contribute/sybunt', 'Some year(s) but not this year. Provides a list of constituents who donated at some time in the history of your organization but did not donate during the time period you specify.', 'access CiviContribute', 'a:15:{s:6:"fields";a:3:{s:12:"display_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"yid_op";s:2:"eq";s:9:"yid_value";s:4:"2009";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:179:"Some year(s) but not this year. Provides a list of constituents who donated at some time in the history of your organization but did not donate during the time period you specify.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"charts";s:0:"";}');
+    ( @domainID, 'Donation Summary Report (Repeat)', 'contribute/repeat', 'Given two date ranges, shows contacts (and their contributions) who contributed in both the date ranges with percentage increase / decrease.', 'access CiviContribute', 'a:29:{s:6:"fields";a:3:{s:9:"sort_name";s:1:"1";s:13:"total_amount1";s:1:"1";s:13:"total_amount2";s:1:"1";}s:22:"receive_date1_relative";s:13:"previous.year";s:18:"receive_date1_from";s:0:"";s:16:"receive_date1_to";s:0:"";s:22:"receive_date2_relative";s:9:"this.year";s:18:"receive_date2_from";s:0:"";s:16:"receive_date2_to";s:0:"";s:17:"total_amount1_min";s:0:"";s:17:"total_amount1_max";s:0:"";s:16:"total_amount1_op";s:3:"lte";s:19:"total_amount1_value";s:0:"";s:17:"total_amount2_min";s:0:"";s:17:"total_amount2_max";s:0:"";s:16:"total_amount2_op";s:3:"lte";s:19:"total_amount2_value";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:9:"group_bys";a:1:{s:2:"id";s:1:"1";}s:11:"description";s:140:"Given two date ranges, shows contacts (and their contributions) who contributed in both the date ranges with percentage increase / decrease.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'SYBUNT Report',                      'SYBUNT Report',                                       'access CiviContribute',    '',  @reportlastID,  '1', NULL, 8 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Donation Summary Report (Repeat)',   'Donation Summary Report (Repeat)', 'access CiviContribute',    '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES
+    ( @domainID, 'SYBUNT Report', 'contribute/sybunt', 'Some year(s) but not this year. Provides a list of constituents who donated at some time in the history of your organization but did not donate during the time period you specify.', 'access CiviContribute', 'a:18:{s:6:"fields";a:3:{s:9:"sort_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"yid_op";s:2:"eq";s:9:"yid_value";s:4:"2011";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:179:"Some year(s) but not this year. Provides a list of constituents who donated at some time in the history of your organization but did not donate during the time period you specify.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'SYBUNT Report',                      'SYBUNT Report',                                       'access CiviContribute',    '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES    
-    ( @domainID, 'LYBUNT Report', 'contribute/lybunt', 'Last year but not this year. Provides a list of constituents who donated last year but did not donate during the time period you specify as the current year.', 'access CiviContribute', 'a:16:{s:6:"fields";a:3:{s:12:"display_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"yid_op";s:2:"eq";s:9:"yid_value";s:4:"2009";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:157:"Last year but not this year. Provides a list of constituents who donated last year but did not donate during the time period you specify as the current year.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:6:"charts";s:0:"";}');
+    ( @domainID, 'LYBUNT Report', 'contribute/lybunt', 'Last year but not this year. Provides a list of constituents who donated last year but did not donate during the time period you specify as the current year.', 'access CiviContribute', 'a:19:{s:6:"fields";a:3:{s:9:"sort_name";s:1:"1";s:5:"email";s:1:"1";s:5:"phone";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"yid_op";s:2:"eq";s:9:"yid_value";s:4:"2011";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:157:"Last year but not this year. Provides a list of constituents who donated last year but did not donate during the time period you specify as the current year.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'LYBUNT Report',                      'LYBUNT Report',                                       'access CiviContribute',    '',  @reportlastID,  '1', NULL, 9 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'LYBUNT Report',                      'LYBUNT Report',                                       'access CiviContribute',    '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES    
+    ( @domainID, 'Donation Summary Report (Organization)', 'contribute/organizationSummary', 'Displays a detailed contribution report for Organization relationships with contributors, as to if contribution done was  from an employee of some organization or from that Organization itself.', 'access CiviContribute', 'a:20:{s:6:"fields";a:5:{s:17:"organization_name";s:1:"1";s:9:"sort_name";s:1:"1";s:12:"total_amount";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:12:"receive_date";s:1:"1";}s:20:"organization_name_op";s:3:"has";s:23:"organization_name_value";s:0:"";s:23:"relationship_type_id_op";s:2:"eq";s:26:"relationship_type_id_value";s:5:"4_b_a";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:11:"description";s:193:"Displays a detailed contribution report for Organization relationships with contributors, as to if contribution done was  from an employee of some organization or from that Organization itself.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Donation Summary Report (Organization)', 'Donation Summary Report (Organization)', 'access CiviContribute', '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES    
-    ( @domainID, 'Soft Credit Report', 'contribute/softcredit', 'Soft Credit details.', 'access CiviContribute', 'a:21:{s:6:"fields";a:5:{s:21:"display_name_creditor";s:1:"1";s:24:"display_name_constituent";s:1:"1";s:14:"email_creditor";s:1:"1";s:14:"phone_creditor";s:1:"1";s:12:"total_amount";s:1:"1";}s:5:"id_op";s:2:"in";s:8:"id_value";a:0:{}s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:20:"Soft Credit details.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";}');
+    ( @domainID, 'Donation Summary Report (Household)', 'contribute/householdSummary', 'Provides a detailed report for Contributions made by contributors(Or Household itself) who are having a relationship with household (For ex a Contributor is Head of Household for some household or is a member of.)', 'access CiviContribute', 'a:21:{s:6:"fields";a:5:{s:14:"household_name";s:1:"1";s:9:"sort_name";s:1:"1";s:12:"total_amount";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:12:"receive_date";s:1:"1";}s:17:"household_name_op";s:3:"has";s:20:"household_name_value";s:0:"";s:23:"relationship_type_id_op";s:2:"eq";s:26:"relationship_type_id_value";s:5:"6_b_a";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:11:"description";s:213:"Provides a detailed report for Contributions made by contributors(Or Household itself) who are having a relationship with household (For ex a Contributor is Head of Household for some household or is a member of.)";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Donation Summary Report (Household)',    'Donation Summary Report (Household)',    'access CiviContribute', '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES    
+    ( @domainID, 'Top Donors Report', 'contribute/topDonor', 'Provides a list of the top donors during a time period you define. You can include as many donors as you want (for example, top 100 of your donors).', 'access CiviContribute', 'a:20:{s:6:"fields";a:2:{s:12:"display_name";s:1:"1";s:12:"total_amount";s:1:"1";}s:21:"receive_date_relative";s:9:"this.year";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:15:"total_range_min";s:0:"";s:15:"total_range_max";s:0:"";s:14:"total_range_op";s:2:"eq";s:17:"total_range_value";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:148:"Provides a list of the top donors during a time period you define. You can include as many donors as you want (for example, top 100 of your donors).";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Top Donors Report',                  'Top Donors Report',            'access CiviContribute',   '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES    
+    ( @domainID, 'Soft Credit Report', 'contribute/softcredit', 'Soft Credit details.', 'access CiviContribute', 'a:23:{s:6:"fields";a:5:{s:21:"display_name_creditor";s:1:"1";s:24:"display_name_constituent";s:1:"1";s:14:"email_creditor";s:1:"1";s:14:"phone_creditor";s:1:"1";s:12:"total_amount";s:1:"1";}s:5:"id_op";s:2:"in";s:8:"id_value";a:0:{}s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:20:"Soft Credit details.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Soft Credit Report',                 'Soft Credit Report',                                  'access CiviContribute',    '',  @reportlastID,  '1', NULL, 10 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Soft Credit Report',                 'Soft Credit Report',                                  'access CiviContribute',    '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES    
+    ( @domainID, 'Personal Campaign Page Summary', 'contribute/pcp', 'Contribution totals by personal campaign page.', 'access CiviContribute', 'a:22:{s:6:"fields";a:8:{s:9:"sort_name";s:1:"1";s:10:"page_title";s:1:"1";s:5:"title";s:1:"1";s:11:"goal_amount";s:1:"1";s:8:"amount_1";s:1:"1";s:8:"amount_2";s:1:"1";s:7:"soft_id";s:1:"1";s:12:"receive_date";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"page_title_op";s:3:"has";s:16:"page_title_value";s:0:"";s:8:"title_op";s:3:"has";s:11:"title_value";s:0:"";s:12:"amount_2_min";s:0:"";s:12:"amount_2_max";s:0:"";s:11:"amount_2_op";s:3:"lte";s:14:"amount_2_value";s:0:"";s:11:"description";s:35:"Shows Personal Campaign Page Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Personal Campaign Page Summary',                 'Personal Campaign Page Summary',                                  'access CiviContribute',    '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES    
+    ( @domainID, 'Pledge Summary Report', 'pledge/detail', 'Updates you with your Pledge Summary (if any) such as your pledge status, next payment date, amount, payment due, total amount paid etc.', 'access CiviPledge', 'a:27:{s:6:"fields";a:4:{s:9:"sort_name";s:1:"1";s:10:"country_id";s:1:"1";s:6:"amount";s:1:"1";s:9:"status_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:27:"pledge_create_date_relative";s:1:"0";s:23:"pledge_create_date_from";s:0:"";s:21:"pledge_create_date_to";s:0:"";s:17:"pledge_amount_min";s:0:"";s:17:"pledge_amount_max";s:0:"";s:16:"pledge_amount_op";s:3:"lte";s:19:"pledge_amount_value";s:0:"";s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:13:"Pledge Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviPledge";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Pledge Summary Report',              'Pledge Summary Report',        'access CiviPledge',       '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES    
+    ( @domainID, 'Pledged But not Paid Report', 'pledge/pbnp', 'Pledged but not Paid Report', 'access CiviPledge', 'a:17:{s:6:"fields";a:5:{s:9:"sort_name";s:1:"1";s:18:"pledge_create_date";s:1:"1";s:6:"amount";s:1:"1";s:14:"scheduled_date";s:1:"1";s:10:"country_id";s:1:"1";}s:27:"pledge_create_date_relative";s:1:"0";s:23:"pledge_create_date_from";s:0:"";s:21:"pledge_create_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:27:"Pledged but not Paid Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviPledge";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES    
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Pledged But not Paid Report',        'Pledged But not Paid Report',  'access CiviPledge',       '',  @reportlastID,  '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Bookkeeping Transactions Report', 'contribute/bookkeeping', 'Shows Bookkeeping Transactions Report', 'access CiviContribute', 'a:25:{s:6:"fields";a:10:{s:9:"sort_name";s:1:"1";s:12:"receive_date";s:1:"1";s:12:"total_amount";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:7:"trxn_id";s:1:"1";s:10:"invoice_id";s:1:"1";s:12:"check_number";s:1:"1";s:21:"payment_instrument_id";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:2:"id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:11:"description";s:37:"Shows Bookkeeping Transactions Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Bookkeeping Transactions Report', 'Bookkeeping Transactions Report', 'access CiviContribute', '', @reportlastID, '1', NULL, @instanceID+2 );
+
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
@@ -16981,43 +17136,43 @@ SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Membership Report (Summary)',        'Membership Report (Summary)',      'access CiviMember',        '',  @reportlastID,  '1', NULL, 11 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),     'Membership Report (Summary)',        'Membership Report (Summary)',      'access CiviMember',        '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES    
-    ( @domainID, 'Membership Report (Detail)', 'member/detail', 'Provides a list of members along with their membership status and membership details (Join Date, Start Date, End Date).', 'access CiviMember', 'a:27:{s:6:"fields";a:5:{s:12:"display_name";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:4:"name";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:18:"join_date_relative";s:1:"0";s:14:"join_date_from";s:0:"";s:12:"join_date_to";s:0:"";s:23:"owner_membership_id_min";s:0:"";s:23:"owner_membership_id_max";s:0:"";s:22:"owner_membership_id_op";s:3:"lte";s:25:"owner_membership_id_value";s:0:"";s:6:"tid_op";s:2:"in";s:9:"tid_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:119:"Provides a list of members along with their membership status and membership details (Join Date, Start Date, End Date).";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviMember";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";}');
+    ( @domainID, 'Membership Report (Detail)', 'member/detail', 'Provides a list of members along with their membership status and membership details (Join Date, Start Date, End Date).', 'access CiviMember', 'a:28:{s:6:"fields";a:5:{s:9:"sort_name";s:1:"1";s:18:"membership_type_id";s:1:"1";s:21:"membership_start_date";s:1:"1";s:19:"membership_end_date";s:1:"1";s:4:"name";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:18:"join_date_relative";s:1:"0";s:14:"join_date_from";s:0:"";s:12:"join_date_to";s:0:"";s:23:"owner_membership_id_min";s:0:"";s:23:"owner_membership_id_max";s:0:"";s:22:"owner_membership_id_op";s:3:"lte";s:25:"owner_membership_id_value";s:0:"";s:6:"tid_op";s:2:"in";s:9:"tid_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:119:"Provides a list of members along with their membership status and membership details (Join Date, Start Date, End Date).";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviMember";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Membership Report (Detail)',         'Membership Report (Detail)',       'access CiviMember',        '',  @reportlastID,  '1', NULL, 12 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Membership Report (Detail)',         'Membership Report (Detail)',       'access CiviMember',        '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES    
-    ( @domainID, 'Membership Report (Lapsed)', 'member/lapse', 'Provides a list of memberships that lapsed or will lapse before the date you specify.', 'access CiviMember', 'a:15:{s:6:"fields";a:5:{s:12:"display_name";s:1:"1";s:18:"membership_type_id";s:1:"1";s:19:"membership_end_date";s:1:"1";s:4:"name";s:1:"1";s:10:"country_id";s:1:"1";}s:6:"tid_op";s:2:"in";s:9:"tid_value";a:0:{}s:28:"membership_end_date_relative";s:1:"0";s:24:"membership_end_date_from";s:0:"";s:22:"membership_end_date_to";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:85:"Provides a list of memberships that lapsed or will lapse before the date you specify.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviMember";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";}');
+    ( @domainID, 'Membership Report (Lapsed)', 'member/lapse', 'Provides a list of memberships that lapsed or will lapse before the date you specify.', 'access CiviMember', 'a:16:{s:6:"fields";a:5:{s:9:"sort_name";s:1:"1";s:18:"membership_type_id";s:1:"1";s:19:"membership_end_date";s:1:"1";s:4:"name";s:1:"1";s:10:"country_id";s:1:"1";}s:6:"tid_op";s:2:"in";s:9:"tid_value";a:0:{}s:28:"membership_end_date_relative";s:1:"0";s:24:"membership_end_date_from";s:0:"";s:22:"membership_end_date_to";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"description";s:85:"Provides a list of memberships that lapsed or will lapse before the date you specify.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviMember";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Membership Report (Lapsed)',         'Membership Report (Lapsed)',       'access CiviMember',        '',  @reportlastID,  '1', NULL, 13 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Membership Report (Lapsed)',         'Membership Report (Lapsed)',       'access CiviMember',        '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES    
-    ( @domainID, 'Event Participant Report (List)', 'event/participantListing', 'Provides lists of participants for an event.', 'access CiviEvent', 'a:25:{s:6:"fields";a:4:{s:12:"display_name";s:1:"1";s:8:"event_id";s:1:"1";s:9:"status_id";s:1:"1";s:7:"role_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:8:"email_op";s:3:"has";s:11:"email_value";s:0:"";s:11:"event_id_op";s:2:"in";s:14:"event_id_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"rid_op";s:2:"in";s:9:"rid_value";a:0:{}s:34:"participant_register_date_relative";s:1:"0";s:30:"participant_register_date_from";s:1:" ";s:28:"participant_register_date_to";s:1:" ";s:6:"eid_op";s:2:"in";s:9:"eid_value";a:0:{}s:16:"blank_column_end";s:0:"";s:11:"description";s:44:"Provides lists of participants for an event.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviEvent";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";s:7:"options";N;}');
+    ( @domainID, 'Event Participant Report (List)', 'event/participantListing', 'Provides lists of participants for an event.', 'access CiviEvent', 'a:27:{s:6:"fields";a:4:{s:9:"sort_name";s:1:"1";s:8:"event_id";s:1:"1";s:9:"status_id";s:1:"1";s:7:"role_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:8:"email_op";s:3:"has";s:11:"email_value";s:0:"";s:11:"event_id_op";s:2:"in";s:14:"event_id_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"rid_op";s:2:"in";s:9:"rid_value";a:0:{}s:34:"participant_register_date_relative";s:1:"0";s:30:"participant_register_date_from";s:0:"";s:28:"participant_register_date_to";s:0:"";s:6:"eid_op";s:2:"in";s:9:"eid_value";a:0:{}s:11:"custom_4_op";s:2:"in";s:14:"custom_4_value";a:0:{}s:16:"blank_column_end";s:0:"";s:11:"description";s:44:"Provides lists of participants for an event.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviEvent";s:6:"groups";s:0:"";s:7:"options";N;s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Event Participant Report (List)',    'Event Participant Report (List)',  'access CiviEvent',         '',  @reportlastID,  '1', NULL, 14 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Event Participant Report (List)',    'Event Participant Report (List)',  'access CiviEvent',         '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
@@ -17029,7 +17184,7 @@ SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Event Income Report (Summary)',      'Event Income Report (Summary)',    'access CiviEvent',         '',  @reportlastID,  '1', NULL, 15 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Event Income Report (Summary)',      'Event Income Report (Summary)',    'access CiviEvent',         '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
@@ -17041,190 +17196,104 @@ SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Event Income Report (Detail)',       'Event Income Report (Detail)',     'access CiviEvent',         '',  @reportlastID,  '1', NULL, 16 );
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Event Income Report (Detail)',       'Event Income Report (Detail)',     'access CiviEvent',         '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES    
-    ( @domainID, 'Attendee List', 'event/participantListing', 'Provides lists of event attendees.', 'access CiviEvent', 'a:25:{s:6:"fields";a:4:{s:12:"display_name";s:1:"1";s:14:"participant_id";s:1:"1";s:9:"status_id";s:1:"1";s:7:"role_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:8:"email_op";s:3:"has";s:11:"email_value";s:0:"";s:11:"event_id_op";s:2:"in";s:14:"event_id_value";a:1:{i:0;s:1:"1";}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"rid_op";s:2:"in";s:9:"rid_value";a:0:{}s:34:"participant_register_date_relative";s:1:"0";s:30:"participant_register_date_from";s:0:"";s:28:"participant_register_date_to";s:0:"";s:6:"eid_op";s:2:"in";s:9:"eid_value";a:0:{}s:16:"blank_column_end";s:1:"1";s:11:"description";s:34:"Provides lists of event attendees.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviEvent";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";s:7:"options";N;}');
+    ( @domainID, 'Attendee List', 'event/participantListing', 'Provides lists of event attendees.', 'access CiviEvent', 'a:27:{s:6:"fields";a:4:{s:9:"sort_name";s:1:"1";s:8:"event_id";s:1:"1";s:9:"status_id";s:1:"1";s:7:"role_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:8:"email_op";s:3:"has";s:11:"email_value";s:0:"";s:11:"event_id_op";s:2:"in";s:14:"event_id_value";a:0:{}s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"rid_op";s:2:"in";s:9:"rid_value";a:0:{}s:34:"participant_register_date_relative";s:1:"0";s:30:"participant_register_date_from";s:0:"";s:28:"participant_register_date_to";s:0:"";s:6:"eid_op";s:2:"in";s:9:"eid_value";a:0:{}s:11:"custom_4_op";s:2:"in";s:14:"custom_4_value";a:0:{}s:16:"blank_column_end";s:0:"";s:11:"description";s:44:"Provides lists of participants for an event.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviEvent";s:6:"groups";s:0:"";s:7:"options";N;s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Attendee List',                      'Attendee List',                                       'access CiviEvent',         '',  @reportlastID,  '1', NULL, 17 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES    
-    ( @domainID, 'Activity Report ', 'activity', 'Provides a list of constituent activity including activity statistics for one/all contacts during a given date range(required)', 'administer CiviCRM', 'a:23:{s:6:"fields";a:7:{s:14:"contact_source";s:1:"1";s:16:"contact_assignee";s:1:"1";s:14:"contact_target";s:1:"1";s:16:"activity_type_id";s:1:"1";s:7:"subject";s:1:"1";s:18:"activity_date_time";s:1:"1";s:9:"status_id";s:1:"1";}s:17:"contact_source_op";s:3:"has";s:20:"contact_source_value";s:0:"";s:19:"contact_assignee_op";s:3:"has";s:22:"contact_assignee_value";s:0:"";s:17:"contact_target_op";s:3:"has";s:20:"contact_target_value";s:0:"";s:27:"activity_date_time_relative";s:10:"this.month";s:23:"activity_date_time_from";s:0:"";s:21:"activity_date_time_to";s:0:"";s:10:"subject_op";s:3:"has";s:13:"subject_value";s:0:"";s:19:"activity_type_id_op";s:2:"in";s:22:"activity_type_id_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:9:"group_bys";a:1:{s:17:"source_contact_id";s:1:"1";}s:11:"description";s:126:"Provides a list of constituent activity including activity statistics for one/all contacts during a given date range(required)";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";}');
-SET @instanceID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Activity Report',                    'activity',                                            'administer CiviCRM',       '',  @reportlastID,  '1', NULL, 18 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES
-    ( @domainID, 'Relationship Report', 'contact/relationship', 'Gives relationship details between two contacts', 'administer CiviCRM', 'a:23:{s:6:"fields";a:4:{s:14:"display_name_a";s:1:"1";s:14:"display_name_b";s:1:"1";s:9:"label_a_b";s:1:"1";s:9:"label_b_a";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:17:"contact_type_a_op";s:2:"in";s:20:"contact_type_a_value";a:0:{}s:17:"contact_type_b_op";s:2:"in";s:20:"contact_type_b_value";a:0:{}s:12:"is_active_op";s:2:"eq";s:15:"is_active_value";s:0:"";s:23:"relationship_type_id_op";s:2:"eq";s:26:"relationship_type_id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:47:"Gives relationship details between two contacts";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:18:"administer CiviCRM";s:6:"groups";s:0:"";}');
-SET @instanceID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Relationship Report',                'Relationship Report',                                 'administer CiviCRM',       '',  @reportlastID,  '1', NULL, 19 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES    
-    ( @domainID, 'Donation Summary Report (Organization)', 'contribute/organizationSummary', 'Displays a detailed contribution report for Organization relationships with contributors, as to if contribution done was  from an employee of some organization or from that Organization itself.', 'access CiviContribute', 'a:21:{s:6:"fields";a:5:{s:17:"organization_name";s:1:"1";s:12:"display_name";s:1:"1";s:12:"total_amount";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:12:"receive_date";s:1:"1";}s:20:"organization_name_op";s:3:"has";s:23:"organization_name_value";s:0:"";s:23:"relationship_type_id_op";s:2:"eq";s:26:"relationship_type_id_value";s:5:"4_b_a";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:1:" ";s:15:"receive_date_to";s:1:" ";s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:11:"description";s:193:"Displays a detailed contribution report for Organization relationships with contributors, as to if contribution done was  from an employee of some organization or from that Organization itself.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";}');
-SET @instanceID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Donation Summary Report (Organization)', 'Donation Summary Report (Organization)', 'access CiviContribute', '',  @reportlastID,  '1', NULL, 20 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES    
-    ( @domainID, 'Donation Summary Report (Household)', 'contribute/householdSummary', 'Provides a detailed report for Contributions made by contributors(Or Household itself) who are having a relationship with household (For ex a Contributor is Head of Household for some household or is a member of.)', 'access CiviContribute', 'a:21:{s:6:"fields";a:5:{s:14:"household_name";s:1:"1";s:12:"display_name";s:1:"1";s:12:"total_amount";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:12:"receive_date";s:1:"1";}s:17:"household_name_op";s:3:"has";s:20:"household_name_value";s:0:"";s:23:"relationship_type_id_op";s:2:"eq";s:26:"relationship_type_id_value";s:5:"6_b_a";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:1:" ";s:15:"receive_date_to";s:1:" ";s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:11:"description";s:213:"Provides a detailed report for Contributions made by contributors(Or Household itself) who are having a relationship with household (For ex a Contributor is Head of Household for some household or is a member of.)";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";}');
-SET @instanceID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Donation Summary Report (Household)',    'Donation Summary Report (Household)',    'access CiviContribute', '',  @reportlastID,  '1', NULL, 21 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES    
-    ( @domainID, 'Top Donors Report', 'contribute/topDonor', 'Provides a list of the top donors during a time period you define. You can include as many donors as you want (for example, top 100 of your donors).', 'access CiviContribute', 'a:20:{s:6:"fields";a:2:{s:12:"display_name";s:1:"1";s:12:"total_amount";s:1:"1";}s:21:"receive_date_relative";s:9:"this.year";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:15:"total_range_min";s:0:"";s:15:"total_range_max";s:0:"";s:14:"total_range_op";s:2:"eq";s:17:"total_range_value";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:148:"Provides a list of the top donors during a time period you define. You can include as many donors as you want (for example, top 100 of your donors).";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:21:"access CiviContribute";s:6:"groups";s:0:"";}');
-SET @instanceID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Top Donors Report',                  'Top Donors Report',            'access CiviContribute',   '',  @reportlastID,  '1', NULL, 22 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES    
-    ( @domainID, 'Pledge Summary Report', 'pledge/summary', 'Updates you with your Pledge Summary (if any) such as your pledge status, next payment date, amount, payment due, total amount paid etc.', 'access CiviPledge', 'a:25:{s:6:"fields";a:4:{s:12:"display_name";s:1:"1";s:10:"country_id";s:1:"1";s:6:"amount";s:1:"1";s:9:"status_id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:27:"pledge_create_date_relative";s:1:"0";s:23:"pledge_create_date_from";s:0:"";s:21:"pledge_create_date_to";s:0:"";s:17:"pledge_amount_min";s:0:"";s:17:"pledge_amount_max";s:0:"";s:16:"pledge_amount_op";s:3:"lte";s:19:"pledge_amount_value";s:0:"";s:6:"sid_op";s:2:"in";s:9:"sid_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:136:"Updates you with your Pledge Summary (if any) such as your pledge status, next payment date, amount, payment due, total amount paid etc.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviPledge";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";}');
-SET @instanceID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Pledge Summary Report',              'Pledge Summary Report',        'access CiviPledge',       '',  @reportlastID,  '1', NULL, 23 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES    
-    ( @domainID, 'Pledged But not Paid Report', 'pledge/pbnp', 'Pledged but not Paid Report', 'access CiviPledge', 'a:15:{s:6:"fields";a:6:{s:12:"display_name";s:1:"1";s:18:"pledge_create_date";s:1:"1";s:6:"amount";s:1:"1";s:14:"scheduled_date";s:1:"1";s:10:"country_id";s:1:"1";s:5:"email";s:1:"1";}s:27:"pledge_create_date_relative";s:1:"0";s:23:"pledge_create_date_from";s:0:"";s:21:"pledge_create_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:11:"description";s:27:"Pledged but not Paid Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:17:"access CiviPledge";s:9:"parent_id";s:3:"174";s:6:"groups";s:0:"";}');
-SET @instanceID:=LAST_INSERT_ID();
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES    
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Pledged But not Paid Report',        'Pledged But not Paid Report',  'access CiviPledge',       '',  @reportlastID,  '1', NULL, 24 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
-
-INSERT INTO `civicrm_report_instance`
-    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES 
-    ( @domainID, 'Bookkeeping Transactions Report', 'contribute/bookkeeping', 'Shows Bookkeeping Transactions Report', 'access CiviContribute', 'a:26:{s:6:"fields";a:10:{s:12:"display_name";s:1:"1";s:12:"receive_date";s:1:"1";s:12:"total_amount";s:1:"1";s:20:"contribution_type_id";s:1:"1";s:7:"trxn_id";s:1:"1";s:10:"invoice_id";s:1:"1";s:12:"check_number";s:1:"1";s:21:"payment_instrument_id";s:1:"1";s:22:"contribution_status_id";s:1:"1";s:2:"id";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:21:"receive_date_relative";s:1:"0";s:17:"receive_date_from";s:0:"";s:15:"receive_date_to";s:0:"";s:23:"contribution_type_id_op";s:2:"in";s:26:"contribution_type_id_value";a:0:{}s:25:"contribution_status_id_op";s:2:"in";s:28:"contribution_status_id_value";a:1:{i:0;s:1:"1";}s:16:"total_amount_min";s:0:"";s:16:"total_amount_max";s:0:"";s:15:"total_amount_op";s:3:"lte";s:18:"total_amount_value";s:0:"";s:11:"description";s:37:"Shows Bookkeeping Transactions Report";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:1:"0";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";s:9:"domain_id";i:1;} ');
- 
-SET @instanceID:=LAST_INSERT_ID( );
-INSERT INTO civicrm_navigation
-    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
-VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Bookkeeping Transactions Report', 'Bookkeeping Transactions Report', 'access CiviContribute', '', @reportlastID, '1', NULL, 25 );
-
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'),    'Attendee List',                      'Attendee List',                                       'access CiviEvent',         '',  @reportlastID,  '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
-    ( @domainID, 'Grant Report (Detail)', 'grant/detail', 'Grant Report Detail', 'access CiviGrant', 'a:37:{s:6:"fields";a:2:{s:12:"display_name";s:1:"1";s:25:"application_received_date";s:1:"1";}s:15:"display_name_op";s:3:"has";s:18:"display_name_value";s:0:"";s:12:"gender_id_op";s:2:"in";s:15:"gender_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"grant_type_op";s:2:"in";s:16:"grant_type_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:18:"amount_granted_min";s:0:"";s:18:"amount_granted_max";s:0:"";s:17:"amount_granted_op";s:3:"lte";s:20:"amount_granted_value";s:0:"";s:20:"amount_requested_min";s:0:"";s:20:"amount_requested_max";s:0:"";s:19:"amount_requested_op";s:3:"lte";s:22:"amount_requested_value";s:0:"";s:34:"application_received_date_relative";s:1:"0";s:30:"application_received_date_from";s:0:"";s:28:"application_received_date_to";s:0:"";s:28:"money_transfer_date_relative";s:1:"0";s:24:"money_transfer_date_from";s:0:"";s:22:"money_transfer_date_to";s:0:"";s:23:"grant_due_date_relative";s:1:"0";s:19:"grant_due_date_from";s:0:"";s:17:"grant_due_date_to";s:0:"";s:11:"description";s:19:"Grant Report Detail";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviGrant";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
-
+    ( @domainID, 'Grant Report (Detail)', 'grant/detail', 'Grant Report Detail', 'access CiviGrant', 'a:40:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:25:"application_received_date";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:12:"gender_id_op";s:2:"in";s:15:"gender_id_value";a:0:{}s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"grant_type_op";s:2:"in";s:16:"grant_type_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:18:"amount_granted_min";s:0:"";s:18:"amount_granted_max";s:0:"";s:17:"amount_granted_op";s:3:"lte";s:20:"amount_granted_value";s:0:"";s:20:"amount_requested_min";s:0:"";s:20:"amount_requested_max";s:0:"";s:19:"amount_requested_op";s:3:"lte";s:22:"amount_requested_value";s:0:"";s:34:"application_received_date_relative";s:1:"0";s:30:"application_received_date_from";s:0:"";s:28:"application_received_date_to";s:0:"";s:28:"money_transfer_date_relative";s:1:"0";s:24:"money_transfer_date_from";s:0:"";s:22:"money_transfer_date_to";s:0:"";s:23:"grant_due_date_relative";s:1:"0";s:19:"grant_due_date_from";s:0:"";s:17:"grant_due_date_to";s:0:"";s:11:"description";s:19:"Grant Report Detail";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviGrant";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Grant Report (Detail)', 'Grant Report Detail', 'access CiviGrant', '',@reportlastID, '1', NULL, 26 );
-
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Grant Report (Detail)', 'Grant Report Detail', 'access CiviGrant', '',@reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+
+INSERT INTO `civicrm_report_instance`
+    ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
+VALUES 
+    ( @domainID, 'Grant Report (Statistics)', 'grant/statistics', 'Grant Report Statistics', 'access CiviGrant', 'a:42:{s:6:"fields";a:2:{s:18:"summary_statistics";s:1:"1";s:13:"grant_type_id";s:1:"1";}s:34:"application_received_date_relative";s:1:"0";s:30:"application_received_date_from";s:0:"";s:28:"application_received_date_to";s:0:"";s:22:"decision_date_relative";s:1:"0";s:18:"decision_date_from";s:0:"";s:16:"decision_date_to";s:0:"";s:28:"money_transfer_date_relative";s:1:"0";s:24:"money_transfer_date_from";s:0:"";s:22:"money_transfer_date_to";s:0:"";s:23:"grant_due_date_relative";s:1:"0";s:19:"grant_due_date_from";s:0:"";s:17:"grant_due_date_to";s:0:"";s:13:"grant_type_op";s:2:"in";s:16:"grant_type_value";a:0:{}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:20:"amount_requested_min";s:0:"";s:20:"amount_requested_max";s:0:"";s:19:"amount_requested_op";s:3:"lte";s:22:"amount_requested_value";s:0:"";s:18:"amount_granted_min";s:0:"";s:18:"amount_granted_max";s:0:"";s:17:"amount_granted_op";s:3:"lte";s:20:"amount_granted_value";s:0:"";s:24:"grant_report_received_op";s:2:"eq";s:27:"grant_report_received_value";s:0:"";s:12:"gender_id_op";s:2:"in";s:15:"gender_id_value";a:0:{}s:15:"contact_type_op";s:2:"in";s:18:"contact_type_value";a:0:{}s:12:"region_id_op";s:2:"in";s:15:"region_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:11:"description";s:23:"Grant Report Statistics";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:1:"0";s:9:"parent_id";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID( );
+INSERT INTO civicrm_navigation
+    ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
+VALUES
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Grant Report (Statistics)', 'Grant Report Statistics', 'access CiviGrant', '',@reportlastID, '1', NULL, @instanceID+2 );
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
     ( @domainID, 'Mail Bounce Report', 'Mailing/bounce', 'Bounce Report for mailings', 'access CiviMail', 'a:39:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:11:"bounce_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:19:"bounce_type_name_op";s:2:"eq";s:22:"bounce_type_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:26:"Bounce Report for mailings";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
-
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Bounce Report', 'Mail Bounce Report', 'access CiviMail', '',@reportlastID, '1', NULL, 27 );
-
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Bounce Report', 'Mail Bounce Report', 'access CiviMail', '',@reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
     ( @domainID, 'Mail Summary Report', 'Mailing/summary','Summary statistics for mailings','access CiviMail','a:25:{s:6:"fields";a:5:{s:4:"name";s:1:"1";s:11:"queue_count";s:1:"1";s:15:"delivered_count";s:1:"1";s:12:"bounce_count";s:1:"1";s:10:"open_count";s:1:"1";}s:15:"is_completed_op";s:2:"eq";s:18:"is_completed_value";s:1:"1";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:9:"status_op";s:3:"has";s:12:"status_value";s:8:"Complete";s:11:"is_test_min";s:0:"";s:11:"is_test_max";s:0:"";s:10:"is_test_op";s:3:"lte";s:13:"is_test_value";s:1:"0";s:19:"start_date_relative";s:9:"this.year";s:15:"start_date_from";s:0:"";s:13:"start_date_to";s:0:"";s:17:"end_date_relative";s:9:"this.year";s:13:"end_date_from";s:0:"";s:11:"end_date_to";s:0:"";s:11:"description";s:31:"Summary statistics for mailings";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
-
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Summary Report', 'Mail Summary Report', 'access CiviMail', '',@reportlastID, '1', NULL, 28 );
-
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Summary Report', 'Mail Summary Report', 'access CiviMail', '',@reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
 
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
     ( @domainID, 'Mail Opened Report', 'Mailing/opened', 'Display contacts who opened emails from a mailing', 'access CiviMail', 'a:37:{s:6:"fields";a:4:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:49:"Display contacts who opened emails from a mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
-
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Opened Report', 'Mail Opened Report', 'access CiviMail', '',@reportlastID, '1', NULL, 28 );
-
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Opened Report', 'Mail Opened Report', 'access CiviMail', '',@reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+
+
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
     ( @domainID, 'Mail Clickthrough Report', 'Mailing/clicks', 'Display clicks from each mailing', 'access CiviMail', 'a:37:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:5:"email";s:1:"1";s:3:"url";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:32:"Display clicks from each mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
-
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Clickthrough Report', 'Mail Clickthrough Report', 'access CiviMail', '',@reportlastID, '1', NULL, 29 );
-
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mail Clickthrough Report', 'Mail Clickthrough Report', 'access CiviMail', '',@reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
+
+-- walk list survey report.
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
-VALUES 
-    ( @domainID, 'Grant Report (Statistics)', 'grant/statistics', 'Shows statistics for Grants', 'access CiviGrant', 'a:45:{s:6:"fields";a:3:{s:18:"summary_statistics";s:1:"1";s:9:"gender_id";s:1:"1";s:12:"contact_type";s:1:"1";}s:34:"application_received_date_relative";s:1:"0";s:30:"application_received_date_from";s:0:"";s:28:"application_received_date_to";s:0:"";s:22:"decision_date_relative";s:1:"0";s:18:"decision_date_from";s:0:"";s:16:"decision_date_to";s:0:"";s:28:"money_transfer_date_relative";s:1:"0";s:24:"money_transfer_date_from";s:0:"";s:22:"money_transfer_date_to";s:0:"";s:23:"grant_due_date_relative";s:1:"0";s:19:"grant_due_date_from";s:0:"";s:17:"grant_due_date_to";s:0:"";s:13:"grant_type_op";s:2:"in";s:16:"grant_type_value";a:1:{i:0;s:1:"1";}s:12:"status_id_op";s:2:"in";s:15:"status_id_value";a:0:{}s:20:"amount_requested_min";s:0:"";s:20:"amount_requested_max";s:0:"";s:19:"amount_requested_op";s:3:"lte";s:22:"amount_requested_value";s:0:"";s:18:"amount_granted_min";s:0:"";s:18:"amount_granted_max";s:0:"";s:17:"amount_granted_op";s:3:"lte";s:20:"amount_granted_value";s:0:"";s:24:"grant_report_received_op";s:2:"eq";s:27:"grant_report_received_value";s:0:"";s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:12:"region_id_op";s:2:"in";s:15:"region_id_value";a:0:{}s:11:"custom_7_op";s:2:"in";s:14:"custom_7_value";a:0:{}s:11:"custom_9_op";s:3:"has";s:14:"custom_9_value";s:0:"";s:11:"custom_8_op";s:4:"mhas";s:14:"custom_8_value";a:0:{}s:11:"description";s:28:"Shows statistics for Grants.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviGrant";s:9:"parent_id";s:0:"";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
-
-SET @instanceID:=LAST_INSERT_ID( );
+VALUES
+    (  @domainID, 'Survey Report (Detail)', 'survey/detail', 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', '', 'a:39:{s:6:"fields";a:2:{s:9:"sort_name";s:1:"1";s:6:"result";s:1:"1";}s:22:"assignee_contact_id_op";s:2:"eq";s:25:"assignee_contact_id_value";s:0:"";s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:17:"street_number_min";s:0:"";s:17:"street_number_max";s:0:"";s:16:"street_number_op";s:3:"lte";s:19:"street_number_value";s:0:"";s:14:"street_name_op";s:3:"has";s:17:"street_name_value";s:0:"";s:15:"postal_code_min";s:0:"";s:15:"postal_code_max";s:0:"";s:14:"postal_code_op";s:3:"lte";s:17:"postal_code_value";s:0:"";s:7:"city_op";s:3:"has";s:10:"city_value";s:0:"";s:20:"state_province_id_op";s:2:"in";s:23:"state_province_id_value";a:0:{}s:13:"country_id_op";s:2:"in";s:16:"country_id_value";a:0:{}s:12:"survey_id_op";s:2:"in";s:15:"survey_id_value";a:0:{}s:12:"status_id_op";s:2:"eq";s:15:"status_id_value";s:1:"1";s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:11:"description";s:75:"Detailed report for canvassing, phone-banking, walk lists or other surveys.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:1:"0";s:6:"groups";s:0:"";s:9:"domain_id";i:1;}');
+SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
-    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Grant Report (Statistics)', 'Shows statistics for grants', 'access CiviGrant', '',@reportlastID, '1', NULL, 29 );
-
+    ( @domainID, CONCAT('civicrm/report/instance/', @instanceID, '&reset=1'), 'Survey Report (Detail)', 'Survey Report (Detail)', 'administer CiviCampaign,manage campaign,interview campaign contacts', 'OR', @reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
- UPDATE civicrm_domain SET version = '3.3.5';
+
+ UPDATE civicrm_domain SET version = '3.4.5';

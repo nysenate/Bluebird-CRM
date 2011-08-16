@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * @copyright DharmaTech  (c) 2009
  * $Id$
  *
@@ -197,6 +197,19 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
                                       'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                       'group'         => true,
                                       'options'       => CRM_Core_PseudoConstant::group( ) ), ), ),
+           'civicrm_contribution_lastcont' =>
+                   array( 'dao'     => 'CRM_Contribute_DAO_Contribution',
+                         
+                      ),
+                   'civicrm_contribution_cont' =>                    
+                   array( 'dao'    => 'CRM_Contribute_DAO_Contribution',
+                          'alias'  => 'cont',
+                          'fields'  =>
+                          array(
+                                 'receive_date'         => array( 'default' => true , 'title' => 'Last Receipt'),
+                                 'total_amount'         => array( 'default'     => true,'title' => 'Amount received'
+                       
+                                                                  ),),)
                  );
     }
     
@@ -216,7 +229,7 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
                     //echo "&nbsp;&nbsp;&nbsp;field name $fieldName<br>";
                     $clause = null;
 
-                    if ( $field['type'] & CRM_Utils_Type::T_DATE ) {
+                    if ( CRM_Utils_Array::value('type',$field) & CRM_Utils_Type::T_DATE ) {
                         $relative = CRM_Utils_Array::value( "{$fieldName}_relative", $this->_params );
                         $from     = CRM_Utils_Array::value( "{$fieldName}_from"    , $this->_params );
                         $to       = CRM_Utils_Array::value( "{$fieldName}_to"      , $this->_params );
@@ -355,29 +368,37 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
     }
 
    function executePrintmode($rows) {
-      
+      //only get these last contribution related variables in print mode if selected on previous form
+       if ( array_key_exists('civicrm_contribution_cont_receive_date',$rows[0])){
+        $receiveDate = ', date_received   DATE';
+      }
+      if (array_key_exists('civicrm_contribution_cont_total_amount',$rows[0])){
+        $contAmount = ' , total_amount    INT';
+      }
        //  Separate out fields and build a temporary table
        $tempTable = "WalkList_" . uniqid();
        $sql = "CREATE TEMPORARY TABLE {$tempTable}"
            . " ( id              INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
                   street_name     VARCHAR(255),
-                  s_street_number VARCHAR(255),
+                  s_street_number VARCHAR(32),
                   i_street_number INT,
                   odd             TINYINT,
-                  apt_number      VARCHAR(255),
-                  city            VARCHAR(255),
-                  state           VARCHAR(255),
-                  zip             VARCHAR(255),
+                  apt_number      VARCHAR(32),
+                  city            VARCHAR(64),
+                  state           VARCHAR(32),
+                  zip             VARCHAR(32),
                   name            VARCHAR(255),
                   phone           VARCHAR(255),
                   age             INT,
-                  sex             VARCHAR(255),
+                  sex             VARCHAR(16),
                   lang            CHAR(2),
                   party           CHAR(1),
                   vh              CHAR(1),
-                  contact_type    VARCHAR(255),
-                  other_name      VARCHAR(255),
-                  contact_id      INT )
+                  contact_type    VARCHAR(32),
+                  other_name      VARCHAR(128),
+                  contact_id      INT 
+                  $receiveDate $contAmount
+                  )
                  ENGINE=HEAP
                  DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci"; 
         CRM_Core_DAO::executeQuery($sql);
@@ -419,7 +440,7 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
                        i_street_number = {$iStreetNumber},
                        odd             = {$odd},
                        apt_number      = '{$value['civicrm_address_street_unit']}',
-                       city            = '{$value['civicrm_address_city']}',
+                       city            = \"{$value['civicrm_address_city']}\",
                        state           = '{$state}',
                        zip             = '{$value['civicrm_address_postal_code']}',
                        name            = \"{$value['civicrm_contact_display_name']}\",
@@ -432,6 +453,14 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
                        contact_type    = '{$type}',
                        other_name      = {$otherName},
                        contact_id      = {$contact_id}";
+            if(!empty($contAmount)){
+              $query .=",total_amount      = '{$value['civicrm_contribution_cont_total_amount']}'";
+            }
+            if(!empty($receiveDate)){
+               $query .=",date_received      = '{$value['civicrm_contribution_cont_receive_date']}'";         
+            }
+             					 
+             					 
 
             CRM_Core_DAO::executeQuery($query);
         } 
@@ -470,7 +499,19 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
                              'rcode'           => array( 'title' => 'RESPONSE CODES'   ),
                              'status'          => array( 'title' => 'STATUS'  ),
                              'contact_id'      => array( 'title' => 'ID',
-                                                         'class' => 'width=7%') );
+                                                         'class' => 'width=7%'),);
+
+        if (variable_get('civicrm_engage_groupbreak_street',"1") !=1) { 
+                    $pdfHeaders['street_name']['title'] = 'Street' ;
+                 }
+        if ($receiveDate){
+            $pdfHeaders['date_received']= array( 'title' => 'Last donation Date');
+        }
+        if ($contAmount){
+            $pdfHeaders['total_amount'] = array( 'title' => 'Last donation'  );         
+        }
+
+
         $groupInfo = array( 'date'  => $reportDate,
                             'descr' => empty( $this->_groupDescr )? '': "<br>Group {$this->_groupDescr}"  );
 
@@ -478,30 +519,46 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
         while( $dao->fetch( ) ) {
 
             if ( strtolower( $state ) != strtolower( $dao->state )
-                  || strtolower( $city )  != strtolower( $dao->city )
-                  || strtolower( $zip )   != strtolower( $dao->zip )
-                  || strtolower( $street_name )
-                                 != strtolower( $dao->street_name )
-                  || $odd != $dao->odd
-                 || $pageRow > 6
+                  || (variable_get('civicrm_engage_groupbreak_city',"1") ==1 && strtolower( $city )  != strtolower( $dao->city ))
+                  || (variable_get('civicrm_engage_groupbreak_zip',"1") ==1 && strtolower( $zip )   != strtolower( $dao->zip ))
+                  || (variable_get('civicrm_engage_groupbreak_street',"1") ==1 && strtolower( $street_name )  != strtolower( $dao->street_name ))
+                  || (variable_get('civicrm_engage_groupbreak_odd_even',"1") ==1 && $odd != $dao->odd)
+                 || $pageRow > variable_get('civicrm_engage_lines_per_group',"6")-1
                 ) {
-
                 $state       = $dao->state;
                 $city        = $dao->city;
                 $zip         = $dao->zip;
                 $street_name = $dao->street_name;
                 $odd         = $dao->odd;
                 $pageRow     = 0;
-
+                unset( $groupRow['city_zip'] );
                 $groupRow['org']         = $this->_orgName;
-                $groupRow['street_name'] = $street_name;
-                $groupRow['city_zip']    = $city.', '.$state .' '.$zip;
-                $groupRow['odd']         = $odd ? 'Odd' : 'Even';
-
+                if (variable_get('civicrm_engage_groupbreak_street',"1")==1) { 
+                    $groupRow['street_name'] = $street_name;
+                 }
+                if (variable_get('civicrm_engage_groupbreak_city',"1")==1) { 
+                   $groupRow['city_zip']  .= $city.', ';
+                }
+                 $groupRow['city_zip']    .= $state;
+                //don't give zip or odd-even if not grouped on
+                if (variable_get('civicrm_engage_groupbreak_zip',"1")==1) { 
+                   $groupRow['city_zip']  .= ' '.$zip;
+                }
+                if (variable_get('civicrm_engage_groupbreak_odd_even',"1")==1) { 
+                  $groupRow['odd']         = $odd ? 'Odd' : 'Even';
+                 }
                 $groupCounts++;
                 $groupRows[$groupCounts] = $groupRow;
+                
 
-            } 
+                }
+                
+                // if admin settings have been defined to specify not to canvas people for a period change date to specified text
+                if ( variable_get('civicrm_engage_no_canvas_period',"0") > 0 && $dao->date_received > 0 
+                && ((strtotime("now") - strtotime($dao->date_received))/60/60/24/30) <  variable_get('civicrm_engage_no_canvas_period',"0")  ) {
+                  $dao->date_received = variable_get('civicrm_engage_no_canvass_text',"Do Not Canvass");         
+ 
+                } 
 
             $pdfRow = array();
             foreach( $pdfHeaders as $k => $v ){
@@ -519,6 +576,9 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
             $pdfRows[$groupCounts][] =  $pdfRow;
 
             $pageRow++;
+        }
+        if (variable_get('civicrm_engage_group_per_page',"1")){
+                  $this->assign( 'newgroupdiv' , 'class="page"' );
         }
         $this->assign( 'pageTotal' , $groupCounts );
         $this->assign( 'pdfHeaders', $pdfHeaders );

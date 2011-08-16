@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -41,29 +41,63 @@ class CRM_Logging_Schema
     private $logs   = array();
     private $tables = array();
 
-    private $loggingDB;
+    private $db;
+
+    private $reports = array(
+        'logging/contact/detail',
+        'logging/contact/summary',
+        'logging/contribute/detail',
+        'logging/contribute/summary',
+    );
 
     /**
      * Populate $this->tables and $this->logs with current db state.
      */
     function __construct()
     {
-        $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
-        $this->loggingDB = $dsn['database'];
+        require_once 'CRM/Contact/DAO/Contact.php';
+        $dao = new CRM_Contact_DAO_Contact( );
+        $civiDBName = $dao->_database;
 
-        $dao = CRM_Core_DAO::executeQuery('SHOW TABLES LIKE "civicrm_%"');
+        $dao = CRM_Core_DAO::executeQuery("
+SELECT TABLE_NAME 
+FROM   INFORMATION_SCHEMA.TABLES 
+WHERE  TABLE_SCHEMA = '{$civiDBName}'
+AND    TABLE_TYPE = 'BASE TABLE' 
+AND    TABLE_NAME LIKE 'civicrm_%'
+");
         while ($dao->fetch()) {
-            $this->tables[] = $dao->toValue("Tables_in_{$dao->_database}_(civicrm_%)");
+            $this->tables[] = $dao->TABLE_NAME;
         }
-        // do not log temp import and cache tables
-        $this->tables = preg_grep('/^civicrm_import_job_/', $this->tables, PREG_GREP_INVERT);
-        $this->tables = preg_grep('/_cache$/',              $this->tables, PREG_GREP_INVERT);
 
-        $dao = CRM_Core_DAO::executeQuery("SHOW TABLES FROM `{$this->loggingDB}` LIKE 'log_civicrm_%'");
+        // do not log temp import and cache tables
+        $this->tables = preg_grep('/^civicrm_import_job_/',       $this->tables, PREG_GREP_INVERT);
+        $this->tables = preg_grep('/_cache$/',                    $this->tables, PREG_GREP_INVERT);
+        $this->tables = preg_grep('/^civicrm_task_action_temp_/', $this->tables, PREG_GREP_INVERT);
+        $this->tables = preg_grep('/^civicrm_export_temp_/',      $this->tables, PREG_GREP_INVERT);
+
+        $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+        $this->db = $dsn['database'];
+
+        $dao = CRM_Core_DAO::executeQuery("
+SELECT TABLE_NAME 
+FROM   INFORMATION_SCHEMA.TABLES 
+WHERE  TABLE_SCHEMA = '{$this->db}'
+AND    TABLE_TYPE = 'BASE TABLE' 
+AND    TABLE_NAME LIKE 'log_civicrm_%'
+");
         while ($dao->fetch()) {
-            $log = $dao->toValue("Tables_in_{$this->loggingDB}_(log_civicrm_%)");
+            $log = $dao->TABLE_NAME;
             $this->logs[substr($log, 4)] = $log;
         }
+    }
+
+    /**
+     * Return logging custom data tables.
+     */
+    function customDataLogTables()
+    {
+        return preg_grep('/^log_civicrm_value_/', $this->logs);
     }
 
     /**
@@ -84,7 +118,7 @@ class CRM_Logging_Schema
     {
         if ($this->isEnabled()) return;
 
-        foreach (array_diff($this->tables, array_keys($this->logs)) as $table) {
+        foreach ($this->tables as $table) {
             $this->createLogTableFor($table);
         }
         $this->createTriggers();
@@ -128,7 +162,7 @@ class CRM_Logging_Schema
         $create = explode("\n", $dao->Create_Table);
         foreach ($cols as $col) {
             $line = substr(array_pop(preg_grep("/^  `$col` /", $create)), 0, -1);
-            CRM_Core_DAO::executeQuery("ALTER TABLE `{$this->loggingDB}`.log_$table ADD $line");
+            CRM_Core_DAO::executeQuery("ALTER TABLE `{$this->db}`.log_$table ADD $line");
         }
 
         // recreate triggers to cater for the new columns
@@ -150,31 +184,30 @@ class CRM_Logging_Schema
 
     private function addReports()
     {
+        $titles = array(
+            'logging/contact/detail'     => ts('Contact Logging Report (Detail)'),
+            'logging/contact/summary'    => ts('Contact Logging Report (Summary)'),
+            'logging/contribute/detail'  => ts('Contribution Logging Report (Detail)'),
+            'logging/contribute/summary' => ts('Contribution Logging Report (Summary)'),
+        );
         // enable logging templates
-        $dao =& CRM_Core_DAO::executeQuery("UPDATE civicrm_option_value SET is_active = 1 WHERE value = 'logging/contact/summary' OR value = 'logging/contact/detail'");
-
-        // return early if the logging report templates are missing
-        require_once 'CRM/Core/OptionGroup.php';
-        $templates = CRM_Core_OptionGroup::values('report_template');
-        if (!isset($templates['logging/contact/summary']) or
-            !isset($templates['logging/contact/detail'])) return;
+        CRM_Core_DAO::executeQuery("
+            UPDATE civicrm_option_value
+            SET is_active = 1
+            WHERE value IN ('" . implode("', '", $this->reports) . "')
+        ");
 
         // add report instances
-        require_once 'CRM/Report/BAO/Instance.php';
-
-        $bao = new CRM_Report_BAO_Instance;
-        $bao->domain_id  = CRM_Core_Config::domainID();
-        $bao->title      = ts('Contact Logging Report (Summary)');
-        $bao->report_id  = 'logging/contact/summary';
-        $bao->permission = 'administer CiviCRM';
-        $bao->insert();
-
-        $bao = new CRM_Report_BAO_Instance;
-        $bao->domain_id  = CRM_Core_Config::domainID();
-        $bao->title      = ts('Contact Logging Report (Detail)');
-        $bao->report_id  = 'logging/contact/detail';
-        $bao->permission = 'administer CiviCRM';
-        $bao->insert();
+        require_once 'CRM/Report/DAO/Instance.php';
+        $domain_id = CRM_Core_Config::domainID();
+        foreach ($this->reports as $report) {
+            $dao = new CRM_Report_DAO_Instance;
+            $dao->domain_id  = $domain_id;
+            $dao->report_id  = $report;
+            $dao->title      = $titles[$report];
+            $dao->permission = 'administer CiviCRM';
+            $dao->insert();
+        }
     }
 
     /**
@@ -184,7 +217,7 @@ class CRM_Logging_Schema
     {
         static $columnsOf = array();
 
-        $from = (substr($table, 0, 4) == 'log_') ? "`{$this->loggingDB}`.$table" : $table;
+        $from = (substr($table, 0, 4) == 'log_') ? "`{$this->db}`.$table" : $table;
 
         if (!isset($columnsOf[$table])) {
             $dao = CRM_Core_DAO::executeQuery("SHOW COLUMNS FROM $from");
@@ -202,7 +235,7 @@ class CRM_Logging_Schema
      */
     private function createLogTableFor($table)
     {
-        CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS `{$this->loggingDB}`.log_$table");
+        CRM_Core_DAO::executeQuery("DROP TABLE IF EXISTS `{$this->db}`.log_$table");
 
         $dao = CRM_Core_DAO::executeQuery("SHOW CREATE TABLE $table");
         $dao->fetch();
@@ -220,7 +253,7 @@ class CRM_Logging_Schema
             log_user_id INTEGER,
             log_action  ENUM('Initialization', 'Insert', 'Update', 'Delete')
 COLS;
-        $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE `{$this->loggingDB}`.log_$table", $query);
+        $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE `{$this->db}`.log_$table", $query);
         $query = preg_replace("/ AUTO_INCREMENT/i", '', $query);
         $query = preg_replace("/^  [^`].*$/m", '', $query);
         $query = preg_replace("/^\) ENGINE=[^ ]+ /im", ') ENGINE=ARCHIVE ', $query);
@@ -229,7 +262,7 @@ COLS;
         CRM_Core_DAO::executeQuery($query);
 
         $columns = implode(', ', $this->columnsOf($table));
-        CRM_Core_DAO::executeQuery("INSERT INTO `{$this->loggingDB}`.log_$table ($columns, log_conn_id, log_user_id, log_action) SELECT $columns, CONNECTION_ID(), @civicrm_user_id, 'Initialization' FROM {$table}");
+        CRM_Core_DAO::executeQuery("INSERT INTO `{$this->db}`.log_$table ($columns, log_conn_id, log_user_id, log_action) SELECT $columns, CONNECTION_ID(), @civicrm_user_id, 'Initialization' FROM {$table}");
 
         $this->tables[]     = $table;
         $this->logs[$table] = "log_$table";
@@ -248,7 +281,7 @@ COLS;
         foreach (array('Insert', 'Update', 'Delete') as $action) {
             $trigger = "{$table}_after_" . strtolower($action);
             $queries[] = "DROP TRIGGER IF EXISTS $trigger";
-            $query = "CREATE TRIGGER $trigger AFTER $action ON $table FOR EACH ROW INSERT INTO `{$this->loggingDB}`.log_$table (";
+            $query = "CREATE TRIGGER $trigger AFTER $action ON $table FOR EACH ROW INSERT INTO `{$this->db}`.log_$table (";
             foreach ($columns as $column) {
                 $query .= "$column, ";
             }
@@ -279,20 +312,21 @@ COLS;
     private function deleteReports()
     {
         // disable logging templates
-        $dao =& CRM_Core_DAO::executeQuery("UPDATE civicrm_option_value SET is_active = 0 WHERE value = 'logging/contact/summary' OR value = 'logging/contact/detail'");
+        CRM_Core_DAO::executeQuery("
+            UPDATE civicrm_option_value
+            SET is_active = 0
+            WHERE value IN ('" . implode("', '", $this->reports) . "')
+        ");
 
         // delete report instances
         require_once 'CRM/Report/DAO/Instance.php';
-
-        $bao = new CRM_Report_DAO_Instance;
-        $bao->domain_id = CRM_Core_Config::domainID();
-        $bao->report_id = 'logging/contact/summary';
-        $bao->delete();
-
-        $bao = new CRM_Report_DAO_Instance;
-        $bao->domain_id = CRM_Core_Config::domainID();
-        $bao->report_id = 'logging/contact/details';
-        $bao->delete();
+        $domain_id = CRM_Core_Config::domainID();
+        foreach($this->reports as $report) {
+            $dao = new CRM_Report_DAO_Instance;
+            $dao->domain_id = $domain_id;
+            $dao->report_id = $report;
+            $dao->delete();
+        }
     }
 
     /**
@@ -311,7 +345,7 @@ COLS;
     /**
      * Predicate whether logging is enabled.
      */
-    private function isEnabled()
+    public function isEnabled()
     {
         return $this->tablesExist() and $this->triggersExist();
     }

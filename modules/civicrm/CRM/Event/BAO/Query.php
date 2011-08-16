@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -204,6 +204,12 @@ class CRM_Event_BAO_Query
                 $query->_whereTables['civicrm_discount']          = 1;
                 $query->_whereTables['participant_discount_name'] = 1;
             }
+            
+            //carry campaign id to selectors.
+            if ( CRM_Utils_Array::value( 'participant_campaign_id', $query->_returnProperties ) ) {
+                $query->_select['participant_campaign_id']  = 'civicrm_participant.campaign_id as participant_campaign_id';
+                $query->_element['participant_campaign_id'] = 1;
+            }
         }
     }
 
@@ -225,8 +231,10 @@ class CRM_Event_BAO_Query
             }
         }
 
-        if ( $grouping !== null &&
-             ! $isTest ) {
+        if ( $grouping !== null && 
+             ! $isTest &&
+             // we dont want to include all tests for sql OR CRM-7827
+             $query->getOperator( ) != 'OR' ) {
             $values = array( 'participant_test', '=', 0, $grouping, 0 );
             self::whereClauseSingle( $values, $query );
         }
@@ -280,6 +288,7 @@ class CRM_Event_BAO_Query
             
         case 'participant_fee_id':
             $feeLabel = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionValue', $value, 'label');
+            $feeLabel = CRM_Core_DAO::escapeString( trim( $feeLabel ) );
             if ( $value ) {
                 $query->_where[$grouping][] = "civicrm_participant.fee_level $op '$feeLabel'";
                 $query->_qill[$grouping][]  = ts("Fee level" ) . " $op $feeLabel";
@@ -315,6 +324,7 @@ class CRM_Event_BAO_Query
             $query->_tables['civicrm_participant'] = $query->_whereTables['civicrm_participant'] = 1;
             return;
 
+        case 'participant_status':
         case 'participant_status_id':
             $val = array( );
             if ( is_array( $value ) ) {
@@ -429,6 +439,14 @@ class CRM_Event_BAO_Query
             $query->_tables['civicrm_event'] = $query->_whereTables['civicrm_event'] = 1;
             return;
 
+        case 'participant_campaign_id':
+            require_once 'CRM/Campaign/BAO/Query.php';
+            $campParams = array( 'op'          => $op,
+                                 'campaign'    => $value,
+                                 'grouping'    => $grouping,
+                                 'tableName'   => 'civicrm_participant' );
+            CRM_Campaign_BAO_Query::componentSearchClause( $campParams, $query );
+            return;
         }
     }
 
@@ -511,8 +529,9 @@ class CRM_Event_BAO_Query
                                 'participant_fee_amount'    => 1,
                                 'participant_discount_name' => 1,
                                 'participant_fee_currency'  => 1,
-                                'participant_registered_by_id' => 1
-                                );
+                                'participant_registered_by_id' => 1,
+                                'participant_campaign_id'      => 1
+                                  );
        
             // also get all the custom participant properties
             require_once "CRM/Core/BAO/CustomField.php";
@@ -591,7 +610,10 @@ class CRM_Event_BAO_Query
                 }
             }
         }
-
+        
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch( $form, 'participant_campaign_id' );
+        
         $form->assign( 'validCiviEvent', true );
     }
     

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -65,43 +65,72 @@
               <td>			
 		  {$form.sort_name.html|crmReplace:class:'twenty'}
               </td>
-
-              <td class="font-size12pt">
+	      <td><label>{ts}Contact Type(s){/ts}</label><br />
+                  {$form.contact_type.html}
+                  {literal}
+	            <script type="text/javascript">
+                	cj("select#contact_type").crmasmSelect({
+			    addItemTarget: 'bottom',
+			    animate: false,
+			    highlight: true,
+     			    sortable: true,
+			    respectParents: true
+			});
+		    </script>
+		   {/literal}
+              </td>
+              <td><label>{ts}Group(s){/ts}</label>
+                  {$form.group.html}
+                  {literal}
+                    <script type="text/javascript">
+                        cj("select#group").crmasmSelect({
+                           addItemTarget: 'bottom',
+                           animate: false,
+                           highlight: true,
+                           sortable: true,
+                           respectParents: true,
+			   selectClass:'campaignGroupsSelect'
+                        });
+                    </script>
+                {/literal}
+              </td>
+          </tr>
+	  <tr>
+	      <td class="font-size12pt">
                   {$form.street_address.label}
 	      </td>
               <td>
                   {$form.street_address.html}
-              </td>       
-          </tr>
-	  <tr>
+              </td>  	
 	      <td class="font-size12pt">
                   {$form.street_name.label}
        	      </td>
               <td>	
                   {$form.street_name.html}
               </td>
-              <td class="font-size12pt">
+	  </tr>	
+          <tr>
+	      <td class="font-size12pt">
                   {$form.street_unit.label}
 	      </td>
               <td>
                   {$form.street_unit.html}
               </td> 
-	  </tr>	
-          <tr>
               <td class="font-size12pt">
                   {$form.city.label}
               </td>
               <td>
                   {$form.city.html}
               </td>
-	      <td class="font-size12pt">
+	  </tr>
+          <tr>
+              <td class="font-size12pt">
                   {$form.street_number.label}
        	      </td>
               <td>	
                   {$form.street_number.html}
               </td>
-	  </tr>
-          <tr>
+		
 	      <td class="font-size12pt">
                   {$form.postal_code.label}
        	      </td>
@@ -147,15 +176,19 @@
 </div>
 </div>
 </div>
-    
+
 {literal}
 <script type="text/javascript">
 
-    {/literal}{if !$doNotReloadCRMAccordion}{literal}	
     cj(function() {
-      cj().crmaccordions(); 
+      cj().crmaccordions();
+
+      {/literal}
+      {if !$isFormSubmitted} 
+      buildCampaignGroups( );
+      {/if}
+      {literal}
     });
-    {/literal}{/if}{literal}
 
   //load interviewer autocomplete.
   var interviewerDataUrl = "{/literal}{$dataUrl}{literal}";
@@ -172,6 +205,54 @@
                                                          }).bind( 'click', function( ) { 
                                                               cj( "#survey_interviewer_id" ).val(''); 
                                                          });
+
+
+function buildCampaignGroups( surveyId ) 
+{
+    if ( !surveyId ) surveyId = cj("#campaign_survey_id").val( ); 
+
+    var operation = {/literal}'{$searchVoterFor}'{literal};
+    if ( !surveyId || operation != 'reserve' ) return; 
+
+    var grpUrl = {/literal}"{crmURL p='civicrm/ajax/rest' h=0 q='className=CRM_Campaign_Page_AJAX&fnName=campaignGroups'}"
+                 {literal};
+
+    cj.post( grpUrl, 
+             {survey_id:surveyId}, 
+             function( data ) {
+	     	 if ( data.status != 'success' ) return;
+
+		 var selectName         = 'campaignGroupsSelect';
+		 var groupSelect        = cj("select[id^=" + selectName + "]");
+		 var groupSelectCountId	= cj( groupSelect ).attr( 'id' ).replace( selectName, '' ); 
+		 
+		 //first remove all groups for given survey.
+		 cj( "#group" ).find('option').remove( );
+		 cj( groupSelect ).find('option').remove( );
+		 cj( '#crmasmContainer' + groupSelectCountId ).find( 'span' ).remove( );
+		 cj( '#crmasmList' + groupSelectCountId ).find( 'li' ).remove( );		
+								
+		 var groups = data.groups;      			
+    	     	 
+		 //build the new group options.
+		 var optCount = 0;
+		 for ( group in groups ) {
+		      title = groups[group].title;
+		      value = groups[group].value;
+		      if ( !title ) continue;
+		      var crmOptCount = 'asm' + groupSelectCountId + 'option' + optCount;
+		      
+		      //add options to main group select.
+		      cj( "#group" ).append( cj('<option></option>').val( value ).html( title ).attr( 'id', crmOptCount ) );
+		      
+		      //add option to crm multi select ul.
+		      cj( groupSelect ).append( cj('<option></option>').val(value).html(title).attr( 'rel', crmOptCount ) );
+
+		      optCount++;
+		 }
+    	     }, 
+    	     'json');
+}
 
 </script>
 {/literal}

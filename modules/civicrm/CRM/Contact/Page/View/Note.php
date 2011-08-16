@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -136,7 +136,7 @@ class CRM_Contact_Page_View_Note extends CRM_Core_Page
                                                     $action,
                                                     array( 'id'  => $note->id,
                                                            'pid' => $note->entity_id,
-                                                           'cid' => $this->_contactId ) 
+                                                           'cid' => $note->entity_id ) 
                                                     );
         $this->assign( 'commentAction', $commentAction );
 
@@ -288,19 +288,19 @@ class CRM_Contact_Page_View_Note extends CRM_Core_Page
                                           CRM_Core_Action::VIEW    => array(
                                                                             'name'  => ts('View'),
                                                                             'url'   => 'civicrm/contact/view/note',
-                                                                            'qs'    => 'action=view&reset=1&cid={cid}&id={id}&selectedChild=note',
+                                                                            'qs'    => 'action=view&reset=1&cid=%%cid%%&id={id}&selectedChild=note',
                                                                             'title' => ts('View Comment')
                                                                             ),       
                                           CRM_Core_Action::UPDATE  => array(
                                                                             'name'  => ts('Edit'),
                                                                             'url'   => 'civicrm/contact/view/note',
-                                                                            'qs'    => 'action=update&reset=1&cid={cid}&id={id}&parentId=%%pid%%&selectedChild=note',
+                                                                            'qs'    => 'action=update&reset=1&cid=%%cid%%&id={id}&parentId=%%pid%%&selectedChild=note',
                                                                             'title' => ts('Edit Comment')
                                                                             ),
                                           CRM_Core_Action::DELETE  => array(
                                                                             'name'  => ts('Delete'),
                                                                             'url'   => 'civicrm/contact/view/note',
-                                                                            'qs'    => 'action=delete&reset=1&cid={cid}&id={id}&selectedChild=note',
+                                                                            'qs'    => 'action=delete&reset=1&cid=%%cid%%&id={id}&selectedChild=note',
                                                                             'extra' => 'onclick = "if (confirm(\'' . $deleteExtra . '\') ) this.href+=\'&amp;confirmed=1\'; else return false;"',
                                                                             'title' => ts('Delete Comment')
                                                                             ),

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -122,7 +122,6 @@ class CRM_Contact_Form_Search_Custom_DateAdded
                          contact_a.sort_name    as sort_name,
                          d.date_added           as date_added";
 
-        #$selectClause .= ", GROUP_CONCAT(DISTINCT group_names ORDER BY group_names ASC ) as gname";
         $groupBy = " GROUP BY contact_id ";
         return $this->sql( $selectClause,
                            $offset, $rowcount, $sort,
@@ -345,9 +344,7 @@ class CRM_Contact_Form_Search_Custom_DateAdded
         if ( $this->_groups ){
             $from .= " INNER JOIN Ig_{$this->_tableName} temptable1 ON (contact_a.id = temptable1.contact_id)";
         }
-        //this makes smart groups using this search compatible w/ CiviMail
-        $from .= " LEFT JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id)";
-        
+
         return $from;
     }
 

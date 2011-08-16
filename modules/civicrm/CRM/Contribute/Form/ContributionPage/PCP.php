@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -64,6 +64,7 @@ class CRM_Contribute_Form_ContributionPage_PCP extends CRM_Contribute_Form_Contr
         if ( isset($this->_id ) ) {
             $params = array( 'entity_id' => $this->_id, 'entity_table' => 'civicrm_contribution_page' );
             CRM_Core_DAO::commonRetrieve( 'CRM_Contribute_DAO_PCPBlock', $params, $defaults );
+            $defaults['pcp_active'] = CRM_Utils_Array::value( 'is_active', $defaults );
             // Assign contribution page ID to pageId for referencing in PCP.hlp - since $id is overwritten there. dgg
             $this->assign('pageId',$this->_id);
         }
@@ -89,7 +90,7 @@ class CRM_Contribute_Form_ContributionPage_PCP extends CRM_Contribute_Form_Contr
      */
     function buildQuickForm( ) 
     {
-        $this->addElement( 'checkbox', 'is_active', ts('Enable Personal Campaign Pages (for this contribution page)?'), null, array('onclick' => "return showHideByValue('is_active',true,'pcpFields','table-row','radio',false);" ) );
+        $this->addElement( 'checkbox', 'pcp_active', ts('Enable Personal Campaign Pages (for this contribution page)?'), null, array('onclick' => "return showHideByValue('pcp_active',true,'pcpFields','table-row','radio',false);" ) );
 	
         $this->addElement( 'checkbox', 'is_approval_needed', ts('Approval required') );
         
@@ -186,12 +187,13 @@ class CRM_Contribute_Form_ContributionPage_PCP extends CRM_Contribute_Form_Contr
         $dao->entity_id = $this->_id; 
         $dao->find(true);
         $params['id'] = $dao->id;
-        $params['is_active']             =  CRM_Utils_Array::value( 'is_active', $params, false );
+        $params['is_active']             =  CRM_Utils_Array::value( 'pcp_active', $params, false );
         $params['is_approval_needed']    =  CRM_Utils_Array::value( 'is_approval_needed', $params, false );
         $params['is_tellfriend_enabled'] =  CRM_Utils_Array::value( 'is_tellfriend_enabled', $params, false );
 
         require_once 'CRM/Contribute/BAO/PCP.php'; 
         $dao = CRM_Contribute_BAO_PCP::add( $params ); 
+        parent::endPostProcess( );
     }
 
     /** 

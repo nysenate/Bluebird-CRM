@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: dompdf_internal_exception.cls.php,v 1.2 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: dompdf_internal_exception.cls.php 216 2010-03-11 22:49:18Z ryan.masten $ */
 
 /**
  * Exception thrown by DOMPDF classes for internal errors
@@ -57,4 +57,3 @@ class DOMPDF_Internal_Exception extends Exception {
   }
 
 }
-?>

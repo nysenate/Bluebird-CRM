@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -70,6 +70,17 @@ class CRM_Mailing_Event_BAO_TrackableURLOpen extends CRM_Mailing_Event_DAO_Track
         $eq = CRM_Mailing_Event_BAO_Queue::getTableName();
         $turl = CRM_Mailing_BAO_TrackableURL::getTableName();
         
+        if ( !$queue_id ) {
+        	$search->query("SELECT $turl.url as url from $turl
+                    WHERE $turl.id = " 
+                        . CRM_Utils_Type::escape($url_id, 'Integer')
+                           );
+            if (! $search->fetch()) {
+                return CRM_Utils_System::baseURL();
+            }
+            return $search->url; 
+        }
+
         $search->query("SELECT $turl.url as url from $turl
                     INNER JOIN $job ON $turl.mailing_id = $job.mailing_id
                     INNER JOIN $eq ON $job.id = $eq.job_id

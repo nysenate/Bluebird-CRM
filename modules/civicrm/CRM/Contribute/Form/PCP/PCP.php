@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -151,15 +151,11 @@ class CRM_Contribute_Form_PCP_PCP extends CRM_Core_Form
             
         } else {      
             require_once 'CRM/Contribute/PseudoConstant.php';
-            $status = array_merge( 
-                                  array( ts('- select -') ), 
-                                  CRM_Contribute_PseudoConstant::pcpstatus( ) );
-            $contribution_page = array_merge(
-                                             array( ts('- select -') ),
-                                             CRM_Contribute_PseudoConstant::contributionPage( ) );
+            $status       = array( '' => ts('- select -') ) + CRM_Contribute_PseudoConstant::pcpstatus( );            
+            $contribPages = array( '' => ts('- select -') ) + CRM_Contribute_PseudoConstant::contributionPage( );
             
             $this->addElement( 'select', 'status_id', ts('Status'), $status );
-            $this->addElement( 'select', 'contibution_page_id', ts('Contribution Page'), $contribution_page );
+            $this->addElement( 'select', 'contibution_page_id', ts('Contribution Page'), $contribPages );
             $this->addButtons( array( 
                                      array ( 'type'      => 'refresh',
                                              'name'      => ts('Search'), 

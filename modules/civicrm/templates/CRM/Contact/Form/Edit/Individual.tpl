@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -26,9 +26,9 @@
 {* tpl for building Individual related fields *}
 <script type="text/javascript">
 var cid=parseFloat("{$contactId}");//parseInt is octal by default
-var contactIndividual = "{crmURL p='civicrm/ajax/rest?fnName=civicrm/contact/search&json=1&contact_type=Individual&return[display_name]&return[sort_name]=1&return[email]=1&rowCount=50'}";
-var viewIndividual = "{crmURL p='civicrm/contact/view?reset=1&cid='}";
-var editIndividual = "{crmURL p='civicrm/contact/add?reset=1&action=update&cid='}";
+var contactIndividual = "{crmURL p='civicrm/ajax/rest' q='fnName=civicrm/contact/search&json=1&contact_type=Individual&return[display_name]&return[sort_name]=1&return[email]=1&rowCount=50' h=0}";
+var viewIndividual = "{crmURL p='civicrm/contact/view' q='reset=1&cid=' h=0}";
+var editIndividual = "{crmURL p='civicrm/contact/add' q='reset=1&action=update&cid=' h=0}";
 var checkSimilar =  {$checkSimilar};
 {literal}
 
@@ -58,7 +58,12 @@ var checkSimilar =  {$checkSimilar};
            }
            msg = msg+ '<table class="matching-contacts-actions">';
            cj.each(data, function(i,contact){
+	   if ( contact.contact_id ) {
+	     if ( !(contact.email) ) {
+	       contact.email = '';
+	     }
              msg = msg + '<tr><td><a href="'+viewIndividual+contact.contact_id+'">'+ contact.display_name +'</a></td><td>'+contact.email+'</td><td class="action-items"><a class="action-item action-item-first" href="'+viewIndividual+contact.contact_id+'">{/literal}{ts}View{/ts}{literal}</a><a class="action-item" href="'+editIndividual+contact.contact_id+'">{/literal}{ts}Edit{/ts}{literal}</a></td></tr>';
+	   }
            });
            msg = msg+ '</table>';
            cj('#last_name').parent().parent().after(msg+'</div><td></tr>');
@@ -79,23 +84,14 @@ var checkSimilar =  {$checkSimilar};
         {/if}
         <td>
             {$form.first_name.label}<br /> 
-            {if $action == 2}
-                {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='first_name' id=$contactId}
-            {/if}
-            {$form.first_name.html}
+	    {$form.first_name.html}
         </td>
         <td>
             {$form.middle_name.label}<br />
-            {if $action == 2}
-                {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='middle_name' id=$contactId}
-            {/if}
             {$form.middle_name.html}
         </td>
         <td>
             {$form.last_name.label}<br />
-            {if $action == 2}
-                {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='last_name' id=$contactId}
-            {/if}
             {$form.last_name.html}
         </td>
 	{if $form.suffix_id}

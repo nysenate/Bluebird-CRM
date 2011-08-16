@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -39,6 +39,7 @@
  */
 
 require_once 'CRM/Campaign/BAO/Survey.php';
+require_once 'CRM/Campaign/BAO/Campaign.php';
 require_once 'CRM/Campaign/Selector/Search.php';
 require_once 'CRM/Core/Selector/Controller.php';
 
@@ -166,6 +167,9 @@ class CRM_Campaign_Form_Search extends CRM_Core_Form
             $this->_operation = 'reserve';
             $this->set( 'op', $this->_operation );
         }
+        $this->set( 'searchVoterFor', $this->_operation );
+        $this->assign( 'searchVoterFor', $this->_operation );
+        $this->assign( 'isFormSubmitted', $this->isSubmitted( ) );
         
         //do check permissions.
         if ( !CRM_Core_Permission::check( 'administer CiviCampaign' ) &&
@@ -230,7 +234,7 @@ class CRM_Campaign_Form_Search extends CRM_Core_Form
         
         //append breadcrumb to survey dashboard.
         require_once 'CRM/Campaign/BAO/Campaign.php';
-        if ( CRM_Campaign_BAO_Campaign::accessCampaignDashboard( ) ) {
+        if ( CRM_Campaign_BAO_Campaign::accessCampaign( ) ) {
             $url = CRM_Utils_System::url( 'civicrm/campaign', 'reset=1&subPage=survey' );
             CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('Survey(s)'), 'url' => $url ) ) );
         }
@@ -243,7 +247,7 @@ class CRM_Campaign_Form_Search extends CRM_Core_Form
     { 
         //load the default survey for all actions.
         if ( empty( $this->_defaults ) ) {
-            $defaultSurveyId = key( CRM_Campaign_BAO_Survey::getSurvey( false, null, true ) );
+            $defaultSurveyId = key( CRM_Campaign_BAO_Survey::getSurveys( true, true ) );
             if ( $defaultSurveyId ) $this->_defaults['campaign_survey_id'] = $defaultSurveyId; 
         }
         
@@ -274,7 +278,7 @@ class CRM_Campaign_Form_Search extends CRM_Core_Form
                 foreach ($rows as $row) { 
                     $this->addElement( 'checkbox', $row['checkbox'], 
                                        null, null, 
-                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "', '" . $this->getName() . "');" )
+                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "');" )
                                        ); 
                 }
             }
@@ -366,7 +370,7 @@ class CRM_Campaign_Form_Search extends CRM_Core_Form
         
         require_once 'CRM/Contact/BAO/Query.php';
         $this->_queryParams = CRM_Contact_BAO_Query::convertFormValues( $this->_formValues );
-       
+        
         $this->set( 'formValues' , $this->_formValues  );
         $this->set( 'queryParams', $this->_queryParams );
         
@@ -435,19 +439,37 @@ class CRM_Campaign_Form_Search extends CRM_Core_Form
                                                                                          'id' );
         }
         
+        //format multi-select group and contact types.
+        foreach ( array( 'group', 'contact_type' ) as $param ) {
+            if ( $this->_force ) continue; 
+            $paramValue = CRM_Utils_Array::value( $param, $this->_formValues );
+            if ( $paramValue && is_array( $paramValue ) ) {
+                unset( $this->_formValues[$param] );
+                foreach ( $paramValue as $key => $value ) {
+                    $this->_formValues[$param][$value] = 1;
+                }
+            }
+        }
+        
+        //apply filter of survey contact type for search.
+        $contactType = CRM_Campaign_BAO_Survey::getSurveyContactType( CRM_Utils_Array::value('campaign_survey_id', $this->_formValues) );
+        if ( $contactType && in_array( $this->_operation, array( 'reserve', 'interview' ) ) ) {
+            $this->_formValues['contact_type'][$contactType] = 1 ;
+        }
+        
         if ( $this->_operation == 'reserve' ) {
             if ( CRM_Utils_Array::value( 'campaign_survey_id', $this->_formValues ) ) {
                 $campaignId = CRM_Core_DAO::getFieldValue( 'CRM_Campaign_DAO_Survey',  
                                                            $this->_formValues['campaign_survey_id'], 
                                                            'campaign_id');
-                if ( $campaignId ) {
-                    require_once 'CRM/Campaign/BAO/Campaign.php';
-                    $campaignGroups = CRM_Campaign_BAO_Campaign::getCampaignGroups($campaignId);
-                    foreach( $campaignGroups as $id => $group ) {
-                        if ( $group['entity_table'] == 'civicrm_group' ) {
-                            $this->_formValues['group'][$group['entity_id']] = 1;
-                        }
-                    }
+                
+                //allow voter search in sub-part of given constituents,
+                //but make sure in case user does not select any group.
+                //get all associated campaign groups in where filter, CRM-7406
+                $groups = CRM_Utils_Array::value( 'group', $this->_formValues );
+                if ( $campaignId && CRM_Utils_System::isNull( $groups ) ) {
+                    $campGroups = CRM_Campaign_BAO_Campaign::getCampaignGroups( $campaignId );
+                    foreach ( $campGroups as $id => $title ) $this->_formValues['group'][$id] = 1; 
                 }
                 
                 //carry servey id w/ this.
@@ -488,7 +510,7 @@ class CRM_Campaign_Form_Search extends CRM_Core_Form
             $surveyId = CRM_Utils_Type::escape( $surveyId, 'Integer' );
         } else {
             // use default survey id
-            $surveyId = key( CRM_Campaign_BAO_Survey::getSurvey( false, null, true ) );
+            $surveyId = key( CRM_Campaign_BAO_Survey::getSurveys( true, true ) );
         }
         if ( !$surveyId ) {
             CRM_Core_Error::fatal('Could not find valid Survey Id.');

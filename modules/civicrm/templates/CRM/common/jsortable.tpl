@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,7 +33,7 @@ var useClass  = 'display';
 
 var tcount =1;
 if ( useAjax ) {
- sourceUrl = {/literal}"{$sourceUrl}"{literal};
+ {/literal}{if isset($sourceUrl)}sourceUrl = "{$sourceUrl}";{/if}{literal}
  useClass = 'pagerDisplay';
  tcount =5;
 } 
@@ -116,20 +116,21 @@ eval('tableId =[' + tableId + ']');
   	    }
 	}
 	
-    var oTable = null;
+    oTable = null;
     if ( useAjax ) {
       oTable = cj(tabId).dataTable({
-    	        "bFilter"    : false,
-		"bAutoWidth" : false,
-                "aaSorting"  : sortColumn,
-		"aoColumns"  : columns,
-	    	"bProcessing": true,
-		"sPaginationType": "full_numbers",
-		"sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
-	   	"bServerSide": true,
-	   	"sAjaxSource": sourceUrl,
+              "bFilter"    : false,
+              "bAutoWidth" : false,
+              "aaSorting"  : sortColumn,
+              "aoColumns"  : columns,
+              "bProcessing": true,
+              "bJQueryUI": true,
+              "sPaginationType": "full_numbers",
+              "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',
+              "bServerSide": true,
+              "sAjaxSource": sourceUrl,
 
-		{/literal}{if $callBack}{literal}
+		{/literal}{if !empty($callBack)}{literal}
 		"fnDrawCallback": function() { checkSelected(); },
 		{/literal}{/if}{literal}
 

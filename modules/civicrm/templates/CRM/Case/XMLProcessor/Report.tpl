@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
 <Case>
   <Client>{$case.clientName}</Client>
   <CaseType>{$case.caseType}</CaseType>
-  <CaseSubject>{$case.subject}</CaseSubject>
+  <CaseSubject>{$case.subject|escape}</CaseSubject>
   <CaseStatus>{$case.status}</CaseStatus>
   <CaseOpen>{$case.start_date}</CaseOpen>
   <CaseClose>{$case.end_date}</CaseClose>

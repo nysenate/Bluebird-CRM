@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -40,6 +40,17 @@ require_once 'CRM/Contribute/PseudoConstant.php';
 class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_ContributionPage 
 {
 
+    /**
+     * Function to set variables up before form is built
+     *
+     * @return void
+     * @access public
+     */
+    public function preProcess()
+    {
+        parent::preProcess( );
+    }
+    
     /**
      * This function sets the default values for the form. Note that in edit/view mode
      * the default values are retrieved from the database
@@ -81,6 +92,10 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
                    ts( 'Contribution Type' ),
                    CRM_Contribute_PseudoConstant::contributionType( ),
                    true );
+        
+        //CRM-7362 --add campaigns.
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        CRM_Campaign_BAO_Campaign::addCampaign( $this, CRM_Utils_Array::value( 'campaign_id', $this->_values ) );
         
         $this->addWysiwyg( 'intro_text', ts('Introductory Message'), $attributes['intro_text'] );
 
@@ -181,8 +196,20 @@ class CRM_Contribute_Form_ContributionPage_Settings extends CRM_Contribute_Form_
         $dao =& CRM_Contribute_BAO_ContributionPage::create( $params );
 
         $this->set( 'id', $dao->id );
-        
-        parent::postProcess( );
+        if ( $this->_action & CRM_Core_Action::ADD ) {
+            $url       = 'civicrm/admin/contribute/amount';
+            $urlParams = "action=update&reset=1&id={$dao->id}";
+            // special case for 'Save and Done' consistency.
+            if ( $this->controller->getButtonName('submit') == "_qf_Amount_upload_done" ) {
+                $url       = 'civicrm/admin/contribute';
+                $urlParams = 'reset=1';
+                CRM_Core_Session::setStatus( ts("'%1' information has been saved.", 
+                                                array( 1 => $this->getTitle( ) ) ) );
+            }
+            
+            CRM_Utils_System::redirect( CRM_Utils_System::url( $url, $urlParams ) );
+        }
+        parent::endPostProcess( );
     }
 
     /** 

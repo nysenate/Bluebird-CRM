@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,7 +34,7 @@ require_once 'CRM/Core/Component/Info.php';
  * abstract class.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -51,7 +51,7 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info
         return array( 'name'                 => 'CiviMail',
                       'translatedName'       => ts('CiviMail'),
                       'title'                => 'CiviCRM Mailing Engine',
-                      'search'               => 0,
+                      'search'               => 1,
                       'showActivitiesInCore' => 1 
                       );
     }
@@ -74,7 +74,8 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info
     {
         $permissions = array( 'access CiviMail', 
                               'access CiviMail subscribe/unsubscribe pages',
-                              'delete in CiviMail' );
+                              'delete in CiviMail',
+                              'view public CiviMail content');
 
         if ( self::workflowEnabled( ) ) {
             $permissions[] = 'create mailings';
@@ -109,8 +110,8 @@ class CRM_Mailing_Info extends CRM_Core_Component_Info
     // docs inherited from interface  
     public function registerAdvancedSearchPane()
     {
-        // this component doesn't use advanced search
-        return null;
+        return array( 'title'   => ts( 'Mailings' ),
+                      'weight'  => 20 );
     }    
     
     // docs inherited from interface    

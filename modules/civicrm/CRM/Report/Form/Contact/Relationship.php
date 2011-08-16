@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -54,9 +54,9 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
                   'civicrm_contact' =>
                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
                          'fields'    =>
-                         array( 'display_name_a' => 
+                         array( 'sort_name_a' => 
                                 array( 'title'     => ts( 'Contact A' ),
-                                       'name'      => 'display_name',
+                                       'name'      => 'sort_name',
                                        'required'  => true,
                                        ),
                                 'id' => 
@@ -76,9 +76,9 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
                          'alias'     => 'contact_b',
                          'fields'    =>
-                         array( 'display_name_b' => 
+                         array( 'sort_name_b' => 
                                 array( 'title'     => ts( 'Contact B' ),
-                                       'name'      => 'display_name',
+                                       'name'      => 'sort_name',
                                        'required'  => true,
                                        ),
                                 'id' => 
@@ -438,8 +438,12 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
         } else {
             $this->_groupBy = " GROUP BY {$this->_aliases['civicrm_relationship']}.id ";
         }
-        
     }
+
+    function orderBy( ) {
+        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact_b']}.sort_name ";
+    }
+
     function postProcess( ) {
         $this->beginPostProcess( );
 
@@ -489,23 +493,23 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
                 $entryFound = true;
             }
 
-            if ( array_key_exists('civicrm_contact_display_name_a', $row) && 
+            if ( array_key_exists('civicrm_contact_sort_name_a', $row) && 
                  array_key_exists('civicrm_contact_id', $row) ) {
                 $url = CRM_Report_Utils_Report::getNextUrl( 'contact/detail', 
                                                             'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
                                                             $this->_absoluteUrl, $this->_id );
-                $rows[$rowNum]['civicrm_contact_display_name_a_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_a_hover'] = ts("View Contact details for this contact.");
+                $rows[$rowNum]['civicrm_contact_sort_name_a_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_a_hover'] = ts("View Contact details for this contact.");
                 $entryFound = true;
             }
 
-            if ( array_key_exists('civicrm_contact_b_display_name_b', $row) && 
+            if ( array_key_exists('civicrm_contact_b_sort_name_b', $row) && 
                  array_key_exists('civicrm_contact_b_id', $row) ) {
                 $url = CRM_Report_Utils_Report::getNextUrl( 'contact/detail', 
                                                             'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_b_id'],
                                                             $this->_absoluteUrl, $this->_id );
-                $rows[$rowNum]['civicrm_contact_b_display_name_b_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_b_display_name_b_hover'] = ts("View Contact details for this contact.");
+                $rows[$rowNum]['civicrm_contact_b_sort_name_b_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_b_sort_name_b_hover'] = ts("View Contact details for this contact.");
                 $entryFound = true;
             }
  

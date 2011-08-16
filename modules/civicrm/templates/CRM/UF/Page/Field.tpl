@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,7 +38,7 @@
         <div id="field_page">
         {if not ($action eq 2 or $action eq 1)}
             <div class="action-link">
-                <a href="{crmURL p="civicrm/admin/uf/group/field/add" q="reset=1&action=add&gid=$gid"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Field{/ts}</span></a><a href="{crmURL p="civicrm/admin/uf/group/update" q="action=update&id=`$gid`&reset=1&context=field"}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Settings{/ts}</span></a><a href="{crmURL p="civicrm/admin/uf/group" q="action=preview&id=`$gid`&reset=1&field=0&context=field"}" class="button"><span><div class="icon preview-icon"></div>{ts}Preview (all fields){/ts}</span></a>{if !$skipCreate }<a href="{crmURL p="civicrm/profile/create" q="gid=$gid&reset=1"}" class="button"><span><div class="icon play-icon"></div>{ts}Use (create mode){/ts}</span></a>{/if}
+                <a href="{crmURL p="civicrm/admin/uf/group/field/add" q="reset=1&action=add&gid=$gid"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Field{/ts}</span></a>{if !$isGroupReserved}<a href="{crmURL p="civicrm/admin/uf/group/update" q="action=update&id=`$gid`&reset=1&context=field"}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Settings{/ts}</span></a>{/if}<a href="{crmURL p="civicrm/admin/uf/group" q="action=preview&id=`$gid`&reset=1&field=0&context=field"}" class="button"><span><div class="icon preview-icon"></div>{ts}Preview (all fields){/ts}</span></a>{if !$skipCreate }<a href="{crmURL p="civicrm/profile/create" q="gid=$gid&reset=1"}" class="button"><span><div class="icon play-icon"></div>{ts}Use (create mode){/ts}</span></a>{/if}
                 <div class="clear"></div>
             </div>
         {/if}
@@ -81,7 +81,7 @@
         {/strip}
         {if not ($action eq 2 or $action eq 1)}
             <div class="action-link">
-                <a href="{crmURL p="civicrm/admin/uf/group/field/add" q="reset=1&action=add&gid=$gid"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Field{/ts}</span></a><a href="{crmURL p="civicrm/admin/uf/group" q="action=update&id=`$gid`&reset=1&context=field"}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Settings{/ts}</span></a><a href="{crmURL p="civicrm/admin/uf/group" q="action=preview&id=`$gid`&reset=1&field=0&context=field"}" class="button"><span><div class="icon preview-icon"></div>{ts}Preview (all fields){/ts}</span></a>{if !$skipCreate }<a href="{crmURL p="civicrm/profile/create" q="gid=$gid&reset=1"}" class="button"><span><div class="icon play-icon"></div>{ts}Use (create mode){/ts}</span></a>{/if}
+                <a href="{crmURL p="civicrm/admin/uf/group/field/add" q="reset=1&action=add&gid=$gid"}" class="button"><span><div class="icon add-icon"></div>{ts}Add Field{/ts}</span></a>{if !$isGroupReserved}<a href="{crmURL p="civicrm/admin/uf/group" q="action=update&id=`$gid`&reset=1&context=field"}" class="button"><span><div class="icon edit-icon"></div>{ts}Edit Settings{/ts}</span></a>{/if}<a href="{crmURL p="civicrm/admin/uf/group" q="action=preview&id=`$gid`&reset=1&field=0&context=field"}" class="button"><span><div class="icon preview-icon"></div>{ts}Preview (all fields){/ts}</span></a>{if !$skipCreate }<a href="{crmURL p="civicrm/profile/create" q="gid=$gid&reset=1"}" class="button"><span><div class="icon play-icon"></div>{ts}Use (create mode){/ts}</span></a>{/if}
                 <div class="clear"></div>
             </div>
         {/if}    

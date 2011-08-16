@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -232,7 +232,7 @@ class CRM_Case_Page_Tab extends CRM_Core_Page
             $deleteExtra = ts('Are you sure you want to delete this case?');
             self::$_links = array(
                                   CRM_Core_Action::VIEW    => array(
-                                                                    'name'  => ts('Manage Case'),
+                                                                    'name'  => ts('Manage'),
                                                                     'url'   => 'civicrm/contact/view/case',
                                                                     'qs'    => 'action=view&reset=1&cid=%%cid%%&id=%%id%%',
                                                                     'title' => ts('Manage Case')
@@ -279,10 +279,9 @@ class CRM_Case_Page_Tab extends CRM_Core_Page
             $url = CRM_Utils_System::url( 'civicrm/case/search', $urlParams );
             break;
             
+        case 'dashlet':
+        case 'dashletFullscreen':    
         case 'home':
-            $url = CRM_Utils_System::url( 'civicrm/dashboard', 'reset=1' );
-            break;
-          
         case 'standalone':
             $url = CRM_Utils_System::url( 'civicrm/dashboard', 'reset=1' );
             break;

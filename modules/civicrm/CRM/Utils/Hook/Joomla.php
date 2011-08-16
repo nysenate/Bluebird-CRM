@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CiviCRM_Hook
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id: $
  *
  */
@@ -42,7 +42,7 @@ class CRM_Utils_Hook_Joomla extends CRM_Utils_Hook {
                            &$arg1, &$arg2, &$arg3, &$arg4, &$arg5,
                            $fnSuffix ) {
        return parent::invoke( $numParams, $arg1, $arg2, $arg3, $arg4, $arg5,
-                       $fnSuffix, 'joomla' );
+                              $fnSuffix, 'joomla' );
    }
 
 }

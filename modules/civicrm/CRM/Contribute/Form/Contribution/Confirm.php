@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -143,25 +143,65 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
 
         // if onbehalf-of-organization
-        if ( CRM_Utils_Array::value( 'is_for_organization', $this->_params ) ) {
+        if ( CRM_Utils_Array::value( 'hidden_onbehalf_profile', $this->_params ) ) {
             if ( CRM_Utils_Array::value( 'org_option', $this->_params ) && 
                  CRM_Utils_Array::value( 'organization_id', $this->_params ) ) {
                 if ( CRM_Utils_Array::value( 'onbehalfof_id', $this->_params ) ) {
                     $this->_params['organization_id'] = $this->_params['onbehalfof_id'];
                 }
             }
-            if ( !empty( $this->_params['address'][1]['country_id'] ) ) {
-                $this->_params['address'][1]['country'] =
-                    CRM_Core_PseudoConstant::countryIsoCode( $this->_params['address'][1]['country_id'] ); 
-            }
-            if ( !empty( $this->_params['address'][1]['state_province_id'] ) ) {
-                $this->_params['address'][1]['state_province'] =
-                    CRM_Core_PseudoConstant::stateProvinceAbbreviation( $this->_params['address'][1]['state_province_id'] );
-            }
-            // hardcode blocks for now. We might shift to generalized model in 3.1 which uses profiles
-            foreach ( array('phone', 'email', 'address') as $loc ) {
-                $this->_params['onbehalf_location'][$loc] = $this->_params[$loc];
-                unset($this->_params[$loc]);
+            
+            $this->_params['organization_name'] = $this->_params['onbehalf']['organization_name'];
+            $addressBlocks = array( 'street_address', 'city', 
+                                    'state_province', 'postal_code', 'country' );
+
+            $blocks = array( 'email', 'phone', 'im', 'url', 'openid' );
+            
+            foreach ( $this->_params['onbehalf'] as $loc => $value ) {
+                list( $field, $locType, $typeId ) = explode( '-', $loc );
+
+                if ( in_array( $field, $addressBlocks ) ) {
+                    if ( $field == 'country' ) {
+                        $value = CRM_Core_PseudoConstant::countryIsoCode( $value );
+                    } else if ( $field == 'state_province' ) {
+                        $value = CRM_Core_PseudoConstant::stateProvinceAbbreviation( $value );
+                    }
+                    $this->_params['onbehalf_location']['address'][$locType][$field]       = $value;
+                    $this->_params['onbehalf_location']['address'][$locType]['is_primary'] = 1;
+                } else if ( in_array( $field, $blocks ) ) {
+                    if ( !$typeId || is_numeric( $typeId ) ) {
+                        $blockName     = $fieldName = $field;
+                        $locationType  = 'location_type_id';
+                        $locationValue = $locType;
+                        $locTypeId     = '';
+                        
+                        if ( $field == 'url' ) {
+                            $blockName     = 'website';
+                            $locationType  = 'website_type_id';
+                            $locationValue = $this->_params['onbehalf']["{$loc}-website_type_id"];
+                        } else if ( $field == 'im' ) {
+                            $fieldName     = 'name';
+                            $locTypeId     = 'provider_id';
+                            $typeId        = $this->_params['onbehalf']["{$loc}-provider_id"];
+                        } else if ( $field == 'phone' ) {
+                            $locTypeId     = 'phone_type_id';
+                        }
+                        
+                        $this->_params['onbehalf_location'][$blockName][$locType][$fieldName]    = $value;
+                        $this->_params['onbehalf_location'][$blockName][$locType][$locationType] = $locationValue;
+                        $this->_params['onbehalf_location'][$blockName][$locType]['is_primary']  = 1;
+                        if ( $locTypeId ) {
+                            $this->_params['onbehalf_location'][$blockName][$locType][$locTypeId] = $typeId;
+                        }
+                    }
+                }
+
+                if ( strstr( $loc, 'custom' ) ) {
+                    if ( $value  && isset($this->_params['onbehalf']["{$loc}_id"]) ) {
+                        $value = $this->_params['onbehalf']["{$loc}_id"];
+                    }
+                    $this->_params['onbehalf_location']["{$loc}"] = $value;
+                }
             }
         } else if ( CRM_Utils_Array::value( 'is_for_organization', $this->_values ) ) {
             // no on behalf of an organization, CRM-5519 
@@ -206,6 +246,12 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             }
         }
         $this->_params['invoiceID'] = $this->get( 'invoiceID' );
+        
+        //carry campaign from profile.
+        if ( array_key_exists( 'contribution_campaign_id', $this->_params ) ) {
+            $this->_params['campaign_id'] = $this->_params['contribution_campaign_id'];
+        }
+        
         $this->set( 'params', $this->_params );
     }
 
@@ -220,7 +266,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         $this->assignToTemplate( );
         require_once 'CRM/Contribute/BAO/Premium.php';
         
-        $params = $this->_params;                    
+        $params = $this->_params;
         $honor_block_is_active = $this->get( 'honor_block_is_active');
         // make sure we have values for it
         if ( $honor_block_is_active &&
@@ -266,6 +312,20 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
         $this->buildCustom( $this->_values['custom_pre_id'] , 'customPre' , true );
         $this->buildCustom( $this->_values['custom_post_id'], 'customPost', true );
+
+        if ( CRM_Utils_Array::value( 'hidden_onbehalf_profile', $params ) ) {
+            $profileId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', 'on_behalf_organization', 'id', 'name' );
+
+            $fieldTypes = array( 'Contact', 'Organization' );
+            if ( is_array( $this->_membershipBlock ) && !empty( $this->_membershipBlock ) ) {
+                $fieldTypes = array_merge( $fieldTypes, array( 'Membership' ) );
+            } else {
+                $fieldTypes = array_merge( $fieldTypes, array( 'Contribution' ) );
+            }
+
+            $this->buildCustom( $profileId, 'onbehalfProfile', true, true, $fieldTypes );
+        }
+
         $this->_separateMembershipPayment = $this->get( 'separateMembershipPayment' );
         $this->assign( 'is_separate_payment', $this->_separateMembershipPayment );
         $this->assign( 'lineItem', $this->_lineItem );
@@ -315,14 +375,29 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         require_once 'CRM/Core/BAO/CustomGroup.php';
         $removeCustomFieldTypes = array ('Contribution');
         foreach ( $this->_fields as $name => $dontCare ) {
-            $fields[$name] = 1;
+            if ( $name == 'onbehalf' ) {
+                foreach ( $dontCare as $key => $value ) {
+                    $fields['onbehalf'][$key] = 1;
+                }
+            } else {
+                $fields[$name] = 1;
+            }
         }
         $fields["billing_state_province-{$this->_bltID}"] =
             $fields["billing_country-{$this->_bltID}"] = $fields["email-{$this->_bltID}"] = 1;
 
         $contact =  $this->_params;
         foreach ($fields as $name => $dontCare ) {
-            if ( isset( $contact[$name] ) ) {
+            if ( $name == 'onbehalf' ) {
+                foreach ( $dontCare as $key => $value ) {
+                    if ( isset($contact['onbehalf'][$key]) ) {
+                        $defaults[$key] = $contact['onbehalf'][$key];
+                    }
+                    if ( isset($contact['onbehalf']["{$key}_id"]) ) {
+                        $defaults["{$key}_id"] = $contact['onbehalf']["{$key}_id"];
+                    }
+                }       
+            } else if ( isset( $contact[$name] ) ) {
                 $defaults[$name] = $contact[$name];
                 if ( substr( $name, 0, 7 ) == 'custom_' ) {
                     $timeField = "{$name}_time";
@@ -475,19 +550,32 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         // organization params in a separate variable, to make sure
         // normal behavior is continued. And use that variable to
         // process on-behalf-of functionality.
-        if ( CRM_Utils_Array::value( 'is_for_organization', $this->_values ) ) {
+        if ( CRM_Utils_Array::value( 'hidden_onbehalf_profile', $this->_params ) ) {
             $behalfOrganization = array();
-            foreach ( array('organization_name', 'organization_id', 'org_option') as $fld ) {
+            $orgFields = array('organization_name', 'organization_id', 'org_option');
+            foreach ( $orgFields as $fld ) {
                 if ( array_key_exists( $fld, $params ) ) {
                     $behalfOrganization[$fld] = $params[$fld];
-                    unset($params[$fld]);
+                    unset( $params[$fld] );
                 }
             }
+
+            if ( is_array( $params['onbehalf'] ) && !empty( $params['onbehalf'] ) ) {
+                foreach ( $params['onbehalf'] as $fld => $values ) {
+                    if ( !( strstr( $fld, '-' ) || strstr( $fld, 'custom_' ) ) ) {
+                        if ( in_array( $fld, array( 'contribution_campaign_id', 'member_campaign_id' ) ) ) {
+                            $fld = 'campaign_id';
+                        }
+                        $this->_params[$fld] = $values;
+                    }
+                }
+            }
+            
             if ( array_key_exists( 'onbehalf_location', $params ) && is_array( $params['onbehalf_location'] ) ) {
                 foreach ( $params['onbehalf_location'] as $block => $vals ) {
                     $behalfOrganization[$block] = $vals;
                 }
-                unset($params['onbehalf_location']);
+                unset( $params['onbehalf_location'] );
             }
         }
         
@@ -512,18 +600,52 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
 
         if ( ! isset( $contactID ) ) {
             require_once 'CRM/Dedupe/Finder.php';
-            $dedupeParams = CRM_Dedupe_Finder::formatParams($params, 'Individual');
+            $dupeParams = $params;
+            if ( CRM_Utils_Array::value( 'onbehalf', $dupeParams ) ) {
+                unset( $dupeParams['onbehalf'] );
+            }
+
+            $dedupeParams = CRM_Dedupe_Finder::formatParams($dupeParams, 'Individual');
             $dedupeParams['check_permission'] = false;
             $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, 'Individual');
 
             // if we find more than one contact, use the first one
             $contact_id  = CRM_Utils_Array::value( 0, $ids );
-            $contactID =& CRM_Contact_BAO_Contact::createProfileContact( $params, $fields, $contact_id, $addToGroups );
+            
+            $greetingTypes = array( 'addressee'       => 'addressee_id', 
+                                    'email_greeting'  => 'email_greeting_id', 
+                                    'postal_greeting' => 'postal_greeting_id'
+                                    );
+            
+            foreach( $greetingTypes  as $key => $value ) {
+                if( !array_key_exists( $key, $params ) ) {
+                    $defaultGreetingTypeId = CRM_Core_OptionGroup::values( $key, null, null, null, 
+                                                                           'AND is_default =1
+                                                                            AND (filter = 1 OR filter = 0 )',
+                                                                           'value' 
+                                                                           );
+                    
+                    $params[$key] = key( $defaultGreetingTypeId );
+                }
+            }
+            
+            $contactID =& CRM_Contact_BAO_Contact::createProfileContact( $params,
+                                                                         $fields,
+                                                                         $contact_id,
+                                                                         $addToGroups,
+                                                                         null,
+                                                                         null,
+                                                                         true );
             $this->set( 'contactID', $contactID );
         } else {
             $ctype = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $contactID, 'contact_type');
-            $contactID =& CRM_Contact_BAO_Contact::createProfileContact( $params, $fields, $contactID, $addToGroups,
-                                                                         null, $ctype);
+            $contactID =& CRM_Contact_BAO_Contact::createProfileContact( $params,
+                                                                         $fields,
+                                                                         $contactID,
+                                                                         $addToGroups,
+                                                                         null,
+                                                                         $ctype,
+                                                                         true );
         }
 
         //get email primary first if exist
@@ -539,8 +661,13 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         
         // If onbehalf-of-organization contribution / signup, add organization
         // and it's location.
-        if ( isset( $params['is_for_organization'] ) && isset( $behalfOrganization['organization_name'] ) ) {
-            self::processOnBehalfOrganization( $behalfOrganization, $contactID, $this->_values, $this->_params );
+        if ( isset( $params['hidden_onbehalf_profile'] ) && isset( $behalfOrganization['organization_name'] ) ) {
+            $ufFields = array( );
+            foreach ( $this->_fields['onbehalf'] as $name => $value ) {
+                $ufFields[$name] = 1;
+            }
+            self::processOnBehalfOrganization( $behalfOrganization, $contactID, $this->_values, 
+                                               $this->_params, $ufFields );
         }
 
         // lets store the contactID in the session
@@ -578,21 +705,57 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             } else {
                 $membershipParams['cms_contactID'] = $contactID;
             } 
+            
+            //inherit campaign from contirb page.
+            if ( !array_key_exists( 'campaign_id', $membershipParams ) ) {
+                $membershipParams['campaign_id'] = CRM_Utils_Array::value( 'campaign_id', $this->_values );
+            }
+            
+            if ( CRM_Utils_Array::value( 'member_campaign_id', $membershipParams['onbehalf'] ) ) {
+                $this->_params['campaign_id'] = $membershipParams['onbehalf']['member_campaign_id'];
+            }
+
+            $customFieldsFormatted = $fieldTypes = array( );
+            require_once 'CRM/Core/BAO/CustomField.php';
+            if ( is_array( $membershipParams['onbehalf'] ) && !empty( $membershipParams['onbehalf'] ) ) {
+                foreach ( $membershipParams['onbehalf'] as $key => $value ) {
+                    if ( strstr( $key, 'custom_' ) ) {
+                        $customFieldId = explode( '_', $key );
+                        CRM_Core_BAO_CustomField::formatCustomField( $customFieldId[1], $customFieldsFormatted, $value, 
+                                                                     'Membership', null, $contactID );
+                    }
+                }
+                $fieldTypes = array( 'Contact', 'Organization', 'Membership' );
+            }
+            
             require_once 'CRM/Member/BAO/Membership.php';
             CRM_Member_BAO_Membership::postProcessMembership( $membershipParams, $contactID,
-                                                              $this, $premiumParams );                       
+                                                              $this, $premiumParams, $customFieldsFormatted, 
+                                                              $fieldTypes );  
         } else {
             // at this point we've created a contact and stored its address etc
             // all the payment processors expect the name and address to be in the 
             // so we copy stuff over to first_name etc. 
             $paymentParams      = $this->_params;
             $contributionTypeId = $this->_values['contribution_type_id'];
+
+            $fieldTypes = array( );
+            require_once 'CRM/Core/BAO/CustomField.php';
+            if ( is_array( $paymentParams['onbehalf'] ) && !empty( $paymentParams['onbehalf'] ) ) {
+                foreach ( $paymentParams['onbehalf'] as $key => $value ) {
+                    if ( strstr( $key, 'custom_' ) ) {
+                        $this->_params[$key] = $value;
+                    }
+                }
+                $fieldTypes = array( 'Contact', 'Organization', 'Contribution' );
+            }
             
             require_once 'CRM/Contribute/BAO/Contribution/Utils.php';
             CRM_Contribute_BAO_Contribution_Utils::processConfirm( $this, $paymentParams, 
                                                                    $premiumParams, $contactID, 
                                                                    $contributionTypeId, 
-                                                                   'contribution' );
+                                                                   'contribution',
+                                                                   $fieldTypes );
         }
     }
     
@@ -763,12 +926,17 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
         
         //get the contrib page id.
-        $contributionPageId = null;
+        $campaignId = $contributionPageId = null;
         if ( $online ) {
             $contributionPageId = $form->_id;
+            $campaignId = CRM_Utils_Array::value( 'campaign_id', $params );
+            if ( !array_key_exists( 'campaign_id', $params ) ) {
+                $campaignId = CRM_Utils_Array::value( 'campaign_id', $form->_values );
+            }
         } else {
             //also for offline we do support - CRM-7290
             $contributionPageId = CRM_Utils_Array::value( 'contribution_page_id', $params );
+            $campaignId = CRM_Utils_Array::value( 'campaign_id', $params  );
         }
         
         // first create the contribution record
@@ -776,7 +944,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
                                'contact_id'            => $contactID,
                                'contribution_type_id'  => $contributionType->id,
                                'contribution_page_id'  => $contributionPageId,
-                               'receive_date'          => $now,
+                               'receive_date'          => isset( $params['receive_date'] ) ? CRM_Utils_Date::processDate( $params['receive_date'] ) : date( 'YmdHis' ),
                                'non_deductible_amount' => $nonDeductibleAmount,
                                'total_amount'          => $params['amount'],
                                'amount_level'          => CRM_Utils_Array::value( 'amount_level', $params ),
@@ -790,6 +958,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
                                'cancel_reason'         => CRM_Utils_Array::value( 'cancel_reason', $params, 0),
                                'cancel_date'           => isset( $params['cancel_date'] ) ? CRM_Utils_Date::format( $params['cancel_date'] ) : null,
                                'thankyou_date'         => isset( $params['thankyou_date'] ) ? CRM_Utils_Date::format( $params['thankyou_date'] ) : null,
+                               'campaign_id'           => $campaignId,
                                );
         if ( ! $online && isset($params['thankyou_date'] ) ) {
             $contribParams['thankyou_date'] = $params['thankyou_date'];
@@ -808,8 +977,8 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
                                     'trxn_id'      => $result['trxn_id'],
                                     'receipt_date' => $receiptDate,
                                     // also add financial_trxn details as part of fix for CRM-4724
-                                    'trxn_result_code' => $result['trxn_result_code'],
-                                    'payment_processor' => $result['payment_processor'],
+                                    'trxn_result_code' => CRM_Utils_Array::value( 'trxn_result_code', $result ),
+                                    'payment_processor' => CRM_Utils_Array::value( 'payment_processor', $result )
                                     );
         }
         
@@ -937,7 +1106,10 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
                 $pledgeParams['is_test'                ] = $contribution->is_test;
                 $pledgeParams['acknowledge_date'       ] = date( 'Ymd' );
                 $pledgeParams['original_installment_amount'] = $pledgeParams['installment_amount'] ;
-
+                
+                //inherit campaign from contirb page. 
+                $pledgeParams['campaign_id']             = $campaignId;
+                
                 require_once 'CRM/Pledge/BAO/Pledge.php';
                 $pledge = CRM_Pledge_BAO_Pledge::create( $pledgeParams );
                 
@@ -1010,7 +1182,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
                                 'currency'          => $params['currencyID'],
                                 'payment_processor' => $form->_paymentProcessor['payment_processor_type'],
                                 'trxn_id'           => $result['trxn_id'],
-                                'trxn_result_code'  => $result['trxn_result_code'],
+                                'trxn_result_code'  => (isset($result['trxn_result_code']) ? $result['trxn_result_code'] : false),
                                 );
             
             require_once 'CRM/Core/BAO/FinancialTrxn.php';
@@ -1020,7 +1192,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         //create contribution activity w/ individual and target
         //activity w/ organisation contact id when onbelf, CRM-4027 
         $targetContactID = null; 
-        if ( CRM_Utils_Array::value( 'is_for_organization', $params ) ) {
+        if ( CRM_Utils_Array::value( 'hidden_onbehalf_profile', $params ) ) {
             $targetContactID = $contribution->contact_id;  
             $contribution->contact_id = $contactID;
         }
@@ -1061,13 +1233,19 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
              ( isset( $form->_mode ) && ( $form->_mode == 'test' ) ) ) {
             $recurParams['is_test'] = 1;
         }
-        
         $now = date( 'YmdHis' );
+        if(CRM_Utils_Array::value('receive_date',$params)){
+          $startdate = CRM_Utils_Date::processDate( $params['receive_date'] );
+        }
+
         $recurParams['start_date'] = $recurParams['create_date'] = $recurParams['modified_date'] = $now;
+        if(CRM_Utils_Array::value('receive_date',$params)){
+          $recurParams['start_date'] = CRM_Utils_Date::processDate( $params['receive_date'] );
+        }
         $recurParams['invoice_id'] = $params['invoiceID'];
         $recurParams['contribution_status_id'] = 2;
         $recurParams['payment_processor_id']   = $params['payment_processor_id'];
-        
+    
         // we need to add a unique trxn_id to avoid a unique key error
         // in paypal IPN we reset this when paypal sends us the real trxn id, CRM-2991
         $recurParams['trxn_id'] = CRM_Utils_Array::value( 'trxn_id', $params, $params['invoiceID'] );
@@ -1139,7 +1317,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
      * @return void
      * @access public
      */
-    static function processOnBehalfOrganization( &$behalfOrganization, &$contactID, &$values, &$params ) {
+    static function processOnBehalfOrganization( &$behalfOrganization, &$contactID, &$values, &$params, $fields = null ) {
         $isCurrentEmployer = false;
         if ( $behalfOrganization['organization_id'] && $behalfOrganization['org_option'] ) {
             $orgID = $behalfOrganization['organization_id'];
@@ -1148,12 +1326,13 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
         }
 
         // formalities for creating / editing organization.
-        require_once 'CRM/Core/BAO/LocationType.php';
-        $locType = CRM_Core_BAO_LocationType::getDefault();
         $behalfOrganization['contact_type'] = 'Organization';
-        foreach ( array('phone', 'email', 'address') as $locFld ) {
-            $behalfOrganization[$locFld][1]['is_primary'] = 1;
-            $behalfOrganization[$locFld][1]['location_type_id'] = $locType->id;
+        foreach ( $behalfOrganization as $locFld => $value ) {
+            if ( in_array( $locFld, array( 'phone', 'email', 'address' ) ) ) {
+                $locTypeId = array_keys( $value );
+                $behalfOrganization[$locFld][$locTypeId[0]]['is_primary'] = 1;
+                $behalfOrganization[$locFld][$locTypeId[0]]['location_type_id'] = $locTypeId[0];
+            }
         }
         
         // get the relationship type id
@@ -1188,16 +1367,13 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             unset($behalfOrganization['organization_name']);
         }
         // create organization, add location 
-        $org = CRM_Contact_BAO_Contact::create( $behalfOrganization );
-                
+        $orgID = CRM_Contact_BAO_Contact::createProfileContact( $behalfOrganization, $fields, $orgID,
+                                                                null, null, 'Organization' );
         // create relationship
-        $relParams['contact_check'][$org->id] = 1;
+        $relParams['contact_check'][$orgID] = 1;
         $cid = array( 'contact' => $contactID );
         $relationship = CRM_Contact_BAO_Relationship::create($relParams, $cid);
-        
-        // take a note of new/updated organiation contact-id.
-        $orgID = $org->id;
-
+       
         // if multiple match - send a duplicate alert
         if ( $dupeIDs && (count($dupeIDs) > 1) ) {
             $values['onbehalf_dupe_alert'] = 1;

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -142,6 +142,8 @@ class CRM_Member_Form_Search extends CRM_Core_Form
      */ 
     function preProcess( ) 
     { 
+        $this->set( 'searchFormName', 'Search' );
+
         /** 
          * set the button names 
          */ 
@@ -186,11 +188,11 @@ class CRM_Member_Form_Search extends CRM_Core_Form
         require_once 'CRM/Contact/BAO/Query.php';
         $this->_queryParams =& CRM_Contact_BAO_Query::convertFormValues( $this->_formValues ); 
         $selector = new CRM_Member_Selector_Search( $this->_queryParams,
-                                                     $this->_action,
-                                                     null,
-                                                     $this->_single,
-                                                     $this->_limit,
-                                                     $this->_context ); 
+                                                    $this->_action,
+                                                    null,
+                                                    $this->_single,
+                                                    $this->_limit,
+                                                    $this->_context ); 
         $prefix = null;
         if ( $this->_context == 'basic' ) {
             $prefix = $this->_prefix;
@@ -237,7 +239,7 @@ class CRM_Member_Form_Search extends CRM_Core_Form
                 foreach ($rows as $row) { 
                     $this->addElement( 'checkbox', $row['checkbox'], 
                                        null, null, 
-                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "', '" . $this->getName() . "');" )
+                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "');" )
                                        ); 
                 }
             }
@@ -448,7 +450,13 @@ class CRM_Member_Form_Search extends CRM_Core_Form
         
         $this->_limit = CRM_Utils_Request::retrieve( 'limit', 'Positive',
                                                      $this );
-    }
+    
+		//LCD also allow restrictions to membership owner via GET
+		$owner = CRM_Utils_Request::retrieve( 'owner', 'String', CRM_Core_DAO::$_nullObject );
+		if ( $owner ) {
+			$this->_formValues['member_is_primary'] = $this->_defaults['member_is_primary'] = 2;
+		}
+	}
 
     /**
      * Return a descriptive name for the page, used in wizard header

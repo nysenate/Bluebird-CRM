@@ -1,6 +1,6 @@
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -53,7 +53,7 @@ var options {ajaxURL:"{$config->userFrameworkResourceURL}";
     	      return settings.success(result,settings);
     	  },
     	  closetxt: "<div class='icon close-icon' title='Close'>[X]</div>",
-    	  ajaxURL: 'civicrm/ajax/rest',
+    	  ajaxURL: '/civicrm/ajax/rest',
     	  msgbox: '#restmsg'
       };
 
