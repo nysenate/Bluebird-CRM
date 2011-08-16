@@ -766,9 +766,6 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			if ( isset($nyss_iofields[$tbl][$key]) && 
 			     ( $dao->$key<>$data || $form_state['values']['fieldoverride'] )
 			   ) {
-			
-				//escape some sql fields
-	            $data = str_replace("'","\'",$data);
 
 				//add to the update statement
 				if ( !empty($data) || $form_state['values']['fieldoverride'] ) {
