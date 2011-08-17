@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -39,12 +39,12 @@ require_once 'CRM/Core/Permission.php';
 class CRM_Report_Form_Instance {
 
     static function buildForm( &$form ) {
-        //NYSS 3643 we should not build form elements in dashlet mode
+        // we should not build form elements in dashlet mode
         if ( $form->_section ) {
             return;
         }
-
-		$attributes = CRM_Core_DAO::getAttribute( 'CRM_Report_DAO_Instance' );
+        
+        $attributes = CRM_Core_DAO::getAttribute( 'CRM_Report_DAO_Instance' );
 
         $form->add( 'text',
                     'title',
@@ -94,7 +94,7 @@ class CRM_Report_Form_Instance {
                                array( '0' => '- Any One -') + CRM_Core_Permission::basicPermissions( ) );
         }
         // navigation field
-		$parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );
+        $parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );
        
         $form->add( 'select', 'parent_id', ts( 'Parent Menu' ), array( '' => ts('-- select --') ) + $parentMenu );
         
@@ -126,12 +126,12 @@ class CRM_Report_Form_Instance {
     }
 
     static function setDefaultValues( &$form, &$defaults ) {
-        //NYSS 3643 we should not build form elements in dashlet mode
+        // we should not build form elements in dashlet mode
         if ( $form->_section ) {
             return;
         }
-		
-		$instanceID = $form->getVar( '_id' );
+ 
+        $instanceID = $form->getVar( '_id' );
         $navigationDefaults = array();
         require_once 'CRM/Core/Config.php';
         $config = CRM_Core_Config::singleton(); 
@@ -183,15 +183,17 @@ class CRM_Report_Form_Instance {
         $params['header']    = $params['report_header'];
         $params['footer']    = $params['report_footer'];
         $params['domain_id'] = CRM_Core_Config::domainID( );
+
+        $form->_navigation['permission'] = array( );
+        $form->_navigation['label']      = $params['title'];
+        $form->_navigation['name']       = $params['title'];
+
         //navigation parameters
         if ( CRM_Utils_Array::value( 'is_navigation', $params ) ) {
-            $form->_navigation['permission'] = array( );
             $permission = CRM_Utils_Array::value( 'permission', $params );
             
             $form->_navigation['current_parent_id']  = CRM_Utils_Array::value( 'parent_id', $form->_navigation );
             $form->_navigation['parent_id']          = CRM_Utils_Array::value( 'parent_id', $params );
-            $form->_navigation['label']              = $params['title'];
-            $form->_navigation['name']               = $params['title'];
             $form->_navigation['is_active']          = 1;
             
             if ( $permission ) {
@@ -207,7 +209,7 @@ class CRM_Report_Form_Instance {
         $dashletParams = array( );
         if ( CRM_Utils_Array::value( 'addToDashboard', $params ) ) {
             $dashletParams = array( 'label'     =>  $params['title'],
-                                    'is_active' => 1, ); //NYSS 4125
+                                    'is_active' => 1 );
                                 
             $permission = CRM_Utils_Array::value( 'permission', $params );
             if ( $permission ) {
@@ -250,8 +252,13 @@ class CRM_Report_Form_Instance {
                 $form->_navigation['url'] = "civicrm/report/instance/{$dao->id}&reset=1";
                 $navigation = CRM_Core_BAO_Navigation::add( $form->_navigation );
 
-                //set the navigation id in report instance table
-                CRM_Core_DAO::setFieldValue( 'CRM_Report_DAO_Instance', $dao->id, 'navigation_id', $navigation->id );
+                if ( CRM_Utils_Array::value('is_active', $form->_navigation) ) {
+                    //set the navigation id in report instance table
+                    CRM_Core_DAO::setFieldValue( 'CRM_Report_DAO_Instance', $dao->id, 'navigation_id', $navigation->id );
+                } else {
+                    // has been removed from the navigation bar
+                    CRM_Core_DAO::setFieldValue( 'CRM_Report_DAO_Instance', $dao->id, 'navigation_id', 'NULL'); 
+                }
 
                 //reset navigation
                 CRM_Core_BAO_Navigation::resetNavigation( );
@@ -267,11 +274,11 @@ class CRM_Report_Form_Instance {
                 if ( CRM_Utils_Array::value( 'charts', $params ) ) {
                     $section = 1;
                     $chart = "&charts=". $params['charts'];
-                    $dashletParams['is_fullscreen'] = 0;
                 }
 
-                $dashletParams['url'        ] = "civicrm/report/instance/{$dao->id}&reset=1&section={$section}&snippet=4{$chart}";
-                $dashletParams['instanceURL'] = "civicrm/report/instance/{$dao->id}";
+                $dashletParams['url'           ] = "civicrm/report/instance/{$dao->id}&reset=1&section={$section}&snippet=4{$chart}";
+                $dashletParams['fullscreen_url'] = "civicrm/report/instance/{$dao->id}&reset=1&section={$section}&snippet=4{$chart}&context=dashletFullscreen";
+                $dashletParams['instanceURL'   ] = "civicrm/report/instance/{$dao->id}";
                 require_once 'CRM/Core/BAO/Dashboard.php';
                 CRM_Core_BAO_Dashboard::addDashlet(  $dashletParams );
             }

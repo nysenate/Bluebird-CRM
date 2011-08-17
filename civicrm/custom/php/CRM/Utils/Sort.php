@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -43,7 +43,7 @@
  * if introducing additional functionality
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -149,7 +149,7 @@ class CRM_Utils_Sort {
             $this->_currentSortDirection = $this->_vars[$this->_currentSortID]['direction'];
         }
         $this->_urlVar               = self::SORT_ID;
-        $this->_link                 = CRM_Utils_System::makeUrl( $this->_urlVar );
+        $this->_link                 = CRM_Utils_System::makeURL( $this->_urlVar );
 
         $this->initialize( $defaultSortOrder );
     }

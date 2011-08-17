@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -63,8 +63,8 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                           array( 'sort_name_touched' => 
                                  array( 'title'      => ts( 'Touched Contact' ),
                                         'name'       => 'sort_name',
-										'type'       => '2',
                                         'where'      => 'civicrm_contact.display_name', //NYSS 3271
+                                        'type'       => CRM_Utils_Type::T_STRING
                                       ),
                                 ),
                           'grouping'  => 'contact-fields',
@@ -81,7 +81,8 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                                         'required'  => true, ), ),
                           'filters'   =>             
                           array( 'sort_name'    => 
-                                 array( 'title'      => ts( 'Modified By' )  ),
+                                 array( 'title'      => ts( 'Modified By' ),
+                                        'type'       => CRM_Utils_Type::T_STRING ),
                           ),
                           'grouping'  => 'contact-fields',
                         ),
@@ -98,8 +99,8 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
 								 							   'no_display' => true ),
                                  ),
                           ),
-				          
-				  'civicrm_activity' => 
+                          
+                  'civicrm_activity' => 
                    array( 'dao'       => 'CRM_Activity_DAO_Activity',
                           'fields'    =>
                           array( 'id'  => array('title'      => ts( 'Activity ID' ),
@@ -170,15 +171,15 @@ class CRM_Report_Form_Contact_Log extends CRM_Report_Form {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
                          CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
-						
-						$select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
+
+                        $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
                     }
                 }
             }
         }
-		
+
         $this->_select = "SELECT " . implode( ', ', $select ) . " ";
     }
 

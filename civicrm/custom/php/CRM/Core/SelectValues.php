@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
  * smart caching scheme on a per domain basis
  * 
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -260,12 +260,14 @@ class CRM_Core_SelectValues
                                         'Pledge'       => ts('Pledges'),
                                         'Grant'        => ts('Grants'),
                                         'Address'      => ts('Addresses'),
+                                        'Campaign'     => ts('Campaigns'),
                                         );
             $contactTypes = self::contactType( );
             unset( $contactTypes[''] ); 
             $contactTypes = !empty( $contactTypes ) ? array( 'Contact' => 'Contacts' ) 
                 + $contactTypes : array( );
-            $customGroupExtends = array_merge( $contactTypes, $customGroupExtends );
+            $extendObjs   = CRM_Core_OptionGroup::values( 'cg_extend_objects' );
+            $customGroupExtends = array_merge( $contactTypes, $customGroupExtends, $extendObjs );
         }
         return $customGroupExtends;
     }
@@ -470,7 +472,7 @@ class CRM_Core_SelectValues
 
 
     /**
-     * Function to get the Map Providers from available plugins
+     * Function to get the Map Provider 
      * 
      * @return array $map array of map providers
      * @static
@@ -478,13 +480,14 @@ class CRM_Core_SelectValues
     static function &mapProvider()
     {
         static $map = null;
-        if (! $map ) {
+        //NYSS
+		if (! $map ) {
             return CRM_Utils_System::getPluginList( 'templates/CRM/Contact/Form/Task/Map', ".tpl" );
         }
         return $map;
     }
 
-
+	//NYSS
     /**
      * Function to get the Geocoding Providers from available plugins
      * 
@@ -543,7 +546,29 @@ class CRM_Core_SelectValues
                              '{domain.phone}'          => ts('Domain (organization) phone'),
                              '{domain.email}'          => ts('Domain (organization) email'),
                              '{mailing.name}'          => ts('Mailing name'),
-                             '{mailing.group}'         => ts('Mailing group')    
+                             '{mailing.group}'         => ts('Mailing group'),
+                             '{mailing.viewUrl}'	   => ts('Mailing permalink'),
+                          );
+        }
+        return $tokens;
+    }
+    
+    /**
+     * different type of Activity Tokens
+     *
+     * @static
+     * return array
+     */
+    static function &activityTokens( ) 
+    {
+        static $tokens = null;
+
+        if (! $tokens ) {
+            $tokens = array( 
+                            '{activity.activity_id}' => ts('Activity ID'),
+                            '{activity.subject}' => ts('Activity Subject'),
+                            '{activity.details}' => ts('Activity Details'),
+                            
                           );
         }
         return $tokens;
@@ -573,18 +598,17 @@ class CRM_Core_SelectValues
                                  'is_deceased','deceased_date','legal_identifier','contact_sub_type', 'user_unique_id'
                                  );
             $customFields = array();
-			//NYSS make sure address tokens are constructed correctly
-            $customFieldsIndiv = CRM_Core_BAO_CustomField::getFields('Individual');
-			$customFieldsAddress = CRM_Core_BAO_CustomField::getFields('Address');
-			$customFields = $customFieldsIndiv + $customFieldsAddress;
+            $customFields = CRM_Core_BAO_CustomField::getFields('Individual');
+            $customFieldsAddress = CRM_Core_BAO_CustomField::getFields('Address');
+            $customFields = $customFields + $customFieldsAddress;
             
             foreach($values as $key => $val) {
                 if ( in_array($val, $skipTokens) ) {
                     continue;
-                }
+                } 
                 //keys for $tokens should be constant. $token Values are changed for Custom Fields. CRM-3734
                 if ( $customFieldId = CRM_Core_BAO_CustomField::getKeyID( $val ) ) {
-                    $tokens["{contact.$val}"] = $customFields[$customFieldId]['label']." :: ".$customFields[$customFieldId]['groupTitle'];
+                   $tokens["{contact.$val}"] =  CRM_Utils_Array::value($customFieldId, $customFields) ? $customFields[$customFieldId]['label']." :: ".$customFields[$customFieldId]['groupTitle'] : '';
                 } else {
                     $tokens["{contact.$val}"] = $exportFields[$val]['title'];
                 }
@@ -694,7 +718,7 @@ class CRM_Core_SelectValues
                                    "d M yy"        => 'j M Y',
                                    "MM d, yy"      => 'F j, Y',
                                    "d MM yy"       => 'j F Y',
-                                   "DD, d MM yy"   => 'l, j F Y',                                   
+                                   "DD, d MM yy"   => 'l, j F Y',                               
                                    "mm/dd"         => 'm/d',
                                    "dd-mm"         => 'd-m',
                                    "yy-mm"         => 'Y-m',

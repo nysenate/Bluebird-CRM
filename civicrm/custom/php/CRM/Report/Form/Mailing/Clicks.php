@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -359,7 +359,7 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 		$mailing->query($query);
 		
 		while($mailing->fetch()) {
-			$data[mysql_real_escape_string($mailing->name)] = $mailing->name; //NYSS escape option list
+			$data[mysql_real_escape_string($mailing->name)] = $mailing->name;
 		}
 
 		return $data;
