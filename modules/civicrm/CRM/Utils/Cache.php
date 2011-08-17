@@ -77,6 +77,9 @@ class CRM_Utils_Cache {
             } else if ( defined( 'CIVICRM_USE_ARRAYCACHE' ) && CIVICRM_USE_ARRAYCACHE) { //NYSS
                 require_once 'CRM/Utils/Cache/Arraycache.php';
                 self::$_singleton = new CRM_Utils_Cache_Arraycache();
+
+            } else {
+                self::$_singleton = new CRM_Utils_Cache();
             }
         }
         return self::$_singleton;
