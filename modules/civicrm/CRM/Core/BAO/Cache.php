@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -168,6 +168,31 @@ WHERE       group_name = 'CiviCRM Session'
 AND         created_date < date_sub( NOW( ), INTERVAL $cacheTimeIntervalDays day )
 ";
             CRM_Core_DAO::executeQuery( $sql );
+
+            // also delete all the action temp tables
+            // that were created the same interval ago
+            $dao = new CRM_Core_DAO( );
+            $query = "
+SELECT TABLE_NAME as tableName
+FROM   INFORMATION_SCHEMA.TABLES
+WHERE  TABLE_SCHEMA = %1 
+AND    ( TABLE_NAME LIKE 'civicrm_task_action_temp_%' 
+ OR      TABLE_NAME LIKE 'civicrm_export_temp_%' )
+AND    CREATE_TIME < date_sub( NOW( ), INTERVAL $cacheTimeIntervalDays day )
+";
+
+            $params = array( 1 => array( $dao->database(), 'String' ) );
+            $tableDAO = CRM_Core_DAO::executeQuery( $query, $params );
+            $tables = array();
+            while ( $tableDAO->fetch() ) {
+                $tables[] = $tableDAO->tableName;
+            }
+            if ( !empty( $tables ) ) {
+                $table = implode(',', $tables);
+                // drop leftover temporary tables
+                CRM_Core_DAO::executeQuery( "DROP TABLE $table" );
+            }
+
         }
     }
                                          

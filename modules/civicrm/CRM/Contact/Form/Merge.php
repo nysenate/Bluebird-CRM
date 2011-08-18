@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -60,57 +60,103 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
 
     function preProcess()
     {
-        require_once 'api/v2/Contact.php';
         require_once 'CRM/Core/BAO/CustomGroup.php';
         require_once 'CRM/Core/OptionGroup.php';
         require_once 'CRM/Core/OptionValue.php';
-       if ( ! CRM_Core_Permission::check( 'merge duplicate contacts' ) ) {
+        if ( ! CRM_Core_Permission::check( 'merge duplicate contacts' ) ) {
             CRM_Core_Error::fatal( ts( 'You do not have access to this page' ) );
         }
 
-        $cid   = CRM_Utils_Request::retrieve('cid', 'Positive', $this, true);
-        $oid   = CRM_Utils_Request::retrieve('oid', 'Positive', $this, true);
-        $rgid  = CRM_Utils_Request::retrieve('rgid','Positive', $this, false);
-        $gid   = CRM_Utils_Request::retrieve('gid','Positive', $this, false);
+        $cid  = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true );
+        $oid  = CRM_Utils_Request::retrieve( 'oid', 'Positive', $this, true );
+        $flip = CRM_Utils_Request::retrieve( 'flip', 'Positive', $this, false );
+
+        $this->_rgid = $rgid = CRM_Utils_Request::retrieve( 'rgid','Positive', $this, false );
+        $this->_gid  = $gid  = CRM_Utils_Request::retrieve( 'gid', 'Positive', $this, false );
+        $this->_mergeId      = CRM_Utils_Request::retrieve( 'mergeId', 'Positive', $this, false );
+
+        require_once 'CRM/Dedupe/BAO/Rule.php';
+        CRM_Dedupe_BAO_Rule::validateContacts( $cid, $oid );
+
+        //load cache mechanism 
+        require_once 'CRM/Core/BAO/PrevNextCache.php';
+        $contactType = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $cid, 'contact_type' );
+        $cacheKey  = "merge $contactType";
+        $cacheKey .= $rgid ? "_{$rgid}" : '_0';
+        $cacheKey .= $gid  ? "_{$gid}"  : '_0';
         
-        self::validateContacts( $cid, $oid );
-        
+        $join  = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
+                                                             pn.entity_id2 = de.contact_id2 )";
+        $where = "de.id IS NULL";   
+
+        $pos = CRM_Core_BAO_PrevNextCache::getPositions( $cacheKey, $cid, $oid, $this->_mergeId, $join, $where, $flip  );
+ 
         // Block access if user does not have EDIT permissions for both contacts.
         require_once 'CRM/Contact/BAO/Contact/Permission.php';
-        if ( ! ( CRM_Contact_BAO_Contact_Permission::allow( $cid, CRM_Core_Permission::EDIT ) 
-                 && CRM_Contact_BAO_Contact_Permission::allow( $oid, CRM_Core_Permission::EDIT ) ) ) {
+        if ( ! ( CRM_Contact_BAO_Contact_Permission::allow( $cid, CRM_Core_Permission::EDIT ) && 
+                 CRM_Contact_BAO_Contact_Permission::allow( $oid, CRM_Core_Permission::EDIT ) ) ) {
             CRM_Utils_System::permissionDenied( );
         }
         
         // get user info of main contact.
         $config = CRM_Core_Config::singleton( );
+        $config->doNotResetCache = 1;
+
         require_once 'CRM/Core/Permission.php';
-        $viewUser = CRM_Core_Permission::check('access user profiles');
+        $viewUser = CRM_Core_Permission::check( 'access user profiles' );
         $mainUfId = CRM_Core_BAO_UFMatch::getUFId( $cid );
+        $mainUser = null;
         if ( $mainUfId ) {
-           
             if ( $config->userFramework == 'Drupal' ) {
                 $mainUser = user_load( $mainUfId );
             } else if ( $config->userFramework == 'Joomla' ) {
                 $mainUser = JFactory::getUser( $mainUfId );
             }
+            
+            $this->assign( 'mainUfId', $mainUfId );
+            $this->assign( 'mainUfName', $mainUser->name );
         }
-        
-        $this->assign( 'mainUfId', $mainUfId );
-        $this->assign( 'mainUfName', $mainUser->name );
-        
+
+        $flipUrl = CRM_Utils_system::url( 'civicrm/contact/merge', 
+                                          "reset=1&action=update&cid={$oid}&oid={$cid}&rgid={$rgid}&gid={$gid}" );
+        if ( !$flip ) {
+            $flipUrl .= '&flip=1';
+        }
+        $this->assign( 'flip', $flipUrl );
+
+        $this->prev = $this->next = null;
+        foreach ( array( 'prev', 'next' ) as $position ) {
+            if ( !empty( $pos[$position] ) ) {
+                if ( $pos[$position]['id1'] && $pos[$position]['id2'] ) {
+                    $urlParam = "reset=1&cid={$pos[$position]['id1']}&oid={$pos[$position]['id2']}&mergeId={$pos[$position]['mergeId']}&action=update";
+
+                    if ( $rgid ) {
+                        $urlParam .= "&rgid={$rgid}";
+                    }
+                    if ( $gid ) {
+                        $urlParam .= "&gid={$gid}";
+                    }
+                    
+                    $this->$position = CRM_Utils_system::url( 'civicrm/contact/merge', $urlParam );
+                    $this->assign( $position, $this->$position );
+                }
+            }
+        }
+
         // get user info of other contact.
         $otherUfId = CRM_Core_BAO_UFMatch::getUFId( $oid );
+        $otherUser = null;
+
         if ( $otherUfId ) {
             if ( $config->userFramework == 'Drupal' ) {
                 $otherUser = user_load( $otherUfId );
             } else if ( $config->userFramework == 'Joomla' ) {
                 $otherUser = JFactory::getUser( $otherUfId );
             }
-        }
         
-        $this->assign( 'otherUfId', $otherUfId );
-        $this->assign( 'otherUfName', $otherUser->name );
+            $this->assign( 'otherUfId', $otherUfId );
+            $this->assign( 'otherUfName', $otherUser->name );
+        }
         
         $cmsUser = ( $mainUfId && $otherUfId ) ? true : false;  
         $this->assign( 'user', $cmsUser );
@@ -120,7 +166,9 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         // context fixed.
         if ( $rgid ) {
             $urlParam = "reset=1&action=browse&rgid={$rgid}";
-            if ( $gid ) $urlParam .= "&gid={$gid}";
+            if ( $gid ) {
+                $urlParam .= "&gid={$gid}";
+            }
             $session->pushUserContext( CRM_Utils_system::url( 'civicrm/contact/dedupefind', $urlParam ) );
         }
         
@@ -135,6 +183,13 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         
         $diffs = CRM_Dedupe_Merger::findDifferences($cid, $oid);
         
+        $mainParams  = array('contact_id' => $cid, 'return.display_name' => 1, 'return.contact_sub_type' => 1, 'version' => 2);
+        $otherParams = array('contact_id' => $oid, 'return.display_name' => 1, 'return.contact_sub_type' => 1, 'version' => 2);
+        // API 2 has to have the requested fields spelt-out for it
+        foreach (CRM_Dedupe_Merger::$validFields as $field) {
+            $mainParams["return.$field"] = $otherParams["return.$field"] = 1;
+        }
+
         $mainParams  = array('contact_id' => $cid, 'return.display_name' => 1, 'return.contact_sub_type' => 1);
         $otherParams = array('contact_id' => $oid, 'return.display_name' => 1, 'return.contact_sub_type' => 1);
         // API 2 has to have the requested fields spelt-out for it
@@ -159,8 +214,12 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         $subtypes = CRM_Contact_BAO_ContactType::subTypePairs( null, true, '' );
 
         $this->assign('contact_type', $main['contact_type']);
-        $this->assign('main_contact_subtype',  $subtypes[$main['contact_sub_type']]);
-        $this->assign('other_contact_subtype', $subtypes[$other['contact_sub_type']]);
+        if(isset($main['contact_sub_type'])) {
+            $this->assign('main_contact_subtype',  CRM_Utils_Array::value( 'contact_sub_type', $subtypes[$main['contact_sub_type']] ) );
+        }
+        if(isset($other['contact_sub_type'])) {
+            $this->assign('other_contact_subtype', CRM_Utils_Array::value( 'contact_sub_type', $subtypes[$other['contact_sub_type']] ) );
+        }
         $this->assign('main_name',    $main['display_name']);
         $this->assign('other_name',   $other['display_name']);
         $this->assign('main_cid',     $main['contact_id']);
@@ -172,18 +231,18 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         $this->_contactType = $main['contact_type'];
         $this->addElement('checkbox', 'toggleSelect', null, null, array('onclick' => "return toggleCheckboxVals('move_',this);"));
 
-        require_once "CRM/Contact/DAO/Contact.php";
+        require_once 'CRM/Contact/DAO/Contact.php';
         $fields =& CRM_Contact_DAO_Contact::fields();
 
         // FIXME: there must be a better way
         foreach (array('main', 'other') as $moniker) {
             $contact =& $$moniker;
-            $specialValues[$moniker] = array('preferred_communication_method' => $contact['preferred_communication_method']);
+            $specialValues[$moniker] = array('preferred_communication_method' => CRM_Utils_array::value('preferred_communication_method', $contact));
             $names = array('preferred_communication_method' => array('newName'   => 'preferred_communication_method_display',
                                                                      'groupName' => 'preferred_communication_method'));
             CRM_Core_OptionGroup::lookupValues($specialValues[$moniker], $names);
         }
-        foreach (CRM_Core_OptionValue::getFields() as $field => $params) {
+        foreach ( CRM_Core_OptionValue::getFields() as $field => $params ) {
             $fields[$field]['title'] = $params['title'];
         }
 
@@ -192,23 +251,31 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
             foreach (array('main', 'other') as $moniker) {
                 $contact =& $$moniker;
                 $value = CRM_Utils_Array::value( $field, $contact );
-                $label = isset($specialValues[$moniker][$field]) ? $specialValues[$moniker]["{$field}_display"] : $value;
-                if ($fields[$field]['type'] == CRM_Utils_Type::T_DATE) {
+                $label = isset( $specialValues[$moniker][$field] ) ? $specialValues[$moniker]["{$field}_display"] : $value;
+                if ( CRM_Utils_Array::value( 'type', $fields[$field] ) && $fields[$field]['type'] == CRM_Utils_Type::T_DATE ) {
                     if ( $value ) {
-                        $value = str_replace('-', '', $value);
-                        $label = CRM_Utils_Date::customFormat($label);
+                        $value = str_replace( '-', '', $value );
+                        $label = CRM_Utils_Date::customFormat( $label );
                     } else {
                         $value = "null";
                     }
-                } elseif ($fields[$field]['type'] == CRM_Utils_Type::T_BOOLEAN) {
-                    if ($label === '0') $label = ts('[ ]');
-                    if ($label === '1') $label = ts('[x]');
+                } elseif ( CRM_Utils_Array::value( 'type', $fields[$field] ) && $fields[$field]['type'] == CRM_Utils_Type::T_BOOLEAN ) {
+                    if ( $label === '0' ) {
+                        $label = ts('[ ]');
+                    }
+                    if ( $label === '1' ) {
+                        $label = ts('[x]');
+                    }
                 }
                 $rows["move_$field"][$moniker] = $label;
-                if ($moniker == 'other') {
-                    if ($value === null) $value = 'null';
-                    if ($value === 0 or $value === '0') $value = $this->_qfZeroBug;
-                    $this->addElement('advcheckbox', "move_$field", null, null, null, $value);
+                if ( $moniker == 'other' ) {
+                    if ( $value === null ) {
+                        $value = 'null';
+                    }
+                    if ( $value === 0 or $value === '0' ) {
+                        $value = $this->_qfZeroBug;
+                    }
+                    $this->addElement( 'advcheckbox', "move_$field", null, null, null, $value );
                 }
             }
             $rows["move_$field"]['title'] = $fields[$field]['title'];
@@ -216,7 +283,7 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         
         // handle location blocks.
         require_once 'api/v2/Location.php';
-        $mainParams['version'] = $otherParams['version'] = '3.0';
+        $mainParams['version'] = $otherParams['version'] = 3;
         
         $locations['main']  =& civicrm_location_get($mainParams);
         $locations['other'] =& civicrm_location_get($otherParams);
@@ -230,14 +297,13 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
                 
                 if ( empty( $blockValue ) ) {
                     $locValue[$moniker][$name] = 0;
-                    $locLabel[$moniker][$name] = array( );
-                    $locTypes[$moniker][$name] = array( );
+                    $locLabel[$moniker][$name] = $locTypes[$moniker][$name] = array( );
                 } else {
                     $locValue[$moniker][$name] = true; 
                     foreach ( $blockValue as $count => $blkValues ) {
                         $fldName   = $name;
                         $locTypeId = $blkValues['location_type_id'];
-                        if ( $name == 'im'      ) $fldName = 'name';
+                        if ( $name == 'im' ) $fldName = 'name';
                         if ( $name == 'address' ) $fldName = 'display';
                         $locLabel[$moniker][$name][$count] = $blkValues[$fldName];
                         $locTypes[$moniker][$name][$count] = $locTypeId;
@@ -334,17 +400,22 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
                 unset($relTables[$name]);
                 continue;
             }
-            $this->addElement('checkbox', "move_$name");
+            $el = $this->addElement('checkbox', "move_$name");
+            $el->setChecked (true);
             $relTables[$name]['main_url']  = str_replace('$cid', $cid, $relTables[$name]['url']);
             $relTables[$name]['other_url'] = str_replace('$cid', $oid, $relTables[$name]['url']);
             if ( $name == 'rel_table_users' ) {
                 $relTables[$name]['main_url']    = str_replace('$ufid', $mainUfId,  $relTables[$name]['url']);
                 $relTables[$name]['other_url']   = str_replace('$ufid', $otherUfId, $relTables[$name]['url']);
                 $find = array( '$ufid', '$ufname');
-                $replace = array( $mainUfId, $mainUser->name );
-                $relTables[$name]['main_title']  = str_replace( $find, $replace, $relTables[$name]['title']);
-                $replace = array( $otherUfId, $otherUser->name );
-                $relTables[$name]['other_title'] = str_replace( $find, $replace, $relTables[$name]['title']);
+                if($mainUser) {
+                    $replace = array( $mainUfId, $mainUser->name );
+                    $relTables[$name]['main_title']  = str_replace( $find, $replace, $relTables[$name]['title']);
+                }
+                if($otherUser) {
+                    $replace = array( $otherUfId, $otherUser->name );
+                    $relTables[$name]['other_title'] = str_replace( $find, $replace, $relTables[$name]['title']);
+                }
             }
             if ( $name == 'rel_table_memberships' ) {
                 $this->addElement('checkbox', "operation[move_{$name}][add]", null, ts('add new'));
@@ -369,13 +440,33 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
 
     public function buildQuickForm()
     {
-        CRM_Utils_System::setTitle(ts('Merge Contacts'));
-        $this->addButtons(array(
-            array('type' => 'next',   'name' => ts('Merge'), 'isDefault' => true),
-            array('type' => 'cancel', 'name' => ts('Cancel')),
-        ));
+        CRM_Utils_System::setTitle( ts( 'Merge %1s', array( 1 => $this->_contactType ) ) );
+        $name = ts('Merge');
+        if ( $this->next ) {
+            $name = ts('Merge and Goto Next Pair');
+        }
+        
+        if ( $this->next || $this->prev ) {
+            $button = array(                                 
+                            array( 'type' => 'next',   
+                                   'name' => $name,
+                                   'isDefault' => true ),
+                            array( 'type' => 'submit',
+                                   'name' => ts('Merge and Goto Listing') ),  
+                            array( 'type' => 'cancel',
+                                   'name' => ts('Cancel') ) );
+        } else {
+            $button = array(                                 
+                            array( 'type' => 'next',   
+                                   'name' => $name,
+                                   'isDefault' => true ),
+                            array( 'type' => 'cancel',
+                                   'name' => ts('Cancel') ) );
+        }
+        
+        $this->addButtons( $button );
     }
-
+    
     public function postProcess()
     {
         $formValues = $this->exportValues();
@@ -388,9 +479,8 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         }
         
         $relTables =& CRM_Dedupe_Merger::relTables();
-        $moveTables = $locBlocks = array( );
-        $tableOperations = array( );
-        foreach ($formValues as $key => $value) {
+        $moveTables = $locBlocks = $tableOperations = array( );
+        foreach ( $formValues as $key => $value ) {
             if ($value == $this->_qfZeroBug) $value = '0';
             if ((in_array(substr($key, 5), CRM_Dedupe_Merger::$validFields) or 
                  substr($key, 0, 12) == 'move_custom_') and $value != null) {
@@ -481,35 +571,39 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         }
         
         // FIXME: fix gender, prefix and postfix, so they're edible by createProfileContact()
-        $names['gender']            = array('newName' => 'gender_id',          'groupName' => 'gender');
-        $names['individual_prefix'] = array('newName' => 'prefix_id',          'groupName' => 'individual_prefix');
-        $names['individual_suffix'] = array('newName' => 'suffix_id',          'groupName' => 'individual_suffix');
-        $names['addressee']         = array('newName' => 'addressee_id',       'groupName' => 'addressee');
-        $names['email_greeting']    = array('newName' => 'email_greeting_id',  'groupName' => 'email_greeting');
-        $names['postal_greeting']   = array('newName' => 'postal_greeting_id', 'groupName' => 'postal_greeting');
-        CRM_Core_OptionGroup::lookupValues($submitted, $names, true);
+        $names['gender']            = array( 'newName' => 'gender_id',          'groupName' => 'gender' );
+        $names['individual_prefix'] = array( 'newName' => 'prefix_id',          'groupName' => 'individual_prefix' );
+        $names['individual_suffix'] = array( 'newName' => 'suffix_id',          'groupName' => 'individual_suffix' );
+        $names['addressee']         = array( 'newName' => 'addressee_id',       'groupName' => 'addressee' );
+        $names['email_greeting']    = array( 'newName' => 'email_greeting_id',  'groupName' => 'email_greeting' );
+        $names['postal_greeting']   = array( 'newName' => 'postal_greeting_id', 'groupName' => 'postal_greeting' );
+        CRM_Core_OptionGroup::lookupValues( $submitted, $names, true );
 
         // FIXME: fix custom fields so they're edible by createProfileContact()
-        $cgTree =& CRM_Core_BAO_CustomGroup::getTree($this->_contactType, $this, null, -1);
+        $cgTree =& CRM_Core_BAO_CustomGroup::getTree( $this->_contactType, $this, null, -1 );
         
         $cFields = array( );
-        foreach ($cgTree as $key => $group) {
+        foreach ( $cgTree as $key => $group ) {
             if (!isset($group['fields'])) continue;
-            foreach ($group['fields'] as $fid => $field) {
+            foreach ( $group['fields'] as $fid => $field ) {
                 $cFields[$fid]['attributes'] = $field;
             }
         }
         
-        if (!isset($submitted)) $submitted = array();
-        foreach ($submitted as $key => $value) {
-            if (substr($key, 0, 7) == 'custom_') {
+        if ( !isset( $submitted ) ) {
+            $submitted = array();
+        }
+        foreach ( $submitted as $key => $value ) {
+            if ( substr( $key, 0, 7 ) == 'custom_' ) {
                 $fid = (int) substr($key, 7);
                 $htmlType = $cFields[$fid]['attributes']['html_type'];
                 switch ( $htmlType ) {
+                    
                 case 'File':
                     $customFiles[] = $fid;
                     unset($submitted["custom_$fid"]);
                     break;
+
                 case 'Select Country':
                 case 'Select State/Province':
                     $submitted[$key] = CRM_Core_BAO_CustomField::getDisplayValue($value, $fid, $cFields);
@@ -541,13 +635,13 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
                             }
                             
                             //keep state and country as array format. 
-                            //for checkbox and m-select format w/ VALUE_SEPERATOR
+                            //for checkbox and m-select format w/ VALUE_SEPARATOR
                             if ( in_array( $htmlType, array( 'CheckBox', 'Multi-Select', 'AdvMulti-Select' ) ) ) {
                                 $submitted[$key] = 
-                                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR . 
-                                    implode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+                                    CRM_Core_DAO::VALUE_SEPARATOR .
+                                    implode( CRM_Core_DAO::VALUE_SEPARATOR,
                                              $mergeValue ) .
-                                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR;
+                                    CRM_Core_DAO::VALUE_SEPARATOR;
                             } else {
                                 $submitted[$key] = $mergeValue; 
                             }
@@ -575,8 +669,8 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         }
 
         // handle the related tables
-        if (isset($moveTables)) {
-            CRM_Dedupe_Merger::moveContactBelongings($this->_cid, $this->_oid, $moveTables, $tableOperations);
+        if ( isset( $moveTables ) ) {
+            CRM_Dedupe_Merger::moveContactBelongings( $this->_cid, $this->_oid, $moveTables, $tableOperations );
         }
         
         // move file custom fields
@@ -589,9 +683,11 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         require_once 'CRM/Core/DAO/EntityFile.php';
         require_once 'CRM/Core/Config.php';
 
-        if (!isset($customFiles)) $customFiles = array();
-        foreach ($customFiles as $customId) {
-            list($tableName, $columnName, $groupID) = CRM_Core_BAO_CustomField::getTableColumnGroup($customId);
+        if ( !isset( $customFiles ) ) {
+            $customFiles = array();
+        }
+        foreach ( $customFiles as $customId ) {
+            list( $tableName, $columnName, $groupID ) = CRM_Core_BAO_CustomField::getTableColumnGroup( $customId );
 
             // get the contact_id -> file_id mapping
             $fileIds = array();
@@ -631,41 +727,63 @@ class CRM_Contact_Form_Merge extends CRM_Core_Form
         }
         
         // move other's belongings and delete the other contact
-        CRM_Dedupe_Merger::moveContactBelongings($this->_cid, $this->_oid);
+        CRM_Dedupe_Merger::moveContactBelongings( $this->_cid, $this->_oid );
         $otherParams = array('contact_id' => $this->_oid);
-        if ( CRM_Core_Permission::check( 'merge duplicate contacts' ) && CRM_Core_Permission::check( 'delete contacts' )) {
+
+        if ( CRM_Core_Permission::check( 'merge duplicate contacts' ) && 
+             CRM_Core_Permission::check( 'delete contacts' ) ) {
             // if ext id is submitted then set it null for contact to be deleted
             if ( CRM_Utils_Array::value( 'external_identifier', $submitted ) ) {
                 $query = "UPDATE civicrm_contact SET external_identifier = null WHERE id = {$this->_oid}";
                 CRM_Core_DAO::executeQuery( $query );
             }
             civicrm_contact_delete($otherParams);
+            CRM_Core_BAO_PrevNextCache::deleteItem( $this->_oid );
         } else {
-            CRM_Core_Session::setStatus(ts('Do not have sufficient permission to delete duplicate contact.'));
+            CRM_Core_Session::setStatus( ts('Do not have sufficient permission to delete duplicate contact.') );
         }
         
-        if (isset($submitted)) {
+        if ( isset( $submitted ) ) {
             $submitted['contact_id'] = $this->_cid;
-            CRM_Contact_BAO_Contact::createProfileContact($submitted, CRM_Core_DAO::$_nullArray, $this->_cid);
+            CRM_Contact_BAO_Contact::createProfileContact( $submitted, CRM_Core_DAO::$_nullArray, $this->_cid );
         }
-        CRM_Core_Session::setStatus(ts('The contacts have been merged.'));
+        CRM_Core_Session::setStatus( ts('The contacts have been merged.') );
         $url = CRM_Utils_System::url( 'civicrm/contact/view', "reset=1&cid={$this->_cid}" );
-        CRM_Utils_System::redirect($url);
-    }
-    
-    function validateContacts( $cid, $oid ) {
-        if ( !$cid || !$oid ) return; 
-        require_once 'CRM/Dedupe/DAO/Exception.php';
-        $exception = new CRM_Dedupe_DAO_Exception( );
-        $exception->contact_id1 = $cid;
-        $exception->contact_id2 = $oid;
-        //make sure contact2 > contact1.
-        if ( $cid > $oid ) {
-            $exception->contact_id1 = $oid;
-            $exception->contact_id2 = $cid;
+        if ( CRM_Utils_Array::value('_qf_Merge_submit',$formValues) ) {
+            $listParamsURL =  "reset=1&action=update&rgid={$this->_rgid}";
+            if ( $this->_gid ) {
+                $listParamsURL .= "&gid={$this->_gid}";
+            }
+            $lisitingURL = CRM_Utils_System::url( 'civicrm/contact/dedupefind', 
+                                                  $listParamsURL
+                                                  );
+            CRM_Utils_System::redirect( $lisitingURL );
         }
-        if ( $exception->find( true ) ) {
-            CRM_Core_Error::fatal( ts( 'Oops, these contacts seems to be marked as non duplicates.' ) );
+      
+        if ( $this->next && $this->_mergeId ) {
+            $cacheKey  = "merge {$this->_contactType}";
+            $cacheKey .= $this->_rgid ? "_{$this->_rgid}" : '_0';
+            $cacheKey .= $this->_gid  ? "_{$this->_gid}"  : '_0';
+        
+            $join  = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
+                                                                 pn.entity_id2 = de.contact_id2 )";
+            $where = "de.id IS NULL";   
+
+            $pos = CRM_Core_BAO_PrevNextCache::getPositions( $cacheKey, null, null, $this->_mergeId, $join, $where );
+
+            if ( !empty($pos) &&
+                 $pos['next']['id1'] && 
+                 $pos['next']['id2'] ) {
+
+                $urlParam = "reset=1&cid={$pos['next']['id1']}&oid={$pos['next']['id2']}&mergeId={$pos['next']['mergeId']}&action=update";
+                if ( $this->_rgid ) $urlParam .= "&rgid={$this->_rgid}";
+                if ( $this->_gid )  $urlParam .= "&gid={$this->_gid}";
+                
+                $url  = CRM_Utils_system::url( 'civicrm/contact/merge', $urlParam );
+            }
         }
+
+        CRM_Utils_System::redirect( $url );
     }
+        
 }

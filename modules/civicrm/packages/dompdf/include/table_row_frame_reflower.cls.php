@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: table_row_frame_reflower.cls.php,v 1.4 2006/07/07 21:31:04 benjcarson Exp $ */
+/* $Id: table_row_frame_reflower.cls.php 357 2011-01-30 20:56:46Z fabien.menager $ */
 
 /**
  * Reflows table rows
@@ -51,21 +51,24 @@ class Table_Row_Frame_Reflower extends Frame_Reflower {
   function __construct(Table_Row_Frame_Decorator $frame) {
     parent::__construct($frame);
   }
-  
-  //........................................................................ 
 
-  function reflow() {
+  //........................................................................
+
+  function reflow(Frame_Decorator $block = null) {
     $page = $this->_frame->get_root();
 
     if ( $page->is_full() )
       return;
-    
+
     $this->_frame->position();
     $style = $this->_frame->get_style();
     $cb = $this->_frame->get_containing_block();
-    
+
     foreach ($this->_frame->get_children() as $child) {
-      
+
+      if ( $page->is_full() )
+        return;
+
       $child->set_containing_block($cb);
       $child->reflow();
 
@@ -82,11 +85,10 @@ class Table_Row_Frame_Reflower extends Frame_Reflower {
     $this->_frame->set_position($cellmap->get_frame_position($this->_frame));
 
   }
-  
+
   //........................................................................
 
   function get_min_max_width() {
     throw new DOMPDF_Exception("Min/max width is undefined for table rows");
   }
-}  
-?>
+}

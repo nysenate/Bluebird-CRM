@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -47,12 +47,12 @@
                 <span class="description">{ts}Set this value to <strong>Yes</strong> if you want to display a backtrace listing when a fatal error is encountered. <strong>This feature should NOT be enabled for production sites</strong>{/ts}</span></td>
             </tr>
             <tr class="crm-debugging-form-block-fatalErrorTemplate">
-                <td>{$form.fatalErrorTemplate.label}</td>
+                <td class="label">{$form.fatalErrorTemplate.label}</td>
                 <td>{$form.fatalErrorTemplate.html}<br />
                 <span class="description">{ts}Enter the path and filename for a custom Smarty template if you want to define your own screen for displaying fatal errors.{/ts}</span></td>
             </tr>
             <tr class="crm-debugging-form-block-fatalErrorHandler">
-                <td>{$form.fatalErrorHandler.label}</td>
+                <td class="label">{$form.fatalErrorHandler.label}</td>
                 <td>{$form.fatalErrorHandler.html}<br />
                 <span class="description">{ts}Enter the path and class for a custom PHP error-handling function if you want to override built-in CiviCRM error handling for your site.{/ts}</span></td>
             </tr>

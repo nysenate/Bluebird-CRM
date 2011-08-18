@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -187,22 +187,35 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form
     public function buildQuickForm( ) 
     {
         $session = CRM_Core_Session::singleton();
-        
+        $config  = CRM_Core_Config::singleton();
+        $options = array( );
+        $tempVar = false;
+        $session->getVars( $options, "CRM_Mailing_Controller_Send_{$this->controller->_key}");
+                                
         require_once 'CRM/Core/PseudoConstant.php';
-        $formEmailAddress = CRM_Core_PseudoConstant::fromEmailAddress( 'from_email_address' );
-        if ( empty( $formEmailAddress ) ) {
+        $fromEmailAddress = CRM_Core_PseudoConstant::fromEmailAddress( 'from_email_address' );
+        if ( empty( $fromEmailAddress ) ) {
             //redirect user to enter from email address. 
             $url = CRM_Utils_System::url( 'civicrm/admin/options/from_email_address', 'group=from_email_address&action=add&reset=1' );
             $status = ts( "There is no valid from email address present. You can add here <a href='%1'>Add From Email Address.</a>", array( 1 => $url ) );
             $session->setStatus( $status );
         } else {
-            foreach ( $formEmailAddress as $key => $email ) {
-                $formEmailAddress[$key] = htmlspecialchars( $formEmailAddress[$key] );
+            foreach ( $fromEmailAddress as $key => $email ) {
+                $fromEmailAddress[$key] = htmlspecialchars( $fromEmailAddress[$key] );
             }
         }
         
         $this->add( 'select', 'from_email_address', 
-                    ts( 'From Email Address' ), array( '' => '- select -' ) + $formEmailAddress, true );
+                    ts( 'From Email Address' ), array( '' => '- select -' ) + $fromEmailAddress, true );
+        
+        //Added code to add custom field as Reply-To on form when it is enabled from Mailer settings
+        if ( $config->replyTo && !CRM_Utils_Array::value( 'override_verp', $options ) ) {
+            $this->add( 'select', 'reply_to_address', ts( 'Reply-To' ), 
+                        array( '' => '- select -' ) + $fromEmailAddress, true );
+        } else if ( CRM_Utils_Array::value( 'override_verp', $options ) ) {
+            $trackReplies = true;
+            $this->assign( 'trackReplies', $trackReplies );
+        }
         
         $this->add('text', 'subject', ts('Mailing Subject'), 
                    CRM_Core_DAO::getAttribute( 'CRM_Mailing_DAO_Mailing', 'subject' ), true);
@@ -381,21 +394,29 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form
         $ids['mailing_id'] = $this->_mailingID;
         
         //handle mailing from name & address.
-        $formEmailAddress = CRM_Utils_Array::value( $formValues['from_email_address'],
+        $fromEmailAddress = CRM_Utils_Array::value( $formValues['from_email_address'],
                                                     CRM_Core_PseudoConstant::fromEmailAddress( 'from_email_address' ) );
         
         //get the from email address
         require_once 'CRM/Utils/Mail.php';
-        $params['from_email'] = CRM_Utils_Mail::pluckEmailFromHeader( $formEmailAddress );
+        $params['from_email'] = CRM_Utils_Mail::pluckEmailFromHeader( $fromEmailAddress );
         
         //get the from Name
-        $params['from_name'] = CRM_Utils_Array::value( 1, explode('"', $formEmailAddress ) );
+        $params['from_name'] = CRM_Utils_Array::value( 1, explode('"', $fromEmailAddress ) );
+
+        //Add Reply-To to headers
+        if ( CRM_Utils_Array::value( 'reply_to_address', $formValues ) ) {
+            $replyToEmail = CRM_Utils_Array::value( $formValues['reply_to_address'],
+                                                    CRM_Core_PseudoConstant::fromEmailAddress( 'from_email_address' ) );
+            $params['replyto_email'] = CRM_Utils_Mail::pluckEmailFromHeader( $replyToEmail );
+        }
         
         /* Build the mailing object */
         require_once 'CRM/Mailing/BAO/Mailing.php';
         CRM_Mailing_BAO_Mailing::create($params, $ids);
      
-        if ( $this->_submitValues['_qf_Upload_upload_save'] == 'Save & Continue Later' ) {
+        if ( isset($this->_submitValues['_qf_Upload_upload_save']) &&
+             $this->_submitValues['_qf_Upload_upload_save'] == 'Save & Continue Later' ) {
             //when user perform mailing from search context 
             //redirect it to search result CRM-3711.
             $ssID    = $this->get( 'ssID' );
@@ -423,12 +444,12 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form
                 
                 //replace user context to search.
                 $url = CRM_Utils_System::url( 'civicrm/contact/' . $fragment, $urlParams );
-                CRM_Utils_System::redirect( $url );
+                return $this->controller->setDestination($url);
             } else { 
                 $status = ts("Your mailing has been saved. Click the 'Continue' action to resume working on it.");
                 CRM_Core_Session::setStatus( $status );
                 $url = CRM_Utils_System::url( 'civicrm/mailing/browse/unscheduled', 'scheduled=false&reset=1' );
-                CRM_Utils_System::redirect($url);
+                return $this->controller->setDestination($url);
             }
         }
     }
@@ -466,7 +487,7 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form
         $mailing->find(true);
 
         $session = CRM_Core_Session::singleton();
-        $values = array('contact_id' => $session->get('userID'));
+        $values = array('contact_id' => $session->get('userID') );
         require_once 'api/v2/Contact.php';
         $contact =& civicrm_contact_get( $values );
         

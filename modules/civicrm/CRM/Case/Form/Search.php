@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -81,7 +81,7 @@ class CRM_Case_Form_Search extends CRM_Core_Form
      * @var array 
      * @access protected 
      */ 
-    protected $_formValues; 
+    public $_formValues; 
 
     /**
      * the params that are sent to the query
@@ -140,6 +140,8 @@ class CRM_Case_Form_Search extends CRM_Core_Form
      */ 
     function preProcess( ) 
     { 
+        $this->set( 'searchFormName', 'Search' );
+
         //check for civicase access.
         if ( !CRM_Case_BAO_Case::accessCiviCase( ) ) {
             CRM_Core_Error::fatal( ts( 'You are not authorized to access this page.' ) );
@@ -203,11 +205,11 @@ class CRM_Case_Form_Search extends CRM_Core_Form
        
         $this->_queryParams =& CRM_Contact_BAO_Query::convertFormValues( $this->_formValues ); 
         $selector = new CRM_Case_Selector_Search( $this->_queryParams,
-                                                   $this->_action,
-                                                   null,
-                                                   $this->_single,
-                                                   $this->_limit,
-                                                   $this->_context );
+                                                  $this->_action,
+                                                  null,
+                                                  $this->_single,
+                                                  $this->_limit,
+                                                  $this->_context );
  
         $prefix = null;
         if ( $this->_context == 'user' ) {
@@ -263,7 +265,7 @@ class CRM_Case_Form_Search extends CRM_Core_Form
                 foreach ($rows as $row) { 
                     $this->addElement( 'checkbox', $row['checkbox'], 
                                        null, null, 
-                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "', '" . $this->getName() . "');" )
+                                       array( 'onclick' => "toggleTaskAction( true ); return checkSelectedBox('" . $row['checkbox'] . "');" )
                                        ); 
                 }
             }

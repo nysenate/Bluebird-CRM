@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,7 +35,7 @@ function setStatusesTo(statusId)
     {/foreach}
     {literal}
     for (k = 0; k < cId.length; k++) {
-        document.getElementById("field_"+cId[k]+"_participant_status_id").value = statusId;
+        document.getElementById("field_"+cId[k]+"_participant_status").value = statusId;
     }
 }
 
@@ -71,8 +71,17 @@ function copyValues(fieldName, source)
                 }
             }
         } else {
+	    var copyHidden = false;
+            if ( document.getElementById(source).type == 'text' &&
+	         cj('#'+ source +'_id').length > 0 &&
+		 cj('#field_'+ cId[1] + '_' + fieldName + '_id').length > 0 ) {
+		 copyHidden = true;
+            }
             for ( k=0; k<cId.length; k++ ) {
                 document.getElementById("field_"+cId[k]+"_"+fieldName).value = document.getElementById(source).value;
+		if ( copyHidden ) {
+		  document.getElementById("field_"+cId[k]+"_"+fieldName+'_id').value = document.getElementById(source+'_id').value;
+		}
             }
         }
     } else if ( document.getElementsByName("field"+"["+cId[0]+"]"+"["+fieldName+"]") &&
@@ -141,14 +150,15 @@ function copyValuesDate(fieldName)
         {literal}cId[i++]{/literal} = {$field}
     {/foreach}
     {literal}
-    var firstDate = cj( "#field_" + cId[0] + '_' + fieldName ).val( );
+    var firstDate = cj( "#field_" + cId[0] + '_' + fieldName + '_display' ).val( );
     var firstTime = null;
     if( cj( "#field_" + cId[0] + '_' + fieldName + '_time') ){
     	firstTime = cj( "#field_" + cId[0] + '_' + fieldName + '_time' ).val( );
     }
  	cj(cId).each(function(i,id){
- 		cj( '#field_' + id + '_' + fieldName ).val( firstDate );
-		cj( '#field_' + id + '_' + fieldName + '_time').val( firstTime );
+        cj( '#field_' + id + '_' + fieldName + '_display' ).val( firstDate );
+        cj( '#field_' + id + '_' + fieldName ).val( firstDate );
+        cj( '#field_' + id + '_' + fieldName + '_time').val( firstTime );
  	});    
 }
 

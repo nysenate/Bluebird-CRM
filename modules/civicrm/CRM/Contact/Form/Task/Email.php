@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -81,6 +81,10 @@ class CRM_Contact_Form_Task_Email extends CRM_Contact_Form_Task {
         $this->_context = CRM_Utils_Request::retrieve( 'context', 'String', $this );
 
         $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, false );
+        if ( $cid ) {
+            require_once 'CRM/Contact/Page/View.php';
+            CRM_Contact_Page_View::setTitle( $cid );
+        }
 
         CRM_Contact_Form_Task_EmailCommon::preProcessFromAddress( $this );
 

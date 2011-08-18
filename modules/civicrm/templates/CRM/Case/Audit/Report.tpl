@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -134,7 +134,7 @@
              <th scope="row" class="label">{$field.label|escape}</th>
              {if $field.label eq 'Activity Type' or $field.label eq 'Status'}
                 <td class="bold">{$field.value|escape}</td> 
-             {elseif $field.label eq 'Details'}
+             {elseif $field.label eq 'Details' or $field.label eq 'Subject'}
                 <td>{$field.value}</td>
              {else} 
                 <td>{$field.value|escape}</td> 

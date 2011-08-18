@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -58,7 +58,7 @@ class CRM_Core_Payment_PayPalProIPN extends CRM_Core_Payment_BaseIPN {
             }
 
             if ( $value == null && $abort ) {
-                echo "Failure: Missing Parameter<p>";
+                echo "Failure: Missing Parameter $name<p>";
                 exit( );
             } else {
                 return $value;
@@ -102,8 +102,8 @@ class CRM_Core_Payment_PayPalProIPN extends CRM_Core_Payment_BaseIPN {
         // make sure the invoice is valid and matches what we have in
         // the contribution record
         if ( $recur->invoice_id != $input['invoice'] ) {
-            CRM_Core_Error::debug_log_message( "Invoice values dont match between database and IPN request" );
-            echo "Failure: Invoice values dont match between database and IPN request<p>";
+            CRM_Core_Error::debug_log_message( "Invoice values dont match between database and IPN request recur is " . $recur->invoice_id . " input is " . $input['invoice']);
+            echo "Failure: Invoice values dont match between database and IPN request recur is " . $recur->invoice_id . " input is " . $input['invoice'];
             return false;
         }
         
@@ -222,7 +222,7 @@ class CRM_Core_Payment_PayPalProIPN extends CRM_Core_Payment_BaseIPN {
         if ( ( ! $recur ) || ( $recur && $first ) ) {
             if ( $contribution->invoice_id != $input['invoice'] ) {
                 CRM_Core_Error::debug_log_message( "Invoice values dont match between database and IPN request" );
-                echo "Failure: Invoice values dont match between database and IPN request<p>";
+                echo "Failure: Invoice values dont match between database and IPN request<p>contribution is" . $contribution->invoice_id  . " and input is " .$input['invoice']  ;
                 return false;
             }
         } else {

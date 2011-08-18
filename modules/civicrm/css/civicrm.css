@@ -81,6 +81,7 @@ table.crm-table-group-summary tbody {
 
 #crm-container tr {
     font-size: .95em;
+    background: none;
 }
 
 #crm-container td,
@@ -96,20 +97,19 @@ table.crm-table-group-summary tbody {
     border-collapse: collapse;
 }
 
-#crm-container .row-selected {
+#crm-container .crm-row-selected {
     margin: 0px;
     padding: 3px 0px 3px 0px;
     clear: none;
+    background-color: #FFFFCC !important;
 }
 
 #crm-container .row-highlighted {
     margin: 0px;
     padding: 3px 0px 3px 0px;
     clear: none;
-    background-color: #FAFAD2;
+    background-color: #FFFFCC;
 }
-
-
 
 /*
 ** Size input fields in crm-container by class. Classes are assigned by the
@@ -163,13 +163,15 @@ div#crm-container {
 
 .crmasmContainer,
 .crmasmSelect,
+.crmasmSelectCampaigns,
 .crmtagContainer,
 .crmtagSelect {
     width:160px;
 }
 
 .crmasmSelect,
-.crmtagSelect {
+.crmtagSelect,
+.crmasmSelectCampaigns {
     padding:2px;	
 }
 
@@ -306,8 +308,14 @@ div.spacer,
 	font-size:14px;
 	font-weight:bold;
 	padding:4px;
-	}
-
+    background: none;
+    border: medium none;
+    background-color: transparent;
+    color: #3E3E3E;
+    position: relative;
+    text-indent: 0px;
+    width: auto;
+}
 
 
 #crm-container fieldset.form-layout {
@@ -443,6 +451,10 @@ div.spacer,
     border: 1px none;
 }
 
+#crm-container table.crm-profile-tagsandgroups {
+    margin-top: -1.25em;
+}
+
 #crm-container table.advmultiselect {
     margin: 0em;
     width: auto;
@@ -463,6 +475,7 @@ div.spacer,
     vertical-align: top;
     padding: 5px;
     white-space: normal;
+    border: none;
 }
 
 #crm-container .form-layout td.report, 
@@ -475,6 +488,7 @@ div.spacer,
 #crm-container .form-layout-compressed th {
     vertical-align: text-top;
     padding: 2px 5px;
+    border: none;
 }
 
 #crm-container .control-panel td {
@@ -532,6 +546,9 @@ div.spacer,
     padding-top: 10px;
 }
 
+#crm-container .button-disabled {
+    color: #CFCEC3!important;
+}
 
 #crm-container .form-layout-compressed td.describe-image {
     vertical-align: top;
@@ -714,7 +731,6 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
     background-image: url(menu-leaf.png);
 }
 
-#crm-container .crm-loading-element { background-image:url("../i/loading.gif"); width:20px; height:20px;}
 #crm-container .crm-form-block .crm-loading-element { background-image:url("../i/loading-E6E6DC.gif"); }
 
 #crm-container .crm-loading-element  {
@@ -798,6 +814,10 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
 #crm-container table.report, 
 #crm-container table.chart  {
     width: auto;
+}
+
+#crm-container .crm-flashchart {
+    overflow: scroll;
 }
 
 #crm-container td.enclosingNested {
@@ -1034,6 +1054,7 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
 
 /* Recently Viewed bar */
 .block-civicrm div#recently-viewed ul {
+    list-style-image: none;
     font-size: .9em;
     /* overflow: hidden; */
     margin: 0px;
@@ -1068,7 +1089,7 @@ div.block-civicrm li, #crm-container ul li, #crm-container ul.treeview li {
 .block-civicrm div#recently-viewed ul li.crm-recently-viewed ul {
     position:absolute;
     z-index : 99;
-    background-color:FFFFCC;
+    background-color:#FFFFCC;
     overflow:visible;
     list-style-type:none;
     margin:0px;
@@ -1564,7 +1585,7 @@ table.campaign td,
 
 #crm-container .panel {
     display  : none;
-    z-index  : 1;
+    z-index  : 9999;
     position : absolute;
     border-bottom:0px;
     background:transparent url(../i/dropdown-pointer.gif) no-repeat scroll 150px 1px;
@@ -1798,7 +1819,7 @@ div.grippie {
 
 #crm-container div.contact_panel td, 
 #crm-container div#contactTopBar td  {
-    padding:4px
+    padding:4px;
     vertical-align : top;
     border-bottom: 1px solid #E2E2E2;
 }
@@ -2024,6 +2045,7 @@ div.grippie {
 .ac_results-inner,
 .crm-participant-list-inner,
 .crm-event-links-list-inner,
+.crm-contribpage-links-list-inner,
 .crm-create-new-list-inner,
 .crm-contact-actions-list-inner  {
     background-color:#2f2f2e;
@@ -2074,6 +2096,7 @@ div.grippie {
 #crm-create-new-link,
 #crm-participant-link,
 #crm-event-links-link,
+#crm-contribpage-links-link,
 #crm-contact-actions-link,
 #crm-container a.button:link,
 #crm-container input.form-submit,
@@ -2113,6 +2136,7 @@ div.grippie {
 #crm-create-new-link,
 #crm-participant-link,
 #crm-event-links-link,
+#crm-contribpage-links-link,
 #crm-contact-actions-link,
 #crm-container a.button:link {
     display: block;
@@ -2123,6 +2147,7 @@ div.grippie {
 #crm-contact-actions-link span,
 #crm-participant-link span,
 #crm-event-links-link span,
+#crm-contribpage-links-link span,
 #crm-container a.button span {
     display: block;
     line-height: 14px;
@@ -2154,6 +2179,7 @@ div.grippie {
 
 #crm-participant-wrapper,
 #crm-event-links-wrapper,
+#crm-contribpage-links-wrapper,
 #crm-create-new-wrapper,
 #crm-contact-actions-wrapper{
 	position:relative;
@@ -2161,6 +2187,7 @@ div.grippie {
 	}
 
 #crm-event-links-list,
+#crm-contribpage-links-list,
 #crm-create-new-list,
 #crm-contact-actions-list,
 #crm-participant-list{
@@ -2195,6 +2222,9 @@ div.grippie {
 #crm-event-links-list .crm-event-info ul,
 #crm-event-links-list .crm-event-test ul,
 #crm-event-links-list .crm-event-live ul,
+#crm-contribpage-links-list .crm-contribpage-contribution ul,
+#crm-contribpage-links-list .crm-contribpage-test ul,
+#crm-contribpage-links-list .crm-contribpage-live ul,
 #crm-participant-list .crm-participant-counted ul,
 #crm-participant-list .crm-participant-not-counted ul,
 #crm-participant-list .crm-participant-listing ul,
@@ -2258,6 +2288,7 @@ span.icon {
 #crm-contact-actions-link .icon,
 #crm-participant-link .icon,
 #crm-event-links-link .icon,
+#crm-contribpage-links-link .icon,
 #crm-create-new-link .icon,
 .button .icon,
 .crm-button .icon {background-image:url("../i/icons/jquery-ui-FFFFFF.png");}
@@ -2270,8 +2301,8 @@ span.icon {
     color:#333;
 }
 
-.light-icon, .ui-widget-content .light-icon {background-image:url("../packages/jquery/jquery-ui-1.8.5/css/custom-theme/images/ui-icons_3e3e3e_256x240.png")}
-.dark-icon {background-image:url("../packages/jquery/jquery-ui-1.8.5/css/custom-theme/images/ui-icons_222222_256x240.png")}
+.light-icon, .ui-widget-content .light-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-icons_3e3e3e_256x240.png")}
+.dark-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-icons_222222_256x240.png")}
 .red-icon {background-image:url("../i/icons/jquery-ui-8A1F11.png")}
 
 .edit-icon { background-position: -66px -114px;}
@@ -2281,7 +2312,7 @@ span.icon {
 .delete-icon { background-position: -179px -99px;}
 .details-icon { background-position: -129px -112px;}
 .button:hover .delete-icon {
-    background-image:url("../packages/jquery/jquery-ui-1.8.5/css/custom-theme/images/ui-icons_8d2c27_256x240.png")!important;
+    background-image:url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-icons_8d2c27_256x240.png")!important;
 }
 
 .restore-icon { background-position:0px -66px;background-image:url("../i/icons/jquery-ui-91CE00.png"); }
@@ -2496,6 +2527,10 @@ span.icon {
     background       : white url('../i/loading.gif') no-repeat right center;
 }
 
+#crm-container .ac_loading {
+    background       : white url('../i/loading.gif') no-repeat right center;
+}
+
 /* Pop-up help icon - eliminate forced line break */
 div.helpicon {
     background  : transparent url(../i/quiz.png) no-repeat;
@@ -2525,7 +2560,7 @@ div.statusicon {
     width:16px;
     height:16px;
     overflow:hidden;
-    text-indent: -10000;
+    text-indent: -10000px;
 }
 
 
@@ -2541,6 +2576,8 @@ div#crm-toolTip {
     right:20px;
     width:500px;
     display:none;
+    max-height:500px;
+    overflow:auto;
 }
 
 div#crm-toolTip td {
@@ -2634,7 +2671,9 @@ div#crm-toolTip #hide-tooltip {
 /* "don't do this" icons */
 #crm-container div.contact_panel span.email-hold, 
 #crm-container div.contact_panel span.do-not-email, 
-#crm-container div.contact_panel span.do-not-phone {
+#crm-container div.contact_panel span.do-not-phone,
+#crm-container div.crm-search-results span.do-not-phone,
+#crm-container div.crm-search-results span.do-not-email {
     background-position:3px; 
     background-repeat:no-repeat; 
     background-image:url("../i/stop-icon.png");
@@ -2675,7 +2714,7 @@ div#civicrm-dashboard form {
 .ui-widget-header  {
     color: #3e3e3e;
     border:0px solid transparent;
-    border-color:none;
+    border-color:transparent;
 }	
 
 /* ui dialog state */ 
@@ -2688,7 +2727,7 @@ div#civicrm-dashboard form {
 .ui-widget-content .ui-state-focus, 
 .ui-widget-header .ui-state-focus { 
 border: 0px solid #70716b; 
-background: #484e4c url("../packages/jquery/jquery-ui-1.8.5/css/custom-theme/images/ui-bg_flat_40_70716b_40x100.png") 50% 50% repeat-x; 
+background: #484e4c url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-bg_flat_40_70716b_40x100.png") 50% 50% repeat-x; 
 font-weight: normal; 
 color: #f5f6f1; 
 }
@@ -2701,6 +2740,7 @@ color: #f5f6f1;
 #crm-container .crm-datatable-pager-top { padding-top:5px; padding-bottom:25px; }
 #crm-container .crm-datatable-pager-bottom { padding-top:10px; padding-bottom:25px; }
 #crm-container .crm-datatable-pager-top .dataTables_length { float:left; }
+#crm-container .css_right{ float:right}
 
 /* Date plugin */
 #crm-container input.dateplugin {
@@ -2768,21 +2808,22 @@ color: #f5f6f1;
     border-color:#efefef;
     border-right: 1px solid #efefef;
 }
-#crm-container .odd-row, 
+#crm-container .odd-row, #crm-container .odd,
 tbody.scrollContent {
     background-color: #FAFAFA;
 }
-#crm-container .even-row, 
+#crm-container .even-row, #crm-container .even, 
 tbody.scrollContent tr.alternateRow {
-    background-color: #F5F5F5;
-}
-#crm-container .row-selected {
-    background-color: #FAFAD2;
+    background-color: #EFEFEF;
 }
 
+#crm-container td.checkbox {
+    vertical-align: middle;
+    text-align: center;
+}
 #crm-container tr.columnheader a.sorting {
 	color:#a7a7a7;
-	}
+}
 
 #crm-container a.sorting { color:#A7A7A7; }
 #crm-container a.sorting_desc, 
@@ -2820,6 +2861,12 @@ table.crm-info-panel .label  {
 }
 
 .disabled { text-decoration:line-through; }
+    #mainTabContainer li.disabled {
+        text-decoration: none;
+    }
+    #mainTabContainer li.disabled a:link {
+        color: #999999 !important;
+    }
 
 #crm-container table.selector td {
     border-right:1px dotted #DDDDDD;
@@ -2933,7 +2980,8 @@ del,
 #crm-container .disabled, 
 #crm-container .status-overdue,
 #crm-container .status-fatal, 
-#crm-container .status-hold {
+#crm-container .status-hold,
+#crm-container .status-past {
     color:#E43D2B!important;
 }
 
@@ -2943,6 +2991,7 @@ del,
 #crm-create-new-link,
 #crm-participant-link,
 #crm-event-links-link,
+#crm-contribpage-links-link,
 #crm-contact-actions-link,
 #crm-container a.button:link,
 #crm-container input.form-submit,
@@ -2982,6 +3031,7 @@ div#crm-toolTip
 .ac_results-inner,
 .crm-participant-list-inner,
 .crm-event-links-list-inner,
+.crm-contribpage-links-list-inner,
 .crm-create-new-list-inner,
 .crm-contact-actions-list-inner { background-color:#2f2f2e; }
 
@@ -3042,6 +3092,7 @@ div#crm-toolTip
 #crm-container .panel li a:hover,
 #crm-container .crm-participant-list-inner li a:hover,
 #crm-container .crm-event-links-list-inner li a:hover,
+#crm-container .crm-contribpage-links-list-inner li a:hover,
 #crm-container .contextMenu li a:hover,
 .crm-contextmenu li a:hover {
     color: #3e3e3e;
@@ -3072,4 +3123,19 @@ div#crm-toolTip
 
 .extension-installed {
     background-color:#DDFFDD !important;
+}
+
+/* table row highlightng */
+#crm-container .crm-row-highlight {
+    background-color: #FFFFCC !important;
+}
+
+#crm-container .civicrm-drupal-wysiwyg .collapsed {
+    background: transparent;
+    padding-left: 0px;
+}
+
+#manageTags {
+    position: static;
+    z-index: -100;
 }

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -114,7 +114,8 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting
                 $to   = '"' . $toDisplayName . '"' . "<$toEmail>";
                 $from = '"' . $domainEmailName . '" <' . $domainEmailAddress . '>';
                 $testMailStatusMsg = ts( 'Sending test email. FROM: %1 TO: %2.<br />', array( 1 => $domainEmailAddress, 2 => $toEmail ));
-                    
+
+                $params = array( );
                 if ($formValues['outBound_option'] == 0) {
                     $subject = "Test for SMTP settings";
                     $message = "SMTP settings are correct.";

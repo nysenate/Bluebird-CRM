@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -88,6 +88,9 @@
              {/if}
              </td>
 	    {/if}
+        <td class="crm-case=caseview-case_subject label">
+            <span class="crm-case-summary-label">{ts}Case Subject{/ts}:</span>&nbsp;{$caseDetails.case_subject}
+        </td>    
         <td class="crm-case-caseview-case_type label">
             <span class="crm-case-summary-label">{ts}Case Type{/ts}:</span>&nbsp;{$caseDetails.case_type}&nbsp;<a href="{crmURL p='civicrm/case/activity' q="action=add&reset=1&cid=`$contactId`&caseid=`$caseId`&selectedChild=activity&atype=`$changeCaseTypeId`"}" title="Change case type (creates activity record)"><span class="icon edit-icon"></span></a>
         </td>
@@ -115,7 +118,7 @@
             <td>{$form.activity_type_id.label}<br />{$form.activity_type_id.html}&nbsp;<input type="button" accesskey="N" value="Go" name="new_activity" onclick="checkSelection( this );"/></td>
 	    {if $hasAccessToAllCases}	
             <td>
-                <span class="crm-button"><div class="icon print-icon"></div><input type="button"  value="Print Case Report" name="case_report_all" onclick="printCaseReport( );"/></span>
+                <span class="crm-button"><div class="icon print-icon"></div><input type="button"  value="{ts}Print Case Report{/ts}" name="case_report_all" onclick="printCaseReport( );"/></span>
             </td> 
         </tr>
         <tr>
@@ -189,11 +192,11 @@
             </td>
           {if $relId neq 'client' and $hasAccessToAllCases}
             <td id ="edit_{$rowNumber}">
-            	<a href="#" title="edit case role" onclick="createRelationship( {$row.relation_type}, {$row.cid}, {$relId}, {$rowNumber}, '{$row.relation}' );return false;">
+            	<a href="#" title="{ts}edit case role{/ts}" onclick="createRelationship( {$row.relation_type}, {$row.cid}, {$relId}, {$rowNumber}, '{$row.relation}' );return false;">
             	<div class="icon edit-icon" ></div>
             	</a> &nbsp;&nbsp;
             	<a href="{crmURL p='civicrm/contact/view/rel' q="action=delete&reset=1&cid=`$contactID`&id=`$relId`&caseID=`$caseID`"}" onclick = "if (confirm('{ts}Are you sure you want to remove this person from their case role{/ts}?') ) this.href+='&confirmed=1'; else return false;">
-            	<div class="icon delete-icon" title="remove contact from case role"></div>
+            	<div class="icon delete-icon" title="{ts}remove contact from case role{/ts}"></div>
             	</a>
             	
             </td>
@@ -206,12 +209,12 @@
          {if $relTypeID neq 'client'} 
            <tr>
                <td class="crm-case-caseview-role-relName label">{$relName}</td>
-               <td class="crm-case-caseview-role-relName_{$rowNumber}" id="relName_{$rowNumber}">(not assigned)</td>
+               <td class="crm-case-caseview-role-relName_{$rowNumber}" id="relName_{$rowNumber}">{ts}(not assigned){/ts}</td>
                <td class="crm-case-caseview-role-phone" id="phone_{$rowNumber}"></td>
                <td class="crm-case-caseview-role-email" id="email_{$rowNumber}"></td>
 	       {if $hasAccessToAllCases}               
 	       <td id ="edit_{$rowNumber}">
-	       <a href="#" title="edit case role" onclick="createRelationship( {$relTypeID}, null, null, {$rowNumber}, '{$relName}' );return false;">
+	       <a href="#" title="{ts}edit case role{/ts}" onclick="createRelationship( {$relTypeID}, null, null, {$rowNumber}, '{$relName}' );return false;">
 	       	<div class="icon edit-icon"></div>
 	       </a> 
 	       </td>
@@ -671,11 +674,13 @@ function addRole() {
   {ts}Case Tags{/ts}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
+  {assign var="tagExits" value=0}
   {if $tags}
     <div class="crm-block crm-content-block crm-case-caseview-display-tags">{$tags}</div>
+    {assign var="tagExits" value=1}
   {/if}
 
-  {foreach from=$tagset item=displayTagset}
+  {foreach from=$tagsetInfo_case item=displayTagset}
       {if $displayTagset.entityTagsArray}
           <div class="crm-block crm-content-block crm-case-caseview-display-tagset">
               &nbsp;&nbsp;{$displayTagset.parentName}:
@@ -683,16 +688,17 @@ function addRole() {
                   &nbsp;{$val.name}{if !$smarty.foreach.tagsetList.last},{/if}
               {/foreach}
           </div>
+        {assign var="tagExits" value=1}
       {/if}
   {/foreach}
 
-  {if !tags and !$displayTagset.entityTagsArray }
+  {if !$tagExits }
     <div class="status">
-        {ts}There are no tags currently assigend to this case.{/ts}
+        {ts}There are no tags currently assigned to this case.{/ts}
     </div>
   {/if}
 
-  <div class="crm-submit-buttons"><input type="button" class="form-submit" onClick="javascript:addTags()" value={if $tags || $displayTagset.entityTagsArray}"{ts}Edit Tags{/ts}"{else}"{ts}Add Tags{/ts}"{/if} /></div>
+  <div class="crm-submit-buttons"><input type="button" class="form-submit" onClick="javascript:addTags()" value={if $tagExits}"{ts}Edit Tags{/ts}"{else}"{ts}Add Tags{/ts}"{/if} /></div>
 
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
@@ -700,9 +706,12 @@ function addRole() {
     <div id="manageTags">
         <div class="label">{$form.case_tag.label}</div>
         <div class="view-value"><div class="crm-select-container">{$form.case_tag.html}</div>
-        <div style="text-align:left;">{include file="CRM/common/Tag.tpl"}</div>
+        <br/>
+        <div style="text-align:left;">{include file="CRM/common/Tag.tpl" tagsetType='case'}</div>
+        <br/>
+        <div class="clear"></div>
     </div>
-    </div>
+</div>
 
 {literal}
 <script type="text/javascript">
@@ -719,19 +728,10 @@ function addTags() {
     cj("#manageTags").show( );
 
     cj("#manageTags").dialog({
-        title: "Change Case Tags",
+        title: "{/literal}{ts}Change Case Tags{/ts}{literal}",
         modal: true,
-        bgiframe: true,
-        width : 450,
-        overlay: { 
-            opacity: 0.5, 
-            background: "black" 
-        },
-
-        open:function() {
-            /* set defaults if editing */
-        },
-
+        height: 'auto',
+        width: 'auto',
         buttons: { 
             "Save": function() { 
                 var tagsChecked = '';	    
@@ -748,7 +748,7 @@ function addTags() {
                 });
                 
                 var tagList = '';
-                cj("#manageTags input[name^=taglist]").each( function( ) {
+                cj("#manageTags input[name^=case_taglist]").each( function( ) {
                     if ( !tagsChecked ) {
                         tagsChecked = cj(this).val() + '';
                     } else {
@@ -852,7 +852,7 @@ function addTags() {
 </div><!-- /.crm-accordion-wrapper -->
  
   <table id="activities-selector"  class="nestedActivitySelector">
-  <thead><tr class="columnheader">
+  <thead><tr>
   <th class='crm-case-activities-date'>{ts}Date{/ts}</th>
   <th class='crm-case-activities-subject'>{ts}Subject{/ts}</th>
   <th class='crm-case-activities-type'>{ts}Type{/ts}</th>
@@ -956,18 +956,19 @@ function buildCaseActivities( filterSearch ) {
 	eval('columns =[' + columns + ']');
 
  	oTable = cj('#activities-selector').dataTable({
-    	        "bFilter"    : false,
-		"bAutoWidth" : false,
-                "aaSorting"  : [],
-		"aoColumns"  : columns,
+            "bFilter"    : false,
+            "bAutoWidth" : false,
+            "aaSorting"  : [],
+            "aoColumns"  : columns,
 	    	"bProcessing": true,
-		"sPaginationType": "full_numbers",
-		"sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
-	   	"bServerSide": true,
-	   	"sAjaxSource": sourceUrl,
-                "iDisplayLength": 50,
-		"fnDrawCallback": function() { setSelectorClass(); },
-		"fnServerData": function ( sSource, aoData, fnCallback ) {
+            "bJQueryUI": true,
+            "sPaginationType": "full_numbers",
+            "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
+            "bServerSide": true,
+            "sAjaxSource": sourceUrl,
+            "iDisplayLength": 50,
+            "fnDrawCallback": function() { setSelectorClass(); },
+            "fnServerData": function ( sSource, aoData, fnCallback ) {
 
 				if ( filterSearch ) {
 				var activity_deleted = 0;

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -163,7 +163,7 @@ class CRM_Core_BAO_Preferences extends CRM_Core_DAO_Preferences {
         
         if ( $optionValue && !empty( $groupValues ) ) {
             require_once 'CRM/Core/BAO/CustomOption.php';
-            $dbValues = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+            $dbValues = explode( CRM_Core_DAO::VALUE_SEPARATOR,
                                  substr( $optionValue, 1, -1 ) ); 
             
             if ( !empty( $dbValues ) ) { 
@@ -203,10 +203,10 @@ class CRM_Core_BAO_Preferences extends CRM_Core_DAO_Preferences {
 
             if ( ! empty( $cbValues ) ) {
                 $object->$name = 
-                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR .
-                    implode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+                    CRM_Core_DAO::VALUE_SEPARATOR .
+                    implode( CRM_Core_DAO::VALUE_SEPARATOR,
                              array_keys( $cbValues ) ) .
-                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR;
+                    CRM_Core_DAO::VALUE_SEPARATOR;
             } else {
                 $object->$name = 'NULL';
             }
@@ -305,7 +305,8 @@ AND    v.is_active = 1
             if ( $dao->optionName == 'directory_preferences' ) {
                 $value = CRM_Utils_File::absoluteDirectory( $dao->value );
             } else {
-                $value = CRM_Utils_System::absoluteURL( $dao->value );
+                // CRM-7622: we need to remove the language part
+                $value = CRM_Utils_System::absoluteURL($dao->value, true);
             }
             $params[$dao->valueName] = $value;
             if ( $setInConfig ) {
@@ -314,5 +315,3 @@ AND    v.is_active = 1
         }
     }
 }
-
-

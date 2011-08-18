@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -37,7 +37,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -76,7 +76,7 @@ class CRM_Contact_Form_Edit_IM
                           CRM_Core_DAO::getAttribute('CRM_Core_DAO_IM', 'name') );
 			
         //is_Primary radio
-        $js = array( 'id' => "IM_".$blockId."_IsPrimary", 'onClick' => 'singleSelect( this.id );');
+        $js = array( 'id' => 'IM_'.$blockId.'_IsPrimary', 'onClick' => 'singleSelect( this.id );');
         $form->addElement( 'radio', "im[$blockId][is_primary]", '', '', '1', $js );
     }
 }

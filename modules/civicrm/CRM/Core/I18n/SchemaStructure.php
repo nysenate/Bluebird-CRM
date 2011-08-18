@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -42,34 +42,9 @@ class CRM_Core_I18n_SchemaStructure
                     'label' => "varchar(255)",
                     'description' => "varchar(255)",
                 ) ,
-                'civicrm_contact' => array(
-                    'sort_name' => "varchar(128)",
-                    'display_name' => "varchar(128)",
-                    'first_name' => "varchar(64)",
-                    'middle_name' => "varchar(64)",
-                    'last_name' => "varchar(64)",
-                    'email_greeting_display' => "varchar(255)",
-                    'postal_greeting_display' => "varchar(255)",
-                    'addressee_display' => "varchar(255)",
-                    'household_name' => "varchar(128)",
-                    'organization_name' => "varchar(128)",
-                ) ,
                 'civicrm_contact_type' => array(
                     'label' => "varchar(64)",
                     'description' => "text",
-                ) ,
-                'civicrm_mailing_component' => array(
-                    'name' => "varchar(64)",
-                    'subject' => "varchar(255)",
-                    'body_html' => "text",
-                    'body_text' => "text",
-                ) ,
-                'civicrm_mailing' => array(
-                    'name' => "varchar(128)",
-                    'from_name' => "varchar(128)",
-                    'subject' => "varchar(128)",
-                    'body_text' => "longtext",
-                    'body_html' => "longtext",
                 ) ,
                 'civicrm_premiums' => array(
                     'premiums_intro_title' => "varchar(255)",
@@ -79,10 +54,6 @@ class CRM_Core_I18n_SchemaStructure
                     'name' => "varchar(255)",
                     'description' => "text",
                     'options' => "text",
-                ) ,
-                'civicrm_membership_type' => array(
-                    'name' => "varchar(128)",
-                    'description' => "varchar(255)",
                 ) ,
                 'civicrm_membership_status' => array(
                     'label' => "varchar(128)",
@@ -138,12 +109,6 @@ class CRM_Core_I18n_SchemaStructure
                     'honor_block_title' => "varchar(255)",
                     'honor_block_text' => "text",
                 ) ,
-                'civicrm_membership_block' => array(
-                    'new_title' => "varchar(255)",
-                    'new_text' => "text",
-                    'renewal_title' => "varchar(255)",
-                    'renewal_text' => "text",
-                ) ,
                 'civicrm_price_field' => array(
                     'label' => "varchar(255)",
                     'help_pre' => "text",
@@ -163,13 +128,15 @@ class CRM_Core_I18n_SchemaStructure
                     'help_pre' => "text",
                     'label' => "varchar(255)",
                 ) ,
-                'civicrm_address' => array(
-                    'street_address' => "varchar(96)",
-                    'supplemental_address_1' => "varchar(96)",
-                    'supplemental_address_2' => "varchar(96)",
-                    'supplemental_address_3' => "varchar(96)",
-                    'city' => "varchar(64)",
-                    'name' => "varchar(255)",
+                'civicrm_membership_type' => array(
+                    'name' => "varchar(128)",
+                    'description' => "varchar(255)",
+                ) ,
+                'civicrm_membership_block' => array(
+                    'new_title' => "varchar(255)",
+                    'new_text' => "text",
+                    'renewal_title' => "varchar(255)",
+                    'renewal_text' => "text",
                 ) ,
                 'civicrm_event' => array(
                     'title' => "varchar(255)",
@@ -203,38 +170,6 @@ class CRM_Core_I18n_SchemaStructure
         static $result = null;
         if (!$result) {
             $result = array(
-                'civicrm_contact' => array(
-                    'index_sort_name' => array(
-                        'name' => 'index_sort_name',
-                        'field' => array(
-                            'sort_name',
-                        ) ,
-                    ) ,
-                    'index_first_name' => array(
-                        'name' => 'index_first_name',
-                        'field' => array(
-                            'first_name',
-                        ) ,
-                    ) ,
-                    'index_last_name' => array(
-                        'name' => 'index_last_name',
-                        'field' => array(
-                            'last_name',
-                        ) ,
-                    ) ,
-                    'index_household_name' => array(
-                        'name' => 'index_household_name',
-                        'field' => array(
-                            'household_name',
-                        ) ,
-                    ) ,
-                    'index_organization_name' => array(
-                        'name' => 'index_organization_name',
-                        'field' => array(
-                            'organization_name',
-                        ) ,
-                    ) ,
-                ) ,
                 'civicrm_price_set' => array(
                     'UI_title' => array(
                         'name' => 'UI_title',
@@ -262,14 +197,6 @@ class CRM_Core_I18n_SchemaStructure
                             'custom_group_id',
                         ) ,
                         'unique' => 1,
-                    ) ,
-                ) ,
-                'civicrm_address' => array(
-                    'index_city' => array(
-                        'name' => 'index_city',
-                        'field' => array(
-                            'city',
-                        ) ,
                     ) ,
                 ) ,
             );

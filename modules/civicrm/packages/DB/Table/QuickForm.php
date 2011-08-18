@@ -219,7 +219,7 @@ class DB_Table_QuickForm {
         $trackSubmit = isset($args['trackSubmit'])
             ? $args['trackSubmit'] : false;
         
-        $form =& new $GLOBALS['_DB_TABLE']['qf_class_name']($formName, $method,
+        $form = new $GLOBALS['_DB_TABLE']['qf_class_name']($formName, $method,
             $action, $target, $attributes, $trackSubmit);
 
         return $form;

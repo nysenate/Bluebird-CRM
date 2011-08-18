@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -198,13 +198,13 @@ class CRM_Report_Form_Event_Summary extends CRM_Report_Form {
         foreach ( $participant_data as $event_id => $event_data ){
             foreach ( $event_data as $status_id => $data) {
                 
-                if ( array_key_exists($status_id , $statusType1 ) ) {
+                if ( array_key_exists( $status_id, $statusType1 ) ) {
                     //total income of event 
                     $amt = $amt + $data['amount'];
                 
                     //number of Registered/Attended participants    
                     $particiType1 = $particiType1 + $data['participant'];
-                } else if ( array_key_exists( $info->statusId , $statusType2 ) ) {
+                } else if ( array_key_exists( $status_id, $statusType2 ) ) {
                     
                     //number of No-show/Cancelled/Pending participants 
                     $particiType2 = $particiType2 + $data['participant'];

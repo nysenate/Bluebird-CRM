@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  --------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,7 +27,7 @@
   /**
    *
    * @package CRM
-   * @copyright CiviCRM LLC (c) 2004-2010
+   * @copyright CiviCRM LLC (c) 2004-2011
    * $Id$
    *
    */
@@ -49,13 +49,6 @@ class CRM_Campaign_Page_Vote extends CRM_Core_Page
         $controller = new CRM_Core_Controller_Simple( 'CRM_Campaign_Form_Gotv', ts( 'Reserve Respondents' ) );
         $controller->set( 'votingTab',    true );
         $controller->set( 'subVotingTab', 'searchANDReserve' );
-        
-        //make sure to load crmaccordions once.
-        $doNotReloadCRMAccordion = $this->get( 'doNotReloadCRMAccordion' );
-        if ( !$doNotReloadCRMAccordion && $this->get( 'type' ) )  {
-            $this->set( 'doNotReloadCRMAccordion', true );
-        }
-        $controller->set( 'doNotReloadCRMAccordion', $doNotReloadCRMAccordion );
         
         $controller->process( );
         return $controller->run( );

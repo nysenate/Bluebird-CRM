@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -294,6 +294,28 @@ SELECT DISTINCT(civicrm_mailing_event_queue.contact_id) as contact_id,
         }
         
         return array( $displayName, $email );
+    }
+
+    static function bulkCreate( $params, $now = null ) {
+        if ( ! $now ) {
+            $now = time( );
+        }
+
+        // construct a bulk insert statement
+        $values = array( );
+        foreach ( $params as $param ) {
+            $values[] = 
+                "( {$param[0]}, {$param[1]}, {$param[2]}, '" .
+                substr( sha1( "{$param[0]}:{$param[1]}:{$param[2]}:{$now}" ),
+                        0, 16 ) . "' )";
+        }
+
+        while ( ! empty( $values ) ) {
+            $input = array_splice( $values, 0, CRM_Core_DAO::BULK_INSERT_COUNT );
+            $str   = implode( ',', $input );
+            $sql = "INSERT INTO civicrm_mailing_event_queue ( job_id, email_id, contact_id, hash ) VALUES $str;";
+            CRM_Core_DAO::executeQuery( $sql );
+        }
     }
 
 }

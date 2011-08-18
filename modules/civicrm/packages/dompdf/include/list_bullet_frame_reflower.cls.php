@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: list_bullet_frame_reflower.cls.php,v 1.4 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: list_bullet_frame_reflower.cls.php 357 2011-01-30 20:56:46Z fabien.menager $ */
 
 /**
  * Reflows list bullets
@@ -51,17 +51,16 @@ class List_Bullet_Frame_Reflower extends Frame_Reflower {
     
   //........................................................................
 
-  function reflow() {
+  function reflow(Frame_Decorator $block = null) {
     $style = $this->_frame->get_style();
-    
+
     $style->width = $this->_frame->get_width();
     $this->_frame->position();
 
-    if ( $style->list_style_position == "inside" ) {
+    if ( $style->list_style_position === "inside" ) {
       $p = $this->_frame->find_block_parent();
       $p->add_frame_to_line($this->_frame);
     }
-    
+
   }
 }
-?>

@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: inline_frame_reflower.cls.php,v 1.3 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: inline_frame_reflower.cls.php 357 2011-01-30 20:56:46Z fabien.menager $ */
 
 /**
  * Reflows inline frames
@@ -51,31 +51,49 @@ class Inline_Frame_Reflower extends Frame_Reflower {
   
   //........................................................................
 
-  function reflow() {
-    $style = $this->_frame->get_style();
-    $this->_frame->position();
+  function reflow(Frame_Decorator $block = null) {
+    $frame = $this->_frame;
+    
+  	// Check if a page break is forced
+    $page = $frame->get_root();
+    $page->check_forced_page_break($frame);
+    
+    if ( $page->is_full() )
+      return;
+      
+    $style = $frame->get_style();
+    
+    // Generated content
+    $this->_set_content();
+    
+    $frame->position();
 
-    $cb = $this->_frame->get_containing_block();
+    $cb = $frame->get_containing_block();
 
     // Add our margin, padding & border to the first and last children
-    if ( ($f = $this->_frame->get_first_child()) && $f instanceof Text_Frame_Decorator ) {
-      $f->get_style()->margin_left = $style->margin_left;
-      $f->get_style()->padding_left = $style->padding_left;
-      $f->get_style()->border_left = $style->border_left;
+    if ( ($f = $frame->get_first_child()) && $f instanceof Text_Frame_Decorator ) {
+      $f_style = $f->get_style();
+      $f_style->margin_left  = $style->margin_left;
+      $f_style->padding_left = $style->padding_left;
+      $f_style->border_left  = $style->border_left;
+    }
+
+    if ( ($l = $frame->get_last_child()) && $l instanceof Text_Frame_Decorator ) {
+      $l_style = $l->get_style();
+      $l_style->margin_right  = $style->margin_right;
+      $l_style->padding_right = $style->padding_right;
+      $l_style->border_right  = $style->border_right;
     }
     
-    if ( ($l = $this->_frame->get_last_child()) && $l instanceof Text_Frame_Decorator ) {
-      $f->get_style()->margin_right = $style->margin_right;
-      $f->get_style()->padding_right = $style->padding_right;
-      $f->get_style()->border_right = $style->border_right;
+    if ( $block ) {
+      $block->add_frame_to_line($this->_frame);
     }
 
     // Set the containing blocks and reflow each child.  The containing
     // block is not changed by line boxes.
-    foreach ( $this->_frame->get_children() as $child ) {
+    foreach ( $frame->get_children() as $child ) {
       $child->set_containing_block($cb);
-      $child->reflow();
+      $child->reflow($block);
     }
   }
 }
-?>

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,12 +29,15 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
 require_once 'CRM/Core/Config.php';
+require_once 'CRM/Core/BAO/UFGroup.php';
+require_once 'CRM/Core/BAO/CustomField.php';
+require_once 'CRM/Profile/Form.php';
 
 /**
  * This class contains all the function that are called using AJAX
@@ -53,49 +56,142 @@ class CRM_Core_Page_AJAX_Location
     function getPermissionedLocation( ) 
     {
         $cid = CRM_Utils_Type::escape( $_GET['cid'], 'Integer' );
-        
-        require_once 'CRM/Core/BAO/Location.php';
-        $entityBlock = array( 'contact_id' => $cid );
-        $location    =& CRM_Core_BAO_Location::getValues( $entityBlock );
+        if ( $_GET['ufId'] ) {
+            $ufId       = CRM_Utils_Type::escape( $_GET['ufId'], 'Integer' );
+        } else if ( $_GET['relContact'] ) {
+            $relContact = CRM_Utils_Type::escape( $_GET['relContact'], 'Integer' );
+        }
 
+        require_once 'CRM/Core/BAO/Location.php';
+        require_once 'CRM/Core/BAO/Website.php';
+        $values      = array( );
+        $entityBlock = array( 'contact_id' => $cid );
+        $location    = CRM_Core_BAO_Location::getValues( $entityBlock );
+                                
         $config = CRM_Core_Config::singleton();
         $addressSequence = array_flip($config->addressSequence());
-        
-        $elements = array( "phone_1_phone" => 
-                           $location['phone'][1]['phone'],
-                           "email_1_email" => 
-                           $location['email'][1]['email']
-                           );
-        
-        if ( array_key_exists( 'street_address', $addressSequence) ) {
-            $elements["address_1_street_address"] = $location['address'][1]['street_address'];
-        }
-        if ( array_key_exists( 'supplemental_address_1', $addressSequence) ) {
-            $elements['address_1_supplemental_address_1'] = 
-                $location['address'][1]['supplemental_address_1'];
-        }
-        if ( array_key_exists( 'supplemental_address_2', $addressSequence) ) {
-            $elements['address_1_supplemental_address_2'] = 
-                $location['address'][1]['supplemental_address_2'];
-        }
-        if ( array_key_exists( 'city', $addressSequence) ) {
-            $elements['address_1_city'] = $location['address'][1]['city'];
-        }
-        if ( array_key_exists( 'postal_code', $addressSequence) ) {
-            $elements['address_1_postal_code'] = 
-                $location['address'][1]['postal_code'];
-            $elements['address_1_postal_code_suffix'] = 
-                $location['address'][1]['postal_code_suffix'];
-        }
-        if ( array_key_exists( 'country', $addressSequence) ) {
-            $elements['address_1_country_id'] = 
-                $location['address'][1]['country_id'];
-        }
-        if ( array_key_exists( 'state_province', $addressSequence) ) {
-            $elements['address_1_state_province_id'] = 
-                $location['address'][1]['state_province_id'];
-        }
 
+
+        if ( $relContact ) {
+            $elements = array( "phone_1_phone" => 
+                               $location['phone'][1]['phone'],
+                               "email_1_email" => 
+                               $location['email'][1]['email']
+                               );
+            
+            if ( array_key_exists( 'street_address', $addressSequence) ) {
+                $elements["address_1_street_address"] = $location['address'][1]['street_address'];
+            }
+            if ( array_key_exists( 'supplemental_address_1', $addressSequence) ) {
+                $elements['address_1_supplemental_address_1'] = 
+                    $location['address'][1]['supplemental_address_1'];
+            }
+            if ( array_key_exists( 'supplemental_address_2', $addressSequence) ) {
+                $elements['address_1_supplemental_address_2'] = 
+                    $location['address'][1]['supplemental_address_2'];
+            }
+            if ( array_key_exists( 'city', $addressSequence) ) {
+                $elements['address_1_city'] = $location['address'][1]['city'];
+            }
+            if ( array_key_exists( 'postal_code', $addressSequence) ) {
+                $elements['address_1_postal_code'] = 
+                    $location['address'][1]['postal_code'];
+                $elements['address_1_postal_code_suffix'] = 
+                    $location['address'][1]['postal_code_suffix'];
+            }
+            if ( array_key_exists( 'country', $addressSequence) ) {
+                $elements['address_1_country_id'] = 
+                    $location['address'][1]['country_id'];
+            }
+            if ( array_key_exists( 'state_province', $addressSequence) ) {
+                $elements['address_1_state_province_id'] = 
+                    $location['address'][1]['state_province_id'];
+            }
+        } else {
+            $profileFields = CRM_Core_BAO_UFGroup::getFields( $ufId, false, CRM_Core_Action::VIEW, null, null, false,
+                                                              null, false, null, CRM_Core_Permission::CREATE, null );
+            $website       = CRM_Core_BAO_Website::getValues( $entityBlock, $values );
+                        
+            foreach ( $location as $fld => $values ) {
+                $locType = $values[1]['location_type_id'];
+                if ( $fld == 'email' ) {
+                    $elements["onbehalf_{$fld}-{$locType}"] = array( 'type'  => 'Text',
+                                                                     'value' => $location[$fld][1][$fld] );
+                    unset( $profileFields["{$fld}-{$locType}"] );
+                } else if ( $fld == 'phone' ) {
+                    $phoneTypeId = $values[1]['phone_type_id'];
+                    $elements["onbehalf_{$fld}-{$locType}-{$phoneTypeId}"] = array( 'type'  => 'Text',
+                                                                                    'value' => $location[$fld][1][$fld] );
+                    unset( $profileFields["{$fld}-{$locType}"] );
+                } else if ( $fld == 'im' ) {
+                    $providerId = $values[1]['provider_id'];
+                    $elements["onbehalf_{$fld}-{$locType}"] = array( 'type'  => 'Text',
+                                                                     'value' => $location[$fld][1][$fld] );
+                    $elements["onbehalf_{$fld}-{$locType}-provider_id"] = 
+                        array( 'type'  => 'Select',
+                               'value' => $location[$fld][1]['provider_id'] );
+                }
+            }
+            
+            if ( !empty( $website ) ) {
+                foreach ( $website as $key => $val ) {
+                    $websiteTypeId = $values[1]['website_type_id'];
+                    $elements["onbehalf_url-1"] = array( 'type'  => 'Text',
+                                                         'value' => $website[1]['url'] );
+                    $elements["onbehalf_url-1-website_type_id"] = 
+                        array( 'type'  => 'Select',
+                               'value' => $website[1]['website_type_id'] );
+                }
+            }
+            
+            $locTypeId = $location['address'][1]['location_type_id'];
+            $addressFields = array( 'street_address', 
+                                    'supplemental_address_1',
+                                    'supplemental_address_2',
+                                    'city',
+                                    'postal_code',  
+                                    'country',
+                                    'state_province' );
+            
+            foreach ( $addressFields as $field ) {
+                if ( array_key_exists( $field, $addressSequence ) ) {
+                    $addField = $field;
+                    if ( in_array( $field, array( 'state_province', 'country' ) ) ) {
+                        $addField = "{$field}_id";
+                    }
+                    $elements["onbehalf_{$field}-{$locTypeId}"] = array( 'type'  => 'Text',
+                                                                         'value' => $location['address'][1][$addField] );
+                    unset( $profileFields["{$field}-{$locTypeId}"] );
+                }
+            }
+            
+            //set custom field defaults
+            $defaults = array( );
+            CRM_Core_BAO_UFGroup::setProfileDefaults( $cid, $profileFields, $defaults );
+            
+            if ( !empty( $defaults ) ) {
+                foreach ( $profileFields as $key => $val ) {
+                    
+                    if ( array_key_exists( $key, $defaults ) ) {
+                        if ( $val['html_type'] == 'Radio' ) {
+                            $elements["onbehalf[{$key}]"]['type'] = $val['html_type'];
+                            $elements["onbehalf[{$key}]"]['value'] = $defaults[$key];
+                        } else if ( $val['html_type'] == 'CheckBox' ) {
+                            foreach ( $defaults[$key] as $k => $v ) {
+                                $elements["onbehalf[{$key}][{$k}]"]['type'] = $val['html_type'];
+                                $elements["onbehalf[{$key}][{$k}]"]['value'] = $v;
+                            }
+                        } else {
+                            $elements["onbehalf_{$key}"]['type'] = $val['html_type'];
+                            $elements["onbehalf_{$key}"]['value'] = $defaults[$key];
+                        }
+                    } else {
+                        $elements["onbehalf_{$key}"]['value'] = '';
+                    }
+                }
+            }
+        }
+        
         echo json_encode( $elements );
         CRM_Utils_System::civiExit( );
     }
@@ -119,6 +215,36 @@ class CRM_Core_Page_AJAX_Location
         require_once "CRM/Utils/JSON.php";
         echo json_encode( $elements );
         CRM_Utils_System::civiExit( );
+    }
+    
+
+    function jqCounty( $config ) {
+        if ( ! isset( $_GET['_value'] ) ||
+        empty( $_GET['_value'] ) ) {
+            $elements = array( array( 'name'  => ts('- select state -'),
+                'value' => '' ) );
+        } else {
+
+            require_once 'CRM/Core/PseudoConstant.php';
+            $result =& CRM_Core_PseudoConstant::countyForState( $_GET['_value'] );
+
+            $elements = array( array( 'name'  => ts('- select -'),
+                'value' => '' ) );
+            foreach ( $result as $id => $name ) {
+                $elements[] = array( 'name'  => $name,
+                    'value' => $id );
+            }
+            
+            if ( $elements == array( array( 'name'  => ts('- select -'), 'value' => '' ) )) {
+                $elements = array( array( 'name'  => ts('- no counties -'),
+                    'value' => '' ) );
+            }
+
+        }
+        
+        require_once "CRM/Utils/JSON.php";
+        echo json_encode( $elements );
+        CRM_Utils_System::civiExit( ); 
     }
 
     function getLocBlock( ) {
@@ -169,6 +295,6 @@ class CRM_Core_Page_AJAX_Location
         $result['count_loc_used'] = CRM_Event_BAO_Event::countEventsUsingLocBlockId( $_POST['lbid'] );
 
         echo json_encode( $result );
-        exit();
+        CRM_Utils_System::civiExit( ); 
     }
 }

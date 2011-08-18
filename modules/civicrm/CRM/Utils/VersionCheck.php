@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id: $
  *
  */
@@ -42,7 +42,7 @@ class CRM_Utils_VersionCheck
     const
         LATEST_VERSION_AT = 'http://latest.civicrm.org/stable.php',
         CHECK_TIMEOUT     = 5,                          // timeout for when the connection or the server is slow
-        LOCALFILE_NAME    = 'civicrm-version.txt',      // relative to $civicrm_root
+        LOCALFILE_NAME    = 'civicrm-version.php',      // relative to $civicrm_root
         CACHEFILE_NAME    = 'latest-version-cache.txt', // relative to $config->uploadDir
         CACHEFILE_EXPIRE  = 604800;                     // cachefile expiry time (in seconds) - a week
 
@@ -82,9 +82,13 @@ class CRM_Utils_VersionCheck
         $localfile = $civicrm_root . DIRECTORY_SEPARATOR . self::LOCALFILE_NAME;
         $cachefile = $config->uploadDir . self::CACHEFILE_NAME;
 
-        if ($config->versionCheck and file_exists($localfile)) {
-            $localParts         = explode(' ', trim(file_get_contents($localfile)));
-            $this->localVersion = $localParts[0];
+        if ( $config->versionCheck &&
+             file_exists( $localfile ) ) {
+            require_once( $localfile );
+            if ( function_exists( 'civicrmVersion' ) ) {
+                $info = civicrmVersion( );
+                $this->localVersion = $info['version'];
+            }
             $expiryTime         = time() - self::CACHEFILE_EXPIRE;
 
             // if there's a cachefile and it's not stale use it to
@@ -192,16 +196,19 @@ class CRM_Utils_VersionCheck
      */
     function newerVersion()
     {
-        $local  = explode('.', $this->localVersion);
-        $latest = explode('.', $this->latestVersion);
-
+        $local  = explode( '.', $this->localVersion );
+        $latest = explode( '.', $this->latestVersion );
         // compare by version part; this allows us to use trunk.$rev
         // for trunk versions ('trunk' is greater than '1')
         // we only do major / minor version comparison, so stick to 2
-        for ($i = 0; $i < 2; $i++) {
-            if ( CRM_Utils_Array::value($i,$local) > CRM_Utils_Array::value($i,$latest) ) {
+        // ignore 3.4 /4.0 comparison
+        for ( $i = 0; $i < 2; $i++ ) {
+            if ( CRM_Utils_Array::value($i,$local) > CRM_Utils_Array::value($i,$latest) OR
+                 ( CRM_Utils_Array::value( $i, $local  ) == 3 && CRM_Utils_Array::value( $i+1, $local  ) == 4 &&
+                   CRM_Utils_Array::value( $i, $latest ) == 4 && CRM_Utils_Array::value( $i+1, $latest ) == 0 ) ) {
                 return null;
-            } elseif (CRM_Utils_Array::value($i,$local) < CRM_Utils_Array::value($i,$latest) and preg_match('/^\d+\.\d+\.\d+$/', $this->latestVersion)) {
+            } elseif (CRM_Utils_Array::value($i,$local) < CRM_Utils_Array::value($i,$latest) and 
+                      preg_match('/^\d+\.\d+\.\d+$/', $this->latestVersion)) {
                 return $this->latestVersion;
             }
         }
@@ -211,7 +218,7 @@ class CRM_Utils_VersionCheck
     /**
      * A dummy function required for suppressing download errors
      */
-    static function downloadError($errorNumber, $errorString)
+    static function downloadError( $errorNumber, $errorString )
     {
         return;
     }

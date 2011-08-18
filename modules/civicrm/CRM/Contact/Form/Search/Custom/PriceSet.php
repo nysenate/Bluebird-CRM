@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -64,8 +64,7 @@ class CRM_Contact_Form_Search_Custom_PriceSet
         /*
         if ( $this->_eventID ) {
             $sql = "DROP TEMPORARY TABLE {$this->_tableName}";
-            CRM_Core_DAO::executeQuery( $sql,
-                                        CRM_Core_DAO::$_nullArray ) ;
+            CRM_Core_DAO::executeQuery( $sql );
         }
         */
     }
@@ -95,8 +94,7 @@ UNIQUE INDEX unique_participant_id ( participant_id )
 ) ENGINE=HEAP
 ";
         
-        CRM_Core_DAO::executeQuery( $sql,
-                                    CRM_Core_DAO::$_nullArray ) ;
+        CRM_Core_DAO::executeQuery( $sql );
     }
 
     function fillTable( ) {
@@ -109,9 +107,10 @@ FROM   civicrm_contact c,
 WHERE  p.contact_id = c.id
   AND  p.is_test    = 0
   AND  p.event_id = {$this->_eventID}
+  AND  p.status_id NOT IN (4,11,12)
+  AND  ( c.is_deleted = 0 OR c.is_deleted IS NULL )
 ";
-        CRM_Core_DAO::executeQuery( $sql,
-                                    CRM_Core_DAO::$_nullArray );
+        CRM_Core_DAO::executeQuery( $sql );
 
         $sql = "
 SELECT c.id as contact_id,
@@ -128,8 +127,7 @@ AND    l.entity_table ='civicrm_participant'
 ORDER BY c.id, l.price_field_value_id;
 ";
 
-        $dao = CRM_Core_DAO::executeQuery( $sql,
-                                           CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql );
 
         // first store all the information by option value id
         $rows = array( );
@@ -150,8 +148,7 @@ UPDATE {$this->_tableName}
 SET $values
 WHERE participant_id = $participantID;
 ";
-            CRM_Core_DAO::executeQuery( $sql,
-                                        CRM_Core_DAO::$_nullArray );
+            CRM_Core_DAO::executeQuery( $sql );
         }
     }
 

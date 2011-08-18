@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -43,7 +43,7 @@ class CRM_Contribute_Form_ContributionPage_ThankYou extends CRM_Contribute_Form_
 {
 
     /**
-    * This function sets the default values for the form. Note that in edit/view mode
+     * This function sets the default values for the form. Note that in edit/view mode
      * the default values are retrieved from the database
      *
      * @access public
@@ -82,9 +82,8 @@ class CRM_Contribute_Form_ContributionPage_ThankYou extends CRM_Contribute_Form_
         $this->add('text', 'bcc_receipt', ts('BCC Receipt To'), CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_ContributionPage', 'bcc_receipt') );
         $this->addRule( 'bcc_receipt', ts('Please enter a valid list of comma delimited email addresses'), 'emailList' );
 
-        $this->addFormRule( array( 'CRM_Contribute_Form_ContributionPage_ThankYou', 'formRule' ) );
-
         parent::buildQuickForm( );
+        $this->addFormRule( array( 'CRM_Contribute_Form_ContributionPage_ThankYou', 'formRule' ), $this );
     }
 
     /** 
@@ -137,6 +136,7 @@ class CRM_Contribute_Form_ContributionPage_ThankYou extends CRM_Contribute_Form_
 
         require_once 'CRM/Contribute/BAO/ContributionPage.php'; 
         $dao = CRM_Contribute_BAO_ContributionPage::create( $params ); 
+        parent::endPostProcess( );
     }
 
     /** 

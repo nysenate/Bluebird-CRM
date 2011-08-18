@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -97,7 +97,7 @@ class CRM_Admin_Form_Navigation extends CRM_Admin_Form
         $this->add('checkbox', 'has_separator', ts('Separator?'));
         $active = $this->add('checkbox', 'is_active', ts('Enabled?'));
         
-        if ( $this->_defaults['name'] == 'Home' ) {
+        if ( CRM_Utils_Array::value('name', $this->_defaults) == 'Home' ) {
             $active->freeze( );
         } else {
             $parentMenu = CRM_Core_BAO_Navigation::getNavigationList( );

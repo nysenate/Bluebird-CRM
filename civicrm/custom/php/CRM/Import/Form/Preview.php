@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -77,7 +77,6 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
         $groups =& CRM_Core_PseudoConstant::group();
         $this->set('groups', $groups);
         
-		//NYSS - LCD TODO this should be changed to exclude positions and block restored in the tpl
         $tag =& CRM_Core_PseudoConstant::tag();
         if ($tag) {
             $this->set('tag', $tag);
@@ -252,7 +251,7 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
             'invalidRowCount'   => $this->get('invalidRowCount'),
             'conflictRowCount'  => $this->get('conflictRowCount'),
             'onDuplicate'       => $this->get('onDuplicate'),
-			'dedupe'            => $this->get('dedupe'), //NYSS 3750
+            'dedupe'            => $this->get('dedupe'),
             'newGroupName'      => $this->controller->exportValue( $this->_name, 'newGroupName'),
             'newGroupDesc'      => $this->controller->exportValue( $this->_name, 'newGroupDesc'),
             'groups'            => $this->controller->exportValue( $this->_name, 'groups'),
@@ -276,18 +275,25 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
         $importJob = new CRM_Import_ImportJob( $tableName );
         $importJob->setJobParams( $importJobParams );
                
-        // update cache before starting with runImport
-        $session =& CRM_Core_Session::singleton( );
-        $userID  = $session->get( 'userID' );
-        require_once 'CRM/ACL/BAO/Cache.php';
-        CRM_ACL_BAO_Cache::updateEntry( $userID );
+        // If ACL applies to the current user, update cache before running the import.
+        if ( ! CRM_Core_Permission::check( 'view all contacts' ) ) {
+          $session =& CRM_Core_Session::singleton( );
+          $userID  = $session->get( 'userID' );
+          require_once 'CRM/ACL/BAO/Cache.php';
+          CRM_ACL_BAO_Cache::updateEntry( $userID );
+        }
 
         // run the import
         $importJob->runImport($this);
                
         // update cache after we done with runImport
-        require_once 'CRM/ACL/BAO/Cache.php';
-        CRM_ACL_BAO_Cache::updateEntry( $userID );
+        if ( ! CRM_Core_Permission::check( 'view all contacts' ) ) {
+          CRM_ACL_BAO_Cache::updateEntry( $userID );
+        }
+
+        // clear all caches
+        require_once 'CRM/Contact/BAO/Contact/Utils.php';
+        CRM_Contact_BAO_Contact_Utils::clearContactCaches( );
 
         // add all the necessary variables to the form
         $importJob->setFormVariables( $this );
@@ -449,10 +455,8 @@ class CRM_Import_Form_Preview extends CRM_Core_Form {
                       $this->get( 'totalRowCount' ),
                       $doGeocodeAddress,
                       CRM_Import_Parser::DEFAULT_TIMEOUT, 
-                      //$this->get('contactSubType') );
-					  //NYSS 3750
-					  $this->get('contactSubType'),
- 	 	              $this->get('dedupe') );
+                      $this->get('contactSubType'),
+                      $this->get('dedupe') );
         
         // add the new contacts to selected groups
         $contactIds =& $parser->getImportedContacts();

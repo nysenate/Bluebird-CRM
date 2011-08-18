@@ -556,16 +556,17 @@ class DB_DataObject extends DB_DataObject_Overload
             // note: we dont declare this to keep the print_r size down.
             $_DB_DATAOBJECT['RESULTFIELDS'][$this->_DB_resultid]= array_flip(array_keys($array));
         }
-
+        
         $keys = str_replace(array("."," "), "_", array_keys($array));
-        $i = 0;
-        foreach ($array as $val) {
-            $key = $keys[$i++];
-            if (!empty($_DB_DATAOBJECT['CONFIG']['debug']))
-                $this->debug("$key = $val", "fetchrow LINE", 3);
+        $i = 0; 
+        foreach($array as $val) {
+            $key = $keys[$i++]; 
+            if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
+                $this->debug("$key = ". $val, "fetchrow LINE", 3);
+            }
             $this->$key = $val;
         }
-
+        
         // set link flag
         $this->_link_loaded=false;
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
@@ -1490,12 +1491,14 @@ class DB_DataObject extends DB_DataObject_Overload
             return false;
         }
 
-        foreach($array as $k => $v) {
-            $kk = str_replace(".", "_", $k);
+        $keys = str_replace(array("."," "), "_", array_keys($array));
+        $i = 0; 
+        foreach($array as $val) {
+            $key = $keys[$i++]; 
             if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
-                $this->debug("$kk = ". $array[$k], "fetchrow LINE", 3);
+                $this->debug("$key = ". $val, "fetchrow LINE", 3);
             }
-            $this->$kk = $array[$k];
+            $this->$key = $val;
         }
 
         if (!empty($_DB_DATAOBJECT['CONFIG']['debug'])) {
@@ -3617,7 +3620,7 @@ class DB_DataObject extends DB_DataObject_Overload
      * @return   array of key => value for row
      */
 
-    function toArray($format = null, $hideEmpty = false) 
+    function toArray($format = null, $hideEmpty = false) //NYSS
     {
         global $_DB_DATAOBJECT;
         $ret = array();
@@ -3631,7 +3634,8 @@ class DB_DataObject extends DB_DataObject_Overload
              
             if (!isset($this->$k)) {
                 if (!$hideEmpty) {
-                    if ($format===null)
+                    //NYSS
+					if ($format===null) 
                         $ret[$k] = '';
                     else
                         $ret[sprintf($format,$k)] = '';
@@ -3640,14 +3644,16 @@ class DB_DataObject extends DB_DataObject_Overload
             }
             // call the overloaded getXXXX() method. - except getLink and getLinks
             if (method_exists($this,'get'.$k) && !in_array(strtolower($k),array('links','link'))) {
-                if ($format===null)
+                //NYSS
+				if ($format===null)
                     $ret[$k] = $this->{'get'.$k}();
                 else
                     $ret[sprintf($format,$k)] = $this->{'get'.$k}();
                 continue;
             }
             // should this call toValue() ???
-            if ($format===null)
+            //NYSS
+			if ($format===null)
                 $ret[$k] = $this->$k;
             else
                 $ret[sprintf($format,$k)] = $this->$k;
@@ -3656,7 +3662,8 @@ class DB_DataObject extends DB_DataObject_Overload
             return $ret;
         }
         foreach($this->_link_loaded as $k) {
-            if ($format===null)
+            //NYSS
+			if ($format===null)
                 $ret[$k] = $this->$k->toArray();
             else
                 $ret[sprintf($format,$k)] = $this->$k->toArray();

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -69,7 +69,7 @@ class CRM_Core_BAO_CMSUser
             $mail = 'email'; 
             $name = 'name';
         } else { 
-            CRM_Core_Error::fatal( "CMS user creation not supported for this framework" ); 
+            CRM_Core_Error::fatal( 'CMS user creation not supported for this framework' ); 
         } 
 
         set_time_limit(300);
@@ -87,7 +87,7 @@ class CRM_Core_BAO_CMSUser
             $user->$mail = $row[$mail];
             $user->$name = $row[$name];
             $contactCount++;
-            if ($match = CRM_Core_BAO_UFMatch::synchronizeUFMatch( $user, $row[$id], $row[$mail], $uf, 1, null, true ) ) {
+            if ($match = CRM_Core_BAO_UFMatch::synchronizeUFMatch( $user, $row[$id], $row[$mail], $uf, 1, 'Individual', true ) ) {
                 $contactCreated++;
             } else {
                 $contactMatching++;
@@ -261,7 +261,7 @@ class CRM_Core_BAO_CMSUser
     
             if ( $args ) {
                 // append destination so user is returned to form they came from after login
-                $destination = CRM_Utils_System::currentPath( ) . "?reset=1" . $args;
+                $destination = CRM_Utils_System::currentPath( ) . '?reset=1' . $args;
                 $loginUrl .= '?destination=' . urlencode( $destination );
              }
         }
@@ -389,7 +389,7 @@ SELECT name, mail
             //regex \\ to match a single backslash would become '/\\\\/' 
             $isNotValid = (bool) preg_match('/[\<|\>|\"|\'|\%|\;|\(|\)|\&|\\\\|\/]/im', $name );
             if ( $isNotValid || strlen( $name ) < 2 ) {
-                $errors['cms_name'] = ts("Your username contains invalid characters or is too short");
+                $errors['cms_name'] = ts('Your username contains invalid characters or is too short');
             }
             $sql = "
 SELECT username, email
@@ -442,7 +442,7 @@ SELECT username, email
         } 
         
         if ( !$isDrupal && !$isJoomla ) { 
-            die( "Unknown user framework" ); 
+            die( 'Unknown user framework' ); 
         }
         
         if ( $isDrupal ) { 
@@ -485,14 +485,15 @@ SELECT username, email
      */
     static function createDrupalUser( &$params, $mail )
     {
-        $values['values']  = array (
+        $form_state = array( );
+        $form_state['values']  = array (
                                     'name' => $params['cms_name'],
                                     'mail' => $params[$mail],
                                     'op'   => 'Create new account'
                                     );
         if ( !variable_get('user_email_verification', TRUE )) {
-            $values['values']['pass']['pass1'] = $params['cms_pass'];
-            $values['values']['pass']['pass2'] = $params['cms_pass'];
+            $form_state['values']['pass']['pass1'] = $params['cms_pass'];
+            $form_state['values']['pass']['pass2'] = $params['cms_pass'];
         }
 
         $config = CRM_Core_Config::singleton( );
@@ -500,7 +501,14 @@ SELECT username, email
         // we also need to redirect b
         $config->inCiviCRM = true;
 
-        $res = drupal_execute( 'user_register', $values );
+        $form = drupal_retrieve_form('user_register', $form_state);
+        $form['#post'] = $form_state['values'];
+        drupal_prepare_form('user_register', $form, $form_state);
+
+        // remove the captcha element from the form prior to processing
+        unset($form['captcha']);
+        
+        drupal_process_form('user_register', $form, $form_state);
         
         $config->inCiviCRM = false;
         
@@ -538,8 +546,8 @@ SELECT username, email
 
         // get the default usertype
         $userType = $userParams->get('new_usertype');
-        if ( !$usertype ) {
-            $usertype = 'Registered';
+        if ( ! $userType ) {
+            $userType = 'Registered';
         }
 
         $acl = &JFactory::getACL();

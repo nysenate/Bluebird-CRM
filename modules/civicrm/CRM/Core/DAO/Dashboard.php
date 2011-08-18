@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -104,12 +104,6 @@ class CRM_Core_DAO_Dashboard extends CRM_Core_DAO
      */
     public $url;
     /**
-     * dashlet content
-     *
-     * @var text
-     */
-    public $content;
-    /**
      * Permission for the dashlet
      *
      * @var string
@@ -134,6 +128,12 @@ class CRM_Core_DAO_Dashboard extends CRM_Core_DAO
      */
     public $is_minimized;
     /**
+     * fullscreen url for dashlet
+     *
+     * @var string
+     */
+    public $fullscreen_url;
+    /**
      * Is Fullscreen?
      *
      * @var boolean
@@ -157,12 +157,6 @@ class CRM_Core_DAO_Dashboard extends CRM_Core_DAO
      * @var int
      */
     public $weight;
-    /**
-     * When was content populated
-     *
-     * @var datetime
-     */
-    public $created_date;
     /**
      * class constructor
      *
@@ -223,11 +217,6 @@ class CRM_Core_DAO_Dashboard extends CRM_Core_DAO
                     'maxlength' => 255,
                     'size' => CRM_Utils_Type::HUGE,
                 ) ,
-                'content' => array(
-                    'name' => 'content',
-                    'type' => CRM_Utils_Type::T_TEXT,
-                    'title' => ts('Content') ,
-                ) ,
                 'permission' => array(
                     'name' => 'permission',
                     'type' => CRM_Utils_Type::T_STRING,
@@ -251,6 +240,13 @@ class CRM_Core_DAO_Dashboard extends CRM_Core_DAO
                     'name' => 'is_minimized',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
                 ) ,
+                'fullscreen_url' => array(
+                    'name' => 'fullscreen_url',
+                    'type' => CRM_Utils_Type::T_STRING,
+                    'title' => ts('Fullscreen Url') ,
+                    'maxlength' => 255,
+                    'size' => CRM_Utils_Type::HUGE,
+                ) ,
                 'is_fullscreen' => array(
                     'name' => 'is_fullscreen',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
@@ -268,11 +264,6 @@ class CRM_Core_DAO_Dashboard extends CRM_Core_DAO
                     'name' => 'weight',
                     'type' => CRM_Utils_Type::T_INT,
                     'title' => ts('Weight') ,
-                ) ,
-                'created_date' => array(
-                    'name' => 'created_date',
-                    'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
-                    'title' => ts('Created Date') ,
                 ) ,
             );
         }

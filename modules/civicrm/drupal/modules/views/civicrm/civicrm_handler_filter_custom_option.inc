@@ -1,7 +1,7 @@
 <?php
   /*
    +--------------------------------------------------------------------+
-   | CiviCRM version 3.3                                                |
+   | CiviCRM version 3.4                                                |
    +--------------------------------------------------------------------+
    | This file is a part of CiviCRM.                                    |
    |                                                                    |
@@ -50,6 +50,29 @@ class civicrm_handler_filter_custom_option extends views_handler_filter_in_opera
             }
         }
     }
-  }
+
+
+    function op_simple() {
+        if (empty($this->value)) {
+            return;
+        }
+        
+        $this->ensure_my_table();
+        
+        $sep = CRM_Core_DAO::VALUE_SEPARATOR;
+        
+        // negated operator uses AND, positive uses OR
+        $op = ($this->operator == 'in') ? 'LIKE' : 'NOT LIKE';
+        $glue = ($this->operator == 'in') ? 'OR ' : 'AND ';
+        
+        foreach ($this->value as $value){
+            $clauses[] = "$this->table_alias.$this->real_field " . $op . " '%" . $sep . $value . $sep . "%' ";
+        }
+        
+        $clause = implode($glue, $clauses);
+        $this->query->add_where($this->options['group'], $clause);
+    }
+
+}
 
 

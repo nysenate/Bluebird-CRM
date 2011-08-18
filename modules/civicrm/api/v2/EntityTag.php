@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -31,8 +31,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_EntityTag
  * 
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: EntityTag.php 30758 2010-11-15 15:09:56Z neha $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: EntityTag.php 32998 2011-03-14 22:00:35Z kurund $
  */
 
 /**
@@ -129,8 +129,17 @@ function civicrm_tag_entities_get( &$params )
  *
  * @param <type> $params
  * @return <type>
+ * @deprecated
  */
 function civicrm_entity_tag_add( &$params ) {
+    return civicrm_entity_tag_common( $params, 'add' );
+}
+/**
+ *
+ * @param <type> $params
+ * @return <type>
+ */
+function civicrm_entity_tag_create( &$params ) {
     return civicrm_entity_tag_common( $params, 'add' );
 }
 
@@ -138,8 +147,18 @@ function civicrm_entity_tag_add( &$params ) {
  *
  * @param <type> $params
  * @return <type>
+ * @deprecated
  */
 function civicrm_entity_tag_remove( &$params ) {
+    return civicrm_entity_tag_common( $params, 'remove' );
+}
+
+/**
+ *
+ * @param array $params
+ * @return <type>
+ */
+function civicrm_entity_tag_delete( &$params ) {
     return civicrm_entity_tag_common( $params, 'remove' );
 }
 

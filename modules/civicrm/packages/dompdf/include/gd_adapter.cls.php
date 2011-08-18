@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id */
+/* $Id: gd_adapter.cls.php 355 2011-01-27 07:44:54Z fabien.menager $ */
 
 /**
  * Image rendering interface
@@ -71,6 +71,20 @@ class GD_Adapter implements Canvas {
   private $_height;
 
   /**
+   * Current page number
+   *
+   * @var int
+   */
+  private $_page_number;
+
+  /**
+   * Total number of pages
+   *
+   * @var int
+   */
+  private $_page_count;
+
+  /**
    * Image antialias factor
    *
    * @var float
@@ -102,15 +116,15 @@ class GD_Adapter implements Canvas {
   function __construct($size, $orientation = "portrait", $aa_factor = 1, $bg_color = array(1,1,1,0) ) {
 
     if ( !is_array($size) ) {
-
-      if ( isset(CPDF_Adapter::$PAPER_SIZES[ strtolower($size)]) ) 
+      $size = strtolower($size);
+      
+      if ( isset(CPDF_Adapter::$PAPER_SIZES[$size]) ) 
         $size = CPDF_Adapter::$PAPER_SIZES[$size];
       else
         $size = CPDF_Adapter::$PAPER_SIZES["letter"];
-    
     }
 
-    if ( strtolower($orientation) == "landscape" ) {
+    if ( strtolower($orientation) === "landscape" ) {
       list($size[2],$size[3]) = array($size[3],$size[2]);
     }
 
@@ -133,10 +147,10 @@ class GD_Adapter implements Canvas {
     }
 
     $this->_bg_color = $this->_allocate_color($bg_color);
-    imagealphablending($this->_img, false);
+    imagealphablending($this->_img, true);
     imagesavealpha($this->_img, true);
     imagefill($this->_img, 0, 0, $this->_bg_color);
-        
+    
   }
 
   /**
@@ -159,33 +173,42 @@ class GD_Adapter implements Canvas {
    * @return float
    */
   function get_height() { return $this->_height / $this->_aa_factor; }
-  
-  /**
-   * Returns the current page number
-   *
-   * @return int
-   */
-  function get_page_number() {
-    // FIXME
-  }
-   
-  /**
-   * Returns the total number of pages
-   *
-   * @return int
-   */
-  function get_page_count() {
-    // FIXME
-  }    
 
   /**
-   * Sets the total number of pages
+   * Returns the current page number
+   * @return int
+   */
+  function get_page_number() { return $this->_page_number; }
+
+  /**
+   * Returns the total number of pages in the document
+   * @return int
+   */
+  function get_page_count() { return $this->_page_count; }
+
+  /**
+   * Sets the current page number
+   *
+   * @param int $num
+   */
+  function set_page_number($num) { $this->_page_number = $num; }
+
+  /**
+   * Sets the page count
    *
    * @param int $count
    */
-  function set_page_count($count) {
+  function set_page_count($count) {  $this->_page_count = $count; }
+  
+  /**
+   * Sets the opacity 
+   * 
+   * @param $opacity
+   * @param $mode
+   */
+  function set_opacity($opacity, $mode = "Normal") {
     // FIXME
-  }    
+  }
 
   /**
    * Allocate a new color.  Allocate with GD as needed and store
@@ -195,6 +218,10 @@ class GD_Adapter implements Canvas {
    * @return int           The allocated color
    */
   private function _allocate_color($color) {
+    
+    if ( isset($color["c"]) ) {
+      $color = cmyk_to_rgb($color);
+    }
     
     // Full opacity if no alpha set
     if ( !isset($color[3]) ) 
@@ -370,6 +397,53 @@ class GD_Adapter implements Canvas {
     imagefilledrectangle($this->_img, $x1, $y1, $x1 + $w, $y1 + $h, $c);
 
   }
+  
+  /**
+   * Starts a clipping rectangle at x1,y1 with width w and height h
+   *
+   * @param float $x1
+   * @param float $y1
+   * @param float $w
+   * @param float $h
+   */   
+  function clipping_rectangle($x1, $y1, $w, $h) {
+    // @todo
+  }
+  
+  /**
+   * Ends the last clipping shape
+   */  
+  function clipping_end() {
+    // @todo
+  }
+  
+  function save() {
+    // @todo
+  }
+  
+  function restore() {
+    // @todo
+  }
+  
+  function rotate($angle, $x, $y) {
+    // @todo
+  }
+  
+  function skew($angle_x, $angle_y, $x, $y) {
+    // @todo
+  }
+  
+  function scale($s_x, $s_y, $x, $y) {
+    // @todo
+  }
+  
+  function translate($t_x, $t_y) {
+    // @todo
+  }
+  
+  function transform($a, $b, $c, $d, $e, $f) {
+    // @todo
+  }
 
   /**
    * Draws a polygon
@@ -497,6 +571,10 @@ class GD_Adapter implements Canvas {
       $src = @imagecreatefromgif($img_url);
       break;
       
+    case "bmp":
+      $src = @imagecreatefrombmp($img_url);
+      break;
+      
     case "jpg":
     case "jpeg":
       $src = @imagecreatefromjpeg($img_url);
@@ -537,8 +615,9 @@ class GD_Adapter implements Canvas {
    * @param float $size the font size, in points
    * @param array $color
    * @param float $adjust word spacing adjustment
+   * @param float $angle Text angle
    */
-  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $adjust = 0) {
+  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $word_spacing = 0, $char_spacing = 0, $angle = 0) {
 
     // Scale by the AA factor
     $x *= $this->_aa_factor;
@@ -546,15 +625,20 @@ class GD_Adapter implements Canvas {
     $size *= $this->_aa_factor;
     
     $h = $this->get_font_height($font, $size);
-    
     $c = $this->_allocate_color($color);
+    
+    $text = mb_encode_numericentity($text, array(0x0080, 0xff, 0, 0xff), 'UTF-8');
 
     if ( strpos($font, '.ttf') === false )
       $font .= ".ttf";
 
     // FIXME: word spacing
-    imagettftext($this->_img, $size, 0, $x, $y + $h, $c, $font, $text);
+    @imagettftext($this->_img, $size, $angle, $x, $y + $h, $c, $font, $text);
     
+  }
+  
+  function javascript($code) {
+    // Not implemented
   }
 
   /**
@@ -580,6 +664,16 @@ class GD_Adapter implements Canvas {
   }
 
   /**
+   * Add meta information to the PDF
+   *
+   * @param string $label  label of the value (Creator, Producer, etc.)
+   * @param string $value  the text to set
+   */
+  function add_info($label, $value) {
+    // N/A
+  }
+  
+  /**
    * Calculates text size, in points
    *
    * @param string $text the text to be sized
@@ -588,13 +682,15 @@ class GD_Adapter implements Canvas {
    * @param float  $spacing word spacing, if any
    * @return float
    */
-  function get_text_width($text, $font, $size, $spacing = 0) {    
+  function get_text_width($text, $font, $size, $word_spacing = 0, $char_spacing = 0) {    
 
     if ( strpos($font, '.ttf') === false )
       $font .= ".ttf";
+      
+    $text = mb_encode_numericentity($text, array(0x0080, 0xffff, 0, 0xffff), 'UTF-8');
 
     // FIXME: word spacing
-    list($x1,,$x2) = imagettfbbox($size, 0, $font, $text);
+    list($x1,,$x2) = @imagettfbbox($size, 0, $font, $text);
     return $x2 - $x1;
   }
 
@@ -611,7 +707,7 @@ class GD_Adapter implements Canvas {
 
     // FIXME: word spacing
     list(,$y2,,,,$y1) = imagettfbbox($size, 0, $font, "MXjpqytfhl");  // Test string with ascenders, descenders and caps
-    return $y2 - $y1;
+    return ($y2 - $y1) * DOMPDF_FONT_HEIGHT_RATIO;
   }
 
   
@@ -621,9 +717,26 @@ class GD_Adapter implements Canvas {
    * Subsequent drawing operations will appear on the new page.
    */
   function new_page() {
-    // FIXME
+    $this->_page_number++;
+    $this->_page_count++;
   }    
 
+  function open_object(){
+    // N/A
+  }
+
+  function close_object(){
+    // N/A
+  }
+
+  function add_object(){
+    // N/A
+  }
+
+  function page_text(){
+    // N/A
+  }
+  
   /**
    * Streams the image directly to the browser
    *
@@ -715,8 +828,7 @@ class GD_Adapter implements Canvas {
       break;
     }
 
-    $image = ob_get_contents();
-    ob_end_clean();
+    $image = ob_get_clean();
 
     if ( $this->_aa_factor != 1 )
       imagedestroy($dst);
@@ -726,4 +838,3 @@ class GD_Adapter implements Canvas {
   
   
 }
-?>

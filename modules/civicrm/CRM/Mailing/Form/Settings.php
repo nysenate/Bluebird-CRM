@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -79,7 +79,7 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form
 
         if ( $mailingID ) {
             require_once 'CRM/Mailing/DAO/Mailing.php';
-            $dao =&new  CRM_Mailing_DAO_Mailing();
+            $dao = new  CRM_Mailing_DAO_Mailing();
             $dao->id = $mailingID; 
             $dao->find(true);
             // override_verp must be flipped, as in 3.2 we reverted
@@ -87,6 +87,7 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form
             // ‘should it *not* override Reply-To: with VERP-ed address?’
             $dao->override_verp = !$dao->override_verp;
             $dao->storeValues($dao, $defaults);
+            $defaults['visibility'] = $dao->visibility;
         }
         return $defaults;
     }
@@ -116,6 +117,9 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form
         
         $this->add('checkbox', 'auto_responder', ts('Auto-respond to Replies?'));
         $defaults['auto_responder'] = false;
+        
+		$this->add( 'select', 'visibility', ts('Mailing Visibility'),
+        CRM_Core_SelectValues::ufVisibility( true ), true );
         
         $this->add( 'select', 'reply_id', ts( 'Auto-responder' ), 
                     CRM_Mailing_PseudoConstant::component( 'Reply' ), true );
@@ -180,6 +184,8 @@ class CRM_Mailing_Form_Settings extends CRM_Core_Form
             }
             $this->set($key, $this->controller->exportvalue($this->_name, $key));
         }
+        
+        $params['visibility'] = $this->controller->exportvalue($this->_name, 'visibility');
 
         // override_verp must be flipped, as in 3.2 we reverted
         // its meaning to ‘should CiviMail manage replies?’ – i.e.,

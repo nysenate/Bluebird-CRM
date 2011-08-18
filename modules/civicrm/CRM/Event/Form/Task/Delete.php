@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -88,8 +88,7 @@ class CRM_Event_Form_Task_Delete extends CRM_Event_Form_Task
         
         $this->addRadio( 'delete_participant', null, $deleteParticipants, null, '<br />');
         $this->setDefaults( array( 'delete_participant' => 1 ) );
-        $this->assign( "additionalParticipant", $additionalParticipant );
-        
+      
         $this->addDefaultButtons( ts( 'Delete Participations' ), 'done' );
     }
     
@@ -111,7 +110,7 @@ class CRM_Event_Form_Task_Delete extends CRM_Event_Form_Task
                 $participantLinks = (CRM_Event_BAO_Participant::getAdditionalParticipantUrl( $additionalId ));
             }
         }
-        $deletedParticipants = 0;
+        $deletedParticipants = $additionalCount = 0;
         foreach( $this->_participantIds as $participantId ) {
             if( CRM_Utils_Array::value( 'delete_participant', $params ) == 1 ){ 
                 if( CRM_Event_BAO_Participant::isPrimaryParticipant( $participantId ) ){
@@ -132,8 +131,8 @@ class CRM_Event_Form_Task_Delete extends CRM_Event_Form_Task
         if( $additionalCount ) $deletedParticipants += $additionalCount;
         
         $status = array(
-                        ts( 'Deleted Participation(s): %1',        array( 1 => $deletedParticipants ) ),
-                        ts( 'Total Selected Participation(s): %1', array( 1 => $deletedParticipants) ) );
+                        ts( 'Participant(s) Deleted: %1',        array( 1 => $deletedParticipants ) ),
+                        ts( 'Total Selected Participant(s): %1', array( 1 => $deletedParticipants) ) );
             
     
     if ( !empty( $participantLinks ) ) {

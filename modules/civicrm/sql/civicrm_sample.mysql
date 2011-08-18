@@ -1,7 +1,7 @@
 -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |
@@ -122,16 +122,16 @@ INSERT INTO `civicrm_contact_type`
 -- Add sample dashlets 
 
 INSERT INTO `civicrm_dashboard` 
-    ( `domain_id`, `label`, `url`, `content`, `permission`, `permission_operator`, `column_no`, `is_minimized`, `is_active`, `weight`, `created_date`, `is_fullscreen`) 
+    ( `domain_id`, `label`, `url`, `permission`, `permission_operator`, `column_no`, `is_minimized`, `is_active`, `weight`, `is_fullscreen`, `fullscreen_url`) 
     VALUES 
-    ( @domain_id, 'Donor Report (Summary)'       , 'civicrm/report/instance/3&reset=1&section=1&snippet=4&charts=barChart',  NULL, 'access CiviCRM,access CiviContribute', 'AND', 0, 0,'1', 4, NULL, '0'),
-    ( @domain_id, 'Top Donors Report'            , 'civicrm/report/instance/20&reset=1&section=2&snippet=4',                 NULL, 'access CiviCRM,access CiviContribute', 'AND', 0, 0,'1', 5, NULL, '1'),
-    ( @domain_id, 'Event Income Report (Summary)', 'civicrm/report/instance/13&reset=1&section=1&snippet=4&charts=pieChart', NULL, 'access CiviCRM,access CiviEvent'     , 'AND', 0, 0,'1', 6, NULL, '0'),
-    ( @domain_id, 'Membership Report (Summary)'  , 'civicrm/report/instance/9&reset=1&section=2&snippet=4',                  NULL, 'access CiviCRM,access CiviMember'    , 'AND', 0, 0,'1', 7, NULL, '1');
+    ( @domain_id, 'Donor Report (Summary)'       , 'civicrm/report/instance/6&reset=1&section=1&snippet=4&charts=barChart',  'access CiviContribute', 'AND', 0, 0,'1', 4, '1', 'civicrm/report/instance/6&reset=1&section=1&snippet=4&charts=barChart&context=dashletFullscreen'),
+    ( @domain_id, 'Top Donors Report'            , 'civicrm/report/instance/13&reset=1&section=2&snippet=4',                 'access CiviContribute', 'AND', 0, 0,'1', 5, '1', 'civicrm/report/instance/13&reset=1&section=2&snippet=4&context=dashletFullscreen'),
+    ( @domain_id, 'Event Income Report (Summary)', 'civicrm/report/instance/23&reset=1&section=1&snippet=4&charts=pieChart', 'access CiviEvent'     , 'AND', 0, 0,'1', 6, '1', 'civicrm/report/instance/23&reset=1&section=1&snippet=4&charts=pieChart&context=dashletFullscreen'),
+    ( @domain_id, 'Membership Report (Summary)'  , 'civicrm/report/instance/19&reset=1&section=2&snippet=4',                 'access CiviMember'    , 'AND', 0, 0,'1', 7, '1', 'civicrm/report/instance/19&reset=1&section=2&snippet=4&context=dashletFullscreen');
    -- +--------------------------------------------------------------------+
--- | CiviCRM version 3.3                                                |
+-- | CiviCRM version 3.4                                                |
 -- +--------------------------------------------------------------------+
--- | Copyright CiviCRM LLC (c) 2004-2010                                |
+-- | Copyright CiviCRM LLC (c) 2004-2011                                |
 -- +--------------------------------------------------------------------+
 -- | This file is a part of CiviCRM.                                    |
 -- |                                                                    |

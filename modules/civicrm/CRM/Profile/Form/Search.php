@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -76,8 +76,8 @@ class CRM_Profile_Form_Search extends CRM_Profile_Form
         // or a scalar -- FIX ME sometime please
         foreach ( $_GET as $key => $value ) {
             if ( substr( $key, 0, 7 ) == 'custom_' || $key == "preferred_communication_method" ) {
-                if ( strpos( $value, CRM_Core_BAO_CustomOption::VALUE_SEPERATOR ) !== false ) {
-                    $v = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $value );
+                if ( strpos( $value, CRM_Core_DAO::VALUE_SEPARATOR ) !== false ) {
+                    $v = explode( CRM_Core_DAO::VALUE_SEPARATOR, $value );
                     $value = array();
                     foreach ( $v as $item ) {
                         if( $item ) {

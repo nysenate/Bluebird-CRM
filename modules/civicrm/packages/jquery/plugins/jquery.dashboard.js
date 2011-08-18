@@ -383,28 +383,34 @@
 
       widget.enterFullscreen = function() {
         // Make sure the widget actually supports full screen mode.
-        if (!widget.fullscreen) {
+        if (!widget.fullscreenUrl) {
           return;
         }
 
-        if (!widget.fullscreen.element) {
-          // Initialize the full screen element for this widget.
-          var markup = '<div id="widget-' + widget.id + '-full-screen">' + widget.fullscreen + '</div>';
-          
-          // Overwrite the widget.fullscreen string.
-          widget.fullscreen = {
-            initialMarkup: widget.fullscreen,
-            element: $(markup).appendTo(dashboard.element)
-          };
+        $('<div id="crm-dashlet-container"></div>')
+            .html('<div id="crm-container"><div id="crm-dashlet-fullscreen-content">Loading...</div></div>')
+            .dialog({
+                autoOpen: true,
+                title: widget.title,
+                modal: true,
+                height: 'auto',
+                width: 'auto',
+                position: [100,125],
+                close: function(event, ui) {
+                    cj(this).dialog("destroy");
+                    $('#crm-dashlet-container').remove();
+                    $('#crm-dashlet-fullscreen-content').remove();
+                }
+            });
 
-          getJavascript(widget.fullscreenInitScript);
-        }
-
-        // Let dashboard.enterFullscreen() do the heavy lifting.
-        dashboard.enterFullscreen(widget.fullscreen.element);
-        getJavascript(widget.fullscreenScript);
-        widget.fullscreen.displayed = true;
+        $.ajax({
+            url: widget.fullscreenUrl,
+            success: function ( content ) {
+                $('#crm-dashlet-fullscreen-content').html( content );
+            }
+        }); 
       };
+      
       // Exit fullscreen mode.
       widget.exitFullscreen = function() {
         // This is just a wrapper for dashboard.exitFullscreen() which does the heavy lifting.
@@ -488,7 +494,7 @@
         if (!widget.settings) {
           delete widget.controls.settings;
         }
-        if (!widget.fullscreen) {
+        if (!widget.fullscreenUrl) {
           delete widget.controls.fullscreen;
         }
 

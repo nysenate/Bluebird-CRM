@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -50,7 +50,10 @@ class CRM_Event_Page_AJAX
             $name = '%';
         }
         $whereClause = " title LIKE '$name%' AND ( civicrm_event.is_template IS NULL OR civicrm_event.is_template = 0 )";
-        
+        $includeOld = CRM_Utils_Request::retrieve( 'includeOld', 'Boolean', CRM_Core_DAO::$_nullObject, false, true );
+        if ( ! $includeOld ) {
+            $whereClause .= " AND ( end_date IS NULL OR end_date >= NOW() )";
+        }
         $query = "
 SELECT title, id
 FROM civicrm_event

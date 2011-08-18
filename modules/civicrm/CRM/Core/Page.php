@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -161,7 +161,9 @@ class CRM_Core_Page {
         }
 
         self::$_template->assign( 'mode'   , $this->_mode );
-        self::$_template->assign( 'tplFile', $this->getTemplateFileName() );
+
+        $pageTemplateFile = $this->getTemplateFileName( );
+        self::$_template->assign( 'tplFile', $pageTemplateFile );
 
         // invoke the pagRun hook, CRM-3906
         require_once 'CRM/Utils/Hook.php';
@@ -174,9 +176,12 @@ class CRM_Core_Page {
             } else {
                 $content = self::$_template->fetch( 'CRM/common/print.tpl' );
             }
+            CRM_Utils_System::appendTPLFile( $pageTemplateFile, $content );
+
             if ( $this->_print == CRM_Core_Smarty::PRINT_PDF ) {
                 require_once 'CRM/Utils/PDF/Utils.php';
-                CRM_Utils_PDF_Utils::domlib( $content, "{$this->_name}.pdf" );
+                CRM_Utils_PDF_Utils::html2pdf( $content, "{$this->_name}.pdf", false,
+                                               array( 'paper_size' => 'a3', 'orientation' => 'landscape' ) );
             } else {
                 echo $content;
             }
@@ -184,6 +189,9 @@ class CRM_Core_Page {
         }
         $config = CRM_Core_Config::singleton();
         $content = self::$_template->fetch( 'CRM/common/'. strtolower($config->userFramework) .'.tpl' );
+
+        CRM_Utils_System::appendTPLFile( $pageTemplateFile, $content );
+
         echo CRM_Utils_System::theme( 'page', $content, true, $this->_print );
         return;
     }

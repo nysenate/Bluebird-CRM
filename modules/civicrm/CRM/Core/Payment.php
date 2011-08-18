@@ -1,9 +1,9 @@
 <?php  
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -89,7 +89,13 @@ abstract class CRM_Core_Payment {
      *  
      */  
     static function &singleton( $mode = 'test', &$paymentProcessor, &$paymentForm = null, $force = false ) 
-    {        
+    {
+        // make sure paymentProcessor is not empty
+        // CRM-7424
+        if ( empty( $paymentProcessor ) ) {
+            return CRM_Core_DAO::$_nullObject;
+        }
+
         $cacheKey = "{$mode}_{$paymentProcessor['id']}_".(int)isset( $paymentForm );
         if ( !isset( self::$_singleton[$cacheKey] ) || $force ) {
             $config = CRM_Core_Config::singleton( );

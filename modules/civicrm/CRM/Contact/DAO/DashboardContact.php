@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -128,6 +128,18 @@ class CRM_Contact_DAO_DashboardContact extends CRM_Core_DAO
      */
     public $weight;
     /**
+     * dashlet content
+     *
+     * @var text
+     */
+    public $content;
+    /**
+     * When was content populated
+     *
+     * @var datetime
+     */
+    public $created_date;
+    /**
      * class constructor
      *
      * @access public
@@ -202,6 +214,16 @@ class CRM_Contact_DAO_DashboardContact extends CRM_Core_DAO
                     'name' => 'weight',
                     'type' => CRM_Utils_Type::T_INT,
                     'title' => ts('Weight') ,
+                ) ,
+                'content' => array(
+                    'name' => 'content',
+                    'type' => CRM_Utils_Type::T_TEXT,
+                    'title' => ts('Content') ,
+                ) ,
+                'created_date' => array(
+                    'name' => 'created_date',
+                    'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+                    'title' => ts('Created Date') ,
                 ) ,
             );
         }

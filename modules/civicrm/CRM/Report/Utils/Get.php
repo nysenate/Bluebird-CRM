@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -148,7 +148,7 @@ class CRM_Report_Utils_Get {
             // send the type as string so that multiple values can also be retrieved from url. 
             // for e.g url like - "memtype_in=in&memtype_value=1,2,3"
             $value = self::getTypedValue( "{$fieldName}_value", CRM_Utils_Type::T_STRING );
-            if ( ! preg_match('/^(\d)(,\d){0,14}$/', $value) ) {
+            if ( ! preg_match('/^(\d+)(,\d+){0,14}$/', $value) ) {
                 // extra check. Also put a limit of 15 max values.
                 $value = null;
             }

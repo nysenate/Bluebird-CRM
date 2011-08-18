@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -77,8 +77,7 @@
         {foreach from=$group.fields item=panelItem  key=panelName name=groupLoop}
             <tr class="{cycle values="odd-row,even-row" name=$groupName}">
                 <td style="vertical-align: top; width:24px;">
-                    <a href="{$panelItem.url}"{if $panelItem.extra} {$panelItem.extra}{/if} ><img src="{$config->resourceBase}i/
-                    {$panelItem.icon}" alt="{$panelItem.title}"/></a>
+                    <a href="{$panelItem.url}"{if $panelItem.extra} {$panelItem.extra}{/if} ><img src="{$config->resourceBase}i/{if $panelItem.icon}{$panelItem.icon}{else}admin/small/option.png{/if}" alt="{$panelItem.title}"/></a>
                 </td>
                 <td class="report font-size11pt" style="vertical-align: text-top;" width="20%">
                     <a href="{$panelItem.url}"{if $panelItem.extra} {$panelItem.extra}{/if} id="id_{$panelItem.id}">{$panelItem.title}</a>

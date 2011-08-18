@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -96,7 +96,7 @@ class CRM_Price_Form_Option extends CRM_Core_Form
 
             // fix the display of the monetary value, CRM-4038
             require_once 'CRM/Utils/Money.php';
-            $defaults['value'] = CRM_Utils_Money::format($defaults['value'], null, '%a');
+            $defaults['value'] = CRM_Utils_Money::format( CRM_Utils_Array::value( 'value', $defaults ), null, '%a');
         }
         
         require_once 'CRM/Core/DAO.php';

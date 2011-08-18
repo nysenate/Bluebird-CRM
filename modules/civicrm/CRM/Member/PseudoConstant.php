@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -86,7 +86,7 @@ class CRM_Member_PseudoConstant extends CRM_Core_PseudoConstant {
      * @return array - array reference of all membership statuss if any
      * @static
      */
-    public static function &membershipStatus($id = null, $cond = null, $column = 'name')
+    public static function &membershipStatus($id = null, $cond = null, $column = 'name', $force = false)
     {
         if ( self::$membershipStatus === null ) {
             self::$membershipStatus = array( );
@@ -94,7 +94,7 @@ class CRM_Member_PseudoConstant extends CRM_Core_PseudoConstant {
         
         $cacheKey = $column;
         if ( $cond ) $cacheKey .= "_{$cond}"; 
-        if ( !isset( self::$membershipStatus[$cacheKey] ) ) {
+        if ( !isset( self::$membershipStatus[$cacheKey] ) || $force ) {
             CRM_Core_PseudoConstant::populate( self::$membershipStatus[$cacheKey],
                                                'CRM_Member_DAO_MembershipStatus',
                                                false, $column, 'is_active', $cond, 'weight');
@@ -111,6 +111,20 @@ class CRM_Member_PseudoConstant extends CRM_Core_PseudoConstant {
         return $value;
     }
     
+      /**
+     * Flush given pseudoconstant so it can be reread from db
+     * next time it's requested.
+     *
+     * @access public
+     * @static
+     *
+     * @param boolean $name pseudoconstant to be flushed
+     *
+     */
+    public static function flush( $name )
+    {
+        self::$$name = null;
+    }  
 }
 
 

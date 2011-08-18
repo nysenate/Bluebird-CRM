@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -85,6 +85,12 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
      * @var int unsigned
      */
     public $id;
+    /**
+     * Which site is this mailing for
+     *
+     * @var int unsigned
+     */
+    public $domain_id;
     /**
      * FK to the header component.
      *
@@ -265,6 +271,12 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
      */
     public $visibility;
     /**
+     * The campaign for which this mailing has been initiated.
+     *
+     * @var int unsigned
+     */
+    public $campaign_id;
+    /**
      * class constructor
      *
      * @access public
@@ -284,6 +296,7 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
     {
         if (!(self::$_links)) {
             self::$_links = array(
+                'domain_id' => 'civicrm_domain:id',
                 'header_id' => 'civicrm_mailing_component:id',
                 'footer_id' => 'civicrm_mailing_component:id',
                 'reply_id' => 'civicrm_mailing_component:id',
@@ -293,6 +306,7 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
                 'created_id' => 'civicrm_contact:id',
                 'scheduled_id' => 'civicrm_contact:id',
                 'approver_id' => 'civicrm_contact:id',
+                'campaign_id' => 'civicrm_campaign:id',
             );
         }
         return self::$_links;
@@ -311,6 +325,11 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
                     'name' => 'id',
                     'type' => CRM_Utils_Type::T_INT,
                     'required' => true,
+                ) ,
+                'domain_id' => array(
+                    'name' => 'domain_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'FKClassName' => 'CRM_Core_DAO_Domain',
                 ) ,
                 'header_id' => array(
                     'name' => 'header_id',
@@ -471,6 +490,11 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
                     'default' => 'User and User Admin Only',
                     'enumValues' => 'User and User Admin Only,Public Pages',
                 ) ,
+                'campaign_id' => array(
+                    'name' => 'campaign_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'FKClassName' => 'CRM_Campaign_DAO_Campaign',
+                ) ,
             );
         }
         return self::$_fields;
@@ -483,8 +507,7 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
      */
     function getTableName()
     {
-        global $dbLocale;
-        return self::$_tableName . $dbLocale;
+        return self::$_tableName;
     }
     /**
      * returns if this table needs to be logged

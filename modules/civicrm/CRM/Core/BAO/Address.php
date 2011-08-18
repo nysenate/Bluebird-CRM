@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -111,7 +111,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
                 continue;
             }
             
-            if ( $isPrimary && $value['is_primary'] ) {
+            if ( $isPrimary && CRM_Utils_Array::value( 'is_primary', $value ) ) {
                 $isPrimary = false;
             } else {
                 $value['is_primary'] = 0;
@@ -150,6 +150,16 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
             CRM_Core_BAO_Address::fixAddress( $params );
         }
 
+        require_once 'CRM/Utils/Hook.php';
+        if ( CRM_Utils_Array::value( 'id', $params ) ) {
+            CRM_Utils_Hook::pre( 'edit', 'Address', $params['id'], $params );
+            $isEdit = true;
+        } else {
+            CRM_Utils_Hook::pre( 'create', 'Address', null, $params ); 
+            $isEdit = false;
+        }
+
+        $config =& CRM_Core_Config::singleton();
         $address->copyValues($params);
 
         $address->save( );
@@ -179,6 +189,14 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
             // we only create create relationship if address is shared by Individual
             if ( $address->master_id != 'null' ) {
                 self::processSharedAddressRelationship( $address->master_id, $params );
+            }
+
+
+            // lets call the post hook only after we've done all the follow on processing
+            if ( $isEdit ) {
+                CRM_Utils_Hook::post( 'edit'  , 'Address', $params['id'], $params );
+            } else {
+                CRM_Utils_Hook::post( 'create', 'Address', null, $params ); 
             }
         }
 
@@ -266,7 +284,22 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
             }
         }
 
+        // add county id if county is set
+        // CRM-7837
+        if ( ( ! isset( $params['county_id'] ) || ! is_numeric( $params['county_id'] ) )
+             && isset( $params['county'] ) && ! empty( $params['county'] ) ) {
+            $county       = new CRM_Core_DAO_County();
+            $county->name = $params['county'];   
             
+            if ( isset( $params['state_province_id'] ) ) {
+                $county->state_province_id = $params['state_province_id'];
+            }
+
+            if ( $county->find( true ) ) {
+                $params['county_id'] = $county->id;
+            }      
+        }
+             
         // currently copy values populates empty fields with the string "null"
         // and hence need to check for the string null
         if ( isset( $params['state_province_id'] ) && 
@@ -318,6 +351,24 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
         if ($asp === 'USPS') {
             require_once 'CRM/Utils/Address/USPS.php';
             CRM_Utils_Address_USPS::checkAddress( $params );
+
+            // do street parsing again if enabled, since street address might have changed
+            require_once 'CRM/Core/BAO/Preferences.php';
+            $parseStreetAddress = CRM_Utils_Array::value( 'street_address_parsing', 
+                                                          CRM_Core_BAO_Preferences::valueOptions( 'address_options' ), 
+                                                          false );
+
+            if ( $parseStreetAddress && !empty( $params['street_address']) ) {
+                foreach ( array( 'street_number', 'street_name', 'street_unit', 'street_number_suffix' ) as $fld ) {
+                    unset( $params[$fld] );
+                }
+                // main parse string.
+                $parseString  = CRM_Utils_Array::value( 'street_address', $params );
+                $parsedFields = CRM_Core_BAO_Address::parseStreetAddress( $parseString );
+                
+                // merge parse address in to main address block.
+                $params = array_merge( $params, $parsedFields );
+            }
         }
         
         // add latitude and longitude and format address if needed
@@ -493,7 +544,7 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
                         );
         
         if( isset( $this->county_id ) && $this->county_id ) {
-            $fields['county'] = CRM_Core_Pseudoconstant::county($this->county_id);
+            $fields['county'] = CRM_Core_PseudoConstant::county($this->county_id);
         } else {
             $fields['county'] = null;
         }
@@ -615,7 +666,11 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
                     CRM_Contact_Form_Edit_Address::fixStateSelect( $form,
                                                               $match['country'],
                                                               $match['state_province'],
+                                                              CRM_Utils_Array::value( 'county',
+                                                                                      $match ),
                                                               CRM_Utils_Array::value( $match['country'],
+                                                                                      $defaults ),
+                                                              CRM_Utils_Array::value( $match['state_province'],
                                                                                       $defaults ) );
                 } else {
                     unset( $config->stateCountryMap[$index] );
@@ -703,31 +758,31 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
         
         // get street number and suffix.
         $matches = array( );
-        if ( preg_match( '/^[A-Za-z0-9]+([\W]+)/', $streetAddress, $matches ) ) {
-            $steetNumAndSuffix = $matches[0];
-            
-            // get street number.
-            $matches = array( );
-            if ( preg_match( '/^(\d+)/', $steetNumAndSuffix, $matches ) ) {
-                $parseFields['street_number'] = $matches[0];
-                $suffix = preg_replace( '/^(\d+)/', '', $steetNumAndSuffix );
-                $suffix = trim( $suffix );
+		//alter street number/suffix handling so that we accept -digit
+        if ( preg_match( '/^[A-Za-z0-9]+([\S]+)/', $streetAddress, $matches ) ) {
+            // check that $matches[0] is numeric, else assume no street number
+            if ( preg_match( '/^(\d+)/', $matches[0] ) ) {
+                $streetNumAndSuffix = $matches[0];
+
+                // get street number.
                 $matches = array( );
-                if ( preg_match( '/^[A-Za-z0-9]+/', $suffix, $matches ) ) {
-                    $parseFields['street_number_suffix'] = $matches[0];
+                if ( preg_match( '/^(\d+)/', $streetNumAndSuffix, $matches ) ) {
+                    $parseFields['street_number'] = $matches[0];
+                    $suffix = preg_replace( '/^(\d+)/', '', $streetNumAndSuffix );
+                    $parseFields['street_number_suffix'] = trim( $suffix );
                 }
-            }
             
-            // unset from main street address.
-            $streetAddress = preg_replace( '/^[A-Za-z0-9]+([\W]+)/', '', $streetAddress );
-            $streetAddress = trim( $streetAddress );
+                // unset from main street address.
+                $streetAddress = preg_replace( '/^[A-Za-z0-9]+([\S]+)/', '', $streetAddress );
+                $streetAddress = trim( $streetAddress );
+            }
         } else if ( preg_match( '/^(\d+)/', $streetAddress, $matches ) ) {
             $parseFields['street_number'] = $matches[0];
             // unset from main street address.
             $streetAddress = preg_replace( '/^(\d+)/', '', $streetAddress );
             $streetAddress = trim( $streetAddress );
         }
-        
+
         // suffix might be like 1/2
         $matches = array( );
         if ( preg_match( '/^\d\/\d/', $streetAddress, $matches ) ) {
@@ -746,17 +801,17 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
                                     'OFC',  'OFFICE',     'PH',    'PENTHOUSE', 'TRLR', 'TRAILER', 
                                     'UPPR', 'RM',         'ROOM',  'SIDE',      'SLIP', 'KEY',  
                                     'LOT',  'PIER',       'REAR',  'SPC',       'SPACE', 
-                                    'STOP', 'STE',        'SUITE', 'UNIT',      '#',     'ST' );
+                                    'STOP', 'STE',        'SUITE', 'UNIT',      '#'  );
         
         // overwriting $streetUnitFormats for 'en_CA' and 'fr_CA' locale
         if ( in_array( $locale, array ( 'en_CA', 'fr_CA') ) ) {   
             $streetUnitFormats = array( 'APT', 'APP', 'SUITE', 'BUREAU', 'UNIT' );
         }
         
-        $streetUnitPreg = '/('. implode( '\s|\s', $streetUnitFormats ) . ')(.+)?/i';
+        $streetUnitPreg = '/('. implode( '|\s', $streetUnitFormats ) . ')(.+)?/i';
         $matches = array( );
         if ( preg_match( $streetUnitPreg, $streetAddress, $matches ) ) {
-            $parseFields['street_unit'] = $matches[0];
+            $parseFields['street_unit'] = trim($matches[0]);
             $streetAddress = str_replace( $matches[0], '', $streetAddress );
             $streetAddress = trim( $streetAddress );
         }
@@ -764,6 +819,12 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
         // consider remaining string as street name.
         $parseFields['street_name'] = $streetAddress;
         
+        //run parsed fields through stripSpaces to clean
+        require_once 'CRM/Utils/String.php';
+        foreach ( $parseFields as $parseField=>$value ) {
+    		$parseFields[$parseField] = CRM_Utils_String::stripSpaces($value);
+		}
+		
         return $parseFields;
     }
     
@@ -810,6 +871,73 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
     }
 
     /**
+     * Function to check if current address fields are shared with any other address
+     *
+     * @param array    $fields    address fields in profile
+     * @param int      $contactId contact id
+     *
+     * @access public
+     * @static
+     */
+    static function checkContactSharedAddressFields( &$fields, $contactId  ) 
+    {
+        if ( !$contactId || !is_array( $fields ) || empty( $fields ) ) {
+            return;
+        }
+        
+        $sharedLocations = array( );
+        
+        $query = "
+SELECT is_primary,
+       location_type_id
+  FROM civicrm_address 
+ WHERE contact_id = %1 
+   AND master_id IS NOT NULL";
+        
+        $dao = CRM_Core_DAO::executeQuery( $query, array( 1 => array( $contactId, 'Positive' ) ) );
+        while( $dao->fetch( ) ) {
+            $sharedLocations[$dao->location_type_id] = $dao->location_type_id;
+            if ( $dao->is_primary ) $sharedLocations['Primary'] = 'Primary';
+        }
+        
+        //no need to process further.
+        if ( empty( $sharedLocations ) ) {
+            return;
+        }
+        
+        $addressFields = array( 'city',
+                                'county',
+                                'country',
+                                'geo_code_1',
+                                'geo_code_2',
+                                'postal_code',
+                                'address_name',
+                                'state_province',
+                                'street_address',
+                                'postal_code_suffix',
+                                'supplemental_address_1',
+                                'supplemental_address_2' );
+        
+        foreach ( $fields as $name => &$values ) {
+            if ( !is_array( $values ) || empty( $values ) ) {
+                continue;
+            }
+            
+            $nameVal  = explode( '-', $values['name'] ); 
+            $fldName  = CRM_Utils_Array::value( 0, $nameVal );
+            $locType  = CRM_Utils_Array::value( 1, $nameVal );
+            if ( CRM_Utils_Array::value( 'location_type_id', $values ) ) {
+                $locType = $values['location_type_id'];
+            }
+            
+            if ( in_array( $fldName, $addressFields ) && 
+                 in_array( $locType, $sharedLocations ) ) {
+                $values['is_shared'] = true;
+            }
+        }
+    }
+    
+    /**
      * Function to update the shared addresses if master address is modified
      *
      * @param int    $addressId address id
@@ -855,7 +983,7 @@ ORDER BY civicrm_address.is_primary DESC, civicrm_address.location_type_id DESC,
         if ( !$masterAddressId ) {
             return;
         }
-        
+        require_once 'CRM/Contact/BAO/Contact.php';
         // get the contact type of contact being edited / created
         $currentContactType = CRM_Contact_BAO_Contact::getContactType( $params['contact_id'] );      
         $currentContactId   = $params['contact_id'];

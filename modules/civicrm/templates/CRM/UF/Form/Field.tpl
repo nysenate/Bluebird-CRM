@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -68,7 +68,12 @@
             <td><div id="in_selector_html">{$form.in_selector.html}<br />         
             <span id="in_selector_desSpan" class="description">{ts}Is this field included as a column in the search results table? This setting applies only to fields with 'Public Pages' or 'Public Pages and Listings' visibility.{/ts}</span></div></td>
         </tr>
-        <tr class="crm-uf-field-form-block-help_post">
+        <tr class="crm-uf-field-form-block-help_pre">
+            <td class="label">{$form.help_pre.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_uf_field' field='help_pre' id=$fieldId}{/if}</td>
+            <td>{$form.help_pre.html|crmReplace:class:huge}<br /> 
+            <span class="description">&nbsp;{ts}Explanatory text displayed to users for this field (can include HTML formatting tags).{/ts}</span></td>
+        </tr>
+	<tr class="crm-uf-field-form-block-help_post">
             <td class="label">{$form.help_post.label}{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_uf_field' field='help_post' id=$fieldId}{/if}</td>
             <td>{$form.help_post.html|crmReplace:class:huge}<br /> 
             <span class="description">&nbsp;{ts}Explanatory text displayed to users for this field (can include HTML formatting tags).{/ts}</span></td>
@@ -146,13 +151,15 @@ function showLabel( ) {
         fieldId = custom.substring( custom.length, 7);
     } else {
         cj('#help_post').val(" ");
+        cj('#help_pre').val(" ");
         return;
     }
 
     var dataUrl = {/literal}"{crmURL p='civicrm/ajax/custom' h=0 }"{literal};
     cj.post( dataUrl, { id: fieldId }, function(data) {
-       cj('#help_post').val( data );
-    });
+        cj('#help_post').val( data.help_post );
+        cj('#help_pre').val( data.help_pre );
+    }, 'json');
 } 
 
 {/literal}{if $action neq 8}{literal}

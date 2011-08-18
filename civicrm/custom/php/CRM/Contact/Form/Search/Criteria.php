@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -73,7 +73,7 @@ class CRM_Contact_Form_Search_Criteria {
             require_once 'CRM/Core/Form/Tag.php';
             require_once 'CRM/Core/BAO/Tag.php';
             $parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_contact' );
-            CRM_Core_Form_Tag::buildQuickForm( $form, $parentNames, 'civicrm_contact', null, true, false, true ); //NYSS 3426
+            CRM_Core_Form_Tag::buildQuickForm( $form, $parentNames, 'civicrm_contact', null, true, false, true );
         }
 
         // add text box for last name, first name, street name, city
@@ -147,6 +147,30 @@ class CRM_Contact_Form_Search_Criteria {
                               $componentModes );
         }
 
+        $form->addElement( 'select', 
+                           'operator', 
+                           ts('Search Operator'), 
+                           array( 'AND' => ts( 'AND' ),
+                                  'OR'  => ts( 'OR'  ) ) );
+
+        require_once 'CRM/Contact/Form/Search.php';
+        // add the option to display relationships
+        $rTypes  = CRM_Core_PseudoConstant::relationshipType( );
+        $rSelect = array( '' => ts('- Select Relationship Type-') );
+        foreach ( $rTypes as $rid => $rValue ) {
+            if ( $rValue['label_a_b'] == $rValue['label_b_a'] ) {
+                $rSelect[$rid] = $rValue['label_a_b'];
+            } else {
+                $rSelect["{$rid}_a_b"] = $rValue['label_a_b'];
+                $rSelect["{$rid}_b_a"] = $rValue['label_b_a'];
+            }
+        }
+
+        $form->addElement('select',
+                          'display_relationship_type',
+                          ts( 'Display Results as Relationship' ),
+                          $rSelect );
+                          
         // checkboxes for DO NOT phone, email, mail
         // we take labels from SelectValues
         $t = CRM_Core_SelectValues::privacy();
@@ -175,20 +199,7 @@ class CRM_Contact_Form_Search_Criteria {
         $form->addGroup($commPreff, 'preferred_communication_method', ts('Preferred Communication Method'));
 
         //CRM-6138 Preferred Language
-		//NYSS 3273/2752 pull directly as pseudoconstant was causing problems; should revisit
-		require_once 'CRM/Core/OptionValue.php';
-		static $languages = null;
-        if ($languages === null) {
-            $rows = array();
-            CRM_Core_OptionValue::getValues(array('name' => 'languages'), $rows, 'weight', true);
-            $languages = array();
-            foreach ($rows as $row) {
-                $languages[$row['name']] = $row['label'];
-            }
-        } 
-		$langPreff = $languages;
-		//NYSS end
-        //$langPreff = CRM_Core_PseudoConstant::languages( );
+        $langPreff = CRM_Core_PseudoConstant::languages( );
         $form->add( 'select', 'preferred_language', ts('Preferred Language'), array( '' => ts('- select language -')) + $langPreff );
         
     }
@@ -225,7 +236,8 @@ class CRM_Contact_Form_Search_Criteria {
                 $config         = CRM_Core_Config::singleton( );
                 $countryDefault = $config->defaultContactCountry; 
                 $stateCountryMap[ ] = array( 'state_province' => 'state_province',
-                                             'country'        => 'country' );
+                                             'country'        => 'country',
+                                             'county'         => 'county', );
                 if( $select == 'stateProvince' ) {
                     if ( $countryDefault  && !isset( $form->_submitValues['country'] ) ) {
                         $selectElements = array( '' => ts('- select -') ) 
@@ -250,6 +262,15 @@ class CRM_Contact_Form_Search_Criteria {
                     }
                     $selectElements = array( '' => ts('- select -') ) 
                         + CRM_Core_PseudoConstant::$select( );
+                    $element = $form->addElement('select', $name, $title, $selectElements );   
+                } else if ( $select == 'county' ) { 
+                    if ( $form->_submitValues['state_province'] ) {
+                        $selectElements = array( '' => ts('- select -') ) 
+                            + CRM_Core_PseudoConstant::countyForState( $form->_submitValues['state_province']   );
+                    }
+                    else {
+                        $selectElements = array( '' => ts('- select a state -') ); 
+                    }
                     $element = $form->addElement('select', $name, $title, $selectElements );   
                 } else {
                     $selectElements = array( '' => ts('- select -') ) 
@@ -326,10 +347,13 @@ class CRM_Contact_Form_Search_Criteria {
 		//NYSS 3355
         $form->addElement('text', 'changeLogData', ts('Changelog Description'), null);
 
-        $form->addDate( 'modified_date_low', ts('Modified Between'), false, array( 'formatType' => 'searchDate') );
-        $form->addDate( 'modified_date_high', ts('and'), false, array( 'formatType' => 'searchDate') );
+        $dates  = array( 1 => ts( 'Added' ), 2 => ts( 'Modified' ) );
+        $form->addRadio( 'log_date', null, $dates, null, '<br />');
+        
+        $form->addDate( 'log_date_low', ts('Between'),false, array( 'formatType' => 'searchDate') );
+        $form->addDate( 'log_date_high',ts('and'), false, array( 'formatType' => 'searchDate') );
     }
-
+    
     static function task( &$form ) {
         $form->add( 'hidden', 'hidden_task', 1 );
 
@@ -389,16 +413,16 @@ class CRM_Contact_Form_Search_Criteria {
          
         $form->addDate( 'birth_date_low', ts('Birth Dates - From'), false, array( 'formatType' => 'birth') );
         $form->addDate( 'birth_date_high', ts('To'), false, array( 'formatType' => 'birth') );
-		
-		//NYSS 2693 radio button for is_deceased
-        $deceasedOptions = array( );
-        $deceasedOptions[1] = HTML_QuickForm::createElement('radio', null, ts('Deceased'), 'Yes', 1);
-		$deceasedOptions[0] = HTML_QuickForm::createElement('radio', null, ts('Deceased'), 'No', 0);
-        $form->addGroup($deceasedOptions, 'is_deceased', ts('Deceased'));
-		//NYSS end
 
         $form->addDate( 'deceased_date_low', ts('Deceased Dates - From'), false, array( 'formatType' => 'birth') );
         $form->addDate( 'deceased_date_high', ts('To'), false, array( 'formatType' => 'birth') );
+
+		
+		// radio button for is_deceased
+        $deceasedOptions = array( );
+        $deceasedOptions[1] = HTML_QuickForm::createElement('radio', null, ts('Deceased'), 'Yes', 1);
+		$deceasedOptions[0] = HTML_QuickForm::createElement('radio', null, ts('Deceased'), 'No', 0);
+        $form->addGroup( $deceasedOptions, 'is_deceased', ts('Deceased'));
     }
     
     static function notes( &$form ) {

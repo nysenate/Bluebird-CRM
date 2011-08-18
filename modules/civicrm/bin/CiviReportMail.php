@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,48 @@
  * recipients mentioned for that report  
  */
 class CiviReportMail { 
+
+    function __construct( ) {
+        $this->initialize( );
+
+        CRM_Utils_System::authenticateScript(true);
+        
+        //log the execution of script
+        CRM_Core_Error::debug_log_message( 'CiviReportMail.php' );
+
+        // load bootstrap to call hooks
+        require_once 'CRM/Utils/System.php';
+        CRM_Utils_System::loadBootStrap(  );
+    }
+
+    function initialize( ) {
+        require_once '../civicrm.config.php';
+        require_once 'CRM/Core/Config.php';
+
+        $config = CRM_Core_Config::singleton();
+    }
+
+    function run( ) {
+        require_once 'CRM/Core/Lock.php';
+        $lock = new CRM_Core_Lock('CiviReportMail');
+        
+        if ($lock->isAcquired()) {
+            // try to unset any time limits
+            if (!ini_get('safe_mode')) set_time_limit(0);
+        
+            // if there are named sets of settings, use them - otherwise use the default (null)
+            $this->processReport();
+         } else {
+            throw new Exception('Could not acquire lock, another CiviReportMail process is running');
+         }
+        
+        $lock->release();
+    }
+
     function processReport( ) {
+        require_once 'CRM/Report/Page/Instance.php';
+        require_once 'CRM/Utils/Wrapper.php';
+
         $sendmail     = CRM_Utils_Request::retrieve( 'sendmail', 'Boolean', 
                                                      CRM_Core_DAO::$_nullObject, true, null, 'REQUEST' );
         $instanceId   = CRM_Utils_Request::retrieve( 'instanceId', 'Positive', 
@@ -62,37 +103,8 @@ class CiviReportMail {
             return $wrapper->run( $templateInfo['name'], null, $arguments );
         }
     }
-  }
+}
 
 session_start();
-require_once '../civicrm.config.php';
-require_once 'CRM/Core/Config.php';
-require_once 'CRM/Report/Page/Instance.php';
-require_once 'CRM/Utils/Wrapper.php';
-
-$config = CRM_Core_Config::singleton();
-
-CRM_Utils_System::authenticateScript(true);
-
-// load bootstrap to call hooks
-require_once 'CRM/Utils/System.php';
-CRM_Utils_System::loadBootStrap(  );
-
-require_once 'CRM/Core/Lock.php';
-$lock = new CRM_Core_Lock('CiviReportMail');
-
-if ($lock->isAcquired()) {
-    // try to unset any time limits
-    if (!ini_get('safe_mode')) set_time_limit(0);
-
-    //log the execution of script
-    CRM_Core_Error::debug_log_message( 'CiviReportMail.php' );
-    // if there are named sets of settings, use them - otherwise use the default (null)
-    CiviReportMail::processReport();
-    
- } else {
-    throw new Exception('Could not acquire lock, another CiviReportMail process is running');
- }
-
-$lock->release();
-
+$obj = new CiviReportMail;
+$obj->run( );

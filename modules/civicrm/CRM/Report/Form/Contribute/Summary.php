@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -52,7 +52,7 @@ class CRM_Report_Form_Contribute_Summary extends CRM_Report_Form {
             array( 'civicrm_contact'  =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'display_name'      => 
+                          array( 'sort_name'      => 
                                  array( 'title'      => ts( 'Contact Name' ),
                                         'no_repeat'  => true ),
                                  'postal_greeting_display' =>
@@ -64,7 +64,7 @@ class CRM_Report_Form_Contribute_Summary extends CRM_Report_Form {
                           'group_bys' => 
                           array( 'id'                =>
                                  array( 'title'      => ts( 'Contact ID' ) ),
-                                 'display_name'      => 
+                                 'sort_name'      => 
                                  array( 'title'      => ts( 'Contact Name' ), ), ),
                           ),
                    
@@ -86,36 +86,6 @@ class CRM_Report_Form_Contribute_Summary extends CRM_Report_Form {
                           'grouping'      => 'contact-fields',
                           ),
                    
-                   'civicrm_address' =>
-                   array( 'dao' => 'CRM_Core_DAO_Address',
-                          'fields' =>
-                          array( 'street_address'    => null,
-                                 'city'              => null,
-                                 'postal_code'       => null,
-                                 'state_province_id' => 
-                                 array( 'title'   => ts( 'State/Province' ), ),
-                                 'country_id'        => 
-                                 array( 'title'   => ts( 'Country' ) ), ),
-                          'group_bys' =>
-                          array( 'street_address'    => null,
-                                 'city'              => null,
-                                 'postal_code'       => null,
-                                 'state_province_id' => 
-                                 array( 'title'   => ts( 'State/Province' ), ),
-                                 'country_id'        => 
-                                 array( 'title'   => ts( 'Country' ), ), ),
-                          'grouping'=> 'contact-fields',
-                          'filters' =>             
-                          array( 'country_id' => 
-                                 array( 'title'         => ts( 'Country' ), 
-                                        'operatorType'  => CRM_Report_Form::OP_MULTISELECT,
-                                        'options'       => CRM_Core_PseudoConstant::country( ),), 
-                                 'state_province_id' => 
-                                 array( 'title'         => ts( 'State/Province' ), 
-                                        'operatorType'  => CRM_Report_Form::OP_MULTISELECT,
-                                        'options'       => CRM_Core_PseudoConstant::stateProvince( ),), ),
-                          ),
-
                    'civicrm_contribution_type' =>
                    array( 'dao'           => 'CRM_Contribute_DAO_ContributionType',
                           'fields'        =>
@@ -192,7 +162,7 @@ class CRM_Report_Form_Contribute_Summary extends CRM_Report_Form {
                                         'group'         => true,
                                         'options'       => CRM_Core_PseudoConstant::group( ) ), ), ),
                    
-                   );
+                   ) + $this->addAddressFields();
       
         $this->_tagFilter = true;
         parent::__construct( );
@@ -315,7 +285,7 @@ class CRM_Report_Form_Contribute_Summary extends CRM_Report_Form {
         $errors = $grouping = array( );
         //check for searching combination of dispaly columns and
         //grouping criteria
-        $ignoreFields = array( 'total_amount', 'display_name' );
+        $ignoreFields = array( 'total_amount', 'sort_name' );
         $errors       = $self->customDataFormRule( $fields, $ignoreFields );
         
         if ( CRM_Utils_Array::value( 'receive_date', $fields['group_bys'] ) ) {
@@ -324,7 +294,7 @@ class CRM_Report_Form_Contribute_Summary extends CRM_Report_Form {
                     foreach ( $table['fields'] as $fieldName => $field ) {
                         if ( CRM_Utils_Array::value( $field['name'], $fields['fields'] ) && 
                              $fields['fields'][$field['name']] && 
-                             in_array( $field['name'], array( 'display_name', 'postal_greeting_display', 'contribution_source', 'contribution_type' ) ) ) {
+                             in_array( $field['name'], array( 'sort_name', 'postal_greeting_display', 'contribution_source', 'contribution_type' ) ) ) {
                             $grouping[] = $field['title'];
                         }
                     }
@@ -532,51 +502,20 @@ class CRM_Report_Form_Contribute_Summary extends CRM_Report_Form {
                 $entryFound = true;
             }
 
-            // handle state province
-            if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
-                if ( $value = $row['civicrm_address_state_province_id'] ) {
-                    $rows[$rowNum]['civicrm_address_state_province_id'] = 
-                        CRM_Core_PseudoConstant::stateProvince( $value, false );
-
-                    $url = 
-                        CRM_Report_Utils_Report::getNextUrl( 'contribute/detail',
-                                                             "reset=1&force=1&state_province_id_op=in&state_province_id_value={$value}", 
-                                                             $this->_absoluteUrl, $this->_id );
-                    $rows[$rowNum]['civicrm_address_state_province_id_link']  = $url;
-                    $rows[$rowNum]['civicrm_address_state_province_id_hover'] = 
-                        ts('List all contribution(s) for this state.');
-                }
-                $entryFound = true;
-            }
-
-            // handle country
-            if ( array_key_exists('civicrm_address_country_id', $row) ) {
-                if ( $value = $row['civicrm_address_country_id'] ) {
-                    $rows[$rowNum]['civicrm_address_country_id'] = 
-                        CRM_Core_PseudoConstant::country( $value, false );
-                    $url = CRM_Report_Utils_Report::getNextUrl( 'contribute/detail',
-                                                                "reset=1&force=1&" . 
-                                                                "country_id_op=in&country_id_value={$value}",
-                                                                $this->_absoluteUrl, $this->_id );
-                    $rows[$rowNum]['civicrm_address_country_id_link'] = $url;
-                    $rows[$rowNum]['civicrm_address_country_id_hover'] = 
-                        ts('List all contribution(s) for this country.');
-                }
-                
-                $entryFound = true;
-            }
-            
+  
             // convert display name to links
-            if ( array_key_exists('civicrm_contact_display_name', $row) && 
+            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
                  array_key_exists('civicrm_contact_id', $row) ) {
                 $url = CRM_Report_Utils_Report::getNextUrl( 'contribute/detail', 
                                                             'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contact_id'],
                                                             $this->_absoluteUrl, $this->_id );
-                $rows[$rowNum]['civicrm_contact_display_name_link'] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_hover'] = 
+                $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_hover'] = 
                     ts("Lists detailed contribution(s) for this record.");
                 $entryFound = true;
             }
+            $entryFound =  $this->alterDisplayAddressFields($row,$rows,$rowNum,'contribute/detail','List all contribution(s) for this ')?true:$entryFound;
+          
 
             // skip looking further in rows, if first row itself doesn't 
             // have the column we need

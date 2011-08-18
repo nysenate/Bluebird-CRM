@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -156,6 +156,13 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
         if ( !empty( $unsetSubmittedOptions ) && empty( $_POST ) ) {
             $this->resetElementValue( $unsetSubmittedOptions );
         }
+
+        //load default campaign from page.
+        if ( array_key_exists( 'participant_campaign_id', $this->_fields ) ) {
+            $defaults['participant_campaign_id'] = CRM_Utils_Array::value( 'campaign_id', $this->_values['event'] );
+        }
+        require_once 'CRM/Core/BAO/Address.php';
+        CRM_Core_BAO_Address::fixAllStateSelects( $this, $this->_defaults );   
         
         return $defaults;
     }  
@@ -558,6 +565,13 @@ class CRM_Event_Form_Registration_AdditionalParticipant extends CRM_Event_Form_R
         if ( !$this->_allowConfirmation ) {
             // check if the participant is already registered
             $params['contact_id'] = CRM_Event_Form_Registration_Register::checkRegistration( $params, $this, true, true );
+        }
+        
+        //carry campaign to partcipants.
+        if ( array_key_exists( 'participant_campaign_id', $params ) ) {
+            $params['campaign_id'] = $params['participant_campaign_id'];
+        } else {
+            $params['campaign_id'] = CRM_Utils_Array::value( 'campaign_id', $this->_values['event'] );
         }
         
         // if waiting is enabled

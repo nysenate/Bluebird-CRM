@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -76,6 +76,13 @@ class CRM_Mailing_Event_BAO_Resubscribe {
         $mailing    = CRM_Mailing_BAO_Mailing::getTableName();
         $group      = CRM_Contact_BAO_Group::getTableName();
         $gc         = CRM_Contact_BAO_GroupContact::getTableName();
+
+        //We Need the mailing Id for the hook...
+        $do->query("SELECT $job.mailing_id as mailing_id 
+                     FROM   $job 
+                     WHERE $job.id = " . CRM_Utils_Type::escape($job_id, 'Integer'));
+        $do->fetch();
+        $mailing_id = $do->mailing_id;
         
         $do->query("
             SELECT      $mg.entity_table as entity_table,
@@ -83,9 +90,12 @@ class CRM_Mailing_Event_BAO_Resubscribe {
             FROM        $mg
             INNER JOIN  $job
                 ON      $job.mailing_id = $mg.mailing_id
+            INNER JOIN  $group
+                ON      $mg.entity_id = $group.id
             WHERE       $job.id = " 
                 . CRM_Utils_Type::escape($job_id, 'Integer') . "
-                AND     $mg.group_type = 'Include'");
+                AND     $mg.group_type IN ( 'Include', 'Base' )
+                AND     $group.is_hidden = 0");
         
         /* Make a list of groups and a list of prior mailings that received 
          * this mailing */
@@ -122,6 +132,11 @@ class CRM_Mailing_Event_BAO_Resubscribe {
             }
         }
 
+        require_once 'CRM/Utils/Hook.php';
+        $group_ids = array_keys($groups);
+        $base_groups = null;
+        CRM_Utils_Hook::unsubscribeGroups('resubscribe', $mailing_id, $contact_id, $group_ids, $base_groups);
+
         /* Now we have a complete list of recipient groups.  Filter out all
          * those except smart groups and those that the contact belongs to */
         $do->query("
@@ -130,7 +145,7 @@ class CRM_Mailing_Event_BAO_Resubscribe {
             FROM        $group
             LEFT JOIN   $gc
                 ON      $gc.group_id = $group.id
-            WHERE       $group.id IN (".implode(', ', array_keys($groups)).")
+            WHERE       $group.id IN (".implode(', ', $group_ids).")
                 AND     ($group.saved_search_id is not null
                             OR  ($gc.contact_id = $contact_id
                                 AND $gc.status = 'Removed')

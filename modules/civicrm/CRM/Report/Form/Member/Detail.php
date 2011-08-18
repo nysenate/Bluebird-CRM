@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -54,13 +54,27 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
             array( 'civicrm_contact' =>
                    array( 'dao'     => 'CRM_Contact_DAO_Contact',
                           'fields'  =>
-                          array( 'display_name' => 
+                          array( 'sort_name' => 
                                  array( 'title'      => ts( 'Contact Name' ),
                                         'required'   => true,
+                                        'default'    => true,
                                         'no_repeat'  => true ),
                                  'id'           => 
                                  array( 'no_display' => true, 
-                                        'required'   => true ), ),
+                                        'required'   => true ), 
+                                 'first_name' => 
+                                 array( 'title'      => ts( 'First Name' ),
+                                        'no_repeat'  => true ),
+                                 'id'           => 
+                                 array( 'no_display' => true, 
+                                        'required'   => true ), 
+                                 
+                                 'last_name' => 
+                                 array( 'title'      => ts( 'Last Name' ),
+                                        'no_repeat'  => true ),
+                                 'id'           => 
+                                 array( 'no_display' => true, 
+                                        'required'   => true ),),
                           
                           'filters'  =>
                           array('sort_name'     => 
@@ -83,16 +97,19 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
                                                                   'default'   => true ),
                                 'membership_end_date'   => array( 'title'     => ts('End Date'),
                                                                   'default'   => true ),
-                                'join_date'             => null,
-                                
+                                'join_date'             => array( 'title'     => ts('Join Date'),
+                                                                  'default'   => true ),
                                 'source'                => array( 'title' => 'Source'),
                                 ), 
                           'filters' => array( 					      
                                              'join_date'    =>
-                                             array( 'operatorType'  => CRM_Report_Form::OP_DATE),
-
+                                             array( 'operatorType'  => CRM_Report_Form::OP_DATE ),
+                                             'membership_start_date' =>
+                                             array( 'operatorType'  => CRM_Report_Form::OP_DATE ),
+                                             'membership_end_date'   =>
+                                             array( 'operatorType'  => CRM_Report_Form::OP_DATE ),
                                              'owner_membership_id'  =>
-                                             array( 'title'         => ts('Membership Owner ID'),
+                                             array( 'title'         => ts('Membership Owner ID' ),
                                                     'operatorType'  => CRM_Report_Form::OP_INT,
                                                    ),
                                              'tid'          =>
@@ -150,20 +167,9 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
                          array( 'phone' => null),
                          'grouping'=> 'contact-fields',
                          ),
-
-                   'civicrm_group' => 
-                   array( 'dao'    => 'CRM_Contact_DAO_GroupContact',
-                          'alias'  => 'cgroup',
-                          'filters'=>             
-                          array( 'gid' => 
-                                 array( 'name'         => 'group_id',
-                                        'title'        => ts( 'Group' ),
-                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                        'group'        => true,
-                                        'options'      => CRM_Core_PseudoConstant::group( ) ), ), ),
-                   
+                  
                    );
-        
+        $this->_groupFilter = true; 
         $this->_tagFilter = true;
         parent::__construct( );
     }
@@ -283,7 +289,11 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
     function groupBy( ) {
         $this->_groupBy = " GROUP BY {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_membership']}.membership_type_id";
     }
-    
+     
+    function orderBy( ) {
+        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact']}.id, {$this->_aliases['civicrm_membership']}.membership_type_id";
+    }
+
     function postProcess( ) {
         
         $this->beginPostProcess( );
@@ -348,14 +358,14 @@ class CRM_Report_Form_Member_Detail extends CRM_Report_Form {
                 $entryFound = true;
             }
             
-            if ( array_key_exists('civicrm_contact_display_name', $row) && 
-                 $rows[$rowNum]['civicrm_contact_display_name'] && 
+            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
+                 $rows[$rowNum]['civicrm_contact_sort_name'] && 
                  array_key_exists('civicrm_contact_id', $row) ) {
                 $url = CRM_Utils_System::url( "civicrm/contact/view"  , 
                                               'reset=1&cid=' . $row['civicrm_contact_id'],
                                               $this->_absoluteUrl );
-                $rows[$rowNum]['civicrm_contact_display_name_link'] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_hover'] =
+                $rows[$rowNum]['civicrm_contact_sort_name_link'] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_hover'] =
                     ts("View Contact Summary for this Contact.");
                 $entryFound = true;
             }

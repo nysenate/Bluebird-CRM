@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -97,12 +97,12 @@
   <fieldset><legend>{ts}Phone and Email{/ts}</legend>
     <table class="form-layout-compressed">
 		<tr>
-            <td width="25%">{$form.phone.$index.phone.label}</td>
-            <td>{$form.phone.$index.phone.html}</td>
+            <td class='label' width="25%">{$form.phone.$index.phone.label}</td>
+            <td class='value'>{$form.phone.$index.phone.html}</td>
         </tr>
 		<tr>
-            <td>{$form.email.$index.email.label}</td>
-            <td>{$form.email.$index.email.html}</td>
+            <td class='label'>{$form.email.$index.email.label}</td>
+            <td class='value'>{$form.email.$index.email.html}</td>
         </tr>
     </table>
   </fieldset>
@@ -253,9 +253,15 @@
         cj('#onbehalfof_id').val( data[1] );
         setLocationDetails( data[1] );
     });
-    
+ 
+    var orgId = {/literal}"{$orgId}"{literal};
+    if ( orgId ) {
+        setLocationDetails( orgId );
+    }
+
     function setLocationDetails( contactID ) {
-        var locationUrl = {/literal}"{$locDataURL}"{literal}+ contactID; 
+        var locationUrl = {/literal}"{$locDataURL}"{literal}+ contactID + "&relContact=1"; 
+        
         cj.ajax({
             url         : locationUrl,
             dataType    : "json",

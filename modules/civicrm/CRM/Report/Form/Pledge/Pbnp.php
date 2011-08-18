@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -50,7 +50,7 @@ class CRM_Report_Form_Pledge_Pbnp extends CRM_Report_Form {
             array( 'civicrm_contact'  =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'display_name'      => 
+                          array( 'sort_name'      => 
                                  array( 'title'      => ts( 'Constituent Name' ),
                                         'required'   => true,
                                         'no_repeat' => true ),
@@ -217,10 +217,13 @@ class CRM_Report_Form_Pledge_Pbnp extends CRM_Report_Form {
     }      
     
     function groupBy( ) {
-        $this->_groupBy = "";
         $this->_groupBy = "
          GROUP BY {$this->_aliases['civicrm_pledge']}.contact_id, 
                   {$this->_aliases['civicrm_pledge']}.id";
+    }
+    
+    function orderBy( ) {
+        $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_pledge']}.contact_id, {$this->_aliases['civicrm_pledge']}.id";
     }
     
     function postProcess( ) {
@@ -267,6 +270,7 @@ class CRM_Report_Form_Pledge_Pbnp extends CRM_Report_Form {
             //handle the Contribution Type Ids
             if ( array_key_exists('civicrm_pledge_contribution_type_id', $row) ) {
                 if ( $value = $row['civicrm_pledge_contribution_type_id'] ) {
+                    require_once 'CRM/Contribute/PseudoConstant.php';
                     $rows[$rowNum]['civicrm_pledge_contribution_type_id'] = 
                         CRM_Contribute_PseudoConstant::contributionType( $value, false );
                 }
@@ -276,8 +280,9 @@ class CRM_Report_Form_Pledge_Pbnp extends CRM_Report_Form {
             //handle the Status Ids
             if ( array_key_exists( 'civicrm_pledge_status_id', $row ) ) {
                 if ( $value = $row['civicrm_pledge_status_id'] ) {
+                    require_once 'CRM/Contribute/PseudoConstant.php';
                     $rows[$rowNum]['civicrm_pledge_status_id'] = 
-                        CRM_Core_OptionGroup::getLabel( 'contribution_status', $value );
+                        CRM_Contribute_PseudoConstant::contributionStatus($value);
                 }
                 $entryFound = true;
             } 
@@ -301,14 +306,14 @@ class CRM_Report_Form_Pledge_Pbnp extends CRM_Report_Form {
             }
             
             // convert display name to links
-            if ( array_key_exists('civicrm_contact_display_name', $row) && 
+            if ( array_key_exists('civicrm_contact_sort_name', $row) && 
                  array_key_exists('civicrm_contact_id', $row) ) {
                 $url = CRM_Report_Utils_Report::getNextUrl( 'pledge/summary', 
                                                             'reset=1&force=1&id_op=eq&id_value=' .
                                                             $row['civicrm_contact_id'],
                                                             $this->_absoluteUrl, $this->_id );
-                $rows[$rowNum]['civicrm_contact_display_name_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_hover' ] = 
+                $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_hover' ] = 
                     ts("View Pledge Details for this contact");
                 $entryFound = true;
             }

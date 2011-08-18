@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -52,9 +52,9 @@ class CRM_Report_Page_Instance extends CRM_Core_Page
      */
     function run() {
         $instanceId   = CRM_Report_Utils_Report::getInstanceID( );
-	 if ( ! $instanceId ) {
-	     $instanceId = CRM_Report_Utils_Report::getInstanceIDForPath( );
-	 }
+        if ( ! $instanceId ) {
+            $instanceId = CRM_Report_Utils_Report::getInstanceIDForPath( );
+        }
         $action       = CRM_Utils_Request::retrieve( 'action', 'String', $this );
         $optionVal    = CRM_Report_Utils_Report::getValueFromUrl( $instanceId );
         $reportUrl    = CRM_Utils_System::url('civicrm/report/list', "reset=1");

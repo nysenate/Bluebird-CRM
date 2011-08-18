@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -50,14 +50,25 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     
     protected $_worldRegionField = false;
     
-    protected $_activityField  = false;
+    protected $_activityLast  = false;
 
+    protected $_activityLastCompleted = false;
+    
+    protected $_includeCaseDetailExtra = false;
+
+    protected $_caseDetailExtra = array( );
+    
     function __construct( ) {
     	$this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
         $this->case_types = CRM_Case_PseudoConstant::caseType();
         $rels = CRM_Core_PseudoConstant::relationshipType();
      	foreach ( $rels as $relid => $v ) {
      		$this->rel_types[$relid] = $v['label_b_a'];
+        }
+
+        $this->caseActivityTypes = array( );
+        foreach(  CRM_Case_PseudoConstant::activityType() as $typeDetail ) {
+           $this->caseActivityTypes[$typeDetail['id']] = $typeDetail['label'];
         }
         
         $this->_columns = 
@@ -73,8 +84,10 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                'subject'      => array( 'title'     => ts('Subject'),
                                                         'required'  => true,
                                                         ),   
-                               'start_date'   => array( 'title' => ts('Start Date') ),
-                               'end_date'     => array( 'title' => ts('End Date') ),
+                               'start_date'   => array( 'title' => ts('Start Date'),
+                                                        'type'  => CRM_Utils_Type::T_DATE ),
+                               'end_date'     => array( 'title' => ts('End Date'),
+                                                        'type'  => CRM_Utils_Type::T_DATE ),
                                'status_id'    => array( 'title' => ts('Case Status') ),
                                'case_type_id' => array( 'title' => ts('Case Type') ) 
                                
@@ -98,37 +111,39 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                                        'options'      => $this->case_types),
                                 ),
                          ),
+
                   'civicrm_contact' =>
                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
                          'fields'    =>
                          array( 
-                               'display_name' => array( 'title'      => ts('Client Name'),
-                                                        'required'   => true, ),
+                               'client_sort_name' => array( 'name'     => 'sort_name',
+                                                            'title'    => ts('Client Name'),
+                                                            'required' => true ),
                                'id'           => array( 'no_display' => true,
-                                                        'required'   => true, ),
+                                                        'required'   => true ),
                                 ),
                          'filters'   =>  
                          array( 
-                               'display_name' => array( 'title' => ts( 'Client Name' ) ),
+                               'sort_name' => array( 'title' => ts( 'Client Name' ) ),
                                 ),
                          ),
                   
                   'civicrm_relationship' =>
                   array( 'dao'       => 'CRM_Contact_DAO_Relationship',
                          'fields'    =>
-                         array( 'relationship_type_id' => array( 'title' => ts('Case Role') ),
+                         array( 'case_role' => array( 'name' => 'relationship_type_id', 
+                                                      'title' => ts('Case Role(s)') ),
                                 ),
                          'filters'   =>  
-                         array( 'relationship_type_id' => 
-                                array( 'title'         => ts( 'Case Role' ),
+                         array( 'case_role' => 
+                                array( 'name' => 'relationship_type_id',
+                                       'title'         => ts( 'Case Role(s)' ),
                                        'operatorType'  => CRM_Report_Form::OP_MULTISELECT,
                                        'options'       => $this->rel_types,
                                        ),
                                 ),
                          ),
-                  'civicrm_relationship_type' =>
-                  array( 'dao'       => 'CRM_Contact_DAO_RelationshipType',
-                         ),
+                  
                   'civicrm_email'   =>
                   array( 'dao'       => 'CRM_Core_DAO_Email',
                          'fields'    =>
@@ -177,41 +192,70 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                                          'options'      => CRM_Core_PseudoConstant::worldRegion( ) ),
                                ),
                          ),
+
                   'civicrm_country' =>
                   array( 'dao'       => 'CRM_Core_DAO_Country',
                          ),
-                  'civicrm_activity'  => 
+
+                  'civicrm_activity_last'  => 
                   array( 'dao'     => 'CRM_Activity_DAO_Activity',
-                         'fields'  =>
-                         array(
-                               'activity_subject' =>
-                               array(
-                                     'name'       => 'subject',
-                                     'title'      => ts('Activity Subject'),
-                                     'no_display' => true,
-                                     ),
-                               ),
                          'filters' =>
-                         array( 'activity_date_time' =>
+                         array( 'last_activity_date_time' =>
                                 array(
+                                      'name'         => 'activity_date_time',
                                       'title'        => ts('Last Action Date'),
                                       'operatorType' => CRM_Report_Form::OP_DATE,
                                       ),
                                 ),
+                         'alias' => 'civireport_activity_last',
                          ),
-                  'civicrm_case_contact' =>
-                  array( 'dao'       => 'CRM_Case_DAO_CaseContact',
+
+                  'civicrm_activity_last_completed'  => 
+                  array( 'dao'     => 'CRM_Activity_DAO_Activity',
+                         'fields' =>
+                         array( 'last_completed_activity_subject' =>
+                                array(
+                                      'name'         => 'subject', 
+                                      'title'        => ts('Subject of the last completed activity in the case')
+                                      ),
+                                'last_completed_activity_type' =>
+                                array(
+                                      'name'         => 'activity_type_id', 
+                                      'title'        => ts('Activity type of the last completed activity')
+                                      ),
+                                ),
                          ),
                    );
+
         $this->_options = array( 'my_cases' => 
                                  array( 'title'   => ts('My Cases'),
                                         'type'    => 'checkbox' ),
                                  );
         parent::__construct( );
+        
     }
-    
+
     function preProcess( ) {
         parent::preProcess( );
+    }
+    
+    function buildQuickForm( ) {
+        parent::buildQuickForm( );
+        $this->caseDetailSpecialColumnsAdd( ); 
+    }
+
+    function caseDetailSpecialColumnsAdd( ) {
+        $elements = array( );
+        $elements[] =& HTML_QuickForm::createElement( 'select', 'case_activity_all_dates' , null,
+                                                      array('' => ts('-- select --')) +  $this->caseActivityTypes );
+        $this->addGroup($elements, 'case_detail_extra');
+        
+        $this->_caseDetailExtra =  
+            array( 'case_activity_all_dates' => array( 'title' => ts('List of all dates of activities of Type'), 
+                                                       'name'  => 'activity_date_time' ),
+                   );
+        
+        $this->assign( 'caseDetailExtra', $this->_caseDetailExtra );
     }
     
     function select( ) {
@@ -227,70 +271,69 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                          CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
                         if ( $tableName == 'civicrm_email' ) {
                             $this->_emailField = true;
-                        }elseif ( $tableName == 'civicrm_phone' ) {
+                        } elseif ( $tableName == 'civicrm_phone' ) {
                             $this->_phoneField = true;
-                        }elseif ( $tableName == 'civicrm_relationship' ) {
+                        } elseif ( $tableName == 'civicrm_relationship' ) {
                             $this->_relField = true;
                         }
-                        if( $fieldName == 'display_name' ) {
+                        if( $fieldName == 'sort_name' ) {
                             $select[] = "GROUP_CONCAT({$field['dbAlias']}  ORDER BY {$field['dbAlias']} ) 
                                          as {$tableName}_{$fieldName}";
+			}
+                        if ( $tableName == 'civicrm_activity_last_completed') {
+                            $this->_activityLastCompleted = true;  
+                        }
+                        
+                        if ( $fieldName == 'case_role' ) {
+                            $select[] = "GROUP_CONCAT(DISTINCT({$field['dbAlias']}) ORDER BY {$field['dbAlias']}) as {$tableName}_{$fieldName}";
                         } else {
                             $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                         }
+                        
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
                     }
                 }
             }
-            
         }
-        
+                
         $this->_select = 'SELECT ' . implode( ', ', $select ) . ' ';
     }
-    
-    
+        
     function from( ) {
         
-        $cc = $this->_aliases['civicrm_case'];
-        $c = $this->_aliases['civicrm_contact'];
-        $cr = $this->_aliases['civicrm_relationship'];
-        $crt = $this->_aliases['civicrm_relationship_type'];
-        $ccc = $this->_aliases['civicrm_case_contact'];
+        $case   = $this->_aliases['civicrm_case'];
+        $conact = $this->_aliases['civicrm_contact'];
         
         $this->_from = "
-             FROM civicrm_case $cc
- LEFT join civicrm_case_contact $ccc on ${ccc}.case_id = ${cc}.id
- LEFT join civicrm_contact $c on ${c}.id=${ccc}.contact_id
+             FROM civicrm_case $case
+ LEFT JOIN civicrm_case_contact civireport_case_contact on civireport_case_contact.case_id = {$case}.id
+ LEFT JOIN civicrm_contact $conact ON {$conact}.id = civireport_case_contact.contact_id
  ";
         if ( $this->_relField ) {
-            $this->_from = "
-             FROM civicrm_contact $c 
- inner join civicrm_relationship $cr on {$c}.id = ${cr}.contact_id_a
- inner join civicrm_case $cc on ${cc}.id = ${cr}.case_id
- inner join civicrm_relationship_type $crt on ${crt}.id=${cr}.relationship_type_id
- inner join civicrm_case_contact $ccc on ${ccc}.case_id = ${cc}.id
- ";
+            $this->_from .= "
+             LEFT JOIN  civicrm_relationship {$this->_aliases['civicrm_relationship']} ON {$this->_aliases['civicrm_relationship']}.case_id = {$case}.id
+";
         } 
          
         if( $this->_addressField ) {
             $this->_from .= "
              LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
-                    ON $c.id = {$this->_aliases['civicrm_address']}.contact_id AND 
-                       {$this->_aliases['civicrm_address']}.is_primary = 1\n";
+                    ON {$conact}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
+                       {$this->_aliases['civicrm_address']}.is_primary = 1 ";
         } 
         if ( $this->_emailField ) {
             $this->_from .= " 
              LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} 
-                   ON $c.id = {$this->_aliases['civicrm_email']}.contact_id AND 
-                       {$this->_aliases['civicrm_email']}.is_primary = 1\n";  
+                   ON {$conact}.id = {$this->_aliases['civicrm_email']}.contact_id AND 
+                       {$this->_aliases['civicrm_email']}.is_primary = 1 ";  
             
         }
         if( $this->_phoneField ) {
             $this->_from .= "
              LEFT JOIN  civicrm_phone {$this->_aliases['civicrm_phone']} 
-                       ON ($c.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
-                          {$this->_aliases['civicrm_phone']}.is_primary = 1)";
+                       ON ( {$conact}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
+                          {$this->_aliases['civicrm_phone']}.is_primary = 1) ";
             
         }
         if( $this->_worldRegionField ) {
@@ -301,14 +344,16 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                    ON {$this->_aliases['civicrm_country']}.region_id = {$this->_aliases['civicrm_worldregion']}.id ";
             
         }
-        if( $this->_activityField ) {
-            $this->_from .= "
-             LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']}
-                       ON {$this->_aliases['civicrm_activity']}.source_contact_id = $c.id ";
-            
-        }
-         
 
+        // Include clause for last activity of the case
+        if ( $this->_activityLast ) {
+            $this->_from .= " LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity_last']} ON ( {$this->_aliases['civicrm_activity_last']}.id = ( SELECT max(activity_id) FROM civicrm_case_activity WHERE case_id = {$case}.id) )";
+        }
+        
+        // Include clause for last completed activity of the case
+        if ( $this->_activityLastCompleted ) {
+            $this->_from .= " LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity_last_completed']} ON ( {$this->_aliases['civicrm_activity_last_completed']}.id = ( SELECT max(activity_id) FROM civicrm_case_activity cca, civicrm_activity ca WHERE ca.id = cca.activity_id AND cca.case_id = {$case}.id AND ca.status_id = 2 ) )";
+        }   
         
     }
     
@@ -320,28 +365,30 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                 foreach ( $table['filters'] as $fieldName => $field ) {
                     $clause = null;
                     
-                    if ( $field['operatorType'] & CRM_Report_Form::OP_DATE ) {
+                    if ( CRM_Utils_Array::value( 'type', $field ) & CRM_Utils_Type::T_DATE ) {
                         $relative = CRM_Utils_Array::value( "{$fieldName}_relative", $this->_params );
                         $from     = CRM_Utils_Array::value( "{$fieldName}_from"    , $this->_params );
                         $to       = CRM_Utils_Array::value( "{$fieldName}_to"      , $this->_params );
-                        if( $fieldName =='activity_date_time' && $this->_activityField ) {
-                            $select  = "SELECT LAST_INSERT_ID ({$this->_aliases['civicrm_activity']}.activity_date_time )";
-                            $orderBy = "ORDER BY {$this->_aliases['civicrm_activity']}.id DESC limit 0,1 ";
-                            $sql     = "{$select} {$this->_from} {$this->_where} {$orderBy}";
-                            $field['dbAlias']  = date( 'YmdHis',strtotime( CRM_Core_DAO::singleValueQuery( $sql ) ) );
-                        }
-                        
-                        $clause = $this->dateClause( $field['dbAlias'], $relative, $from, $to,
-                                                     CRM_Utils_Array::value( 'type',  $field ) );
+
+                        $clause = $this->dateClause( $field['name'], $relative, $from, $to, $field['type'] );
                     } else {
                         
                         $op = CRM_Utils_Array::value( "{$fieldName}_op", $this->_params );
-                        if( $fieldName =='case_type_id' ) {
-                            foreach( $this->_params['case_type_id_value'] as $key =>$value ) {
-                                $value = CRM_Case_BAO_Case::VALUE_SEPERATOR.$value .CRM_Case_BAO_Case::VALUE_SEPERATOR;
-                                $this->_params['case_type_id_value'][$key]  = "'{$value}'";
+                        if( $fieldName =='case_type_id' && CRM_Utils_Array::value('case_type_id_value', $this->_params) ) {
+                            foreach( $this->_params['case_type_id_value'] as $key => $value ) {
+                                if ( strpos( $value, CRM_Core_DAO::VALUE_SEPARATOR ) === false ) {
+                                    $value = 
+                                        CRM_Core_DAO::VALUE_SEPARATOR .
+                                        $value .
+                                        CRM_Core_DAO::VALUE_SEPARATOR;
+                                    
+                                    $this->_params['case_type_id_value'][$key]  = "'{$value}'";
+                                } else {
+                                    $this->_params['case_type_id_value'][$key]  = $value;
+                                }
                             }
                         } 
+                        
                         if ( $op ) {
                             $clause = 
                                 $this->whereClause( $field,
@@ -349,7 +396,6 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                                     CRM_Utils_Array::value( "{$fieldName}_value", $this->_params ),
                                                     CRM_Utils_Array::value( "{$fieldName}_min", $this->_params ),
                                                     CRM_Utils_Array::value( "{$fieldName}_max", $this->_params ) );
-                            
                             
                         }
                     }
@@ -359,10 +405,8 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                     }
                 }
             }
-            if( $tableName == 'civicrm_activity' && $this->_activityField ) {
-                $clauses[] = "{$this->_aliases['civicrm_activity']}.id = ( SELECT MAX( civicrm_activity.id) FROM civicrm_activity )";
-            }
         }
+
         if( isset( $this->_params['options']['my_cases'] ) ) {
             $session = CRM_Core_Session::singleton( );
             $userID  = $session->get( 'userID' );
@@ -406,42 +450,84 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
         return $statistics;
     }
     
+    function orderBy( ) {
+        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_case']}.start_date DESC ";
+    }
+    
+    function caseDetailSpecialColumnProcess( ) {
+        if ( !$this->_includeCaseDetailExtra ) {
+            return;
+        }
+        
+        $from = $select = array( );
+        $case = $this->_aliases['civicrm_case'];
+
+        if ( $activityType = CRM_Utils_Array::value( 'case_activity_all_dates', $this->_params['case_detail_extra']) ) {
+            $select[] = "GROUP_CONCAT(DISTINCT(civireport_activity_all_{$activityType}.{$this->_caseDetailExtra['case_activity_all_dates']['name']}) ORDER BY civireport_activity_all_{$activityType}.{$this->_caseDetailExtra['case_activity_all_dates']['name']}) as case_activity_all_dates";
+
+            $from[] = " LEFT JOIN civicrm_case_activity civireport_case_activity_all_{$activityType} ON ( civireport_case_activity_all_{$activityType}.case_id = {$case}.id) 
+                        LEFT JOIN civicrm_activity civireport_activity_all_{$activityType} ON ( civireport_activity_all_{$activityType}.id = civireport_case_activity_all_{$activityType}.activity_id AND civireport_activity_all_{$activityType}.activity_type_id = {$activityType})";
+
+            $this->_columnHeaders['case_activity_all_dates'] 
+                = array( 'title' => $this->_caseDetailExtra['case_activity_all_dates']['title'] . ": {$this->caseActivityTypes[$activityType]}",
+                         'type'  => CRM_Utils_Array::value( 'type', $this->_caseDetailExtra['case_activity_all_dates']) );
+        }
+                
+        $this->_select .=  ', ' . implode( ', ', $select ). ' ';
+        $this->_from   .=  ' ' . implode( ' ', $from ). ' ';
+            
+    }
+    
     function postProcess( ) {
         
         $this->beginPostProcess( );
-        if ( isset( $this->_params['worldregion_id_value'] ) && !empty( $this->_params['worldregion_id_value'] ) ) {
-            $this->_addressField = true;
-            $this->_worldRegionField = true;
-        }
-        if ( $this->_params['activity_date_time_relative'] || $this->_params['activity_date_time_from'] 
-             || $this->_params['activity_date_time_to'] ) {     
-            $this->_activityField = true;
-            $this->_params['fields']['activity_subject'] = 1;
-        }
-        if ( isset( $this->_params['relationship_type_id_value'] ) 
-             && !empty( $this->_params['relationship_type_id_value'] ) ) {     
-            $this->_relField = true; 
-        }
-        $sql  = $this->buildQuery( true );
+
+        $this->checkEnabledFields( );
+
+        $this->buildQuery( true );        
         
+        $this->caseDetailSpecialColumnProcess( );
         
+        $sql = "{$this->_select} {$this->_from} {$this->_where} {$this->_groupBy} {$this->_having} {$this->_orderBy} {$this->_limit}";
+
         $rows = $graphRows = array();
         $this->buildRows ( $sql, $rows );
         
         $this->formatDisplay( $rows );
-        if ( $this->_activityField ) {
-            $this->_columnHeaders = array_merge( $this->_columnHeaders ,
-                                                 array( 'civicrm_activity_activity_subject'=>
-                                                        array( 'type'  => '2',
-                                                               'title' => ts('Last Action Activity Subject') ) ) );
-        }
-        
+
         $this->doTemplateAssignment( $rows );
         $this->endPostProcess( $rows );	
     }
+
+    function checkEnabledFields( ) {
+        if ( isset( $this->_params['worldregion_id_value'] ) && !empty( $this->_params['worldregion_id_value'] ) ) {
+            $this->_addressField = true;
+            $this->_worldRegionField = true;
+        }
+                    
+        if ( isset( $this->_params['case_role_value'] ) 
+             && !empty( $this->_params['case_role_value'] ) ) {     
+            $this->_relField = true;
+        }
+
+        if ( CRM_Utils_Array::value('activity_date_time_relative', $this->_params) || 
+             CRM_Utils_Array::value('activity_date_time_from', $this->_params) || 
+             CRM_Utils_Array::value('activity_date_time_to', $this->_params) ) {     
+            $this->_activityLast = true;
+        }
+        
+        foreach( array_keys($this->_caseDetailExtra) as $field ) {
+            if ( CRM_Utils_Array::value($field, $this->_params['case_detail_extra']) ) {
+                $this->_includeCaseDetailExtra = true;
+                break;
+            }
+        }
+
+    }
     
     function alterDisplay( &$rows ) {
-        $entryFound = false;
+        $entryFound    = false;
+        $activityTypes = CRM_Core_PseudoConstant::activityType( true, true );
         
         foreach ( $rows as $rowNum => $row ) { 
             if ( array_key_exists('civicrm_case_status_id', $row ) ) { 
@@ -452,7 +538,7 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                 }
             }
             if ( array_key_exists('civicrm_case_case_type_id', $row ) ) {
-                if ( $value = str_replace( CRM_Case_BAO_Case::VALUE_SEPERATOR, '', $row['civicrm_case_case_type_id'] )) {
+                if ( $value = str_replace( CRM_Core_DAO::VALUE_SEPARATOR, '', $row['civicrm_case_case_type_id'] )) {
                     $rows[$rowNum]['civicrm_case_case_type_id'] = $this->case_types[$value];
                     
                     $entryFound = true;
@@ -468,13 +554,15 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                     $entryFound = true;
                 }
             }
-            if ( array_key_exists('civicrm_relationship_relationship_type_id', $row ) ) {
-                if ( $value = $row['civicrm_relationship_relationship_type_id'] ) {
-                    $rows[$rowNum]['civicrm_relationship_relationship_type_id'] = 
-                        CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_RelationshipType', $value,'label_b_a' );
-                    
-                    $entryFound = true;
+            if ( array_key_exists('civicrm_relationship_case_role', $row ) ) {
+                if ( $value = $row['civicrm_relationship_case_role'] ) {
+                    $caseRoles = explode( ',', $value );
+                    foreach ( $caseRoles as $num => $caseRole ) {
+                        $caseRoles[$num] = $this->rel_types[$caseRole];
+                    }
+                    $rows[$rowNum]['civicrm_relationship_case_role'] = implode( '; ', $caseRoles );
                 }
+                $entryFound = true;
             }
             if ( array_key_exists('civicrm_address_country_id', $row) ) {
                 if ( $value = $row['civicrm_address_country_id'] ) {
@@ -488,10 +576,36 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                 }
                 $entryFound = true;
             }
-            if ( array_key_exists('civicrm_activity_activity_subject', $row) ) {
-                if ( !( $value = $row['civicrm_activity_activity_subject'] ) ) {
-                    $rows[$rowNum]['civicrm_activity_activity_subject'] = ts('No Subject');
-                }
+            if ( array_key_exists('civicrm_activity_last_completed_last_completed_activity_subject', $row) &&
+                 !CRM_Utils_Array::value('civicrm_activity_last_completed_last_completed_activity_subject', $row ) ) {
+                $rows[$rowNum]['civicrm_activity_last_completed_last_completed_activity_subject'] = ts('(No Subject)');
+                $entryFound = true;
+            }
+            if ( array_key_exists('civicrm_contact_client_sort_name', $row) && 
+                 array_key_exists('civicrm_contact_id', $row) ) {
+                $url = CRM_Utils_System::url( "civicrm/contact/view",  
+                                              'reset=1&cid=' . $row['civicrm_contact_id'],
+                                              $this->_absoluteUrl );
+                $rows[$rowNum]['civicrm_contact_client_sort_name_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_client_sort_name_hover'] = 
+                    ts("View Contact Summary for this Contact");
+                $entryFound = true;
+            }
+            if ( array_key_exists('civicrm_activity_last_completed_last_completed_activity_type', $row) ) {
+                if ( $value = $row['civicrm_activity_last_completed_last_completed_activity_type'] ) {
+                    $rows[$rowNum]['civicrm_activity_last_completed_last_completed_activity_type'] = $activityTypes[$value];
+                 }
+                $entryFound = true;
+            }
+            
+            if ( array_key_exists('case_activity_all_dates', $row) ) {
+                if ( $value = $row['case_activity_all_dates'] ) {
+                    $activityDates = explode( ',', $value );
+                    foreach ( $activityDates as $num => $activityDate ) {
+                        $activityDates[$num] = CRM_Utils_Date::customFormat( $activityDate );
+                    }
+                    $rows[$rowNum]['case_activity_all_dates'] = implode('; ', $activityDates);
+                 }
                 $entryFound = true;
             }
             

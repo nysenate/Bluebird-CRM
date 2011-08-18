@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -70,11 +70,11 @@ class CRM_Contact_Form_Search_Custom_Base {
                   $includeContactIDs = false,
                   $groupBy = null ) {
 
-        $sql =
-            "SELECT $selectClause "     .
-            $this->from ( )             .
-            " WHERE "                   .
-            $this->where( )             ;
+        $sql = "SELECT $selectClause ".$this->from ( );
+        $where = $this->where();
+        if (!empty($where)) {
+		$sql .= " WHERE ".$where;
+	}	
 
         if ( $includeContactIDs ) {
             $this->includeContactIDs( $sql,

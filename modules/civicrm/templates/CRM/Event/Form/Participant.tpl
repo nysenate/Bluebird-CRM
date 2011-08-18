@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -134,7 +134,7 @@
 {else}
     {if $participantMode == 'test' }
         {assign var=registerMode value="TEST"}
-        {else if $participantMode == 'live'}
+    {elseif $participantMode == 'live'}
         {assign var=registerMode value="LIVE"}
     {/if}
     <h3>{if $action eq 1}{ts}New Event Registration{/ts}{elseif $action eq 8}{ts}Delete Event Registration{/ts}{else}{ts}Edit Event Registration{/ts}{/if}</h3>
@@ -179,6 +179,9 @@
     			    <td class="font-size12pt view-value">{$displayName}&nbsp;</td>
     			</tr>
     	    {else}
+	        {if !$participantMode and !$email and $outBound_option != 2 }
+		    {assign var='profileCreateCallback' value=1} 
+		{/if} 
                 {include file="CRM/Contact/Form/NewContact.tpl"}
             {/if}
             {if $action EQ 2}
@@ -212,6 +215,11 @@
     				{/if}
                 </td>
             </tr> 
+	    
+	    {* CRM-7362 --add campaign *}
+	    {include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
+	    campaignTrClass="crm-participant-form-block-campaign_id"}
+
             <tr class="crm-participant-form-block-role_id"><td class="label">{$form.role_id.label}</td><td>{$form.role_id.html}</td></tr>
             <tr class="crm-participant-form-block-register_date">
                 <td class="label">{$form.register_date.label}</td>
@@ -276,7 +284,7 @@
                     cj( elementID ).get(0).add(new Option(response[i].name, response[i].value), document.all ? i : null);
                 }
                 cj('#past-event').hide( );
-                cj('input[name=past_event]').val(1);
+                cj('input[name="past_event"]').val(1);
                 cj("#feeBlock").html( '' );
             }
         );
@@ -444,7 +452,7 @@
             }
 
             for ( var i in roleGroupMapper ) {
-                if ( ( i != 0 ) && document.getElementById( "role_id["+i+"]" ).checked == true ) {
+                if ( ( i > 0 ) && ( document.getElementById( "role_id["+i+"]" ).checked ) ) {
                     var splitGroup = roleGroupMapper[i].split(",");
                     for ( j = 0; j < splitGroup.length; j++ ) {
                         groupUnload[x+j+1] = splitGroup[j];
@@ -520,7 +528,7 @@
 		buildCustomData( '{$customDataType}', 'null', 'null' );
 		{literal}
         for ( var i in roleGroupMapper ) {
-            if ( ( i != 0 ) && document.getElementById( "role_id["+i+"]" ).checked == true ) {
+            if ( ( i > 0 ) && ( document.getElementById( "role_id["+i+"]" ).checked ) ) {
                {/literal}
                showCustomData( '{$customDataType}', i, {$roleCustomDataTypeID} );
                {literal}  
@@ -569,7 +577,21 @@
          var mapping = eval('(' + eventAndTypeMapping + ')');
          buildCustomData( 'Participant', mapping[eventID], eventTypeCustomDataTypeID );
     }
+
+    function loadCampaign( eventId, campaigns ) {
+       cj( "#campaign_id" ).val( campaigns[eventId] );
+    }
+    
 {/literal}
+{if $profileCreateCallback}
+{literal}
+function profileCreateCallback( blockNo ) {
+  if( cj('#event_id').val( ) &&  cj('#email-receipt').length > 0 ) {
+    checkEmail( );
+  }
+}
+{/literal}
+{/if}
 </script>
 {literal}
 <script type="text/javascript">

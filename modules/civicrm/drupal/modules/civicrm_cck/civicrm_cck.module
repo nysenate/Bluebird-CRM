@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -722,7 +722,7 @@ function _civicrm_cck_potential_references_standard( $field, $string = '', $exac
     }
       
     $q = "
-    SELECT sort_name, id
+    SELECT sort_name, id, organization_name
     FROM civicrm_contact
     WHERE $whereClause
     sort_name IS NOT NULL
@@ -733,15 +733,21 @@ function _civicrm_cck_potential_references_standard( $field, $string = '', $exac
     AND sort_name NOT LIKE '- -%%'
     AND sort_name NOT LIKE ',%%'
     AND sort_name NOT LIKE '..%%'
+    AND is_deleted = 0
     ". $string_clause ." LIMIT $limit";
     $params = array( 1 => array( $args[0], "String" ) );
     $dao = CRM_Core_DAO::executeQuery( $q, $params );
 
     $references = array();
     while ($dao->fetch()) {
+        $organization_name = '';
+        if ( $dao->sort_name != $dao->organization_name ) {
+            $organization_name = (strlen($dao->organization_name) > 0) ? " - {$dao->organization_name}" : '';
+        }
+
         $references[$dao->id] = array(
                                       'title' => $dao->sort_name,
-                                      'rendered' => $dao->sort_name,
+                                      'rendered' => $dao->sort_name . $organization_name,
                                       );
     }
 

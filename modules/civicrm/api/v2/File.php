@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,7 +35,7 @@
  *
  * @package CiviCRM_APIv2
  * @subpackage API_File
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id: $
  *
  */
@@ -152,7 +152,7 @@ function &civicrm_file_update( &$params ) {
     }
     
     require_once 'CRM/Core/DAO/File.php';
-    $fileDAO =& new CRM_Core_DAO_File( );
+    $fileDAO = new CRM_Core_DAO_File( );
     $fileDAO->id = $params['id'];
     if ($fileDAO->find(true)) {
         $fileDAO->copyValues( $params );
@@ -185,14 +185,14 @@ function &civicrm_file_delete( $fileId ) {
     $check = false;
     
     require_once 'CRM/Core/DAO/EntityFile.php';
-    $entityFileDAO =& new CRM_Core_DAO_EntityFile( );
+    $entityFileDAO = new CRM_Core_DAO_EntityFile( );
     $entityFileDAO->file_id = $fileId;
     if ($entityFileDAO->find()) {
         $check = $entityFileDAO->delete();
     }
     
     require_once 'CRM/Core/DAO/File.php';
-    $fileDAO =& new CRM_Core_DAO_File( );
+    $fileDAO = new CRM_Core_DAO_File( );
     $fileDAO->id = $fileId;
     if ($fileDAO->find(true)) {
         $check = $fileDAO->delete();
@@ -224,7 +224,7 @@ function civicrm_entity_file_create( &$fileID, &$entityID, $entity_table = 'civi
                     'entity_table' => $entity_table
                     );
     
-    $entityFileDAO =& new CRM_Core_DAO_EntityFile( );
+    $entityFileDAO = new CRM_Core_DAO_EntityFile( );
     $entityFileDAO->copyValues( $params );
     $entityFileDAO->save( );
     
@@ -245,7 +245,6 @@ function civicrm_entity_file_create( &$fileID, &$entityID, $entity_table = 'civi
  */
 function civicrm_file_by_entity_add( $name, $entityID, $entityTable = 'civicrm_contact', $params ) {
     require_once 'CRM/Core/BAO/File.php';
-
     CRM_Core_BAO_File::filePostProcess( $name, null, $entityTable, $entityID, null, false, $params );
 }
 
@@ -267,7 +266,7 @@ function civicrm_files_by_entity_get( $entityID, $entityTable = 'civicrm_contact
     require_once 'CRM/Core/DAO/EntityFile.php';
     require_once 'CRM/Core/DAO/File.php';
     
-    $entityFileDAO =& new CRM_Core_DAO_EntityFile();
+    $entityFileDAO = new CRM_Core_DAO_EntityFile();
     $entityFileDAO->entity_table = $entityTable;
     $entityFileDAO->entity_id = $entityID;
     if ( $fileID ) {
@@ -280,7 +279,7 @@ function civicrm_files_by_entity_get( $entityID, $entityTable = 'civicrm_contact
             $files[$entityFileDAO->file_id] = $entityFile;
             
             if ( array_key_exists( 'file_id', $files[$entityFileDAO->file_id] ) ) {
-                $fileDAO =& new CRM_Core_DAO_File();
+                $fileDAO = new CRM_Core_DAO_File();
                 $fileDAO->id = $entityFile['file_id'];
                 $fileDAO->find(true);
                 _civicrm_object_to_array( $fileDAO, $files[$entityFileDAO->file_id] );
@@ -318,7 +317,7 @@ function civicrm_entity_file_delete( &$params )
         return civicrm_create_error('Required parameters missing');
     }
     
-    $entityFileDAO =& new CRM_Core_DAO_EntityFile( );
+    $entityFileDAO = new CRM_Core_DAO_EntityFile( );
     
     $properties = array( 'id', 'entity_id', 'entity_table', 'file_id' );
     foreach ( $properties as $name) {
@@ -329,4 +328,3 @@ function civicrm_entity_file_delete( &$params )
     
     return $entityFileDAO->delete() ? null : civicrm_create_error('Error while deleting');
 }
-

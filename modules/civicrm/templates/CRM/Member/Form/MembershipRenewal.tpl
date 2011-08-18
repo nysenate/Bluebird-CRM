@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,6 +24,9 @@
  +--------------------------------------------------------------------+
 *}
 {* this template is used for renewing memberships for a contact  *}
+{if $cdType }
+  {include file="CRM/Custom/Form/CustomData.tpl"}
+{else}
 {if $membershipMode == 'test' }
     {assign var=registerMode value="TEST"}
 {elseif $membershipMode == 'live'}
@@ -62,7 +65,14 @@
         <tr class="crm-member-membershiprenew-form-block-org_name">  
             <td class="label">{ts}Membership Organization and Type{/ts}</td>
             <td class="html-adjust">{$orgName}&nbsp;&nbsp;-&nbsp;&nbsp;{$memType}
-                {if $member_is_test} {ts}(test){/ts}{/if}</td>
+                {if $member_is_test} {ts}(test){/ts}{/if}
+                &nbsp; <a id="changeMembershipOrgType" href='#' onclick='adjustMembershipOrgType(); return false;'>{ts}change membership type{/ts}</a></td>
+        </tr>
+        <tr id="membershipOrgType" class="crm-member-membershiprenew-form-block-renew_org_name">
+			<td class="label">{$form.membership_type_id.label}</td>
+			<td>{$form.membership_type_id.html}
+    {if $member_is_test} {ts}(test){/ts}{/if}<br />
+        <span class="description">{ts}Select Membership Organization and then Membership Type.{/ts}</span></td>
         </tr> 
         <tr class="crm-member-membershiprenew-form-block-membership_status">  
             <td class="label">{ts}Membership Status{/ts}</td>
@@ -119,9 +129,14 @@
                </fieldset>
             </td>
 	 </tr> 
+	 {else}	
+	 <tr class="crm-member-membershiprenew-form-block-total_amount">
+		<td class="label">{$form.total_amount.label}</td>
+		<td>{$form.total_amount.html}<br />
+		<span class="description">{ts}Membership payment amount. A contribution record will be created for this amount.{/ts}</span></td>
+	 </tr>	 
 	 {/if}  
     </table>
-    
     {if $membershipMode}
      	<div class="spacer"></div>
      	{include file='CRM/Core/BillingBlock.tpl'}
@@ -145,51 +160,71 @@
 	     </tr>
      </table>
      {/if}
-         
+     <div id="customData"></div>
+     {*include custom data js file*}
+     {include file="CRM/common/customData.tpl"}
+     
      <div>{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
    
    <div class="spacer"></div>
    </div>
 {if $accessContribution and ! $membershipMode}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="record_contribution"
-    trigger_value       =""
-    target_element_id   ="recordContribution" 
-    target_element_type ="table-row"
-    field_type          ="radio"
-    invert              = 0
-}
+    {include file="CRM/common/showHideByFieldValue.tpl" 
+        trigger_field_id    ="record_contribution"
+        trigger_value       =""
+        target_element_id   ="recordContribution" 
+        target_element_type ="table-row"
+        field_type          ="radio"
+        invert              = 0
+    }
 {/if}
 {if $email and $outBound_option != 2}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="send_receipt"
-    trigger_value       =""
-    target_element_id   ="notice" 
-    target_element_type ="table-row"
-    field_type          ="radio"
-    invert              = 0
-}
+    {include file="CRM/common/showHideByFieldValue.tpl" 
+        trigger_field_id    ="send_receipt"
+        trigger_value       =""
+        target_element_id   ="notice" 
+        target_element_type ="table-row"
+        field_type          ="radio"
+        invert              = 0
+    }
+    {include file="CRM/common/showHideByFieldValue.tpl" 
+        trigger_field_id    ="send_receipt"
+        trigger_value       =""
+        target_element_id   ="fromEmail" 
+        target_element_type ="table-row"
+        field_type          ="radio"
+        invert              = 0
+    }
 {/if}
 {if !$membershipMode}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="payment_instrument_id"
-    trigger_value       = '4'
-    target_element_id   ="checkNumber" 
-    target_element_type ="table-row"
-    field_type          ="select"
-    invert              = 0
-}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="send_receipt"
-    trigger_value       =""
-    target_element_id   ="fromEmail" 
-    target_element_type ="table-row"
-    field_type          ="radio"
-    invert              = 0
-}
+    {include file="CRM/common/showHideByFieldValue.tpl" 
+        trigger_field_id    ="payment_instrument_id"
+        trigger_value       = '4'
+        target_element_id   ="checkNumber" 
+        target_element_type ="table-row"
+        field_type          ="select"
+        invert              = 0
+    }
+    {include file="CRM/common/showHideByFieldValue.tpl" 
+        trigger_field_id    ="send_receipt"
+        trigger_value       =""
+        target_element_id   ="fromEmail" 
+        target_element_type ="table-row"
+        field_type          ="radio"
+        invert              = 0
+    }
 {/if}
 {literal}
 <script type="text/javascript">
+cj(document).ready(function() {
+	cj('#membershipOrgType').hide(); 
+	{/literal}
+		buildCustomData( '{$customDataType}' );
+		{if $customDataSubType}
+			buildCustomData( '{$customDataType}', {$customDataSubType} );
+		{/if}
+	{literal}
+});
 function checkPayment()
 {
     showHideByValue('record_contribution','','recordContribution','table-row','radio',false);
@@ -197,11 +232,46 @@ function checkPayment()
     var record_contribution = document.getElementsByName('record_contribution');
     if ( record_contribution[0].checked ) {
         document.getElementsByName('send_receipt')[0].checked = true;
+        show('fromEmail', 'table-row');
     } else {
         document.getElementsByName('send_receipt')[0].checked = false;
     }
     showHideByValue('send_receipt','','notice','table-row','radio',false);  
     {/literal}{/if}{literal}
 }        
+function adjustMembershipOrgType( ) 
+{
+	cj('#membershipOrgType').show();		    	    
+	cj('#changeMembershipOrgType').hide();
+}
+cj( function( ) {
+    cj('#record_contribution').click( function( ) {
+        if ( cj(this).attr('checked') ) {
+            cj('#recordContribution').show( );
+            setPaymentBlock( );
+        } else {
+            cj('#recordContribution').hide( );
+        }
+    });
+    
+    cj('#membership_type_id\\[1\\]').change( function( ) {
+        setPaymentBlock( );
+    });
+});
+function setPaymentBlock( ) {
+    var memType = cj('#membership_type_id\\[1\\]').val( );
+    
+    if ( !memType ) {
+        return;
+    }
+    
+    var dataUrl = {/literal}"{crmURL p='civicrm/ajax/memType' h=0}"{literal};
+    
+    cj.post( dataUrl, {mtype: memType}, function( data ) {
+        cj("#contribution_type_id").val( data.contribution_type_id );
+        cj("#total_amount").val( data.total_amount );
+    }, 'json');    
+}
 </script>
 {/literal}
+{/if}{* closing of custom data if *}

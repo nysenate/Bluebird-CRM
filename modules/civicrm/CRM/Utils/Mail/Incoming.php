@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -223,8 +223,6 @@ class CRM_Utils_Mail_Incoming {
 
     function parseMailingObject( &$mail ) {
         require_once 'CRM/Core/Config.php';
-        require_once 'api/v2/Activity.php';
-        require_once 'api/v2/Contact.php';
         
         $config = CRM_Core_Config::singleton();
 

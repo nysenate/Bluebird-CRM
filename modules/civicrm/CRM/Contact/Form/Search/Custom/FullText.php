@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -383,7 +383,8 @@ AND     {$tableValues['id']} IS NOT NULL
         $tables = 
             array( 'civicrm_contact' => array( 'id' => 'id',
                                                'fields' => array( 'sort_name' => null,
-                                                                  'nick_name'    => null ) ),
+                                                                  'nick_name'    => null,
+                                                                  'display_name' => null, ) ),
                    'civicrm_address' => array( 'id' => 'contact_id',
                                                'fields' => array( 'street_address' => null,
                                                                   'city' => null,
@@ -423,7 +424,7 @@ INNER JOIN civicrm_contact c ON ca.source_contact_id = c.id
 LEFT JOIN  civicrm_email e ON e.contact_id = c.id
 LEFT JOIN  civicrm_option_group og ON og.name = 'activity_type'
 LEFT JOIN  civicrm_option_value ov ON ( ov.option_group_id = og.id ) 
-WHERE      c.sort_name LIKE {$this->_text} OR
+WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text}) OR
            ( e.email LIKE {$this->_text}    AND 
              ca.activity_type_id = ov.value AND
              ov.name IN ('Inbound Email', 'Email') )
@@ -439,7 +440,7 @@ INNER JOIN civicrm_contact c ON cat.target_contact_id = c.id
 LEFT  JOIN civicrm_email e ON cat.target_contact_id = e.contact_id
 LEFT  JOIN civicrm_option_group og ON og.name = 'activity_type'
 LEFT  JOIN civicrm_option_value ov ON ( ov.option_group_id = og.id ) 
-WHERE      c.sort_name LIKE {$this->_text} OR
+WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text}) OR
            ( e.email LIKE {$this->_text}    AND 
              ca.activity_type_id = ov.value AND
              ov.name IN ('Inbound Email', 'Email') )
@@ -457,7 +458,7 @@ LEFT  JOIN civicrm_option_group og ON og.name = 'activity_type'
 LEFT  JOIN civicrm_option_value ov ON ( ov.option_group_id = og.id )
 WHERE      caa.activity_id = ca.id
 AND        caa.assignee_contact_id = c.id
-AND        c.sort_name LIKE {$this->_text}  OR
+AND        (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})  OR
            ( e.email LIKE {$this->_text} AND
              ca.activity_type_id = ov.value AND
              ov.name IN ('Inbound Email', 'Email') )
@@ -491,7 +492,7 @@ SELECT SQL_CALC_FOUND_ROWS 'Case', c.id, c.sort_name, cc.id, DATE(cc.start_date)
 FROM      civicrm_case cc 
 LEFT JOIN civicrm_case_contact ccc ON cc.id = ccc.case_id
 LEFT JOIN civicrm_contact c ON ccc.contact_id = c.id
-WHERE     c.sort_name LIKE {$this->_text}
+WHERE     (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})
           AND (cc.is_deleted = 0 OR cc.is_deleted IS NULL)
 {$this->_limitClause}
 ";
@@ -539,7 +540,8 @@ WHERE     cc.id = {$this->_textID}
 SELECT     distinct cc.id 
 FROM       civicrm_contribution cc
 INNER JOIN civicrm_contact c ON cc.contact_id = c.id
-WHERE      c.sort_name LIKE {$this->_text}
+WHERE      (c.sort_name LIKE {$this->_text} OR
+           c.display_name LIKE {$this->_text})
 ";
         $tables = 
             array( 'civicrm_contribution' => array( 'id'     => 'id',
@@ -582,7 +584,7 @@ WHERE      c.sort_name LIKE {$this->_text}
 SELECT     distinct cp.id 
 FROM       civicrm_participant cp
 INNER JOIN civicrm_contact c ON cp.contact_id = c.id
-WHERE      c.sort_name LIKE {$this->_text}
+WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})
 ";
         $tables = 
             array( 'civicrm_participant' => array( 'id'     => 'id',
@@ -623,7 +625,7 @@ WHERE      c.sort_name LIKE {$this->_text}
 SELECT     distinct cm.id 
 FROM       civicrm_membership cm
 INNER JOIN civicrm_contact c ON cm.contact_id = c.id
-WHERE      c.sort_name LIKE {$this->_text}
+WHERE      (c.sort_name LIKE {$this->_text} OR c.display_name LIKE {$this->_text})
 ";
         $tables = 
             array( 'civicrm_membership' => array( 'id'     => 'id',
@@ -733,7 +735,7 @@ WHERE      c.sort_name LIKE {$this->_text}
 
         $summary['Count'] = array( );
         foreach ( array_keys($summary) as $table ) {
-            $summary['Count'][$table] = $this->_foundRows[$table];
+            $summary['Count'][$table] = CRM_Utils_Array::value( $table, $this->_foundRows );
         }
 
         if ( ! $this->_table ) {

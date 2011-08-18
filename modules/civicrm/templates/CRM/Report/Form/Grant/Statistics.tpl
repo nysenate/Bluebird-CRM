@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -46,19 +46,22 @@
         <div id="report-date">{$reportDate}</div>
     {/if}
 
-    {if $totalStatistics}
-      {if $outputMode eq 'html'}
-        {foreach from=$totalStatistics.filters item=row}
+    {if !empty($totalStatistics)}
+          <h3>{ts}Report Filters{/ts}</h3>
           <table class="report-layout statistics-table">
-            <tr>
-              <th class="statistics" scope="row">{$row.title}</th>
-              <td>{$row.value}</td>
-            </tr>
+          {if $totalStatistics.filters}
+              {foreach from=$totalStatistics.filters item=row}
+                <tr>
+                    <th class="statistics">{$row.title}</th>
+                    <td>{$row.value}</td>
+                </tr>
+              {/foreach}
+          {else}
+            ( {ts}All Grants{/ts} )
+          {/if}
           </table>
-        {/foreach}
-      {/if}
 
-    <h3>{ts}Summary{/ts}</h2>
+    <h3>{ts}Summary Statistics{/ts}</h2>
     <table class="report-layout display">
       <tr> 
         <th class="statistics" scope="row"></th>
@@ -75,8 +78,8 @@
     </table>
     {/if}
  
-    <h3>{ts}Statistics Breakdown{/ts}</h2>
-    {if $grantStatistics}
+    {if !empty($grantStatistics)}
+    <h3>{ts}Statistics Breakdown{/ts}</h3>
     <table class="report-layout display">
       {foreach from=$grantStatistics item=values key=key}
        <tr>
@@ -87,7 +90,7 @@
          {foreach from=$values.value item=row key=field}
            <tr>
               <td>{$field}</td>
-              <td class="right">{$row.count} ({$row.percentage}%)</td>
+              <td class="right">{if $row.count}{$row.count} ({$row.percentage}%){/if}</td>
               <td class="right">
                 {foreach from=$row.currency key=fld item=val}
                    {$val.value|crmMoney:$fld} ({$val.percentage}%)&nbsp;&nbsp;
@@ -96,8 +99,8 @@
            </tr>
          {if $row.unassigned_count}
            <tr>
-              <td>{$field} (Unassigned)</td>
-              <td class="right">{$row.unassigned_count} ({$row.unassigned_percentage}%)</td>
+              <td>{$field} ({ts}Unassigned{/ts})</td>
+              <td class="right">{if $row.unassigned_count}{$row.unassigned_count} ({$row.unassigned_percentage}%){/if}</td>
               <td class="right">
                 {foreach from=$row.unassigned_currency key=fld item=val}
                    {$val.value|crmMoney:$fld} ({$val.percentage}%)&nbsp;&nbsp;
@@ -112,6 +115,8 @@
     {/if}
 
     <br />
-        {include file="CRM/Report/Form/ErrorMessage.tpl"}
+        {if empty($totalStatistics)}
+          {include file="CRM/Report/Form/ErrorMessage.tpl"}
+        {/if}
     </div>
 {/if}

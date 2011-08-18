@@ -269,7 +269,6 @@ function civitest_civicrm_enableDisable( $recordBAO, $recordID, $isActive ) {
          $session =& CRM_Core_Session::singleton( );
          $uid     = $session->get('userID');
          if( $uid ) {
-             require_once 'api/v2/Activity.php';
              $params = array( 'activity_type_id'   => 1,
                               'source_contact_id'  => $uid,
                               'status_id'          => 2,
@@ -280,7 +279,7 @@ function civitest_civicrm_enableDisable( $recordBAO, $recordID, $isActive ) {
              } else {
                  $params['subject'] = ts('Disabled relationship type.');
              }
-             civicrm_activity_create($params);
+             civicrm_api('activity', 'create', $params);
          }
      }
  }
@@ -358,9 +357,8 @@ function civicrm_cck_event_field_values($field, $index = null) {
         if ( ! civicrm_initialize( ) ) {
             return;
         }
-        require_once 'api/v2/Event.php';
         $params    = array( );
-        $eventInfo = civicrm_event_search( $params );
+        $eventInfo = civicrm_api('event', 'get', $params );
     }
 
     if ( strpos($_GET['q'], 'edit') || 
@@ -608,9 +606,7 @@ function civitest_civicrm_eventDiscount( &$form, &$params ) {
 function civitest_civicrm_buildForm( $formName, &$form ) {
 
     if ( $formName == 'CRM_Contact_Form_Contact' ) {
-        $defaultDate = array( );
-        CRM_Utils_Date::getAllDefaultValues( $defaultDate );
-        $defaults['custom_3_-1'] = $defaultDate;
+        $defaults['custom_3_-1'] = date('m/d/Y');
         $form->setDefaults( $defaults );
     }
 
@@ -787,7 +783,7 @@ AND    v.weight > 0
 /**
  * Sample hook to add more actions for Create New
  */
-function civitest_civicrm_links( $op, $objectName, $objectId, &$links ) {
+function civitest_civicrm_links( $op, $objectName, $objectId, &$links, &$mask ) {
     if ( $op == 'create.new.shorcuts' ) {
       // add link to create new profile
       $links[] = array( 'url'   => '/civicrm/admin/uf/group?action=add&reset=1',
@@ -859,7 +855,7 @@ function civitest_civicrm_alterPaymentProcessorParams( $paymentObj,
         $occupation = empty($rawParams['custom_2']) ? '' : $rawParams['custom_2'];
         $cookedParams['custom'] = "$employer|$occupation";
         
-    } else if ( $paymentObj instanceof CRM_Contribute_Payment_AuthorizeNet ) {
+    } else if ( $paymentObj instanceof CRM_Core_Payment_AuthorizeNet ) {
         //Actual translation for one application:
         //Employer > Ship to Country (x_ship_to_country)
         //Occupation > Company (x_company)
@@ -918,12 +914,7 @@ function civitest_civicrm_config( &$config ) {
     // fix template path
     $templateDir = $civitestRoot . 'templates' . DIRECTORY_SEPARATOR;
     $template =& CRM_Core_Smarty::singleton( );
-    if ( is_array( $template->template_dir ) ) {
-        $template->template_dir = array( $templateDir ) + $template->template_dir;                            
-    } else {
-        $template->template_dir = array( $templateDir, $template->template_dir );
-    }
-
+    array_unshift( $template->template_dir, $templateDir );
 }
 
 function custom_ts( $string, $params = array( ) ) {  
@@ -1326,4 +1317,86 @@ LIMIT $offset, $limit
     }
     
     CRM_Utils_System::civiExit( );
+}
+
+	
+/* 
+ * import hook allows you to interact with the import data post process
+ * this example retrieves a special column (tag_import) with pipe-separated tags and 
+ * create/tags the imported contact record to a predefined tagset (id=296)
+ */
+
+function civitest_civicrm_import( $object, $usage, &$objectRef, $params ) {
+
+    if ( $object != 'Contact' &&
+         $usage  != 'process' ) {
+        return;
+    }
+
+	//during import, accept special tag_import column for processing
+	$cType           = $objectRef->_contactType;
+	$dupeType        = $objectRef->_onDuplicate;
+	$contactID       = $params['contactID'];
+	$importID        = $params['importID'];
+	$importTempTable = $params['importTempTable'];
+	$fields          = $params['fields'];
+    
+	require_once 'CRM/Core/DAO.php';
+	$sqlTags = "SELECT tag_import
+				FROM $importTempTable
+				WHERE _id = $importID;";
+	$taglist = CRM_Core_DAO::singleValueQuery( $sqlTags );
+    
+	if ( $taglist ) {
+        
+		require_once 'api/v2/Tag.php';
+		require_once 'api/v2/EntityTag.php';
+		require_once 'CRM/Core/BAO/EntityTag.php';
+        
+		$keywords = array();
+		$keywords = explode( '|', $taglist );
+        
+		foreach ( $keywords as $keyword ) {
+			$params = array( 'name' => $keyword, 'parent_id' => '296' ); //import tags to tagset with id 296
+            
+			//lookup tag; create new if nonexist
+			$tag = civicrm_tag_get($params);
+			if ( $tag['is_error'] ) {
+				$tag = civicrm_tag_create($params);
+				$tagid = $tag['tag_id'];
+			} else {
+				$tagid = $tag['id'];
+			}
+            
+			//only add tag to contact if not already present
+			$entityTags =& CRM_Core_BAO_EntityTag::getTag($contactID);
+			if ( !in_array($tagid, $entityTags) ) {
+				$entityParams = array('tag_id' => $tagid, 'contact_id' => $contactID );
+				$entityTag = civicrm_entity_tag_add( $entityParams );
+			}
+		}
+	}
+}    
+
+/**
+ *  alterAPIPermissions() hook allows you to change the permissions checked when doing API 3 calls.
+ */
+function civitest_civicrm_alterAPIPermissions($entity, $action, &$params, &$permissions)
+{
+    // skip permission checks for contact/create calls
+    // (but keep the ones for email, address, etc./create calls)
+    // note: unsetting the below would require the default ‘access CiviCRM’ permission
+    $permissions['contact']['create'] = array();
+
+    // enforce ‘view all contacts’ check for contact/get, but do not test ‘access CiviCRM’
+    $permissions['contact']['get'] = array('view all contacts');
+
+    // add a new permission requirement for your own custom API call
+    // (if all you want to enforce is ‘access CiviCRM’ you can skip the below altogether)
+    $permissions['foo']['get'] = array('access CiviCRM', 'get all foos');
+
+    // allow everyone to get info for a given event; also – another way to skip permissions
+    if ($entity == 'event' and $action == 'get' and $params['title'] == 'CiviCon 2038') {
+        $params['check_permissions'] = false;
+    }
 }

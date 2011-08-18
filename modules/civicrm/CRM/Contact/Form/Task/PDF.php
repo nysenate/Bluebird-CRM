@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -65,6 +65,8 @@ class CRM_Contact_Form_Task_PDF extends CRM_Contact_Form_Task {
      */
     
     function preProcess( ) {
+                                        
+        $this->skipOnHold = $this->skipDeceased = false;
         CRM_Contact_Form_Task_PDFLetterCommon::preProcess( $this );
 
         // store case id if present
@@ -87,13 +89,14 @@ class CRM_Contact_Form_Task_PDF extends CRM_Contact_Form_Task {
     }
     function setDefaultValues( ) 
     {
+        $defaults = array();
         if ( isset( $this->_activityId ) ) {
             $params = array( 'id' => $this->_activityId );
             CRM_Activity_BAO_Activity::retrieve( $params, $defaults );
             $defaults['html_message'] = $defaults['details'];
-            return $defaults;
         }
-        
+        $defaults = $defaults + CRM_Contact_Form_Task_PDFLetterCommon::setDefaultValues( );
+        return $defaults;        
     }
     
     /**

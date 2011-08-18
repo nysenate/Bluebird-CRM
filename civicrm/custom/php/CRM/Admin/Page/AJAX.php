@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -44,7 +44,7 @@ class CRM_Admin_Page_AJAX
      */    
     static function getNavigationList( ) {
         require_once 'CRM/Core/BAO/Navigation.php';
-        echo CRM_Core_BAO_Navigation::buildNavigation( true );           
+        echo CRM_Core_BAO_Navigation::buildNavigation( true, false );           
         CRM_Utils_System::civiExit();
     }
     
@@ -209,48 +209,46 @@ class CRM_Admin_Page_AJAX
         $statusMessage['show']   = $show;
         
         echo json_encode( $statusMessage );
-        
-        exit;
+        CRM_Utils_System::civiExit();
     }
     
     static function getTagList( ) {
         $name     = CRM_Utils_Type::escape( $_GET['name'], 'String' );
         $parentId = CRM_Utils_Type::escape( $_GET['parentId'], 'Integer' );
-		
-		//NYSS 3426
-		$isSearch = null;
- 	 	if ( isset( $_GET['search'] ) ) {
- 	 		$isSearch = CRM_Utils_Type::escape( $_GET['search'], 'Integer' );
- 	 	}
-		//NYSS end
         
+        $isSearch = null;
+        if ( isset( $_GET['search'] ) ) {
+            $isSearch = CRM_Utils_Type::escape( $_GET['search'], 'Integer' );
+        }
+
         $tags = array( );
+
 		//NYSS treat issue codes and keywords using normal method
         if ($parentId != 292 || $isSearch) {
             
-			//NYSS 3426
-            if ( !$isSearch ) {
-				$tags[] = array( 'name' => $name,
-            	                 'id'   => $name. ":::value" ); 
-            }
-			                 	 
-        	$query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
-        	$dao = CRM_Core_DAO::executeQuery( $query );
-        
-        	while( $dao->fetch( ) ) {
-            	//NYSS 3426
-				// make sure we return tag name entered by user only if it does not exists in db
- 	 			if ( $name == $dao->name ) {
- 	 				$tags = array();
- 	 			}
- 				// escape double quotes, which break results js
-				$tags[] = array( 'name' => addcslashes($dao->name, '"'),
-                             	 'id'   => $dao->id );
-        	}
-        
-        	echo json_encode( $tags ); 
-        	CRM_Utils_System::civiExit( );
+        // always add current search term as possible tag
+        // here we append :::value to determine if existing / new tag should be created
+        if ( !$isSearch ) {
+            $tags[] = array( 'name' => $name,
+                             'id'   => $name. ":::value" );            
         }
+
+        $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
+        $dao = CRM_Core_DAO::executeQuery( $query );
+        
+        while( $dao->fetch( ) ) {
+            // make sure we return tag name entered by user only if it does not exists in db
+            if ( $name == $dao->name ) {
+                $tags = array();
+            }
+            // escape double quotes, which break results js
+            $tags[] = array( 'name' =>  addcslashes($dao->name, '"'),
+                             'id'   => $dao->id );
+        }
+        
+        echo json_encode($tags);         
+        CRM_Utils_System::civiExit( );
+
         //NYSS leg positions should retrieve list from open leg and then create value in tag table
         elseif ($parentId == 292) {
         
@@ -361,25 +359,24 @@ class CRM_Admin_Page_AJAX
         	
         }
     }
-	
-	//NYSS 3808
-	static function mergeTagList( ) {
+    
+    static function mergeTagList( ) {
         $name   = CRM_Utils_Type::escape( $_GET['s'],      'String' );
         $fromId = CRM_Utils_Type::escape( $_GET['fromId'], 'Integer' );
-		$limit  = CRM_Utils_Type::escape( $_GET['limit'],  'Integer' );
- 	        
+        $limit  = CRM_Utils_Type::escape( $_GET['limit'],  'Integer' );
+        
         // build used-for clause to be used in main query
         $usedForTagA   = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Tag', $fromId, 'used_for' );
         $usedForClause = array();
         if ( $usedForTagA ) {
- 	        $usedForTagA = explode( ",", $usedForTagA );
+            $usedForTagA = explode( ",", $usedForTagA );
             foreach( $usedForTagA as $key => $value ) {
-            	$usedForClause[] = "t1.used_for LIKE '%{$value}%'";
+                $usedForClause[] = "t1.used_for LIKE '%{$value}%'";
             }
         }
         $usedForClause  = !empty( $usedForClause ) ? implode( " OR " , $usedForClause ) : '1';
-		sort($usedForTagA);
- 	
+        sort($usedForTagA);
+
         // query to list mergable tags
         $query  = "
 SELECT t1.name, t1.id, t1.used_for, t2.name as parent
@@ -387,27 +384,26 @@ FROM   civicrm_tag t1
 LEFT JOIN civicrm_tag t2 ON t1.parent_id = t2.id
 WHERE  t1.id <> {$fromId} AND 
        t1.name LIKE '%{$name}%' AND
-	   ({$usedForClause})
+       ({$usedForClause}) 
 LIMIT $limit";
         $dao    = CRM_Core_DAO::executeQuery( $query );
- 	        
+        
         while( $dao->fetch( ) ) {
             $warning = 0;
- 	            if ( !empty($dao->used_for) ) {
- 	                $usedForTagB = explode( ',', $dao->used_for );
- 	                sort($usedForTagB);
-	                $usedForDiff   = array_diff( $usedForTagA, $usedForTagB );
-	                if ( !empty($usedForDiff) ) {
- 	                    $warning = 1;
- 	                }
- 	            }
- 	            $tag = addcslashes($dao->name, '"') . "|{$dao->id}|{$warning}\n";
-			echo $tag = $dao->parent ? ( addcslashes($dao->parent, '"') . ' :: ' . $tag ) : $tag;
+            if ( !empty($dao->used_for) ) {
+                $usedForTagB = explode( ',', $dao->used_for );
+                sort($usedForTagB);
+                $usedForDiff   = array_diff( $usedForTagA, $usedForTagB );
+                if ( !empty($usedForDiff) ) {
+                    $warning = 1;
+                }
+            }
+            $tag = addcslashes($dao->name, '"') . "|{$dao->id}|{$warning}\n";
+            echo $tag = $dao->parent ? ( addcslashes($dao->parent, '"') . ' :: ' . $tag ) : $tag;
         }
         CRM_Utils_System::civiExit( );
     }
-	//NYSS end
-    
+
     static function processTags( ) {
         $skipTagCreate = $skipEntityAction = $entityId = null;
         $action           = CRM_Utils_Type::escape( $_POST['action'], 'String' );
@@ -441,12 +437,15 @@ LIMIT $limit";
         	    $tagID = $dao2->id;
         	}
 		} else {
-			$tagValue = explode( ':::', $_POST['tagID'] );
-			$createNewTag = false;
-			$tagID  = $tagValue[0];
-        	if ( isset( $tagValue[1] ) && $tagValue[1] == 'value' ) {
-				$createNewTag = true;
-			}
+        // check if user has selected existing tag or is creating new tag
+        // this is done to allow numeric tags etc. 
+        $tagValue = explode( ':::', $_POST['tagID'] );
+        
+        $createNewTag = false;
+        $tagID  = $tagValue[0];
+        if ( isset( $tagValue[1] ) && $tagValue[1] == 'value' ) {
+            $createNewTag = true;
+        }       
 		}
 		
 		//NYSS - retrieve OpenLeg ID and construct URL
@@ -490,8 +489,7 @@ LIMIT $limit";
                 $params = array( 'entity_table' => $entityTable,
                                  'entity_id'    => $entityId,
                                  'tag_id'       => $tagID);
-
-      
+                             
                 CRM_Core_BAO_EntityTag::add( $params );
             }
         } elseif ( $action == 'delete' ) {  // if action is delete
@@ -512,26 +510,76 @@ LIMIT $limit";
         
         echo json_encode( $tagInfo );
         CRM_Utils_System::civiExit( );
-    }
-	
-	//NYSS 3808
-	static function mergeTags( ) {
- 	    $tagAId = CRM_Utils_Type::escape( $_POST['fromId'], 'Integer' );
- 	    $tagBId   = CRM_Utils_Type::escape( $_POST['toId'],   'Integer' );
-		
-		require_once 'CRM/Core/BAO/EntityTag.php';
-		$result = CRM_Core_BAO_EntityTag::mergeTags( $tagAId, $tagBId );
-		
-		if ( !empty( $result['tagB_used_for'] ) ) {
-			require_once 'CRM/Core/OptionGroup.php';
-			$usedFor = CRM_Core_OptionGroup::values('tag_used_for');
-			foreach ( $result['tagB_used_for'] as &$val ) {
- 	            $val = $usedFor[$val];
- 	        }
- 	        $result['tagB_used_for'] = implode( ', ', $result['tagB_used_for'] );
+    } 
+
+    function mappingList(  ) {
+        $params = array( 'mappingID' );
+        foreach ( $params as $param ) {
+            $$param = CRM_Utils_Array::value( $param, $_POST );
         }
- 	
-        echo json_encode( $result ); 	
- 	    CRM_Utils_System::civiExit( );
- 	}
+
+        if ( !$mappingID ) {
+            echo json_encode( array('error_msg' => 'required params missing.' ) );
+            CRM_Utils_System::civiExit( );
+        }
+
+        require_once "CRM/Core/BAO/ScheduleReminders.php";
+        list( $sel1, $sel2 ) = CRM_Core_BAO_ScheduleReminders::getSelection1( $mappingID );
+
+        $elements = array( );
+        foreach ( $sel1 as $id => $name ) {
+            $elements[] = array( 'name'  => $name,
+                                 'value' => $id );
+        }
+
+        require_once "CRM/Utils/JSON.php";
+        echo json_encode( $elements );
+        CRM_Utils_System::civiExit( );
+    } 
+
+    function mappingList1(  ) {
+        $params = array( 'mappingID' );
+        foreach ( $params as $param ) {
+            $$param = CRM_Utils_Array::value( $param, $_POST );
+        }
+
+        if ( !$mappingID ) {
+            echo json_encode( array('error_msg' => 'required params missing.' ) );
+            CRM_Utils_System::civiExit( );
+        }
+
+        require_once "CRM/Core/BAO/ScheduleReminders.php";
+        list( $sel1, $sel2 ) =  CRM_Core_BAO_ScheduleReminders::getSelection1( $mappingID );
+
+        $elements = array( );
+        foreach ( $sel2 as $id => $name ) {
+            $elements[] = array( 'name'  => $name,
+                                 'value' => $id );
+        }
+
+        require_once "CRM/Utils/JSON.php";
+        echo json_encode( $elements );
+        CRM_Utils_System::civiExit( );
+    } 
+   
+    static function mergeTags( ) {
+        $tagAId = CRM_Utils_Type::escape( $_POST['fromId'], 'Integer' );
+        $tagBId   = CRM_Utils_Type::escape( $_POST['toId'],   'Integer' );
+        
+        require_once 'CRM/Core/BAO/EntityTag.php';
+        $result = CRM_Core_BAO_EntityTag::mergeTags( $tagAId, $tagBId );
+
+        if ( !empty( $result['tagB_used_for'] ) ) {
+            require_once 'CRM/Core/OptionGroup.php';
+            $usedFor = CRM_Core_OptionGroup::values('tag_used_for');
+            foreach ( $result['tagB_used_for'] as &$val ) {
+                $val = $usedFor[$val];
+            }
+            $result['tagB_used_for'] = implode( ', ', $result['tagB_used_for'] );
+        }
+
+        echo json_encode( $result );
+        CRM_Utils_System::civiExit( );
+    } 
+
 }

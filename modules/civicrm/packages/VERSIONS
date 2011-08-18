@@ -84,8 +84,6 @@ XML_Util                      1.2.1      BSD 3-cl.
 NON-PEAR
 ========
 AMFPHP         1.2.6      GPL 2       http://amfphp.org/
-Auth_OpenID    2.1.3      Apache 2    http://openidenabled.com/php-openid/
-Auth_Yadis     2.1.3      Apache 2    http://openidenabled.com/php-openid/
 PHP gettext    1.0.7      GPL 2+      http://savannah.nongnu.org/projects/php-gettext/
 PHPIDS         0.6.4      LGPL 3+     http://php-ids.org/
 Smarty         2.6.26     LGPL 2.1+   http://smarty.php.net/                                        local changes

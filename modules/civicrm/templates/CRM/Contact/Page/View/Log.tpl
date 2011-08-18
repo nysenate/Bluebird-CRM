@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,8 +24,12 @@
  +--------------------------------------------------------------------+
 *}
 <div id="changeLog" class="view-content">
-    <p></p>
-    <div class="bold">{ts}Change Log:{/ts} {$displayName}</div>
+   <p></p>
+   <div class="bold">{ts}Change Log:{/ts} {$displayName}</div>
+   {if $useLogging}
+     <br />
+     <div class='hiddenElement' id='instance_data'> </div>
+   {else}
     <div class="form-item">
      {if $logCount > 0 }  	
        <table>
@@ -44,5 +48,22 @@
      </div>	
      {/if}
     </div>
+   {/if}
  </p>
 </div>
+
+{if $useLogging}
+{literal}
+  <script type="text/javascript">
+  cj( document ).ready( function ( ) {
+    var dataURL = {/literal}"{$instanceUrl}"{literal};
+    cj.ajax({
+      url: dataURL,
+      success: function( content ) {
+        cj('#instance_data').show( ).html( content );
+      }
+    });
+  });
+</script>
+{/literal}
+{/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 <div class="block-civicrm">
 <div id="crm-create-new-wrapper">
-	<div id="crm-create-new-link"><span><div class="icon dropdown-icon"></div>Create New</span></div>
+	<div id="crm-create-new-link"><span><div class="icon dropdown-icon"></div>{ts}Create New{/ts}</span></div>
 		<div id="crm-create-new-list" class="ac_results">
 			<div class="crm-create-new-list-inner">
 			<ul>

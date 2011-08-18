@@ -30,7 +30,7 @@
 
 {capture assign=siteRoot}&lt;{ts}site root{/ts}&gt;{/capture}
 <p>
-  {ts 1=$siteRoot 2='sites/all/modules/civicrm/bin/CiviReportMail.php?' 3='instanceId=3&amp;reset=1&amp;sendmail=1'}Your site administrator will need to setup a server 'cron job' (automatically scheduled task) to trigger creation and delivery of each report. The cron job should use invoke the URL: <strong><em>%1/%2 %3</em></strong>. (This example url is specific to report ID = 3. When invoked, this URL will deliver email to the recipients specified for this report.) The cron job will also need to include authentication parameters which can be set by providing user-name, password and site key.{/ts} {docURL page="Command-line Script Configuration"}
+  {ts 1=$siteRoot 2='sites/all/modules/civicrm/bin/CiviReportMail.php?' 3='instanceId=3&amp;reset=1&amp;sendmail=1' 4='&amp;output=csv'}Your site administrator will need to setup a server 'cron job' (automatically scheduled task) to trigger creation and delivery of each report. The cron job should use invoke the URL: <strong><em>%1/%2%3</em></strong>. (This example url is specific to report ID = 3. When invoked, this URL will deliver email to the recipients specified for this report.) To email the report as a CSV file, add <strong><em>%4</em></strong> to the URL. The cron job will also need to include authentication parameters which can be set by providing user-name, password and site key.{/ts} {docURL page="Command-line Script Configuration"}
 </p>
 {/htxt}
 

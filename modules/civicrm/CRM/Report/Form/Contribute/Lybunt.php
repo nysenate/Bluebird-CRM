@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -63,7 +63,7 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'grouping'  => 'contact-field',
                           'fields'    =>
-                          array(  'display_name'      => 
+                          array(  'sort_name'      => 
                                   array( 'title'      => ts( 'Donor Name' ),
                                          'default'    => true,
                                          'required'   => true
@@ -279,10 +279,10 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
     
     
     function groupBy( ) {
-        $this->_groupBy = "Group BY  {$this->_aliases['civicrm_contribution']}.contact_id, Year({$this->_aliases['civicrm_contribution']}.receive_date) WITH ROLLUP"; 
+        $this->_groupBy = "GROUP BY  {$this->_aliases['civicrm_contribution']}.contact_id, Year({$this->_aliases['civicrm_contribution']}.receive_date) WITH ROLLUP"; 
         $this->assign( 'chartSupported', true );
     }
-
+    
     function statistics( &$rows ) {
         $statistics = parent::statistics( $rows );
         if( !empty($rows) ) {
@@ -313,7 +313,7 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
         $this->from   ( );
         $this->where  ( ); 
         $this->groupBy( );
-          
+
         $rows = $contactIds = array( );
         if( !CRM_Utils_Array::value( 'charts', $this->_params ) ) {  
             $this->limit( );
@@ -410,13 +410,13 @@ class CRM_Report_Form_Contribute_Lybunt extends CRM_Report_Form {
     function alterDisplay( &$rows ) {
         foreach ( $rows as $rowNum => $row ) {
             //Convert Display name into link
-            if ( array_key_exists('civicrm_contact_display_name', $row) &&
+            if ( array_key_exists('civicrm_contact_sort_name', $row) &&
                  array_key_exists('civicrm_contribution_contact_id', $row) ) {
                 $url = CRM_Report_Utils_Report::getNextUrl( 'contribute/detail', 
                                                             'reset=1&force=1&id_op=eq&id_value=' . $row['civicrm_contribution_contact_id'],
                                                             $this->_absoluteUrl, $this->_id );
-                $rows[$rowNum]['civicrm_contact_display_name_link' ] = $url;
-                $rows[$rowNum]['civicrm_contact_display_name_hover'] =  
+                $rows[$rowNum]['civicrm_contact_sort_name_link' ] = $url;
+                $rows[$rowNum]['civicrm_contact_sort_name_hover'] =  
                     ts("View Contribution Details for this Contact.");
             }
         }

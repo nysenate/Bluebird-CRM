@@ -196,7 +196,11 @@ $.Autocompleter = function(input, options) {
 		$input.unbind();
 		$(input.form).unbind(".autocomplete");
 	}).bind("input", function() {
-    onChange(0, true);
+        // needed for chinese input? see CRM-6135 and http://plugins.jquery.com/node/14682 
+        // this breaks "delay" though, so lets only use it with chinese minChars setting 
+        if (options.minChars <= 1) { 
+            onChange(0, true); 
+        } 
   });
 	
 	function selectCurrent() {

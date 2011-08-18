@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -243,7 +243,7 @@ class CRM_Event_Import_Form_MapField extends CRM_Core_Form
             $this->assign('loadedMapping', $mappingDetails->name);
             $this->set('loadedMapping', $savedMapping);
             
-            $getMappingName =&  new CRM_Core_DAO_Mapping();
+            $getMappingName = new CRM_Core_DAO_Mapping();
             $getMappingName->id = $savedMapping;
             $getMappingName->mapping_type = 'Import Participants';
             $getMappingName->find();

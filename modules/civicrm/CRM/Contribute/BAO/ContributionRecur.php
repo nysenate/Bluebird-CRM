@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -53,6 +53,14 @@ class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_Contributi
      * @static
      */
     static function add(&$params, &$ids) {
+      
+        require_once 'CRM/Utils/Hook.php';
+        if ( CRM_Utils_Array::value( 'id', $params ) ) {
+            CRM_Utils_Hook::pre( 'edit', 'ContributionRecur', $params['id'], $params );
+        } else {
+            CRM_Utils_Hook::pre( 'create', 'ContributionRecur', null, $params ); 
+        }
+        
         $duplicates = array( );
         if ( self::checkDuplicate( $params, $duplicates ) ) {
             $error =& CRM_Core_Error::singleton( ); 
@@ -73,8 +81,15 @@ class CRM_Contribute_BAO_ContributionRecur extends CRM_Contribute_DAO_Contributi
 	  $config =& CRM_Core_Config::singleton( );
 	  $recurring->currency = $config->defaultCurrency;
 	}
-
-        return $recurring->save();
+	      $result = $recurring->save( );
+        
+        if ( CRM_Utils_Array::value( 'id', $params ) ) {
+            CRM_Utils_Hook::post( 'edit', 'ContributionRecur', $recurring->id, $recurring );
+        } else {
+            CRM_Utils_Hook::post( 'create', 'ContributionRecur', $recurring->id, $recurring );
+        }
+        
+        return $result;
     }
 
     /**

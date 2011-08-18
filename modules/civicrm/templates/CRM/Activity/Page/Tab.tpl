@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,5 +33,6 @@
 {if $action eq 1 or $action eq 2 or $action eq 8 or $action eq 4 or $action eq 32768} {* add, edit, delete or view or detach*}
     {include file="CRM/Activity/Form/Activity.tpl"}
 {else}
-    {include file="CRM/Activity/Selector/Activity.tpl"}
+    {*include file="CRM/Activity/Selector/Activity.tpl"*}
+    {include file="CRM/Activity/Selector/Selector.tpl"}
 {/if}

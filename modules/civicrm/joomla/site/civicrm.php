@@ -54,14 +54,19 @@ function civicrm_invoke( ) {
         $menu       =& JSite::getMenu( );
         $item       =  $menu->getItems('componentid', $component->id, true);
         $params     =  $menu->getParams( $_GET['Itemid'] );
-        $args = array( 'task', 'id', 'gid', 'reset', 'pageId', 'action' ); 
-        foreach ( $args as $a ) { 
-            $val = $params->get( $a, null ); 
-            if ( $val !== null ) { 
+        $args = array( 'task', 'id', 'gid', 'pageId', 'action' ); 
+		$view =  CRM_Utils_Array::value( 'view', $_GET );
+		if ( $view ) {
+		    $args[] = 'reset';
+ 		}
+        foreach ( $args as $a ) {
+			$val = $params->get( $a, null ); 
+            if ( $val !== null && $view ) { 
                 $_GET[$a] = $val; 
             } 
-        } 
+        }
     }
+	
     $task = CRM_Utils_Array::value( 'task', $_GET, '' );
     $args = explode( '/', trim( $task ) );
 
@@ -135,7 +140,15 @@ function civicrm_check_permission( $args ) {
             return true;
         }
     }
-    
+
+    // allow petition sign in, CRM-7401
+    if ( in_array( 'CiviCampaign', $config->enableComponents ) ) {
+        if ( $arg1 == 'petition' &&
+             $arg2 == 'sign' ) {
+            return true;
+        }
+    }
+
     return false;
 }
 

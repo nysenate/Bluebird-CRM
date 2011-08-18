@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -1000,11 +1000,17 @@ class CRM_Import_Form_MapField extends CRM_Core_Form
         
         $primaryKeyName = $this->get( 'primaryKeyName' );
         $statusFieldName = $this->get( 'statusFieldName' );
-        $parser->run( $this->_importTableName, $mapper,
+        $parser->run( $this->_importTableName,
+                      $mapper,
                       CRM_Import_Parser::MODE_PREVIEW,
                       $this->get('contactType'),
-                      $primaryKeyName, $statusFieldName, $this->_onDuplicate, 
-                      null, null, false, CRM_Import_Parser::DEFAULT_TIMEOUT, $this->get('contactSubType') );
+                      $primaryKeyName,
+                      $statusFieldName,
+                      $this->_onDuplicate, 
+                      null, null, false,
+                      CRM_Import_Parser::DEFAULT_TIMEOUT,
+                      $this->get('contactSubType'),
+                      $this->get('dedupe') );
         
         // add all the necessary variables to the form
         $parser->set( $this );        

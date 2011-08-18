@@ -2,9 +2,9 @@
     
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -100,7 +100,8 @@ implements CRM_Contact_Form_Search_Interface {
                         $name,
                         $title );
         }
-
+        
+        $this->setTitle('Contributions made in Year X and not Year Y');
         // @TODO: Decide on better names for "Exclusion"
         // @TODO: Add rule to ensure that exclusion dates are not in the inclusion range
     }
@@ -304,7 +305,14 @@ AND      c.receive_date < {$this->start_date_1}
     function summary( ) {
         return null;
     }
-        
+    
+    function setTitle( $title ) {
+        if ( $title ) {
+            CRM_Utils_System::setTitle( $title );
+        } else {
+            CRM_Utils_System::setTitle(ts('Search'));
+        }
+    } 
 }
     
 

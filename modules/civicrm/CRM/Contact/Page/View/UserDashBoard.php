@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -246,8 +246,11 @@ class CRM_Contact_Page_View_UserDashBoard extends CRM_Core_Page
 
         // call the hook so we can modify it
         require_once 'CRM/Utils/Hook.php';
-        CRM_Utils_Hook::links( 'view.contact.userDashBoard', 'Contact',
-                               CRM_Core_DAO::$_nullObject, self::$_links );
+        CRM_Utils_Hook::links( 'view.contact.userDashBoard',
+                               'Contact',
+                               CRM_Core_DAO::$_nullObject,
+                               self::$_links,
+                               CRM_Core_DAO::$_nullObject );
         return self::$_links;
     }
 }

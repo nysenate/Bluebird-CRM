@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -302,10 +302,12 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                 'location_type_id' => array(
                     'name' => 'location_type_id',
                     'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Address Location Type') ,
                 ) ,
                 'is_primary' => array(
                     'name' => 'is_primary',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
+                    'title' => ts('Is Address Primary?') ,
                 ) ,
                 'is_billing' => array(
                     'name' => 'is_billing',
@@ -440,6 +442,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                 'state_province_id' => array(
                     'name' => 'state_province_id',
                     'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('State') ,
                     'FKClassName' => 'CRM_Core_DAO_StateProvince',
                 ) ,
                 'postal_code_suffix' => array(
@@ -476,6 +479,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                 'country_id' => array(
                     'name' => 'country_id',
                     'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Country') ,
                     'FKClassName' => 'CRM_Core_DAO_Country',
                 ) ,
                 'geo_code_1' => array(
@@ -520,7 +524,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
                 'master_id' => array(
                     'name' => 'master_id',
                     'type' => CRM_Utils_Type::T_INT,
-                    'title' => ts('Master Address ID') ,
+                    'title' => ts('Master Address Belongs To') ,
                     'import' => true,
                     'where' => 'civicrm_address.master_id',
                     'headerPattern' => '',
@@ -540,8 +544,7 @@ class CRM_Core_DAO_Address extends CRM_Core_DAO
      */
     function getTableName()
     {
-        global $dbLocale;
-        return self::$_tableName . $dbLocale;
+        return self::$_tableName;
     }
     /**
      * returns if this table needs to be logged

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -55,7 +55,7 @@
 {/if}
 
 {if $hasOpenFlashChart}
-{include file="CRM/common/openFlashChart.tpl"}
+{include file="CRM/common/openFlashChart.tpl" contriChart=true}
 
 {literal}
 <script type="text/javascript">

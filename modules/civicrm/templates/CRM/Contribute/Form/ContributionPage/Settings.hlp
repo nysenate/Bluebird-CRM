@@ -49,5 +49,7 @@
 {/htxt}
 
 {htxt id="id-is_organization"}
-{ts}When enabled, this feature allows users to identify an organization as the donor or member. Logged in users will be given a choice of selecting from a list of organizations that they have a permissioned relationship with OR entering a new organization. Anonymous users are prompted to enter the organization name. If a matching organization is found using your site's configured strict duplicate matching rules for Organizations, the contribution or membership will be linked to that organization. Otherwise a new organization contact record is created. In either case, users will be able to optionally enter email, phone and postal address data for the organization.{/ts}
+<p>{ts}When enabled, this feature allows users to identify an organization as the donor or member. Logged in users will be given a choice of selecting from a list of organizations that they have a permissioned relationship with OR entering a new organization. Anonymous users are prompted to enter the organization name. If a matching organization is found using your site's configured strict duplicate matching rules for Organizations, the contribution or membership will be linked to that organization. Otherwise a new organization contact record is created. In either case, users will be able to optionally enter email, phone and postal address data for the organization.{/ts}</p>
+{capture assign="profileURL"}{crmURL p='civicrm/admin/uf/group' q='reset=1'}{/capture}
+<p>{ts 1=$profileURL}To change the organization data collected use the "On Behalf Of Organization" profile (<a href="%1">Administer > Customize > CiviCRM Profile</a>).{/ts}</p>
 {/htxt}

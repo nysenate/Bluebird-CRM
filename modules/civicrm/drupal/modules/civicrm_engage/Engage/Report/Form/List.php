@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * @copyright DharmaTech  (c) 2009
  * $Id$
  *
@@ -36,7 +36,6 @@
 
 require_once 'CRM/Report/Form.php';
 require_once 'CRM/Core/DAO.php';
-require_once 'api/v2/Group.php';
 
 /**
  *  Generate a walk list
@@ -96,7 +95,9 @@ class Engage_Report_Form_List extends CRM_Report_Form {
      *  @var boolean
      */
     protected $_voterInfoField   = false;
-
+     
+    protected $_contributionField   = false; 
+    
     protected $_summary      = null;
 
     /**
@@ -178,7 +179,7 @@ class Engage_Report_Form_List extends CRM_Report_Form {
         $dao = CRM_Core_DAO::executeQuery( $query );
         $dao->fetch( );        
         $this->_partyCol = $dao->column_name;
-        $partyOptGrp = $dao->option_group_ID;
+        $partyOptGrp = $dao->option_group_id;
         $query = "SELECT label, value"
             . " FROM civicrm_option_value"
             . " WHERE option_group_id={$partyOptGrp}";
@@ -412,10 +413,9 @@ ORDER BY ov.label
         //var_dump($this->_params);
         $this->_columnHeaders = array( );
         foreach ( $this->_columns as $tableName => $table ) {
-            //echo "select: table name $tableName<br>";
             if ( array_key_exists('fields', $table) ) {
-                foreach ( $table['fields'] as $fieldName => $field ) {
-                    //echo "&nbsp;&nbsp;&nbsp;field name $fieldName<br>";
+                foreach ( $table['fields'] as $fieldName => $field ) {             
+                    
                     //var_dump($this->_params['fields'][$fieldName]);
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
                          CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
@@ -433,11 +433,13 @@ ORDER BY ov.label
                             $this->_coreField = true;
                         } else if ( $tableName == $this->_voterInfoTable ) {
                             $this->_voterInfoField = true;
-                        }
-                        
+                        } else if ( $tableName == "civicrm_contribution_cont" ) {
+                            $this->_contributionField = true;
+                        }    
+                                            
                         $select[] = "{$table['alias']}.{$fieldName} as {$tableName}_{$fieldName}";
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
-                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = $field['type'];
+                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value('type',$field);
                     }
                 }
             }
@@ -450,9 +452,21 @@ ORDER BY ov.label
      *  Generate FROM clause for SQL SELECT
      */
     protected function from( ) {
-        $this->_from =
-            " FROM civicrm_contact AS {$this->_aliases['civicrm_contact']} ";
 
+      $this->_from =
+            " FROM civicrm_contact AS {$this->_aliases['civicrm_contact']} ";
+        if ( $this->_contributionField ) {
+            //store in a temp table max receive date & relevant contribution _value - described as 'group by trick' here http://dev.mysql.com/doc/refman/5.1/en/example-maximum-column-group-row.html
+            //there doesn't appear to be any efficient way to do this without using the temp table
+            //as we want to use the latest receive date & the latest value (not the max value)
+            //and we want to join this against contact_id     
+            $query = "create temporary table civicrm_maxconts SELECT * FROM ( SELECT  `receive_date` ,`total_amount`, contact_id  FROM `civicrm_contribution` ORDER BY receive_date DESC) as maxies group by contact_id;";
+            $dao = CRM_Core_DAO::executeQuery( $query );
+            //apparently it is faster to create & then index http://mysqldump.azundris.com/archives/80-CREATE-TEMPORARY-TABLE.html
+            $query = "alter table civicrm_maxconts add index (contact_id);";
+            $dao = CRM_Core_DAO::executeQuery($query );
+    				$this->_from .=	"LEFT JOIN civicrm_maxconts cont_civireport ON contact_civireport.id = cont_civireport.contact_id ";
+        }
         if ( $this->_addressField ) {
             $this->_from .= "LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND {$this->_aliases['civicrm_address']}.is_primary = 1\n";
         }

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -58,6 +58,14 @@
         {ts}(test){/ts}
     {/if}
         </td></tr>
+
+    {if $campaign}
+	<tr class="crm-pledge-form-block-campaign">
+	    <td class="label">{ts}Campaign{/ts}</td>
+    	    <td>{$campaign}</td>
+	</tr>    
+    {/if}
+
     {if $acknowledge_date}	
             <tr class="crm-pledge-form-block-acknowledge_date"><td class="label">{ts}Received{/ts}</td><td>{$acknowledge_date|truncate:10:''|crmDate}&nbsp;</td></tr>
 	{/if}

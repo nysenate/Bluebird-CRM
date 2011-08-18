@@ -608,7 +608,7 @@ class DB_Table_Manager {
             // in PEAR::DB ==> use adopted code from MDB2's driver classes
             require_once 'DB/Table/Manager/' . $phptype . '.php';
             $classname = 'DB_Table_Manager_' . $phptype;
-            $dbtm =& new $classname();
+            $dbtm = new $classname();
             $dbtm->_db =& $db;  // pass database instance to the 'workaround' class
             $manager =& $dbtm;
             $table_info_mode = DB_TABLEINFO_FULL;
@@ -1564,7 +1564,7 @@ class DB_Table_Manager {
             // in PEAR::DB ==> use adopted code from MDB2's driver classes
             require_once 'DB/Table/Manager/' . $db->phptype . '.php';
             $classname = 'DB_Table_Manager_' . $db->phptype;
-            $dbtm =& new $classname();
+            $dbtm = new $classname();
             $dbtm->_db =& $db;  // pass database instance to the 'workaround' class
             $manager =& $dbtm;
             $reverse =& $dbtm;

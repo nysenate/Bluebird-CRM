@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -40,7 +40,7 @@
        var installments = cj( '#installments' );	 
        isDisabled = false;
 
-       if ( cj( 'input:radio[name=is_recur]:checked').val() == 0 )  {
+       if ( cj( 'input:radio[name="is_recur"]:checked').val() == 0 )  {
           isDisabled = true;
           frInerval.val( '' );
           installments.val( '' );
@@ -62,10 +62,10 @@
        if ( priceSet && priceSet.val( ) ) {
           funName = 'hide';
           //reset the values of recur block. 
-	  if ( cj( 'input:radio[name=is_recur]:checked').val() ) {
+	  if ( cj( 'input:radio[name="is_recur"]:checked').val() ) {
 	      cj("#installments").val('');
 	      cj("#frequency_interval").val('');
-	      cj( 'input:radio[name=is_recur]')[0].checked = true;
+	      cj( 'input:radio[name="is_recur"]')[0].checked = true;
 	  }
        }
 

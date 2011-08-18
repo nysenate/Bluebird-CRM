@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -135,7 +135,6 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         
         $this->add('select', 'dataSource', ts('Data Source'), $dataSources, true,
                    array('onchange' => 'buildDataSourceFormBlock(this.value);'));
-        $this->setDefaults(array('dataSource' => 'CRM_Import_DataSource_CSV'));
             
         // duplicate handling options
         $duplicateOptions = array();        
@@ -159,15 +158,9 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
 
         $this->assign('savedMapping',$mappingArray);
         $this->addElement('select','savedMapping', ts('Mapping Option'), array('' => ts('- select -'))+$mappingArray);
-       
-        if ( $loadeMapping = $this->get('loadedMapping') ) {
-            $this->assign('loadedMapping', $loadeMapping );
-            $this->setDefaults(array('savedMapping' => $loadeMapping));
-        }
 
-        $this->setDefaults(array('onDuplicate' =>
-                                    CRM_Import_Parser::DUPLICATE_SKIP));
-        $js = array('onClick' => "buildSubTypes();");    
+
+        $js = array('onClick' => "buildSubTypes();buildDedupeRules();");    
         // contact types option
         require_once 'CRM/Contact/BAO/ContactType.php';
         $contactOptions = array();
@@ -187,22 +180,22 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         $this->addGroup($contactOptions, 'contactType', 
                         ts('Contact Type'));
         
-        $this->addElement('select','subType', ts('Subtype'));
+        $this->addElement( 'select', 'subType', ts( 'Subtype'     ) );
+        $this->addElement( 'select', 'dedupe' , ts( 'Dedupe Rule' ) );
 
-        $this->setDefaults(array('contactType' =>
-                                 CRM_Import_Parser::CONTACT_INDIVIDUAL));
-        
         require_once 'CRM/Core/Form/Date.php';
         CRM_Core_Form_Date::buildAllowedDateFormats($this);
         
         $config = CRM_Core_Config::singleton();
         $geoCode = false;
-        if (!empty($config->geocodeMethod)) {
+        if ( ! empty( $config->geocodeMethod ) ) {
             $geoCode = true;
             $this->addElement('checkbox', 'doGeocodeAddress', ts('Lookup mapping info during import?'));
         }
         $this->assign( 'geoCode',$geoCode );
         
+        $this->addElement('text','fieldSeparator', ts('Import Field Separator'), array('size' => 2)); 
+
         $this->addButtons( array( 
                                  array ( 'type'         => 'upload',
                                          'name'         => ts('Continue >>'),
@@ -213,7 +206,22 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
                                  )
                          );
     }
-    
+
+    function setDefaultValues( ) {
+        $config =& CRM_Core_Config::singleton( );
+        $defaults = array( 'dataSource'     => 'CRM_Import_DataSource_CSV',
+                           'onDuplicate'    => CRM_Import_Parser::DUPLICATE_SKIP,
+                           'contactType'    => CRM_Import_Parser::CONTACT_INDIVIDUAL,
+                           'fieldSeparator' => $config->fieldSeparator );
+
+        if ( $loadeMapping = $this->get('loadedMapping') ) {
+            $this->assign('loadedMapping', $loadeMapping );
+            $defaults['savedMapping'] = $loadeMapping;
+        }
+
+        return $defaults;
+    }
+
     private function _getDataSources() {
         // Open the data source dir and scan it for class files
         $config = CRM_Core_Config::singleton();
@@ -254,18 +262,20 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         if ($this->_dataSourceIsValid) {
             // Setup the params array 
             $this->_params = $this->controller->exportValues( $this->_name );
-                       
-            $onDuplicate     = $this->exportValue('onDuplicate');
-            $contactType     = $this->exportValue('contactType');
-            $dateFormats     = $this->exportValue('dateFormats');
-            $savedMapping    = $this->exportValue('savedMapping');
-            $contactSubType  = $this->exportValue('subType');
-                              
-            $this->set('onDuplicate', $onDuplicate);
-            $this->set('contactType', $contactType);
-            $this->set('contactSubType', $contactSubType);
-            $this->set('dateFormats', $dateFormats);
-            $this->set('savedMapping', $savedMapping);
+
+            $storeParams = array( 'onDuplicate'     => 'onDuplicate',
+                                  'dedupe'          => 'dedupe',
+                                  'contactType'     => 'contactType',
+                                  'contactSubType'  => 'subType',
+                                  'dateFormats'     => 'dateFormats',
+                                  'savedMapping'    => 'savedMapping',
+                                  );
+
+            foreach ( $storeParams as $storeName => $storeValueName ) {
+                $$storeName = $this->exportValue( $storeValueName );
+                $this->set( $storeName, $$storeName );
+            }
+
             $this->set('dataSource', $this->_params['dataSource'] );
             $this->set('skipColumnHeader', CRM_Utils_Array::value( 'skipColumnHeader', $this->_params ) );
             
@@ -292,10 +302,18 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
 
             $parser = new CRM_Import_Parser_Contact( $mapper );
             $parser->setMaxLinesToProcess( 100 );
-            $parser->run( $importTableName, $mapper,
-                          CRM_Import_Parser::MODE_MAPFIELD, $contactType,
-                          $fieldNames['pk'], $fieldNames['status'], 
-                          DUPLICATE_SKIP, null, null, false, CRM_Import_Parser::DEFAULT_TIMEOUT, $contactSubType );
+            $parser->run( $importTableName,
+                          $mapper,
+                          CRM_Import_Parser::MODE_MAPFIELD,
+                          $contactType,
+                          $fieldNames['pk'],
+                          $fieldNames['status'], 
+                          CRM_Import_Parser::DUPLICATE_SKIP,
+                          null, null, false,
+                          CRM_Import_Parser::DEFAULT_TIMEOUT,
+                          $contactSubType,
+                          $dedupe
+                          );
                           
             // add all the necessary variables to the form
             $parser->set( $this );

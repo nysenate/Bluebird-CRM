@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  *
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -64,6 +64,8 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration
         $this->assign( 'participantInfo', $participantInfo ); 
         $customGroup = $this->get('customProfile');
         $this->assign( 'customProfile',$customGroup );
+        
+        $this->assign( 'addParticipantProfile', $this->get('addParticipantProfile'));
         CRM_Utils_System::setTitle(CRM_Utils_Array::value('thankyou_title',$this->_values['event']));
     }
 
@@ -105,9 +107,9 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration
         $this->assign( 'receive_date', $this->_receiveDate );
         $this->assign( 'trxn_id', $this->_trxnId );
         
-        if( CRM_Utils_Array::value( 'amount', $this->_params[0] ) == 0 ) {
-            $this->assign( 'isAmountzero', 1 );
-        }
+        //cosider total amount.
+        $this->assign( 'isAmountzero', ( $this->_totalAmount <= 0 ) ? true : false );
+        
         $this->assign( 'defaultRole', false );
         if( CRM_Utils_Array::value( 'defaultRole', $this->_params[0] ) == 1 ) {
             $this->assign( 'defaultRole', true );
@@ -149,10 +151,10 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration
             $friendText = $data['title'];
             $this->assign( 'friendText', $friendText );
             if( $this->_action & CRM_Core_Action::PREVIEW ) {
-                $url = CRM_Utils_System::url("civicrm/friend", 
+                $url = CRM_Utils_System::url('civicrm/friend', 
                                              "eid={$this->_eventId}&reset=1&action=preview&page=event" );
             } else {
-                $url = CRM_Utils_System::url("civicrm/friend", 
+                $url = CRM_Utils_System::url('civicrm/friend', 
                                              "eid={$this->_eventId}&reset=1&page=event" );   
             }                    
             $this->assign( 'friendURL', $url );
@@ -172,7 +174,7 @@ class CRM_Event_Form_Registration_ThankYou extends CRM_Event_Form_Registration
         $this->assign( 'isRequireApproval', $isRequireApproval );
         
         // Assign Participant Count to Lineitem Table
-        require_once "CRM/Price/BAO/Set.php";
+        require_once 'CRM/Price/BAO/Set.php';
         $this->assign( 'pricesetFieldsCount', CRM_Price_BAO_Set::getPricesetCount( $this->_priceSetId ) );    
         
         // can we blow away the session now to prevent hackery

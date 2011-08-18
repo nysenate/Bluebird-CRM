@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -119,7 +119,7 @@ class CRM_Custom_Form_Option extends CRM_Core_Form
             if ( $fieldDefaults['html_type'] == 'CheckBox' 
                  || $fieldDefaults['html_type'] == 'Multi-Select' 
                  || $fieldDefaults['html_type'] == 'AdvMulti-Select' ) {
-                $defaultCheckValues = explode( CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+                $defaultCheckValues = explode( CRM_Core_DAO::VALUE_SEPARATOR,
                                                substr( $fieldDefaults['default_value'], 1, -1 ) );
                 if ( in_array( $defaults['value'], $defaultCheckValues ) ) 
                     $defaults['default_value'] = 1;
@@ -409,7 +409,7 @@ SELECT count(*)
              ( $customField->html_type == 'CheckBox' ||
                $customField->html_type == 'AdvMulti-Select' ||
                $customField->html_type == 'Multi-Select' ) ) {
-            $defVal = explode(CRM_Core_BAO_CustomOption::VALUE_SEPERATOR,
+            $defVal = explode(CRM_Core_DAO::VALUE_SEPARATOR,
                               substr( $customField->default_value, 1, -1 ) );
             if ( CRM_Utils_Array::value( 'default_value', $params ) ) {
                 if ( !in_array($customOption->value, $defVal) ) {
@@ -419,9 +419,9 @@ SELECT count(*)
                         $defVal[] = $customOption->value;
                     }
                     $customField->default_value =
-                        CRM_Core_BAO_CustomOption::VALUE_SEPERATOR . 
-                        implode(CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $defVal) .
-                        CRM_Core_BAO_CustomOption::VALUE_SEPERATOR;
+                        CRM_Core_DAO::VALUE_SEPARATOR . 
+                        implode(CRM_Core_DAO::VALUE_SEPARATOR, $defVal) .
+                        CRM_Core_DAO::VALUE_SEPARATOR;
                     $customField->save();
                 }
             } else if ( in_array($customOption->value, $defVal) ) {
@@ -433,9 +433,9 @@ SELECT count(*)
                 }
 
                 $customField->default_value =
-                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR . 
-                    implode(CRM_Core_BAO_CustomOption::VALUE_SEPERATOR, $tempVal) .
-                    CRM_Core_BAO_CustomOption::VALUE_SEPERATOR;
+                    CRM_Core_DAO::VALUE_SEPARATOR . 
+                    implode(CRM_Core_DAO::VALUE_SEPARATOR, $tempVal) .
+                    CRM_Core_DAO::VALUE_SEPARATOR;
                 $customField->save(); 
             }           
         } else {            

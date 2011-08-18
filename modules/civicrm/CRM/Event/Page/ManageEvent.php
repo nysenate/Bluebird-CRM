@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +29,14 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
 require_once 'CRM/Core/Page.php';
 require_once 'CRM/Event/BAO/Event.php';
+require_once 'CRM/Campaign/BAO/Campaign.php';
 
 /**
  * Page for displaying list of events
@@ -209,6 +210,9 @@ ORDER BY start_date desc
         
         $dao = CRM_Core_DAO::executeQuery( $query, $params, true, 'CRM_Event_DAO_Event' );
         $permissions = CRM_Event_BAO_Event::checkPermission( );
+        
+        //get all campaigns.
+        $allCampaigns = CRM_Campaign_BAO_Campaign::getCampaigns( null, null, false, false, false, true );
 
         while ($dao->fetch()) {
             if ( in_array( $dao->id, $permissions[CRM_Core_Permission::VIEW] ) ) {
@@ -254,6 +258,9 @@ ORDER BY start_date desc
                 if ( isset( $defaults['location']['address'][1]['state_province_id'] )) {
                     $manageEvent[$dao->id]['state_province'] = CRM_Core_PseudoConstant::stateProvince($defaults['location']['address'][1]['state_province_id']);
                 }
+                
+                //show campaigns on selector.
+                $manageEvent[$dao->id]['campaign'] = CRM_Utils_Array::value( $dao->campaign_id, $allCampaigns );
             }
         }
         $this->assign('rows', $manageEvent);
@@ -372,7 +379,13 @@ ORDER BY start_date desc
             $clauses[] = 'title LIKE %6';
             $params[6] = array( $this->_sortByCharacter . '%', 'String' );
         }
-
+        
+        $campainIds = $this->get( 'campaign_id' );
+        if ( !CRM_Utils_System::isNull( $campainIds ) ) {
+            if ( !is_array( $campainIds ) ) $campaignIds = array( $campaignIds );
+            $clauses[] = '( campaign_id IN ( ' . implode( ' , ', array_values( $campainIds ) ). ' ) )';
+        }
+        
         // dont do a the below assignment when doing a 
         // AtoZ pager clause
         if ( $sortBy ) {

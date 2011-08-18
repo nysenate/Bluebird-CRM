@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -223,6 +223,7 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
         require_once "CRM/Contact/BAO/Relationship.php";
         require_once 'CRM/Core/OptionGroup.php';
         require_once 'CRM/Contact/BAO/ContactType.php';
+        require_once 'CRM/Campaign/PseudoConstant.php';
         $contactTypes = array( 'Contact', 'Individual', 'Household', 'Organization' );
         $this->assign( 'contactTypes', json_encode($contactTypes) );
               
@@ -231,6 +232,7 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
         $activityType = CRM_Core_PseudoConstant::activityType( false, true, false, 'label', true );
         
         $eventType       = CRM_Core_OptionGroup::values( 'event_type' );
+        $campaignTypes   = CRM_Campaign_PseudoConstant::campaignType( );
         $membershipType  = CRM_Member_BAO_MembershipType::getMembershipTypes( false );
         $participantRole = CRM_Core_OptionGroup::values( 'participant_role' );
         $relTypeInd      = CRM_Contact_BAO_Relationship::getContactRelationshipType( null, 'null', null, 'Individual' );
@@ -257,6 +259,7 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
 
         $sel2['Event']                = $eventType;
         $sel2['Activity']             = $activityType;
+        $sel2['Campaign']             = $campaignTypes;
         $sel2['Membership']           = $membershipType;
         $sel2['ParticipantRole']      = $participantRole;
         $sel2['ParticipantEventName'] = 
@@ -268,6 +271,8 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
         $sel2['Individual']           = CRM_Contact_BAO_ContactType::subTypePairs( 'Individual', false, null );
         $sel2['Household' ]           = CRM_Contact_BAO_ContactType::subTypePairs( 'Household', false, null );
         $sel2['Organization']         = CRM_Contact_BAO_ContactType::subTypePairs( 'Organization', false, null );
+
+        CRM_Core_BAO_CustomGroup::getExtendedObjectTypes( $sel2 );
 
         foreach ( $sel2 as $main => $sub ) {
             if ( !empty($sel2[$main]) ) {
@@ -489,7 +494,7 @@ class CRM_Custom_Form_Group extends CRM_Core_Form
             CRM_Core_Session::setStatus(ts('Your custom field set \'%1 \' has been saved.', array(1 => $group->title)));
         } else {
             $url = CRM_Utils_System::url( 'civicrm/admin/custom/group/field/add', 'reset=1&action=add&gid=' . $group->id);
-            CRM_Core_Session::setStatus(ts('Your custom field set \'%1\' has been added. You can add it custom fields now.',
+            CRM_Core_Session::setStatus(ts('Your custom field set \'%1\' has been added. You can add custom fields now.',
                                            array(1 => $group->title)));
             $session = CRM_Core_Session::singleton( );
             $session->replaceUserContext($url);

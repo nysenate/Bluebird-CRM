@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -64,16 +64,18 @@ class CRM_Contact_Form_Edit_Phone
         
         //phone type select
         $form->addElement('select', "phone[$blockId][phone_type_id]", ts('Phone'), CRM_Core_PseudoConstant::phoneType( ) );
-        
-		//phone box
-		$form->addElement('text', "phone[$blockId][phone]", ts('Phone'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone'));
+
+		//main phone number with crm_phone class
+		$form->addElement('text', "phone[$blockId][phone]", ts('Phone'), array_merge( CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone'), array( 'class' => 'crm_phone twelve' ) ) );
+        // phone extension
+		$form->addElement('text', "phone[$blockId][phone_ext]", ts('Extension'), CRM_Core_DAO::getAttribute('CRM_Core_DAO_Phone', 'phone_ext'));
 		
 		if( isset( $form->_contactType ) ) {
 			//Block type select
 			$form->addElement('select',"phone[$blockId][location_type_id]", '' , CRM_Core_PseudoConstant::locationType());
 			
 			//is_Primary radio
-			$js = array( 'id' => "Phone_".$blockId."_IsPrimary", 'onClick' => 'singleSelect( this.id );');
+			$js = array( 'id' => 'Phone_'.$blockId.'_IsPrimary', 'onClick' => 'singleSelect( this.id );');
             $form->addElement( 'radio', "phone[$blockId][is_primary]", '', '', '1', $js );
 		}           
         // TODO: set this up as a group, we need a valid phone_type_id if we have a  phone number

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -61,8 +61,6 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
     private $_surveyTypeId;
     
     private $_interviewerId;
-    
-    private $_ufGroupId;
     
     private $_surveyActivityIds;
     
@@ -107,13 +105,7 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
         $returnProperties  = array_fill_keys( array_keys( $readOnlyFields ), 1 );
         $returnProperties['contact_sub_type'] = true;
         
-        //get the profile id.
-        require_once 'CRM/Core/BAO/UFJoin.php'; 
-        $ufJoinParams = array( 'entity_id'    => $this->_surveyId,
-                               'entity_table' => 'civicrm_survey',   
-                               'module'       => 'CiviCampaign' );
-        $this->_ufGroupId = CRM_Core_BAO_UFJoin::findUFGroupId( $ufJoinParams );
-        $this->assign( 'ufGroupId', $this->_ufGroupId );
+        
         
         //validate all voters for required activity.
         //get the survey activities for given voters.
@@ -149,6 +141,9 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
                CRM_Core_Permission::check( 'release campaign contacts' ) ) ) {
             $this->_allowAjaxReleaseButton = true;
         }
+        
+        //validate voter ids across profile.
+        $this->filterVoterIds( );
         
         $this->assign( 'votingTab',      $this->_votingTab );
         $this->assign( 'componentIds',   $this->_contactIds );
@@ -187,7 +182,7 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
         
         //append breadcrumb to survey dashboard.
         require_once 'CRM/Campaign/BAO/Campaign.php';
-        if ( CRM_Campaign_BAO_Campaign::accessCampaignDashboard( ) ) {
+        if ( CRM_Campaign_BAO_Campaign::accessCampaign( ) ) {
             $url = CRM_Utils_System::url( 'civicrm/campaign', 'reset=1&subPage=survey' );
             CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('Survey(s)'), 'url' => $url ) ) );
         }
@@ -231,38 +226,14 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
         $this->assign( 'surveyTypeId', $this->_surveyTypeId );
         
         //pickup the uf fields.
-        $this->_surveyFields = array( );
-        if ( $this->_ufGroupId ) {
-            require_once 'CRM/Core/BAO/UFGroup.php';
-            $this->_surveyFields = CRM_Core_BAO_UFGroup::getFields( $this->_ufGroupId, 
-                                                                    false, CRM_Core_Action::VIEW );
-        }
+        $this->_surveyFields = CRM_Campaign_BAO_Survey::getSurveyResponseFields( $this->_surveyId,
+                                                                                 $this->_surveyTypeId );
         
-        //don't load these fields in grid.
-        $removeFields = array( 'File', 'Autocomplete-Select', 'RichTextEditor' );
-        require_once 'CRM/Core/BAO/CustomField.php';
-        foreach ( $this->_surveyFields as $name => $field ) {
-            if ( CRM_Core_BAO_CustomField::getKeyID( $name ) && 
-                 in_array( $field['html_type'], $removeFields ) ) {
-                unset( $this->_surveyFields[$name] );
-            }
-        }
-        
-        //build all fields.
-        $exposedSurveyFields = array( );
+        require_once 'CRM/Core/BAO/UFGroup.php';
         foreach ( $this->_contactIds as $contactId ) {
             //build the profile fields.
             foreach ( $this->_surveyFields as $name => $field ) {
-                if ( $customFieldID = CRM_Core_BAO_CustomField::getKeyID( $name ) ) {
-                    $customValue = CRM_Utils_Array::value( $customFieldID, $customFields );
-                    // allow custom fields from profile which are having
-                    // the activty type same of that selected survey.
-                    $valueType = CRM_Utils_Array::value( 'extends_entity_column_value', $customValue );
-                    if ( !$valueType || ( $valueType == $this->_surveyTypeId ) ) {
-                        CRM_Core_BAO_UFGroup::buildProfile( $this, $field, null, $contactId );
-                        $exposedSurveyFields[$name] = $field;
-                    }
-                }
+                CRM_Core_BAO_UFGroup::buildProfile( $this, $field, null, $contactId );
             }
             
             //build the result field.
@@ -281,7 +252,7 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
                                    array('id'=>"field_{$contactId}_is_release_or_reserve") );
             }
         }
-        $this->assign( 'surveyFields', empty( $exposedSurveyFields ) ? false : $exposedSurveyFields );
+        $this->assign( 'surveyFields', empty( $this->_surveyFields ) ? false : $this->_surveyFields );
         
         //no need to get qf buttons.
         if ( $this->_votingTab ) return;  
@@ -320,7 +291,21 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
      */
     function setDefaultValues( ) 
     {
-        return $defaults = array( );
+        //load default data for only contact fields.
+        $contactFields = $defaults = array( );
+        foreach ( $this->_surveyFields as $name => $field ) {
+            if ( $field['field_type'] == 'Contact' ) {
+                $contactFields[$name] = $field;
+            }
+        }
+        if ( !empty( $contactFields ) ) {
+            require_once 'CRM/Core/BAO/UFGroup.php';
+            foreach ( $this->_contactIds as $contactId ) {
+                CRM_Core_BAO_UFGroup::setProfileDefaults( $contactId, $contactFields, $defaults, false );
+            }
+        }
+        
+        return $defaults;
     }
     
     /**
@@ -391,8 +376,36 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
                                                                $surveyFields,
                                                                $activityId,
                                                                'Activity' );
+        
         require_once 'CRM/Core/BAO/CustomValueTable.php';
         CRM_Core_BAO_CustomValueTable::store( $customParams, 'civicrm_activity', $activityId );
+        
+        //process contact data.
+        require_once 'CRM/Campaign/BAO/Survey.php';
+        $contactParams  = $fields = array( );
+
+        require_once 'CRM/Contact/BAO/ContactType.php';
+        $contactFieldTypes = array_merge( array( 'Contact' ), CRM_Contact_BAO_ContactType::basicTypes( ) );
+        $responseFields = CRM_Campaign_BAO_Survey::getSurveyResponseFields( $params['survey_id'] );
+        if ( !empty( $responseFields ) ) {
+            foreach ( $params as $key => $value ) {
+                if ( array_key_exists( $key, $responseFields ) ) {
+                    if ( in_array( $responseFields[$key]['field_type'], $contactFieldTypes ) ) {
+                        $fields[$key] = $responseFields[$key];
+                        $contactParams[$key] = $value;
+                        if ( isset($params["{$key}_id"]) ) {
+                            $contactParams["{$key}_id"] = $params["{$key}_id"];
+                        }
+                    }
+                }
+            }
+        }
+        
+        $contactId = CRM_Utils_Array::value( 'voter_id', $params );
+        if ( $contactId && !empty( $contactParams ) ) {
+            require_once 'CRM/Contact/BAO/Contact.php';
+            CRM_Contact_BAO_Contact::createProfileContact( $contactParams, $fields, $contactId );
+        }
         
         //update activity record.
         require_once 'CRM/Activity/DAO/Activity.php';
@@ -421,6 +434,9 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
         
         $activity->subject = $subject;
         $activity->save( );
+        //really this should use Activity BAO& not be here but refactoring will have to be later 
+        //actually the whole ajax call could be done as an api ajax call & post hook would be sorted
+        CRM_Utils_Hook::post( 'edit', 'Activity', $activity->id, $activity );
         $activity->free( );
         
         return $activityId; 
@@ -458,6 +474,55 @@ class CRM_Campaign_Form_Task_Interview extends CRM_Campaign_Form_Task {
             $this->set( 'contactIds', $this->_contactIds );
         }
     }
-    
+
+    function filterVoterIds( ) 
+    {
+        //do the cleanup later on.
+        if ( !is_array( $this->_contactIds ) ) return;
+        
+        require_once 'CRM/Campaign/BAO/Survey.php';
+        $profileId = CRM_Campaign_BAO_Survey::getSurveyProfileId( $this->_surveyId );
+        if ( $profileId ) {
+            require_once 'CRM/Core/BAO/UFField.php';
+            $profileType = CRM_Core_BAO_UFField::getProfileType( $profileId );
+            if ( in_array( $profileType, CRM_Contact_BAO_ContactType::basicTypes( ) ) ) {
+                $voterIdCount = count( $this->_contactIds );
+                
+                //create temporary table to store voter ids.
+                $tempTableName = CRM_Core_DAO::createTempTableName( 'civicrm_survey_respondent' );
+                CRM_Core_DAO::executeQuery( "DROP TABLE IF EXISTS {$tempTableName}" );
+                $query = "
+     CREATE TEMPORARY TABLE {$tempTableName} (
+            id int unsigned NOT NULL AUTO_INCREMENT,
+            survey_contact_id int unsigned NOT NULL,  
+PRIMARY KEY ( id ),
+ CONSTRAINT FK_civicrm_survey_respondent FOREIGN KEY (survey_contact_id) REFERENCES civicrm_contact(id) ON DELETE CASCADE )";
+                CRM_Core_DAO::executeQuery( $query );
+                $batch = 100;
+                $insertedCount = 0;
+                do {
+                    $processIds = $this->_contactIds;
+                    $insertIds  = array_splice( $processIds, $insertedCount, $batch );
+                    if ( !empty( $insertIds ) ) {
+                        $insertSQL = "INSERT IGNORE INTO {$tempTableName}( survey_contact_id ) 
+                     VALUES (" . implode( '),(', $insertIds ) . ');';
+                            CRM_Core_DAO::executeQuery( $insertSQL );
+                    }
+                    $insertedCount += $batch;
+                } while ( $insertedCount < $voterIdCount );  
+                
+                $query = "
+    SELECT  contact.id as id
+      FROM  civicrm_contact contact 
+INNER JOIN  {$tempTableName} ON ( {$tempTableName}.survey_contact_id = contact.id )
+     WHERE  contact.contact_type != %1";
+                $removeContact = CRM_Core_DAO::executeQuery( $query, 
+                                                             array( 1 => array( $profileType, 'String' ) ) );
+                while ( $removeContact->fetch( ) ) {
+                    unset( $this->_contactIds[$removeContact->id] );
+                }
+            }
+        }
+    }
 }
 

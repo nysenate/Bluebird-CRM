@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,10 +27,10 @@
 {* add single row *}
 {if $soInstance}
 <tr id="string_override_row_{$soInstance}">
-  <td class="even-row">{$form.enabled.$soInstance.html}</td>	
+  <td class="even-row checkbox">{$form.enabled.$soInstance.html}</td>	
   <td class="even-row">{$form.old.$soInstance.html}</td>
   <td class="even-row">{$form.new.$soInstance.html}</td>
-  <td class="even-row">{$form.cb.$soInstance.html}</td>
+  <td class="even-row checkbox">{$form.cb.$soInstance.html}</td>
 </tr>
 
 {else}
@@ -43,29 +43,28 @@
 	<tr>
 	    <td>
       	    <table>
-		<tr class="columnheader">
-		    <td>{ts}Enabled{/ts}</td>
-		    <td>{ts}Original{/ts}</td>
+		    <tr class="columnheader">
+		        <td>{ts}Enabled{/ts}</td>
+		        <td>{ts}Original{/ts}</td>
     		    <td>{ts}Replacement{/ts}</td>
     		    <td>{ts}Exact Match?{/ts}</td>
     		</tr>
 
- 		{section name="numStrings" start=1 step=1 loop=$numStrings+1}
-		{assign var='soInstance' value=$smarty.section.numStrings.index}
+     		{section name="numStrings" start=1 step=1 loop=$numStrings+1}
+    		{assign var='soInstance' value=$smarty.section.numStrings.index}
 
-		<tr id="string_override_row_{$soInstance}">
-		    <td class="even-row" style="text-align: center; vertical-align: middle;">{$form.enabled.$soInstance.html}</td>	
-  		    <td class="even-row">{$form.old.$soInstance.html}</td>
-  		    <td class="even-row">{$form.new.$soInstance.html}</td>
-		    <td class="even-row" style="text-align: center; vertical-align: middle;">{$form.cb.$soInstance.html}</td>
-		</tr>
+    		<tr id="string_override_row_{$soInstance}">
+    		    <td class="even-row checkbox">{$form.enabled.$soInstance.html}</td>	
+      		    <td class="even-row">{$form.old.$soInstance.html}</td>
+      		    <td class="even-row">{$form.new.$soInstance.html}</td>
+    		    <td class="even-row checkbox">{$form.cb.$soInstance.html}</td>
+    		</tr>
 
-                </div> 
-    		{/section}
+        	{/section}
     	    </table>
-       	    </td>
+       	</td>
 	</tr>
-    </table>
+</table>
  <div class="crm-submit-buttons" ><a class="button" onClick="Javascript:buildStringOverrideRow( false );return false;"><span><div class="icon add-icon"></div>{ts}Add row{/ts}</span></a>{include file="CRM/common/formButtons.tpl"} </div>
 	
 </div>
@@ -86,7 +85,7 @@ function buildStringOverrideRow( curInstance )
       var currentInstance = parseInt( previousInstance ) + 1;
    }
 
-   var dataUrl  = {/literal}"{crmURL q='snippet=4'}"{literal} ;
+   var dataUrl  = {/literal}"{crmURL q='snippet=4' h=0}"{literal} ;
    dataUrl     += "&instance="+currentInstance;
    
    var prevInstRowId = '#string_override_row_' + previousInstance;

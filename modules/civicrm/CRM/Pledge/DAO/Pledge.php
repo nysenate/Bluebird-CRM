@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -224,6 +224,12 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
      */
     public $is_test;
     /**
+     * The campaign for which this pledge has been initiated.
+     *
+     * @var int unsigned
+     */
+    public $campaign_id;
+    /**
      * class constructor
      *
      * @access public
@@ -247,6 +253,7 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                 'contribution_type_id' => 'civicrm_contribution_type:id',
                 'contribution_page_id' => 'civicrm_contribution_page:id',
                 'honor_contact_id' => 'civicrm_contact:id',
+                'campaign_id' => 'civicrm_campaign:id',
             );
         }
         return self::$_links;
@@ -284,7 +291,7 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                     'export' => true,
                     'FKClassName' => 'CRM_Contact_DAO_Contact',
                 ) ,
-                'contribution_type_id' => array(
+                'pledge_contribution_type_id' => array(
                     'name' => 'contribution_type_id',
                     'type' => CRM_Utils_Type::T_INT,
                     'export' => false,
@@ -434,6 +441,17 @@ class CRM_Pledge_DAO_Pledge extends CRM_Core_DAO
                     'headerPattern' => '',
                     'dataPattern' => '',
                     'export' => true,
+                ) ,
+                'pledge_campaign_id' => array(
+                    'name' => 'campaign_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('Campaign ID') ,
+                    'import' => true,
+                    'where' => 'civicrm_pledge.campaign_id',
+                    'headerPattern' => '',
+                    'dataPattern' => '',
+                    'export' => true,
+                    'FKClassName' => 'CRM_Campaign_DAO_Campaign',
                 ) ,
             );
         }

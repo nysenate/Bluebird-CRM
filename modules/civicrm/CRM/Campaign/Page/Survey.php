@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,7 +28,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -85,7 +85,7 @@ class CRM_Campaign_Page_Survey extends CRM_Core_Page
     function browse( ) {
         require_once 'CRM/Core/Permission.php';
 
-        $surveys = CRM_Campaign_BAO_Survey::getSurvey( true );
+        $surveys = CRM_Campaign_BAO_Survey::getSurveySummary( );
         
         if ( !empty($surveys) ) {
             require_once 'CRM/Campaign/BAO/Campaign.php';

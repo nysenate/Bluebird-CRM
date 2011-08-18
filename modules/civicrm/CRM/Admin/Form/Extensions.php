@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -66,11 +66,7 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form
         
         require_once "CRM/Core/Extensions.php";
         $ext = new CRM_Core_Extensions( );
-        if ( $this->_action & CRM_Core_Action::ADD || $this->_action & CRM_Core_Action::UPDATE ) {
-            $extension = $ext->getRemoteByKey( );
-        } else {
             $extension = $ext->getExtensions( );
-        }
 
         $this->assign( 'extension', get_object_vars($extension[$this->_key]) );
     }

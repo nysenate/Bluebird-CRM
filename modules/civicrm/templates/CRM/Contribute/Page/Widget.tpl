@@ -47,6 +47,7 @@
         -khtml-border-radius: 	4px;
         border-radius:			4px;
         margin-bottom:.8em;
+        text-align:left;
     }
     .crm-contribute-widget .crm-amount-fill {
         background-color:#2786C2;
@@ -56,6 +57,7 @@
         -webkit-border-radius: 	4px 0px 0px 4px;
         -khtml-border-radius: 	4px 0px 0px 4px;
         border-radius:			4px 0px 0px 4px;
+        text-align:left;
     }
     .crm-contribute-widget .crm-amount-raised-wrapper {
         margin-bottom:.8em;
@@ -164,53 +166,74 @@
 {literal}
 
 <script type="text/javascript">
-    //create onDomReady Event
-    window.onDomReady = DomReady;
-
-    //Setup the event
-    function DomReady(fn) { //W3C
-        if(document.addEventListener) {
-            document.addEventListener("DOMContentLoaded", fn, false);
-        } else { //IE
-            document.onreadystatechange = function(){readyState(fn)}
+// Cleanup functions for the document ready method
+if ( document.addEventListener ) {
+    DOMContentLoaded = function() {
+        document.removeEventListener( "DOMContentLoaded", DOMContentLoaded, false );
+        onReady();
+    };
+} else if ( document.attachEvent ) {
+    DOMContentLoaded = function() {
+        // Make sure body exists, at least, in case IE gets a little overzealous 
+        if ( document.readyState === "complete" ) {
+            document.detachEvent( "onreadystatechange", DOMContentLoaded );
+            onReady();
         }
-    }
+    };
+}
 
-    //IE execute function
-    function readyState(fn) {
-        //dom is ready for interaction
-        if(document.readyState == "interactive") {
-            fn();
-        }
-    }
+if ( document.readyState === "complete" ) {
+    // Handle it asynchronously to allow scripts the opportunity to delay ready
+    setTimeout( onReady, 1 );
+}
 
-    window.onDomReady(onReady);
+// Mozilla, Opera and webkit support this event
+if ( document.addEventListener ) {
+    // Use the handy event callback
+    document.addEventListener( "DOMContentLoaded", DOMContentLoaded, false );
+    // A fallback to window.onload, that will always work
+    window.addEventListener( "load", onReady, false );
+    // If IE event model is used
+} else if ( document.attachEvent ) {
+    // ensure firing before onload,
+    // maybe late but safe also for iframes
+    document.attachEvent("onreadystatechange", DOMContentLoaded);
 
-    function onReady( ) {
-        var crmCurrency = jsondata.currencySymbol;
-        var cpid        = {/literal}{$cpageId}{literal};
-        document.getElementById('crm_cpid_'+cpid+'_title').innerHTML        = jsondata.title;
-        if ( jsondata.money_target > 0 ) {
-            document.getElementById('crm_cpid_'+cpid+'_amt_hi').innerHTML       = jsondata.money_target_display;
-            document.getElementById('crm_cpid_'+cpid+'_amt_low').innerHTML      = crmCurrency+jsondata.money_low;
-        }
-        document.getElementById('crm_cpid_'+cpid+'_amt_raised').innerHTML   = jsondata.money_raised;
-        document.getElementById('crm_cpid_'+cpid+'_comments').innerHTML     = jsondata.about;
-        document.getElementById('crm_cpid_'+cpid+'_donors').innerHTML       = jsondata.num_donors;
-        document.getElementById('crm_cpid_'+cpid+'_btn_txt').innerHTML      = jsondata.button_title;
-        document.getElementById('crm_cpid_'+cpid+'_campaign').innerHTML     = jsondata.campaign_start;
-        if ( jsondata.money_raised_percentage ) {
-            document.getElementById('crm_cpid_'+cpid+'_amt_fill').style.width   = jsondata.money_raised_percentage;
-            document.getElementById('crm_cpid_'+cpid+'_percentage').innerHTML   = jsondata.money_raised_percentage;
-        }
+    // A fallback to window.onload, that will always work
+    window.attachEvent( "onload", onReady );
+}
 
-        if ( !jsondata.is_active ) {
-            document.getElementById('crm_cpid_'+cpid+'_button').innerHTML   = jsondata.home_url;
-            document.getElementById('crm_cpid_'+cpid+'_button').style.color = 'red';
-        }
-    }
+function onReady( ) {
+    var cpid    = {/literal}{$cpageId}{literal};
+    var jsonvar = eval('jsondata' + cpid);
     
+    var crmCurrency = jsonvar.currencySymbol;
+    document.getElementById('crm_cpid_'+cpid+'_title').innerHTML        = jsonvar.title;
+    if ( jsonvar.money_target > 0 ) {
+        document.getElementById('crm_cpid_'+cpid+'_amt_hi').innerHTML   = jsonvar.money_target_display;
+        document.getElementById('crm_cpid_'+cpid+'_amt_low').innerHTML  = crmCurrency+jsonvar.money_low;
+    }
+    document.getElementById('crm_cpid_'+cpid+'_amt_raised').innerHTML   = jsonvar.money_raised;
+    document.getElementById('crm_cpid_'+cpid+'_comments').innerHTML     = jsonvar.about;
+    document.getElementById('crm_cpid_'+cpid+'_donors').innerHTML       = jsonvar.num_donors;
+    document.getElementById('crm_cpid_'+cpid+'_btn_txt').innerHTML      = jsonvar.button_title;
+    document.getElementById('crm_cpid_'+cpid+'_campaign').innerHTML     = jsonvar.campaign_start;
+    if ( jsonvar.money_raised_percentage ) {
+        var moneyRaised = jsonvar.money_raised_percentage;
+        var percentWidth = moneyRaised.split('%');
+        if ( percentWidth[0] > 100 ) {
+            moneyRaised = '100%';
+        }
+        document.getElementById('crm_cpid_'+cpid+'_amt_fill').style.width = moneyRaised;
+        document.getElementById('crm_cpid_'+cpid+'_percentage').innerHTML = jsonvar.money_raised_percentage;
+    }
+
+    if ( !jsonvar.is_active ) {
+        document.getElementById('crm_cpid_'+cpid+'_button').innerHTML   = jsonvar.home_url;
+        document.getElementById('crm_cpid_'+cpid+'_button').style.color = 'red';
+    }
+}
+
 </script>
 {/literal}
-<script type="text/javascript" src="{$config->userFrameworkResourceURL}/extern/widget.php?cpageId={$cpageId}&widgetId={$widget_id}"></script>
-
+<script type="text/javascript" src="{$config->userFrameworkResourceURL}/extern/widget.php?cpageId={$cpageId}&widgetId={$widget_id}&format=3"></script>

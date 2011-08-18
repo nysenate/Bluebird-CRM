@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -101,6 +101,14 @@ cj( function($) {
         </td>
     </tr>
    </table>
+  </fieldset>
+  <fieldset><legend>Online Publication</legend>
+  	<table class="form-layout">
+		<tr class="crm-mailing-group-form-block-visibility">
+   		<td class="label">{$form.visibility.label}</td><td>{$form.visibility.html} {help id="mailing-visibility"}
+   		</td>
+   		</tr>
+  	</table>
   </fieldset>
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 </div>

@@ -2,8 +2,11 @@
    jQuery TextAreaResizer plugin
 */
 $(document).ready(function() {
-    cj('textarea.huge:not(.processed)').TextAreaResizer();
-    cj('textarea.form-textarea:not(.processed)').TextAreaResizer();
+	cj('textarea.huge:not(.textarea-processed), textarea.form-textarea:not(.textarea-processed)').each(function() {
+        $this = cj(this);
+        if ($this.parents('div.civicrm-drupal-wysiwyg').length == 0) 
+			$this.TextAreaResizer();
+    });
 });
 
 (function($) {
@@ -18,9 +21,9 @@ $(document).ready(function() {
     /* TextAreaResizer plugin */
     $.fn.TextAreaResizer = function() {
 	return this.each(function() {
-	    textarea = $(this).addClass('processed'), staticOffset = null;
+	    textarea = $(this).addClass('textarea-processed'), staticOffset = null;
 	    
-	    // When wrapping the text area, work around an IE margin bug.  See:
+        // When wrapping the text area, work around an IE margin bug.  See:
 	    // http://jaspan.com/ie-inherited-margin-bug-form-elements-and-haslayout
 	    $(this).wrap('<div class="resizable-textarea"><span></span></div>')
 	    .parent().append($('<div class="grippie"></div>').bind("mousedown",{el: this} , startDrag));

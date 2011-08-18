@@ -62,10 +62,22 @@
      <component>CiviCampaign</component>
   </item>
   <item>
+     <path>civicrm/admin/options/engagement_index</path>
+     <title>Engagement Index</title>
+     <desc>Engagement levels.</desc>
+     <path_arguments>group=engagement_index</path_arguments>
+     <page_callback>CRM_Admin_Page_Options</page_callback>
+     <adminGroup>CiviCampaign</adminGroup>
+     <icon>admin/small/05.png</icon>
+     <weight>4</weight>
+     <component>CiviCampaign</component>
+  </item>
+  <item>
     <path>civicrm/survey/search</path>
     <title>Reserve Respondents</title>
     <path_arguments>op=reserve</path_arguments>
     <page_callback>CRM_Campaign_Controller_Search</page_callback>
+    <access_arguments>administer CiviCampaign;manage campaign;reserve campaign contacts</access_arguments>
     <component>CiviCampaign</component>
   </item>
   <item>
@@ -73,6 +85,7 @@
     <title>Release Respondents</title>
     <path_arguments>op=release</path_arguments>
     <page_callback>CRM_Campaign_Controller_Search</page_callback>
+    <access_arguments>administer CiviCampaign;manage campaign;release campaign contacts</access_arguments>
     <component>CiviCampaign</component>
   </item>
   <item>
@@ -80,6 +93,7 @@
     <title>Record Respondents Interview</title>
     <path_arguments>op=interview</path_arguments>
     <page_callback>CRM_Campaign_Controller_Search</page_callback>
+    <access_arguments>administer CiviCampaign;manage campaign;interview campaign contacts</access_arguments>
     <component>CiviCampaign</component>
   </item>
   <item>
@@ -120,5 +134,10 @@
      <page_callback>CRM_Campaign_Page_Petition_ThankYou</page_callback>
      <access_arguments>sign CiviCRM Petition</access_arguments>
      <is_public>true</is_public>
+  </item>
+  <item>
+     <path>civicrm/campaign/registerInterview</path>
+     <page_callback>CRM_Campaign_Page_AJAX::registerInterview</page_callback>
+     <access_arguments>administer CiviCampaign;manage campaign;interview campaign contacts</access_arguments>
   </item>
  </menu>

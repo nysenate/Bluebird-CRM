@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -43,9 +43,9 @@
  */
 function _civicrm_get_groups( ) {
 	civicrm_initialize( );
-	require_once 'api/v2/Group.php';
-	$params = array( 'return.id' => 1, 'return.title' => 1 );
-	$groupInformation = civicrm_group_get( $params );
+	require_once 'api/api.php';
+	$params = array( 'return.id' => 1, 'return.title' => 1, 'version' => 2 );
+	$groupInformation = civicrm_api('group', 'get', $params);
 
 	$groups = array( );	
 	foreach ( $groupInformation as $values ) {
@@ -60,11 +60,12 @@ function _civicrm_get_groups( ) {
  */
 function _civicrm_rules_group_contact( $contactId, $groupId, $action = 'add' ) {	
 	civicrm_initialize( );
-	require_once 'api/v2/GroupContact.php';
 	$params = array( 'contact_id' => $contactId,
-									 'group_id' => $groupId
-								 );
-	civicrm_group_contact_common( $params, $action );
+                     'group_id' => $groupId,
+                     'version' => 2
+                     );
+  // This used to be civicrm_group_contact_common($params, $action);
+	civicrm_api('group_contact', 'common', $params, $action );
 }
 
 /**
@@ -82,6 +83,8 @@ function _civicrm_rules_load_contact( $contactID ) {
     
     return $contact;
 }
+
+
 
 function _civicrm_rules_in_group( $contact, $group ) {
     // check if contact is in the group gid

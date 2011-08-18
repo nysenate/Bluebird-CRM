@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: positioner.cls.php,v 1.2 2006/07/07 21:31:04 benjcarson Exp $ */
+/* $Id: positioner.cls.php 283 2010-07-19 17:57:40Z fabien.menager $ */
 
 /**
  * Base Positioner class
@@ -57,10 +57,15 @@ abstract class Positioner {
   function __construct(Frame_Decorator $frame) {
     $this->_frame = $frame;
   }
-
+  
+  /**
+   * Class destructor
+   */
+  function __destruct() {
+  	clear_object($this);
+  }
   //........................................................................
 
   abstract function position();
   
 }
-?>

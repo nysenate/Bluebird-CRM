@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -52,6 +52,13 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
         $this->add( 'text', 'sort_name', ts( 'Created or Sent by' ), 
                     CRM_Core_DAO::getAttribute('CRM_Contact_DAO_Contact', 'sort_name') );
         
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch( $this );
+        
+        foreach ( array('Scheduled', 'Complete', 'Running') as $status ) {
+            $this->addElement( 'checkbox', "mailing_status[$status]", null, $status );
+        }
+
         $this->addButtons(array( 
                                 array ('type'      => 'refresh', 
                                        'name'      => ts('Search'), 
@@ -59,21 +66,29 @@ class CRM_Mailing_Form_Search extends CRM_Core_Form {
                                 ) ); 
     }
 
+    function setDefaultValues( ) {
+        $defaults = array( );
+        foreach ( array('Scheduled', 'Complete', 'Running') as $status ) {
+            $defaults['mailing_status'][$status] = 1;
+        }
+        return $defaults;
+    }
+
     function postProcess( ) {
         $params = $this->controller->exportValues( $this->_name );
         
         $parent = $this->controller->getParent( );
         if ( ! empty( $params ) ) {
-            $fields = array( 'mailing_name', 'mailing_from', 'mailing_to', 'sort_name' );
+            $fields = array( 'mailing_name', 'mailing_from', 'mailing_to', 'sort_name', 'campaign_id', 'mailing_status' );
             foreach ( $fields as $field ) {
                 if ( isset( $params[$field] ) &&
                      ! CRM_Utils_System::isNull( $params[$field] ) ) { 
-                         if ( substr( $field, -4 ) != 'name' ) { 
-                             $time = ( $field == 'mailing_to' ) ? '235959' : null;
-                             $parent->set( $field, CRM_Utils_Date::processDate( $params[$field], $time ) );
-                         } else {
-                            $parent->set( $field, $params[$field] );
-                        }
+                    if ( in_array( $field, array( 'mailing_from', 'mailing_to' ) ) ) { 
+                        $time = ( $field == 'mailing_to' ) ? '235959' : null;
+                        $parent->set( $field, CRM_Utils_Date::processDate( $params[$field], $time ) );
+                    } else {
+                        $parent->set( $field, $params[$field] );
+                    }
                 } else {
                     $parent->set( $field, null );
                 }

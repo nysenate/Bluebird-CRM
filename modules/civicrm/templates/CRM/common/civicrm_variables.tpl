@@ -5,6 +5,6 @@ civicrm.config = {ldelim}
   relativeURL : "{$config->civiRelativeURL}",
   frameworkBaseURL     : "{$config->userFrameworkBaseURL}",
   frameworkResourceURL: "{$config->userFrameworkResourceURL}",
-  restURL = "{crmURL p='civicrm/ajax/rest' q='json=1'}"
+  restURL = "{crmURL p='civicrm/ajax/rest' q='json=1' h=0}"
 {rdelim};
 </script>

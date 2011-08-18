@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -66,6 +66,19 @@ class CRM_Mailing_Config extends CRM_Core_Component_Config {
     */
     public $mailerBatchLimit = 0;
 
+    /**
+     * How large should each mail thread be
+     *
+     * @var int
+     */
+    public $mailerJobSize = 0;
+
+    /**
+     * How many parallel delivery cron jobs should we run
+     *
+     * @var int
+     */
+    public $mailerJobsMax = 0;
 }
 
 

@@ -1,5 +1,5 @@
 {if $rows}
-<div class="crm-submit-buttons element-right">{include file="CRM/common/formButtons.tpl"}</div>
+<div class="crm-submit-buttons element-right">{include file="CRM/common/formButtons.tpl" location="top"}</div>
 
 <div class="spacer"></div>
 
@@ -24,7 +24,7 @@
 </table>
 </div>
 
-<div class="crm-submit-buttons element-right">{include file="CRM/common/formButtons.tpl"}</div>
+<div class="crm-submit-buttons element-right">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 
 {else}
    <div class="messages status">

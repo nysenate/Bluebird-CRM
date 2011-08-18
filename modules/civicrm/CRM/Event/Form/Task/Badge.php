@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -133,14 +133,22 @@ class CRM_Event_Form_Task_Badge extends CRM_Event_Form_Task
         $query = new CRM_Contact_BAO_Query( $queryParams, $returnProperties, null, false, false,
                                             CRM_Contact_BAO_Query::MODE_EVENT );
         
-        list( $select, $from, $where ) = $query->query( );
+        list( $select, $from, $where, $having ) = $query->query( );
         if ( empty( $where ) ) {
             $where = "WHERE {$this->_componentClause}";
         } else {
             $where .= " AND {$this->_componentClause}";
         }
         
-        $queryString = "$select $from $where";
+        require_once 'CRM/Utils/Sort.php';
+        $sortOrder = null;
+        if ( $this->get( CRM_Utils_Sort::SORT_ORDER  ) ) {
+            $sortOrder = $this->get( CRM_Utils_Sort::SORT_ORDER );
+            if ( ! empty( $sortOrder ) ) {
+                $sortOrder = " ORDER BY $sortOrder";
+            }
+        }
+        $queryString = "$select $from $where $having $sortOrder";
 
         $dao = CRM_Core_DAO::executeQuery( $queryString );
         $rows = array( );

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -73,7 +73,14 @@
       </div>
     </div>
   </div>
-  
+
+  <div class="crm-section msg_html-section">
+  <h3 class="header-dark">{$form.pdf_format_id.label}</h3>
+    <div class='text'>
+      {$form.pdf_format_id.html}
+    </div>
+  </div>
+    
   <div id="crm-submit-buttons">{$form.buttons.html}</div>
   </fieldset>
 {/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,36 +33,69 @@
 </table>
 {/if}
 
-<div class="crm-accordion-wrapper crm-html_email-accordion crm-accordion-open">
+<div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
     <div class="crm-accordion-header">
-        {$form.html_message.label}
+        <div class="icon crm-accordion-pointer"></div> 
+        {$form.pdf_format_header.html}
     </div>
     <div class="crm-accordion-body">
-    {if $action neq 4}
-        <span class="helpIcon" id="helphtml">
-		<a href="#" onClick="return showToken('Html', 1);">{$form.token1.label}</a> 
-		{help id="id-token-html" file="CRM/Contact/Form/Task/Email.hlp"}
-		<div id='tokenHtml' style="display:none">
-		    <input style="border:1px solid #999999;" type="text" id="filter1" size="20" name="filter1" onkeyup="filter(this, 1)"/><br />
-		    <span class="description">{ts}Begin typing to filter list of tokens{/ts}</span><br/>
-		    {$form.token1.html}
-		</div>
-	    </span>
-	    {/if}
-	    <div class="clear"></div>
-        <div class='html'>
-        {if $editor EQ 'textarea'}
-            <span class="description">{ts}If you are composing HTML-formatted messages, you may want to enable a WYSIWYG editor (Administer CiviCRM &raquo; Global Settings &raquo; Site Preferences).{/ts}</span><br />
-            {/if}
-            {$form.html_message.html}<br />
-        </div>
+      <div class="crm-block crm-form-block crm-pdf-format-form-block">
+		<table class="form-layout-compressed">
+			<tr>
+				<td class="label-left">{$form.format_id.label}</td><td>{$form.format_id.html}{help id="id-pdf-format" file="CRM/Contact/Form/Task/PDFLetterCommon.hlp"}</td>
+				<td colspan="2">&nbsp;</td>
+            </tr>
+			<tr>
+				<td class="label-left">{$form.paper_size.label}</td><td>{$form.paper_size.html}</td>
+				<td class="label-left">{$form.orientation.label}</td><td>{$form.orientation.html}</td>
+			</tr>
+			<tr>
+				<td class="label-left">{$form.metric.label}</td><td>{$form.metric.html}</td>
+				<td colspan="2">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>{$form.paper_dimensions.html}</td><td id="paper_dimensions">&nbsp;</td>
+				<td colspan="2">&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="label-left">{$form.margin_top.label}</td><td>{$form.margin_top.html}</td>
+				<td class="label-left">{$form.margin_bottom.label}</td><td>{$form.margin_bottom.html}</td>
+			</tr>
+			<tr>
+				<td class="label-left">{$form.margin_left.label}</td><td>{$form.margin_left.html}</td>
+				<td class="label-left">{$form.margin_right.label}</td><td>{$form.margin_right.html}</td>
+			</tr>
+		</table>
+        <div id="bindFormat">{$form.bind_format.html}&nbsp;{$form.bind_format.label}</div>
+        <div id="updateFormat" style="display: none">{$form.update_format.html}&nbsp;{$form.update_format.label}</div>
+      </div>
+	</div>
+</div>
 
-{if ! $noAttach}
-    <div class="spacer"></div>
-    {include file="CRM/Form/attachment.tpl"}
-{/if}
-
-<div class="spacer"></div>
+<div class="crm-accordion-wrapper crm-html_email-accordion crm-accordion-open">
+<div class="crm-accordion-header">
+    <div class="icon crm-accordion-pointer"></div>
+    {$form.html_message.label}
+</div><!-- /.crm-accordion-header -->
+ <div class="crm-accordion-body">
+  {if $action neq 4}
+  <span class="helpIcon" id="helphtml">
+	<a href="#" onClick="return showToken('Html', 1);">{$form.token1.label}</a>
+	{help id="id-token-html" file="CRM/Contact/Form/Task/Email.hlp"}
+	<div id="tokenHtml" style="display:none;">
+	    <input style="border:1px solid #999999;" type="text" id="filter1" size="20" name="filter1" onkeyup="filter(this, 1)"/><br />
+	    <span class="description">{ts}Begin typing to filter list of tokens{/ts}</span><br/>
+	    {$form.token1.html}
+	</div>
+  </span>
+  {/if}
+    <div class="clear"></div>
+    <div class='html'>
+	{if $editor EQ 'textarea'}
+	    <div class="help description">{ts}NOTE: If you are composing HTML-formatted messages, you may want to enable a Rich Text (WYSIWYG) editor (Administer &raquo; Configure &raquo; Global Settings &raquo; Site Preferences).{/ts}</div>
+	{/if}
+	{$form.html_message.html}<br />
+    </div>
 
 <div id="editMessageDetails">
     <div id="updateDetails" >
@@ -78,141 +111,22 @@
     <div class="content">{$form.saveTemplateName.html|crmReplace:class:huge}</div>
 </div>
 
-    </div><!-- /.crm-accordion-body -->
+  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
 
+{include file="CRM/Mailing/Form/InsertTokens.tpl"}
+
 {literal}
-<script type="text/javascript" >
-{/literal}
-{if $templateSelected}
-    {literal}
-    if ( document.getElementsByName("saveTemplate")[0].checked ) {
-	document.getElementById('template').selectedIndex = "{/literal}{$templateSelected}{literal}";  	
-    }
-    {/literal}
-{/if}
-{literal}
-var editor = {/literal}"{$editor}"{literal};
-function loadEditor()
-{
-    var msg =  {/literal}"{$htmlContent}"{literal};
-    if (msg) {
-        if ( editor == "ckeditor" ) {
-            oEditor = CKEDITOR.instances['html_message'];
-            oEditor.setData( msg );
-        } else if ( editor == "tinymce" ) {
-            tinyMCE.get('html_message').setContent( msg );
-        }
-    }
-}
+<script type="text/javascript">
+cj(function() {
+    cj().crmaccordions(); 
+});
 
-function showSaveUpdateChkBox()
-{
-    if ( document.getElementById('template') == null ) {
-        if (document.getElementsByName("saveTemplate")[0].checked){
-            document.getElementById("saveDetails").style.display = "block";
-            document.getElementById("editMessageDetails").style.display = "block";
-        } else {
-            document.getElementById("saveDetails").style.display = "none";
-            document.getElementById("editMessageDetails").style.display = "none";
-        }
-        return;
-    }
-
-    if ( document.getElementsByName("saveTemplate")[0].checked && document.getElementsByName("updateTemplate")[0].checked == false  ) {
-        document.getElementById("updateDetails").style.display = "none";
-    } else if ( document.getElementsByName("saveTemplate")[0].checked && document.getElementsByName("updateTemplate")[0].checked ){
-        document.getElementById("editMessageDetails").style.display = "block";	
-        document.getElementById("saveDetails").style.display = "block";	
-    } else if ( document.getElementsByName("saveTemplate")[0].checked == false && document.getElementsByName("updateTemplate")[0].checked ){
-        document.getElementById("saveDetails").style.display = "none";
-        document.getElementById("editMessageDetails").style.display = "block";
-    } else {
-        document.getElementById("saveDetails").style.display = "none";
-        document.getElementById("editMessageDetails").style.display = "none";
-    }
-
-}
-
-function selectValue( val ) {
-    if ( !val ) {
-        document.getElementById("text_message").value ="";
-        document.getElementById("subject").value ="";
-        if ( editor == "ckeditor" ) {
-            oEditor = CKEDITOR.instances['html_message'];
-            oEditor.setData('');
-        } else if ( editor == "tinymce" ) {
-            tinyMCE.get('html_message').setContent('');
-        } else {	
-            document.getElementById("html_message").value = '' ;
-        }
-        return;
-    }
-
-    var dataUrl = {/literal}"{crmURL p='civicrm/ajax/template' h=0 }"{literal};
-
-    cj.post( dataUrl, {tid: val}, function( data ) {
-        cj("#subject").val( data.subject );
-
-        if ( data.msg_text ) {      
-            cj("#text_message").val( data.msg_text );
-        } else {
-            cj("#text_message").val("");
-        }
-
-        var html_body  = "";
-        if (  data.msg_html ) {
-           html_body = data.msg_html;
-        }
-
-        if ( editor == "ckeditor" ) {
-           oEditor = CKEDITOR.instances['html_message'];
-           oEditor.setData(html_body);
-        } else if ( editor == "tinymce" ) {
-            tinyMCE.get('html_message').setContent( html_body );
-        } else {	
-            cj("#html_message").val( html_body );
-        }
-       
-    }, 'json');    
-}
-
- 
-document.getElementById("editMessageDetails").style.display = "block";
-
-function verify( select )
-{
-    if ( document.getElementsByName("saveTemplate")[0].checked  == false ) {
-        document.getElementById("saveDetails").style.display = "none";
-    }
-    document.getElementById("editMessageDetails").style.display = "block";
-
-    var templateExists = true;
-    if ( document.getElementById('template') == null ) {
-        templateExists = false;
-    }
-
-    if ( templateExists && document.getElementById('template').value ) {
-        document.getElementById("updateDetails").style.display = '';
-    } else {
-        document.getElementById("updateDetails").style.display = 'none';
-    }
-
-    document.getElementById("saveTemplateName").disabled = false;
-}
-   
-function showSaveDetails(chkbox) 
-{
-    if (chkbox.checked) {
-        document.getElementById("saveDetails").style.display = "block";
-        document.getElementById("saveTemplateName").disabled = false;
-    } else {
-        document.getElementById("saveDetails").style.display = "none";
-        document.getElementById("saveTemplateName").disabled = true;
-    }
-}
-	
-showSaveUpdateChkBox();
+var currentWidth;
+var currentHeight;
+var currentMetric = document.getElementById('metric').value;
+showBindFormatChkBox();
+selectPaper( document.getElementById('paper_size').value );
 
 function tokenReplHtml ( )
 {
@@ -221,91 +135,180 @@ function tokenReplHtml ( )
     if ( editor == "tinymce" ) {
         var content= tinyMCE.get('html_message').getContent() +token1;
         tinyMCE.get('html_message').setContent(content);
-    } else if ( editor == "ckeditor" ) {
-           oEditor = CKEDITOR.instances['html_message'];
-           oEditor.insertHtml(token1);        
+    } else if ( editor == "joomlaeditor" ) { 
+        tinyMCE.execCommand('mceInsertContent',false, token1);
+        var msg       = document.getElementById(html_message).value;
+        var cursorlen = document.getElementById(html_message).selectionStart;
+        var textlen   = msg.length;
+        document.getElementById(html_message).value = msg.substring(0, cursorlen) + token1 + msg.substring(cursorlen, textlen);
+        var cursorPos = (cursorlen + token1.length);
+        document.getElementById(html_message).selectionStart = cursorPos;
+        document.getElementById(html_message).selectionEnd   = cursorPos;
+        document.getElementById(html_message).focus();
+	} else if ( editor == "ckeditor" ) {
+        oEditor = CKEDITOR.instances[html_message];
+        oEditor.insertHtml(token1.toString() );        
+    } else if ( editor == "drupalwysiwyg" ) {
+        Drupal.wysiwyg.instances[html_message].insert(token1.toString());
     } else {
-        document.getElementById("html_message").value =  document.getElementById("html_message").value + token1;
+		var msg       = document.getElementById(html_message).value;
+        var cursorlen = document.getElementById(html_message).selectionStart;
+        var textlen   = msg.length;
+        document.getElementById(html_message).value = msg.substring(0, cursorlen) + token1 + msg.substring(cursorlen, textlen);
+        var cursorPos = (cursorlen + token1.length);
+        document.getElementById(html_message).selectionStart = cursorPos;
+        document.getElementById(html_message).selectionEnd   = cursorPos;
+        document.getElementById(html_message).focus();
     }
     verify();
 }
-{/literal}
-{if $editor eq "ckeditor"}
-{literal}
-	function CKeditor_OnComplete( editorInstance )
-	{
-        oEditor = CKEDITOR.instances['html_message'];
-		oEditor.setData( {/literal}'{$message_html}'{literal});
-		loadEditor();	
-    }
-    cj( function() {
-     	 oEditor = CKEDITOR.instances['html_message'];
-	 oEditor.on( 'focus', verify );
-     });
-{/literal}
-{/if}
-{if $editor eq "tinymce"}
-{literal}
-	function customEvent() {
-		loadEditor();
-	}
 
-tinyMCE.init({
-	oninit : "customEvent"
-});
-
-cj( function() {
-  cj('div.html').hover( 
-  function( ) {
-    if ( cj('#html_message').tinymce() ) {
-      tinyMCE.get('html_message').onKeyPress.add(function(ed, e) {
-        verify( );
-      });
+function showBindFormatChkBox()
+{
+    var templateExists = true;
+    if ( document.getElementById('template') == null || document.getElementById('template').value == '' ) {
+        templateExists = false;
     }
-  },
-  function( ) {
-   if ( cj('#html_message').tinymce() ) {
-     if ( tinyMCE.get('html_message').getContent() ) {
-       verify( );
-     } 
-   }
-  }	
-  );
-});
-{/literal}
-{/if}
-{include file="CRM/common/Filter.tpl"}
-{literal}
-    function showToken(element, id) {
-	initFilter(id);
-	cj("#token"+id).css({"width":"290px", "size":"8"});
-	var tokenTitle = {/literal}'{ts}Select Token{/ts}'{literal};
-	cj("#token"+element ).show( ).dialog({
-	    title       : tokenTitle,
-	    modal       : true,
-	    width       : '310px',
-	    resizable   : false,
-	    bgiframe    : false,
-	    overlay     : { opacity: 0.5, background: "black" },
-	    beforeclose : function(event, ui) { cj(this).dialog("destroy"); },
-	    buttons     : { 
-		"Done": function() { 
-		    cj(this).dialog("close");
-
-			//focus on editor/textarea after token selection     
-			if (element == 'Text') {
-			    cj('#text_message').focus();
-			} else if (element == 'Html' ) {
-			    switch ({/literal}"{$editor}"{literal}) {
-				case 'ckeditor': { CKEDITOR.instances['html_message'].focus(); break;}
-				case 'tinymce'  : { tinyMCE.get('html_message').focus(); break; } 
-				default         : { cj("#html_message").focus(); break; } 
-			}
-		    }
-		}
-	    }
-	});
-	return false;
+    var formatExists = true;
+    if ( document.getElementById('format_id').value == 0 ) {
+        formatExists = false;
     }
+    if ( templateExists && formatExists ) {
+        document.getElementById("bindFormat").style.display = "block";
+    } else if ( formatExists && document.getElementById("saveTemplate") != null && document.getElementById("saveTemplate").checked ) {
+        document.getElementById("bindFormat").style.display = "block";
+        var yes = confirm( '{/literal}{$useThisPageFormat}{literal}' );
+        if ( yes ) {
+            document.getElementById("bind_format").checked = true;
+        }
+    } else {
+        document.getElementById("bindFormat").style.display = "none";
+        document.getElementById("bind_format").checked = false;
+    }
+}
+
+function showUpdateFormatChkBox()
+{
+    if ( document.getElementById('format_id').value != 0 ) {
+        document.getElementById("updateFormat").style.display = "block";
+    }
+}
+
+function hideUpdateFormatChkBox()
+{
+    document.getElementById("update_format").checked = false;
+    document.getElementById("updateFormat").style.display = "none";
+}
+
+function selectFormat( val, bind )
+{
+    if ( val == null || val == 0 ) {
+        val = 0;
+        bind = false;
+    }
+    var dataUrl = {/literal}"{crmURL p='civicrm/ajax/pdfFormat' h=0 }"{literal};
+    cj.post( dataUrl, {formatId: val}, function( data ) {
+        cj("#format_id").val( data.id );
+        cj("#paper_size").val( data.paper_size );
+        cj("#orientation").val( data.orientation );
+        cj("#metric").val( data.metric );
+        cj("#margin_top").val( data.margin_top );
+        cj("#margin_bottom").val( data.margin_bottom );
+        cj("#margin_left").val( data.margin_left );
+        cj("#margin_right").val( data.margin_right );
+        selectPaper( data.paper_size );
+        hideUpdateFormatChkBox();
+        document.getElementById('bind_format').checked = bind;
+        showBindFormatChkBox();
+    }, 'json');
+}
+
+function selectPaper( val )
+{
+    dataUrl = {/literal}"{crmURL p='civicrm/ajax/paperSize' h=0 }"{literal};
+    cj.post( dataUrl, {paperSizeName: val}, function( data ) {
+        cj("#paper_size").val( data.name );
+        metric = document.getElementById('metric').value;
+        currentWidth = convertMetric( data.width, data.metric, metric );
+        currentHeight = convertMetric( data.height, data.metric, metric );
+        updatePaperDimensions( );
+    }, 'json');
+}
+
+function selectMetric( metric )
+{
+    convertField( 'margin_top', currentMetric, metric );
+    convertField( 'margin_bottom', currentMetric, metric );
+    convertField( 'margin_left', currentMetric, metric );
+    convertField( 'margin_right', currentMetric, metric );
+    currentWidth = convertMetric( currentWidth, currentMetric, metric );
+    currentHeight = convertMetric( currentHeight, currentMetric, metric );
+    updatePaperDimensions( );
+}
+
+function updatePaperDimensions( )
+{
+    metric = document.getElementById('metric').value;
+    width = new String( currentWidth.toFixed( 2 ) );
+    height = new String( currentHeight.toFixed( 2 ) );
+    if ( document.getElementById('orientation').value == 'landscape' ) {
+        width = new String( currentHeight.toFixed( 2 ) );
+        height = new String( currentWidth.toFixed( 2 ) );
+    }
+    document.getElementById('paper_dimensions').innerHTML = parseFloat( width ) + ' ' + metric + ' x ' + parseFloat( height ) + ' ' + metric;
+    currentMetric = metric;
+}
+
+function convertField( id, from, to )
+{
+    val = document.getElementById( id ).value;
+    if ( val == '' || isNaN( val ) ) return;
+    val = convertMetric( val, from, to );
+    val = new String( val.toFixed( 3 ) );
+    document.getElementById( id ).value = parseFloat( val );
+}
+
+function convertMetric( value, from, to ) {
+    switch( from + to ) {
+        case 'incm': return value * 2.54;
+        case 'inmm': return value * 25.4;
+        case 'inpt': return value * 72;
+        case 'cmin': return value / 2.54;
+        case 'cmmm': return value * 10;
+        case 'cmpt': return value * 72 / 2.54;
+        case 'mmin': return value / 25.4;
+        case 'mmcm': return value / 10;
+        case 'mmpt': return value * 72 / 25.4;
+        case 'ptin': return value / 72;
+        case 'ptcm': return value * 2.54 / 72;
+        case 'ptmm': return value * 25.4 / 72;
+    }
+    return value;
+}
+
+function showSaveDetails(chkbox)  {
+    var formatSelected = ( document.getElementById('format_id').value > 0 );
+    var templateSelected = ( document.getElementById('template') != null && document.getElementById('template').value > 0 );
+    if (chkbox.checked) {
+        document.getElementById("saveDetails").style.display = "block";
+        document.getElementById("saveTemplateName").disabled = false;
+        if ( formatSelected && ! templateSelected ) {
+            document.getElementById("bindFormat").style.display = "block";
+            var yes = confirm( '{/literal}{$useSelectedPageFormat}{literal}' );
+            if ( yes ) {
+                document.getElementById("bind_format").checked = true;
+            }
+        }
+    } else {
+        document.getElementById("saveDetails").style.display = "none";
+        document.getElementById("saveTemplateName").disabled = true;
+        if ( ! templateSelected ) {
+            document.getElementById("bindFormat").style.display = "none";
+            document.getElementById("bind_format").checked = false;
+        }
+    }
+}
+
 </script>
 {/literal}
+

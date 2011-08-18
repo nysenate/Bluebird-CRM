@@ -2,7 +2,7 @@
 
 define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 
-function nyss_mail_civicrm_alterMailParams( &$params, $source )
+function nyss_mail_civicrm_alterMailParams( &$params, $context )
 {
     require_once 'SmtpApiHeader.php';
 	//CRM_Core_Error::debug($params);
@@ -34,7 +34,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $source )
 	$params['Reply-To'] = $replyto;
 	
 	//set some values based on context
-	if ( $source == 'civimail' ) {
+	if ( $context == 'civimail' ) {
 		
 		$hdr->setCategory("BluebirdMail");
 		$hdr->addFilterSetting('subscriptiontrack', 'enable', 1);

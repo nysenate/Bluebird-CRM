@@ -26,9 +26,17 @@ else
 {
     die( "Your environment isn't properly set-up. Please refer to the eZ components documentation at http://components.ez.no/doc ." );
 }
+// Joomla, libraries/loader.php, already defined autoload
 
+if ( function_exists("spl_autoload_register") ) {
+    spl_autoload_register(array('ezcBase', 'autoload'));
+    if (function_exists('__autoload')) {
+        // Be polite and ensure that userland autoload gets retained
+        spl_autoload_register('__autoload');
+    }
+} elseif ( ! function_exists("__autoload") ) {
 // Joomla, libraries/loader.php, already defined __autoload
-if ( !function_exists("__autoload") ) {
+
     /**
      * Implements the __autoload mechanism for PHP - which can only be done once
      * per request.

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,13 +29,13 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 class CRM_Activity_BAO_Query 
 {
-
+    
     /** 
      * build select for Case 
      * 
@@ -81,7 +81,7 @@ class CRM_Activity_BAO_Query
         }
         
         if ( CRM_Utils_Array::value( 'activity_status_id', $query->_returnProperties ) ) {
-            $query->_select['activity_status_id']  = "activity_status.id as activity_status_id";
+            $query->_select['activity_status_id']  = "activity_status.value as activity_status_id";
             $query->_element['activity_status_id'] = 1;
             $query->_tables['civicrm_activity'] = 1;
             $query->_tables['activity_status'] = 1;
@@ -101,30 +101,42 @@ class CRM_Activity_BAO_Query
         if ( CRM_Utils_Array::value( 'activity_duration', $query->_returnProperties ) ) {
             $query->_select['activity_duration']  = "civicrm_activity.duration as activity_duration";
             $query->_element['activity_duration'] = 1;
-			$query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
+            $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
         }
         
         if ( CRM_Utils_Array::value( 'activity_location', $query->_returnProperties ) ) {
             $query->_select['activity_location']  = "civicrm_activity.location as activity_location";
             $query->_element['activity_location'] = 1;
-			$query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
+            $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
         }
         
         if ( CRM_Utils_Array::value( 'activity_details', $query->_returnProperties ) ) {
             $query->_select['activity_details']  = "civicrm_activity.details as activity_details";
             $query->_element['activity_details'] = 1;
-			$query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
+            $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
         }
 
         if ( CRM_Utils_Array::value( 'source_record_id', $query->_returnProperties ) ) {
             $query->_select['source_record_id']  = "civicrm_activity.source_record_id as source_record_id";
             $query->_element['source_record_id'] = 1;
-			$query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
+            $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
         }
-
+        
         if ( CRM_Utils_Array::value( 'activity_is_test', $query->_returnProperties ) ) {
             $query->_select['activity_is_test']  = "civicrm_activity.is_test as activity_is_test";
             $query->_element['activity_is_test'] = 1;
+            $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
+        }
+        
+        if ( CRM_Utils_Array::value( 'activity_campaign_id', $query->_returnProperties ) ) {
+            $query->_select['activity_campaign_id']  = 'civicrm_activity.campaign_id as activity_campaign_id';
+            $query->_element['activity_campaign_id'] = 1;
+            $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
+        }
+        
+        if ( CRM_Utils_Array::value( 'activity_engagement_level', $query->_returnProperties ) ) {
+            $query->_select['activity_engagement_level'] = 'civicrm_activity.engagement_level as activity_engagement_level';
+            $query->_element['activity_engagement_level'] = 1;
             $query->_tables['civicrm_activity'] = $query->_whereTables['civicrm_activity'] = 1;
         }
     }
@@ -167,7 +179,7 @@ class CRM_Activity_BAO_Query
      * @access public 
      */ 
     static function whereClauseSingle( &$values, &$query ) 
-    {
+    {        
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
         
         $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
@@ -179,18 +191,28 @@ class CRM_Activity_BAO_Query
         switch ( $name ) {
         
         case 'activity_type_id':
-            $types  = CRM_Core_PseudoConstant::activityType( true, true );
+            $types  = CRM_Core_PseudoConstant::activityType( true, true, false, 'label', true );
+            
+            //get the component activity types.
+            $compActTypes = CRM_Core_PseudoConstant::activityType( true, true, false, 'label', true, true );
+            
             $clause = array( );
             if ( is_array( $value ) ) {
                 foreach ( $value as $id => $dontCare ) {
                     if ( array_key_exists( $id, $types ) && $dontCare ) {
                         $clause[] = "'" . CRM_Utils_Type::escape( $types[$id], 'String' ) . "'";
+                        if ( array_key_exists( $id, $compActTypes ) ) {
+                            CRM_Contact_BAO_Query::$_considerCompActivities = true;
+                        }
                     }
                 } 
                 $activityTypes = implode( ',', array_keys( $value ) );
             } else {
                 $clause[] = "'" . CRM_Utils_Type::escape( $value, 'String' ) . "'";
                 $activityTypes = $value;
+                if ( array_key_exists( $value, $compActTypes ) ) {
+                    CRM_Contact_BAO_Query::$_considerCompActivities = true;
+                }
             }
             $query->_where[$grouping][] = ' civicrm_activity.activity_type_id IN (' . $activityTypes . ')';
             $query->_qill [$grouping][]  = ts('Activity Type') . ' ' . implode( ' ' . ts('or') . ' ', $clause );
@@ -208,7 +230,21 @@ class CRM_Activity_BAO_Query
                 ' - ' . 
                 CRM_Core_DAO::getFieldValue( 'CRM_Campaign_DAO_Survey', $value, 'title' );
             break;
+
+        case 'activity_engagement_level':
+            require_once 'CRM/Core/OptionGroup.php';
+            if ( ! $value ) {
+                break;
+            }
             
+            $value = CRM_Utils_Type::escape( $value, 'Integer' );
+            $query->_where[$grouping][] = " engagement_level = $value";
+            $query->_qill[$grouping][] = 
+                ts( 'Engagement Index' ) . 
+                ' - ' . 
+                CRM_Core_OptionGroup::getLabel( 'engagement_index', $value );
+            break;
+
         case 'activity_role':
             CRM_Contact_BAO_Query::$_activityRole = $values[2];
              
@@ -221,13 +257,13 @@ class CRM_Activity_BAO_Query
                 $name = strtolower( CRM_Core_DAO::escapeString( $name ) );
             }
             
-            $query->_where[$grouping][] = " contact_b.is_deleted = 0 AND contact_b.sort_name LIKE '%{$name}%'";
+            $query->_where[$grouping][] = " contact_activity_source.is_deleted = 0 AND contact_activity_source.sort_name LIKE '%{$name}%'";
             if ( $values[2] == 1 ) {
-                $query->_where[$grouping][] = " civicrm_activity.source_contact_id = contact_b.id";
+                $query->_where[$grouping][] = " civicrm_activity.source_contact_id = contact_activity_source.id";
                 $query->_qill[$grouping][]  = ts( 'Activity created by').  " '$name'";
                 $query->_tables['civicrm_activity_contact']   = $query->_whereTables['civicrm_activity_contact'] = 1;                
             } else if ( $values[2] == 2 ) {
-                $query->_where[$grouping][] = " civicrm_activity_assignment.activity_id = civicrm_activity.id AND civicrm_activity_assignment.assignee_contact_id = contact_b.id";
+                $query->_where[$grouping][] = " civicrm_activity_assignment.activity_id = civicrm_activity.id AND civicrm_activity_assignment.assignee_contact_id = contact_activity_source.id";
                 $query->_tables['civicrm_activity_assignment']   = $query->_whereTables['civicrm_activity_assignment'] = 1;
                 $query->_tables['civicrm_activity_contact']   = $query->_whereTables['civicrm_activity_contact'] = 1;                
                 $query->_qill[$grouping][]  = ts( 'Activity assigned to').  " '$name'";
@@ -289,10 +325,41 @@ class CRM_Activity_BAO_Query
                                      'civicrm_activity', 'activity_date', 'activity_date_time', ts('Activity Date') );
 
             break;
+        case 'activity_taglist':
+            $taglist = $value;
+            $value = array( );
+            foreach( $taglist as $val ) {
+                if ( $val ) {
+                    $val = explode(',', $val );
+                    foreach( $val as $tId ) {
+                        if ( is_numeric( $tId ) ) {
+                            $value[$tId] = 1;
+                        }
+                    }
+                }
+            } 
+
+        case 'activity_id':
+            if ( empty($value) ) {
+                break;
+            }
+            
+            if ( is_array($value) ) {
+                foreach( $value as $k => $v ) {
+                    $value[$k] = CRM_Utils_Type::escape( $v, 'Integer' );
+                    
+                }
+            } else {
+                $value = array( CRM_Utils_Type::escape( $value, 'Integer' ) );
+            }
+            $query->_where[$grouping][] = "civicrm_activity.id IN (". implode( ",", $value) .")";
+            $query->_qill[$grouping ][] = ts( 'Activity Id(s)  %1', array(1 => implode($value) ) );             
+            break;
+            
         case 'activity_tags':
             require_once'CRM/Core/BAO/Tag.php';
             $value = array_keys( $value );
-            $activityTags = CRM_Core_BAO_Tag::getTagsUsedFor('civicrm_activity');
+            $activityTags = CRM_Core_PseudoConstant::tag( ); 
             
             $names = array( );
             $val   = array( );
@@ -306,7 +373,14 @@ class CRM_Activity_BAO_Query
             $query->_tables['civicrm_activity_tag'] = $query->_whereTables['civicrm_activity_tag'] = 1;
             
             break;
-            
+        case 'activity_campaign_id':
+            require_once 'CRM/Campaign/BAO/Query.php';
+            $campParams = array( 'op'          => $op,
+                                 'campaign'    => $value,
+                                 'grouping'    => $grouping,
+                                 'tableName'   => 'civicrm_activity' );
+            CRM_Campaign_BAO_Query::componentSearchClause( $campParams, $query );
+            return;
         }
         
     }
@@ -317,40 +391,71 @@ class CRM_Activity_BAO_Query
         switch ( $name ) {
             
         case 'civicrm_activity':
-            /*
-        	if ( $mode & CRM_Contact_BAO_Query::MODE_ACTIVITY ) {
-		        $from = " FROM civicrm_activity 
-		                  LEFT JOIN civicrm_activity_target  ON ( civicrm_activity_target.activity_id = civicrm_activity.id 
-		                       AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1  ) 
-                          LEFT JOIN civicrm_contact contact_a ON ( civicrm_activity_target.target_contact_id = contact_a.id AND contact_a.is_deleted = 0)
-                          LEFT JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id AND civicrm_email.is_primary = 1)";
-            } else {
+            //CRM-7480 we are going to civicrm_activitty table either 
+            //from civicrm_activity_target or civicrm_activity_assignment.
+            //as component specific activities does not have entry in
+            //activity target table so lets consider civicrm_activity_assignment. 
+            if ( CRM_Contact_BAO_Query::$_considerCompActivities ) {
+                $from .= " $side JOIN civicrm_activity_target 
+                                      ON ( civicrm_activity_target.target_contact_id = contact_a.id ) ";
+                
+                $from .= " $side JOIN civicrm_activity_assignment activity_assignment 
+                                      ON ( activity_assignment.assignee_contact_id = contact_a.id )";
+                
+                $from .= " $side JOIN civicrm_activity 
+                                      ON ( civicrm_activity.id = civicrm_activity_target.activity_id 
+                                      AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1 )";
+            } else if ( CRM_Contact_BAO_Query::$_withContactActivitiesOnly ) {
+                //force the civicrm_activity_target table.
                 $from .= " $side JOIN civicrm_activity_target ON civicrm_activity_target.target_contact_id = contact_a.id ";
                 $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.id = civicrm_activity_target.activity_id 
-                                 AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1 )";
-                
+                                                            AND civicrm_activity.is_deleted = 0 
+                                                            AND civicrm_activity.is_current_revision = 1 )";
+            } else {
+                $activityRole = CRM_Contact_BAO_Query::$_activityRole;
+                switch ( $activityRole ) {
+                case 1:
+                    $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.source_contact_id = contact_a.id 
+                        AND civicrm_activity.is_deleted = 0 
+                        AND civicrm_activity.is_current_revision = 1 )";
+                    break;
+                    
+                case 2:
+                    $from .= " $side JOIN civicrm_activity_assignment activity_assignment ON ( activity_assignment.assignee_contact_id = contact_a.id )";
+                    $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.id = activity_assignment.activity_id 
+                        AND civicrm_activity.is_deleted = 0 
+                        AND civicrm_activity.is_current_revision = 1 )";
+                    break;
+
+                default: 
+                    if ( $mode == CRM_Contact_BAO_QUERY::MODE_CONTACTS ) {  
+                        $from .= " $side JOIN civicrm_activity_target ON civicrm_activity_target.target_contact_id = contact_a.id ";
+                        $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.id = civicrm_activity_target.activity_id
+                            AND civicrm_activity.is_deleted = 0 
+                            AND civicrm_activity.is_current_revision = 1 )";
+                    } else {
+                        $from .= " $side JOIN civicrm_activity_target ON civicrm_activity_target.target_contact_id = contact_a.id ";
+                        $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.source_contact_id = contact_a.id 
+                            AND civicrm_activity.is_deleted = 0 
+                            AND civicrm_activity.is_current_revision = 1 )";
+                    }
+                }
             }
-            */
-            
-            $from .= " $side JOIN civicrm_activity_target ON civicrm_activity_target.target_contact_id = contact_a.id ";
-            $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.id = civicrm_activity_target.activity_id 
-                             AND civicrm_activity.is_deleted = 0 AND civicrm_activity.is_current_revision = 1 )";
-            
             break;
             
 		case 'civicrm_activity_contact':
-		
             $activityRole = CRM_Contact_BAO_Query::$_activityRole;
             if ( $activityRole == 1 ) {
-                $from .= " $side JOIN civicrm_contact contact_b ON civicrm_activity.source_contact_id = contact_b.id
-                           LEFT JOIN civicrm_email email_b ON (contact_b.id = email_b.contact_id AND email_b.is_primary = 1)";
+                $from .= " $side JOIN civicrm_contact contact_activity_source ON civicrm_activity.source_contact_id = contact_activity_source.id
+                           LEFT JOIN civicrm_email email_activity_source ON (contact_activity_source.id = email_activity_source.contact_id AND email_activity_source.is_primary = 1)";
             } else if ( $activityRole == 2 ) {
                 $from .= " $side JOIN civicrm_activity_assignment ON civicrm_activity.id = civicrm_activity_assignment.activity_id ";
-                $from .= " $side JOIN civicrm_contact contact_b ON civicrm_activity_assignment.assignee_contact_id = contact_b.id
-                           LEFT JOIN civicrm_email email_b ON (contact_b.id = email_b.contact_id AND email_b.is_primary = 1)";
+                $from .= " $side JOIN civicrm_contact contact_activity_source ON civicrm_activity_assignment.assignee_contact_id = contact_activity_source.id
+                           LEFT JOIN civicrm_email email_activity_source ON (contact_activity_source.id = email_activity_source.contact_id AND email_activity_source.is_primary = 1)";
             }
 		
 			break;
+
         case 'activity_status':
             $from = " $side JOIN civicrm_option_group option_group_activity_status ON (option_group_activity_status.name = 'activity_status')";
             $from .= " $side JOIN civicrm_option_value activity_status ON (civicrm_activity.status_id = activity_status.value 
@@ -423,10 +528,17 @@ class CRM_Activity_BAO_Query
                                                         null, $tagName);         
             }
         }
-        require_once ('CRM/Campaign/BAO/Survey.php');
-        $surveys = array('' => ts('- none -')) + CRM_Campaign_BAO_Survey::getSurveyList( );
-        $form->add( 'select', 'activity_survey_id', ts('Survey'), $surveys, false );
 
+        require_once 'CRM/Core/Form/Tag.php';
+        require_once 'CRM/Core/BAO/Tag.php';
+        $parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_activity' );
+        CRM_Core_Form_Tag::buildQuickForm( $form, $parentNames, 'civicrm_activity', null, true, false, true );
+
+        require_once ('CRM/Campaign/BAO/Survey.php');
+        $surveys = CRM_Campaign_BAO_Survey::getSurveys( );
+        if( $surveys ) $form->add( 'select', 'activity_survey_id', ts('Survey'), 
+                                   array('' => ts('- none -')) + $surveys, false );
+        
         require_once 'CRM/Core/BAO/CustomGroup.php';
         $extends = array( 'Activity' );
         $groupDetails = CRM_Core_BAO_CustomGroup::getGroupDetail( null, true, $extends );
@@ -441,6 +553,22 @@ class CRM_Activity_BAO_Query
                 }
             }
         }
+        
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch( $form, 'activity_campaign_id' );
+        
+        //add engagement level CRM-7775
+        $buildEngagementLevel = false;
+        if ( CRM_Campaign_BAO_Campaign::isCampaignEnable( ) &&
+             CRM_Campaign_BAO_Campaign::accessCampaign( ) ) {
+            $buildEngagementLevel = true;
+            require_once 'CRM/Campaign/PseudoConstant.php';
+            $form->add( 'select', 'activity_engagement_level', 
+                        ts( 'Engagement Index' ), 
+                        array( '' => ts( '- select -' ) ) + CRM_Campaign_PseudoConstant::engagementLevel( ) );
+        }
+        $form->assign( 'buildEngagementLevel', $buildEngagementLevel );
+            
     }
 
     static function addShowHide( &$showHide ) 
@@ -468,9 +596,11 @@ class CRM_Activity_BAO_Query
                                 'activity_status'     => 1,
                                 'source_contact_id'   => 1,
                                 'source_record_id'    => 1,
-                                'activity_is_test'    => 1
-                                );
-
+                                'activity_is_test'    => 1,
+                                'activity_campaign_id' => 1,
+                                'activity_engagement_level' => 1,
+                            );
+            
             // also get all the custom activity properties
             require_once "CRM/Core/BAO/CustomField.php";
             $fields = CRM_Core_BAO_CustomField::getFieldsForImport('Activity');

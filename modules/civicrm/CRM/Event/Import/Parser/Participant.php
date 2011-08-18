@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -321,6 +321,7 @@ class CRM_Event_Import_Parser_Participant extends CRM_Event_Import_Parser
                                            $qParams);
             }
         } 
+
         //date-Format part ends
         static $indieFields = null;
         if ($indieFields == null) {
@@ -338,7 +339,7 @@ class CRM_Event_Import_Parser_Participant extends CRM_Event_Import_Parser
         }
         
         $formatError = _civicrm_participant_formatted_param( $formatValues, $formatted, true );
-        require_once "api/v2/Participant.php";
+        civicrm_api_include('participant', false, 2);
 
         if ( $formatError ) {
             array_unshift($values, $formatError['error_message']);
@@ -357,7 +358,7 @@ class CRM_Event_Import_Parser_Participant extends CRM_Event_Import_Parser
                                                                           'Participant' );
         } else {
             if ( $formatValues['participant_id'] ) {
-                require_once 'CRM/Event/BAO/Participant.php';
+                civicrm_api_include('participant', false, 2);
                 $dao =  new CRM_Event_BAO_Participant();
                 $dao->id = $formatValues['participant_id'];
                 

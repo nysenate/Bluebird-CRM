@@ -1,8 +1,6 @@
 <?php
 
 require_once('HTML/QuickForm/textarea.php');
-define('CKFINDER_HOME', '/sites/all/modules/ckfinder/');
-define('CKFINDER_URL', CKFINDER_HOME.'ckfinder.html');
 
 /**
  * HTML Quickform element for CKeditor
@@ -73,12 +71,6 @@ class HTML_QuickForm_CKeditor extends HTML_QuickForm_textarea
                     }
                     if ( cj('#{$elementId}').val( ) == '' ) cj('#{$elementId}').val('&nbsp;');
                     CKEDITOR.replace( '{$elementId}' );
-                    /************* if using CKFinder, then uncomment this block
-                    CKEDITOR.replace( '{$elementId}',
-                      {
-                        filebrowserBrowseUrl : '".CKFINDER_URL."'
-                      });
-                    *************/
                     var editor = CKEDITOR.instances['{$elementId}'];
                     if ( editor ) {
                         editor.on( 'key', function( evt ){

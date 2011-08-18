@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -41,19 +41,15 @@
     var target_contact = assignee_contact = '';
 
     {/literal}
-    {foreach from=$target_contact key=id item=name}
-         {literal} target_contact += '{"name":"'+{/literal}"{$name}"{literal}+'","id":"'+{/literal}"{$id}"{literal}+'"},';{/literal}
-    {/foreach}
-    {literal} eval( 'target_contact = [' + target_contact + ']'); {/literal}
-
-    {if $assigneeContactCount}
-    {foreach from=$assignee_contact key=id item=name}
-         {literal} assignee_contact += '{"name":"'+{/literal}"{$name}"{literal}+'","id":"'+{/literal}"{$id}"{literal}+'"},';{/literal}
-    {/foreach}
-    {literal} eval( 'assignee_contact = [' + assignee_contact + ']'); {/literal}
+    {if $target_contact}
+        var target_contact = {$target_contact};
     {/if}
+    
+    {if $assignee_contact}
+        var assignee_contact = {$assignee_contact};
+    {/if}
+    
     {literal}
-
     var target_contact_id = assignee_contact_id = null;
     //loop to set the value of cc and bcc if form rule.
     var toDataUrl = "{/literal}{crmURL p='civicrm/ajax/checkemail' q='id=1&noemail=1' h=0 }{literal}"; {/literal}
@@ -77,13 +73,11 @@
     {/if}
     {literal}
 
-    eval( 'tokenClass = { tokenList: "token-input-list-facebook", token: "token-input-token-facebook", tokenDelete: "token-input-delete-token-facebook", selectedToken: "token-input-selected-token-facebook", highlightedToken: "token-input-highlighted-token-facebook", dropdown: "token-input-dropdown-facebook", dropdownItem: "token-input-dropdown-item-facebook", dropdownItem2: "token-input-dropdown-item2-facebook", selectedDropdownItem: "token-input-selected-dropdown-item-facebook", inputToken: "token-input-input-token-facebook" } ');
-
     var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
     var tokenDataUrl  = "{/literal}{$tokenUrl}{literal}";
     var hintText = "{/literal}{ts}Type in a partial or complete name of an existing contact.{/ts}{literal}";
-    cj( "#target_contact_id"  ).tokenInput( tokenDataUrl, { prePopulate: target_contact,   classes: tokenClass, hintText: hintText });
-    cj( "#assignee_contact_id").tokenInput( tokenDataUrl, { prePopulate: assignee_contact, classes: tokenClass, hintText: hintText });
+    cj( "#target_contact_id"  ).tokenInput( tokenDataUrl, { prePopulate: target_contact,   theme: 'facebook', hintText: hintText });
+    cj( "#assignee_contact_id").tokenInput( tokenDataUrl, { prePopulate: assignee_contact, theme: 'facebook', hintText: hintText });
     cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '450px' );
     cj('#source_contact_id').autocomplete( sourceDataUrl, { width : 180, selectFirst : false, hintText: hintText, matchContains: true, minChars: 1
                                 }).result( function(event, data, formatted) { cj( "#source_contact_qid" ).val( data[1] );
@@ -92,7 +86,7 @@
     </script>
     {/literal}
     {if !$action or ( $action eq 1 ) or ( $action eq 2 ) }
-        <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
+        <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     {/if}
       
         {if $action eq 8} {* Delete action. *}
@@ -177,6 +171,19 @@
              <tr class="crm-activity-form-block-subject">
                 <td class="label">{$form.subject.label}</td><td class="view-value">{$form.subject.html|crmReplace:class:huge}</td>
              </tr>
+	     
+    	     {* CRM-7362 --add campaign to activities *}
+    	     {include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+    	     campaignTrClass="crm-activity-form-block-campaign_id"}
+
+    	     {* build engagement level CRM-7775 *}
+    	     {if $buildEngagementLevel}
+        	     <tr class="crm-activity-form-block-engagement_level">
+                         <td class="label">{$form.engagement_level.label}</td>
+        		 <td class="view-value">{$form.engagement_level.html}</td>
+                     </tr>
+    	     {/if}
+	     
              <tr class="crm-activity-form-block-location">
                 <td class="label">{$form.location.label}</td><td class="view-value">{$form.location.html|crmReplace:class:huge}</td>
              </tr> 
@@ -239,8 +246,8 @@
                  </tr>
              {/if}
              
-             {if $tagset}
-                <tr class="crm-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl"}</td></tr>
+             {if $tagsetInfo_activity}
+                <tr class="crm-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl" tagsetType='activity'}</td></tr>
              {/if}
              
              {if $action neq 4 OR $viewCustomData} 
@@ -257,7 +264,7 @@
              
              {if $action eq 4 AND $currentAttachmentURL}
                 {include file="CRM/Form/attachment.tpl"}{* For view action the include provides the row and cells. *}
-             {else if $action eq 1 OR $action eq 2}
+             {elseif $action eq 1 OR $action eq 2}
                  <tr class="crm-activity-form-block-attachment">
                     <td colspan="2">
                         {include file="CRM/Form/attachment.tpl"}

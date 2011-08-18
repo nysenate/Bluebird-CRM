@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -145,7 +145,7 @@ class CRM_Core_BAO_UFJoin extends CRM_Core_DAO_UFJoin {
         return null; 
     } 
 
-    public static function getUFGroupIds(&$params) { 
+   public static function getUFGroupIds(&$params) { 
     
         $dao = new CRM_Core_DAO_UFJoin( ); 
          
@@ -156,33 +156,22 @@ class CRM_Core_BAO_UFJoin extends CRM_Core_DAO_UFJoin {
         $dao->entity_table = CRM_Utils_Array::value( 'entity_table', $params );
         $dao->entity_id    = CRM_Utils_Array::value( 'entity_id'   , $params );
         $dao->orderBy( 'weight asc' );
-
-        $first = $second  = $firstActive = $secondActive = null;
-        $firstWeight = null;
         $dao->find( );
-        if ( $dao->fetch( ) ) {
-            $first       = $dao->uf_group_id;
-            $firstWeight = $dao->weight;
-            $firstActive = $dao->is_active;
-        }
+        $first  = $firstActive = null;
+        $second = $secondActive = array();
+
         while ( $dao->fetch( ) ) {
-            if ( $first != $dao->uf_group_id ) {
-                $second = $dao->uf_group_id; 
-                $secondActive = $dao->is_active;
-                break;
+            if ($dao->weight == 1) {
+                $first = $dao->uf_group_id;
+                $firstActive = $dao->is_active; 
+            } else {
+                $second[] = $dao->uf_group_id;
+                $secondActive[] = $dao->is_active; 
             }
         } 
-
-        // if there is only one profile check to see the weight, if > 1 then let it be second
-        // this is an approx rule, but should work in most cases.
-        if ( $second == null &&
-             $firstWeight > 1 ) {
-            $second = $first;
-            $first  = null;
-        }
-
         return array( $first, $second, $firstActive, $secondActive );
     } 
+
 
 }
 

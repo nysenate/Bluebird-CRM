@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -39,14 +39,12 @@
  * This class handles all SOAP client requests.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
-require_once 'api/v2/utils.php';
 require_once 'api/v2/Mailer.php';
-
 class CRM_Utils_SoapServer
 {
     /**
@@ -124,9 +122,9 @@ class CRM_Utils_SoapServer
      * @access public
      * @static
      */
-    public function authenticate($name, $pass) {
+    public function authenticate($name, $pass, $loadCMSBootstrap = true ) {
         require_once( str_replace( '_', DIRECTORY_SEPARATOR, $this->ufClass ) . '.php' );
-        eval ('$result =& ' . $this->ufClass . '::authenticate($name, $pass);');
+        eval ('$result =& ' . $this->ufClass . '::authenticate($name, $pass, $loadCMSBootstrap );');
 
         if (empty($result)) {
             throw new SoapFault('Client', 'Invalid login');
@@ -218,9 +216,9 @@ class CRM_Utils_SoapServer
     }
     
     public function get_contact($key, $params) { 
-        $this->verify($key); 
-        require_once 'api/v2/Contact.php';
-        return civicrm_contact_get( $params );
+        $this->verify($key);
+        $params['version'] = 3;
+        return civicrm_api('contact', 'get', $params);
     }
 
 }

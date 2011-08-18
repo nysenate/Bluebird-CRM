@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -50,7 +50,7 @@ class CRM_Import_ImportJob {
     protected $_invalidRowCount;
     protected $_conflictRowCount;
     protected $_onDuplicate;
-	protected $_dedupe; //NYSS 3750
+    protected $_dedupe;
     protected $_newGroupName;
     protected $_newGroupDesc;
     protected $_groups;
@@ -258,18 +258,18 @@ class CRM_Import_ImportJob {
             $this->_mapperRelatedContactWebsiteType );
         
         $this->_parser->run( $this->_tableName, $mapperFields,
-                      CRM_Import_Parser::MODE_IMPORT,
-                      $this->_contactType,
-                      $this->_primaryKeyName,
-                      $this->_statusFieldName,
-                      $this->_onDuplicate,
-                      $this->_statusID,
-                      $this->_totalRowCount,
-                      $this->_doGeocodeAddress,
-                      CRM_Import_Parser::DEFAULT_TIMEOUT, 
-                      $this->_contactSubType,
- 	 	              $this->_dedupe //NYSS
- 	 	              );
+                             CRM_Import_Parser::MODE_IMPORT,
+                             $this->_contactType,
+                             $this->_primaryKeyName,
+                             $this->_statusFieldName,
+                             $this->_onDuplicate,
+                             $this->_statusID,
+                             $this->_totalRowCount,
+                             $this->_doGeocodeAddress,
+                             CRM_Import_Parser::DEFAULT_TIMEOUT, 
+                             $this->_contactSubType,
+                             $this->_dedupe
+                             );
                       
         $contactIds = $this->_parser->getImportedContacts( );
         
@@ -354,7 +354,7 @@ class CRM_Import_ImportJob {
                                'title'         => $newTagName,
                                'description'   => $newTagDesc,
                                'is_selectable' => true,
-							   'parent_id'	   => 296, //NYSS - LCD new tags during import should be imported as keywords
+							   'parent_id'	   => 296, //NYSS new tags during import should be imported as keywords
                                'used_for'      => 'civicrm_contact' 
                                );
             require_once 'CRM/Core/BAO/Tag.php';
@@ -364,14 +364,13 @@ class CRM_Import_ImportJob {
         }
         //add Tag to Import   
 
-        if(is_array($this->_tag)) {
-
+        if ( is_array($this->_tag) ) {
             $tagAdditions = array();
             require_once "CRM/Core/BAO/EntityTag.php";
             foreach ($this->_tag as $tagId =>$val) {
                 $addTagCount = CRM_Core_BAO_EntityTag::addEntitiesToTag( $contactIds, $tagId );
                 $totalTagCount = $addTagCount[1];
-                if ($tagId == $addedTag->id) {
+                if ( isset( $addedTag ) && $tagId == $addedTag->id ) {
                     $tagName = $newTagName;
                     $new = true;
                 } else {

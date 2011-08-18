@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -57,9 +57,10 @@
    <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
     {if $action eq 8}
       <div class="messages status">
-          <div class="icon inform-icon"></div>       
-          {ts}WARNING: Deleting this membership will also delete related membership log and payment records.{/ts} {ts}This action cannot be undone.{/ts} {ts}Consider modifying the membership status instead if you want to maintain a record of this membership.{/ts}
-          {ts}Do you want to continue?{/ts}    
+          <div class="icon inform-icon"></div>&nbsp;       
+          <span class="font-red bold">{ts}WARNING: Deleting this membership will also delete any related payment (contribution) records.{/ts} {ts}This action cannot be undone.{/ts}</span>
+          <p>{ts}Consider modifying the membership status instead if you want to maintain an audit trail and avoid losing payment data. You can set the status to Cancelled by editing the membership and clicking the Status Override checkbox.{/ts}</p>
+          <p>{ts}Click 'Delete' if you want to continue.{/ts}</p>    
       </div>
     {else}
     <table class="form-layout-compressed">
@@ -68,6 +69,9 @@
                 <td class="font-size12pt label"><strong>{ts}Member{/ts}</strong></td><td class="font-size12pt"><strong>{$displayName}</strong></td>
             </tr>
         {else}
+            {if !$membershipMode and !$emailExists and $outBound_option != 2}
+                {assign var='profileCreateCallback' value=1 }
+            {/if}
             {include file="CRM/Contact/Form/NewContact.tpl"}
         {/if}
     {if $membershipMode}
@@ -78,6 +82,11 @@
         <span class="description">{ts}Select Membership Organization and then Membership Type.{/ts}</span></td></tr>	
     <tr class="crm-membership-form-block-source"><td class="label">{$form.source.label}</td><td>&nbsp;{$form.source.html}<br />
         <span class="description">{ts}Source of this membership. This value is searchable.{/ts}</span></td></tr>
+		
+	{* CRM-7362 --add campaign to membership *}
+	{include file="CRM/Campaign/Form/addCampaignToComponent.tpl"
+	campaignTrClass="crm-membership-form-block-campaign_id"}
+
 	<tr class="crm-membership-form-block-join_date"><td class="label">{$form.join_date.label}</td><td>{include file="CRM/common/jcalendar.tpl" elementName=join_date}
 		<br />
         <span class="description">{ts}When did this contact first become a member?{/ts}</span></td></tr>
@@ -109,6 +118,11 @@
             <span class="description">{ts}If <strong>Status Override</strong> is checked, the selected status will remain in force (it will NOT be modified by the automated status update script).{/ts}</span></td></tr>
 
 	{elseif $membershipMode}
+        <tr class="crm-membership-form-block-total_amount">
+                      <td class="label">{$form.total_amount.label}</td>
+                      <td>{$form.total_amount.html}<br />
+                      <span class="description">{ts}Membership payment amount.{/ts}</span></td>                   
+        </tr>
         <tr class="crm-membership-form-block-billing"><td colspan="2">
         {include file='CRM/Core/BillingBlock.tpl'}
         </td></tr>
@@ -118,7 +132,7 @@
             <td class="label">{if $onlinePendingContributionId}{ts}Update Payment Status{/ts}{else}{$form.record_contribution.label}{/if}</td>
             <td>{$form.record_contribution.html}<br />
                 <span class="description">{ts}Check this box to enter or update payment information. You will also be able to generate a customized receipt.{/ts}</span></td>
-            </tr>
+        </tr>
         <tr class="crm-membership-form-block-record_contribution"><td colspan="2">    
           <fieldset id="recordContribution"><legend>{ts}Membership Payment and Receipt{/ts}</legend>
               <table>
@@ -211,25 +225,6 @@
 {if $action neq 8} {* Jscript additions not need for Delete action *} 
 {if $accessContribution and !$membershipMode AND ($action neq 2 or !$rows.0.contribution_id or $onlinePendingContributionId)}
 
-{literal}
-<script type="text/javascript">
-cj( function( ) {
-    cj('#record_contribution').click( function( ) {
-        if ( cj(this).attr('checked') ) {
-            cj('#recordContribution').show( );
-            setPaymentBlock( );
-        } else {
-            cj('#recordContribution').hide( );
-        }
-    });
-    
-    cj('#membership_type_id\\[1\\]').change( function( ) {
-        setPaymentBlock( );
-    });
-});
-</script>
-{/literal}
-
 {include file="CRM/common/showHideByFieldValue.tpl" 
     trigger_field_id    ="record_contribution"
     trigger_value       =""
@@ -247,6 +242,32 @@ cj( function( ) {
     invert              = 0
 }
 {/if}
+
+{literal}
+<script type="text/javascript">
+cj( function( ) {
+    var mode   = {/literal}'{$membershipMode}'{literal};
+    if ( !mode ) {
+        // Offline form (mode = false) has the record_contribution checkbox
+        cj('#record_contribution').click( function( ) {
+            if ( cj(this).attr('checked') ) {
+                cj('#recordContribution').show( );
+                setPaymentBlock( );
+            } else {
+                cj('#recordContribution').hide( );
+            }
+        });
+    }
+    
+    cj('#membership_type_id\\[1\\]').change( function( ) {
+        setPaymentBlock( mode );
+    });
+});
+</script>
+{/literal}
+
+
+
 {if ($emailExists and $outBound_option != 2) OR $context eq 'standalone' }
 {include file="CRM/common/showHideByFieldValue.tpl" 
     trigger_field_id    ="send_receipt"
@@ -283,7 +304,7 @@ function showHideMemberStatus() {
 {/literal}{/if}
 	
 {literal}
-function setPaymentBlock( ) {
+function setPaymentBlock( mode ) {
     var memType = cj('#membership_type_id\\[1\\]').val( );
     
     if ( !memType ) {
@@ -293,7 +314,10 @@ function setPaymentBlock( ) {
     var dataUrl = {/literal}"{crmURL p='civicrm/ajax/memType' h=0}"{literal};
     
     cj.post( dataUrl, {mtype: memType}, function( data ) {
-        cj("#contribution_type_id").val( data.contribution_type_id );
+        if ( !mode ) {
+            // skip this for test and live modes because contribution type is set automatically
+            cj("#contribution_type_id").val( data.contribution_type_id );            
+        } 
         cj("#total_amount").val( data.total_amount );
     }, 'json');    
 }
@@ -308,7 +332,7 @@ cj( function( ) {
     checkEmail( );
 });
 function checkEmail( ) {
-    var contactID = cj("input[name=contact_select_id[1]]").val();
+    var contactID = cj("input[name='contact_select_id[1]']").val();
     if ( contactID ) {
         var postUrl = "{/literal}{crmURL p='civicrm/ajax/checkemail' h=0}{literal}";
         cj.post( postUrl, {contact_id: contactID},
@@ -326,7 +350,14 @@ function checkEmail( ) {
                 }
             }
         );
+    } else {
+       cj("#email-receipt").hide( );
+       cj("#notice").hide( );
     }
+}
+
+function profileCreateCallback( blockNo ) {
+    checkEmail( );     			    	    
 }
 {/literal}
 {/if}

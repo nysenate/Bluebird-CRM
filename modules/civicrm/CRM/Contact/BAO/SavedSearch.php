@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -147,24 +147,21 @@ class CRM_Contact_BAO_SavedSearch extends CRM_Contact_DAO_SavedSearch
 
     static function contactIDsSQL( $id ) {
         $params =& self::getSearchParams( $id );
-        if ( $params ) {
-            if ( CRM_Utils_Array::value( 'customSearchID', $params ) ) {
-                require_once 'CRM/Contact/BAO/SearchCustom.php';
-                return CRM_Contact_BAO_SearchCustom::contactIDSQL( null, $id );
-            } else {
-                $tables = $whereTables = array( $contact => 1 );
-                $where  = CRM_Contact_BAO_SavedSearch::whereClause( $id, $tables, $whereTables );
-                if ( ! $where ) {
-                    $where = '( 1 )' ;
-                }
-                $from   = CRM_Contact_BAO_Query::fromClause( $whereTables );
-                return "
+        if ( $params &&
+             CRM_Utils_Array::value( 'customSearchID', $params ) ) {
+            require_once 'CRM/Contact/BAO/SearchCustom.php';
+            return CRM_Contact_BAO_SearchCustom::contactIDSQL( null, $id );
+        } else {
+            $tables = $whereTables = array( $contact => 1 );
+            $where  = CRM_Contact_BAO_SavedSearch::whereClause( $id, $tables, $whereTables );
+            if ( ! $where ) {
+                $where = '( 1 )' ;
+            }
+            $from   = CRM_Contact_BAO_Query::fromClause( $whereTables );
+            return "
 SELECT contact_a.id
 $from
 WHERE  $where";
-            }
-        } else {
-            CRM_Core_Error::fatal( 'No contactID clause' );
         }
     }
 

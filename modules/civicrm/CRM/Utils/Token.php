@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id: $
  *
  */
@@ -53,6 +53,7 @@ class CRM_Utils_Token
                                                       'subscribeUrl'
                                                       ),
                              'mailing'       => array(
+                             						  'id',
                                                       'name',
                                                       'group',
                                                       'subject',
@@ -372,6 +373,10 @@ class CRM_Utils_Token
     {
         $value = '';
         switch ( $token ) {
+        // CRM-7663
+        case 'id':
+        	$value = $mailing ? $mailing->id : 'undefined';
+        	break;
         case 'name':
             $value = $mailing ? $mailing->name : 'Mailing Name';
             break;
@@ -562,7 +567,10 @@ class CRM_Utils_Token
             $value = "{contact.$token}";
         } else if ( $token == 'checksum' ) {
             require_once 'CRM/Contact/BAO/Contact/Utils.php';
-            $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum( $contact['contact_id'] );
+            $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum( $contact['contact_id'],
+                                                                   null,
+                                                                   null,
+                                                                   $contact['hash'] );
             $value = "cs={$cs}";
         } else {
             $value = CRM_Utils_Array::retrieveValueRecursive($contact, $token);

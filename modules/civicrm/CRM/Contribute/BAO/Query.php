@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -79,7 +79,6 @@ class CRM_Contribute_BAO_Query
             $query->_select['contribution_id'] = "civicrm_contribution.id as contribution_id";
             $query->_element['contribution_id'] = 1;
             $query->_tables['civicrm_contribution'] = 1;
-            $query->_whereTables['civicrm_contribution'] = 1;
         }
 
         // get contribution_type
@@ -88,12 +87,10 @@ class CRM_Contribute_BAO_Query
             $query->_element['contribution_type'] = 1;
             $query->_tables['civicrm_contribution'] = 1;
             $query->_tables['civicrm_contribution_type'] = 1;
-            $query->_whereTables['civicrm_contribution'] = 1;
-            $query->_whereTables['civicrm_contribution_type'] = 1;
         }
         
         if ( CRM_Utils_Array::value( 'contribution_note', $query->_returnProperties ) ) {
-            $query->_select['contribution_note']  = "civicrm_note_contribution.note as contribution_note";
+            $query->_select['contribution_note']  = "civicrm_note.note as contribution_note";
             $query->_element['contribution_note'] = 1;
             $query->_tables['contribution_note']  = 1;
         }
@@ -104,8 +101,6 @@ class CRM_Contribute_BAO_Query
             $query->_element['contribution_status_id'] = 1;
             $query->_tables['civicrm_contribution'] = 1;
             $query->_tables['contribution_status'] = 1;
-            $query->_whereTables['civicrm_contribution'] = 1;
-            $query->_whereTables['contribution_status'] = 1;
         }
 
         // get contribution_status label
@@ -114,8 +109,6 @@ class CRM_Contribute_BAO_Query
             $query->_element['contribution_status'] = 1;
             $query->_tables['civicrm_contribution'] = 1;
             $query->_tables['contribution_status'] = 1;
-            $query->_whereTables['civicrm_contribution'] = 1;
-            $query->_whereTables['contribution_status'] = 1;
         }
         
         // get payment instruments
@@ -124,15 +117,18 @@ class CRM_Contribute_BAO_Query
             $query->_element['contribution_payment_instrument'] = 1;
             $query->_tables['civicrm_contribution'] = 1;
             $query->_tables['contribution_payment_instrument'] = 1;
-            $query->_whereTables['civicrm_contribution'] = 1;
-            $query->_whereTables['contribution_payment_instrument'] = 1;
         }
 
         if ( CRM_Utils_Array::value( 'check_number', $query->_returnProperties ) ) {
             $query->_select['contribution_check_number']  = "civicrm_contribution.check_number as contribution_check_number";
             $query->_element['contribution_check_number'] = 1;
             $query->_tables['civicrm_contribution'] = 1;
-            $query->_whereTables['civicrm_contribution'] = 1;
+        }
+        
+        if ( CRM_Utils_Array::value( 'contribution_campaign_id', $query->_returnProperties ) ) {
+            $query->_select['contribution_campaign_id']  = 'civicrm_contribution.campaign_id as contribution_campaign_id';
+            $query->_element['contribution_campaign_id'] = 1;
+            $query->_tables['civicrm_contribution'] = 1;
         }
     }
 
@@ -146,18 +142,20 @@ class CRM_Contribute_BAO_Query
                     $query->_useDistinct = true;
                 }
                 if ( $query->_params[$id][0] == 'contribution_test' ) {
-                    $isTest = true;
-                }
-                $grouping = $query->_params[$id][3];
-                self::whereClauseSingle( $query->_params[$id], $query );
-            }
-        }
+                     $isTest = true;
+                 }
+                 $grouping = $query->_params[$id][3];
+                 self::whereClauseSingle( $query->_params[$id], $query );
+             }
+         }
 
-        if ( $grouping !== null &&
-             ! $isTest ) {
-            $values = array( 'contribution_test', '=', 0, $grouping, 0 );
-            self::whereClauseSingle( $values, $query );
-        }
+         if ( $grouping !== null &&
+              ! $isTest &&
+              // we dont want to include all tests for sql OR CRM-7827
+              $query->getOperator( ) != 'OR' ) {
+             $values = array( 'contribution_test', '=', 0, $grouping, 0 );
+             self::whereClauseSingle( $values, $query );
+         }
     }
 
     static function whereClauseSingle( &$values, &$query ) 
@@ -169,6 +167,7 @@ class CRM_Contribute_BAO_Query
         if ( !empty ( $value ) ) {
             $quoteValue = "\"$value\"";
         }
+
 
         $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
 
@@ -189,7 +188,9 @@ class CRM_Contribute_BAO_Query
         case 'contribution_amount_high':
             // process min/max amount
             $query->numberRangeBuilder( $values,
-                                        'civicrm_contribution', 'contribution_amount', 'total_amount', 'Contribution Amount' );
+                                        'civicrm_contribution', 'contribution_amount',
+                                        'total_amount', 'Contribution Amount',
+                                        null );
             return;
 
         case 'contribution_total_amount':
@@ -268,6 +269,7 @@ class CRM_Contribute_BAO_Query
             $query->_tables['civicrm_contribution'] = $query->_whereTables['civicrm_contribution'] = 1;
             return;
 
+        case 'contribution_status':
         case 'contribution_status_id':
             if ( is_array( $value ) ) {
                 foreach ($value as $k => $v) {
@@ -411,7 +413,16 @@ class CRM_Contribute_BAO_Query
             $query->_qill[$grouping][]  = ts( 'Currency Type - %1', array( 1 => $currencySymbol[$value] ) );
             $query->_tables['civicrm_contribution'] = $query->_whereTables['civicrm_contribution'] = 1;
             return;
-
+            
+        case 'contribution_campaign_id':
+            require_once 'CRM/Campaign/BAO/Query.php';
+            $campParams = array( 'op'          => $op,
+                                 'campaign'    => $value,
+                                 'grouping'    => $grouping,
+                                 'tableName'   => 'civicrm_contribution' );
+            CRM_Campaign_BAO_Query::componentSearchClause( $campParams, $query );
+            return;
+            
         default: 
             //all other elements are handle in this case
             $fldName    = substr($name, 13 );
@@ -496,8 +507,8 @@ class CRM_Contribute_BAO_Query
             break;
             
         case 'contribution_note':
-            $from .= " $side JOIN civicrm_note civicrm_note_contribution ON ( civicrm_note_contribution.entity_table = 'civicrm_contribution' AND
-                                                        civicrm_contribution.id = civicrm_note_contribution.entity_id )";
+            $from .= " $side JOIN civicrm_note ON ( civicrm_note.entity_table = 'civicrm_contribution' AND
+                                                    civicrm_contribution.id = civicrm_note.entity_id )";
             break;
 
         case 'contribution_membership':
@@ -557,7 +568,8 @@ class CRM_Contribute_BAO_Query
                                 'contribution_status_id'  => 1,
                                 'contribution_recur_id'   => 1, 
                                 'amount_level'            => 1,
-                                'contribution_note'       => 1
+                                'contribution_note'       => 1,
+                                'contribution_campaign_id'=> 1
                                 );
 
             // also get all the custom contribution properties
@@ -677,6 +689,9 @@ class CRM_Contribute_BAO_Query
             }
         }
 
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch( $form, 'contribution_campaign_id' );
+        
         $form->assign( 'validCiviContribute', true );
     }
 
@@ -695,6 +710,11 @@ class CRM_Contribute_BAO_Query
         //add contribution table
         if ( CRM_Utils_Array::value( 'civicrm_product', $tables ) ) {
             $tables = array_merge( array( 'civicrm_contribution' => 1), $tables );
+        }
+
+        if ( CRM_Utils_Array::value( 'civicrm_contribution_product', $tables ) &&
+             !CRM_Utils_Array::value( 'civicrm_product', $tables ) ) {
+            $tables['civicrm_product'] = 1;
         }
     }
 }

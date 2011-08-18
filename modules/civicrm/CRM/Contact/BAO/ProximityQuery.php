@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -257,6 +257,8 @@ $earthDistanceSQL  <= $distance
                                 'postal_code'       => 1,
                                 'state_province_id' => 0,
                                 'country_id'        => 0,
+                                'state_province'    => 0,
+                                'country'           => 0,
                                 'distance_unit'     => 0 );
 
         $proximityAddress = array( );
@@ -321,6 +323,33 @@ $earthDistanceSQL  <= $distance
         $query->_qill[$grouping][]  = $qill;
         return;
     }
+
+    static function fixInputParams( &$input ) {
+        foreach ($input as $param){
+            if ($param[0] == 'prox_distance'){
+                // add prox_ prefix to these
+                $param_alter = array('street_address', 'city', 'postal_code', 'state_province', 'country');
+
+                foreach ($input as $key => $_param){
+                    if (in_array($_param[0], $param_alter)){
+                        $input[$key][0] = 'prox_' . $_param[0];
+
+                        // _id suffix where needed
+                        if ($_param[0] == 'country' || $_param[0] == 'state_province'){
+                            $input[$key][0] .= '_id';
+
+                            // flatten state_province array
+                            if (is_array($input[$key][2])){
+                                $input[$key][2] = $input[$key][2][0];
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+        }
+    }
+
 
 }
 

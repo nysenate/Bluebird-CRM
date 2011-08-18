@@ -28,16 +28,22 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
+ * @contributor Helmut Tischer <htischer@weihenstephan.org>
  * @package dompdf
- * @version 0.5.1
+
+ *
+ * Changes
+ * @contributor Helmut Tischer <htischer@weihenstephan.org>
+ * @version 20090622
+ * - bullet size proportional to font size, center position
  */
 
-/* $Id: list_bullet_frame_decorator.cls.php,v 1.5 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: list_bullet_frame_decorator.cls.php 325 2010-11-07 18:05:59Z fabien.menager $ */
 
 /**
  * Decorates frames for list bullet rendering
@@ -47,8 +53,11 @@
  */
 class List_Bullet_Frame_Decorator extends Frame_Decorator {
 
-  const BULLET_SIZE = 5;   // Size of graphical bullets
-  const BULLET_PADDING = 2.5; // Distance from bullet to text
+  const BULLET_PADDING = 1; // Distance from bullet to text in pt
+  // As fraction of font size (including descent). See also DECO_THICKNESS.
+  const BULLET_THICKNESS = 0.04;   // Thickness of bullet outline. Screen: 0.08, print: better less, e.g. 0.04
+  const BULLET_DESCENT = 0.3;  //descent of font below baseline. Todo: Guessed for now.
+  const BULLET_SIZE = 0.35;   // bullet diameter. For now 0.5 of font_size without descent.
   
   static $BULLET_TYPES = array("disc", "circle", "square");
   
@@ -59,17 +68,29 @@ class List_Bullet_Frame_Decorator extends Frame_Decorator {
   }
   
   function get_margin_width() {
-    return self::BULLET_SIZE + self::BULLET_PADDING;
+    $style = $this->_frame->get_style();
+    // Small hack to prevent extra indenting of list text on list_style_position === "inside"
+    // and on suppressed bullet
+    if ( $style->list_style_position === "outside" ||
+         $style->list_style_type === "none" )
+      return 0;
+    return $style->get_font_size()*self::BULLET_SIZE + 2 * self::BULLET_PADDING;
   }
 
+  //hits only on "inset" lists items, to increase height of box
   function get_margin_height() {
-    return self::BULLET_SIZE + self::BULLET_PADDING;
+    $style = $this->_frame->get_style();
+    if ( $style->list_style_type === 'none' ) return 0;
+    return $style->get_font_size() * self::BULLET_SIZE + 2 * self::BULLET_PADDING;
   }
 
   function get_width() {
-    return self::BULLET_SIZE + 2 * self::BULLET_PADDING;
+    return $this->get_margin_height();
+  }
+  
+  function get_height() {
+    return $this->get_margin_height();
   }
   
   //........................................................................
 }
-?>

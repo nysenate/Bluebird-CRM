@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -82,10 +82,38 @@ class CRM_Contact_Form_Task_PDFLetterCommon
      */
     static function buildQuickForm( &$form )
     {
+        require_once 'CRM/Core/BAO/PdfFormat.php';
+        $form->add( 'static', 'pdf_format_header', NULL, ts('Page Format') );
+        $form->add( 'select', 'format_id', ts( 'Select Format' ),
+                     array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PdfFormat::getList( true ), false,
+                     array('onChange' => "selectFormat( this.value, false );") );
+        require_once 'CRM/Core/BAO/PaperSize.php';
+        $form->add( 'select', 'paper_size', ts( 'Paper Size' ), 
+                     array( 0 => ts( '- default -' ) ) + CRM_Core_BAO_PaperSize::getList( true ), false,
+                     array('onChange' => "selectPaper( this.value ); showUpdateFormatChkBox();") );
+        $form->add( 'static', 'paper_dimensions', NULL, ts('Width x Height') );
+        $form->add( 'select', 'orientation', ts('Orientation'), CRM_Core_BAO_PdfFormat::getPageOrientations(), false,
+                     array('onChange' => "updatePaperDimensions(); showUpdateFormatChkBox();") );
+        $form->add( 'select', 'metric', ts('Unit of Measure'), CRM_Core_BAO_PdfFormat::getUnits(), false,
+                     array('onChange' => "selectMetric( this.value );") );
+        $form->add( 'text', 'margin_left', ts('Left Margin'),
+                     array( 'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();" ), true );
+        $form->add( 'text', 'margin_right', ts('Right Margin'),
+                     array( 'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();" ), true );
+        $form->add( 'text', 'margin_top', ts('Top Margin'),
+                     array( 'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();" ), true );
+        $form->add( 'text', 'margin_bottom', ts('Bottom Margin'),
+                     array( 'size' => 8, 'maxlength' => 8, 'onkeyup' => "showUpdateFormatChkBox();" ), true );
+        $form->add( 'checkbox', 'bind_format', ts('Always use this Page Format with the selected Template') );
+        $form->add( 'checkbox', 'update_format', ts('Update Page Format (this will affect all templates that use this format)') );
+
+        $form->assign('useThisPageFormat', ts('Always use this Page Format with the new template?') );
+        $form->assign('useSelectedPageFormat', ts('Should the new template always use the selected Page Format?') );
         $form->assign('totalSelectedContacts',count($form->_contactIds));
 
         require_once "CRM/Mailing/BAO/Mailing.php";
         CRM_Mailing_BAO_Mailing::commonLetterCompose( $form );
+
         if ( $form->_single ){
             $cancelURL   = CRM_Utils_System::url('civicrm/contact/view',
                                                  "reset=1&cid={$form->_cid}&selectedChild=activity",
@@ -116,6 +144,16 @@ class CRM_Contact_Form_Task_PDFLetterCommon
         $form->addFormRule( array( 'CRM_Contact_Form_Task_PDFLetterCommon', 'formRule' ), $form );
     }
 
+    /**
+     * Set default values
+     */
+    static function setDefaultValues( ) {
+        require_once 'CRM/Core/BAO/PdfFormat.php';
+        $defaultFormat = CRM_Core_BAO_PdfFormat::getDefaultValues();
+        $defaultFormat['format_id'] = $defaultFormat['id'];
+        return $defaultFormat;
+    }
+
     /** 
      * form rule  
      *  
@@ -136,6 +174,10 @@ class CRM_Contact_Form_Task_PDFLetterCommon
         if( CRM_Utils_Array::value('saveTemplate',$fields) && empty($fields['saveTemplateName']) ){
             $errors['saveTemplateName'] = ts("Enter name to save message template");
         }
+        if ( ! is_numeric( $fields['margin_left'] ) )   $errors['margin_left']   = 'Margin must be numeric';
+        if ( ! is_numeric( $fields['margin_right'] ) )  $errors['margin_right']  = 'Margin must be numeric';
+        if ( ! is_numeric( $fields['margin_top'] ) )    $errors['margin_top']    = 'Margin must be numeric';
+        if ( ! is_numeric( $fields['margin_bottom'] ) ) $errors['margin_bottom'] = 'Margin must be numeric';
         return empty($errors) ? true : $errors;
     }
     
@@ -157,6 +199,10 @@ class CRM_Contact_Form_Task_PDFLetterCommon
                                       'msg_subject' => NULL,
                                       'is_active'   => true );
 
+            $messageTemplate['pdf_format_id'] = 'null';
+            if ( CRM_Utils_Array::value( 'bind_format', $formValues ) && $formValues['format_id'] > 0 ) {
+                $messageTemplate['pdf_format_id'] = $formValues['format_id'];
+            }
             if ( $formValues['saveTemplate'] ) {
                 $messageTemplate['msg_title'] = $formValues['saveTemplateName'];
                 CRM_Core_BAO_MessageTemplates::add( $messageTemplate );
@@ -168,12 +214,21 @@ class CRM_Contact_Form_Task_PDFLetterCommon
                 CRM_Core_BAO_MessageTemplates::add( $messageTemplate );
             }
         }
+        else if ( $formValues['template'] > 0 ) {
+            if ( CRM_Utils_Array::value( 'bind_format', $formValues ) && $formValues['format_id'] > 0 ) {
+                $query = "UPDATE civicrm_msg_template SET pdf_format_id = {$formValues['format_id']} WHERE id = {$formValues['template']}";
+            } else {
+                $query = "UPDATE civicrm_msg_template SET pdf_format_id = NULL WHERE id = {$formValues['template']}";
+            }
+            CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
+        }
+        if ( CRM_Utils_Array::value( 'update_format', $formValues ) ) {
+            require_once 'CRM/Core/BAO/PdfFormat.php';
+            $bao = new CRM_Core_BAO_PdfFormat();
+            $bao->savePdfFormat( $formValues, $formValues['format_id'] );
+        }
 
-
-
-        require_once 'dompdf/dompdf_config.inc.php';
-        $html = '<html><head><style>body { margin: 56px; }</style></head><body>';
-        require_once 'api/v2/Contact.php';
+        $html = array();
         require_once 'CRM/Utils/Token.php';
 
         $tokens = array( );
@@ -196,20 +251,21 @@ class CRM_Contact_Form_Task_PDFLetterCommon
             }
         }
                     
+        require_once 'api/v2/utils.php';
         require_once 'CRM/Mailing/BAO/Mailing.php';
         $mailing = new CRM_Mailing_BAO_Mailing();
-        if ( defined( 'CIVICRM_MAIL_SMARTY' ) ) {
+        if ( defined( 'CIVICRM_MAIL_SMARTY' ) &&
+             CIVICRM_MAIL_SMARTY ) {
             require_once 'CRM/Core/Smarty/resources/String.php';
             civicrm_smarty_register_string_resource( );
         }
 
-        $first = TRUE;
-
+        $skipOnHold   = isset( $form->skipOnHold ) ? $form->skipOnHold : false;
+        $skipDeceased = isset( $form->skipDeceased ) ? $form->skipDeceased : true;
         foreach ($form->_contactIds as $item => $contactId) {
             $params  = array( 'contact_id'  => $contactId );
-
-			list( $contact ) = $mailing->getDetails($params, $returnProperties, false );
             
+			list( $contact ) = $mailing->getDetails($params, $returnProperties, $skipOnHold, $skipDeceased );
             if ( civicrm_error( $contact ) ) {
                 $notSent[] = $contactId;
                 continue;
@@ -218,23 +274,17 @@ class CRM_Contact_Form_Task_PDFLetterCommon
 			$tokenHtml    = CRM_Utils_Token::replaceContactTokens( $html_message, $contact[$contactId], true       , $messageToken);
             $tokenHtml    = CRM_Utils_Token::replaceHookTokens   ( $tokenHtml, $contact[$contactId]   , $categories, true         );
                 
-            if ( defined( 'CIVICRM_MAIL_SMARTY' ) ) {
+            if ( defined( 'CIVICRM_MAIL_SMARTY' ) &&
+                 CIVICRM_MAIL_SMARTY ) {
             	$smarty = CRM_Core_Smarty::singleton( );
             	// also add the contact tokens to the template
             	$smarty->assign_by_ref( 'contact', $contact );
             	$tokenHtml = $smarty->fetch( "string:$tokenHtml" );
             }
 
-            if ( $first == TRUE ) {
-              $first = FALSE;
-              $html .= $tokenHtml;
-            } else {
-              $html .= "<div STYLE='page-break-after: always'></div>$tokenHtml";
-            }
-
+            $html[] = $tokenHtml;
         }
         
-        $html .= '</body></html>';
         require_once 'CRM/Activity/BAO/Activity.php';
         
         $session = CRM_Core_Session::singleton( );
@@ -270,13 +320,9 @@ class CRM_Contact_Form_Task_PDFLetterCommon
         
         
         require_once 'CRM/Utils/PDF/Utils.php';
-        CRM_Utils_PDF_Utils::html2pdf( $html, "CiviLetter.pdf", 'portrait', 'letter' ); 
+        CRM_Utils_PDF_Utils::html2pdf( $html, "CiviLetter.pdf", false, $formValues );
 
-        // we need to call the hook manually here since we redirect and never 
-        // go back to CRM/Core/Form.php
-        CRM_Utils_Hook::postProcess( get_class( $form ),
-                                     $form );
-
+        $form->postProcessHook( );
 
         CRM_Utils_System::civiExit( 1 );
     }//end of function

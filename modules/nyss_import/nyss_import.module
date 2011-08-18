@@ -1,5 +1,5 @@
 <?php 
-function nyss_import_civicrm_import( $usage, &$objectRef, $params ) {
+function nyss_import_civicrm_import( $object, $usage, &$objectRef, &$params ) {
 	
 	//during import, accept special tag_import column for processing
 	$cType           = $objectRef->_contactType;

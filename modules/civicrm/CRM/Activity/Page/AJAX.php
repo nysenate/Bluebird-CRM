@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  *
  */
 
@@ -144,9 +144,80 @@ class CRM_Activity_Page_AJAX
         $caseActivity->activity_id = $mainActivityId;
         $caseActivity->save( );
         $error_msg = $caseActivity->_lastError;
-		$caseActivity->free( ); 
+        $caseActivity->free( ); 
+
+        // attach custom data to the new activity
+        require_once 'CRM/Core/BAO/CustomValueTable.php';
+        require_once 'CRM/Core/BAO/File.php';
+        $customParams = $htmlType = array( );
+        $customValues = CRM_Core_BAO_CustomValueTable::getEntityValues( $activityID, 'Activity' );
+
+        $fieldIds = implode( ', ', array_keys( $customValues ) );
+        $sql      = "SELECT id FROM civicrm_custom_field WHERE html_type = 'File' AND id IN ( {$fieldIds} )";
+        $result   = CRM_Core_DAO::executeQuery( $sql );
         
+        while ( $result->fetch( ) ) {
+            $htmlType[] = $result->id;
+        }
+                
+        foreach ( $customValues as $key => $value ) {
+            if ( $value ) {
+                if ( in_array( $key, $htmlType ) ) {
+                    $fileValues = CRM_Core_BAO_File::path( $value, $activityID );
+                    $customParams["custom_{$key}_-1"] = array( 'name' => $fileValues[0],
+                                                               'path' => $fileValues[1] );
+                } else {
+                    $customParams["custom_{$key}_-1"] = $value;
+                }
+            }
+        }
+        CRM_Core_BAO_CustomValueTable::postProcess( $customParams, CRM_Core_DAO::$_nullArray, 'civicrm_activity',
+                                                    $mainActivityId, 'Activity' );
+        
+        // copy activity attachments ( if any )
+        require_once "CRM/Core/BAO/File.php";
+        CRM_Core_BAO_File::copyEntityFile( 'civicrm_activity', $activityID, 'civicrm_activity', $mainActivityId );
+            
         echo json_encode(array('error_msg' => $error_msg));
+        CRM_Utils_System::civiExit( );
+    }
+    
+    static function getContactActivity( ) 
+    {
+        $contactID = CRM_Utils_Type::escape( $_POST['contact_id'], 'Integer' );
+        $context   = CRM_Utils_Type::escape( CRM_Utils_Array::value( 'context', $_GET ), 'String' );
+    
+        $sortMapper  = array( 0 => 'activity_type', 1 => 'subject', 2 => 'source_contact_name', 
+                              3 => '', 4 => '', 5 => 'activity_date_time', 6 => 'status_id'  );
+
+        $sEcho       = CRM_Utils_Type::escape($_REQUEST['sEcho'], 'Integer');
+        $offset      = isset($_REQUEST['iDisplayStart'])? CRM_Utils_Type::escape($_REQUEST['iDisplayStart'], 'Integer'):0;
+        $rowCount    = isset($_REQUEST['iDisplayLength'])? CRM_Utils_Type::escape($_REQUEST['iDisplayLength'], 'Integer'):25; 
+        $sort        = isset($_REQUEST['iSortCol_0'] )? CRM_Utils_Array::value( CRM_Utils_Type::escape($_REQUEST['iSortCol_0'],'Integer'), $sortMapper ): null;
+        $sortOrder   = isset($_REQUEST['sSortDir_0'] )? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String'):'asc';
+
+        $params    = $_POST;
+        if ( $sort && $sortOrder ) {
+            $params['sortBy']  = $sort . ' '. $sortOrder;
+        }
+        
+        $params['page'] = ($offset/$rowCount) + 1;
+        $params['rp']   = $rowCount;
+
+        $params['contact_id'] = $contactID;
+        $params['context'   ] = $context;
+        
+        // get the contact activities
+        require_once 'CRM/Activity/BAO/Activity.php';
+        $activities = CRM_Activity_BAO_Activity::getContactActivitySelector( $params );
+
+        require_once "CRM/Utils/JSON.php";
+        $iFilteredTotal = $iTotal =  $params['total'];
+        $selectorElements = array( 'activity_type', 'subject', 'source_contact',
+                                   'target_contact', 'assignee_contact',
+                                   'activity_date', 'status', 'links', 'class' );
+
+        echo CRM_Utils_JSON::encodeDataTableSelector( $activities, $sEcho, $iTotal, $iFilteredTotal, $selectorElements );
         CRM_Utils_System::civiExit( );
     }
 }

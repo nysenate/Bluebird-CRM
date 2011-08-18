@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -122,7 +122,7 @@ class CRM_Case_Form_CaseView extends CRM_Core_Form
         $returnProperties = array( 'case_type_id', 'subject', 'status_id', 'start_date' );
         CRM_Core_DAO::commonRetrieve('CRM_Case_BAO_Case', $params, $values, $returnProperties );
                 
-        $values['case_type_id'] = explode( CRM_Case_BAO_Case::VALUE_SEPERATOR, 
+        $values['case_type_id'] = explode( CRM_Core_DAO::VALUE_SEPARATOR,
                                            CRM_Utils_Array::value( 'case_type_id' , $values ) );
 
         require_once 'CRM/Case/PseudoConstant.php';

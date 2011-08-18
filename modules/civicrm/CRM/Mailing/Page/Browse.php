@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -134,6 +134,8 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page
         if ( isset( $_GET['runJobs'] ) || CRM_Utils_Array::value( '2', $newArgs ) == 'queue' ) {
             require_once 'CRM/Mailing/BAO/Job.php';
             $config =& CRM_Core_Config::singleton();
+
+
             CRM_Mailing_BAO_Job::runJobs_pre( $config->mailerJobSize );
             CRM_Mailing_BAO_Job::runJobs();
             CRM_Mailing_BAO_Job::runJobs_post();
@@ -316,6 +318,12 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page
              $this->_sortByCharacter ) {
             $clauses[] = 'name LIKE %2';
             $params[2] = array( $this->_sortByCharacter . '%', 'String' );
+        }
+        
+        $campainIds = $this->get( 'campaign_id' );
+        if ( !CRM_Utils_System::isNull( $campainIds ) ) {
+            if ( !is_array( $campainIds ) ) $campaignIds = array( $campaignIds );
+            $clauses[] = '( campaign_id IN ( ' . implode( ' , ', array_values( $campainIds ) ). ' ) )';
         }
 
         return implode( ' AND ', $clauses );

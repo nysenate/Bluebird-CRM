@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: frame_factory.cls.php,v 1.7 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: frame_factory.cls.php 356 2011-01-28 08:56:10Z fabien.menager $ */
 
 /**
  * Contains frame decorating logic
@@ -52,6 +52,12 @@
  */
 class Frame_Factory {
 
+  /**
+   * Decorate the Frame
+   * 
+   * @param $root Frame The frame to decorate
+   * @param $dompdf DOMPDF The dompdf instance
+   */
   static function decorate_root(Frame $root, DOMPDF $dompdf) {
     $frame = new Page_Frame_Decorator($root, $dompdf);
     $frame->set_reflower( new Page_Frame_Reflower($frame) );
@@ -59,11 +65,21 @@ class Frame_Factory {
     return $frame;
   }
 
-  // FIXME: this is admittedly a little smelly...
-  static function decorate_frame(Frame $frame, $dompdf) {
+  /**
+   * Decorate a Frame 
+   * 
+   * @param $root Frame The frame to decorate
+   * @param $dompdf DOMPDF The dompdf instance
+   * @return Frame_Decorator
+   * FIXME: this is admittedly a little smelly...
+   */ 
+  static function decorate_frame(Frame $frame, DOMPDF $dompdf) {
     if ( is_null($dompdf) )
       throw new Exception("foo");
-    switch ($frame->get_style()->display) {
+      
+    $style = $frame->get_style();
+    
+    switch ($style->display) {
       
     case "block":
       $positioner = "Block";        
@@ -79,12 +95,19 @@ class Frame_Factory {
 
     case "inline":
       $positioner = "Inline";
-      if ( $frame->get_node()->nodeName == "#text" ) {
+      if ( $frame->get_node()->nodeName === "#text" ) {
         $decorator = "Text";
         $reflower = "Text";
-      } else {
-        $decorator = "Inline";
-        $reflower = "Inline";
+      } 
+      else {
+        if ( DOMPDF_ENABLE_CSS_FLOAT && $style->float !== "none" ) {
+          $decorator = "Block";
+          $reflower = "Block";
+        }
+        else {
+          $decorator = "Inline";
+          $reflower = "Inline";
+        }
       }
       break;   
 
@@ -127,12 +150,12 @@ class Frame_Factory {
       break;
 
     case "-dompdf-list-bullet":
-      if ( $frame->get_style()->list_style_position == "inside" )
+      if ( $style->list_style_position === "inside" )
         $positioner = "Inline";
       else        
         $positioner = "List_Bullet";
 
-      if ( $frame->get_style()->list_style_image != "none" )
+      if ( $style->list_style_image !== "none" )
         $decorator = "List_Bullet_Image";
       else
         $decorator = "List_Bullet";
@@ -159,9 +182,16 @@ class Frame_Factory {
       $decorator = "Null";
       $reflower = "Null";
       break;
-
     }
 
+    $position = $style->position;
+    
+    if ( $position === "absolute" )
+      $positioner = "Absolute";
+
+    else if ( $position === "fixed" )
+      $positioner = "Fixed";
+  
     $positioner .= "_Positioner";
     $decorator .= "_Frame_Decorator";
     $reflower .= "_Frame_Reflower";
@@ -170,37 +200,8 @@ class Frame_Factory {
     $deco->set_positioner( new $positioner($deco) );
     $reflow = new $reflower($deco);
     
-    // Generated content is a special case
-    if ( $frame->get_node()->nodeName == "_dompdf_generated" ) {
-      // Decorate the reflower
-      $gen = new Generated_Frame_Reflower( $deco );
-      $gen->set_reflower( $reflow );
-      $reflow = $gen;
-    }
-    
     $deco->set_reflower( $reflow );
-
-    // Images are a special case
-//    if ( $frame->get_node()->nodeName == "img" ) {
-
-//       // FIXME: This is a hack
-//       $node =$frame->get_node()->ownerDocument->createElement("img_sub");
-//       $node->setAttribute("src", $frame->get_node()->getAttribute("src"));
-      
-//       $img_frame = new Frame( $node );
-
-//       $style = $frame->get_style()->get_stylesheet()->create_style();
-//       $style->inherit($frame->get_style());
-//       $img_frame->set_style( $style );
-
-//       $img_deco = new Image_Frame_Decorator($img_frame, $dompdf);
-//       $img_deco->set_reflower( new Image_Frame_Reflower($img_deco) );
-//       $deco->append_child($img_deco);
-
-//     }   
     
     return $deco;
   }
-  
 }
-?>

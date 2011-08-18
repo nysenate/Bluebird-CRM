@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -96,6 +96,15 @@
                <td class="label">{$form.wysiwyg_editor.label}</td>
                <td>{$form.wysiwyg_editor.html}</td>
             </tr>
+            {if $form.wysiwyg_input_format.html}
+            <tr id="crm-preferences-display-form-block-wysiwyg_input_format" style="display:none;">
+                <td class="label">{$form.wysiwyg_input_format.label}</td>
+                <td>
+                    {$form.wysiwyg_input_format.html}{literal}<script type="text/javascript">cj(document).ready(function() { if (cj('#wysiwyg_editor').val() == 4) cj('#crm-preferences-display-form-block-wysiwyg_input_format').show(); });</script>{/literal}
+                    <br /><span class="description">{ts}You will need to enable and configure several modules if you want to allow users to upload images while using a Druapl Default Editor.{/ts} {docURL page="Configuring CiviCRM to Use the Default Drupal Editor"}</span>
+                </td>
+            </tr>    
+            {/if}
             <tr class="crm-preferences-display-form-block-description">
                <td>&nbsp;</td>
                <td class="description">{ts}Select the HTML WYSIWYG Editor provided for fields that allow HTML formatting. Select 'Textarea' if you don't want to provide a WYSIWYG Editor (users will type text and / or HTML code into plain text fields).{/ts} {help id="id-wysiwyg_editor"}

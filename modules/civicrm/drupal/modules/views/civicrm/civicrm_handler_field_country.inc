@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,6 +33,7 @@
 
 class civicrm_handler_field_country extends views_handler_field {
     static $_countries;
+    static $_countries_full;
 
     function construct( ) {
         if ( ! self::$_countries ) {
@@ -41,6 +42,7 @@ class civicrm_handler_field_country extends views_handler_field {
             }
             require_once 'CRM/Core/PseudoConstant.php';
             self::$_countries = CRM_Core_PseudoConstant::countryIsoCode( );
+            self::$_countries_full = CRM_Core_PseudoConstant::country( );
         }
     }
 
@@ -51,7 +53,27 @@ class civicrm_handler_field_country extends views_handler_field {
             return null;
         }
 
-        return self::$_countries[$values->{$this->field_alias}];
+        if( $this->options['country_display'] == 1 ) {
+            return self::$_countries[$values->{$this->field_alias}];
+        } else {
+            return self::$_countries_full[$values->{$this->field_alias}];
+        }
+    }
+    
+    function option_definition() {
+        $options = parent::option_definition();
+        $options['country_display'] = array('default' => '');
+        return $options;
+    }
+    
+    function options_form(&$form, &$form_state) {
+        parent::options_form($form, $form_state);
+        $form['country_display'] = array(
+                                         '#type' => 'radios',
+                                         '#title' => 'Type of display for country field',
+                                         '#options' => array(1 => 'Display two letter country code', 2 => 'Display full country name'),
+                                         '#description' => t('Display full or abbreviated country name'),
+                                         '#default_value' => $this->options['country_display']
+                                         );
     }
 }
-?>

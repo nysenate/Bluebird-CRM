@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -114,7 +114,7 @@ class CRM_Utils_ICalendar
         $lang = $config->lcMessages;
         header( "Content-Language: $lang" );
         // header( "Content-Type: $content_type; charset=$charset; profile=\"ICalendar\"" );
-        header( "Content-Type: $content_type" );
+        header( "Content-Type: $content_type; charset=$charset" );
         
         if ( $content_type == 'text/calendar') {
             header('Content-Length: ' . strlen($calendar));

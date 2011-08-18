@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,15 +29,12 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
 class CRM_Contact_BAO_Contact_Permission {
-
-    const
-        NUM_CONTACTS_TO_INSERT = 200;
 
     /**
      * check if the logged in user has permissions for the operation type
@@ -68,7 +65,7 @@ class CRM_Contact_BAO_Contact_Permission {
         require_once 'CRM/ACL/API.php';
         $permission = CRM_ACL_API::whereClause( $type, $tables, $whereTables );
 
-        require_once "CRM/Contact/BAO/Query.php";
+        require_once 'CRM/Contact/BAO/Query.php';
         $from       = CRM_Contact_BAO_Query::fromClause( $whereTables );
 
         $query = "
@@ -129,17 +126,19 @@ AND    $operationClause
         require_once 'CRM/ACL/API.php';
         $permission = CRM_ACL_API::whereClause( $type, $tables, $whereTables, $userID );
 
-        require_once "CRM/Contact/BAO/Query.php";
+        require_once 'CRM/Contact/BAO/Query.php';
         $from       = CRM_Contact_BAO_Query::fromClause( $whereTables );
 
-        $count = CRM_Core_DAO::singleValueQuery("SELECT count(DISTINCT contact_a.id) $from WHERE $permission");
-        for($i=0; $i < $count; $i+=self::NUM_CONTACTS_TO_INSERT) {
+        require_once 'CRM/Core/DAO.php';
+        $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) $from WHERE $permission GROUP BY contact_a.id");
+        for($i=0; $i < $count; $i+=CRM_Core_DAO::BULK_INSERT_COUNT) {
             CRM_Core_DAO::executeQuery( "
                 INSERT INTO civicrm_acl_contact_cache ( user_id, contact_id, operation )
-                    SELECT DISTINCT $userID as user_id, contact_a.id as contact_id, '$operation' as operation
+                    SELECT $userID as user_id, contact_a.id as contact_id, '$operation' as operation
                     $from
                     WHERE $permission
-                    LIMIT ".self::NUM_CONTACTS_TO_INSERT." OFFSET $i
+                    GROUP BY contact_a.id
+                    LIMIT ".CRM_Core_DAO::BULK_INSERT_COUNT." OFFSET $i
                 ON DUPLICATE KEY UPDATE
                     user_id=VALUES(user_id),
                     contact_id=VALUES(contact_id),
@@ -152,9 +151,46 @@ AND    $operationClause
         return;
     }
 
+    /**
+     * Function to check if there are any contacts in cache table
+     *
+     * @param int     $id     contact id
+     * @param string  $type   the type of operation (view|edit)
+     *
+     * @return boolean
+     * @access public
+     * @static
+     */
+    static function hasContactsInCache( $type = CRM_Core_Permission::VIEW )
+    {
+        $session   = CRM_Core_Session::singleton( );
+        $contactID = $session->get( 'userID' );
+
+        if ( $type = CRM_Core_Permission::VIEW ) {
+            $operationClause = " operation IN ( 'Edit', 'View' ) ";
+            $operation       = 'View';
+        } else {
+            $operationClause = " operation = 'Edit' ";
+            $operation       = 'Edit';
+        }
+
+        // fill cache
+        self::cache( $contactID );
+
+        $sql = "
+SELECT id
+FROM   civicrm_acl_contact_cache
+WHERE  user_id = %1
+AND    $operationClause LIMIT 1";
+
+        $params = array( 1 => array( $contactID, 'Integer' ) );
+        return (bool) CRM_Core_DAO::singleValueQuery( $sql, $params );
+    }
+
     static function cacheClause( $contactAlias = 'contact_a', $contactID = null ) {
-        if ( CRM_Core_Permission::check( 'view all contacts' ) ) {
-            if (is_array($contactAlias)) {
+        if ( CRM_Core_Permission::check( 'view all contacts' ) ||
+             CRM_Core_Permission::check( 'edit all contacts' ) ) {
+            if ( is_array( $contactAlias ) ) {
                 $wheres = array();
                 foreach ($contactAlias as $alias) {
                     // CRM-6181
@@ -224,6 +260,7 @@ WHERE  (( contact_id_a = %1 AND contact_id_b = %2 AND is_permission_a_b = 1 ) OR
         ( contact_id_a = %2 AND contact_id_b = %1 AND is_permission_b_a = 1 )) AND
        (contact_id_a NOT IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1)) AND
        (contact_id_b NOT IN (SELECT id FROM civicrm_contact WHERE is_deleted = 1))
+  AND  ( civicrm_relationship.is_active = 1 )
 ";
             $params = array( 1 => array( $contactID        , 'Integer' ),
                              2 => array( $selectedContactID, 'Integer' ) );
@@ -232,31 +269,34 @@ WHERE  (( contact_id_a = %1 AND contact_id_b = %2 AND is_permission_a_b = 1 ) OR
     }
 
 
-    static function validateOnlyChecksum( $contactID, &$form ) {
+    static function validateOnlyChecksum( $contactID, &$form, $redirect = true ) {
         // check if this is of the format cs=XXX
         require_once 'CRM/Contact/BAO/Contact/Utils.php';
         require_once 'CRM/Utils/Request.php';
         require_once 'CRM/Utils/System.php';
         if ( !  CRM_Contact_BAO_Contact_Utils::validChecksum( $contactID,
                                                               CRM_Utils_Request::retrieve( 'cs', 'String' , $form, false ) ) ) {
-            // also set a message in the UF framework
+            if ( $redirect ) {
+                // also set a message in the UF framework
+                $message = ts( 'You do not have permission to edit this contact record. Contact the site administrator if you need assistance.' );
+                require_once 'CRM/Utils/System.php';
+                CRM_Utils_System::setUFMessage( $message );
 
-            $message = ts( 'You do not have permission to edit this contact record. Contact the site administrator if you need assistance.' );
-            require_once 'CRM/Utils/System.php';
-            CRM_Utils_System::setUFMessage( $message );
-
-            $config = CRM_Core_Config::singleton( );
-            CRM_Core_Error::statusBounce( $message,
-                                          $config->userFrameworkBaseURL );
-            // does not come here, we redirect in the above statement
+                $config = CRM_Core_Config::singleton( );
+                CRM_Core_Error::statusBounce( $message,
+                                              $config->userFrameworkBaseURL );
+                // does not come here, we redirect in the above statement
+            }
+            return false;
         }
         return true;
     }
 
-    static function validateChecksumContact( $contactID, &$form ) {
+    static function validateChecksumContact( $contactID, &$form, $redirect = true ) {
+        require_once 'CRM/Core/Permission.php';
         if ( ! self::allow( $contactID, CRM_Core_Permission::EDIT ) ) {
             // check if this is of the format cs=XXX
-            return self::validateOnlyChecksum( $contactID, $form );
+            return self::validateOnlyChecksum( $contactID, $form, $redirect );
         }
         return true;
     }

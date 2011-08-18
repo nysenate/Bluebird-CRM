@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,25 +28,6 @@
 {/if}
 
 <div id="crm-container" lang="{$config->lcMessages|truncate:2:"":true}" xml:lang="{$config->lcMessages|truncate:2:"":true}">
-
-{* we should uncomment below code only when we are experimenting with new css for specific pages and comment css inclusion in civicrm.module*}
-{*if $config->customCSSURL}
-    <link rel="stylesheet" href="{$config->customCSSURL}" type="text/css" />
-{else}
-    {assign var="revamp" value=0}
-    {foreach from=$config->revampPages item=page}
-        {if $page eq $tplFile}
-            {assign var="revamp" value=1}
-        {/if}
-    {/foreach}
-    
-    {if $revamp eq 0}
-        <link rel="stylesheet" href="{$config->resourceBase}css/civicrm.css" type="text/css" />
-    {else}
-        <link rel="stylesheet" href="{$config->resourceBase}css/civicrm-new.css" type="text/css" />
-    {/if}
-    <link rel="stylesheet" href="{$config->resourceBase}css/extras.css" type="text/css" />
-{/if*}
 
 {include file="CRM/common/action.tpl"}
 {if $buildNavigation }

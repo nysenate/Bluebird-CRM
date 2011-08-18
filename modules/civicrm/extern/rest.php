@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,11 +30,11 @@ session_start( );
 
 require_once '../civicrm.config.php';
 require_once 'CRM/Core/Config.php';
+$config = CRM_Core_Config::singleton();
 
 require_once 'CRM/Utils/REST.php';
 $rest = new CRM_Utils_REST();
 
-$config = CRM_Core_Config::singleton();
 $rest->loadCMSBootstrap( );
 
 if ( isset( $_GET['json'] ) &&
@@ -44,6 +44,6 @@ if ( isset( $_GET['json'] ) &&
     header( 'Content-Type: text/xml' );
 }
 
-echo $rest->run( $config );
+echo $rest->run( );
 
 

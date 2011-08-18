@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -164,11 +164,12 @@ class CRM_Core_DAO_OpenID extends CRM_Core_DAO
                 'location_type_id' => array(
                     'name' => 'location_type_id',
                     'type' => CRM_Utils_Type::T_INT,
+                    'title' => ts('OpenID Location Type') ,
                 ) ,
                 'openid' => array(
                     'name' => 'openid',
                     'type' => CRM_Utils_Type::T_STRING,
-                    'title' => ts('Openid') ,
+                    'title' => ts('OpenID') ,
                     'maxlength' => 255,
                     'size' => CRM_Utils_Type::HUGE,
                     'import' => true,
@@ -187,6 +188,7 @@ class CRM_Core_DAO_OpenID extends CRM_Core_DAO
                 'is_primary' => array(
                     'name' => 'is_primary',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
+                    'title' => ts('Is OpenID Primary?') ,
                 ) ,
             );
         }

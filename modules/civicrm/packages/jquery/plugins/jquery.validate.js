@@ -145,7 +145,8 @@ $.extend($.fn, {
 			{},
 			$.validator.metadataRules(element),
 			$.validator.classRules(element),
-			$.validator.attributeRules(element),
+			// commenting out default validations, CRM-8334
+            // $.validator.attributeRules(element),
 			$.validator.staticRules(element)
 		), element);
 
@@ -739,6 +740,8 @@ $.extend($.validator, {
 	},
 
 	classRuleSettings: {
+        /*
+        // commenting all default validation rules
 		required: {required: true},
 		email: {email: true},
 		url: {url: true},
@@ -749,6 +752,7 @@ $.extend($.validator, {
 		numberDE: {numberDE: true},
 		digits: {digits: true},
 		creditcard: {creditcard: true}
+        */
 	},
 
 	addClassRules: function(className, rules) {

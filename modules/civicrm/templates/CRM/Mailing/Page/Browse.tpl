@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -38,14 +38,27 @@
     <table class="selector">
       <thead class="sticky">
       {foreach from=$columnHeaders item=header}
-        <th>
-          {if $header.sort}
-            {assign var='key' value=$header.sort}
-            {$sort->_response.$key.link}
-          {else}
-            {$header.name}
-          {/if}
-        </th>
+        {if $unscheduled} {* Hide columnns not relevant for unscheduled mailings. *}
+            {if $header.sort NEQ 'scheduled_by' && $header.sort NEQ 'scheduled_date' && $header.sort NEQ 'start_date' & $header.sort NEQ 'end_date'}
+            <th>
+              {if $header.sort}
+                {assign var='key' value=$header.sort}
+                {$sort->_response.$key.link}
+              {else}
+                {$header.name}
+              {/if}
+            </th>
+            {/if}
+        {elseif $header.sort NEQ 'created_date'}
+            <th>
+              {if $header.sort}
+                {assign var='key' value=$header.sort}
+                {$sort->_response.$key.link}
+              {else}
+                {$header.name}
+              {/if}
+            </th>
+        {/if}
       {/foreach}
       </thead>
 
@@ -55,10 +68,17 @@
         <td class="crm-mailing-name">{$row.name}</td>
         <td class="crm-mailing-status crm-mailing_status-{$row.status}">{$row.status}</td>
         <td class="crm-mailing-created_by"><a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.created_id}>{$row.created_by}</a></td>
-        <td class="crm-mailing-scheduled_by"><a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id}>{$row.scheduled_by}</a></td>	
-        <td class="crm-mailing-scheduled">{$row.scheduled}</td>
-        <td class="crm-mailing-start">{$row.start}</td>
-        <td class="crm-mailing-end">{$row.end}</td>
+        {if $unscheduled}
+            <td class="crm-mailing-created_date">{$row.created_date}</td>
+        {else}
+            <td class="crm-mailing-scheduled_by"><a href ={crmURL p='civicrm/contact/view' q="reset=1&cid="}{$row.scheduled_id}>{$row.scheduled_by}</a></td>	
+            <td class="crm-mailing-scheduled">{$row.scheduled}</td>
+            <td class="crm-mailing-start">{$row.start}</td>
+            <td class="crm-mailing-end">{$row.end}</td>
+        {/if}
+	    {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+	        <td class="crm-mailing-campaign">{$row.campaign}</td>
+	    {/if}
         <td>{$row.action|replace:'xx':$row.id}</td>
       </tr>
       {/foreach}

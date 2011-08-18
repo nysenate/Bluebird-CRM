@@ -28,16 +28,23 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
+ * @contributor Helmut Tischer <htischer@weihenstephan.org>
  * @package dompdf
- * @version 0.5.1
+ *
+ * Changes
+ * @contributor Helmut Tischer <htischer@weihenstephan.org>
+ * @version 0.5.1.htischer.20090507
+ * - Fix image size as percent of wrapping box
+ * - Fix arithmetic rounding of image size
+ * - Time consuming additional image file scan only when really needed
  */
 
-/* $Id: image_frame_reflower.cls.php,v 1.9 2006/07/07 21:31:03 benjcarson Exp $ */
+/* $Id: image_frame_reflower.cls.php 357 2011-01-30 20:56:46Z fabien.menager $ */
 
 /**
  * Image reflower class
@@ -51,78 +58,105 @@ class Image_Frame_Reflower extends Frame_Reflower {
     parent::__construct($frame);
   }
 
-  function reflow() {
+  function reflow(Frame_Decorator $block = null) {
+    $this->_frame->position();
     
+    //FLOAT
+    //$frame = $this->_frame;
+    //$page = $frame->get_root();
+    //if (DOMPDF_ENABLE_CSS_FLOAT && $frame->get_style()->float !== "none" ) {
+    //  $page->add_floating_frame($this);
+    //}
     // Set the frame's width
     $this->get_min_max_width();
     
+    if ( $block ) {
+      $block->add_frame_to_line($this->_frame);
+    }
   }
 
   function get_min_max_width() {
-
-    // We need to grab our *parent's* style because images are wrapped...
-    $style = $this->_frame->get_parent()->get_style();
-    
-    $width = $style->width;
-    $height = $style->height;
-    
-    // Determine the image's size
-    list($img_width, $img_height, $type) = getimagesize($this->_frame->get_image_url());
-
-    if ( is_percent($width) )
-      $width = ((float)rtrim($width,"%")) * $img_width / 100;
-
-    if ( is_percent($height) )
-      $height = ((float)rtrim($height,"%")) * $img_height / 100;
-                 
-    $width = $style->length_in_pt($width);
-    $height = $style->length_in_pt($height);
-
-    if ( $width === "auto" && $height === "auto" ) {
-      $width = $img_width;
-      $height = $img_height;
-      
-    } else if ( $width === "auto" && $height !== "auto" ) {
-      $width = (float)$height / $img_height * $img_width;
-      
-    } else if ( $width !== "auto" && $height === "auto" ) {
-      $height = (float)$width / $img_width * $img_height;
-      
-    } 
-    
-    // Resample images if the sizes were auto
-    if ( $style->width === "auto" && $style->height === "auto" ) {
-      $width = ((float)rtrim($width, "px")) * 72 / DOMPDF_DPI;
-      $height = ((float)rtrim($height, "px")) * 72 / DOMPDF_DPI;
+    if (DEBUGPNG) {
+      // Determine the image's size. Time consuming. Only when really needed?
+      list($img_width, $img_height) = dompdf_getimagesize($this->_frame->get_image_url());
+      print "get_min_max_width() ".
+        $this->_frame->get_style()->width.' '.
+        $this->_frame->get_style()->height.';'.
+        $this->_frame->get_parent()->get_style()->width." ".
+        $this->_frame->get_parent()->get_style()->height.";".
+        $this->_frame->get_parent()->get_parent()->get_style()->width.' '.
+        $this->_frame->get_parent()->get_parent()->get_style()->height.';'.
+        $img_width. ' '.
+        $img_height.'|' ;
     }
 
-    // Synchronize the styles
-    $inner_style = $this->_frame->get_style();
-    $inner_style->width = $style->width = $width . "pt";
-    $inner_style->height = $style->height = $height . "pt";
+    $style = $this->_frame->get_style();
 
-    $inner_style->padding_top = $style->padding_top;
-    $inner_style->padding_right = $style->padding_right;
-    $inner_style->padding_bottom = $style->padding_bottom;
-    $inner_style->padding_left = $style->padding_left;
+    //own style auto or invalid value: use natural size in px
+    //own style value: ignore suffix text including unit, use given number as px
+    //own style %: walk up parent chain until found available space in pt; fill available space
+    //
+    //special ignored unit: e.g. 10ex: e treated as exponent; x ignored; 10e completely invalid ->like auto
 
-    $inner_style->border_top_width = $style->border_top_width;
-    $inner_style->border_right_width = $style->border_right_width;
-    $inner_style->border_bottom_width = $style->border_bottom_width;
-    $inner_style->border_left_width = $style->border_left_width;
+    $width = ($style->width > 0 ? $style->width : 0);
+    if ( is_percent($width) ) {
+      $t = 0.0;
+      for ($f = $this->_frame->get_parent(); $f; $f = $f->get_parent()) {
+        $t = (float)($f->get_style()->width); //always in pt
+        if ((float)$t != 0) {
+        	break;
+        }
+      }
+      $width = ((float)rtrim($width,"%") * $t)/100; //maybe 0
+    } elseif ( !mb_strpos($width, 'pt') ) {
+      // Don't set image original size if "%" branch was 0 or size not given.
+      // Otherwise aspect changed on %/auto combination for width/height
+      // Resample according to px per inch
+      // See also List_Bullet_Image_Frame_Decorator::__construct
+      $width = (float)($width * 72) / DOMPDF_DPI;
+    }
 
-    $inner_style->border_top_style = $style->border_top_style;
-    $inner_style->border_right_style = $style->border_right_style;
-    $inner_style->border_bottom_style = $style->border_bottom_style;
-    $inner_style->border_left_style = $style->border_left_style;
+    $height = ($style->height > 0 ? $style->height : 0);
+    if ( is_percent($height) ) {
+      $t = 0.0;
+      for ($f = $this->_frame->get_parent(); $f; $f = $f->get_parent()) {
+        $t = (float)($f->get_style()->height); //always in pt
+        if ((float)$t != 0) {
+        	break;
+        }
+      }
+      $height = ((float)rtrim($height,"%") * $t)/100; //maybe 0
+    } elseif ( !mb_strpos($height, 'pt') ) {
+      // Don't set image original size if "%" branch was 0 or size not given.
+      // Otherwise aspect changed on %/auto combination for width/height
+      // Resample according to px per inch
+      // See also List_Bullet_Image_Frame_Decorator::__construct
+      $height = (float)($height * 72) / DOMPDF_DPI;
+    }
 
-    $inner_style->margin_top = $style->margin_top;
-    $inner_style->margin_right = $style->margin_right;
-    $inner_style->margin_bottom = $style->margin_bottom;
-    $inner_style->margin_left = $style->margin_left;
+    if ($width == 0 || $height == 0) {
+      // Determine the image's size. Time consuming. Only when really needed!
+      list($img_width, $img_height) = dompdf_getimagesize($this->_frame->get_image_url());
+      
+      // don't treat 0 as error. Can be downscaled or can be catched elsewhere if image not readable.
+      // Resample according to px per inch
+      // See also List_Bullet_Image_Frame_Decorator::__construct
+      if ($width == 0 && $height == 0) {
+        $width = (float)($img_width * 72) / DOMPDF_DPI;
+        $height = (float)($img_height * 72) / DOMPDF_DPI;
+      } elseif ($height == 0 && $width != 0) {
+        $height = ($width / $img_width) * $img_height; //keep aspect ratio
+      } elseif ($width == 0 && $height != 0) {
+        $width = ($height / $img_height) * $img_width; //keep aspect ratio
+      }
+    }
+
+    if (DEBUGPNG) print $width.' '.$height.';';
+
+    $style->width = $width . "pt";
+    $style->height = $height . "pt";
 
     return array( $width, $width, "min" => $width, "max" => $width);
     
   }
 }
-?>

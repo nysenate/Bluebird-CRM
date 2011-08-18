@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -123,19 +123,35 @@ class CRM_Core_Permission {
         return eval( 'return ' . $config->userPermissionClass . '::group( $groupType, $excludeHidden );' );
     }
 
+    public static function customGroupAdmin( ) {
+        $admin = false;
+
+        // check if user has all powerful permission
+        // or administer civicrm permission (CRM-1905)
+        if ( self::check( 'access all custom data' ) ) {
+            return true;
+        }
+
+        if ( defined( 'CIVICRM_MULTISITE' ) && 
+             CIVICRM_MULTISITE &&
+             self::check('administer Multiple Organizations') ) {
+            return true;
+        }
+        
+        if ( self::check( 'administer CiviCRM' ) ) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static function customGroup( $type = CRM_Core_Permission::VIEW , $reset = false ) {
         $customGroups = CRM_Core_PseudoConstant::customGroup( $reset );
         $defaultGroups = array( );
 
         // check if user has all powerful permission
         // or administer civicrm permission (CRM-1905)
-        if ( self::check( 'access all custom data' ) ) {
-            $defaultGroups = array_keys( $customGroups );
-        } else if ( defined( 'CIVICRM_MULTISITE' ) && CIVICRM_MULTISITE ) {
-            if ( self::check('administer Multiple Organizations') ) {
-                $defaultGroups = array_keys( $customGroups );
-            }
-        } else if ( self::check( 'administer CiviCRM' ) ) {
+        if ( self::customGroupAdmin( ) ) {
             $defaultGroups = array_keys( $customGroups );
         }
 
@@ -144,6 +160,10 @@ class CRM_Core_Permission {
     }
 
     static function customGroupClause( $type = CRM_Core_Permission::VIEW, $prefix = null, $reset = false ) {
+        if ( self::customGroupAdmin( ) ) {
+            return ' ( 1 ) ';
+        }
+
         $groups = self::customGroup( $type, $reset );
         if ( empty( $groups ) ) {
             return ' ( 0 ) ';
@@ -436,11 +456,18 @@ class CRM_Core_Permission {
         }
         
         //check for acl.
-        if ( !$hasPermission ) { 
+        if ( ! $hasPermission ) { 
             $aclPermission = self::getPermission( );
             if ( in_array( $aclPermission, array( CRM_Core_Permission::EDIT, 
                                                   CRM_Core_Permission::VIEW ) ) ) {
                 $hasPermission = true;
+            } else if ( defined( 'CIVICRM_MULTISITE' ) && CIVICRM_MULTISITE ) {
+                // For multisite just check if there are contacts in acl_contact_cache table for now.
+                // FixMe: so even if a user in multisite has very limited permission could still 
+                // see search / contact navigation options for example.
+
+                require_once 'CRM/Contact/BAO/Contact/Permission.php';
+                $hasPermission = CRM_Contact_BAO_Contact_Permission::hasContactsInCache( );
             }
         }
         

@@ -1,9 +1,9 @@
 <?php
 /*
 +--------------------------------------------------------------------+
-| CiviCRM version 3.3                                                |
+| CiviCRM version 3.4                                                |
 +--------------------------------------------------------------------+
-| Copyright CiviCRM LLC (c) 2004-2010                                |
+| Copyright CiviCRM LLC (c) 2004-2011                                |
 +--------------------------------------------------------------------+
 | This file is a part of CiviCRM.                                    |
 |                                                                    |
@@ -27,7 +27,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -134,6 +134,12 @@ class CRM_Core_DAO_MessageTemplates extends CRM_Core_DAO
      */
     public $is_reserved;
     /**
+     * FK to civicrm_option_value containing PDF Page Format.
+     *
+     * @var int unsigned
+     */
+    public $pdf_format_id;
+    /**
      * class constructor
      *
      * @access public
@@ -142,6 +148,21 @@ class CRM_Core_DAO_MessageTemplates extends CRM_Core_DAO
     function __construct()
     {
         parent::__construct();
+    }
+    /**
+     * return foreign links
+     *
+     * @access public
+     * @return array
+     */
+    function &links()
+    {
+        if (!(self::$_links)) {
+            self::$_links = array(
+                'pdf_format_id' => 'civicrm_option_value:id',
+            );
+        }
+        return self::$_links;
     }
     /**
      * returns all the column names of this table
@@ -202,6 +223,11 @@ class CRM_Core_DAO_MessageTemplates extends CRM_Core_DAO
                 'is_reserved' => array(
                     'name' => 'is_reserved',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
+                ) ,
+                'pdf_format_id' => array(
+                    'name' => 'pdf_format_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'FKClassName' => 'CRM_Core_DAO_OptionValue',
                 ) ,
             );
         }

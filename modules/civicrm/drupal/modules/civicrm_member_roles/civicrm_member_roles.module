@@ -81,6 +81,11 @@ function civicrm_member_roles_user($op, &$edit, &$account)
             _civicrm_member_roles_sync($account->uid);
         }
     }
+    if (variable_get('civicrm_member_roles_sync_method', 0) == 3) {
+        if ($op == 'insert') {
+            _civicrm_member_roles_sync($account->uid);
+        }
+    }
 }
 
 /**
@@ -418,9 +423,9 @@ function _civicrm_member_roles_sync( $ext_uid = NULL, $cid = NULL )
     if ( ! civicrm_initialize( ) ) {
         return;
     }  
+
     //Bring in CRM_Core_BAO_UFMatch class so we can find Drupal UIDs
-    global $civicrm_root;
-    require_once $civicrm_root . '/CRM/Core/BAO/UFMatch.php';
+    require_once 'CRM/Core/BAO/UFMatch.php';
     $rules = db_query('SELECT * FROM {civicrm_member_roles_rules}');
     //Error check
     if ($rules === FALSE) {
@@ -485,7 +490,7 @@ function _civicrm_member_roles_sync( $ext_uid = NULL, $cid = NULL )
         if ( empty( $uid ) ) continue;
         
         //Get all memberships of contact
-        require_once 'api/v2/Membership.php';
+        civicrm_api_include('membership', false, 2);
         $memberships = civicrm_contact_memberships_get( $cid );
         $contactMemberships = CRM_Utils_Array::value( $cid, $memberships, array( ) );
         $addRoles = array();

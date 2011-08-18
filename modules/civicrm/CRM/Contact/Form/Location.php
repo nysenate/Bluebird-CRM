@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -46,12 +46,12 @@ class CRM_Contact_Form_Location
         $form->_addBlockName  = CRM_Utils_Request::retrieve('block', 'String',   CRM_Core_DAO::$_nullObject );
         $additionalblockCount = CRM_Utils_Request::retrieve('count', 'Positive', CRM_Core_DAO::$_nullObject );
         
-        $form->assign( "addBlock", false );
+        $form->assign( 'addBlock', false );
         if ( $form->_addBlockName && $additionalblockCount ) {
-            $form->assign( "addBlock", true );
-            $form->assign( "blockName", $form->_addBlockName );
-            $form->assign( "blockId",  $additionalblockCount );
-            $form->set( $form->_addBlockName."_Block_Count", $additionalblockCount );
+            $form->assign( 'addBlock', true );
+            $form->assign( 'blockName', $form->_addBlockName );
+            $form->assign( 'blockId',  $additionalblockCount );
+            $form->set( $form->_addBlockName.'_Block_Count', $additionalblockCount );
         }
         
         $className = CRM_Utils_System::getClassName( $form );
@@ -87,7 +87,7 @@ class CRM_Contact_Form_Location
         
         //build 1 instance of all blocks, without using ajax ...
         foreach ( $form->_blocks as $blockName => $label ) {
-            require_once(str_replace('_', DIRECTORY_SEPARATOR, "CRM_Contact_Form_Edit_" . $blockName ) . ".php");
+            require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $blockName ) . '.php');
             $name = strtolower($blockName);
             
             $instances = array( 1 );
@@ -99,15 +99,15 @@ class CRM_Contact_Form_Location
             
             foreach ( $instances as $instance ) {
                 if ( $instance == 1 ) {
-                    $form->assign( "addBlock", false );
-                    $form->assign( "blockId",  $instance );
+                    $form->assign( 'addBlock', false );
+                    $form->assign( 'blockId',  $instance );
                 } else {
                     //we are going to build other block instances w/ AJAX
                     $generateAjaxRequest++;
                     $ajaxRequestBlocks[$blockName][$instance] = true;
                 }
                 
-                $form->set( $blockName."_Block_Count", $instance );
+                $form->set( $blockName.'_Block_Count', $instance );
                 eval( 'CRM_Contact_Form_Edit_' . $blockName . '::buildQuickForm( $form );' );
             }
         }

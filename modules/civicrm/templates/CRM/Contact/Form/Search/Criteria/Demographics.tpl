@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,6 +33,13 @@
             {include file="CRM/common/jcalendar.tpl" elementName=birth_date_high}
         </td>
        </tr>
+       <tr>
+	 <td>
+       	   {$form.is_deceased.label}<br />
+           {$form.is_deceased.html}
+             <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('is_deceased', 'Advanced'); return false;" >{ts}clear{/ts}</a>)</span>
+         </td>
+      </tr>
       <tr>
         <td>
            {$form.deceased_date_low.label|replace:'-':'<br />'}&nbsp;&nbsp;

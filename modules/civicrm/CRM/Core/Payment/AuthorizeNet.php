@@ -12,7 +12,7 @@
  *
  * @package CRM
  * @author Marshal Newrock <marshal@idealso.com>
- * $Id: AuthorizeNet.php 32169 2011-02-02 16:10:39Z deepak $
+ * $Id: AuthorizeNet.php 35129 2011-07-04 10:07:23Z eileen $
  */
 
 /* NOTE:
@@ -100,7 +100,8 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
             $this->_setParam( $field, $value );
         }
 
-        if ( $params['is_recur'] && $params['contributionRecurID'] ) {
+        if ( CRM_Utils_Array::value( 'is_recur', $params ) &&
+             $params['contributionRecurID'] ) {
             return $this->doRecurPayment( $params );
         }
 
@@ -228,9 +229,13 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         
         //for recurring, carry first contribution id  
         $template->assign( 'invoiceNumber', $this->_getParam( 'contributionID' ) );
-        
-        $template->assign( 'startDate', date('Y-m-d') );
-        
+        $firstPaymentDate = $this->_getParam('receive_date');
+        if(!empty($firstPaymentDate)){
+          //allow for post dated payment if set in form
+          $template->assign( 'startDate', date('Y-m-d', strtotime($firstPaymentDate)) );
+        }else{
+          $template->assign( 'startDate', date('Y-m-d') );
+        }
         // for open ended subscription totalOccurrences has to be 9999
         $installments = $this->_getParam('installments');
         $template->assign( 'totalOccurrences', $installments ? $installments : 9999 );
@@ -255,13 +260,12 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         $template->assign( 'billingCountry', $this->_getParam('country') );
         
         $arbXML = $template->fetch( 'CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl' );
-        
         // submit to authorize.net
+
         $submit = curl_init( $this->_paymentProcessor['url_recur'] );
         if ( !$submit ) {
             return self::error(9002, 'Could not initiate connection to payment gateway');
         }
-
         curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($submit, CURLOPT_HTTPHEADER, Array("Content-Type: text/xml"));
         curl_setopt($submit, CURLOPT_HEADER, 1);
@@ -276,19 +280,20 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         }
 
         curl_close( $submit );
-
         $responseFields = $this->_ParseArbReturn( $response );
 
         if ( $responseFields['resultCode'] == 'Error' ) {
             return self::error( $responseFields['code'], $responseFields['text'] );
         }
 
-        // log request
-        CRM_Core_Error::debug_var( 'Create Subscription Request', $arbXML );
-
         // update recur processor_id with subscriptionId
         CRM_Core_DAO::setFieldValue( 'CRM_Contribute_DAO_ContributionRecur', $params['contributionRecurID'], 
                                      'processor_id', $responseFields['subscriptionId'] );
+        //only impact of assigning this here is is can be used to cancel the subscription in an automated test
+        // if it isn't cancelled a duplicate transaction error occurs
+        if(CRM_Utils_Array::value('subscriptionId',$responseFields)){
+          $this->_setParam('subscriptionId', $responseFields['subscriptionId']);
+        }
         return $params;
     }
 
@@ -559,6 +564,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
             return CRM_Utils_System::url( 'civicrm/contribute/unsubscribe', 
                                           "reset=1&mid={$entityID}&cs={$checksumValue}", true, null, false, false );
         }
+
         return ( $this->_mode == 'test' ) ?
             'https://test.authorize.net' : 'https://authorize.net';
     }
@@ -573,7 +579,7 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         $template->assign( 'subscriptionId', $this->_getParam( 'subscriptionId' ) );
 
         $arbXML = $template->fetch( 'CRM/Contribute/Form/Contribution/AuthorizeNetARB.tpl' );
-        
+
         // submit to authorize.net
         $submit = curl_init( $this->_paymentProcessor['url_recur'] );
         if ( !$submit ) {
@@ -600,9 +606,6 @@ class CRM_Core_Payment_AuthorizeNet extends CRM_Core_Payment {
         if ( $responseFields['resultCode'] == 'Error' ) {
             return self::error( $responseFields['code'], $responseFields['text'] );
         }
-
-        // log request
-        CRM_Core_Error::debug_var( 'Cancel Subscription Request', $arbXML );
 
         // carry on cancelation procedure
         return true;

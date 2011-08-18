@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -44,7 +44,8 @@ class CRM_Grant_Task
     const
         DELETE_GRANTS                     =     1,
         PRINT_GRANTS                      =     2,
-        EXPORT_GRANTS                     =     3; 
+        EXPORT_GRANTS                     =     3, 
+        UPDATE_GRANTS                     =     4; 
      
     /**
      * the task array
@@ -82,6 +83,9 @@ class CRM_Grant_Task
                                    3 => array( 'title'  => ts( 'Export Grants' ),
                                                'class'  => array( 'CRM_Export_Form_Select',
                                                                   'CRM_Export_Form_Map' ),
+                                               'result' => false ),
+                                   4 => array( 'title'  => ts( 'Update Grants' ),
+                                               'class'  => 'CRM_Grant_Form_Task_Update',
                                                'result' => false ),
                                    );
         }

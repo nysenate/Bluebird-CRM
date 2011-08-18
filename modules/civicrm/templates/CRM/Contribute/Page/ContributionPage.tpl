@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,14 +23,11 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{if $id and $action eq 2}
-    {include file="CRM/Contribute/Page/ContributionPageEdit.tpl"}
-{else}
     {capture assign=newPageURL}{crmURL p='civicrm/admin/contribute/add' q='action=add&reset=1'}{/capture}
     <div id="help">
     	 {ts}CiviContribute allows you to create and maintain any number of Online Contribution Pages. You can create different pages for different programs or campaigns - and customize text, amounts, types of information collected from contributors, etc.{/ts} {help id="id-intro"}
     </div>
-
+    
     {include file="CRM/Contribute/Form/SearchContribution.tpl"}  
     {if NOT ($action eq 1 or $action eq 2) }
     	<table class="form-layout-compressed">
@@ -56,6 +53,9 @@
                  <th id="sortable">{ts}Title{/ts}</th>
             	 <th>{ts}ID{/ts}</th>
             	 <th>{ts}Enabled?{/ts}</th>
+		 {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+		 <th>{ts}Campaign{/ts}</th>
+		 {/if}
 		 <th></th>
                </tr>
                </thead>
@@ -64,6 +64,9 @@
                      <td><strong>{$row.title}</strong></td>
                      <td>{$row.id}</td>
                      <td id="row_{$row.id}_status">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
+		     {if call_user_func(array('CRM_Campaign_BAO_Campaign','isCampaignEnable'))}
+		     <td>{$row.campaign}</td>
+		     {/if}
 		     <td class="crm-contribution-page-actions right nowrap">
 		
 			{if $row.configureActionLinks}	
@@ -113,8 +116,7 @@
     	{else}
     	<div class="messages status">
              <div class="icon inform-icon"></div> &nbsp;
-             {ts 1=$newPageURL}No contribution pages have been created yet. Click <a accesskey="N" href='%1'>here</a> to create a new contribution page using the step-by-step wizard.{/ts}
+             {ts 1=$newPageURL}No contribution pages have been created yet. Click <a accesskey="N" href='%1'>here</a> to create a new contribution page.{/ts}
     	</div>
       	{/if}
     {/if}
-{/if}

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 {if $AllCases}
    <div class="form-item">
-       {include file="CRM/Case/Page/DashboardSelector.tpl" context="dashboard" list="allcases" rows=$AllCases}
+       {include file="CRM/Case/Page/DashboardSelector.tpl" context="$context" list="allcases" rows=$AllCases}
    </div>
 {else}
     <div class="messages status">

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,10 +27,8 @@
 <table class="form-layout-compressed">
     <tr>
        <td>{$form.household_name.label}<br/>
-        {if $action == 2}
-            {include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='household_name' id=$entityID}
-        {/if}
-       {$form.household_name.html|crmReplace:class:big}</td>
+         {$form.household_name.html|crmReplace:class:big}
+       </td>
 
        <td>{$form.nick_name.label}<br/>
        {$form.nick_name.html|crmReplace:class:big}</td>

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -23,7 +23,7 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* this template is used for adding/editing/deleting contribution *}
+{* this template is used for adding/editing/deleting contributions and pledge payments *}
 
 {if $cdType}
   {include file="CRM/Custom/Form/CustomData.tpl"}
@@ -71,6 +71,9 @@
                 <td class="font-size12pt label"><strong><strong>{ts}Contributor{/ts}</strong></td><td class="font-size12pt"><strong>{$displayName}</strong></td>
             </tr>
         {else}
+	    {if !$contributionMode and !$email and $outBound_option != 2}
+	       {assign var='profileCreateCallback' value=1 }
+ 	    {/if}
             {include file="CRM/Contact/Form/NewContact.tpl"}
         {/if}
         {if $contributionMode}
@@ -102,7 +105,7 @@
 	            <br /><span class="description">{ts}Actual amount given by contributor.{/ts}</span>
 	    </td>
         </tr>
-	    {if $buildRecurBlock}
+	    {if $buildRecurBlock && !$ppID}
 	    <tr id='recurringPaymentBlock' class='hiddenElement'>
 	       <td></td>		
 	       <td>
@@ -126,12 +129,20 @@
 	    </tr>
     {/if}
 
-        <tr  class="crm-contribution-form-block-source"><td class="label">{$form.source.label}</td><td{$valueStyle}>{$form.source.html} {help id="id-contrib_source"}</td></tr>
+        <tr  class="crm-contribution-form-block-source"><td class="label">{$form.source.label}</td><td{$valueStyle}>{$form.source.html|crmReplace:class:huge} {help id="id-contrib_source"}</td></tr>
+
+	{* CRM-7362 --add campaign to contributions *}
+	{include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+	campaignTrClass="crm-contribution-form-block-campaign_id"}
 
         {if $contributionMode}
             {if $email and $outBound_option != 2}
-                <tr class="crm-contribution-form-block-is_email_receipt"><td class="label">{$form.is_email_receipt.label}</td><td>{$form.is_email_receipt.html}</td></tr>
-                <tr><td class="label">&nbsp;</td><td class="description">{ts 1=$email}Automatically email a receipt for this contribution to %1?{/ts}</td></tr>
+                <tr class="crm-contribution-form-block-is_email_receipt">
+                    <td class="label">
+                        {$form.is_email_receipt.label}</td><td>{$form.is_email_receipt.html}&nbsp;
+                        <span class="description">{ts 1=$email}Automatically email a receipt for this contribution to %1?{/ts}</span>
+                    </td>
+                </tr>
             {elseif $context eq 'standalone' and $outBound_option != 2 }
                 <tr id="email-receipt" style="display:none;" class="crm-contribution-form-block-is_email_receipt"><td class="label">{$form.is_email_receipt.label}</td><td>{$form.is_email_receipt.html} <span class="description">{ts}Automatically email a receipt for this contribution to {/ts}<span id="email-address"></span>?</span></td></tr>
             {/if}
@@ -201,29 +212,42 @@
             </tr>
         {/if}
 
-        <tr class="crm-contribution-form-block-soft_credit_to"><td class="label">{$form.soft_credit_to.label}</td>
-            <td>{$form.soft_credit_to.html} {help id="id-soft_credit"}</td>
+        <tr id="softCreditID" class="crm-contribution-form-block-soft_credit_to"><td class="label">{$form.soft_credit_to.label}</td>
+            <td {$valueStyle}>
+                {$form.soft_credit_to.html} {help id="id-soft_credit"}
+        	    {if $siteHasPCPs}
+        	        <div id="showPCPLink">{ts}<a href='#' onclick='showPCP(); return false;'>credit this contribution to a personal campaign page</a>{/ts}{help id="id-link_pcp"}</div>
+        	    {/if}
+            </td>
         </tr>
-	    {if $action eq 2 and $form.pcp_made_through_id.value[0]} {* Include PCP honor roll fields if contrib came from PCP page *}
-    	    <tr class="crm-contribution-form-block-pcp_display_in_roll"><td class="label">{$form.pcp_display_in_roll.label}</td>
-    	        <td>{$form.pcp_display_in_roll.html}</td>
-    	    </tr>
-    	    <tr id="nameID" class="crm-contribution-form-block-pcp_is_anonymous">
-    	        <td></td>
-    	        <td>{$form.pcp_is_anonymous.html}</td>
-    	    </tr>
-    	    <tr id="nickID" class="crm-contribution-form-block-pcp_roll_nickname">
-    	        <td class="label">{$form.pcp_roll_nickname.label}</td>
-    	        <td>{$form.pcp_roll_nickname.html}<br />
-    		    <span class="description">{ts}Name displayed in the Honor Roll.{/ts}</span></td>
-    	    </tr>
-    	    <tr id="personalNoteID" class="crm-contribution-form-block-pcp_personal_note">
-    	        <td class="label" style="vertical-align: top">{$form.pcp_personal_note.label}</td>
-    	        <td>{$form.pcp_personal_note.html}
-                    <span class="description">{ts}Personal message submitted by contributor for display in the Honor Roll.{/ts}</span>
-    		    </td>
-    	    </tr>
-        {/if}	
+        {* Credit contribution to PCP. *}
+        <tr id="pcpID" class="crm-contribution-form-block-pcp_made_through_id">
+            <td class="label">{$form.pcp_made_through.label}</td>
+            <td>
+                {$form.pcp_made_through.html} &nbsp;
+	            <span class="showSoftCreditLink">{ts}<a href="#" onclick='showSoftCredit(); return false;'>unlink from personal campaign page</a>{/ts}</span><br />
+	            <span class="description">{ts}Search for the Personal Campaign Page by the fund-raiser's last name or email address.{/ts}</span>
+                <div class="spacer"></div>
+                <div class="crm-contribution-form-block-pcp_details">
+                <table class="crm-contribution-form-table-credit_to_pcp">
+            	    <tr id="pcpDisplayRollID" class="crm-contribution-form-block-pcp_display_in_roll"><td class="label">{$form.pcp_display_in_roll.label}</td>
+            	        <td>{$form.pcp_display_in_roll.html}</td>
+            	    </tr>
+            	    <tr id="nickID" class="crm-contribution-form-block-pcp_roll_nickname">
+            	        <td class="label">{$form.pcp_roll_nickname.label}</td>
+            	        <td>{$form.pcp_roll_nickname.html|crmReplace:class:big}<br />
+            		    <span class="description">{ts}Name or nickname contributor wants to be displayed in the Honor Roll. Enter "Anonymous" for anonymous contributions.{/ts}</span></td>
+            	    </tr>
+            	    <tr id="personalNoteID" class="crm-contribution-form-block-pcp_personal_note">
+            	        <td class="label" style="vertical-align: top">{$form.pcp_personal_note.label}</td>
+            	        <td>{$form.pcp_personal_note.html}
+                            <span class="description">{ts}Personal message submitted by contributor for display in the Honor Roll.{/ts}</span>
+            		    </td>
+            	    </tr>
+            	</table>
+            	</div>
+            </td>
+        </tr>
       </table>
 
     <div id="customData" class="crm-contribution-form-block-customData"></div>
@@ -284,9 +308,11 @@ function loadPanes( id ) {
             checkEmail( );
         });
         checkEmail( );
+	showHideByValue( 'is_email_receipt', '', 'receiptDate', 'table-row', 'radio', true); 
+	showHideByValue( 'is_email_receipt', '', 'fromEmail', 'table-row', 'radio', false );
     });
     function checkEmail( ) {
-        var contactID = cj("input[name=contact_select_id[1]]").val();
+        var contactID = cj("input[name='contact_select_id[1]']").val();
         if ( contactID ) {
             var postUrl = "{/literal}{crmURL p='civicrm/ajax/checkemail' h=0}{literal}";
             cj.post( postUrl, {contact_id: contactID},
@@ -299,14 +325,21 @@ function loadPanes( id ) {
                     }
                 }
             );
-        }
+        } else {
+	   cj("#email-receipt").hide( );
+	}
     }
+
+    function profileCreateCallback( blockNo ) {
+    	checkEmail( );     			    	    
+    }
+
     {/literal}
     {/if}
 </script>
 
 <div class="accordion ui-accordion ui-widget ui-helper-reset">
-    {* Additional Detail / Honoree Information / Premium Information  Fieldset *}
+    {* Additional Detail / Honoree Information / Premium Information *}
     {foreach from=$allPanes key=paneName item=paneValue}
             
 <div class="crm-accordion-wrapper crm-ajax-accordion crm-{$paneValue.id}-accordion {if $paneValue.open eq 'true'}crm-accordion-open{else}crm-accordion-closed{/if}">
@@ -349,54 +382,45 @@ function loadPanes( id ) {
 
 
 {if $action neq 8}  
-{if $email and $outBound_option != 2}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="is_email_receipt"
-    trigger_value       =""
-    target_element_id   ="receiptDate" 
-    target_element_type ="table-row"
-    field_type          ="radio"
-    invert              = 1
-}
-{/if}
-{if $email and $outBound_option != 2}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="is_email_receipt"
-    trigger_value       =""
-    target_element_id   ="fromEmail" 
-    target_element_type ="table-row"
-    field_type          ="radio"
-    invert              = 0
-}
-{/if}
-{if !$contributionMode} 
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="contribution_status_id"
-    trigger_value       = '3'
-    target_element_id   ="cancelInfo" 
-    target_element_type ="table-row"
-    field_type          ="select"
-    invert              = 0
-}
-{if $pcp}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="pcp_display_in_roll"
-    trigger_value       =""
-    target_element_id   ="nameID|nickID" 
-    target_element_type ="table-row"
-    field_type          ="radio"
-    invert              = 0
-}
-{/if}
-{include file="CRM/common/showHideByFieldValue.tpl" 
-    trigger_field_id    ="payment_instrument_id"
-    trigger_value       = '4'
-    target_element_id   ="checkNumber" 
-    target_element_type ="table-row"
-    field_type          ="select"
-    invert              = 0
-}
-{/if} 
+{literal}
+<script type="text/javascript">
+    cj( function( ) {
+        checkEmailDependancies( );
+        cj('#is_email_receipt').click( function( ) {
+            checkEmailDependancies( );
+        });
+    });
+    function checkEmailDependancies( ) {
+        if ( cj('#is_email_receipt').attr( 'checked' ) ) {
+            cj('#fromEmail').show( );
+            cj('#receiptDate').hide( );
+        } else {
+            cj('#fromEmail').hide( );
+            cj('#receiptDate').show( );
+        }
+    }
+</script>
+{/literal}
+    {if !$contributionMode} 
+        {include file="CRM/common/showHideByFieldValue.tpl" 
+            trigger_field_id    ="contribution_status_id"
+            trigger_value       = '3'
+            target_element_id   ="cancelInfo" 
+            target_element_type ="table-row"
+            field_type          ="select"
+            invert              = 0
+        }
+        {if !$isOnline}
+            {include file="CRM/common/showHideByFieldValue.tpl" 
+                trigger_field_id    ="payment_instrument_id"
+                trigger_value       = '4'
+                target_element_id   ="checkNumber" 
+                target_element_type ="table-row"
+                field_type          ="select"
+                invert              = 0
+            }
+        {/if}
+    {/if} 
 {/if} {* not delete mode if*}      
 
     {* include jscript to warn if unsaved form field changes *}
@@ -418,38 +442,46 @@ cj(function() {
 <script type="text/javascript" >
 {/literal}
 
- {if $pcp}{literal}pcpAnonymous();{/literal}{/if}
+// load form during form rule.
+{if $buildPriceSet}{literal}buildAmount( );{/literal}{/if}
 
- // load form during form rule.
- {if $buildPriceSet}{literal}buildAmount( );{/literal}
- {/if}
- {literal}
+{if $siteHasPCPs}
+    {literal}
+    var pcpUrl = "{/literal}{$pcpDataUrl}{literal}";
 
-function pcpAnonymous( ) {
-    // clear nickname field if anonymous is true
-    if ( document.getElementsByName("pcp_is_anonymous")[1].checked ) { 
-        document.getElementById('pcp_roll_nickname').value = '';
-	document.getElementById('pcp_personal_note').value = '';
+    cj('#pcp_made_through').autocomplete( pcpUrl, { width : 360, selectFirst : false, matchContains: true
+        }).result( function(event, data, formatted) { cj( "#pcp_made_through_id" ).val( data[1] );
+    });
+    {/literal}
+    
+    {if $pcpLinked}
+        {literal}hideSoftCredit( );{/literal}{* hide soft credit on load if we have PCP linkage *}
+    {else}
+        {literal}cj('#pcpID').hide();{/literal}{* hide PCP section *}
+    {/if}
+    
+    {literal}
+    function hideSoftCredit ( ){
+        cj("#softCreditID").hide();
     }
-    if ( ! document.getElementsByName("pcp_display_in_roll")[0].checked ) { 
-        hide('nickID', 'table-row');
-        hide('nameID', 'table-row');
-	hide('personalNoteID', 'table-row');
-    } else {
-        if ( document.getElementsByName("pcp_is_anonymous")[0].checked ) {
-            show('nameID', 'table-row');
-            show('nickID', 'table-row');
-	    show('personalNoteID', 'table-row');
-        } else {
-            show('nameID', 'table-row');
-            hide('nickID', 'table-row');
-	    hide('personalNoteID', 'table-row');
-        }
+    function showPCP( ) {
+        cj('#pcpID').show();
+        cj("#softCreditID").hide();
     }
-}
+    function showSoftCredit( ) {
+        cj('#pcp_made_through_id').val('');
+        cj('#pcp_made_through').val('');
+        cj('#pcp_roll_nickname').val('');
+        cj('#pcp_personal_note').val('');
+        cj('#pcp_display_in_roll').attr('checked', false);
+        cj("#pcpID").hide();
+        cj('#softCreditID').show();
+    }
+    {/literal}
+{/if}
 
+{literal}
 function buildAmount( priceSetId ) {
-
   if ( !priceSetId ) priceSetId = cj("#price_set_id").val( );
 
   var fname = '#priceset';
@@ -463,17 +495,15 @@ function buildAmount( priceSetId ) {
 
       //we might want to build recur block.
       if ( cj( "#is_recur" ) ) buildRecurBlock( null );
-
       return;
   }
 
   //don't allow recurring w/ priceset.
-  if ( cj( "#is_recur" ) && cj( 'input:radio[name=is_recur]:checked').val( ) ) {
+  if ( cj( "#is_recur" ) && cj( 'input:radio[name="is_recur"]:checked').val( ) ) {
       //reset the values of recur block. 
       cj("#installments").val('');
       cj("#frequency_interval").val('');
-      cj( 'input:radio[name=is_recur]')[0].checked = true;
-
+      cj( 'input:radio[name="is_recur"]')[0].checked = true;
       cj( "#recurringPaymentBlock" ).hide( );
   }
       
@@ -481,20 +511,21 @@ function buildAmount( priceSetId ) {
   
   var response = cj.ajax({
 		         url: dataUrl,
-			 async: false
-			}).responseText;
+                 async: false
+                 }).responseText;
+  
   cj( fname ).show( ).html( response );
   // freeze total amount text field.
   cj( "#total_amount").val( '' );
 
   cj( "#totalAmountORPriceSet" ).hide( );
   cj( "#totalAmount").hide( );
-  
 }
+
 function adjustPayment( ) {
-cj('#adjust-option-type').show();		    	    
-cj("#total_amount").removeAttr("READONLY");
-cj("#total_amount").css('background-color', '#ffffff');
+    cj('#adjust-option-type').show();		    	    
+    cj("#total_amount").removeAttr("READONLY");
+    cj("#total_amount").css('background-color', '#ffffff');
 }
 
 </script>

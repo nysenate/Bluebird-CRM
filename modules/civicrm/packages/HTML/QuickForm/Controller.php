@@ -210,7 +210,7 @@ class HTML_QuickForm_Controller
             case 'jump':
                 include_once 'HTML/QuickForm/Action/' . ucfirst($actionName) . '.php';
                 $className = 'HTML_QuickForm_Action_' . $actionName;
-                $this->_actions[$actionName] =& new $className();
+                $this->_actions[$actionName] = new $className();
                 return $this->_actions[$actionName]->perform($page, $actionName);
                 break;
             default:

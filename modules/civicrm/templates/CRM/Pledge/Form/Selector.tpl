@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -79,6 +79,7 @@
             <td class="right">{$row.pledge_amount|crmMoney}</td>
             <td class="right">{$row.pledge_total_paid|crmMoney}</td>
             <td class="right">{$row.pledge_amount-$row.pledge_total_paid|crmMoney}</td>
+            <td>{$row.pledge_contribution_type}</td>
             <td>{$row.pledge_create_date|truncate:10:''|crmDate}</td>
             <td>{$row.pledge_next_pay_date|truncate:10:''|crmDate}</td>
             <td class="right">{$row.pledge_next_pay_amount|crmMoney}</td>

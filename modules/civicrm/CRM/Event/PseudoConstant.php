@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,11 +29,12 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
 
+require_once 'CRM/Core/OptionGroup.php';
 require_once 'CRM/Core/PseudoConstant.php';
 
 /**
@@ -177,14 +178,14 @@ class CRM_Event_PseudoConstant extends CRM_Core_PseudoConstant
         $index = $cond ? $cond : 'No Condition';
         if ( ! CRM_Utils_Array::value( $index, self::$participantRole ) ) {
             self::$participantRole[$index] = array( );
-            require_once "CRM/Core/OptionGroup.php";
+
             $condition = null;
             
             if ( $cond ) {
                 $condition = "AND $cond";
             }
             
-            self::$participantRole[$index] = CRM_Core_OptionGroup::values( "participant_role",  false, false, 
+            self::$participantRole[$index] = CRM_Core_OptionGroup::values( 'participant_role',  false, false, 
                                                                            false, $condition );
         }
         
@@ -205,8 +206,7 @@ class CRM_Event_PseudoConstant extends CRM_Core_PseudoConstant
     {
         if ( ! self::$participantListing ) {
             self::$participantListing = array( );
-            require_once "CRM/Core/OptionGroup.php";
-            self::$participantListing = CRM_Core_OptionGroup::values("participant_listing");
+            self::$participantListing = CRM_Core_OptionGroup::values('participant_listing');
         }
         
         if( $id ) {
@@ -227,8 +227,7 @@ class CRM_Event_PseudoConstant extends CRM_Core_PseudoConstant
     {
         if ( ! self::$eventType ) {
             self::$eventType = array( );
-            require_once "CRM/Core/OptionGroup.php";
-            self::$eventType = CRM_Core_OptionGroup::values("event_type");
+            self::$eventType = CRM_Core_OptionGroup::values('event_type');
         }
         
         if( $id ) {
@@ -251,7 +250,7 @@ class CRM_Event_PseudoConstant extends CRM_Core_PseudoConstant
                                               false, 
                                               'template_title', 
                                               'is_active', 
-                                              "is_template = 1"
+                                              'is_template = 1'
                                               );
         }
         if ($id) {
@@ -259,6 +258,19 @@ class CRM_Event_PseudoConstant extends CRM_Core_PseudoConstant
         }
         return self::$eventTemplates;
     }
-    
+      /**
+     * Flush given pseudoconstant so it can be reread from db
+     * nex time it's requested.
+     *
+     * @access public
+     * @static
+     *
+     * @param boolean $name pseudoconstant to be flushed
+     *
+     */
+    public static function flush( $name )
+    {
+        self::$$name = null;
+    }
 }
 

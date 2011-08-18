@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
  * Redefine the upload action.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -152,7 +152,14 @@ class CRM_Core_QuickForm_Action_Upload extends CRM_Core_QuickForm_Action {
         // the page is valid, process it before we jump to the next state
         $page->mainProcess( );
 
-        $state->handleNextState( $page );
+        // check if destination is set, if so goto destination
+        $destination = $this->_stateMachine->getDestination( );
+        if ( $destination ) {
+            $destination = urldecode( $destination );
+            CRM_Utils_System::redirect( $destination );
+        } else {
+            return $state->handleNextState( $page );
+        }
     }
 
 }

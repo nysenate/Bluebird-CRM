@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -51,35 +51,14 @@ class CRM_Activity_Page_Tab extends CRM_Core_Page
      */
     function browse( )
     {
-        require_once 'CRM/Core/Selector/Controller.php';
-
-        $output = CRM_Core_Selector_Controller::SESSION;
-        require_once 'CRM/Activity/Selector/Activity.php';
-        $selector   = new CRM_Activity_Selector_Activity($this->_contactId, $this->_permission );
-        $sortID     = null;
-        if ( $this->get( CRM_Utils_Sort::SORT_ID  ) ) {
-            $sortID = CRM_Utils_Sort::sortIDValue( $this->get( CRM_Utils_Sort::SORT_ID  ),
-                                                   $this->get( CRM_Utils_Sort::SORT_DIRECTION ) );
-        }
-        $controller = new CRM_Core_Selector_Controller($selector,
-                                                        $this->get(CRM_Utils_Pager::PAGE_ID),
-                                                        $sortID,
-                                                        CRM_Core_Action::VIEW, $this, $output);
-        $controller->setEmbedded(true);
-        $controller->run();
-        $controller->moveFromSessionToTemplate( );
-
-        // check if case is enabled
-        require_once 'CRM/Core/BAO/Preferences.php';
-        $viewOptions = CRM_Core_BAO_Preferences::valueOptions( 'contact_view_options', true, null, true );
-
-        $enableCase = false;
-        if ( CRM_Utils_Array::value('CiviCase',$viewOptions ) ) { 
-            $enableCase = true;
-        }
+        $this->assign( 'admin', false );
+        $this->assign( 'context'   , 'activity');
         
-        $this->assign( 'enableCase', $enableCase);
-        $this->assign( 'context'   , 'activity');        
+        // also create the form element for the activity filter box
+        $controller = new CRM_Core_Controller_Simple( 'CRM_Activity_Form_ActivityFilter',
+                                                       ts('Activity Filter'), null );
+        $controller->setEmbedded( true );
+        $controller->run( );        
     }
 
     function edit( )
@@ -151,6 +130,8 @@ class CRM_Activity_Page_Tab extends CRM_Core_Page
     {
         $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true );
         $this->assign( 'contactId', $this->_contactId );
+        //FIX ME: need to fix this conflict
+        $this->assign( 'contactID', $this->_contactId );
 
         // check logged in url permission
         require_once 'CRM/Contact/Page/View.php';

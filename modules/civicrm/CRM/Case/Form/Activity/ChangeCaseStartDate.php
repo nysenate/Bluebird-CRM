@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -187,7 +187,7 @@ WHERE civicrm_case.id=  %1";
         	$oldActivity = $abao->retrieve( $oldParams, $oldActivityDefaults );
 
             // save the old values
-        	require_once 'api/v2/utils.php';
+            civicrm_api_include('utils', false, 2);
         	$openCaseParams = array();
         	_civicrm_object_to_array($oldActivity, $openCaseParams);
 

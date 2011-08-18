@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -51,7 +51,7 @@
             {ts}Otherwise, click the <strong>Continue</strong> button below to complete your registration.{/ts}
         {/if}
         </div>
-        {if $is_pay_later}
+        {if $is_pay_later and !$isAmountzero}
             <div class="bold">{$pay_later_receipt}</div>
         {/if}
     {/if}
@@ -128,35 +128,15 @@
 
 
     {if $customPre}
-        {foreach from=$customPre item=field key=cname}
-	        {if $field.groupTitle}
-		        {assign var=groupTitlePre  value=$field.groupTitle} 
-            {/if}
-	    {/foreach}
-    	<div class="crm-group custom_pre-group">
-            <div class="header-dark">
-    	        {$groupTitlePre}
-            </div>
             <fieldset class="label-left">
                 {include file="CRM/UF/Form/Block.tpl" fields=$customPre}
             </fieldset>
-        </div>
     {/if}
     
     {if $customPost}
-        {foreach from=$customPost item=field key=cname}
-            {if $field.groupTitle}
-		        {assign var=groupTitlePost  value=$field.groupTitle} 
-            {/if}
-        {/foreach}
-    	<div class="crm-group custom_post-group">
-            <div class="header-dark">
-    	        {$groupTitlePost}
-            </div>
             <fieldset class="label-left">  
                 {include file="CRM/UF/Form/Block.tpl" fields=$customPost}
             </fieldset>
-        </div>
     {/if}
 
     {*display Additional Participant Profile Information*}
@@ -167,7 +147,7 @@
                     {ts 1=$participantNo+1}Participant Information - Participant %1{/ts}	
                 </div>
                 {if $participant.additionalCustomPre}
-                    <fieldset class="label-left"><legend>{$participant.additionalCustomPreGroupTitle}</legend>
+                    <fieldset class="label-left"><div class="header-dark">{$participant.additionalCustomPreGroupTitle}</div>
                         {foreach from=$participant.additionalCustomPre item=value key=field}
                             <div class="crm-section {$field}-section">
                                 <div class="label">{$field}</div>
@@ -179,14 +159,17 @@
                 {/if}
 
                 {if $participant.additionalCustomPost}
-                    <fieldset class="label-left"><legend>{$participant.additionalCustomPostGroupTitle}</legend>
-                        {foreach from=$participant.additionalCustomPost item=value key=field}
+		{foreach from=$participant.additionalCustomPost item=value key=field}
+                 <fieldset class="label-left"><div class="header-dark">{$participant.additionalCustomPostGroupTitle.$field.groupTitle}</div>
+                        {foreach from=$participant.additionalCustomPost.$field item=value key=field}
                             <div class="crm-section {$field}-section">
                                 <div class="label">{$field}</div>
                                 <div class="content">{$value}</div>
                                 <div class="clear"></div>
                             </div>
-                        {/foreach}
+                        {/foreach}		 
+		{/foreach}		
+
                     </fieldset>
                 {/if}
             </div>

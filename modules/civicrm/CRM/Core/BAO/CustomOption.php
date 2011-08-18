@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -40,8 +40,6 @@
  *
  */
 class CRM_Core_BAO_CustomOption {
-
-    const VALUE_SEPERATOR = "";
 
     /**
      * Takes a bunch of params that are needed to match certain criteria and
@@ -116,6 +114,19 @@ class CRM_Core_BAO_CustomOption {
         return $options;
     }
 
+    /**
+     * Returns the option label for a custom field with a specific value. Handles all
+     * custom field data and html types
+     *
+     * @param $fieldId  int    the custom field ID
+     * @pram  $value    string the value (typically from the DB) of this custom field
+     * @param $htmlType string the html type of the field (optional)
+     * @param $dataType string the data type of the field (optional)
+     *
+     * @return string          the label to display for this custom field
+     * @static
+     * @access public
+     */
     static function getOptionLabel($fieldId, $value, $htmlType = null, $dataType = null )
     {
         if ( ! $fieldId ) {

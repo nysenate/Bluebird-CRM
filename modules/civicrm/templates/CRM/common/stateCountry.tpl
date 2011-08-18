@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -36,6 +36,19 @@ cj(function()
         callbackURL     = "{crmURL p='civicrm/ajax/jqState' h=0}"
 {literal}
 	cj(countryID).chainSelect(stateProvinceID, callbackURL, null );
+});
+{/literal}
+{/if}
+{if $stateCountryMap.state_province && $stateCountryMap.county}
+{literal}
+cj(function()
+{
+{/literal}
+	    stateProvinceID = "#{$stateCountryMap.state_province}"
+        countyID       = "#{$stateCountryMap.county}"
+        callbackURL     = "{crmURL p='civicrm/ajax/jqCounty' h=0}"
+{literal}
+	cj(stateProvinceID).chainSelect(countyID, callbackURL, null );
 });
 {/literal}
 {/if}

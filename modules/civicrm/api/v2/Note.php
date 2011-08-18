@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,8 +32,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Note
  * 
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Note.php 30811 2010-11-17 04:33:34Z neha $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: Note.php 32998 2011-03-14 22:00:35Z kurund $
  *
  */
 

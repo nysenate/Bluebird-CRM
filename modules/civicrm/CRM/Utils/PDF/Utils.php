@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -37,119 +37,101 @@
 
 class CRM_Utils_PDF_Utils {
 
-    static function domlib( $text,
-                            $fileName = 'civicrm.pdf',
-                            $output = false,
-                            $orientation = 'landscape',
-                            $paperSize   = 'a3' ) {
-        require_once 'packages/dompdf/dompdf_config.inc.php';
-        $dompdf = new DOMPDF( );
-        
-        $values = array( );
-        if ( ! is_array( $text ) ) {
-            $values =  array( $text );
+    static function html2pdf( &$text, $fileName = 'civicrm.pdf', $output = false, $pdfFormat = null ) {
+        if ( is_array( $text ) ) {
+            $pages =& $text;
         } else {
-            $values =& $text;
+            $pages =  array( $text );
         }
+        // Get PDF Page Format
+        require_once "CRM/Core/BAO/PdfFormat.php";
+        $format = CRM_Core_BAO_PdfFormat::getDefaultValues();
+        if ( is_array( $pdfFormat ) ) {
+            // PDF Page Format parameters passed in
+            $format = array_merge( $format, $pdfFormat );
+        } else {
+            // PDF Page Format ID passed in
+            $format = CRM_Core_BAO_PdfFormat::getById( $pdfFormat );
+        }
+        require_once 'CRM/Core/BAO/PaperSize.php';
+        $paperSize = CRM_Core_BAO_PaperSize::getByName( $format['paper_size'] );
+        $paper_width = self::convertMetric( $paperSize['width'], $paperSize['metric'], 'pt' );
+        $paper_height = self::convertMetric( $paperSize['height'], $paperSize['metric'], 'pt' );
+        $paper_size = array(0, 0, $paper_width, $paper_height);	// dompdf requires dimensions in points
+        $orientation = CRM_Core_BAO_PdfFormat::getValue( 'orientation', $format );
+        $metric = CRM_Core_BAO_PdfFormat::getValue( 'metric', $format );
+        $t = CRM_Core_BAO_PdfFormat::getValue( 'margin_top', $format );
+        $r = CRM_Core_BAO_PdfFormat::getValue( 'margin_right', $format );
+        $b = CRM_Core_BAO_PdfFormat::getValue( 'margin_bottom', $format );
+        $l = CRM_Core_BAO_PdfFormat::getValue( 'margin_left', $format );
 
-        $first = true;
-        
-        $html = '
+        $config = CRM_Core_Config::singleton(); 
+        $html = "
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title></title>
-    <style>
-      .page_break {
-        page-break-before: always;
-      }
-    </style>
+    <style>body { margin: {$t}{$metric} {$r}{$metric} {$b}{$metric} {$l}{$metric}; }</style>
+    <style type=\"text/css\">@import url({$config->userFrameworkResourceURL}css/print.css);</style>
   </head>
-  <body>';
+  <body>
+    <div id=\"crm-container\">\n";
 
-        $htmlElementstoStrip = array(
-                                     '@<head[^>]*?>.*?</head>@siu',
-                                     '@<body>@siu',
-                                     '@</body>@siu',
-                                     '@<html[^>]*?>@siu',
-                                     '@</html>@siu',
-                                     '@<!DOCTYPE[^>]*?>@siu',
-                                     );
-        $htmlElementsInstead = array("","","","","","");                     
-        
-        foreach ( $values as $value ) {
-            if ( $first ) {
-                $first = false;
-                $pattern = '@<html[^>]*?>.*?<body>@siu';
-                preg_match($pattern, $value['html'], $matches);
-                //If there is a header in the template it will be used instead of the default header
-                $html = $matches[0] ? $matches[0] : nothing;
-                //$html .= "<h2>{$value['to']}: {$value['subject']}</h2><p>"; //If needed it should be generated through the message template
-            } else {
-                $html .= "<div style=\"page-break-after: always\"></div>";
-                //$html .= "<h2 class=\"page_break\">{$value['to']}: {$value['subject']}</h2><p>"; //If needed it should be generated through the message template
-            }
-            if ( $value['html'] ) {
-                //Strip the header from the template to avoid multiple headers within one document causing invalid html
-                $value['html'] = preg_replace( $htmlElementstoStrip,
-                                               $htmlElementsInstead,
-                                               $value['html'] );
-                $html .= "{$value['html']}\n";              
-            } else {
-                $html .= "{$value['body']}\n";
-            }
+        // Strip <html>, <header>, and <body> tags from each page
+        $htmlElementstoStrip = array( '@<head[^>]*?>.*?</head>@siu',
+                                      '@<body>@siu',
+                                      '@</body>@siu',
+                                      '@<html[^>]*?>@siu',
+                                      '@</html>@siu',
+                                      '@<!DOCTYPE[^>]*?>@siu',
+                               );
+        $htmlElementsInstead = array( '','','','','','' );
+        foreach ( $pages as &$page ) {
+            $page = preg_replace( $htmlElementstoStrip,
+                                   $htmlElementsInstead,
+                                   $page );
         }
+        // Glue the pages together
+        $html .= implode( "\n<div style=\"page-break-after: always\"></div>\n", $pages );
+        $html .= "
+    </div>
+  </body>
+</html>";
 
-        $html .= '
-          </body>
-        </html>';
-                        
+        require_once 'packages/dompdf/dompdf_config.inc.php';
+        spl_autoload_register('DOMPDF_autoload');
+        $dompdf = new DOMPDF( );
+        $dompdf->set_paper ($paper_size, $orientation);
         $dompdf->load_html(utf8_decode($html));
-        $dompdf->set_paper ($paperSize, $orientation);
         $dompdf->render( );
-        
+
         if ( $output ) {
             return $dompdf->output( );
         } else {
             $dompdf->stream( $fileName );
         }
     }
-
-    static function html2pdf( $text,
-                              $fileName = 'civicrm.pdf',
-                              $orientation = 'landscape',
-                              $paperSize   = 'a3',
-                              $output = false ) {
-        require_once 'packages/dompdf/dompdf_config.inc.php';
-        spl_autoload_register('DOMPDF_autoload');
-        $dompdf = new DOMPDF( );
-        
-        $values = array( );
-        if ( ! is_array( $text ) ) {
-            $values =  array( $text );
-        } else {
-            $values =& $text;
+    
+    /*
+     * function to convert value from one metric to another
+     */
+    static function convertMetric( $value, $from, $to, $precision = null ) {
+        switch( $from . $to ) {
+            case 'incm': $value *= 2.54;      break;
+            case 'inmm': $value *= 25.4;      break;
+            case 'inpt': $value *= 72;        break;
+            case 'cmin': $value /= 2.54;      break;
+            case 'cmmm': $value *= 10;        break;
+            case 'cmpt': $value *= 72 / 2.54; break;
+            case 'mmin': $value /= 25.4;      break;
+            case 'mmcm': $value /= 10;        break;
+            case 'mmpt': $value *= 72 / 25.4; break;
+            case 'ptin': $value /= 72;        break;
+            case 'ptcm': $value *= 2.54 / 72; break;
+            case 'ptmm': $value *= 25.4 / 72; break;
         }
-
-        $html = "
-<style>
-.page_break {
-  page-break-before: always;
-}
-</style>
-";
-
-        foreach ( $values as $value ) {
-            $html .= "{$value}\n";
+        if ( ! is_null( $precision ) ) {
+            $value = round( $value, $precision );
         }
-        $dompdf->load_html(utf8_decode($html));
-        $dompdf->set_paper ($paperSize, $orientation);
-        $dompdf->render( );
-        if ( $output ) {
-            return $dompdf->output( );
-        } else {
-            $dompdf->stream( $fileName );
-        }
+        return $value;
     }
 
     static function &pdflib( $fileName,

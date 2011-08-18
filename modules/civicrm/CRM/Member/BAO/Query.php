@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -118,9 +118,15 @@ class CRM_Member_BAO_Query
                 $query->_select['membership_recur_id']  = "civicrm_membership.contribution_recur_id as membership_recur_id";
                 $query->_element['membership_recur_id'] = 1;
             }
+            
+            //add campaign id.
+            if ( CRM_Utils_Array::value( 'member_campaign_id', $query->_returnProperties ) ) {
+                $query->_select['member_campaign_id']  = 'civicrm_membership.campaign_id as member_campaign_id';
+                $query->_element['member_campaign_id'] = 1;
+            }
         }
     }
-
+    
     static function where( &$query ) 
     {
         $isTest   = false;
@@ -292,7 +298,15 @@ class CRM_Member_BAO_Query
             }
             $query->_tables['civicrm_membership'] = $query->_whereTables['civicrm_membership'] = 1;
             return;
-
+            
+        case 'member_campaign_id':
+            require_once 'CRM/Campaign/BAO/Query.php';
+            $campParams = array( 'op'          => $op,
+                                 'campaign'    => $value,
+                                 'grouping'    => $grouping,
+                                 'tableName'   => 'civicrm_membership' );
+            CRM_Campaign_BAO_Query::componentSearchClause( $campParams, $query );
+            return;
         }
     }
 
@@ -348,7 +362,8 @@ class CRM_Member_BAO_Query
                                 'membership_status'      => 1,
                                 'membership_id'          => 1,
                                 'owner_membership_id'    => 1,
-                                'membership_recur_id'    => 1
+                                'membership_recur_id'    => 1,
+                                'member_campaign_id'     => 1
                                 );
 
             // also get all the custom membership properties
@@ -413,6 +428,10 @@ class CRM_Member_BAO_Query
                 }
             }
         }
+        
+        require_once 'CRM/Campaign/BAO/Campaign.php';
+        CRM_Campaign_BAO_Campaign::addCampaignInComponentSearch( $form, 'member_campaign_id' );
+        
         $form->assign( 'validCiviMember', true );
     }
 

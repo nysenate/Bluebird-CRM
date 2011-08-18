@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -126,7 +126,6 @@
         </fieldset>
     {/if}
 </div>
-{/if}
 
 {literal}
 <script type="text/javascript">
@@ -137,13 +136,13 @@ function showHideAutoRenew( memTypeId )
 {
   var considerUserInput = {/literal}'{$takeUserSubmittedAutoRenew}'{literal};	    
   if ( memTypeId ) considerUserInput = false;
-  if ( !memTypeId ) memTypeId = cj('input:radio[name=selectMembership]:checked').val();
+  if ( !memTypeId ) memTypeId = cj('input:radio[name="selectMembership"]:checked').val();
   
   //does this page has only one membership type.
   var singleMembership = {/literal}'{$singleMembership}'{literal};
   if ( !memTypeId && singleMembership ) memTypeId = cj("#selectMembership").val( ); 
   
-  var renewOptions  = {/literal}'{$autoRenewMembershipTypeOptions}'{literal};	 
+  var renewOptions  = {/literal}{$autoRenewMembershipTypeOptions}{literal};	 
   var currentOption = eval( "renewOptions." + 'autoRenewMembershipType_' + memTypeId );
   
   funName = 'hide();';
@@ -166,7 +165,7 @@ function showHideAutoRenew( memTypeId )
 
   //its a normal recur contribution.
   if ( cj( "is_recur" ) && 
-      ( cj( 'input:radio[name=is_recur]:checked').val() == 1 ) ) {
+      ( cj( 'input:radio[name="is_recur"]:checked').val() == 1 ) ) {
      isChecked = false;
      funName   = 'hide();';
   }
@@ -193,3 +192,4 @@ function showHideAutoRenew( memTypeId )
 </script>
 {/literal}
 
+{/if}{* membership block end here *}

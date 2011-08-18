@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -41,7 +41,6 @@ require_once 'CRM/Core/DAO/Email.php';
  */
 class CRM_Core_BAO_Email extends CRM_Core_DAO_Email 
 {
-
     /**
      * takes an associative array and adds email
      *
@@ -91,7 +90,6 @@ contact_id = {$params['contact_id']}";
     {
         return CRM_Core_BAO_Block::getValues( 'email', $entityBlock );
     }
-
    
     /**
      * Get all the emails for a specified contact_id, with the primary email being first
@@ -140,8 +138,7 @@ ORDER BY
         return $emails;
     }
     
-
-     /**
+    /**
      * Get all the emails for a specified location_block id, with the primary email being first
      *
      * @param array $entityElements the array containing entity_id and

@@ -47,6 +47,7 @@
 		},
 
 		replaceSelection: function() {
+
 			var e = this.jquery ? this[0] : this;
 			var text = arguments[0] || '';
 
@@ -56,34 +57,27 @@
 				('selectionStart' in e && function() {
                     var cursorlength = e.selectionStart + text.length;
                     e.value = e.value.substr(0, e.selectionStart) + text + e.value.substr(e.selectionEnd, e.value.length);
-                    
 					e.selectionStart = e.selectionEnd = cursorlength;
                     return this;
 				}) ||
 
 				/* exploder */
 				(document.selection && function() {
-				
-			
-				
-				
-                    //NYSS 3524 & NYSS 4073
-		    // get the current cursor position
-                    // really, really, really inefficient way to move variables around, but because of my unfamiliarity
-                    // on how to store variables in CCRM, this is the work to be done.
-                    // it takes data from insert token
-                    var gSPi = cj('#gSP').text();
-                    var gEPi = cj('#gEP').text();
+                    // get the current cursor position
+                    // currently IE 8 does not support methods to get cursor start position
+                    // replace below code with the equivalent once method is available 
+                    var startPosition = e.value.length;
+                    var endPosition = startPosition + text.length;
                     
                     // set the value
-                    e.value = e.value.substr(0, gSPi) + text + e.value.substr( gEPi, e.value.length);
-                    //move the focus to correct position, end of inserted token
-		    //NYSS 3524
+                    e.value = e.value.substr(0, startPosition) + text + e.value.substr( endPosition, e.value.length);
+                    
+                    // move the focus to correct position, end of inserted token 
+					e.focus();
                     var range = e.createTextRange(); 
-                    range.move( "character", gEPi ); 
-                    range.select();
-
-					//return this;
+                    range.move( "character", endPosition ); 
+                    range.select(); 
+					return this;
 				}) ||
 
 				/* browser not supported */
@@ -95,7 +89,6 @@
 			)();
 
 		}
-
 	};
 
 	jQuery.each(fieldSelection, function(i) { jQuery.fn[i] = this; });

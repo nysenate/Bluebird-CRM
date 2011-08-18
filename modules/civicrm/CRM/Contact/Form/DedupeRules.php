@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -95,7 +95,7 @@ class CRM_Contact_Form_DedupeRules extends CRM_Admin_Form
                 }
             }
         }
-        asort($this->_fields);
+        asort( $this->_fields );
     }
     
     /**
@@ -106,7 +106,11 @@ class CRM_Contact_Form_DedupeRules extends CRM_Admin_Form
      */
     public function buildQuickForm()
     {
-        $this->add('text', 'name', ts('Rule Name') );
+        $foo = CRM_Core_DAO::getAttribute('CRM_Dedupe_DAO_Rule', 'title');
+        
+        $this->add('text', 'name', ts('Rule Name'), array( 'maxlength' => 64, 'class' => 'huge'), true );
+        $this->addRule( 'name', ts('A duplicate matching rule with this name already exists. Please select another name.'), 
+                        'objectExists', array( 'CRM_Dedupe_DAO_RuleGroup', $this->_rgid, 'name' ) );
         $levelType = array(
                            'Fuzzy'  => ts('Fuzzy'),
                            'Strict' => ts('Strict')
@@ -126,12 +130,41 @@ class CRM_Contact_Form_DedupeRules extends CRM_Admin_Form
         }
         $this->add('text', 'threshold', ts("Weight Threshold to Consider Contacts 'Matching':"), array('class' => 'two', 'style' => 'text-align: right'));
         $this->addButtons(array(
-            array('type' => 'next',   'name' => ts('Save'), 'isDefault' => true),
-            array('type' => 'cancel', 'name' => ts('Cancel')),
-        ));
+                                array('type' => 'next',   'name' => ts('Save'), 'isDefault' => true),
+                                array('type' => 'cancel', 'name' => ts('Cancel')),
+                                ));
         $this->assign('contact_type', $this->_contactType);
+
+        $this->addFormRule( array( 'CRM_Contact_Form_DedupeRules', 'formRule' ), $this );
     }
 
+    /**
+     * global validation rules for the form
+     *
+     * @param array $fields posted values of the form
+     *
+     * @return array list of errors to be posted back to the form
+     * @static
+     * @access public
+     */
+    static function formRule( $fields, $files, $self ) 
+    {
+        $errors = array( );
+        $fieldSelected = false;
+        for ($count = 0; $count < self::RULES_COUNT; $count++) {
+            if ( CRM_Utils_Array::value( "where_$count", $fields ) ) {
+                $fieldSelected = true;
+                break;
+            }
+        }
+        
+        if ( !$fieldSelected ) {
+            $errors['_qf_default'] = ts('Please select atleast one field.');
+        }
+
+        return empty($errors) ? true : $errors;
+    }
+    
     function setDefaultValues()
     {
         return $this->_defaults;
@@ -212,6 +245,13 @@ UPDATE civicrm_dedupe_rule_group
         // CRM-3837
         require_once 'CRM/Core/BAO/SchemaHandler.php';
         CRM_Core_BAO_SchemaHandler::createIndexes( $tables, 'dedupe_index', $substrLenghts );
+        
+        //need to clear cache of deduped contacts 
+        //based on the previous rule
+        $cacheKey = "merge {$this->_contactType}_{$this->_rgid}_%";
+        
+        require_once 'CRM/Core/BAO/PrevNextCache.php';
+        CRM_Core_BAO_PrevNextCache::deleteItem( null, $cacheKey );
                 
     }
     

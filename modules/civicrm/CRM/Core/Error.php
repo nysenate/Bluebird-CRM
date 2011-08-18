@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
  * PEAR_ErrorStack and use that framework
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -215,6 +215,27 @@ class CRM_Core_Error extends PEAR_ErrorStack {
         self::abend(1);
     }
 
+    // this function is used to trap and print errors
+    // during system initialization time. Hence the error
+    // message is quite ugly
+    public function simpleHandler( $pearError ) {
+
+        // create the error array
+        $error = array();
+        $error['callback']    = $pearError->getCallback();
+        $error['code']        = $pearError->getCode();
+        $error['message']     = $pearError->getMessage();
+        $error['mode']        = $pearError->getMode();
+        $error['debug_info']  = $pearError->getDebugInfo();
+        $error['type']        = $pearError->getType();
+        $error['user_info']   = $pearError->getUserInfo();
+        $error['to_string']   = $pearError->toString();
+
+        $errorDetails = CRM_Core_Error::debug( 'Initialization Error', $error );
+        CRM_Core_Error::backtrace( );
+        exit( 0 );
+    }
+
     /**
      * Handle errors raised using the PEAR Error Stack.
      *
@@ -250,6 +271,11 @@ class CRM_Core_Error extends PEAR_ErrorStack {
             $message = ts('We experienced an unexpected error. Please post a detailed description and the backtrace on the CiviCRM forums: %1', array(1 => 'http://forum.civicrm.org/')); 
         }
 
+        if ( php_sapi_name() == "cli" ) {
+          print ("Sorry. A non-recoverable error has occurred.\n$message \n$code\n$email\n\n");
+          debug_print_backtrace();
+          die ("\n");
+        }
         $vars = array( 'message' => $message,
                        'code'    => $code );
 
@@ -276,8 +302,12 @@ class CRM_Core_Error extends PEAR_ErrorStack {
         CRM_Core_Error::debug_var( 'Fatal Error Details', $vars );
         CRM_Core_Error::backtrace( 'backTrace', true );
         $content = $template->fetch( $config->fatalErrorTemplate );
-        echo CRM_Utils_System::theme( 'page', $content );
-        // print $content;
+        if ( $config->userFramework == 'Joomla' ) {
+            JError::raiseError( 'CiviCRM-001', $content );
+        } else {
+            echo CRM_Utils_System::theme( 'page', $content );
+        }
+
         self::abend( CRM_Core_Error::FATAL_ERROR );
     }
 
@@ -486,7 +516,6 @@ class CRM_Core_Error extends PEAR_ErrorStack {
 
     /* used for the API, rise the exception instead of catching/fatal it */
     public static function setRaiseException( ) {
-        //deprecated        PEAR::setErrorHandling( PEAR_ERROR_EXCEPTION);
         PEAR::setErrorHandling( PEAR_ERROR_CALLBACK,  array( 'CRM_Core_Error', 'exceptionHandler' ) );
     }
 
@@ -500,15 +529,6 @@ class CRM_Core_Error extends PEAR_ErrorStack {
     }
     
     public static function exceptionHandler ($pearError) {
-        $error = array();
-        $error['code']        = $pearError->getCode();
-        $error['message']     = $pearError->getMessage();
-        $error['mode']        = $pearError->getMode();
-        $error['debug_info']  = $pearError->getDebugInfo();
-        $error['type']        = $pearError->getType();
-        $error['user_info']   = $pearError->getUserInfo();
-        $error['to_string']   = $pearError->toString();
-
         throw new PEAR_Exception($pearError->getMessage(),$pearError);   
     }
     
@@ -551,9 +571,8 @@ class CRM_Core_Error extends PEAR_ErrorStack {
         
         $values['is_error']      = 1;
         $values['error_message'] = $msg;
-        if ( $data ) {
-            $values['error_data']    = $data;
-        }
+        if (isset ($data))
+          $values = array_merge ($values,$data);
         return $values;
     }
 

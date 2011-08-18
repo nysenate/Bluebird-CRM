@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -47,6 +47,7 @@
         {/if}
 
         {include file="CRM/common/jsortable.tpl"}
+        <div id="merge_tag_status"></div>
         <div id="cat">
             {strip}
             <table id="options" class="display">
@@ -63,12 +64,12 @@
                     </tr>
                 </thead>
                 {foreach from=$rows item=row key=id }
-                <tr class="{cycle values="odd-row,even-row"} {$row.class} crm-tag">
+                <tr class="{cycle values="odd-row,even-row"} {$row.class} crm-tag" id="tag_row_{$row.id}">
                     <td class="crm-tag-name">{$row.name}</td>
                     <td class="crm-tag-id">{$row.id}</td>	
                     <td class="crm-tag-description">{$row.description} </td>
                     <td class="crm-tag-parent">{$row.parent} {if $row.parent_id}({$row.parent_id}){/if}</td>
-        	        <td>{$row.used_for}</td>
+        	    <td class="crm-tag-used_for">{$row.used_for}</td>
                     <td class="crm-tag-is_tagset">{if $row.is_tagset}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Tag Set{/ts}" />{/if}</td>
                     <td class="crm-tag-is_reserved">{if $row.is_reserved}<img src="{$config->resourceBase}/i/check.gif" alt="{ts}Reserved{/ts}" />{/if}</td>
                     <td>{$row.action|replace:'xx':$row.id}</td>
@@ -94,5 +95,106 @@
             {ts 1=$crmURL}There are no Tags present. You can <a href='%1'>add one</a>.{/ts}
         </div>    
     {/if}
+
+<div id="mergeTagDialog">
+    {ts}Begin typing name of tag to merge into.{/ts}<br/>
+    <input type="text" id="tag_name"/>
+    <input type="hidden" id="tag_name_id" value="">
+    <div id="used_for_warning" class="status message"></div>
 </div>
+
+</div>
+
+{literal}
+<script type="text/javascript">
+cj("#mergeTagDialog").hide( );
+cj( function() {
+    cj('.merge_tag').click(function(){
+        var row_id = cj(this).closest('tr').attr('id');
+        var tagId = row_id.split('_');
+        mergeTag( tagId[2] );
+    });    
+});
+
+function mergeTag( fromId ) {
+    var fromTag = cj('#tag_row_' + fromId).children('td.crm-tag-name').text();
+    cj('#used_for_warning').html('');
+
+    cj("#mergeTagDialog").show( );
+	cj("#mergeTagDialog").dialog({
+		title: "Merge tag '" + fromTag + "' into:",
+		modal: true,
+		bgiframe: true, 
+		close: function(event, ui) { cj("#tag_name").unautocomplete( ); },
+		overlay: { 
+			opacity: 0.5, 
+			background: "black" 
+		},
+
+		open:function() {
+			cj("#tag_name").val( "" );
+			cj("#tag_name_id").val( null );
+
+			var tagUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTagList' h=0}"{literal};
+                        tagUrl = tagUrl + "&fromId=" + fromId;
+
+			cj("#tag_name").autocomplete( tagUrl, {
+				width: 260,
+				selectFirst: false,
+				matchContains: true 
+			});
+			
+			cj("#tag_name").focus();
+			cj("#tag_name").result(function(event, data, formatted) {
+				cj("input[id=tag_name_id]").val(data[1]);
+                                if ( data[2] == 1 ) {
+                                    cj('#used_for_warning').html("Warning: '" + fromTag + "' has different used-for options than the selected tag, which would be merged into the selected tag. Click Ok to proceed.");
+                                } else {
+                                    cj('#used_for_warning').html('');
+                                }
+			});		    
+		},
+
+		buttons: { 
+			"Ok": function() { 	    
+				if ( ! cj("#tag_name").val( ) ) {
+					alert('{/literal}{ts escape="js"}Select valid tag from the list{/ts}{literal}.');
+					return false;
+				}
+				var toId = cj("#tag_name_id").val( );
+				if ( ! toId ) {
+					alert('{/literal}{ts escape="js"}Select valid tag from the list{/ts}{literal}.');
+					return false;
+				}
+				
+                /* send synchronous request so that disabling any actions for slow servers*/
+				var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
+				var data    = 'fromId='+ fromId + '&toId='+ toId + "&key={/literal}{crmKey name='civicrm/ajax/mergeTags'}{literal}";
+                cj.ajax({ type     : "POST", 
+					  url      : postUrl, 
+					  data     : data, 
+					  dataType : "json",
+					  success  : function( values ) {
+                        if ( values.status == true ) {
+                            cj('#tag_row_' + toId).children('td.crm-tag-used_for').text(values.tagB_used_for);
+                            var msg = "'" + values.tagA + "' has been merged with '" + values.tagB + "'. All records previously tagged with '" + values.tagA + "' are now tagged with '" + values.tagB + "'.";
+                            cj('#tag_row_' + fromId).html('<td colspan="8"><div class="status message"><div class="icon inform-icon"></div>' + msg + '</div></td>'); 
+                        }
+                      }
+                });
+				
+                cj(this).dialog("close"); 
+				cj(this).dialog("destroy");
+ 			},
+
+			"Cancel": function() { 
+				cj(this).dialog("close"); 
+				cj(this).dialog("destroy"); 
+			} 
+          }
+	});
+}
+</script>
+{/literal}
+
 {/if}

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -86,7 +86,7 @@ class CRM_Core_BAO_FinancialTrxn extends CRM_Core_DAO_FinancialTrxn
 		'amount'            => $contributionAmount,
 		'currency'          => $trxn->currency,
 		);
-        $entity_trxn =& new CRM_Core_DAO_EntityFinancialTrxn();
+        $entity_trxn = new CRM_Core_DAO_EntityFinancialTrxn();
         $entity_trxn->copyValues($entity_financial_trxn_params);
         if ( $fids['entityFinancialTrxnId'] ) {
             $entity_trxn->id = $fids['entityFinancialTrxnId'];

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,6 +27,7 @@
 <script type="text/javascript" >
 var text_message = null;
 var html_message = null;
+var isPDF        = false;
 var isMailing    = false;
 
 {/literal}
@@ -43,6 +44,12 @@ var isMailing    = false;
     {/literal}
 {/if}
 
+{if $form.formName eq 'PDF'}
+    {literal}
+    isPDF = true;
+    {/literal}
+{/if}
+
 {if $templateSelected}
     {literal}
     if ( document.getElementsByName("saveTemplate")[0].checked ) {
@@ -53,17 +60,6 @@ var isMailing    = false;
 {literal}
 
 var editor = {/literal}"{$editor}"{literal};
-function loadEditor()
-{
-    var msg =  {/literal}"{$htmlContent}"{literal};
-    if (msg) {
-        if ( editor == "ckeditor" ) {
-            oEditor = CKEDITOR.instances[html_message];
-            oEditor.setData( msg );
-        }
-    }
-}
-
 function showSaveUpdateChkBox()
 {
     if ( document.getElementById('template') == null ) {
@@ -93,16 +89,29 @@ function showSaveUpdateChkBox()
 }
 
 function selectValue( val ) {
+    document.getElementsByName("saveTemplate")[0].checked = false;
+    document.getElementsByName("updateTemplate")[0].checked = false;
+    showSaveUpdateChkBox();
     if ( !val ) {
-        document.getElementById(text_message).value ="";
-        document.getElementById("subject").value ="";
+        if ( !isPDF ) {
+            document.getElementById(text_message).value ="";
+            document.getElementById("subject").value ="";
+        }
         if ( editor == "ckeditor" ) {
             oEditor = CKEDITOR.instances[html_message];
             oEditor.setData('');
         } else if ( editor == "tinymce" ) {
             tinyMCE.getInstanceById(html_message).setContent( html_body );
+        } else if ( editor == "joomlaeditor" ) { 
+            document.getElementById(html_message).value = '' ;
+            tinyMCE.execCommand('mceSetContent',false, '');               
+        } else if (editor == "drupalwysiwyg") {
+            //doesn't work! WYSIWYG API doesn't support a clear or replace method
         } else {	
             document.getElementById(html_message).value = '' ;
+        }
+        if ( isPDF ) {
+            showBindFormatChkBox();
         }
         return;
     }
@@ -110,17 +119,18 @@ function selectValue( val ) {
     var dataUrl = {/literal}"{crmURL p='civicrm/ajax/template' h=0 }"{literal};
 
     cj.post( dataUrl, {tid: val}, function( data ) {
-        cj("#subject").val( data.subject );
-
-        if ( data.msg_text ) {      
-            cj("#"+text_message).val( data.msg_text );
-            cj("div.text").show();
-            cj(".head").find('span').removeClass().addClass('ui-icon ui-icon-triangle-1-s');
-            cj("#helptext").show(); 
-        } else {
-            cj("#"+text_message).val("");
+        if ( !isPDF ) {
+            cj("#subject").val( data.subject );
+            
+            if ( data.msg_text ) {      
+                cj("#"+text_message).val( data.msg_text );
+                cj("div.text").show();
+                cj(".head").find('span').removeClass().addClass('ui-icon ui-icon-triangle-1-s');
+                cj("#helptext").show(); 
+            } else {
+                cj("#"+text_message).val("");
+            }
         }
-
         var html_body  = "";
         if (  data.msg_html ) {
             html_body = data.msg_html;
@@ -131,16 +141,26 @@ function selectValue( val ) {
             oEditor.setData( html_body );
         } else if ( editor == "tinymce" ) {
             cj('#'+ html_message).tinymce().execCommand('mceSetContent',false, html_body);
-        } else {	
+        } else if ( editor == "joomlaeditor" ) { 
+            cj("#"+ html_message).val( html_body );
+            tinyMCE.execCommand('mceSetContent',false, html_body);           
+        } else if ( editor =="drupalwysiwyg" ) {
+            Drupal.wysiwyg.instances[html_message].insert(html_body);
+        } else {
             cj("#"+ html_message).val( html_body );
         }
-
-        }, 'json');    
-    }
+        if ( isPDF ) {
+            var bind = data.pdf_format_id ? true : false ;
+            selectFormat( data.pdf_format_id, bind );
+            if ( !bind ) {
+                document.getElementById("bindFormat").style.display = "none";
+            }
+        }
+    }, 'json');    
+}
 
  if ( isMailing ) { 
      document.getElementById("editMessageDetails").style.display = "block";
-    
 
     function verify( select )
     {
@@ -180,15 +200,13 @@ function selectValue( val ) {
     {if $editor eq "ckeditor"}
         {literal}
         cj( function() {
-            oEditor = CKEDITOR.instances[html_message];
-            oEditor.setData( {/literal}'{$message_html}'{literal});
+            oEditor = CKEDITOR.instances['html_message'];
             oEditor.BaseHref = '' ;
             oEditor.UserFilesPath = '' ; 
-            loadEditor();
-	        oEditor.on( 'focus', verify );
+	    oEditor.on( 'focus', verify );
         });
         {/literal}
-    {else if $editor eq "tinymce"}
+    {elseif $editor eq "tinymce"}
         {literal}
         cj( function( ) {
 	if ( isMailing ) { 
@@ -211,7 +229,18 @@ function selectValue( val ) {
         }
         });
         {/literal}
-    {/if}
+    {elseif $editor eq "drupalwysiwyg"}
+      {literal}
+      cj( function( ) {
+        if ( isMailing ) { 
+          cj('div.html').hover(
+            verify,
+            verify
+          );  
+        }
+     });
+     {/literal}
+     {/if}
     {literal}
  }
 
@@ -223,14 +252,9 @@ function selectValue( val ) {
         }else {
            ( isMailing ) ? text_message = "text_message" : text_message = "msg_text";
         }          
-        var msg       = cj("#"+ text_message).val( );
-        var cursorlen = document.getElementById(text_message).selectionStart;
-        var textlen   = msg.length;
-        document.getElementById(text_message).value = msg.substring(0, cursorlen) + token + msg.substring(cursorlen, textlen);
-        var cursorPos = (cursorlen + token.length);
-        document.getElementById(text_message).selectionStart = cursorPos;
-        document.getElementById(text_message).selectionEnd   = cursorPos;
-        document.getElementById(text_message).focus();
+        
+        cj( "#"+ text_message ).replaceSelection( token ); 
+
         if ( isMailing ) { 
              verify();
         }
@@ -242,10 +266,8 @@ function selectValue( val ) {
         var editor     = {/literal}"{$editor}"{literal};
         if ( editor == "tinymce" ) {
             cj('#'+ html_message).tinymce().execCommand('mceInsertContent',false, token2);
-        } else if ( editor == "ckeditor" ) {
-            oEditor = CKEDITOR.instances[html_message];
-            oEditor.insertHtml(token2.toString() );
-        } else {
+        } else if ( editor == "joomlaeditor" ) { 
+            tinyMCE.execCommand('mceInsertContent',false, token2);
             var msg       = document.getElementById(html_message).value;
             var cursorlen = document.getElementById(html_message).selectionStart;
             var textlen   = msg.length;
@@ -253,7 +275,14 @@ function selectValue( val ) {
             var cursorPos = (cursorlen + token2.length);
             document.getElementById(html_message).selectionStart = cursorPos;
             document.getElementById(html_message).selectionEnd   = cursorPos;
-            document.getElementById(html_message).focus();
+            document.getElementById(html_message).focus();            
+        } else if ( editor == "ckeditor" ) {
+            oEditor = CKEDITOR.instances[html_message];
+            oEditor.insertHtml(token2.toString() );
+        } else if ( editor == "drupalwysiwyg" ) {
+            Drupal.wysiwyg.instances[html_message].insert(token2.toString());
+        } else {
+            cj( "#"+ html_message ).replaceSelection( token2 );
         }
 
         if ( isMailing ) { 
@@ -312,6 +341,7 @@ function selectValue( val ) {
                             switch ({/literal}"{$editor}"{literal}) {
                                 case 'ckeditor': { oEditor = CKEDITOR.instances[html_message]; oEditor.focus(); break;}
                                 case 'tinymce'  : { tinyMCE.get(html_message).focus(); break; } 
+                                case 'joomlaeditor' : { tinyMCE.get(html_message).focus(); break; } 
                                 default         : { cj("#"+ html_message).focus(); break; } 
                         }
                     } else if (element == 'Subject') {
@@ -326,8 +356,10 @@ function selectValue( val ) {
     }
 
     cj(function() {
-        if ( !cj().find('div.crm-error').text() ) {            
-            setSignature( );
+        if ( !cj().find('div.crm-error').text() ) {
+          cj(window).load(function () {           
+            setSignature();
+          });
         }
 
         cj("#fromEmailAddress").change( function( ) {
@@ -359,6 +391,8 @@ function selectValue( val ) {
                         oEditor.setData( htmlMessage  );
                     } else if ( editor == "tinymce" ) {
                         cj('#'+ html_message).tinymce().execCommand('mceSetContent',false, htmlMessage );
+                    }  else if ( editor == "drupalwysiwyg" ) {
+                        Drupal.wysiwyg.instances[html_message].insert(htmlMessage);
                     } else {	
                         cj("#"+ html_message).val( htmlMessage );
                     }

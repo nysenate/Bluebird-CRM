@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -55,8 +55,9 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
             array( 'civicrm_c2' =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
                           'fields'    =>
-                          array( 'display_name'           => 
-                                 array( 'title' => ts('Client'),
+                          array( 'client_name'           => 
+                                 array( 'name'      => 'sort_name',
+                                        'title'     => ts('Client'),
                                         'required'  => true, ),
                                 ),
                         ),

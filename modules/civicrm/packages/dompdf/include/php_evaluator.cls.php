@@ -28,16 +28,16 @@
  * the case, you can obtain a copy at http://www.php.net/license/3_0.txt.
  *
  * The latest version of DOMPDF might be available at:
- * http://www.digitaljunkies.ca/dompdf
+ * http://www.dompdf.com/
  *
- * @link http://www.digitaljunkies.ca/dompdf
+ * @link http://www.dompdf.com/
  * @copyright 2004 Benj Carson
  * @author Benj Carson <benjcarson@digitaljunkies.ca>
  * @package dompdf
- * @version 0.5.1
+
  */
 
-/* $Id: php_evaluator.cls.php,v 1.4 2006/07/07 21:31:04 benjcarson Exp $ */
+/* $Id: php_evaluator.cls.php 216 2010-03-11 22:49:18Z ryan.masten $ */
 
 /**
  * Executes inline PHP code during the rendering process
@@ -53,15 +53,19 @@ class PHP_Evaluator {
     $this->_canvas = $canvas;
   }
 
-  function evaluate($code) {
-
+  function evaluate($code, $vars = array()) {
     if ( !DOMPDF_ENABLE_PHP )
       return;
     
     // Set up some variables for the inline code
     $pdf = $this->_canvas;
-    $PAGE_NUM = $this->_canvas->get_page_number();
-    $PAGE_COUNT = $this->_canvas->get_page_count();
+    $PAGE_NUM = $pdf->get_page_number();
+    $PAGE_COUNT = $pdf->get_page_count();
+    
+    // Override those variables if passed in
+    foreach ($vars as $k => $v) {
+        $$k = $v;
+    }
 
     eval(utf8_decode($code)); 
   }
@@ -70,4 +74,3 @@ class PHP_Evaluator {
     $this->evaluate($frame->get_node()->nodeValue);
   }
 }
-?>

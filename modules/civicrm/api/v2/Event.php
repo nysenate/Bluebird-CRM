@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,8 +33,8 @@
  * @package CiviCRM_APIv2
  * @subpackage API_Event
  * 
- * @copyright CiviCRM LLC (c) 2004-2010
- * @version $Id: Event.php 30929 2010-11-24 17:33:02Z xavier $
+ * @copyright CiviCRM LLC (c) 2004-2011
+ * @version $Id: Event.php 32998 2011-03-14 22:00:35Z kurund $
  *
  */
 
@@ -148,19 +148,21 @@ function civicrm_event_search( &$params )
     $inputParams            = array( );
     $returnProperties       = array( );
     $returnCustomProperties = array( );
-    $otherVars              = array( 'sort', 'offset', 'rowCount' );
+    $otherVars              = array( 'sort', 'offset', 'rowCount', 'isCurrent' );
 
-    $sort     = false;
-    // don't check if empty, more meaningful error for API user instead of siletn defaults
-    $offset   = array_key_exists( 'return.offset', $params ) ? $params['return.offset'] : 0;
-    $rowCount = array_key_exists( 'return.max_results', $params ) ? $params['return.max_results'] : 25;
-    
+    $sort     =  array_key_exists( 'return.sort', $params ) ? $params['return.sort'] : false; 
+
+    // don't check if empty, more meaningful error for API user instead of silent defaults
+    $offset    = array_key_exists( 'return.offset', $params ) ? $params['return.offset'] : 0;
+    $rowCount  = array_key_exists( 'return.max_results', $params ) ? $params['return.max_results'] : 25;
+    $isCurrent = array_key_exists( 'isCurrent', $params ) ? $params['isCurrent'] : 0;
+
     foreach ( $params as $n => $v ) {
         if ( substr( $n, 0, 7 ) == 'return.' ) {
             if ( substr( $n, 0, 14 ) == 'return.custom_') {
                 //take custom return properties separate
                 $returnCustomProperties[] = substr( $n, 7 );
-            } elseif( !in_array( substr( $n, 7 ) ,array( 'offset', 'max_results' ) ) ) {
+            } elseif( !in_array( substr( $n, 7 ) ,array( 'sort', 'offset', 'max_results' ) ) ) {
                 $returnProperties[] = substr( $n, 7 );
             }
         } elseif ( in_array( $n, $otherVars ) ) {
@@ -185,6 +187,9 @@ function civicrm_event_search( &$params )
         $eventDAO->selectAdd( implode( ',' , $returnProperties ) );
     }
     $eventDAO->whereAdd( '( is_template IS NULL ) OR ( is_template = 0 )' );
+	if ( $isCurrent ) { 
+		$eventDAO->whereAdd( '(start_date >= CURDATE() || end_date >= CURDATE())' );
+	}
     
     $eventDAO->orderBy( $sort );
     $eventDAO->limit( (int)$offset, (int)$rowCount );
@@ -192,7 +197,11 @@ function civicrm_event_search( &$params )
     while ( $eventDAO->fetch( ) ) {
         $event[$eventDAO->id] = array( );
         CRM_Core_DAO::storeValues( $eventDAO, $event[$eventDAO->id] );
-        $groupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Event', CRM_Core_DAO::$_nullObject, $eventDAO->id, false, $eventDAO->event_type_id );
+        $groupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Event', 
+                                                         CRM_Core_DAO::$_nullObject,
+                                                         $eventDAO->id, 
+                                                         false, 
+                                                         $eventDAO->event_type_id );
         $groupTree = CRM_Core_BAO_CustomGroup::formatGroupTree( $groupTree, 1, CRM_Core_DAO::$_nullObject );
         $defaults  = array( );
         CRM_Core_BAO_CustomGroup::setDefaults( $groupTree, $defaults );
@@ -241,6 +250,10 @@ function civicrm_event_delete( &$params )
     
     require_once 'CRM/Event/BAO/Event.php';
     
-    return CRM_Event_BAO_Event::del( $eventID ) ?  civicrm_create_success( ) : civicrm_create_error( ts( 'Error while deleting event' ) );
+    return 
+        CRM_Event_BAO_Event::del( $eventID ) ? 
+        civicrm_create_success( ) :
+        civicrm_create_error( ts( 'Error while deleting event' ) );
+
 }
 

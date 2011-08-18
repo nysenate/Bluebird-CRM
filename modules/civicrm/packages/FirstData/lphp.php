@@ -471,6 +471,9 @@ class lphp
 		if ( isset( $pdata["transactionorigin"] ) )
 			$xml .= "<transactionorigin>" . $pdata["transactionorigin"] . "</transactionorigin>";
 
+        if ( isset( $pdata["invoice_number"] ) )
+            $xml .= "<invoice_number>" . $pdata["invoice_number"] . "</invoice_number>";
+
 		if ( isset( $pdata["tdate"] ) )
 			$xml .= "<tdate>" . $pdata["tdate"] . "</tdate>";
 

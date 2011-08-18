@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -83,12 +83,15 @@
 	    {* here build the survey profile fields *}
 	    {if $surveyFields}
 	    {foreach from=$surveyFields item=field key=fieldName}
-		<td class="compressed">
+        <td class="compressed {$field.data_type} {$fieldName}">
                 {if ( $field.data_type eq 'Date') or 
-		    ( $fieldName eq 'thankyou_date' ) or ( $fieldName eq 'cancel_date' ) or ( $fieldName eq 'receipt_date' ) or (  $fieldName eq 'activity_date_time') }
+            ( $fieldName eq 'thankyou_date' ) or ( $fieldName eq 'cancel_date' ) or ( $fieldName eq 'receipt_date' ) or (  $fieldName eq 'activity_date_time') }
                     {include file="CRM/common/jcalendar.tpl" elementName=$fieldName elementIndex=$voterId batchUpdate=1}
                 {else}
                    {$form.field.$voterId.$fieldName.html}
+                {/if}
+		{if $field.html_type eq 'Autocomplete-Select'}
+		  {include file="CRM/Custom/Form/AutoComplete.tpl" element_name = field[`$voterId`][`$fieldName`]}
                 {/if}
 		</td> 
             {/foreach}
@@ -153,6 +156,7 @@
 	//load jQuery data table.
         cj('#voterRecords').dataTable( {
 		"sPaginationType": "full_numbers",
+		"bJQueryUI"  : true,
 		"aaSorting"  : sortColumn,
 		"aoColumns"  : columns
         });        
@@ -214,7 +218,18 @@
 	for ( radioName in allRadios ) {
 	   if ( !data.hasOwnProperty( radioName ) ) data[radioName] = '';  
 	}
-		
+	
+	//carry contact related profile field data.
+	fieldName = 'field_' + voterId;
+	cj( '[id^="'+ fieldName +'"]' ).each( function( ) {
+	    fldId = cj(this).attr( 'id' );
+	    if ( fldId.indexOf( '_custom_' ) == -1 &&
+	         fldId.indexOf( '_result' ) == -1  && 
+		 fldId.indexOf( '_note' ) == -1  ) {
+	       data[fldId] = cj( this ).val( );
+	    }
+        });
+	
 	var surveyActivityIds = {/literal}{$surveyActivityIds}{literal};
 	activityId =  eval( "surveyActivityIds.activity_id_" + voterId );
 	if ( !activityId ) return; 	
@@ -226,9 +241,9 @@
 	data['result']           = cj( '#field_' + voterId + '_result' ).val( ); 
 	data['note']             = cj( '#field_' + voterId + '_note' ).val( );
 	data['surveyTitle']      = {/literal}'{$surveyValues.title|escape:javascript}'{literal};
-	data['ufGroupId']        = {/literal}'{$ufGroupId}'{literal};	
+	data['survey_id']        = {/literal}'{$surveyValues.id}'{literal};
 	
-	var dataUrl = {/literal}"{crmURL p='civicrm/ajax/rest' h=0 q='className=CRM_Campaign_Page_AJAX&fnName=registerInterview' }"{literal}	          
+	var dataUrl = {/literal}"{crmURL p='civicrm/campaign/registerInterview' h=0}"{literal}	          
 	
 	//post data to create interview.
 	cj.post( dataUrl, data, function( interview ) {

@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -32,7 +32,7 @@
  * The default values in general, should reflect production values (minimizes chances of screwing up)
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -45,6 +45,7 @@ require_once 'CRM/Utils/System.php';
 require_once 'CRM/Utils/File.php';
 require_once 'CRM/Core/Session.php';
 require_once 'CRM/Core/Config/Variables.php';
+require_once 'api/api.php';
 
 class CRM_Core_Config extends CRM_Core_Config_Variables
 {
@@ -174,6 +175,10 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
     static function &singleton($loadFromDB = true, $force = false)
     {
         if ( self::$_singleton === null || $force ) {
+            // goto a simple error handler
+            PEAR::setErrorHandling( PEAR_ERROR_CALLBACK,
+                                    array( 'CRM_Core_Error', 'simpleHandler' ) );
+            
             // lets ensure we set E_DEPRECATED to minimize errors
             // CRM-6327
             if ( defined( 'E_DEPRECATED' ) ) {
@@ -244,18 +249,10 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
 
         if ( defined( 'CIVICRM_UF_BASEURL' ) ) {
             $this->userFrameworkBaseURL = CRM_Utils_File::addTrailingSlash( CIVICRM_UF_BASEURL, '/' );
-            if ($userFramework == 'Drupal' and function_exists('variable_get')) {
-                global $language;
-                if (module_exists('locale') && $mode = variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE)) {
-                    if (isset($language->prefix) and $language->prefix
-                        and ($mode == LANGUAGE_NEGOTIATION_PATH_DEFAULT or $mode == LANGUAGE_NEGOTIATION_PATH)) {
-                        $this->userFrameworkBaseURL .= $language->prefix . '/';
-                }
-                    if (isset($language->domain) and $language->domain and $mode == LANGUAGE_NEGOTIATION_DOMAIN) {
-                        $this->userFrameworkBaseURL = CRM_Utils_File::addTrailingSlash( $language->domain, '/' );
-                    }
-                }
-            }
+            
+            //format url for language negotiation, CRM-7803 
+            $this->userFrameworkBaseURL = CRM_Utils_System::languageNegotiationURL( $this->userFrameworkBaseURL );
+            
             if ( isset( $_SERVER['HTTPS'] ) &&
                  strtolower( $_SERVER['HTTPS'] ) != 'off' ) {
                 $this->userFrameworkBaseURL     = str_replace( 'http://', 'https://', 
@@ -275,7 +272,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
         }
 
         if ( $userFramework == 'Joomla' ) {
-            $this->userFrameworkVersion = '1.5';
+            $this->userFrameworkVersion = 'Unknown';
             if ( class_exists('JVersion') ) {
                 $version = new JVersion;
                 $this->userFrameworkVersion = $version->getShortVersion();
@@ -459,7 +456,8 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
             // dont use absolute path if resources are stored on a different server
             // CRM-4642
             $this->resourceBase = $this->userFrameworkResourceURL;
-            if ( isset( $_SERVER['HTTP_HOST']) ) {
+            if ( isset( $_SERVER['HTTP_HOST']) &&
+                 isset( $rrb['host'] ) ) {
                 $this->resourceBase = ($rrb['host'] == $_SERVER['HTTP_HOST']) ? $rrb['path'] : $this->userFrameworkResourceURL;
             }
         } 
@@ -510,6 +508,10 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
 
                 // set the localhost value, CRM-3153
                 $params['localhost'] = $_SERVER['SERVER_NAME'];
+
+                // also set the timeout value, lets set it to 30 seconds
+                // CRM-7510
+                $params['timeout'] = 30;
 
                 self::$_mail =& Mail::factory( 'smtp', $params );
             } elseif ($mailingInfo['outBound_option'] == 1) {
@@ -601,19 +603,19 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
         $queries = array( 'TRUNCATE TABLE civicrm_acl_cache',
                           'TRUNCATE TABLE civicrm_acl_contact_cache',
                           'TRUNCATE TABLE civicrm_cache',
+                          'TRUNCATE TABLE civicrm_prevnext_cache',
                           'UPDATE civicrm_group SET cache_date = NULL',
                           'TRUNCATE TABLE civicrm_group_contact_cache',
                           'TRUNCATE TABLE civicrm_menu',
                           'UPDATE civicrm_preferences SET navigation = NULL WHERE contact_id IS NOT NULL',
                           );
 
-        //NYSS 3465
-		// also delete all the import and export temp tables
-        self::clearTempTables( );
-
-		foreach ( $queries as $query ) {
+        foreach ( $queries as $query ) {
             CRM_Core_DAO::executeQuery( $query );
         }
+
+        // also delete all the import and export temp tables
+        self::clearTempTables( );
     }
 
     /**
@@ -621,28 +623,27 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
      */
     function clearTempTables( ) {
         // CRM-5645
-        require_once 'CRM/Contact/DAO/Contact.php';
-        $dao = new CRM_Contact_DAO_Contact( );
+        $dao = new CRM_Core_DAO( );
         $query = "
-SELECT TABLE_NAME as import_table
+SELECT TABLE_NAME as tableName
 FROM   INFORMATION_SCHEMA.TABLES
 WHERE  TABLE_SCHEMA = %1 
 AND    ( TABLE_NAME LIKE 'civicrm_import_job_%'
 OR       TABLE_NAME LIKE 'civicrm_export_temp%'
 OR       TABLE_NAME LIKE 'civicrm_task_action_temp%' )
-"; //NYSS 3465      
-		$params = array( 1 => array( $dao->database(), 'String' ) );
-        $tableDAO = CRM_Core_DAO::executeQuery( $query, $params );
-        $importTables = array();
-        while ( $tableDAO->fetch() ) {
-            $importTables[] = $tableDAO->import_table;
-        }
-        if ( !empty( $importTables ) ) {
-                $importTable = implode(',', $importTables);
-                // drop leftover import temporary tables
-                CRM_Core_DAO::executeQuery( "DROP TABLE $importTable" );
-        }
+";
 
+        $params = array( 1 => array( $dao->database(), 'String' ) );
+        $tableDAO = CRM_Core_DAO::executeQuery( $query, $params );
+        $tables = array();
+        while ( $tableDAO->fetch() ) {
+            $tables[] = $tableDAO->tableName;
+        }
+        if ( !empty( $tables ) ) {
+            $table = implode(',', $tables);
+            // drop leftover temporary tables
+            CRM_Core_DAO::executeQuery( "DROP TABLE $table" );
+        }
     }
     
     /**
@@ -666,5 +667,6 @@ OR       TABLE_NAME LIKE 'civicrm_task_action_temp%' )
         $this->userFramework       = $userFramework;
         $this->_setUserFrameworkConfig( $userFramework );
     }
-    
+
+
 } // end CRM_Core_Config

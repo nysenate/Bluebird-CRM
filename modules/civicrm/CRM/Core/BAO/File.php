@@ -2,9 +2,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,7 +29,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -214,9 +214,8 @@ class CRM_Core_BAO_File extends CRM_Core_DAO_File {
         $cfIDs  = array( );
         $cefIDs = array( );
         while ( $dao->fetch( ) ) {
-            unlink( $config->customFileUploadDir . DIRECTORY_SEPARATOR . $dao->uri );
-            $cfIDs[]  = $dao->cfID ;
-            $cefIDs[] = $dao->cefID;
+            $cfIDs[$dao->cfID]  = $dao->uri ;
+            $cefIDs[]           = $dao->cefID;
         }
 
         if ( ! empty( $cefIDs ) ) {
@@ -226,9 +225,20 @@ class CRM_Core_BAO_File extends CRM_Core_DAO_File {
         }
 
         if ( ! empty( $cfIDs ) ) {
-            $cfIDs = implode( ',', $cfIDs );
-            $sql = "DELETE FROM civicrm_file where id IN ( $cfIDs )";
-            CRM_Core_DAO::executeQuery( $sql );
+            // Delete file only if there no any entity using this file.
+            $deleteFiles = array( );
+            foreach ( $cfIDs as $fId => $fUri ) {
+                if ( !CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_EntityFile', $fId, 'id', 'file_id' ) ) {
+                    unlink( $config->customFileUploadDir . DIRECTORY_SEPARATOR . $fUri );
+                    $deleteFiles[$fId] = $fId;
+                }
+            }
+            
+            if ( !empty($deleteFiles) ) {
+                $deleteFiles = implode( ',', $deleteFiles );
+                $sql = "DELETE FROM civicrm_file where id IN ( $deleteFiles )";
+                CRM_Core_DAO::executeQuery( $sql );
+            }
         }
     }
 
@@ -254,6 +264,7 @@ class CRM_Core_BAO_File extends CRM_Core_DAO_File {
             $result['href'     ] = "<a href=\"{$result['url']}\">{$result['cleanName']}</a>";
             $results[$dao->cfID] = $result;
         }
+        $dao->free( );
         return $results;
     }
 
@@ -344,20 +355,20 @@ AND       CEF.entity_id    = %2";
         $config = CRM_Core_Config::singleton( );
         $numAttachments = $config->maxAttachments;
 
+        $now = date( 'Ymdhis' );
+
         // setup all attachments
         for ( $i = 1; $i <= $numAttachments; $i++ ) {
             $attachName = "attachFile_$i";
             if ( isset( $formValues[$attachName] ) &&
                  ! empty( $formValues[$attachName] ) ) {
-                // ensure file is not empty
-                $contents = file_get_contents( $formValues[$attachName]['name'] );
-                if ( $contents ) {
-                    $fileParams = array( 'uri'        => $formValues[$attachName]['name'],
-                                         'type'       => $formValues[$attachName]['type'],
-                                         'upload_date'=> date( 'Ymdhis' ),
-                                         'location'   => $formValues[$attachName]['name'] );
-                    $params[$attachName] = $fileParams;
-                }
+                // we dont care if the file is empty or not
+                // CRM-7448
+                $fileParams = array( 'uri'         => $formValues[$attachName]['name'],
+                                     'type'        => $formValues[$attachName]['type'],
+                                     'location'    => $formValues[$attachName]['name'],
+                                     'upload_date' => $now );
+                $params[$attachName] = $fileParams;
             }
         }
     }

@@ -3,9 +3,9 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,7 +30,7 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2010
+ * @copyright CiviCRM LLC (c) 2004-2011
  * $Id$
  *
  */
@@ -77,7 +77,7 @@ class CRM_Utils_Geocode_Google {
         
         // CRM-1439: Google (sometimes?) returns data in ISO-8859-1
         // hence we use oe to ensure we get utf-8
-        $arg = "&oe=utf8&output=xml&key=" . urlencode( $config->geoAPIKey );
+        $arg = "&oe=utf8&output=xml&key=" . urlencode( $config->geoAPIKey ); //NYSS
         
         $add = '';
 

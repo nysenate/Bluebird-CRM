@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -128,6 +128,7 @@ function loadVoterList( )
      	        "bFilter"    : false,
 		"bAutoWidth" : false,
 	    	"bProcessing": true,
+		"bJQueryUI"  : true,
                 "aaSorting": [[0,''],[1,'asc'], [2,'asc'], [3,'asc'], [4,'asc'], [5,'asc'] ],
 		"aoColumns":[{bSortable:false},{sClass:""},{sClass:""},{sClass:""},{sClass:""},{sClass:""},{bSortable:false}],
 		"sPaginationType": "full_numbers",
@@ -138,6 +139,9 @@ function loadVoterList( )
 	
 		"fnServerData": function ( sSource, aoData, fnCallback ) {
 			var dataLength = aoData.length;
+
+			var count = 1;
+			var searchCriteria = new Array( 'campaign_search_voter_for' ); 
 		       		
 			//get the search criteria.
                         var searchParams = {/literal}{$searchParams}{literal};
@@ -145,10 +149,14 @@ function loadVoterList( )
                             if ( val = cj( '#' + param ).val( ) ) {
 			      aoData[dataLength++] = {name: param , value: val };
 			    } 
+			    searchCriteria[count++] = param;
                         } 
 
 			//do search to reserve voters.			
 			aoData[dataLength++] = {name: 'campaign_search_voter_for', value: searchVoterFor};
+			
+			//lets transfer search criteria.
+			aoData[dataLength++] = {name: 'searchCriteria', value:searchCriteria.join(',')};
 			
 			cj.ajax( {
 				"dataType": 'json', 
