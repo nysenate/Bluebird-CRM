@@ -75,14 +75,14 @@ fi
 if [ $no_civi -eq 0 ]; then
   echo "Dumping CiviCRM database for instance [$instance]"
   ( set -x
-    $execSql --dump $db_civi_prefix$db_basename > $civi_file
+    $execSql --dump $db_civi_prefix$db_basename > "$civi_file"
   ) || errcode=$(($errcode | 1))
 fi
 
 if [ $no_drup -eq 0 ]; then
   echo "Dumping Drupal database for instance [$instance]"
   ( set -x
-    $execSql --dump $db_drup_prefix$db_basename > $drup_file
+    $execSql --dump $db_drup_prefix$db_basename > "$drup_file"
   ) || errcode=$(($errcode | 2))
 fi
 
@@ -96,7 +96,7 @@ if [ "$archive_dump" ]; then
 
     todays_date=`date +%Y%m%d`
     arc_file="${instance}_dump_$todays_date.$file_ext"
-    $arc_cmd $arc_file $civi_file $drup_file || errcode=$(($errcode | 4))
+    $arc_cmd "$arc_file" "$civi_file" "$drup_file" || errcode=$(($errcode | 4))
   fi
   popd
 
