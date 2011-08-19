@@ -46,12 +46,6 @@ function nyss_ioimport_form() {
      '#size' => 40,
    );
 
-   $form['emailimport'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Perform an email only import'),
-     '#default_value' => 0,
-   );
-
    $form['sendemail'] = array(
      '#type' => 'checkbox',
      '#title' => t('Send summary email'),
@@ -87,6 +81,13 @@ function nyss_ioimport_form() {
      '#type' => 'checkbox',
      '#title' => t('Process as a BOE import.'),
      '#default_value' => 0,
+   );
+   
+   $form['emailimport'] = array(
+     '#type' => 'checkbox',
+     '#title' => t('Process as an email import.'),
+     '#default_value' => 0,
+	 '#description' => t('Enabling will automatically engage dedupe on import using the email import rule. New contacts created during import (which do not match any existing contacts) will be added to an "Email Only" group and excluded from postal mailings.'),
    );
    
    $form['dedupe'] = array(
@@ -263,6 +264,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		if ( !$dryrun ) {
 			nyss_out('status',"groupID: {$groupID}.",true);
 		}
+	}
+	
+	//if processing as an email import, set other required options
+	if ($form_state['values']['emailimport']==1) {
+		$form_state['values']['dedupe']     = 1;
+		$form_state['values']['deduperule'] = 11;
 	}
 	
 	//include parsename helper if set
@@ -635,7 +642,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         $get_group =& civicrm_group_get( $groupparams );
         if ( $get_group['is_error'] ) {
             if (!$dryrun ) {
-                $params = array( 'title' => 'Email Only', 'is_active' => 1 );
+                $params = array( 'title' => 'Email Only', 
+				                 'is_active' => 1,
+								 'description' => 'Contacts in this group will be excluded from postal mailings processed through Corporate Woods, and may be exclude from internal exports using the print processing option.' );
                 $group = civicrm_group_add( $params );
                 $email_group_id = $group['result'];
             } else {

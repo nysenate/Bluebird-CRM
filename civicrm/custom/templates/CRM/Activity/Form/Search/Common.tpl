@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,7 +25,7 @@
 *}
 <tr>
   {if $form.activity_type_id}
-     <td rowspan="5"><label>{ts}Activity Type(s){/ts}</label>
+     <td><label>{ts}Activity Type(s){/ts}</label>
         <div id="Activity" class="listing-box">
           {foreach from=$form.activity_type_id item="activity_type_val"} 
              <div class="{cycle values="odd-row,even-row"}">
@@ -37,9 +37,22 @@
   {else}
       <td>&nbsp;</td>
   {/if} 
-<!--<pre>{$form|@print_r}</pre>-->
+  {if $form.activity_survey_id || $buildEngagementLevel}
+    <td>
+        {if $form.activity_survey_id}
+            <label>{$form.activity_survey_id.label}</label><br />{$form.activity_survey_id.html}
+        {/if}
+        {if $buildEngagementLevel}
+            <br/ ><br />
+            <label>{$form.activity_engagement_level.label}</label><br />{$form.activity_engagement_level.html}
+        {/if}
+    </td>
+  {/if} 
+
 
 {*NYSS move everything here*}
+</tr>
+<tr>
    <td>
           {$form.activity_date_low.label}<br/>
 	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_low} 
@@ -49,13 +62,12 @@
 	  {include file="CRM/common/jcalendar.tpl" elementName=activity_date_high}
    </td>
 </tr>
-
 <tr>
    <td>
 	  {$form.activity_role.html}
       <span class="crm-clear-link">(<a href="#" title="unselect" onclick="unselectRadio('activity_role', '{$form.formName}'); document.getElementById('activity_contact_name').value = ''; return false;" >{ts}clear{/ts}</a>)</span><br />
    </td>
-   <td colspan="2">
+   <td colspan="2"><br />
 	  {$form.activity_contact_name.html}<br />
       <span class="description font-italic">{ts}Complete OR partial Name of the Source Contact or the Assignee Contact.{/ts}</span>
    </td>
@@ -94,10 +106,13 @@
     </td>
 </tr>
 
+{* campaign in activity search *}
+{include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
+campaignContext="componentSearch" campaignTrClass='' campaignTdClass=''}
 
 {if $activityGroupTree}
 <tr id="activityCustom">
-   <td id="activityCustomData" colspan="3">
+   <td id="activityCustomData" colspan="2">
 	  {include file="CRM/Custom/Form/Search.tpl" groupTree=$activityGroupTree showHideLinks=false}
    </td>
 </tr>

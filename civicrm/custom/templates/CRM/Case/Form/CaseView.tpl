@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -546,7 +546,7 @@ cj(document).ready(function(){
             <td class="crm-case-caseview-globalrelationship-sort_name label" id="relName_{$rowNumber}"><a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$row.contact_id`"}" title="view contact record">{$row.sort_name}</a></td>
             <td class="crm-case-caseview-globalrelationship-organization label" id="organization_{$rowNumber}"><a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$organization.$contact_id.current_employer_id`"}" title="view organization record">{$organization.$contact_id.current_employer}</a></td>
             <td class="crm-case-caseview-globalrelationship-phone" id="phone_{$rowNumber}">{$row.phone}</td>
-	    	<td class="crm-case-caseview-globalrelationship-email" id="email_{$rowNumber}">{if $row.email}<a href="{crmURL p='civicrm/contact/view/activity' q="reset=1&action=add&atype=3&cid=`$row.contact_id`&caseid=`$caseID`"}" title="{ts}compose and send an email{/ts}"><div title="compose and send an email" class="icon email-icon"></div></a>&nbsp;{/if}</td>
+	    <td class="crm-case-caseview-globalrelationship-email" id="email_{$rowNumber}">{if $row.email}<a href="{crmURL p='civicrm/contact/view/activity' q="reset=1&action=add&atype=3&cid=`$row.contact_id`&caseid=`$caseID`"}" title="{ts}compose and send an email{/ts}"><div title="compose and send an email" class="icon email-icon"></div></a>&nbsp;{/if}</td>
         </tr>
 		{assign var=rowNumber value = `$rowNumber+1`}
         {/foreach}
@@ -682,13 +682,13 @@ function addRole() {
   {ts}Case Tags{/ts}
  </div><!-- /.crm-accordion-header -->
  <div class="crm-accordion-body">
-  {assign var="tagExits" value=0} {*NYSS 3426*}
+  {assign var="tagExits" value=0}
   {if $tags}
     <div class="crm-block crm-content-block crm-case-caseview-display-tags">{$tags}</div>
-    {assign var="tagExits" value=1} {*NYSS 3426*}
+    {assign var="tagExits" value=1}
   {/if}
 
-  {foreach from=$tagsetInfo_case item=displayTagset} {*NYSS 3426*}
+  {foreach from=$tagsetInfo_case item=displayTagset}
       {if $displayTagset.entityTagsArray}
           <div class="crm-block crm-content-block crm-case-caseview-display-tagset">
               &nbsp;&nbsp;{$displayTagset.parentName}:
@@ -696,17 +696,17 @@ function addRole() {
                   &nbsp;{$val.name}{if !$smarty.foreach.tagsetList.last},{/if}
               {/foreach}
           </div>
-          {assign var="tagExits" value=1} {*NYSS 3426*}
+        {assign var="tagExits" value=1}
       {/if}
   {/foreach}
 
-  {if !$tagExits } {*NYSS 3426*}
+  {if !$tagExits }
     <div class="status">
-        {ts}There are no tags currently assigend to this case.{/ts}
+        {ts}There are no tags currently assigned to this case.{/ts}
     </div>
   {/if}
 
-  <div class="crm-submit-buttons"><input type="button" class="form-submit" onClick="javascript:addTags()" value={if $tagExits}"{ts}Edit Tags{/ts}"{else}"{ts}Add Tags{/ts}"{/if} /></div> {*NYSS 3426*}
+  <div class="crm-submit-buttons"><input type="button" class="form-submit" onClick="javascript:addTags()" value={if $tagExits}"{ts}Edit Tags{/ts}"{else}"{ts}Add Tags{/ts}"{/if} /></div>
 
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
@@ -714,9 +714,12 @@ function addRole() {
     <div id="manageTags">
         <div class="label">{$form.case_tag.label}</div>
         <div class="view-value"><div class="crm-select-container">{$form.case_tag.html}</div>
-        <div style="text-align:left;">{include file="CRM/common/Tag.tpl" tagsetType='case'}</div>{*NYSS 3426*}
+        <br/>
+        <div style="text-align:left;">{include file="CRM/common/Tag.tpl" tagsetType='case'}</div>
+        <br/>
+        <div class="clear"></div>
     </div>
-    </div>
+</div>
 
 {literal}
 <script type="text/javascript">
@@ -733,7 +736,7 @@ function addTags() {
     cj("#manageTags").show( );
 
     cj("#manageTags").dialog({
-        title: "{/literal}{ts}Change Case Tags{/ts}{literal}", //NYSS
+        title: "{/literal}{ts}Change Case Tags{/ts}{literal}",
         modal: true,
 
 		width: '550', //NYSS
@@ -754,7 +757,7 @@ function addTags() {
                 });
                 
                 var tagList = '';
-                cj("#manageTags input[name^=case_taglist]").each( function( ) { //NYSS 3426
+                cj("#manageTags input[name^=case_taglist]").each( function( ) {
                     if ( !tagsChecked ) {
                         tagsChecked = cj(this).val() + '';
                     } else {
@@ -863,7 +866,7 @@ function addTags() {
   <th class='crm-case-activities-subject'>{ts}Subject{/ts}</th>
   <th class='crm-case-activities-type'>{ts}Type{/ts}</th>
   <th class='crm-case-activities-with'>{ts}With{/ts}</th>
-  <th class='crm-case-activities-assignee'>{ts}Reporter/Assignee{/ts}</th>
+  <th class='crm-case-activities-assignee'>{ts}Reporter / Assignee{/ts}</th>
   <th class='crm-case-activities-status'>{ts}Status{/ts}</th>
   <th class='crm-case-activities-status' id="nosort">&nbsp;</th>
   <th class='hiddenElement'>&nbsp;</th>
@@ -962,19 +965,19 @@ function buildCaseActivities( filterSearch ) {
 	eval('columns =[' + columns + ']');
 
  	oTable = cj('#activities-selector').dataTable({
-    	        "bFilter"    : false,
-		"bAutoWidth" : false,
-                "aaSorting"  : [],
-		"aoColumns"  : columns,
+            "bFilter"    : false,
+            "bAutoWidth" : false,
+            "aaSorting"  : [],
+            "aoColumns"  : columns,
 	    	"bProcessing": true,
-		"bJQueryUI": true,
-        "sPaginationType": "full_numbers",
-		"sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
-	   	"bServerSide": true,
-	   	"sAjaxSource": sourceUrl,
-                "iDisplayLength": 50,
-		"fnDrawCallback": function() { setSelectorClass(); },
-		"fnServerData": function ( sSource, aoData, fnCallback ) {
+            "bJQueryUI": true,
+            "sPaginationType": "full_numbers",
+            "sDom"       : '<"crm-datatable-pager-top"lfp>rt<"crm-datatable-pager-bottom"ip>',	
+            "bServerSide": true,
+            "sAjaxSource": sourceUrl,
+            "iDisplayLength": 50,
+            "fnDrawCallback": function() { setSelectorClass(); },
+            "fnServerData": function ( sSource, aoData, fnCallback ) {
 
 				if ( filterSearch ) {
 				var activity_deleted = 0;

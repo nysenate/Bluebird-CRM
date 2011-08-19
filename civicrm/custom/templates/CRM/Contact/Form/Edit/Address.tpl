@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -85,7 +85,7 @@
      <tr>
         <td>
             {$form.address.$blockId.use_shared_address.html}{$form.address.$blockId.use_shared_address.label}{help id="id-sharedAddress" file="CRM/Contact/Form/Contact.hlp"}<br />
-            {if $sharedAddresses.$blockId.shared_address_display}
+            {if !empty($sharedAddresses.$blockId.shared_address_display)}
                 <span class="shared-address-display" id="shared-address-display-name-{$blockId}">
                     {$sharedAddresses.$blockId.shared_address_display.name}
                 </span>
@@ -119,7 +119,7 @@
          });
          
          // start of code to add onchange event for hidden element
-         var contactHiddenElement = 'input[name=contact_select_id[' + blockNo +']]';
+         var contactHiddenElement = 'input[name="contact_select_id[' + blockNo +']"]';
          
          // store initial value
          var _default  = cj( contactHiddenElement ).val();
@@ -132,7 +132,7 @@
             }
             
             var addressHTML = '';
-            cj( ).crmAPI( 'location', 'get', { 'contact_id': sharedContactId, 'version': '3.0' }, {
+            cj( ).crmAPI( 'location', 'get', { 'contact_id': sharedContactId }, {
                   success: function( response ) {
                       if ( response.address ) {
                           var selected = 'checked';
@@ -156,7 +156,7 @@
                                   cj( 'input[name="address[' + elemId[1] + '][master_id]"]' ).val( cj(this).val( ) );
                               });
                           } else {
-                              var helpText = {/literal}"{ts}Selected contact does not have an address. Please select a contact with address else add an address to the existing selected contact."{/ts}{literal};        
+                              var helpText = {/literal}"{ts}Selected contact does not have an address. Please edit that contact to add an address, or select a different contact.{/ts}"{literal};
                               cj( '#shared-address-' + blockNo + ' .shared-address-list' ).remove( );
                               cj( '#shared-address-' + blockNo ).append( '<tr class="shared-address-list"><td></td><td>' + helpText + '</td></tr>');
                           }

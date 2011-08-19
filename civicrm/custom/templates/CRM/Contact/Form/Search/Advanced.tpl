@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -29,10 +29,10 @@
 
 {include file="CRM/Contact/Form/Search/Intro.tpl"}
 
-<div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if $ssID or $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-advanced_search_form-accordion {if !empty($ssID) or $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
  <div class="crm-accordion-header crm-master-accordion-header">
   <div class="icon crm-accordion-pointer"></div>
-  {if $ssID or $rows}
+  {if !empty($ssID) or $rows}
   {if $savedSearch}
     {ts 1=$savedSearch.name}Edit %1 Smart Group Criteria{/ts}
   {else}
@@ -99,6 +99,9 @@
 <script type="text/javascript">
 cj(function() { 
     cj().crmaccordions(); 
+    if ( cj('#component_mode').val() != '7' ) {
+      cj('#crm-display_relationship_type').hide( );
+    }
 
     cj('#component_mode').change( function( ) {
         // reset task dropdown if user changes component mode and it exists
@@ -109,20 +112,47 @@ cj(function() {
         switch ( selectedValue ) {
             case '2':
             cj('.crm-CiviContribute-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            cj('#crm-display_relationship_type').hide( );
+            cj('#display_relationship_type').val('');
             loadPanes('CiviContribute');
             break;
 
             case '3':
             cj('.crm-CiviEvent-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            cj('#display_relationship_type').val('');
+            cj('#crm-display_relationship_type').hide( );
             loadPanes('CiviEvent');
             break;
 
             case '4':
             cj('.crm-activity-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            cj('#display_relationship_type').val('');
+            cj('#crm-display_relationship_type').hide( );
             loadPanes('activity');
             break;
 
+            case '5':
+            cj('.crm-CiviMember-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            cj('#display_relationship_type').val('');
+            cj('#crm-display_relationship_type').hide( );
+            loadPanes('CiviMember');
+            break;
+
+            case '6':
+            cj('.crm-CiviCase-accordion').removeClass('crm-accordion-closed').addClass('crm-accordion-open') ;
+            cj('#display_relationship_type').val('');
+            cj('#crm-display_relationship_type').hide( );
+            loadPanes('CiviCase');
+            break;
+
+	    case '7':
+            cj('#crm-display_relationship_type').show( );
+            break;
+
             default:
+            cj('#crm-display_relationship_type').hide( );
+            cj('#display_relationship_type').val('');
+            break;
         } 
     });
 });

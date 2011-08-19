@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,11 +25,14 @@
 *}
 <div id="changeLog" class="view-content">
     <h3>{ts}Change Log:{/ts} {$displayName}</h3>{*NYSS*}
+   {if $useLogging}
+     <br />
+     <div class='hiddenElement' id='instance_data'> </div>
+   {else}
     <div class="form-item">
      {if $logCount > 0 }  	
        <table>
        <tr class="columnheader"><th>{ts}Changed By{/ts}</th><th>{ts}Change Date{/ts}</th><th>Description</th></tr>{*NYSS*}
-       {*<pre>{$log|@print_r}</pre>*}
        {foreach from=$log item=row}
          <tr class="{cycle values="odd-row,even-row"}">
             <td> {$row.image}&nbsp;<a href="{crmURL p='civicrm/contact/view' q="action=view&reset=1&cid=`$row.id`"}">{$row.name}</a></td>
@@ -45,5 +48,22 @@
      </div>	
      {/if}
     </div>
+   {/if}
  </p>
 </div>
+
+{if $useLogging}
+{literal}
+  <script type="text/javascript">
+  cj( document ).ready( function ( ) {
+    var dataURL = {/literal}"{$instanceUrl}"{literal};
+    cj.ajax({
+      url: dataURL,
+      success: function( content ) {
+        cj('#instance_data').show( ).html( content );
+      }
+    });
+  });
+</script>
+{/literal}
+{/if}

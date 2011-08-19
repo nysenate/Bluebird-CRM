@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,7 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {* Contact Summary template for new tabbed interface. Replaces Basic.tpl *}
-{if $imageURL }
+{if !empty($imageURL)}
     <div>
         {include file="CRM/Contact/Page/ContactImage.tpl"}
     </div>
@@ -84,7 +84,7 @@
                         </li>
                         {/if}
                         
-                        {if $groupOrganizationUrl}
+                        {if !empty($groupOrganizationUrl)}
                         <li class="crm-contact-associated-groups">
                         <a href="{$groupOrganizationUrl}" class="associated-groups button" title="{ts}Associated Multi-Org Group{/ts}">
                         <span><div class="icon associated-groups-icon"></div>{ts}Associated Multi-Org Group{/ts}</span>
@@ -119,20 +119,19 @@
 
 {*Assign AddConstInfo custom fields*}
 {foreach from=$viewCustomData.1 item=addConstInfo}
-<!--<pre>{$addConstInfo|@print_r}</pre>-->
 	{foreach from=$addConstInfo.fields item=addConstInfoField key=customId}
         {assign var="custom_$customId" value=$addConstInfoField}
 	{/foreach}
 {/foreach}
 
         <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if substr_count($custom_19.field_value, 'Yes')}friend-of-senator{/if}">
-            {if $hookContentPlacement neq 3}
+            {if (isset($hookContentPlacement) and ($hookContentPlacement neq 3)) or empty($hookContentPlacement)}
                 
-                {if $hookContent and $hookContentPlacement eq 2}
+                {if !empty($hookContent) and isset($hookContentPlacement) and $hookContentPlacement eq 2}
                     {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
                 {/if}
                 
-                {if $contact_type_label OR $current_employer_id OR $job_title OR $legal_name OR $sic_code OR $nick_name OR $contactTag OR $source}
+                {if !empty($contact_type_label) OR !empty($current_employer_id) OR !empty($job_title) OR !empty($legal_name) OR $sic_code OR !empty($nick_name) OR !empty($contactTag) OR !empty($source)}
                 <div id="contactTopBar">
                 	<div class="subHeader"><!--Basic Constituent Information-->{$display_name}</div>
                     
@@ -231,10 +230,10 @@
                                 <tr>
                                     <td class="label">{ts 1=$add.location_type}%1&nbsp;Address{/ts}
                                         {if $config->mapAPIKey AND $add.geo_code_1 AND $add.geo_code_2}
-                                            <br /><a href="{crmURL p='civicrm/contact/map' q="reset=1&cid=`$contactId`&lid=`$add.location_type_id`"}" title="{ts 1='&#123;$add.location_type&#125;'}Map %1 Address{/ts}"><span class="geotag">{ts}Map{/ts}</span></a>
+                                            <br /><a href="{crmURL p='civicrm/contact/map' q="reset=1&cid=`$contactId`&lid=`$add.location_type_id`"}" title="{ts 1=`$add.location_type`}Map %1 Address{/ts}"><span class="geotag">{ts}Map{/ts}</span></a>
                                         {/if}</td>
-                                    <td>
-                                        {if $sharedAddresses.$locationIndex.shared_address_display.name}
+                                    <td class="crm-contact-address_display">
+                                        {if !empty($sharedAddresses.$locationIndex.shared_address_display.name)}
                                              <strong>{ts}Shared with:{/ts}</strong><br />
                                              {$sharedAddresses.$locationIndex.shared_address_display.name}<br />
                                          {/if}
@@ -253,7 +252,7 @@
 			                <div class="crm-accordion-body">
 				            <table>
 				                {foreach from=$customValue.fields item=customField key=cfId}
-					            <tr><td class="label">{$customField.field_title}</td><td>{$customField.field_value}</td></tr>
+					            <tr><td class="label">{$customField.field_title}</td><td class="crm-contact_custom_field_value">{$customField.field_value}</td></tr>
 	                  	                {/foreach}
 			                    </table>
 			                </div>
@@ -498,7 +497,7 @@
                              <div class="crm-accordion-body">
                               <table>
                                 <tr><td class="label">{ts}Privacy{/ts}</td>
-                                    <td><span class="font-red upper">
+                                    <td class="crm-contact-privacy_values"><span class="font-red upper">
                                         {foreach from=$privacy item=priv key=index}
                                             {if $priv}{$privacy_values.$index}<br />{/if}
                                         {/foreach}
@@ -506,26 +505,25 @@
                                     </span></td>
                                 </tr>
                                 <tr>
-                                    <td class="label">{ts}Preferred Method(s){/ts}</td><td>{$preferred_communication_method_display}</td>
+                                    <td class="label">{ts}Preferred Method(s){/ts}</td><td class="crm-contact-preferred_communication_method_display">{$preferred_communication_method_display}</td>
                                 </tr>
                                 
                                 <tr>
-                                    <td class="label">{ts}Email Format{/ts}</td><td>{$preferred_mail_format}</td>
+                                    <td class="label">{ts}Email Format{/ts}</td><td class="crm-contact-preferred_mail_format">{$preferred_mail_format}</td>
                                 </tr>
                             
-							{*if $contact_type neq 'Organization'*}{*NYSS 3716*}
-                            <tr>
-								<td class="label">{ts}Email Greeting{/ts}{if $email_greeting_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
-								<td>{$email_greeting_display}</td>
+							<tr>
+								<td class="label">{ts}Email Greeting{/ts}{if !empty($email_greeting_custom)}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
+								<td class="crm-contact-email_greeting_display">{$email_greeting_display}</td>
 							</tr>
 							<tr>
-								<td class="label">{ts}Postal Greeting{/ts}{if $postal_greeting_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
-								<td>{$postal_greeting_display}</td>
+								<td class="label">{ts}Postal Greeting{/ts}{if !empty($postal_greeting_custom)}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
+								<td class="crm-contact-postal_greeting_display">{$postal_greeting_display}</td>
 							</tr>
-                            {*/if*}
+
 							<tr>
-								<td class="label">{ts}Addressee{/ts}{if $addressee_custom}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
-								<td>{$addressee_display}</td>
+								<td class="label">{ts}Addressee{/ts}{if !empty($addressee_custom)}<br/><span style="font-size:8px;">({ts}Customized{/ts})</span>{/if}</td>
+								<td class="crm-contact-addressee_display">{$addressee_display}</td>
 							</tr>
 						 </table>
 						 
@@ -552,7 +550,7 @@
                     });
                 </script>
                 {/literal}
-                {if $hookContent and $hookContentPlacement eq 1}
+                {if !empty($hookContent) and isset($hookContentPlacement) and $hookContentPlacement eq 1}
                     {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
                 {/if}
             {else}
@@ -618,7 +616,7 @@ function showHideSignature( blockId ) {
 </script>
 {/literal}
 
-{if $isAddressCustomPresent}
+{if !empty($isAddressCustomPresent)}
     {literal}
         <script type="text/javascript">
             cj(function() {

@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -34,7 +34,12 @@
             </td>
             <td>
                 {if $form.component_mode}  
-                    {$form.component_mode.label} {help id="id-display-results"}<br />{$form.component_mode.html}
+                    {$form.component_mode.label} {help id="id-display-results"}
+                    <br />
+                    {$form.component_mode.html}
+{if $form.display_relationship_type}
+            <span id="crm-display_relationship_type">{$form.display_relationship_type.html}</span>
+{/if}
                 {else}
                     &nbsp;
                 {/if}
@@ -98,7 +103,7 @@
 {/if}
 
 {if $form.contact_tags}
-            <td colspan="3" id="advSearchContactTags">
+            <td colspan="2" id="advSearchContactTags">
             	<div class="crm-section tag-section contact-issue-codes">
                   <div class="label">
                   	<label>{ts}Issue Code(s){/ts}</label>{*NYSS*}
@@ -122,8 +127,9 @@
             	{include file="CRM/common/Tag.tpl"}{*NYSS*}
             </td>
 {else}
-            <td colspan="3">&nbsp;</td>
+            <td>&nbsp;</td>
 {/if}
+            <td colspan="2">{$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}</td>
 	    </tr>
         
         <tr>

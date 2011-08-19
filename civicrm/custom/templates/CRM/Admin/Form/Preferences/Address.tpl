@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -24,8 +24,8 @@
  +--------------------------------------------------------------------+
 *}
 <div class="crm-block crm-form-block crm-preferences-address-form-block">
-<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
-    <fieldset><legend>{ts}Mailing Labels{/ts}</legend>
+<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+    <h3>{ts}Mailing Labels{/ts}</h3>
         <table class="form-layout">
     		<tr class="crm-preferences-address-form-block-mailing_format">
     		    <td class="label">{$form.mailing_format.label}</td>
@@ -34,9 +34,8 @@
     	            </td>
     		</tr>
     	</table>
-    </fieldset>
 
-    <fieldset><legend>{ts}Address Display{/ts}</legend>
+    <h3>{ts}Address Display{/ts}</h3>
         <table class="form-layout">
     	    <tr class="crm-preferences-address-form-block-address_format">
     	        <td class="label">{$form.address_format.label}</td>
@@ -45,9 +44,8 @@
     	        </td>
     	    </tr>
     	</table>
-    </fieldset>
 		
-    <fieldset><legend>{ts}Address Editing{/ts}</legend>
+    <h3>{ts}Address Editing{/ts}</h3>
         <table class="form-layout">
              <tr class="crm-preferences-address-form-block-address_options">
                 <td class="label">{$form.address_options.label}
@@ -56,9 +54,8 @@
                 </td>
              </tr>
         </table>
-    </fieldset>
 
-    <fieldset><legend>{ts}Address Standardization{/ts}</legend>
+    <h3>{ts}Address Standardization{/ts}</h3>
         <table class="form-layout">
              <tr class="crm-preferences-address-form-block-description">
                 <td colspan="2">
@@ -84,6 +81,5 @@
             	</td>
             </tr>
         </table>
-    </fieldset>
-<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
+<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

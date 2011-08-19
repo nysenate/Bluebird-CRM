@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,14 +33,14 @@
 {/if}
 
 <p>{ts}If you want to use the same export setup in the future, check 'Save this field mapping' at the bottom of the page before continuing. You will then be able to reload this setup with a single click.{/ts}</p>
-
+{*NYSS*}
 <p>Once you have selected all desired fields, click <strong>Export</strong> to generate and save the export file. Once you are finished, click <strong>Done</strong> to return to the search page.</p>
 </div>
 {* Export Wizard - Step 3 (map export data fields) *}
 
  {* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
- {*include file="CRM/common/WizardHeader.tpl"*}{*LCD*}
- <h3>Select Fields to Export</h3>{*LCD*}
+ {*include file="CRM/common/WizardHeader.tpl"*}{*NYSS*}
+ <h3>Select Fields to Export</h3>{*NYSS*}
 <!--<div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>-->
 
 {* Table for mapping data to CRM fields *}

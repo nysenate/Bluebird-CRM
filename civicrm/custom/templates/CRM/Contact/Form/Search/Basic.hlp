@@ -34,7 +34,7 @@
     {if $permissionedForGroup}
         {capture assign=addMembersURL}{crmURL q="context=amtg&amtgID=`$group.id`&reset=1"}{/capture}
         <p>{ts 1=$addMembersURL 2=$group.title}Click <a href='%1'>Add Contacts to %2</a> if you want to add contacts to this group.{/ts}
-        {if $ssID}
+        {if !empty($ssID)}
             {if $ssMappingID}
                 {capture assign=editSmartGroupURL}{crmURL p="civicrm/contact/search/builder" q="reset=1&force=1&ssID=`$ssID`"}{/capture}
             {else}
