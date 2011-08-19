@@ -655,15 +655,23 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             $email_group_id = $group[0];
         }
 
-        //Loop through and add each contact
-        //TODO: there really should be a way to add a list of contacts at once.
-        foreach($new_contacts as $contact_id) {
+        //Add all the contacts to the email only group
+        $group_params = array('group_id' => $email_group_id, 'version' => 3);
+
+        //Construct the API's kinda convoluted argument structure
+        foreach($new_contacts as $index=>$contact_id) {
+            if ($index == 0)
+                $group_params['contact_id'] = $contact_id;
+            else
+                $group_params["contact_id.$index"] = $contact_id;
+        }
+
             if (!$dryrun) {
-                $params = array( 'contact_id' => $contact_id, 'group_id' => $email_group_id);
-                $groupcontact = civicrm_group_contact_add( $params );
+            // Create the GroupContact joins for each of these contacts
+            require_once 'api/api.php';
+            $result = civicrm_api('group_contact','create', $group_params );
             } else {
-                nyss_out('status',"Adding contact $contact_id to the email only group",true);
-            }
+            nyss_out('status',"Adding "+count($new_contacts)+" to the email only group",true);
         }
     }
 
