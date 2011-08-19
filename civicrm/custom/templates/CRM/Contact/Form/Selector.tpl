@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -69,13 +69,13 @@
                 <td>
                 {if $key EQ "household_income_total" }
                     {$value|crmMoney}
-		{elseif strpos( $key, '_date' ) !== false }
+		        {elseif strpos( $key, '_date' ) !== false }
                     {$value|crmDate}
                 {else}
                     {$value|truncate:26:"...":true}{*NYSS 4019*}
                 {/if}
                      &nbsp;
-                </td>
+                 </td>
                {/if}
             {/foreach}
             <td>{$row.action|replace:'xx':$row.contact_id}</td>
@@ -83,7 +83,7 @@
      {/foreach}
   {else}
       {foreach from=$rows item=row}
-         <tr id='rowid{$row.contact_id}' class="{cycle values="odd-row,even-row"}" title="{ts}Click contact name to view a summary. Right-click anywhere in the row for an actions menu."{/ts}>
+         <tr id='rowid{$row.contact_id}' class="{cycle values="odd-row,even-row"}" title="{ts}Click contact name to view a summary. Right-click anywhere in the row for an actions menu.{/ts}">
             {assign var=cbName value=$row.checkbox}
             <td>{$form.$cbName.html}</td>
             {if $context eq 'smog'}
@@ -93,15 +93,29 @@
                 {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>	
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
             {if $action eq 512 or $action eq 256}
-              <td>{$row.street_address|mb_truncate:22:"...":true}</td>
+              <td><span title="{$row.street_address}">{$row.street_address|mb_truncate:22:"...":true}</span></td>
               <td>{$row.city}</td>
               <td>{$row.state_province}</td>
               <td>{$row.postal_code}</td>
               <td>{$row.country}</td>
-              <td {if $row.on_hold}class="status-hold"{/if}>{$row.email|mb_truncate:17:"...":true}{if $row.on_hold}&nbsp;(On Hold){/if}</td>
-              <td>{$row.phone}</td> 
+              <td>
+                {if $row.email}
+                    <span
+                        {if $row.on_hold} class="status-hold" title="{ts}This email is on hold (probably due to bouncing).{/ts}"
+                        {elseif $row.do_not_email} class="do-not-email" title="{ts}Do Not Email{/ts}"
+                        {else} title="{$row.email}"{/if}>
+                        {$row.email|mb_truncate:17:"...":true}
+                        {if $row.on_hold}&nbsp;(On Hold){/if}
+                    </span>
+                {/if}
+              </td>
+              <td>
+                {if $row.phone}
+                    <span{if $row.do_not_phone} class="do-not-phone" title="{ts}Do Not Phone{/ts}" {/if}>{$row.phone}</span>
+                {/if}
+              </td>
            {else}
               {foreach from=$row item=value key=key}
                 {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "contact_sub_type") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id")}
@@ -127,10 +141,10 @@
     on_load_init_checkboxes(fname);
  {literal}
 cj(document).ready( function() {
-var url         = "{/literal}{crmURL p='civicrm/contact/view/changeaction' q="reset=1&action=add&cid=changeid&context=changeaction" h=0}{literal}";
-var activityUrl = "{/literal}{crmURL p='civicrm/contact/view' q="action=browse&selectedChild=activity&reset=1&cid=changeid" h=0}{literal}";
-var emailUrl    = "{/literal}{crmURL p='civicrm/contact/view/activity' q="atype=3&action=add&reset=1&cid=changeid" h=0}{literal}";
-var contactUrl  = "{/literal}{crmURL p='civicrm/contact/changeaction' q="reset=1&cid=changeid" h=0}{literal}";
+var url         = "{/literal}{crmURL p='civicrm/contact/view/changeaction' q='reset=1&action=add&cid=changeid&context=changeaction' h=0}{literal}";
+var activityUrl = "{/literal}{crmURL p='civicrm/contact/view' q='action=browse&selectedChild=activity&reset=1&cid=changeid' h=0}{literal}";
+var emailUrl    = "{/literal}{crmURL p='civicrm/contact/view/activity' q='atype=3&action=add&reset=1&cid=changeid' h=0}{literal}";
+var contactUrl  = "{/literal}{crmURL p='civicrm/contact/changeaction' q='reset=1&cid=changeid' h=0}{literal}";
 // Show menu when contact row is right clicked
 cj(".selector tr").contextMenu({
       menu: 'contactMenu'
@@ -151,21 +165,18 @@ cj(".selector tr").contextMenu({
             break;
         }
         eval( 'locationUrl = locationUrl.replace( /changeid/, contactId );');
-        var destination = "{/literal}{crmURL q="force=1" h=0}{literal}";
+        var destination = "{/literal}{crmURL q='force=1' h=0}{literal}";
         window.location = locationUrl + '&destination=' + encodeURIComponent(destination);
    });
+
+    cj('.selector').crmrowhighlighter( );
 });
+
 cj('ul#contactMenu').mouseup( function(e){ 
    if( e.button !=0 ) {
     //when right or middle button clicked fire default right click popup
    }
 });
-
-/*NYSS limit text width
-var len;
-len = cj('.selector-sort_name').val();
-console.log(len);*/
-
 {/literal}
 </script>
 {include file="CRM/common/pager.tpl" location="bottom"}

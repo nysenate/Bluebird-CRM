@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -33,24 +33,9 @@
 .jstree-icon {ldelim}border: 1px solid white;{rdelim} /*NYSS*/
 </style>
 
-{*<span id="restmsg" style="display:none"></span>*}{*NYSS*}
+{*NYSS*}
 <div id="TagGroups" class="view-content">
 <h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
-    {*NYSS hide this para*}
-    {*<p>
-    {if $action eq 16}
-        {if $permission EQ 'edit'}
-            {capture assign=crmURL}{crmURL p='civicrm/contact/view/tag' q='action=update'}{/capture}
-            <span class="unobstructive">{ts 1=$displayName 2=$crmURL}Current tags for <strong>%1</strong> are highlighted. You can add or remove tags from <a href='%2'>Edit Tags</a>.{/ts}</span>
-        {else}
-            {ts}Current tags are highlighted.{/ts}
-        {/if}
-    {else}
-        {if !$hideContext} 
-        {ts}Mark or unmark the checkboxes, <span class="unobstructive">and click 'Update Tags' to modify tags.</span>{/ts}
-	{/if}
-    {/if}
-    </p>*}
     
     {*NYSS add list of Issue Codes*}
     {if $contactIssueCode_list}
@@ -104,14 +89,6 @@
         {/foreach} 
       </ul>
     </div>
-   
-      {*foreach from=$tag item="row" key="id"}
-
-        <div class="form-item" id="rowidtag_{$id}">
-         {$form.tagList[$id].html} &nbsp;<label for="tag_{$id}">{$row}</label>
-        </div>
-
-      {/foreach*}
 
     {* Show Edit Tags link if in View mode *}
     {if $permission EQ 'edit' AND $action eq 16}
@@ -183,12 +160,12 @@ function initTagTree() {
         //get current tag label
         var currentTagLabel = cj("#tagLabel_" + tagid ).text( );
         if (this.checked) {
-            //civiREST ('entity_tag','add',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},image);
-            cj().crmAPI ('entity_tag','add',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},options);
+            //civiREST ('entity_tag','create',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},image);
+            cj().crmAPI ('entity_tag','create',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},options);
             // add check to tab label array
             tagsArray.push( currentTagLabel );
         } else {
-            cj().crmAPI ('entity_tag','remove',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},options);
+            cj().crmAPI ('entity_tag','delete',{entity_table:entityTable,entity_id:entityID,tag_id:tagid},options);
             // build array of tag labels
             tagsArray = cj.map(tagsArray, function (a) { 
                  if ( cj.trim( a ) != currentTagLabel ) {

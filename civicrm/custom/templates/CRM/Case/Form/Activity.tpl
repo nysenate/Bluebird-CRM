@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -35,22 +35,16 @@
 {literal}
 <script type="text/javascript">
 var target_contact = assignee_contact = target_contact_id = '';
+
 {/literal}
-
-{if $targetContactValues}
-{foreach from=$targetContactValues key=id item=name}
-     {literal} target_contact += '{"name":"'+{/literal}"{$name}"{literal}+'","id":"'+{/literal}"{$id}"{literal}+'"},';{/literal}
-{/foreach}
-{literal} eval( 'target_contact = [' + target_contact + ']'); {/literal}
+{if $target_contact}
+    var target_contact = {$target_contact};
 {/if}
-
-{if $assigneeContactCount}
-{foreach from=$assignee_contact key=id item=name}
-     {literal} assignee_contact += '{"name":"'+{/literal}"{$name}"{literal}+'","id":"'+{/literal}"{$id}"{literal}+'"},';{/literal}
-{/foreach}
-{literal} eval( 'assignee_contact = [' + assignee_contact + ']'); {/literal}
+    
+{if $assignee_contact}
+    var assignee_contact = {$assignee_contact};
 {/if}
-
+ 
 {literal}
 var target_contact_id = assignee_contact_id = null;
 //loop to set the value of cc and bcc if form rule.
@@ -78,15 +72,13 @@ cj(document).ready( function( ) {
 
 {literal}
 
-eval( 'tokenClass = { tokenList: "token-input-list-facebook", token: "token-input-token-facebook", tokenDelete: "token-input-delete-token-facebook", selectedToken: "token-input-selected-token-facebook", highlightedToken: "token-input-highlighted-token-facebook", dropdown: "token-input-dropdown-facebook", dropdownItem: "token-input-dropdown-item-facebook", dropdownItem2: "token-input-dropdown-item2-facebook", selectedDropdownItem: "token-input-selected-dropdown-item-facebook", inputToken: "token-input-input-token-facebook" } ');
-
 var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
 var tokenDataUrl  = "{/literal}{$tokenUrl}{literal}";
 var assigneeDataUrl  = "{/literal}{crmURL p='civicrm/ajax/rest?fnName=civicrm/contact/search&json=1&return[contact_id]&group=3'}{literal}"; //NYSS
 
 var hintText = "{/literal}{ts}Type in a partial or complete name or email address of an existing contact.{/ts}{literal}";
-cj( "#assignee_contact_id").customTokenInput( assigneeDataUrl, { prePopulate: assignee_contact, classes: tokenClass, hintText: hintText });
-cj( "#target_contact_id"  ).tokenInput( tokenDataUrl, { prePopulate: target_contact,   classes: tokenClass, hintText: hintText });
+cj( "#assignee_contact_id").customTokenInput( assigneeDataUrl, { prePopulate: assignee_contact, theme: 'facebook', hintText: hintText });
+cj( "#target_contact_id"  ).tokenInput( tokenDataUrl, { prePopulate: target_contact,   theme: 'facebook', hintText: hintText });
 cj( 'ul.token-input-list-facebook, div.token-input-dropdown-facebook' ).css( 'width', '450px' );
 cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirst : false, matchContains:true
                             }).result( function(event, data, formatted) { cj( "#source_contact_qid" ).val( data[1] );
@@ -316,7 +308,7 @@ cj( "#source_contact_id").autocomplete( sourceDataUrl, { width : 180, selectFirs
                 </td>
              </tr>
              {/if}
-                 <tr class="crm-case-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl" tagsetType='activity'}</td></tr>{*NYSS 3426*}
+                 <tr class="crm-case-activity-form-block-tag_set"><td colspan="2">{include file="CRM/common/Tag.tpl" tagsetType='activity'}</td></tr>
              </table>
 
            {/if}

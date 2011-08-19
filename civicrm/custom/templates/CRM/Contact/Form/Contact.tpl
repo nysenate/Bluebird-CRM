@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -46,7 +46,7 @@
 *}
 <span style="float:right;"><a href="#expand" id="expand">{ts}Expand all tabs{/ts}</a></span>
 <div class="crm-submit-buttons">
-   {include file="CRM/common/formButtons.tpl"}
+   {include file="CRM/common/formButtons.tpl" location="top"}
 </div>
 <div class="crm-accordion-wrapper crm-contactDetails-accordion crm-accordion-open">
  <div class="crm-accordion-header">
@@ -192,7 +192,7 @@
 	    {/if}
     {/foreach}
 <div class="crm-submit-buttons">
-    {include file="CRM/common/formButtons.tpl" location="bottom"} {*NYSS ensure unique ids*}
+    {include file="CRM/common/formButtons.tpl" location="bottom"}
 </div>
 
 </div>

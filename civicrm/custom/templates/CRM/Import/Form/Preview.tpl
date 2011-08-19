@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -167,9 +167,9 @@ function verify( ) {
 </div><!-- /.crm-accordion-wrapper -->
 
 
-{* Existing Group *}
-<!--<div class="crm-accordion-wrapper crm-existing_group-accordion {if $form.groups}crm-accordion-open{else}crm-accordion-closed{/if}"> -->
-<div class="crm-accordion-wrapper crm-existing_group-accordion crm-accordion-closed">
+      {* Existing Group *}
+
+<div id="existing-groups" class="crm-accordion-wrapper crm-existing_group-accordion crm-accordion-closed">
  <div class="crm-accordion-header">
   <div class="icon crm-accordion-pointer"></div>
   {$form.groups.label}
@@ -205,10 +205,10 @@ function verify( ) {
     </div>
  </div><!-- /.crm-accordion-body -->
 </div><!-- /.crm-accordion-wrapper -->
+    {* Existing Tag Imported Contact *}
 
-{* Existing Tag Imported Contact *}
 {* 
-<!--LCD commented out to address unmanageably long list of tags; 
+<!--NYSS commented out to address unmanageably long list of tags; 
 should be restored and limited to issue codes (or just exclude positions)-->
 <div class="crm-accordion-wrapper crm-accordion_title-accordion crm-accordion-closed">
  <div class="crm-accordion-header">

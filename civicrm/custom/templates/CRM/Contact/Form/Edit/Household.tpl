@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2010                                |
+ | Copyright CiviCRM LLC (c) 2004-2011                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -25,29 +25,25 @@
 *}
 {* tpl for building Household related fields *}
 <table class="form-layout-compressed">
-	<tr>
-		<td>
-			{$form.household_name.label}<br/>
-			{if $action == 2}
-        		{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_contact' field='household_name' id=$entityID}
-        	{/if}
-       		{$form.household_name.html|crmReplace:class:big}
-		</td>
-       	<td>
-        	{$form.nick_name.label}<br/>
-       		{$form.nick_name.html|crmReplace:class:big}
-       	</td>
-       	<td>
+    <tr>
+       <td>{$form.household_name.label}<br/>
+         {$form.household_name.html|crmReplace:class:big}
+       </td>
+
+       <td>{$form.nick_name.label}<br/>
+       {$form.nick_name.html|crmReplace:class:big}</td>
+
+       <td>
        		{$form.contact_source.label}<br />
             {$form.contact_source.html|crmReplace:class:big}
-       	</td>
-        <td>
+       </td>
+       <td>
         	{$form.external_identifier.label}<br />
             {$form.external_identifier.value}
-        </td>
-        <td>
+       </td>
+       <td>
         	<label for="internal_identifier">{ts}Internal Id{/ts}</label><br />
             {$contactId}
-        </td>
+       </td>
 	</tr>
 </table>
