@@ -485,7 +485,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		}
 
 		//find an address if we don't have an addressID already
-		if (!empty($l['id']) && empty($l['address_id'])) {
+		if ( !empty($l['id']) && empty($l['address_id']) ) {
 			$sql = "SELECT id AS address_id, is_primary AS address_is_primary FROM civicrm_address WHERE contact_id LIKE '{$l['id']}' AND street_number LIKE '{$l['street_number']}' AND street_name LIKE '{$l['street_name']}' AND city LIKE '{$l['city']}' AND ( postal_code LIKE '{$l['postal_cod']}' OR postal_code LIKE '{$l['postal_code']}' )";
 			$dao = &CRM_Core_DAO::executeQuery( $sql );
 	        if ($dao->fetch()) { 
@@ -499,9 +499,17 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		
 		//find district id if address id set
 		if ( !empty($l['address_id']) && empty($l['districtinfo_id']) ) {
-			$sql = "SELECT id AS distinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}";
+			$sql = "SELECT id AS districtinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}";
 			$dao = &CRM_Core_DAO::executeQuery( $sql );
-	        if ( $dao->fetch() ) $l['districtinfo_id'] = $dao->distinfo_id;
+	        if ( $dao->fetch() ) $l['districtinfo_id'] = $dao->districtinfo_id;
+			CRM_Core_DAO::freeResult( );
+		}
+		
+		//find email id if email is set
+		if ( !empty($l['id']) && !empty($l['email']) && empty($l['email_id']) ) {
+			$sql = "SELECT id AS email_id FROM civicrm_email WHERE email = '{$l['email']}' AND contact_id = {$l['id']}";
+			$dao = &CRM_Core_DAO::executeQuery( $sql );
+	        if ( $dao->fetch() ) $l['email_id'] = $dao->email_id;
 			CRM_Core_DAO::freeResult( );
 		}
 		
