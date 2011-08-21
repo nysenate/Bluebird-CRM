@@ -113,6 +113,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql = "SELECT contact_id FROM civicrm_group_contact WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds') AND status = 'Added';";
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
+	
+	//retrieve Email Only group id
+	$eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Only';" );
+	if ( !$eogid ) $eogid = 0; //prevent errors if group is not found
 
     $this->_contactIds = array_unique($this->_contactIds);
 
@@ -128,26 +132,41 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql = "SELECT c.id, c.contact_type, c.first_name, c.last_name, c.middle_name, c.job_title, c.birth_date, c.organization_name, c.postal_greeting_display, c.addressee_display, c.gender_id, c.prefix_id, c.suffix_id, cr.relationship_type_id, ch.household_name as household_name, ch.nick_name as household_nickname, ch.postal_greeting_display as household_postal_greeting_display, ch.addressee_display as household_Addressee_display, ";
 	$sql .= "congressional_district_46, ny_senate_district_47, ny_assembly_district_48, election_district_49, county_50, county_legislative_district_51, town_52, ward_53, school_district_54, new_york_city_council_55, neighborhood_56, ";
 	$sql .= "street_address, supplemental_address_1, supplemental_address_2, street_number, street_number_suffix, street_name, street_unit, city, postal_code, postal_code_suffix, state_province_id, county_id ";
-	//$sql .= "(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0) as nonPrimaryMailingId, ";
-	//$sql .= "(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = c.id AND pm.is_primary = 1) as primaryId ";
 	
 	$sql .= " FROM civicrm_contact c ";
-			//join with address if primary or BOE mailing and non primary
+	
+	//join with address if primary or BOE mailing and non primary
 	$sql .= " LEFT JOIN civicrm_address a ON a.contact_id=c.id AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = c.id AND pm.is_primary = 1)) ";	
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
-	$sql .= " LEFT  JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7) ";
-    $sql .= " LEFT  JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
+	
+	//household joins
+	$sql .= " LEFT JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7) ";
+    $sql .= " LEFT JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
+	
+	//join with group to exclude Email Only
+	$sql .= " LEFT JOIN civicrm_group_contact cgc ON cgc.contact_id = c.id AND status = 'Added' AND group_id = $eogid ";
+	
+	//join with temp table to limit to search results
 	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
+	
+	//exclude deceased, trashed, do not mail
 	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ";
+	
+	//exclude empty last name, empty org name (if org type), and empty address
 	$sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR ( c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Individual' ) ";
 	$sql .= " AND ( ( c.contact_type = 'Organization' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Organization' ) ";
 	$sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
+	
+	//exclude impossibly old contacts
 	$sql .= " AND ( c.birth_date IS NULL OR c.birth_date = '' OR c.birth_date > '1901-01-01' ) ";
+	
+	//exclude email only group
+	$sql .= " AND ( cgc.id IS NULL ) "; 
+	
+	//order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
 	$sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, "; 
 	$sql .= " CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
 	$sql .= " IFNULL(c.birth_date, '9999-01-01');";
-	//order export by oldest male, then oldest female
-	//ensure empty values fall last
 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
