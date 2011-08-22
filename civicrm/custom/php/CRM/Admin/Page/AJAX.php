@@ -223,8 +223,8 @@ class CRM_Admin_Page_AJAX
 
         $tags = array( );
 
-		//NYSS treat issue codes and keywords using normal method
-        if ($parentId != 292 || $isSearch) {
+	  //NYSS treat issue codes and keywords using normal method
+      if ( $parentId != 292 || $isSearch ) {
             
         // always add current search term as possible tag
         // here we append :::value to determine if existing / new tag should be created
@@ -249,8 +249,8 @@ class CRM_Admin_Page_AJAX
         echo json_encode($tags);         
         CRM_Utils_System::civiExit( );
 
-        //NYSS leg positions should retrieve list from open leg and then create value in tag table
-        elseif ($parentId == 292) {
+      //NYSS leg positions should retrieve list from open leg and create value in tag table
+      } elseif ( $parentId == 292 ) {
         
         		$billNo = $name; 
         		$ch = curl_init();
@@ -357,7 +357,7 @@ class CRM_Admin_Page_AJAX
         	echo json_encode($tags );
         	CRM_Utils_System::civiExit( );
         	
-        }
+      } //end leg pos condition
     }
     
     static function mergeTagList( ) {

@@ -87,8 +87,7 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
   }
   
   //set values
-  //TODO this is manually set to override directory; revert when core has been updated
-  require_once $appdir.'/civicrm/custom/php/CRM/Utils/Crypt.php';
+  require_once $appdir.'/modules/civicrm/CRM/Utils/Crypt.php';
   $mb['smtpServer']   = $smtpHost;
   $mb['smtpPort']     = $smtpPort;
   $mb['smtpAuth']     = $smtpAuth;

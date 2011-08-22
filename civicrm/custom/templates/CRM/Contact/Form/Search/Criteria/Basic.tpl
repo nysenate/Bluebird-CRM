@@ -44,9 +44,15 @@
                     &nbsp;
                 {/if}
             </td>
+            {*NYSS suppress profile results option
             <td class="advsearch_profile">
                 {$form.uf_group_id.label} {help id="id-search-views"}<br />{$form.uf_group_id.html}
             </td>
+            *}
+            <td>
+                {$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}
+            </td>
+            
             <td class="advsearch_buttons_top">
             	<div class="crm-submit-buttons">{$form.buttons.html}</div>
                 <a href="/civicrm/contact/search/advanced&reset=1" class="resetbutton">
@@ -103,7 +109,7 @@
 {/if}
 
 {if $form.contact_tags}
-            <td colspan="2" id="advSearchContactTags">
+            <td colspan="3" id="advSearchContactTags">
             	<div class="crm-section tag-section contact-issue-codes">
                   <div class="label">
                   	<label>{ts}Issue Code(s){/ts}</label>{*NYSS*}
@@ -129,7 +135,6 @@
 {else}
             <td>&nbsp;</td>
 {/if}
-            <td colspan="2">{$form.operator.label} {help id="id-search-operator"}<br />{$form.operator.html}</td>
 	    </tr>
         
         <tr>

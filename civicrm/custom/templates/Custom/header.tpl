@@ -108,17 +108,7 @@ cj( document ).ready( function( ) {
 			$(this).addClass('input-active');			
 			}
 		});
-	/*$("input[name=sort_name]").blur(function(){
-		var defaultText = $(this).val();
-		if(defaultText === ''){
-			$(this).val('enter name');
-			$(this).removeClass('input-active');
-			}
-		});*/
-
 });
-
-			
 			
 </script>
 {/literal}
@@ -130,7 +120,6 @@ cj( document ).ready( function( ) {
 		<span id="create-link" class="main-menu-item">
 			<div class="skin-icon link-icon"></div>
 			CREATE
-			
 		</span>
 		<div class="menu-container">
 			<ul class="menu-ul innerbox">
@@ -234,8 +223,6 @@ cj( document ).ready( function( ) {
 </div><!-- /.civi-menu -->
 
 <div class="civi-adv-search-body crm-form-block">
-	
-
 	<div id="advanced-search-form"></div>
 	
   {if $ssID or $rows or $savedSearch}
@@ -245,25 +232,25 @@ cj( document ).ready( function( ) {
 	{literal}
 	<script>
 	cj('.civi-advanced-search-link').click(function() {
-	 if (cj('form#Advanced').length == 0) {
-	   $('.civi-adv-search-linkwrap').addClass('crm-loading');
-	   cj('#advanced-search-form').load('{/literal}{crmURL p='civicrm/contact/search/advanced?reset=1&snippet=1'}{literal}',
-	       function() { 
-	           $('.civi-adv-search-linkwrap').removeClass('crm-loading'); 
+	  if (cj('form#Advanced').length == 0) {
+	    $('.civi-adv-search-linkwrap').addClass('crm-loading');
+	    cj('#advanced-search-form').load('{/literal}{crmURL p="civicrm/contact/search/advanced" q="snippet=1&reset=1"}{literal}',
+	      function() { 
+	        $('.civi-adv-search-linkwrap').removeClass('crm-loading'); 
 	       	if ($('#advanced-search-form .crm-accordion-processed').length == 0){
-            	cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function() {$(this).addClass('crm-accordion-header-hover')});
-            	cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function() {$(this).removeClass('crm-accordion-header-hover')});
-            	$('#advanced-search-form .crm-accordion-header').bind('click', function () {
-            		$(this).parent().toggleClass('crm-accordion-open');
-            		$(this).parent().toggleClass('crm-accordion-closed');
-            		//return false to prevent wiring of click event
-            		return false;
-            		});
-            	$('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
-            	};
-            });
+              cj('#advanced-search-form .crm-accordion-header').bind('mouseenter', function() {$(this).addClass('crm-accordion-header-hover')});
+              cj('#advanced-search-form .crm-accordion-header').bind('mouseleave', function() {$(this).removeClass('crm-accordion-header-hover')});
+              $('#advanced-search-form .crm-accordion-header').bind('click', function () {
+                $(this).parent().toggleClass('crm-accordion-open');
+            	$(this).parent().toggleClass('crm-accordion-closed');
+            	//return false to prevent wiring of click event
+            	return false;
+              });
+              $('.crm-accordion-wrapper').addClass('crm-accordion-processed'); // only attached to accordions processed during first run
+            };
+          });
 	  } else {
-	   cj('.civi-advanced-search-link').removeClass('civi-advanced-search-link').addClass('civi-advanced-search-button');
+	    cj('.civi-advanced-search-link').removeClass('civi-advanced-search-link').addClass('civi-advanced-search-button');
 	  }
 	  });
 	</script>
@@ -272,7 +259,6 @@ cj( document ).ready( function( ) {
   {/if}
 
 </div>
-
 </div>
 
 {literal}
