@@ -1,6 +1,5 @@
 <?php
 
-//define(NYSSIODEBUG,false);
 define(NYSSIODEBUG,true);
 
 require_once(dirname(__FILE__) . '/nyss_lib.php');
@@ -237,45 +236,16 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	}
 	if ( array_key_exists('note', $columns) ) { require_once 'api/v2/Note.php'; }
 	
-	//also create group here if set in form
-	$groupID = '';
-	if ( !empty($form_state['values']['addtogroup']) ) {
-		$groupname = $form_state['values']['addtogroup'];
-		$groupparams = array( 'title' => $groupname );
-    	$get_group =& civicrm_group_get( $groupparams );
-		//nyss_out("debug", $get_group, true);
-		
-		if ( $get_group['is_error'] && !$dryrun ) {
-			$params = array( 'title' => $groupname, 'is_active' => 1 );
-				//nyss_out("debug", $params, true);
-			$group = civicrm_group_add( $params );
-				//nyss_out("debug", $group, true);
-			$groupID = $group['result'];
-		} elseif ( $get_group['is_error'] && $dryrun ) {
-			nyss_out('status',"group '{$groupname}' does not exist; it will be created during import.",true);
-		} else {
-			$group = array_keys($get_group);
-			$groupID = $group[0];
-			if ( $dryrun ) {
-				nyss_out('status',"imported records will be added to the existing group: {$groupname}.",true);
-			}
-		}
-		
-		if ( !$dryrun ) {
-			nyss_out('status',"groupID: {$groupID}.",true);
-		}
+	//include parsename helper if set
+	$parse = $form_state['values']['parsename'];
+	if ( $parse ) {
+		require_once( dirname(__FILE__).'/nameparse.php' );
 	}
 	
 	//if processing as an email import, set other required options
 	if ($form_state['values']['emailimport']==1) {
 		$form_state['values']['dedupe']     = 1;
 		$form_state['values']['deduperule'] = 11;
-	}
-	
-	//include parsename helper if set
-	$parse = $form_state['values']['parsename'];
-	if ( $parse ) {
-		require_once( dirname(__FILE__).'/nameparse.php' );
 	}
 
 	//initialize arrays to be populated with contact id's during import
@@ -627,22 +597,55 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 				$note = civicrm_note_create( $params );
 			}
 		}
-		
-		//add contact to group
-		if ( !empty($form_state['values']['addtogroup']) ) {
-			if ( !$dryrun ) {
-				$params = array( 'contact_id' => $l['id'],
-                    			 'group_id'   => $groupID );
-    			//nyss_out('debug', $params, true);
-				$groupcontact = civicrm_group_contact_add( $params );
-				//nyss_out('debug', $groupcontact, true);
-			}
-		}
-	}
+	} //end record processing
 
+	//Begin post process
+	
+	//Add contacts to group if set
+	if ( !empty($form_state['values']['addtogroup']) ) {
+	
+	    //create group/retrieve existing
+		$groupID = '';
+		$groupname = $form_state['values']['addtogroup'];
+        $groupparams = array( 'title' => $groupname );
+        $get_group =& civicrm_group_get( $groupparams );
+		
+        if ( $get_group['is_error'] ) {
+            if (!$dryrun ) {
+                $params = array( 'title' => $groupname, 
+				                 'is_active' => 1 );
+                $group = civicrm_group_add( $params );
+                $groupID = $group['result']->id;
+            } else {
+                nyss_out('status',"The {$groupname} group does not exist; it will be created during import.",true);
+            }
+        } else {
+            $group = array_keys($get_group);
+            $groupID = $group[0];
+        }
+		
+		//now prepare array for adding contacts to group
+        $group_params = array('group_id' => $groupID);
+
+        //construct the list of contacts to add
+		$allContacts = $new_contacts + $updated_contacts;
+        foreach($allContacts as $index=>$contact_id) {
+            if ($index == 0)
+                $group_params['contact_id'] = $contact_id;
+            else
+                $group_params["contact_id.$index"] = $contact_id;
+        }
+
+        if (!$dryrun) {
+            $groupcontact = civicrm_group_contact_add( $group_params );
+        } else {
+            nyss_out('status',"Adding "+count($new_contacts)+" to the {$groupname} group",true);
+        }
+
+	} //end add to group
 
 	//Add all new contacts to the email only exclusion group
-    if ($form_state['values']['emailimport']==1) {
+    if ( $form_state['values']['emailimport'] == 1 ) {
 
         //Create the group if it doesn't already exist
         $email_group_id = '';
@@ -654,7 +657,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 				                 'is_active' => 1,
 								 'description' => 'Contacts in this group will be excluded from postal mailings processed through Corporate Woods, and may be exclude from internal exports using the print processing option.' );
                 $group = civicrm_group_add( $params );
-                $email_group_id = $group['result'];
+                $email_group_id = $group['result']->id;
             } else {
                 nyss_out('status',"The 'Email Only' group does not exist; it will be created during import.",true);
             }
@@ -680,8 +683,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         } else {
             nyss_out('status',"Adding "+count($new_contacts)+" to the Email Only group",true);
         }
-    }
-
+    } //end add to email only group
 
 	if ($form_state['values']['sendmail']==1) {
 
