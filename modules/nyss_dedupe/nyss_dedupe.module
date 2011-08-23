@@ -161,10 +161,10 @@ function nyss_dedupe_strict_default_record($o, $table, &$tableQueries) {
     $contact = $o->params['civicrm_contact'];
     foreach(array('last_name','first_name','middle_name','suffix_id') as $key) {
         if( array_key_exists($key, $contact) && $value=$contact[$key])
-            $value = "'$value'";
+            $expression = " = '".trim($value)."'";
         else
-            $value = "NULL";
-        $where .= " AND t1.$key = $value\n";
+            $expression = "IS NULL";
+        $where .= " AND t1.$key $expression\n";
     }
 
     //Add address field filters
@@ -173,7 +173,7 @@ function nyss_dedupe_strict_default_record($o, $table, &$tableQueries) {
     if( array_key_exists('postal_code',$address) && $value=$address['postal_code'])
         $where .= " AND a1.postal_code = '$value'\n";
     else
-        $where .= " AND a1.postal_code = NULL\n";
+        $where .= " AND a1.postal_code IS NULL\n";
 
     if( array_key_exists('street_address',$address) && $value=$address['street_address']) {
         //Build the php representation
@@ -183,13 +183,13 @@ function nyss_dedupe_strict_default_record($o, $table, &$tableQueries) {
         $street_address_php = str_replace(array_keys($abbrevs),array_values($abbrevs),$street_address_php);
 
         //Build the sql representation
-        $street_address_sql = "preg_replace('$regexp','',CONCAT(TRIM(LCASE(a1.street_address)),' '))";
+        $street_address_sql = "preg_replace('$regexp','',CONCAT(' ',TRIM(LCASE(a1.street_address)),' '))";
         foreach ( $abbrevs as $longname => $abbrev )
             $street_address_sql = "REPLACE( $street_address_sql, '$longname', '$abbrev' )";
 
         $where .= " AND $street_address_sql = '$street_address_php'";
     } else
-        $where .= " AND a1.street_address = NULL";
+        $where .= " AND a1.street_address IS NULL";
 
 
     $tableQueries['civicrm_contact.last_name.5'] = "
