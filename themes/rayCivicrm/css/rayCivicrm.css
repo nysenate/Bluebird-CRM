@@ -1343,3 +1343,8 @@ ul.token-input-list-facebook { width:265px;}
 #crm-container .panel {
 	width: 205px;
 }
+/*4215 menu font*/
+#civicrm-menu li a, 
+#root-menu-div li a {
+	font-family: "Helvetica Neue",Arial,Helvetica,sans-serif;
+}
