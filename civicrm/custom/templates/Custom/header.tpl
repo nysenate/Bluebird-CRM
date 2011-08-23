@@ -126,24 +126,24 @@ cj( document ).ready( function( ) {
 
 	{if call_user_func(array('CRM_Core_Permission','check'), 'view all activities')}
 	<li><div class="menu-item">
-	<a href="{crmURL p='civicrm/activity&reset=1&action=add&context=standalone'}">New Activity</a></div></li>
+	<a href="{crmURL p='civicrm/activity' q='reset=1&action=add&context=standalone'}">New Activity</a></div></li>
     {/if}
 	{if call_user_func(array('CRM_Core_Permission','check'), 'access all cases and activities')}
 		<li><div class="menu-item">
-		<a href="{crmURL p='civicrm/case/add&reset=1&action=add&atype=13&context=standalone'}">New Case</a></div></li>
+		<a href="{crmURL p='civicrm/case/add' q='reset=1&action=add&atype=13&context=standalone'}">New Case</a></div></li>
 	{/if}
 	{if call_user_func(array('CRM_Core_Permission','check'), 'add contacts')}
 		<li><div class="menu-item">
-		<a href="{crmURL p='civicrm/activity/add&atype=3&action=add&reset=1&context=standalone'}">New Email</a></div></li>
+		<a href="{crmURL p='civicrm/activity/email/add' q='atype=3&action=add&reset=1&context=standalone'}">New Email</a></div></li>
 	{/if}
 	{if call_user_func(array('CRM_Core_Permission','check'), 'add contacts')}
 		<li style="position: relative;" class="menu-separator"><div class="menu-item"></div></li>	
 		<li><div class="menu-item">
-		<a href="{crmURL p='civicrm/contact/add&reset=1&ct=Individual'}">New Individual</a></div></li>
+		<a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Individual'}">New Individual</a></div></li>
 		<li><div class="menu-item">
-		<a href="{crmURL p='civicrm/contact/add&reset=1&ct=Household'}">New Household</a></div></li>
+		<a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Household'}">New Household</a></div></li>
 		<li><div class="menu-item">
-		<a href="{crmURL p='civicrm/contact/add&reset=1&ct=Organization'}">New Organization</a></div></li>
+		<a href="{crmURL p='civicrm/contact/add' q='reset=1&ct=Organization'}">New Organization</a></div></li>
 	{/if}
 	</ul>
 		</div>
