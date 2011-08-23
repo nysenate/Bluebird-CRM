@@ -104,9 +104,16 @@
                     {/foreach}
                 </td>
             {/foreach}
-                 <td>
+                 <td rowspan="2">
                      <br /><span class="label">{$form.preferred_language.label}</span>
                      <br />{$form.preferred_language.html}
+        			 
+                     {*3815 add privacy note field*}
+                     <div id="privacyNote">
+                     	{assign var=privacynote value="custom_64_-1"}
+                     	<br /><span class="label">{$form.$privacynote.label}</span>
+                     	<br />{$form.$privacynote.html}
+                     </div>
                 </td>
         </tr>
         <tr>

@@ -27,7 +27,7 @@
 <script type="text/javascript">var showTab = Array( );</script>
 
 {foreach from=$groupTree item=cd_edit key=group_id}
-{if $group_id neq 3 && $group_id neq 1} {*NYSS remove org fields as they are integrated directly*}
+{if $group_id neq 3 && $group_id neq 1 && $group_id neq 8} {*NYSS remove org and contact fields as they are integrated directly*}
 	<div class="crm-accordion-wrapper crm-address-accordion {if $cd_edit.collapse_display || $group_id eq 5}crm-accordion-closed{else}crm-accordion-open{/if}">
 		<div class="crm-accordion-header">
 			<div id="custom{$group_id}" class="icon crm-accordion-pointer"></div> 

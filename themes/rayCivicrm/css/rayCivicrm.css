@@ -1333,3 +1333,8 @@ ul.token-input-list-facebook { width:265px;}
 .advsearch_profile {
 	visibility: hidden;
 }
+
+/*3815 privacy note*/
+#privacyNote {
+	padding-top: 4px;
+}
