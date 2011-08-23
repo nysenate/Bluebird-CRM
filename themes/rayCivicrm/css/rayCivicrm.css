@@ -1338,3 +1338,8 @@ ul.token-input-list-facebook { width:265px;}
 #privacyNote {
 	padding-top: 4px;
 }
+
+/*4212 case more popup*/
+#crm-container .panel {
+	width: 205px;
+}
