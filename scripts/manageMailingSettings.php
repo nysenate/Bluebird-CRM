@@ -81,7 +81,7 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
 
   $mb = $civiMailing['backend'];
   
-  //TODO we need to retrieve this from the settings file or instantiae civi
+  //TODO we need to retrieve this from the settings file or instantiate civi
   if ( !defined('CIVICRM_SITE_KEY') ) {
     define('CIVICRM_SITE_KEY', '32425kj24h5kjh24542kjh524');
   }
@@ -101,10 +101,13 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
     $rc = false;
   }
   
-  //enable civimail component
+  //enable civimail component and set mailer/job size
   $cb = $civiConfig['backend'];
   $cb['enableComponents'][]   = 'CiviMail';
   $cb['enableComponentIDs'][] = 4;
+  $cb['mailerBatchLimit'][]   = 2500;
+  $cb['mailerJobSize'][]      = 2500;
+  
   $sql = "UPDATE civicrm_domain SET config_backend='".serialize($cb)."' WHERE id=1;";
   if ( !mysql_query($sql, $dbcon) ) {
     echo mysql_error($dbcon)."\n";
