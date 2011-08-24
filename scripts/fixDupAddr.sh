@@ -47,7 +47,7 @@ echo "==> Examining CRM instance [$instance]" >&2
 
 for fld in supplemental_address_1 supplemental_address_2; do
   echo "Checking for street_addresses that are duplicated by $fld" >&2
-  cond="street_address = $fld"
+  cond="$fld <> '' and street_address = $fld"
   sql="select count(*) from civicrm_address where $cond"
   cnt=`$execSql -q -i $instance -c "$sql;"`
   echo "Total address records with duplicate street_address and $fld: $cnt" >&2
