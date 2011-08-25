@@ -322,27 +322,25 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		}
 	}
 	
-	//2503 alpha sort prefix field; reverted and manually reordered
-	/*if ( isset( $form->_elementIndex['prefix_id'] ) ) {
-		require_once 'CRM/Utils/Sort.php';
-		$prefix =& $form->getElement( 'prefix_id' );
-		$prefOptions =& $prefix->_options;
-		uasort( $prefOptions, array('CRM_Utils_Sort', 'cmpText') );
-	}*/
-	
-	//3493 alpha sort preferred language field; reverted and manually reordered
-	/*if ( isset( $form->_elementIndex['preferred_language'] ) ) {
-		require_once 'CRM/Utils/Sort.php';
-		$preflang =& $form->getElement( 'preferred_language' );
-		$preflangOptions =& $preflang->_options;
-		uasort( $preflangOptions, array('CRM_Utils_Sort', 'cmpText') );
-	}*/
-	
 	//2539 require content in activity email
 	if ( $formName == 'CRM_Contact_Form_Task_Email' ) {
 		
 		if ( empty($form->_submitValues['html_message']) && empty($form->_submitValues['text_message']) ) {
 			$form->addRule('html_message', ts('Please enter content in either the html or text message fields.'), 'required');
+		}
+	}
+	
+	//4203 disallow setting report nav to root and home parent navigation items
+	if ( $form->getVar('_instanceForm') && $form->elementExists('parent_id') ) {
+		
+        $removeList = array( '-- select --',
+                             'Home',
+                             'Administer' );
+		$navParent =& $form->getElement('parent_id');
+		foreach ( $navParent->_options as $key=>$option ) {
+			if ( in_array($option['text'], $removeList) ) {
+				unset( $navParent->_options[$key] );
+			}
 		}
 	}
 	
