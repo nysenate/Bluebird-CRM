@@ -76,6 +76,11 @@ ALTER TABLE civicrm_value_contact_details_8
   ADD CONSTRAINT FK_civicrm_value_contact_details_8_entity_id FOREIGN KEY (entity_id) REFERENCES civicrm_contact (id) ON DELETE CASCADE;"
 $execSql -i $instance -c "$customtable"
 
+## 3983 add context to activity report
+dashcontext="UPDATE civicrm_dashboard SET url = 'civicrm/report/instance/23&reset=1&section=2&snippet=4&context=dashlet' WHERE url = 'civicrm/report/instance/23&reset=1&section=2&snippet=4';
+UPDATE civicrm_dashboard SET url = 'civicrm/report/instance/24&reset=1&section=2&snippet=4&context=dashlet' WHERE url = 'civicrm/report/instance/24&reset=1&section=2&snippet=4';"
+$execSql -i $instance -c "$dashcontext"
+
 
 ### Cleanup ###
 

@@ -464,7 +464,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
         $activityType   = CRM_Core_PseudoConstant::activityType( true, true, false, 'label', true );
         $activityStatus = CRM_Core_PseudoConstant::activityStatus();
         $viewLinks      = false;
-        $seperator      =  CRM_CORE_DAO::VALUE_SEPARATOR;
+        $seperator      = CRM_CORE_DAO::VALUE_SEPARATOR;
+		$context        = CRM_Utils_Request::retrieve( 'context', 'String', $this, false, 'report' ); //NYSS 3983
 
         require_once 'CRM/Core/Permission.php';
         if ( CRM_Core_Permission::check( 'access CiviCRM' ) ) {
@@ -530,12 +531,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                         if ( $rows[$rowNum]['civicrm_case_activity_case_id'] ) {
                             $url = CRM_Utils_System::url( "civicrm/case/activity/view"  , 
                                                           'reset=1&cid=' . $rows[$rowNum]['civicrm_activity_source_contact_id'] .
-                                                          '&aid=' . $rows[$rowNum]['civicrm_activity_id'] . '&caseID=' . $rows[$rowNum]['civicrm_case_activity_case_id'],
+                                                          '&aid=' . $rows[$rowNum]['civicrm_activity_id'] . '&caseID=' . $rows[$rowNum]['civicrm_case_activity_case_id'] . '&context=' . $context, //NYSS 3983
                                                           $this->_absoluteUrl );
                         } else {
                             $url = CRM_Utils_System::url( "civicrm/activity/view", //NYSS 3986
                                                           'action=view&reset=1&cid=' . $rows[$rowNum]['civicrm_activity_source_contact_id'] .
-                                                          '&id=' . $rows[$rowNum]['civicrm_activity_id'] . '&atype=' . $value ,
+                                                          '&id=' . $rows[$rowNum]['civicrm_activity_id'] . '&atype=' . $value . '&context=' . $context, //NYSS 3983
                                                           $this->_absoluteUrl );
                         }
                         $rows[$rowNum]['civicrm_activity_activity_type_id_link'] = $url;
