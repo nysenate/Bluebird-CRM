@@ -6,8 +6,15 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
     if( $o->noRules || $table != 'table')
         return;
 
+    //return now if the rule name is not in our list of modified rules
+    $ruleNames = array( 'Level 1 (fname + mname + lname + suffix + street + postal)',
+                        'Level 3 (street + lname + fname + city + suffix)',
+                        'NYSS - Strict Email' );
+    if ( !in_array($o->name, $ruleNames) )
+        return;
+
     // All of our dedupe methods essentially wipe the ruleset clean and insert our own
-    // more expressive set of rule logic and thresholds.
+    // more expressive set of rule logic and thresholds.		
     $o->threshold = 5;
     foreach(array_keys($tableQueries) as $key)
         unset($tableQueries[$key]);
@@ -15,7 +22,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
     if ($o->name=='Level 1 (fname + mname + lname + suffix + street + postal)') {
         // The primary strict dedupe rule can be used with different behavior in two different scenarios
         //
-        // 1) No parameters are passed in. Contruct query to dedupe internally against other contacts
+        // 1) No parameters are passed in. Construct query to dedupe internally against other contacts
         if (empty($o->params)) {
             nyss_dedupe_strict_default_internal($o, $table, $tableQueries);
 
