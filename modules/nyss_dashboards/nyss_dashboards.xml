@@ -107,4 +107,19 @@
     <page_callback>CRM_Tag_AJAX::tag_tree</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/ajax/tag/create</path>
+    <page_callback>CRM_Tag_AJAX::create</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/ajax/tag/update</path>
+    <page_callback>CRM_Tag_AJAX::update</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/ajax/tag/delete</path>
+    <page_callback>CRM_Tag_AJAX::delete</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>
