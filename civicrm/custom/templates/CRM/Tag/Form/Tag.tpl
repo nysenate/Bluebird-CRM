@@ -174,7 +174,12 @@ function initTagTree() {
              });
         }
 		//showing count of tags in summary tab
-		cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + cj("#tagtree input:checkbox:checked").length + '</em>');
+		//cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + cj("#tagtree input:checkbox:checked").length + '</em>');
+		//NYSS 2415
+        var existingTagsInTagset = cj('.token-input-delete-token-facebook').length;
+        var tagCount = cj("#tagtree input:checkbox:checked").length + existingTagsInTagset;  
+        cj( '.ui-tabs-nav #tab_tag a' ).html( 'Tags <em>' + tagCount + '</em>');
+		
         //update summary tab 
         tagLabels = tagsArray.join(', ');
         cj("#tags").html( tagLabels );
