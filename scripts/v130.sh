@@ -58,7 +58,7 @@ $execSql -i $instance -c "$navigation"
 
 ## 3814 create privacy option note
 customgroup="INSERT INTO civicrm_custom_group (id, name, title, extends, extends_entity_column_id, extends_entity_column_value, style, collapse_display, help_pre, help_post, weight, is_active, table_name, is_multiple, min_multiple, max_multiple, collapse_adv_display, created_id, created_date) VALUES
-(8, 'Contact_Details', 'Contact Details', 'Contact', NULL, NULL, 'Inline', 0, '', '', 6, 1, 'civicrm_value_contact_details_8', 0, NULL, NULL, 1, 1, '2011-08-22 23:21:02');"
+(8, 'Contact_Details', 'Contact Details', 'Contact', NULL, NULL, 'Inline', 0, '', '', 6, 1, 'civicrm_value_contact_details_8', 0, NULL, NULL, 0, 1, '2011-08-22 23:21:02');"
 $execSql -i $instance -c "$customgroup"
 
 customfield="INSERT INTO civicrm_custom_field (id, custom_group_id, name, label, data_type, html_type, default_value, is_required, is_searchable, is_search_range, weight, help_pre, help_post, mask, attributes, javascript, is_active, is_view, options_per_line, text_length, start_date_years, end_date_years, date_format, time_format, note_columns, note_rows, column_name, option_group_id) VALUES
