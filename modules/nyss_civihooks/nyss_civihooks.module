@@ -278,7 +278,9 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$btnExcludeName  = array( '_qf_Select_next', 
 		                          '_qf_Map_next', 
 								  '_qf_PDF_submit',
-								  '_qf_PDF_cancel' );
+								  '_qf_PDF_cancel',
+								  '_qf_Contact_upload_view' //we will process, but handle separately
+								 );
 		$btnExcludeValue = array( 'PDF', 
 		                          'Print Contact List' );
 		
@@ -290,6 +292,9 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 				if ( !in_array($btnName, $btnExcludeName) &&
 				     !in_array($btnValue, $btnExcludeValue) ) {
 					$js = "if(this.value!='Processing...'){this.value='Processing...';document.getElementById(this.id).click();return true;}else{return false;}";
+					$buttons->_elements[$key]->_attributes['onclick'] = $js;
+				} elseif ( $btnName == '_qf_Contact_upload_view' ) {
+				    $js = 'if(this.value!="Processing..." && cj("#Contact").valid() ){this.value="Processing...";document.getElementById(this.id).click();return true;}else{return false;}';
 					$buttons->_elements[$key]->_attributes['onclick'] = $js;
 				}
 			}
