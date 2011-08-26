@@ -411,7 +411,7 @@ class CRM_Utils_Token
         case 'html':
             require_once 'CRM/Mailing/Page/View.php';
             $page = new CRM_Mailing_Page_View( );
-            $value = $page->run( $mailing->id, false );
+            $value = $page->run( $mailing->id, null, false ); //NYSS 4240
             break;
             
         case 'approvalStatus':
