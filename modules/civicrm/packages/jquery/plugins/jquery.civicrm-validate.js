@@ -12,7 +12,7 @@
          phone_number = phone_number.replace(/\s+/g, ""); 
          return this.optional(element) || phone_number.length > 9 &&
          phone_number.match(/^(1-?)?(\([2-9]\d{2}\)|[2-9]\d{2})-?[2-9]\d{2}-?\d{4}$/);
-    }, "Enter a valid phone number (9 digits, dashes or parentheses optional).");
+    }, "Enter a valid phone number (10 digits, dashes or parentheses optional).");
 
     jQuery.validator.addMethod("crm_postal_code", function(postalcode, element) {
         return this.optional(element) || postalcode.match(/(^\d{5}(-\d{4})?$)|(^[ABCEGHJKLMNPRSTVXYabceghjklmnpstvxy]{1}\d{1}[A-Za-z]{1} ?\d{1}[A-Za-z]{1}\d{1})$/);
