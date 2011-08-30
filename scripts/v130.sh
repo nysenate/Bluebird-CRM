@@ -89,6 +89,12 @@ dashcontext="UPDATE civicrm_dashboard SET url = 'civicrm/report/instance/23&rese
 UPDATE civicrm_dashboard SET url = 'civicrm/report/instance/24&reset=1&section=2&snippet=4&context=dashlet' WHERE url = 'civicrm/report/instance/24&reset=1&section=2&snippet=4';"
 $execSql -i $instance -c "$dashcontext"
 
+## 4248 update full screen urls
+dashreport="
+UPDATE civicrm_dashboard
+SET fullscreen_url = IF( url LIKE '%context=dashlet', CONCAT(url,'Fullscreen'), CONCAT(url,'&context=dashletFullscreen') )
+WHERE fullscreen_url IS NULL;"
+$execSql -i $instance -c "$dashreport"
 
 ### Cleanup ###
 
