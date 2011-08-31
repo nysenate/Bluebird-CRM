@@ -96,6 +96,12 @@ SET fullscreen_url = IF( url LIKE '%context=dashlet', CONCAT(url,'Fullscreen'), 
 WHERE fullscreen_url IS NULL;"
 $execSql -i $instance -c "$dashreport"
 
+## 4222 email seeds group
+emailgroup="INSERT INTO civicrm_group ( name, title, description, is_active, visibility, group_type )
+VALUES ( 'Email_Seeds', 'Email Seeds', 'Add contacts to this group to be automatically included in all broadcast emails sent from Bluebird.',  '1', 'User and User Admin Only', '2');"
+$execSql -i $instance -c "$emailgroup"
+
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
