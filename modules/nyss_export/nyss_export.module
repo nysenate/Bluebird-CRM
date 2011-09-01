@@ -55,6 +55,19 @@ DELETE FROM $exportTempTable
 WHERE contact_type = 'Individual' AND ( last_name = '' OR last_name IS NULL )";
         CRM_Core_DAO::executeQuery( $query );
     }
+	
+	//4175 exclude Email Only group
+	if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+		$gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Only';" );
+		if ( $gid ) { //continue if group found
+			$query = "
+DELETE exp
+FROM $exportTempTable AS exp
+LEFT JOIN civicrm_group_contact gc ON ( gc.contact_id = exp.civicrm_primary_id AND gc.status = 'Added' )
+WHERE gc.group_id = $gid;";
+            CRM_Core_DAO::executeQuery( $query );
+		}
+	}
 
     //3665 code copied from CRM_Export_BAO_Export::writeCSVFromTable, just to modify the order clause
     $writeHeader = true;

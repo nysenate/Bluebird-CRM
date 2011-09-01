@@ -352,7 +352,8 @@ class CRM_Core_BAO_Address extends CRM_Core_DAO_Address
 		$urlpath = explode( '/', CRM_Utils_System::currentPath() );
         if ( ! empty( $asp ) && $urlpath[1] != 'import' ) {
             require_once "CRM/Utils/Address/$asp.php";
-            eval( "CRM_Utils_Address_$asp".'::checkAddress( $params )');
+            $aspClass = "CRM_Utils_Address_$asp";
+            eval( $aspClass.'::checkAddress( $params );');
 
             // do street parsing again if enabled, since street address might have changed
             require_once 'CRM/Core/BAO/Preferences.php';

@@ -6,10 +6,10 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2011-08-24
-# Revised: 2011-08-24
+# Revised: 2011-08-25
 #
 # Stats are produced as follows:
-#   <instance> TAB <uniqueDupes> TAB <totalDupes> TAB <totalEmails>
+#   <instance> TAB <uniqueDupes> TAB <totalDupes> TAB <uniqueDupesAtSameAddress> TAB <totalEmails>
 #
 
 prog=`basename $0`
@@ -36,8 +36,10 @@ if [ ! "$instance" ]; then
   exit 1
 fi
 
-dup_emails=`./execSql.sh -q -i "$instance" -c "select count(*),sum(c) from ( select email, count(*) as c from civicrm_email group by email having count(*) > 1) as kz"`
+dup_emails=`./execSql.sh -q -i "$instance" -c "select count(*),sum(c)-count(*) from ( select email, count(*) as c from civicrm_email group by email having count(*) > 1) as kz"`
+
+dup_emails_addr=`./execSql.sh -q -i "$instance" -c "select count(*) from ( select count(*) as c, email, street_address, city from civicrm_email e, civicrm_address a where e.contact_id = a.contact_id and a.is_primary=1 group by email,street_address,city having c > 1) as kz"`
 
 total_emails=`./execSql.sh -q -i "$instance" -c "select count(*) from civicrm_email where email<>''"`
 
-echo "$instance	$dup_emails	$total_emails"
+echo "$instance	$dup_emails	$dup_emails_addr	$total_emails"

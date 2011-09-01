@@ -1,18 +1,22 @@
 <?php
 
+function dedupe_reset($o, $table, &$tableQueries) {
+    // All of our dedupe methods essentially wipe the ruleset clean and insert our own
+    // more expressive set of rule logic and thresholds.
+    $o->threshold = 5;
+    foreach(array_keys($tableQueries) as $key)
+        unset($tableQueries[$key]);
+}
+
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 
     //don't run these during user account/contact creation
     if( $o->noRules || $table != 'table')
         return;
 
-    // All of our dedupe methods essentially wipe the ruleset clean and insert our own
-    // more expressive set of rule logic and thresholds.
-    $o->threshold = 5;
-    foreach(array_keys($tableQueries) as $key)
-        unset($tableQueries[$key]);
-
     if ($o->name=='Level 1 (fname + mname + lname + suffix + street + postal)') {
+        dedupe_reset($o, $table, $tableQueries);
+        
         // The primary strict dedupe rule can be used with different behavior in two different scenarios
         //
         // 1) No parameters are passed in. Contruct query to dedupe internally against other contacts
@@ -27,6 +31,8 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         }
 
     } elseif($o->name=='Level 3 (street + lname + fname + city + suffix)') {
+        dedupe_reset($o, $table, $tableQueries);
+        
         // The primary fuzzy rule gets called internally when X, Y, and Z happen.
         // CiviCRM handles the record dedupe well enough, only override the internal dedupe for now...
         if (empty($o->params)) {
@@ -34,6 +40,8 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         }
 
     } elseif($o->name=='NYSS - Strict Email') {
+        dedupe_reset($o, $table, $tableQueries);
+        
         // The fuzzy address rule matches contacts where the address is the only difference.
         if (empty($o->params)) {
             // This rule is currently meaningless in the internal context
