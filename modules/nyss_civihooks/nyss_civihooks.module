@@ -396,4 +396,18 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 	}
 }
 
+function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form ) {
+
+	$errors = array( );
+	
+	//4272 ensure that target/with contact is set when activity created from contact record
+	if ( $formName == 'CRM_Activity_Form_Activity' && $form->_context == 'activity' ) {
+
+        if ( empty($fields['target_contact_id']) ) {
+            $errors['target_contact_id'] = ts( 'Please add at least one target contact.' );
+        }
+        return empty( $errors ) ? true : $errors;
+	}
+}
+
 
