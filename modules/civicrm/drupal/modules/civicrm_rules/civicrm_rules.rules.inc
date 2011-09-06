@@ -253,6 +253,13 @@ function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
         $settings['toEmail'] = CRM_Utils_Token::replaceMailingTokens( $settings['to'],      $mailing, null, $tokens );
         $settings['html']    = CRM_Utils_Token::replaceMailingTokens( $settings['message'], $mailing, null, $tokens );
         $settings['subject'] = CRM_Utils_Token::replaceMailingTokens( $settings['subject'], $mailing, null, $tokens );
+		
+		//get the default from email address if not set
+		if ( empty($settings['from']) ) {
+    		require_once 'CRM/Core/OptionGroup.php';
+    		$defaultAddress = CRM_Core_OptionGroup::values( 'from_email_address', null, null, null, ' AND is_default = 1' );
+    		$settings['from'] = $defaultAddress[1];
+		}
 
         CRM_Utils_Mail::send( $settings );
         return array('mailing' => $mailing );
@@ -261,10 +268,12 @@ function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
 
 function rules_action_civicrm_mailing_send_email_form( $settings = array(), &$form ) {
     civicrm_initialize();
-    //get the default from email address.
-    require_once 'CRM/Core/OptionGroup.php';
-    $defaultAddress = CRM_Core_OptionGroup::values( 'from_email_address', null, null, null, ' AND is_default = 1' );
-    $settings['from'] = $defaultAddress[1];
+    //get the default from email address if not set
+	if ( empty($settings['from']) ) {
+    	require_once 'CRM/Core/OptionGroup.php';
+    	$defaultAddress = CRM_Core_OptionGroup::values( 'from_email_address', null, null, null, ' AND is_default = 1' );
+    	$settings['from'] = $defaultAddress[1];
+	}
 
     if ( !CRM_Utils_Array::value('subject', $settings ) )
     $settings['subject'] = 'New Email: {mailing.subject}';

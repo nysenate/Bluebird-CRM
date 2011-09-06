@@ -110,7 +110,7 @@
         			 
                      {*3815 add privacy note field*}
                      <div id="privacyNote">
-                     	{assign var=privacynote value="custom_64_-1"}
+                        {assign var='privacynote' value=$groupTree.8.fields.64.element_name}
                      	<br /><span class="label">{$form.$privacynote.label}</span>
                      	<br />{$form.$privacynote.html}
                      </div>

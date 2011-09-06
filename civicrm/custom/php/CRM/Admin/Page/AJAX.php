@@ -339,17 +339,25 @@ class CRM_Admin_Page_AJAX
 					//construct tags array
 					foreach ( $positiontags as $positiontag ) {
 						
-                        //if ( $json[$j]['sponsor'] ) { $positiontag_name .= ' ('.$json[$j]['sponsor'].')'; }
-						
 						//add sponsor to display if exists
-        	 			if ( $json[$j]['sponsor'] ) { $positiontag_name = $positiontag.' ('.$json[$j]['sponsor'].')'; }
-							else { $positiontag_name = $positiontag; }
+        	 			if ( $json[$j]['sponsor'] ) { 
+						    $positiontag_name = $positiontag.' ('.$json[$j]['sponsor'].')'; 
+					    } else { 
+						    $positiontag_name = $positiontag; 
+						}
 
-						//exit($positiontag_name);
+						//do lookup to see if tag exists in system already, else construct using standard format
+			            $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292 and name = '{$positiontag_name}'";
+			            $dao   = CRM_Core_DAO::executeQuery( $query );
+			            if ( $dao->fetch( ) ) {
+        	                $tagID = $dao->id;
+        	            } else {
+							$tagID = $positiontag_name.':::value';
+						}
 
 	   	 				$tags[] = array('name'    => $positiontag_name,
-											'id'      => $positiontag_name, //include full value (includes sponsor)
-											'sponsor' => $json[$j]['sponsor'] );
+										'id'      => $tagID,
+										'sponsor' => $json[$j]['sponsor'] );
       				} //end foreach
 					
 				}
@@ -421,22 +429,7 @@ LIMIT $limit";
         if ( $_POST['skipEntityAction'] ) {
             $skipEntityAction = CRM_Utils_Type::escape( $_POST['skipEntityAction'], 'Integer' );
         }
-        
-		//NYSS
-		if ( $parentId == 292 ) {
-        	$tagID = $_POST['tagID'] ;
-        
-        	$createNewTag = false;
-			$query2 = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name = '{$tagID}'";
-			$dao2 = CRM_Core_DAO::executeQuery( $query2 );
 
-			//if tag exists use; else plan to create new
-			if (!$dao2->fetch( ) ) {
-        	    $createNewTag = true;
-        	} else {
-        	    $tagID = $dao2->id;
-        	}
-		} else {
         // check if user has selected existing tag or is creating new tag
         // this is done to allow numeric tags etc. 
         $tagValue = explode( ':::', $_POST['tagID'] );
@@ -445,8 +438,7 @@ LIMIT $limit";
         $tagID  = $tagValue[0];
         if ( isset( $tagValue[1] ) && $tagValue[1] == 'value' ) {
             $createNewTag = true;
-        }       
-		}
+        }
 		
 		//NYSS - retrieve OpenLeg ID and construct URL
 		$bill_url = '';

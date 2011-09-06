@@ -117,9 +117,22 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
 		//CRM_Core_Error::debug($parent);
 	}
 	
-	
 	//CRM_Core_Error::debug($formName);
 	//CRM_Core_Error::debug($form);
+}
+
+function nyss_mail_civicrm_mailingGroups( &$form, &$groups, &$mailings ) {
+
+	//get seed group ID
+	$gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';" );
+	
+	if ( $form->_flagSubmitted && $gid ) {
+		//add group to form selection after submission
+		$form->_submitValues['includeGroups'][] = $gid;
+	} elseif ( array_key_exists($gid, $groups) ) {
+		//unset seed group on initial display so there's no confusion
+		unset($groups[$gid]);
+	}
 }
 
 ?>

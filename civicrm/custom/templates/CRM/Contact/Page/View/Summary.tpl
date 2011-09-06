@@ -124,6 +124,13 @@
 	{/foreach}
 {/foreach}
 
+{*Assign ContactDetails custom fields*}
+{foreach from=$viewCustomData.8 item=contactDetails}
+	{foreach from=$contactDetails.fields item=contactDetailsField key=customId}
+        {assign var="customCD_$customId" value=$contactDetailsField}
+	{/foreach}
+{/foreach}
+
         <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if substr_count($custom_19.field_value, 'Yes')}friend-of-senator{/if}">
             {if (isset($hookContentPlacement) and ($hookContentPlacement neq 3)) or empty($hookContentPlacement)}
                 
@@ -497,12 +504,19 @@
                              <div class="crm-accordion-body">
                               <table>
                                 <tr><td class="label">{ts}Privacy{/ts}</td>
-                                    <td class="crm-contact-privacy_values"><span class="font-red upper">
+                                    <td class="crm-contact-privacy_values">
+                                    	<span class="font-red upper">
                                         {foreach from=$privacy item=priv key=index}
                                             {if $priv}{$privacy_values.$index}<br />{/if}
                                         {/foreach}
                                         {if $is_opt_out}{ts}No Bulk Emails (User Opt Out){/ts}{/if}
-                                    </span></td>
+                                    	</span>
+                                        {if $customCD_64.field_value}
+                                        	<span id="privacyNote">
+                                            	{$customCD_64.field_value}
+                                            </span>
+                                        {/if}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="label">{ts}Preferred Method(s){/ts}</td><td class="crm-contact-preferred_communication_method_display">{$preferred_communication_method_display}</td>

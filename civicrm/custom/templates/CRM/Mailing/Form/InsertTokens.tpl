@@ -324,16 +324,18 @@ function selectValue( val ) {
     var getEndPosition = 0;
     
     function showToken(element, id ) {
-    
-    	//this is for field selection in IE8 for tokens... NYSS 4073
-    	var getStartPosition = cj('#text_message.form-textarea').focus().getSelection().start;
-    	var getEndPosition = cj('#text_message.form-textarea').focus().getSelection().end;
-    	$('.positionplace').remove();
-    	$('body').append('<div id="gSP" class="positionplace" style="display:none">' + getStartPosition + '</div>');
-    	$('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
-	initFilter(id);
-	cj("#token"+id).css({"width":"290px", "size":"8"});
-	var tokenTitle = {/literal}'{ts}Select Token{/ts}'{literal};
+   
+        //NYSS 4073 field selection in IE8 for tokens (text area only)
+        if ( element == 'Text' ) { //NYSS 4245 limit alterations to text box only
+            var getStartPosition = cj('#text_message.form-textarea').focus().getSelection().start;
+            var getEndPosition = cj('#text_message.form-textarea').focus().getSelection().end;
+            $('.positionplace').remove();
+            $('body').append('<div id="gSP" class="positionplace" style="display:none">' + getStartPosition + '</div>');
+            $('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
+        }
+        initFilter(id);
+        cj("#token"+id).css({"width":"290px", "size":"8"});
+        var tokenTitle = {/literal}'{ts}Select Token{/ts}'{literal};
         cj("#token"+element ).show( ).dialog({
             title       : tokenTitle,
             modal       : true,
