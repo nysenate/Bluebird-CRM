@@ -135,9 +135,9 @@ class CRM_Utils_Address_SAGE
  
         $values[$addr_field] = $addr2;
         $values['city'] = ucwords(strtolower($xml->city));
-        $values['state_province'] = $xml->state;
-        $values['postal_code'] = $xml->zip5;
-        $values['postal_code_suffix'] = $xml->zip4;
+        $values['state_province'] = (string)$xml->state;
+        $values['postal_code'] = (string)$xml->zip5;
+        $values['postal_code_suffix'] = (string)$xml->zip4;
         return true;
     }
 }
