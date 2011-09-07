@@ -51,7 +51,7 @@
 {literal}
 <script type="text/javascript">
 cj(function( ) {
-    var elementId = "{/literal}#phone_{$blockId}_phone{literal}";
+    /*var elementId = "{/literal}#phone_{$blockId}_phone{literal}";
     cj( elementId ).blur( function( ) {
         if ( cj(this).hasClass('valid') ) {
             var currentValue = cj(this).val();
@@ -61,7 +61,7 @@ cj(function( ) {
                 cj(this).val( formattedValue );
             }
         }
-    });
+    });*/
 }); 
 </script>
 {/literal}
