@@ -60,7 +60,7 @@ echo "Clearing CiviCRM filesystem caches"
   rm -rf $data_rootdir/$data_dirname/civicrm/js/*
 )
 
-[ $tpl -eq 1 ] && exit 0
+[ $tpl_only -eq 1 ] && exit 0
 
 echo "Clearing CiviCRM database caches"
 sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE civicrm_cache; TRUNCATE civicrm_group_contact_cache; TRUNCATE civicrm_menu; TRUNCATE civicrm_uf_match; TRUNCATE civicrm_task_action_temp; UPDATE civicrm_preferences SET navigation=null; "
