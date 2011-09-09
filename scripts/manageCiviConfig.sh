@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-30
-# Revised: 2010-09-30
+# Revised: 2011-09-09
 #
 
 prog=`basename $0`
@@ -56,9 +56,11 @@ dbname=$dbciviprefix$dbbasename
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
+inc_email=`$readConfig --ig $instance search.include_email_in_name` || inc_email="$DEFAULT_INCLUDE_EMAIL_IN_NAME"
+inc_wildcard=`$readConfig --ig $instance search.include_wildcard_in_name` || inc_wildcard="$DEFAULT_INCLUDE_WILDCARD_IN_NAME"
 
 # Passing a cygwin path to PHP won't work, so expand it to Win32 on Cygwin.
 [ "$OSTYPE" = "cygwin" ] && script_dir=`cygpath --mixed $script_dir`
 
-php "$script_dir/manageCiviConfig.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$instance.$base_domain" "$app_rootdir" "$data_rootdir"
+php "$script_dir/manageCiviConfig.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$instance.$base_domain" "$app_rootdir" "$data_rootdir" "$inc_email" "$inc_wildcard"
 exit $?
