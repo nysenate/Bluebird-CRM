@@ -27,8 +27,8 @@ class CRM_Utils_Address_SAGE
 {
     static function checkAddress( &$values )
     {
-		if ( !isset($values['street_address']) || 
-		     $values['city'] == null ||
+        if ( !isset($values['street_address']) || 
+             $values['city'] == null ||
              (!isset($values['city']) &&
               !isset($values['state_province']) &&
               !isset($values['postal_code'])) ) {
@@ -66,8 +66,8 @@ class CRM_Utils_Address_SAGE
             $session->setStatus(ts('SAGE Warning: Not enough address info.'));
             return false;
         }
-		
-		$addr2_orig = $addr2;
+        
+        $addr2_orig = $addr2;
 
         $data = array('addr2' => str_replace(',', '', $addr2),
                       'city' => $values['city'],
@@ -107,32 +107,42 @@ class CRM_Utils_Address_SAGE
         }
  
         $addr2 = ucwords(strtolower((string)$xml->address2));
+
         if (substr($addr2, 0, 6) == "Po Box") {
-            $addr2 = "P.O. Box".substr($addr2, 6);
+            $addr2 = "PO Box".substr($addr2, 6);
         }
         else {
-            $addr_elems = explode(" ", $addr2);
-            for ($j = 0; $j < count($addr_elems); $j++) {
-                if ((preg_match("/^[1-9]*[1](st)$/", $addr_elems[$j])) ||
-                    (preg_match("/^[1-9]*[2](nd)$/", $addr_elems[$j])) ||
-                    (preg_match("/^[1-9]*[3](rd)$/", $addr_elems[$j])) ||
-                    (preg_match("/^[1-9]*[4-9,0](th)$/", $addr_elems[$j]))) {
-                    //don't do anything
+            $addr_parts = explode(' ', $addr2);
+
+            foreach ($addr_parts as &$part) {
+                //Allowing initial zero is ok because we're already corrected.
+                if (preg_match('/^[0-9]+(st|nd|rd|th)$/', $part)) {
+                    //pass
                 }
-                elseif (preg_match("/^[1-9][0-9a-zA-Z]+/", $addr_elems[$j])) {
-                    $addr_elems[$j] = strtoupper($addr_elems[$j]);
+                else if (preg_match('/^[1-9][0-9a-zA-Z]+/', $part)) {
+                    $part = strtoupper($part);
+                }
+                else if (preg_match('/^Mc[a-z]/', $part)) {
+                    // Capitalize the third letter in parts that begin with 'Mc'
+                    $part = 'Mc'.ucfirst(substr($part, 2));  // issue #4276
                 }
             }
-            $addr2 = implode(" ", $addr_elems);
+            $addr2 = implode(' ', $addr_parts);
         }
-		
-		//compare street_number input to output and retain orig if alphanumeric characters the same
-		if ( preg_match( '/^[A-Za-z0-9]+([\S]+)/', $addr2_orig, $matches ) ) $street_number_in = $matches[0];
-		if ( preg_match( '/^[A-Za-z0-9]+([\S]+)/', $addr2, $matches ) ) $street_number_out = $matches[0];
-		if ( str_replace( '-', '', $street_number_in ) == $street_number_out ) {
-			$addr2 = preg_replace( '/^[A-Za-z0-9]+([\S]+)/', $street_number_in, $addr2 );
-		}
- 
+
+        //NYSS 3800 - Retain original street number if alphanumerics match.
+        //    http://senatedev.nysenate.gov/issues/show/3800
+        $regex = '/^[\d][:alnum:]*\-?[:alnum:]+/';
+        if (preg_match($regex, $addr2_orig, $matches)) {
+            $street_number_in = $matches[0];
+
+            if (preg_match($regex, $addr2, $matches))
+                $street_number_out = $matches[0];
+
+            if (str_replace('-', '', $street_number_in) == $street_number_out)
+                $addr2 = preg_replace($regex, $street_number_in, $addr2);
+        }
+
         $values[$addr_field] = $addr2;
         $values['city'] = ucwords(strtolower($xml->city));
         $values['state_province'] = (string)$xml->state;
