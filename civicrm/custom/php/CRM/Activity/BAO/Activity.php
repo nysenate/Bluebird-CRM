@@ -689,7 +689,7 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
         $insertSQL = "INSERT INTO {$activityTempTable} (". implode( ',', $insertValueSQL ) ." ) ";
         
         $order = $limit = $groupBy = '';
-        $groupBy = " GROUP BY activity_id";
+        $groupBy = " GROUP BY tbl.activity_id"; //NYSS
 
         if ( ! empty( $input['sort'] ) ) {
             if ( is_a( $input['sort'], 'CRM_Utils_Sort' ) ) {
@@ -705,8 +705,8 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
         if ( empty( $order ) ) {
             $order =
                 ( CRM_Utils_Array::value( 'context', $input ) == 'activity' ) ?
-                " ORDER BY activity_date_time desc " :
-                " ORDER BY status_id asc, activity_date_time asc ";
+                " ORDER BY tbl.activity_date_time desc " :
+                " ORDER BY tbl.status_id asc, tbl.activity_date_time asc ";
         }
         
         if ( !empty( $input['rowCount'] ) &&
@@ -718,10 +718,19 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
         list( $sqlClause, $params ) = self::getActivitySQLClause( $input );
 
         $query = "{$insertSQL}
-       SELECT DISTINCT *  from ( {$sqlClause} )
-as tbl ";
+       SELECT DISTINCT tbl.* FROM ( {$sqlClause} )
+AS tbl ";
 
-        $query = $query . $groupBy. $order;
+		//NYSS
+		//filter case activities - CRM-5761
+        $components = self::activityComponents( );
+        if ( !in_array( 'CiviCase', $components ) ) {
+            $query .=  "
+LEFT JOIN civicrm_case_activity ON ( tbl.activity_id = civicrm_case_activity.activity_id )
+WHERE civicrm_case_activity.id IS NULL ";
+        }
+
+        $query = $query . $groupBy . $order . $limit; //NYSS
 
         $dao = CRM_Core_DAO::executeQuery( $query, $params );
         
@@ -777,17 +786,6 @@ as tbl ";
             LEFT JOIN {$activityTargetContactTempTable} on {$activityTempTable}.activity_id = {$activityTargetContactTempTable}.activity_id
             LEFT JOIN {$activityAssigneetContactTempTable} on {$activityTempTable}.activity_id = {$activityAssigneetContactTempTable}.activity_id                  
         ";
-        
-        //filter case activities - CRM-5761
-        $components = self::activityComponents( );
-        if ( !in_array( 'CiviCase', $components ) ) {
-            $query .=  "
-LEFT JOIN  civicrm_case_activity ON ( civicrm_case_activity.activity_id = {$activityTempTable}.activity_id )
-    WHERE  civicrm_case_activity.id IS NULL";
-        }
-
-        //limit query in the last step
-        $query .= $limit;
         
         $dao = CRM_Core_DAO::executeQuery( $query );
                 
