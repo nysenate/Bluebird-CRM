@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-30
-# Revised: 2011-06-01
+# Revised: 2011-09-09
 #
 
 DEFAULT_CONFIG_FILE=/etc/bluebird.cfg
@@ -31,6 +31,9 @@ DEFAULT_BACKUP_ROOTDIR=/crmbackups
 DEFAULT_BASE_DOMAIN=crm.nysenate.gov
 
 DEFAULT_SENATOR_FORMAL_NAME="Senator"
+
+DEFAULT_INCLUDE_EMAIL_IN_NAME=0
+DEFAULT_INCLUDE_WILDCARD_IN_NAME=0
 
 
 confirm_yes_no() {
