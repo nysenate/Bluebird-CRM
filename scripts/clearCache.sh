@@ -15,11 +15,12 @@ execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 drush=$script_dir/drush.sh
 clear_all=0
+tpl_only=0
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--all] [--tpl] instanceName" >&2
+  echo "Usage: $prog [--all] [--tpl-only] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -30,12 +31,17 @@ fi
 while [ $# -gt 0 ]; do
   case "$1" in
     --all) clear_all=1 ;;
-	--tpl) tpl=1 ;;
+    --tpl*) tpl_only=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
   shift
 done
+
+if [ $clear_all -eq 1 -a $tpl_only -eq 1 ]; then
+  echo "$prog: Cannot specify --all and --tpl-only at the same time." >&2
+  exit 1
+fi
 
 if ! $readConfig --instance $instance --quiet; then
   echo "$prog: $instance: Instance not found in config file" >&2
@@ -54,9 +60,7 @@ echo "Clearing CiviCRM filesystem caches"
   rm -rf $data_rootdir/$data_dirname/civicrm/js/*
 )
 
-if [ $tpl -eq 1 ]; then
-  exit 0
-fi
+[ $tpl_only -eq 1 ] && exit 0
 
 echo "Clearing CiviCRM database caches"
 sql="TRUNCATE civicrm_acl_cache; TRUNCATE civicrm_acl_contact_cache; TRUNCATE civicrm_cache; TRUNCATE civicrm_group_contact_cache; TRUNCATE civicrm_menu; TRUNCATE civicrm_uf_match; TRUNCATE civicrm_task_action_temp; UPDATE civicrm_preferences SET navigation=null; "
