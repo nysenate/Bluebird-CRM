@@ -2,7 +2,7 @@
 
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 3.3                                                |
+ | CiviCRM version 3.4                                                |
  +--------------------------------------------------------------------+
  | Copyright CiviCRM LLC (c) 2004-2009                                |
  +--------------------------------------------------------------------+
@@ -42,14 +42,9 @@
 
 function nyss_boe_civicrm_buildForm( $formName, &$form ) 
 {    
-    if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
-        //NYSS no longer required as it is handled in core
-		//require_once 'CRM/Core/Form/Tag.php';
-        //require_once 'CRM/Core/BAO/Tag.php';
-        //$parentNames = CRM_Core_BAO_Tag::getTagSet( 'civicrm_contact' );
-        //CRM_Core_Form_Tag::buildQuickForm( $form, $parentNames, 'civicrm_contact', null, true, true );                        
-    } else if ( $formName == 'CRM_Contact_Form_Contact' ) {
-        //do not allow to edit as well as set 'Board of Election' loc type.
+    if ( $formName == 'CRM_Contact_Form_Contact' ) {
+        
+		//do not allow to edit as well as set 'Board of Election' loc type.
         require_once 'CRM/Core/PseudoConstant.php';
         require_once 'CRM/Utils/Request.php';
         require_once 'CRM/Core/BAO/Preferences.php';
@@ -155,13 +150,6 @@ function _civicrm_processElement( &$form, $elementName, $freezeElement = false, 
     if ( $unsetOption ) {
         $newOptions = array();
 		foreach ( $element->_options as $index => $options ) {
-            /*if ( $options['text'] == 'BOE' || 
-		         $options['text'] == 'Billing' ||
-                 $options['text'] == 'NCOA') {
-				 
-                unset( $element->_options[$index] );
-				
-            }*/
 			if ( $options['text'] != 'BOE' && 
 		         $options['text'] != 'Billing' &&
                  $options['text'] != 'NCOA' ) {
