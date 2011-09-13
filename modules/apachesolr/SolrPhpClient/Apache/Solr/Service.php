@@ -29,6 +29,7 @@
  *
  * @copyright Copyright 2007-2009 Conduit Internet Technologies, Inc. (http://conduit-it.com)
  * @license New BSD (http://solr-php-client.googlecode.com/svn/trunk/COPYING)
+ * @version $Id: Service.php 22 2009-11-09 22:46:54Z donovan.jimenez $
  *
  * @package Apache
  * @subpackage Solr
@@ -79,14 +80,22 @@ require_once(dirname(__FILE__) . '/Response.php');
 class Apache_Solr_Service
 {
 	/**
+	 * SVN Revision meta data for this class
+	 */
+	const SVN_REVISION = '$Revision: 22 $';
+
+	/**
+	 * SVN ID meta data for this class
+	 */
+	const SVN_ID = '$Id: Service.php 22 2009-11-09 22:46:54Z donovan.jimenez $';
+
+	/**
 	 * Response version we support
 	 */
 	const SOLR_VERSION = '1.2';
 
 	/**
-	 * Response writer we support
-	 *
-	 * @todo Solr 1.3 release may change this to SerializedPHP or PHP implementation
+	 * Response writer we'll request - JSON. See http://code.google.com/p/solr-php-client/issues/detail?id=6#c1 for reasoning
 	 */
 	const SOLR_WRITER = 'json';
 
@@ -95,6 +104,12 @@ class Apache_Solr_Service
 	 */
 	const NAMED_LIST_FLAT = 'flat';
 	const NAMED_LIST_MAP = 'map';
+
+	/**
+	 * Search HTTP Methods
+	 */
+	const METHOD_GET = 'GET';
+	const METHOD_POST = 'POST';
 
 	/**
 	 * Servlet mappings
@@ -158,6 +173,20 @@ class Apache_Solr_Service
 	protected $_urlsInited = false;
 
 	/**
+	 * Reusable stream context resources for GET and POST operations
+	 *
+	 * @var resource
+	 */
+	protected $_getContext, $_postContext;
+
+	/**
+	 * Default HTTP timeout when one is not specified (initialized to default_socket_timeout ini setting)
+	 *
+	 * var float
+	 */
+	protected $_defaultTimeout;
+
+	/**
 	 * Escape a value for special query characters such as ':', '(', ')', '*', '?', etc.
 	 *
 	 * NOTE: inside a phrase fewer characters need escaped, use {@link Apache_Solr_Service::escapePhrase()} instead
@@ -214,6 +243,19 @@ class Apache_Solr_Service
 		$this->setPath($path);
 
 		$this->_initUrls();
+
+		// create our shared get and post stream contexts
+		$this->_getContext = stream_context_create();
+		$this->_postContext = stream_context_create();
+
+		// determine our default http timeout from ini settings
+		$this->_defaultTimeout = (int) ini_get('default_socket_timeout');
+
+		// double check we didn't get 0 for a timeout
+		if ($this->_defaultTimeout <= 0)
+		{
+			$this->_defaultTimeout = 60;
+		}
 	}
 
 	/**
@@ -269,23 +311,23 @@ class Apache_Solr_Service
 	 */
 	protected function _sendRawGet($url, $timeout = FALSE)
 	{
-		//set up the stream context so we can control
-		// the timeout for file_get_contents
-		$context = stream_context_create();
-		
-		// set the timeout if specified, without this I assume
-		// that the default_socket_timeout ini setting is used
+		// set the timeout if specified
 		if ($timeout !== FALSE && $timeout > 0.0)
 		{
 			// timeouts with file_get_contents seem to need
 			// to be halved to work as expected
 			$timeout = (float) $timeout / 2;
-			
-			stream_context_set_option($context, 'http', 'timeout', $timeout);
+
+			stream_context_set_option($this->_getContext, 'http', 'timeout', $timeout);
+		}
+		else
+		{
+			// use the default timeout pulled from default_socket_timeout otherwise
+			stream_context_set_option($this->_getContext, 'http', 'timeout', $this->_defaultTimeout);
 		}
 
 		//$http_response_header is set by file_get_contents
-		$response = new Apache_Solr_Response(@file_get_contents($url, false, $context), $http_response_header, $this->_createDocuments, $this->_collapseSingleValueArrays);
+		$response = new Apache_Solr_Response(@file_get_contents($url, false, $this->_getContext), $http_response_header, $this->_createDocuments, $this->_collapseSingleValueArrays);
 
 		if ($response->getHttpStatus() != 200)
 		{
@@ -308,35 +350,35 @@ class Apache_Solr_Service
 	 */
 	protected function _sendRawPost($url, $rawPost, $timeout = FALSE, $contentType = 'text/xml; charset=UTF-8')
 	{
-		//set up the stream context for posting with file_get_contents
-		$context = stream_context_create(
-			array(
+		stream_context_set_option($this->_postContext, array(
 				'http' => array(
 					// set HTTP method
 					'method' => 'POST',
-					
+
 					// Add our posted content type
 					'header' => "Content-Type: $contentType",
-					
+
 					// the posted content
-					'content' => $rawPost
+					'content' => $rawPost,
+
+					// default timeout
+					'timeout' => $this->_defaultTimeout
 				)
 			)
 		);
-		
-		// set the timeout if specified, without this I assume
-		// that the default_socket_timeout ini setting is used
+
+		// set the timeout if specified
 		if ($timeout !== FALSE && $timeout > 0.0)
 		{
 			// timeouts with file_get_contents seem to need
 			// to be halved to work as expected
 			$timeout = (float) $timeout / 2;
-			
-			stream_context_set_option($context, 'http', 'timeout', $timeout);
+
+			stream_context_set_option($this->_postContext, 'http', 'timeout', $timeout);
 		}
 
 		//$http_response_header is set by file_get_contents
-		$response = new Apache_Solr_Response(@file_get_contents($url, false, $context), $http_response_header, $this->_createDocuments, $this->_collapseSingleValueArrays);
+		$response = new Apache_Solr_Response(@file_get_contents($url, false, $this->_postContext), $http_response_header, $this->_createDocuments, $this->_collapseSingleValueArrays);
 
 		if ($response->getHttpStatus() != 200)
 		{
@@ -549,7 +591,7 @@ class Apache_Solr_Service
 	public function ping($timeout = 2)
 	{
 		$start = microtime(true);
-		
+
 		// when using timeout in context and file_get_contents
 		// it seems to take twice the timout value
 		$timeout = (float) $timeout / 2;
@@ -558,7 +600,7 @@ class Apache_Solr_Service
 		{
 			$timeout = -1;
 		}
-		
+
 		$context = stream_context_create(
 			array(
 				'http' => array(
@@ -567,10 +609,10 @@ class Apache_Solr_Service
 				)
 			)
 		);
-		
+
 		// attempt a HEAD request to the solr ping page
 		$ping = @file_get_contents($this->_pingUrl, false, $context);
-		
+
 		// result is false if there was a timeout
 		// or if the HTTP status was not 200
 		if ($ping !== false)
@@ -723,7 +765,21 @@ class Apache_Solr_Service
 
 		$xml .= '</doc>';
 
-		return $xml;
+		// replace any control characters to avoid Solr XML parser exception
+		return $this->_stripCtrlChars($xml);
+	}
+
+	/**
+	 * Replace control (non-printable) characters from string that are invalid to Solr's XML parser with a space.
+	 *
+	 * @param string $string
+	 * @return string
+	 */
+	protected function _stripCtrlChars($string)
+	{
+		// See:  http://w3.org/International/questions/qa-forms-utf-8.html
+		// Printable utf-8 does not include any of these chars below x7F
+		return preg_replace('@[\x00-\x08\x0B\x0C\x0E-\x1F]@', ' ', $string);
 	}
 
 	/**
@@ -753,13 +809,14 @@ class Apache_Solr_Service
 	 * a complete and well formed "delete" xml document
 	 *
 	 * @param string $rawPost Expected to be utf-8 encoded xml document
+	 * @param float $timeout Maximum expected duration of the delete operation on the server (otherwise, will throw a communication exception)
 	 * @return Apache_Solr_Response
 	 *
 	 * @throws Exception If an error occurs during the service call
 	 */
-	public function delete($rawPost)
+	public function delete($rawPost, $timeout = 3600)
 	{
-		return $this->_sendRawPost($this->_updateUrl, $rawPost);
+		return $this->_sendRawPost($this->_updateUrl, $rawPost, $timeout);
 	}
 
 	/**
@@ -768,11 +825,12 @@ class Apache_Solr_Service
 	 * @param string $id Expected to be utf-8 encoded
 	 * @param boolean $fromPending
 	 * @param boolean $fromCommitted
+	 * @param float $timeout Maximum expected duration of the delete operation on the server (otherwise, will throw a communication exception)
 	 * @return Apache_Solr_Response
 	 *
 	 * @throws Exception If an error occurs during the service call
 	 */
-	public function deleteById($id, $fromPending = true, $fromCommitted = true)
+	public function deleteById($id, $fromPending = true, $fromCommitted = true, $timeout = 3600)
 	{
 		$pendingValue = $fromPending ? 'true' : 'false';
 		$committedValue = $fromCommitted ? 'true' : 'false';
@@ -782,7 +840,38 @@ class Apache_Solr_Service
 
 		$rawPost = '<delete fromPending="' . $pendingValue . '" fromCommitted="' . $committedValue . '"><id>' . $id . '</id></delete>';
 
-		return $this->delete($rawPost);
+		return $this->delete($rawPost, $timeout);
+	}
+
+	/**
+	 * Create and post a delete document based on multiple document IDs.
+	 *
+	 * @param array $ids Expected to be utf-8 encoded strings
+	 * @param boolean $fromPending
+	 * @param boolean $fromCommitted
+	 * @param float $timeout Maximum expected duration of the delete operation on the server (otherwise, will throw a communication exception)
+	 * @return Apache_Solr_Response
+	 *
+	 * @throws Exception If an error occurs during the service call
+	 */
+	public function deleteByMultipleIds($ids, $fromPending = true, $fromCommitted = true, $timeout = 3600)
+	{
+		$pendingValue = $fromPending ? 'true' : 'false';
+		$committedValue = $fromCommitted ? 'true' : 'false';
+
+		$rawPost = '<delete fromPending="' . $pendingValue . '" fromCommitted="' . $committedValue . '">';
+
+		foreach ($ids as $id)
+		{
+			//escape special xml characters
+			$id = htmlspecialchars($id, ENT_NOQUOTES, 'UTF-8');
+
+			$rawPost .= '<id>' . $id . '</id>';
+		}
+
+		$rawPost .= '</delete>';
+
+		return $this->delete($rawPost, $timeout);
 	}
 
 	/**
@@ -791,11 +880,12 @@ class Apache_Solr_Service
 	 * @param string $rawQuery Expected to be utf-8 encoded
 	 * @param boolean $fromPending
 	 * @param boolean $fromCommitted
+	 * @param float $timeout Maximum expected duration of the delete operation on the server (otherwise, will throw a communication exception)
 	 * @return Apache_Solr_Response
 	 *
 	 * @throws Exception If an error occurs during the service call
 	 */
-	public function deleteByQuery($rawQuery, $fromPending = true, $fromCommitted = true)
+	public function deleteByQuery($rawQuery, $fromPending = true, $fromCommitted = true, $timeout = 3600)
 	{
 		$pendingValue = $fromPending ? 'true' : 'false';
 		$committedValue = $fromCommitted ? 'true' : 'false';
@@ -805,7 +895,7 @@ class Apache_Solr_Service
 
 		$rawPost = '<delete fromPending="' . $pendingValue . '" fromCommitted="' . $committedValue . '"><query>' . $rawQuery . '</query></delete>';
 
-		return $this->delete($rawPost);
+		return $this->delete($rawPost, $timeout);
 	}
 
 	/**
@@ -840,7 +930,7 @@ class Apache_Solr_Service
 	 *
 	 * @throws Exception If an error occurs during the service call
 	 */
-	public function search($query, $offset = 0, $limit = 10, $params = array())
+	public function search($query, $offset = 0, $limit = 10, $params = array(), $method = self::METHOD_GET)
 	{
 		if (!is_array($params))
 		{
@@ -869,6 +959,17 @@ class Apache_Solr_Service
 		// anywhere else the regex isn't expecting it
 		$queryString = preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', $queryString);
 
-		return $this->_sendRawGet($this->_searchUrl . $this->_queryDelimiter . $queryString);
+		if ($method == self::METHOD_GET)
+		{
+			return $this->_sendRawGet($this->_searchUrl . $this->_queryDelimiter . $queryString);
+		}
+		else if ($method == self::METHOD_POST)
+		{
+			return $this->_sendRawPost($this->_searchUrl, $queryString, FALSE, 'application/x-www-form-urlencoded');
+		}
+		else
+		{
+			throw new Exception("Unsupported method '$method', please use the Apache_Solr_Service::METHOD_* constants");
+		}
 	}
 }

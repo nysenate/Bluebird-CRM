@@ -1,69 +1,70 @@
 <?php
+
 /**
- * $Id: memcached.php,v 1.1.4.3 2009/09/05 13:03:25 slantview Exp $
- *
- * @file memcached.php
+ * @file
  *   Engine file for memcached. See http://us2.php.net/memcached
+ *
  *   ---
  *   Notice (9/5/2009):
  *   WARNING: This engine is still in early alpha.  I do not recommend that
  *   you use this on a production site.  You have been warned.
  *   ---
  */
-class memcachedCache extends Cache {
+
+class memcachedCacheRouterEngine extends CacheRouterEngine {
   var $settings = array();
   var $memcached;
-  
+
   function page_fast_cache() {
     return $this->fast_cache;
   }
-  
+
   function __construct($bin, $options, $default_options) {
     // Assign the servers on the following order: bin specific -> default specific -> localhost port 11211
     if (isset($options['servers'])) {
-    	$this->settings['servers'] = $options['servers'];
-    	$this->settings['compress'] = isset($options['compress']) ? memcached_COMPRESSED : 0;
+      $this->settings['servers'] = $options['servers'];
+      $this->settings['compress'] = isset($options['compress']) ? TRUE : FALSE;
       $this->settings['shared'] = isset($options['shared']) ? $options['shared'] : TRUE;
     }
     else {
       if (isset($default_options['servers'])) {
         $this->settings['servers'] = $default_options['servers'];
-        $this->settings['compress'] = isset($default_options['compress']) ? memcached_COMPRESSED : 0;
+        $this->settings['compress'] = isset($default_options['compress']) ? TRUE : FALSE;
         $this->settings['shared'] = isset($default_options['shared']) ? $default_options['shared'] : TRUE;
       }
       else {
         $this->settings['servers'] = array('localhost:11211');
-        $this->settings['compress'] = 0;
+        $this->settings['compress'] = FALSE;
         $this->settings['shared'] = TRUE;
       }
     }
-                                
+
     parent::__construct($bin, $options, $default_options);
-    
+
     $this->connect();
   }
-  
+
   function get($key) {
     // Attempt to pull from static cache.
     $cache = parent::get($this->key($key));
     if (isset($cache)) {
       return $cache;
     }
-    
+
     // Get from memcached
     $cache = $this->memcached->get($this->key($key));
-    
-    // Update static cache 
+
+    // Update static cache
     parent::set($this->key($key), $cache);
-    
+
     return $cache;
   }
-  
+
   function set($key, $value, $expire = CACHE_PERMANENT, $headers = NULL) {
     if ($expire == CACHE_TEMPORARY) {
       $expire = 180;
     }
-    
+
     // Create new cache object.
     $cache = new stdClass;
     $cache->cid = $key;
@@ -71,7 +72,7 @@ class memcachedCache extends Cache {
     $cache->expire = $expire;
     $cache->headers = $headers;
     $cache->data = $value;
-    
+
     if (!empty($key)) {
       if ($this->settings['shared']) {
         if ($this->lock()) {
@@ -79,7 +80,7 @@ class memcachedCache extends Cache {
           $lookup = $this->memcached->get($this->lookup);
 
           // If the lookup table is empty, initialize table
-          if (empty($lookup)) {
+          if (!is_array($lookup)) {
             $lookup = array();
           }
 
@@ -87,7 +88,7 @@ class memcachedCache extends Cache {
           $lookup[$this->key($key)] = 1;
 
           // Attempt to store full key and value
-          if (!$this->memcached->set($this->key($key), $cache, $this->settings['compress'], $expire)) {
+          if (!$this->memcached->set($this->key($key), $cache, $expire)) {
             unset($lookup[$this->key($key)]);
             $return = FALSE;
           }
@@ -98,7 +99,7 @@ class memcachedCache extends Cache {
           }
 
           // Resave the lookup table (even on failure)
-          $this->memcached->set($this->lookup, $lookup, $this->settings['compress'], $expire);  
+          $this->memcached->set($this->lookup, $lookup, $expire);
 
           // Remove lock.
           $this->unlock();
@@ -106,20 +107,20 @@ class memcachedCache extends Cache {
       }
       else {
         // Update memcached
-        return $this->memcached->set($this->key($key), $cache, $this->settings['compress'], $expire);
+        return $this->memcached->set($this->key($key), $cache, $expire);
       }
     }
   }
-  
+
   function delete($key) {
     // Delete from static cache
     parent::flush();
-    
+
     if (substr($key, strlen($key) - 1, 1) == '*') {
       $key = $this->key(substr($key, 0, strlen($key) - 1));
       if ($this->settings['shared']) {
         $lookup = $this->memcached->get($this->lookup);
-        if (!empty($lookup)) {
+        if (is_array($lookup) && !empty($lookup)) {
           foreach ($lookup as $k => $v) {
             if (substr($k, 0, strlen($key)) == $key) {
               $this->memcached->delete($k);
@@ -127,8 +128,11 @@ class memcachedCache extends Cache {
             }
           }
         }
+        else {
+          $lookup = array();
+        }
         if ($this->lock()) {
-          $this->memcached->set($this->lookup, $lookup, $this->settings['compress'], 0); 
+          $this->memcached->set($this->lookup, $lookup, 0);
           $this->unlock();
         }
       }
@@ -142,11 +146,11 @@ class memcachedCache extends Cache {
       }
     }
   }
-  
+
   function flush() {
     // Flush static cache
     parent::flush();
-    
+
     // If this is a shared cache, we need to cycle through the lookup table and remove individual
     // items directly
     if ($this->settings['shared']) {
@@ -168,7 +172,7 @@ class memcachedCache extends Cache {
         }
 
         // Resave the lookup table (even on failure)
-        $this->memcached->set($this->lookup, $lookup, $this->settings['compress'], 0);
+        $this->memcached->set($this->lookup, $lookup, 0);
 
         // Remove lock
         $this->unlock();
@@ -179,14 +183,14 @@ class memcachedCache extends Cache {
       return $this->memcached->flush();
     }
   }
-  
+
   function lock() {
     // Lock once by trying to add lock file, if we can't get the lock, we will loop
     // for 3 seconds attempting to get lock.  If we still can't get it at that point,
     // then we give up and return FALSE.
-    if ($this->memcached->add($this->lock, $this->settings['compress'], 0) === FALSE) {
+    if ($this->memcached->add($this->lock, 1, 10) === FALSE) {
       $time = time();
-      while ($this->memcached->add($this->lock, $this->settings['compress'], 0) === FALSE) {
+      while ($this->memcached->add($this->lock, 1, 10) === FALSE) {
         if (time() - $time >= 3) {
           return FALSE;
         }
@@ -194,21 +198,28 @@ class memcachedCache extends Cache {
     }
     return TRUE;
   }
-  
+
   function unlock() {
-    return $this->memcached->delete($this->lock);
+    return $this->memcached->delete($this->lock, 0);
   }
-  
+
   function connect() {
-    $this->memcached =& new Memcached;
+    $this->memcached = new Memcached;
+    $this->memcached->setOption(Memcached::OPT_COMPRESSION, $this->settings['compress']);
     foreach ($this->settings['servers'] as $server) {
-      list($host, $port) = explode(':', $server);
-      if (!$this->memcached->addServer($host, $port)) {
+      if (strpos($server, 'unix://') === 0) {
+        $host = $server;
+        $port = 0;
+      }
+      else {
+        list($host, $port) = explode(':', $server);
+      }
+      if (!$this->memcached->addServer($host, $port) && function_exists('watchdog')) {
         watchdog('cache', "Unable to connect to memcached server $host:$port", WATCHDOG_ERROR);
       }
     }
   }
-  
+
   function stats() {
     $memcached_stats = $this->memcached->getStats();
     $stats = array(

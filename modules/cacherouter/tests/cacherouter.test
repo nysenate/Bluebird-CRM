@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * @file
+ * Cache Router module tests.
+ *
+ */
+
 class CacheTestCase extends DrupalWebTestCase {
   protected $default_table = 'cache';
   protected $default_cid = 'test_temporary';
@@ -16,8 +23,8 @@ class CacheTestCase extends DrupalWebTestCase {
    * @return
    *   TRUE on pass, FALSE on fail.
    */
-  protected function checkCacheExists($cid, $var, $table = null) {
-    if ($table == null) {
+  protected function checkCacheExists($cid, $var, $table = NULL) {
+    if ($table == NULL) {
       $table = $this->default_table;
     }
 
@@ -95,7 +102,7 @@ class CacheTestCase extends DrupalWebTestCase {
    */
   protected function setupLifetime($time) {
     variable_set('cache_lifetime', $time);
-    variable_set('cache_flush', 0);
+    variable_set('cache_flush_' . $this->default_table, 0);
   }
 }
 
@@ -143,7 +150,7 @@ class CacheSavingCase extends CacheTestCase {
    * Test the saving and restoring of an object.
    */
   function testObject() {
-    $test_object = new StdClass();
+    $test_object = new stdClass();
     $test_object->test1 = $this->randomName('100');
     $test_object->test2 = 100;
     $test_object->test3 = array('drupal1', 'drupal2' => 'drupal3', 'drupal4' => array('drupal5', 'drupal6'));
@@ -155,12 +162,12 @@ class CacheSavingCase extends CacheTestCase {
 
   /*
    * Check or a variable is stored and restored properly.
-   **/
+   */
   function checkVariable($var) {
-  	$cid = $this->randomName(10);
+    $cid = $this->randomName(10);
     cache_set($cid, $var, 'cache');
     $cache = cache_get($cid, 'cache');
-    $this->assertTrue(isset($cache->data) && $cache->data === $var, t('@type is saved and restored properly.', array('@type' => ucfirst(gettype($var)))));
+    $this->assertTrue(isset($cache->data) && $cache->data === $var, t('@type is saved and restored properly.', array('@type' => drupal_ucfirst(gettype($var)))));
   }
 }
 

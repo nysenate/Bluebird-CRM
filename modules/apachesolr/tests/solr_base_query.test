@@ -1,13 +1,14 @@
 <?php
-// $Id: solr_base_query.test,v 1.1.4.10 2009/04/12 03:16:33 pwolanin Exp $
 
-
-/***
- * JacobSingh: Warning! This test is totally broken because of the addition of the "hash" in apachesolr_search.module.
- * Needs to be moved out.
- *
+/**
+ * @file
+ *   Tests for the apachsolr module: base query.
  */
 
+/**
+ * JacobSingh: Warning! This test is totally broken because of the addition of the "hash" in apachesolr_search.module.
+ * Needs to be moved out.
+ */
 
 class DrupalSolrQueryTests extends DrupalWebTestCase {
   function getInfo() {
@@ -39,71 +40,53 @@ class DrupalSolrQueryTests extends DrupalWebTestCase {
 
   function testParseSimple() {
     foreach ($this->queries as $string) {
-      $query = apachesolr_drupal_query($string, TRUE);
+      $query = apachesolr_drupal_query($string);
       // force the query to be rebuilt without removing any fields.
       $query->remove_filter('fake-field-name');
-      $this->assertEqual($string, $query->get_query());
+      $this->assertEqual($string, $query->get_query_basic());
     }
   }
 
   function testAddTerm() {
     foreach ($this->queries as $string) {
-      $query = apachesolr_drupal_query($string, TRUE);
+      $query = apachesolr_drupal_query($string);
       $query->add_filter('wham', '1');
-      $this->assertEqual($string . ' wham:1', $query->get_query());
+      $this->assertEqual($string, $query->get_query_basic());
+      $this->assertEqual(array('filters' => 'wham:1'), $query->get_url_queryvalues());
     }
   }
 
   function testRemoveTerm() {
     $string = 'foo';
-    $query = apachesolr_drupal_query($string, TRUE);
+    $query = apachesolr_drupal_query($string);
     $query->remove_filter('', 'foo');
-    $this->assertEqual('foo', $query->get_query());
+    $this->assertEqual('foo', $query->get_query_basic());
 
     $string = 'foo bar';
-    $query = apachesolr_drupal_query($string, TRUE);
+    $query = apachesolr_drupal_query($string);
     $query->remove_filter('', 'foo');
-    $this->assertEqual('foo bar', $query->get_query());
+    $this->assertEqual('foo bar', $query->get_query_basic());
 
-    $string = 'foo uid:1 bar';
-    $query = apachesolr_drupal_query($string, TRUE);
+    $string = 'foo bar';
+    $query = apachesolr_drupal_query($string, 'uid:1');
     $query->remove_filter('uid', '1');
-    $this->assertEqual('foo bar', $query->get_query());
+    $this->assertEqual('foo bar', $query->get_query_basic());
 
-    $string = 'foo uid:1 bar';
-    $query = apachesolr_drupal_query($string, TRUE);
-    $query->remove_filter('uid');
-    $this->assertEqual('foo bar', $query->get_query());
+    $string = 'foo bar';
+    $query = apachesolr_drupal_query($string);
+    $query->remove_filter('uid', 'uid:1');
+    $this->assertEqual('foo bar', $query->get_query_basic());
 
-    $string = 'foo uid:1 bar uid:2 tid:3';
-    $query = apachesolr_drupal_query($string, TRUE);
+    $string = 'foo bar';
+    $query = apachesolr_drupal_query($string, 'uid:1 uid:2 tid:3');
     $query->remove_filter('uid', '1');
+    $this->assertEqual('foo bar', $query->get_query_basic());
+    $this->assertEqual(array('filters' => 'uid:2 tid:3'), $query->get_url_queryvalues());
 
-    // Not very beautiful, but probably best way there is:
-    $pass = TRUE;
-    $components = array('foo', 'bar', 'uid:2', 'tid:3');
-    $q = $query->get_query();
-    if (count($components) != count(explode(' ', $q))) {
-      $pass = FALSE;
-    }
-    else {
-      foreach ($components as $s) {
-        if (strpos($q, $s) === FALSE) {
-          $pass = FALSE;
-          break;
-        }
-      }
-    }
-    if ($pass) {
-      $this->assertEqual($q, $q);
-    }
-    else {
-      $this->assertEqual('foo bar tid:3 uid:2', $q);
-    }
-
-    $string = 'foo uid:1 bar uid:2 tid:3';
-    $query = apachesolr_drupal_query($string, TRUE);
+    $string = 'foo bar';
+    $query = apachesolr_drupal_query($string, 'uid:1 uid:2 tid:3');
     $query->remove_filter('uid');
-    $this->assertEqual('foo bar tid:3', $query->get_query());
+    $this->assertEqual('foo bar', $query->get_query_basic());
+    $this->assertEqual(array('filters' => 'tid:3'), $query->get_url_queryvalues());
   }
 }

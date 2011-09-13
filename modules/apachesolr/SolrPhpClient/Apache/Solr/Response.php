@@ -1,35 +1,36 @@
 <?php
 /**
- * Copyright (c) 2007-2009, Conduit Internet Technologies, Inc. 
- * All rights reserved. 
- * 
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions are met: 
- * 
- *  - Redistributions of source code must retain the above copyright notice, 
- *    this list of conditions and the following disclaimer. 
- *  - Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the distribution. 
- *  - Neither the name of Conduit Internet Technologies, Inc. nor the names of 
- *    its contributors may be used to endorse or promote products derived from 
- *    this software without specific prior written permission. 
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * Copyright (c) 2007-2009, Conduit Internet Technologies, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  - Neither the name of Conduit Internet Technologies, Inc. nor the names of
+ *    its contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @copyright Copyright 2007-2009 Conduit Internet Technologies, Inc. (http://conduit-it.com)
  * @license New BSD (http://solr-php-client.googlecode.com/svn/trunk/COPYING)
- * 
+ * @version $Id: Response.php 19 2009-08-12 14:08:42Z donovan.jimenez $
+ *
  * @package Apache
  * @subpackage Solr
  * @author Donovan Jimenez <djimenez@conduit-it.com>
@@ -41,11 +42,19 @@
  *
  * Currently requires json_decode which is bundled with PHP >= 5.2.0, Alternatively can be
  * installed with PECL.  Zend Framework also includes a purely PHP solution.
- *
- * @todo When Solr 1.3 is released, possibly convert to use PHP or Serialized PHP output writer
  */
 class Apache_Solr_Response
 {
+	/**
+	 * SVN Revision meta data for this class
+	 */
+	const SVN_REVISION = '$Revision: 19 $';
+
+	/**
+	 * SVN ID meta data for this class
+	 */
+	const SVN_ID = '$Id: Response.php 19 2009-08-12 14:08:42Z donovan.jimenez $';
+
 	/**
 	 * Holds the raw response used in construction
 	 *
@@ -114,7 +123,7 @@ class Apache_Solr_Response
 			//Thanks to Daniel Andersson for pointing out this oversight
 			while (isset($httpHeaders[0]) && substr($httpHeaders[0], 0, 4) == 'HTTP')
 			{
-				$parts = split(' ', substr($httpHeaders[0], 9), 2);
+				$parts = explode(' ', substr($httpHeaders[0], 9), 2);
 
 				$status = $parts[0];
 				$statusMessage = trim($parts[1]);
@@ -129,14 +138,14 @@ class Apache_Solr_Response
 				if (strncasecmp($header, 'Content-Type:', 13) == 0)
 				{
 					//split content type value into two parts if possible
-					$parts = split(';', substr($header, 13), 2);
+					$parts = explode(';', substr($header, 13), 2);
 
 					$type = trim($parts[0]);
 
 					if ($parts[1])
 					{
 						//split the encoding section again to get the value
-						$parts = split('=', $parts[1], 2);
+						$parts = explode('=', $parts[1], 2);
 
 						if ($parts[1])
 						{

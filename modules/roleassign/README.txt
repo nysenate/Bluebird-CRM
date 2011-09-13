@@ -6,10 +6,10 @@ the task of managing user's roles.
 
 RoleAssign introduces a new permission called 'assign roles'. Users
 with this permission are able to assign selected roles to still other
-users. Only users with the 'administer access control' permission may
+users. Only users with the 'administer permissions' permission may
 select which roles are available for assignment through this module.
 
-This module is sponsored by Webbredaktoren <http://www.webbredaktoren.se/>.
+This module was developped by TBarregren.
 
 
 BACKGROUND
@@ -22,7 +22,7 @@ the delegatee should be able to administrate user accounts without
 intervention from a site administrator.
 
 To delegate the assignment of roles, site administrators have had until
-now no other choice than also grant the 'administer access control'
+now no other choice than also grant the 'administer permissions'
 permission. But that is not advisable, since it gives right to access
 all roles, and worse, to grant any rights to any role. That can be
 abused by the delegatee, who can assign himself all rights and thereby
@@ -32,7 +32,7 @@ This module solves this dilemma by introducing the 'assign roles'
 permission. While editing a user's account information, a user with this
 permission will be able to select roles for the user from a set of
 available roles. Roles available are configured by users with the
-'administer access control' permission.
+'administer permissions' permission.
 
 
 INSTALL
@@ -64,6 +64,10 @@ permission.
 account and select a role with both the 'assign roles' and the
 'administer users' permissions.
 
+Beware: granting 'administer users' permission to users will allow them
+to modify admin passwords or email addresses or even delete the site
+administrator account. The User Protect module can prevent this.
+
 
 USAGE
 -----
@@ -75,4 +79,3 @@ users' permissions.
 the assignable roles and change them as necessary.
 
 
-$Id: README.txt,v 1.11 2008/10/03 17:59:06 tbarregren Exp $

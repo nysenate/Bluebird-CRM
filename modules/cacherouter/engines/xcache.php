@@ -1,11 +1,11 @@
 <?php
+
 /**
- * $Id: xcache.php,v 1.1.2.14 2009/09/05 13:03:25 slantview Exp $
- *
- * @file xcache.php
+ * @file
  *   Engine file for XCache.
  */
-class xcacheCache extends Cache {
+
+class xcacheCacheRouterEngine extends CacheRouterEngine {
   /**
    * page_fast_cache
    *   This tells CacheRouter to use page_fast_cache.
@@ -15,7 +15,7 @@ class xcacheCache extends Cache {
   function page_fast_cache() {
     return $this->fast_cache;
   }
-  
+
   /**
    * get()
    *   Return item from cache if it is available.
@@ -30,8 +30,8 @@ class xcacheCache extends Cache {
     if (isset($cache)) {
       return $cache;
     }
-    
-    // Get item from cache    
+
+    // Get item from cache
     $cache = unserialize(xcache_get($this->key($key)));
 
     // Update static cache
@@ -78,7 +78,7 @@ class xcacheCache extends Cache {
       $lookup = xcache_get($this->lookup);
 
       // If the lookup table is empty, initialize table
-      if (empty($lookup)) {
+      if (!is_array($lookup)) {
         $lookup = array();
       }
 
@@ -94,17 +94,17 @@ class xcacheCache extends Cache {
         parent::set($this->key($key), $cache);
         $return = TRUE;
       }
-      
+
       // Resave the lookup table (even on failure)
       xcache_set($this->lookup, $lookup);
-      
+
       // Remove lock.
       $this->unlock();
     }
 
     return $return;
   }
-  
+
   /**
    * delete()
    *   Remove item from cache.
@@ -121,13 +121,16 @@ class xcacheCache extends Cache {
     if (substr($key, strlen($key) - 1, 1) == '*') {
       $key = $this->key(substr($key, 0, strlen($key) - 1));
       $lookup = xcache_get($this->lookup);
-      if (!empty($lookup) && is_array($lookup)) {
+      if (is_array($lookup) && !empty($lookup)) {
         foreach ($lookup as $k => $v) {
           if (substr($k, 0, strlen($key)) == $key) {
             xcache_unset($k);
             unset($lookup[$k]);
           }
         }
+      }
+      else {
+        $lookup = array();
       }
       if ($this->lock()) {
         xcache_set($this->lookup, $lookup);
@@ -157,9 +160,9 @@ class xcacheCache extends Cache {
     if ($this->lock()) {
       // Get lookup table to be able to keep track of bins
       $lookup = xcache_get($this->lookup);
-    
+
       // If the lookup table is empty, remove lock and return
-      if (empty($lookup) || !is_array($lookup)) {
+      if (!is_array($lookup) || empty($lookup)) {
         $this->unlock();
         return TRUE;
       }
@@ -178,18 +181,18 @@ class xcacheCache extends Cache {
       // Remove lock
       $this->unlock();
     }
-    
+
     return TRUE;
   }
-  
+
   function getLookup() {
     return xcache_get($this->lookup);
   }
-  
+
   function setLookup($lookup = array()) {
     xcache_set($this->lookup, $lookup, 0);
   }
-  
+
   function stats() {
     $stats = array(
       'uptime' => time(),

@@ -1,11 +1,11 @@
 <?php
+
 /**
- * $Id: db.php,v 1.1.2.10 2009/09/05 13:03:25 slantview Exp $
- *
- * @file db.php
+ * @file
  *   Database engine file.
  */
-class dbCache extends Cache {  
+
+class dbCacheRouterEngine extends CacheRouterEngine {
   function page_fast_cache() {
     if ($this->fast_cache === TRUE) {
       require_once './includes/database.inc';
@@ -13,26 +13,26 @@ class dbCache extends Cache {
     }
     return $this->fast_cache;
   }
-  
+
   function get($key) {
     global $user;
-    
+
     $cache = parent::get($key);
     if ($cache) {
       return $cache;
     }
-    
+
     $cache = db_fetch_object(db_query("SELECT data, created, headers, expire, serialized FROM {". $this->name ."} WHERE cid = '%s'", $key));
     if (isset($cache->data)) {
       $cache->data = db_decode_blob($cache->data);
       if ($cache->serialized) {
         $cache->data = unserialize($cache->data);
       }
-	  }
-	  parent::set($key, $cache);
-	  return $cache;
+    }
+    parent::set($key, $cache);
+    return $cache;
   }
-  
+
   function set($key, $value, $expire = CACHE_PERMANENT, $headers = NULL) {
     // Create new cache object.
     $cache = new stdClass;
@@ -45,7 +45,7 @@ class dbCache extends Cache {
       $cache->serialized = TRUE;
       $cache->data = serialize($value);
     }
-    else { 
+    else {
       $cache->serialized = FALSE;
       $cache->data = $value;
     }
@@ -56,7 +56,7 @@ class dbCache extends Cache {
     }
     parent::set($key, $cache);
   }
-  
+
   function delete($key) {
     parent::flush();
     if (substr($key, -1, 1) == '*') {

@@ -1,0 +1,24 @@
+
+CHANGELOG for RoleAssign for Drupal 6
+
+
+roleassign 6.x-1.x-dev:
+
+
+roleassign 6.x-1.0 (2011-08-11):
+
+
+roleassign 6.x-1.0-rc1 (2011-07-20):
+  Fix a typo.
+  Fix buglet introduced in porting clean-up.
+  Remove unnecessary quotes from the .info file.
+  Avoid two 'undefined index' notices.
+  #599440 by shark: Keep permission names in help text visible for light-on-dark themes.
+  Minor coding style and porting clean-up.
+  'administer access control' is called 'administer permissions' in D6.
+  Maintainership passed to salvis.
+  Minor code cleanup, by TBarregren.
+
+roleassign 6.x-1.0-beta3 (2010-10-09):
+  Last release by TBarregren.
+

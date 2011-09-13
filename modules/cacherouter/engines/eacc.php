@@ -1,11 +1,11 @@
 <?php
+
 /**
- * $Id: eacc.php,v 1.1.2.14 2009/09/05 13:03:25 slantview Exp $
- *
- * @file eacc.php
+ * @file
  *   Engine file for eAccelerator.
  */
-class eaccCache extends Cache {
+
+class eaccCacheRouterEngine extends CacheRouterEngine {
   /**
    * page_fast_cache
    *   This tells CacheRouter to use page_fast_cache.
@@ -65,7 +65,7 @@ class eaccCache extends Cache {
     $cache->expire = $expire;
     $cache->headers = $headers;
     $cache->data = $value;
-    
+
     if ($expire != CACHE_PERMANENT && $expire != CACHE_TEMPORARY) {
       // Convert Drupal $expire, which is a timestamp, to a TTL
       $ttl = $expire - time();
@@ -80,12 +80,12 @@ class eaccCache extends Cache {
       $lookup = $this->getLookup();
 
       // If the lookup table is empty, initialize table
-      if (empty($lookup)) {
+      if (!is_array($lookup)) {
         $lookup = array();
       }
-      
+
       $lookup[$this->key($key)] = $expire;
-      
+
       // Attempt to store full key and value
       if (!eaccelerator_put($this->key($key), serialize($cache), $ttl)) {
         unset($lookup[$this->key($key)]);
@@ -122,13 +122,16 @@ class eaccCache extends Cache {
     if (substr($key, strlen($key) - 1, 1) == '*') {
       $key = $this->key(substr($key, 0, strlen($key) - 1));
       $lookup = $this->getLookup();
-      if (!empty($lookup) && is_array($lookup)) {
+      if (is_array($lookup) && !empty($lookup)) {
         foreach ($lookup as $k => $v) {
           if (substr($k, 0, strlen($key)) == $key) {
             eaccelerator_rm($k);
             unset($lookup[$k]);
           }
         }
+      }
+      else {
+        $lookup = array();
       }
       if ($this->lock()) {
         $lookup = $this->setLookup($lookup);
@@ -161,7 +164,7 @@ class eaccCache extends Cache {
       $lookup = $this->getLookup();
 
       // If the lookup table is empty, remove lock and return
-      if (empty($lookup) || !is_array($lookup)) {
+      if (!is_array($lookup) || empty($lookup)) {
         $this->unlock();
         return TRUE;
       }
@@ -207,11 +210,11 @@ class eaccCache extends Cache {
   function unlock() {
     return  eaccelerator_unlock($this->lock);
   }
-  
+
   function getLookup() {
     return unserialize(eaccelerator_get($this->lookup));
   }
-  
+
   function setLookup($lookup = array()) {
     eaccelerator_put($this->lookup, serialize($lookup), 0);
   }

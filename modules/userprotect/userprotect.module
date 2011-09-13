@@ -1,6 +1,6 @@
 <?php
 
-// $Id: userprotect.module,v 1.39.2.3 2009/11/04 13:36:54 thehunmonkgroup Exp $
+// $Id: userprotect.module,v 1.39.2.4 2010/06/14 22:34:22 thehunmonkgroup Exp $
 
 /**
  * Implementation of hook_help().
@@ -184,7 +184,7 @@ function userprotect_form_alter(&$form, &$form_state, $form_id) {
     // it, then check if the user themselves is protected from it.  if either is TRUE,
     // then disable the field, and mark a fixed form value so it will be properly submitted.
     case 'user_profile_form':
-      $account = user_load(array('uid' => arg(1)));
+      $account = $form['_account']['#value'];
       $protected = array();
       if (isset($form['account']['name']) && !userprotect_check_bypass('up_name') && userprotect_get_user_protection($account, 'up_name')) {
         // If for some reason this field has no initial value, then don't protect it.
@@ -249,7 +249,7 @@ function userprotect_form_alter(&$form, &$form_state, $form_id) {
       break;
     case 'openid_user_add':
     case 'openid_user_delete_form':
-      $account = user_load(array('uid' => arg(1)));
+      $account = menu_get_object('user');
       $protected = array();
       if (!userprotect_check_bypass('up_openid') && userprotect_get_user_protection($account, 'up_openid')) {
         switch ($form_id) {

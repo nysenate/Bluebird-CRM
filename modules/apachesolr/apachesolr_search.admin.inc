@@ -1,5 +1,4 @@
 <?php
-// $Id: apachesolr_search.admin.inc,v 1.1.2.21 2009/07/29 18:27:48 pwolanin Exp $
 
 /**
  * @file
@@ -10,14 +9,15 @@
  * Menu callback - the settings form.
  */
 function apachesolr_search_settings_page() {
-  // try to fetch the schema fields
+  $output = '';
+  // Try to fetch the schema fields.
   try {
     $solr = apachesolr_get_solr();
     $fields = $solr->getFields();
     $output .= drupal_get_form('apachesolr_search_settings_form', $fields);
   }
   catch (Exception $e) {
-    watchdog('apachesolr', nl2br(check_plain($e->getMessage())));
+    watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
     drupal_set_message(nl2br(check_plain($e->getMessage())), "warning");
     $output .= t('Cannot get information about the fields in the index at this time.');
   }
@@ -241,9 +241,15 @@ function apachesolr_search_type_boost_form_submit($form_id, &$form_state) {
     // Note - we omit a check on empty($old_excluded_types[$type]) so that
     // the admin can re-submit this page if the delete operation fails.
     if (!empty($new_excluded_types[$type])) {
-      $solr = apachesolr_get_solr();
-      $solr->deleteByQuery("type:$type");
-      apachesolr_index_updated(time());
+      try {
+        $solr = apachesolr_get_solr();
+        $solr->deleteByQuery("type:$type");
+        apachesolr_index_updated(time());
+      }
+      catch (Exception $e) {
+        watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+        drupal_set_message(t('The Apache Solr search engine is not available. Please contact your site administrator.'), 'error');
+      }
     }
   }
 

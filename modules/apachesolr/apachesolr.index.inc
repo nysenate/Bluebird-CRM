@@ -1,5 +1,4 @@
 <?php
-// $Id: apachesolr.index.inc,v 1.1.2.13 2009/10/14 19:08:19 pwolanin Exp $
 
 /**
  * @file
@@ -16,25 +15,13 @@ function apachesolr_add_node_document(&$documents, $nid, $namespace) {
 }
 
 /**
- * Strip control characters that cause Jetty/Solr to fail.
- */
-function apachesolr_strip_ctl_chars($text) {
-  // See:  http://w3.org/International/questions/qa-forms-utf-8.html
-  // Printable utf-8 does not include any of these chars below x7F
-  return preg_replace('@[\x00-\x08\x0B\x0C\x0E-\x1F]@', ' ', $text);
-}
-
-/**
  * Strip html tags and also control characters that cause Jetty/Solr to fail.
  */
 function apachesolr_clean_text($text) {
   // Add spaces before stripping tags to avoid running words together.
   $text = filter_xss(str_replace(array('<', '>'), array(' <', '> '), $text), array());
   // Decode entities and then make safe any < or > characters.
-  $text = htmlspecialchars(html_entity_decode($text, ENT_NOQUOTES, 'UTF-8'), ENT_NOQUOTES, 'UTF-8');
-  // We must strip low bytes second in case there was an encoded
-  // low-byte character.
-  return apachesolr_strip_ctl_chars($text);
+  return htmlspecialchars(html_entity_decode($text, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8');
 }
 
 /**
@@ -64,27 +51,28 @@ function apachesolr_node_to_document($nid, $namespace) {
     $node->body = drupal_render($node->content);
     $node->title = apachesolr_clean_text($node->title);
 
-    $text = $node->body;
-
-    // Fetch extra data normally not visible, including comments.      
+    // Fetch extra data normally not visible, including comments.
     $extra = array();
-    $exclude_comments = in_array($node->type, variable_get('apachesolr_exclude_comments_types', array()), TRUE);
+    $excludes = variable_get('apachesolr_exclude_nodeapi_types', array());
+    $exclude_nodeapi = isset($excludes[$node->type]) ? $excludes[$node->type] : array();
     foreach (module_implements('nodeapi') as $module) {
-      if ($exclude_comments && $module == 'comment') {
-        // Don't add comments.
-        continue;
-      }
-      if ($output = module_invoke($module, 'nodeapi', $node, 'update index', FALSE, FALSE)) {
-        $extra[$module] = $output;
+      // Invoke nodeapi if this module has not been excluded, for example,
+      // exclude 'comment' for a type to skip indexing its comments.
+      if (empty($exclude_nodeapi[$module])) {
+        $function = $module .'_nodeapi';
+        if ($output = $function($node, 'update index', FALSE, FALSE)) {
+          $extra[$module] = $output;
+        }
       }
     }
-    $text .= "\n\n" . implode(' ', $extra);
-    $text = apachesolr_strip_ctl_chars($text);
+
+    $text = $node->body . "\n\n" . implode(' ', $extra);
 
     $document = new Apache_Solr_Document();
     $document->id = apachesolr_document_id($node->nid);
     $document->site = url(NULL, array('absolute' => TRUE));
     $document->hash = apachesolr_site_hash();
+    $document->entity = 'node';
     $document->nid = $node->nid;
     $document->uid = $node->uid;
     $document->title = $node->title;
@@ -94,18 +82,22 @@ function apachesolr_node_to_document($nid, $namespace) {
     $document->moderate = $node->moderate;
     $document->tnid = $node->tnid;
     $document->translate = $node->translate;
-    if (!empty($node->language)) {
+    if (empty($node->language)) {
+      // 'und' is the language-neutral code in Drupal 7.
+      $document->language = 'und';
+    }
+    else {
       $document->language = $node->language;
     }
     $document->body = apachesolr_clean_text($text);
-    $document->type  = $node->type;
-    $document->type_name = apachesolr_strip_ctl_chars(node_get_types('name', $node));
+    $document->type = $node->type;
+    $document->type_name = node_get_types('name', $node);
     $document->created = apachesolr_date_iso($node->created);
     $document->changed = apachesolr_date_iso($node->changed);
     $last_change = (isset($node->last_comment_timestamp) && $node->last_comment_timestamp > $node->changed) ? $node->last_comment_timestamp : $node->changed;
     $document->last_comment_or_change = apachesolr_date_iso($last_change);
     $document->comment_count = isset($node->comment_count) ? $node->comment_count : 0;
-    $document->name = apachesolr_strip_ctl_chars($node->name);
+    $document->name = $node->name;
 
     $path = 'node/' . $node->nid;
     $document->url = url($path, array('absolute' => TRUE));
@@ -118,7 +110,7 @@ function apachesolr_node_to_document($nid, $namespace) {
       $language = empty($node->language) ? '' : $node->language;
       $output = drupal_get_path_alias($path, $language);
       if ($output && $output != $path) {
-        $document->path_alias = apachesolr_strip_ctl_chars($output);
+        $document->path_alias = $output;
       }
     }
 
@@ -157,10 +149,13 @@ function apachesolr_node_to_document($nid, $namespace) {
     apachesolr_add_tags_to_document($document, $text);
     apachesolr_add_taxonomy_to_document($document, $node);
 
-    // Let modules add to the document - TODO convert to drupal_alter().
+    if (isset($node->files) && is_array($node->files)) {
+      $document->is_upload_count = count($node->files);
+    }
+    // Let modules add to the document.
     foreach (module_implements('apachesolr_update_index') as $module) {
       $function = $module .'_apachesolr_update_index';
-      $function($document, $node);
+      $function($document, $node, $namespace);
     }
   }
   return $document;
@@ -169,7 +164,8 @@ function apachesolr_node_to_document($nid, $namespace) {
 /**
  * Extract taxonomy from $node and add to dynamic fields.
  */
-function apachesolr_add_taxonomy_to_document(&$document, $node) {
+function apachesolr_add_taxonomy_to_document($document, $node) {
+  static $ancestors = array();
   if (isset($node->taxonomy) && is_array($node->taxonomy)) {
     foreach ($node->taxonomy as $term) {
       // Double indexing of tids lets us do effecient searches (on tid)
@@ -179,8 +175,10 @@ function apachesolr_add_taxonomy_to_document(&$document, $node) {
       // sure that searches for general categories match specific
       // categories, e.g. Fruit -> apple, a search for fruit will find
       // content categorized with apple.
-      $ancestors = taxonomy_get_parents_all($term->tid);
-      foreach ($ancestors as $ancestor) {
+      if (!isset($ancestors[$term->tid])) {
+        $ancestors[$term->tid] = taxonomy_get_parents_all($term->tid);
+      }
+      foreach ($ancestors[$term->tid] as $ancestor) {
         $document->setMultiValue('tid', $ancestor->tid);
         $document->setMultiValue('im_vid_'. $ancestor->vid, $ancestor->tid);
         $name = apachesolr_clean_text($ancestor->name);
@@ -217,7 +215,7 @@ function apachesolr_vocab_name($vid) {
  *
  * $text must be stripped of control characters before hand.
  */
-function apachesolr_add_tags_to_document(&$document, $text) {
+function apachesolr_add_tags_to_document($document, $text) {
   $tags_to_index = variable_get('apachesolr_tags_to_index', array(
     'h1' => 'tags_h1',
     'h2' => 'tags_h2_h3',
@@ -238,9 +236,13 @@ function apachesolr_add_tags_to_document(&$document, $text) {
 
   preg_match_all('@<('. implode('|', array_keys($tags_to_index)) .')[^>]*>(.*)</\1>@Ui', $text, $matches);
   foreach ($matches[1] as $key => $tag) {
+    $tag = strtolower($tag);
     // We don't want to index links auto-generated by the url filter.
     if ($tag != 'a' || !preg_match('@(?:http://|https://|ftp://|mailto:|smb://|afp://|file://|gopher://|news://|ssl://|sslv2://|sslv3://|tls://|tcp://|udp://|www\.)[a-zA-Z0-9]+@', $matches[2][$key])) {
-      $document->{$tags_to_index[$tag]} .= ' '. $matches[2][$key];
+      if (!isset($document->{$tags_to_index[$tag]})){
+        $document->{$tags_to_index[$tag]} = '';
+      }
+      $document->{$tags_to_index[$tag]} .= ' '. apachesolr_clean_text($matches[2][$key]);
     }
   }
 }
@@ -254,7 +256,7 @@ function apachesolr_add_tags_to_document(&$document, $text) {
  */
 function apachesolr_cron_check_node_table() {
   // Check for unpublished content that wasn't deleted from the index.
-  $result = db_query("SELECT n.nid, n.status FROM {apachesolr_search_node} asn INNER JOIN {node} n ON n.nid = asn.nid WHERE asn.status != n.status");
+  $result = db_query("SELECT n.nid, n.status FROM {apachesolr_search_node} asn INNER JOIN {node} n ON n.nid = asn.nid WHERE asn.status <> n.status");
   $node_lists = array();
   $nodes = array();
   // Update or delete at most this many in each Solr query.
@@ -305,20 +307,33 @@ function apachesolr_nodeapi_mass_update($nodes) {
   if (empty($nodes)) {
     return TRUE;
   }
-  $ids = array();
+  
+  if (variable_get('apachesolr_read_only', APACHESOLR_READ_WRITE) == APACHESOLR_READ_ONLY) {
+    return TRUE;
+  }
+  
+  $published_ids = array();
+  $unpublished_ids = array();
   foreach ($nodes as $node) {
-    if (!$node->status) {
-      $ids[] = apachesolr_document_id($node->nid);
+    if ($node->status) {
+      $published_ids[$node->nid] = apachesolr_document_id($node->nid);
+    }
+    else {
+      $unpublished_ids[$node->nid] = apachesolr_document_id($node->nid);
     }
   }
   $time = time();
   try {
     $solr = apachesolr_get_solr();
-    $solr->deleteMultipleById($ids);
+    $solr->deleteByMultipleIds($unpublished_ids);
     apachesolr_index_updated($time);
-    foreach ($nodes as $node) {
+
       // There was no exception, so update the table.
-      db_query("UPDATE {apachesolr_search_node} SET changed = %d, status = %d WHERE nid  = %d", $time, $node->status, $node->nid);
+    if ($published_ids) {
+      db_query('UPDATE {apachesolr_search_node} SET changed = %d, status = 1 WHERE nid IN ('. db_placeholders($published_ids) .')', array_merge((array) $time, array_keys($published_ids)));
+    }
+    if ($unpublished_ids) {
+      db_query('UPDATE {apachesolr_search_node} SET changed = %d, status = 0 WHERE nid IN ('. db_placeholders($unpublished_ids) .')', array_merge((array) $time, array_keys($unpublished_ids)));
     }
     return TRUE;
   }
@@ -332,6 +347,11 @@ function apachesolr_nodeapi_mass_delete($nodes) {
   if (empty($nodes)) {
     return TRUE;
   }
+
+  if (variable_get('apachesolr_read_only', APACHESOLR_READ_WRITE) == APACHESOLR_READ_ONLY) {
+    return TRUE;
+  }
+
   $ids = array();
   $nids = array();
   foreach ($nodes as $node) {
@@ -340,7 +360,7 @@ function apachesolr_nodeapi_mass_delete($nodes) {
   }
   try {
     $solr = apachesolr_get_solr();
-    $solr->deleteMultipleById($ids);
+    $solr->deleteByMultipleIds($ids);
     apachesolr_index_updated($time);
     // There was no exception, so update the table.
     db_query("DELETE FROM {apachesolr_search_node} WHERE nid  IN (" . db_placeholders($nids) . ")", $nids);

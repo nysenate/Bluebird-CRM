@@ -1,10 +1,9 @@
 <?php
-// $Id: apachesolr_nodeaccess.module,v 1.1.2.11 2009/06/05 18:05:06 robertDouglass Exp $
 
 /**
  * Implementation of apachesolr_update_index
  */
-function apachesolr_nodeaccess_apachesolr_update_index(&$document, $node) {
+function apachesolr_nodeaccess_apachesolr_update_index(&$document, $node, $namespace) {
   static $account;
 
   if (!isset($account)) {
@@ -31,6 +30,8 @@ function apachesolr_nodeaccess_apachesolr_update_index(&$document, $node) {
  * Creates a Solr query for a given user
  *
  * @param $account an account to get grants for and build a solr query
+ *
+ * @throws Exception
  */
 function _apachesolr_nodeaccess_build_subquery($account) {
   if (!user_access('access content', $account)) {
@@ -61,7 +62,7 @@ function _apachesolr_nodeaccess_build_subquery($account) {
 /**
  * Implementation of hook_apachesolr_modify_query().
  */
-function apachesolr_nodeaccess_apachesolr_modify_query(&$query, &$params) {
+function apachesolr_nodeaccess_apachesolr_modify_query(&$query, &$params, $caller) {
   global $user;
   try {
     $subquery = _apachesolr_nodeaccess_build_subquery($user);
@@ -124,7 +125,6 @@ function apachesolr_nodeaccess_form_alter(&$form, $form_state, $form_id) {
  */
 function apachesolr_nodeaccess_rebuild_nodeaccess(&$form, $form_state) {
   drupal_set_message(t('Solr search index will be rebuilt.'));
-  node_access_needs_rebuild(TRUE);
   apachesolr_clear_last_index();
 }
 

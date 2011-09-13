@@ -1,6 +1,5 @@
 ===============================================================================
 CacheRouter
-$Id: README.txt,v 1.1.2.1 2009/09/05 13:24:50 slantview Exp $
 ===============================================================================
 
 -------------------------------------------------------------------------------
@@ -35,7 +34,7 @@ $conf['cache_inc'] = './sites/all/modules/contrib/cacherouter/cacherouter.inc';
 $conf['cacherouter'] = array(
   'default' => array(
     'engine' => 'db',
-    'server' => array(),
+    'servers' => array(),
     'shared' => TRUE,
     'prefix' => '',
     'path' => 'sites/default/files/filecache',
@@ -50,8 +49,8 @@ be added in addition, but you must have a default if you skip any bins.
 For engine, the current available options are: apc, db, file, memcache and 
 xcache.
 
-server is only used in memcache and should be an array of host:port 
-combinations. (e.g. 'server' => array('localhost:11211', 'localhost:11212'))
+servers is only used in memcache and should be an array of host:port 
+combinations. (e.g. 'servers' => array('localhost:11211', 'localhost:11212'))
 
 shared is only used on memcache as well. This allows memcache to be used with a
 single process and still handle flushing correctly.
@@ -74,6 +73,14 @@ multiple requests per page will not hit the remote cache. This defaults to
 FALSE due to the fact that in Drupal 6 there are several caches (menu, 
 localization) that do their own static storage. Advanced feature, use at own 
 discretion.
+
+If your site uses domain level cookies, like $cookie_domain = '.example.com', 
+and you are not sharing sessions with other Drupal instances configured in the
+same domain, you will need to customize this variable too, using per-site
+unique names:
+
+$conf['cacherouter_cookie'] = 'DRUPAL_UID';
+
 
 -------------------------------------------------------------------------------
 - TODO -

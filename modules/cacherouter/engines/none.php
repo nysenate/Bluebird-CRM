@@ -1,26 +1,26 @@
 <?php
+
 /**
- * $Id$
- *
- * @file none.php
+ * @file
  *   Disable caching altogether.  Useful for debugging and various situations
  *   where caching is undesired.  Please be very careful in using this engine.
  */
-class noneCache extends Cache {
+
+class noneCacheRouterEngine extends CacheRouterEngine {
   var $content = array();
-  
+
   function page_fast_cache() {
     return FALSE;
   }
-  
+
   function get() {
     return FALSE; // we never find it!
   }
-  
+
   function set() {
     // no op
   }
-  
+
   function delete() {
     // no op
   }
@@ -28,11 +28,11 @@ class noneCache extends Cache {
   function flush() {
     // no op
   }
-  
+
   function gc() {
     // no op
   }
-  
+
   function stats() {
     $stats = array(
       'uptime' => time(),

@@ -1,5 +1,9 @@
 <?php
-// $Id: solr_index_and_search.test,v 1.1.2.3 2008/11/21 21:23:36 pwolanin Exp $
+
+/**
+ * @file
+ *   Tests for the apachsolr module: index and search.
+ */
 
 class DrupalSolrMatchTestCase extends DrupalWebTestCase {
   /**
@@ -45,7 +49,7 @@ class DrupalSolrMatchTestCase extends DrupalWebTestCase {
 
     variable_set('minimum_word_size', 3);
     for ($i = 1; $i <= 7; ++$i) {
-      $documents[] = $this->_solr_build_document($i, $this->getText($i), array('nid' => $i));
+      $documents[] = $this->_solr_build_document($i, array('nid' => $i, 'text' => $this->getText($i)));
     }
 
     $this->_solr_index($documents);
@@ -67,19 +71,12 @@ class DrupalSolrMatchTestCase extends DrupalWebTestCase {
     }
   }
 
-  function _solr_build_document($id, $body, $values=array()) {
+  function _solr_build_document($nid, $values = array()) {
     $document = new Apache_Solr_Document();
-    if (!$fields['body']) {
-        $field['body'] = $body;
-    }
-    $fields = array('title', 'body', 'type', 'uid', 'changed', 'nid', 'comment_count', 'name', 'language');
+    $document->id = apachesolr_document_id($nid);
     foreach ($values as $key => $value) {
-      if (in_array($key, $fields)) {
-        $document->$key = $value;
-      }
+      $document->$key = $value;
     }
-
-    $document->text = $field['body'];
     return $document;
   }
 

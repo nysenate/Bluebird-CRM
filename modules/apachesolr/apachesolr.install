@@ -1,10 +1,79 @@
 <?php
-// $Id: apachesolr.install,v 1.1.4.21 2009/07/24 17:37:43 robertDouglass Exp $
 
 /**
  * @file
  *   Install and related hooks for apachesolr_search.
  */
+
+/**
+ * Implementation of hook_requirements().
+ */
+function apachesolr_requirements($phase) {
+  $requirements = array();
+  $file_exists = file_exists(dirname(__FILE__) . '/SolrPhpClient/Apache/Solr/Service.php');
+  // Ensure translations don't break at install time
+  $t = get_t();
+  if ($phase == 'runtime' && $file_exists) {
+    $host = variable_get('apachesolr_host', 'localhost');
+    $port = variable_get('apachesolr_port', 8983);
+    $path = variable_get('apachesolr_path', '/solr');
+    $ping = FALSE;
+    try {
+      $solr = apachesolr_get_solr();
+      $ping = @$solr->ping(variable_get('apachesolr_ping_timeout', 4));
+      // If there is no $solr object, there is no server available, so don't continue.
+      if (!$ping) {
+        throw new Exception(t('No Solr instance available when checking requirements.'));
+      }
+    }
+    catch (Exception $e) {
+      watchdog('Apache Solr', nl2br(check_plain($e->getMessage())), NULL, WATCHDOG_ERROR);
+    }
+    $value = $ping ? $t('Your site has contacted the Apache Solr server.') : $t('Your site was unable to contact the Apache Solr server.');
+    $severity = $ping ? REQUIREMENT_OK : REQUIREMENT_ERROR;
+    $description = theme('item_list', array($t('Host: %host', array('%host' => $host)),
+                        $t('Port: %port', array('%port' => $port)),
+                        $t('Path: %path', array('%path' => $path))));
+    $requirements['apachesolr'] = array(
+      'title' => $t('Apache Solr'),
+      'value' => $value,
+      'description' => $description,
+      'severity' => $severity,
+    );
+  }
+  // All phases
+  $title = $t('Apache Solr PHP Client Library');
+  if ($file_exists) {
+    $expected_revision = 'Revision: 22';
+    require_once 'SolrPhpClient/Apache/Solr/Service.php';
+    $revision = defined('Apache_Solr_Service::SVN_REVISION') ? trim(Apache_Solr_Service::SVN_REVISION, ' $') : '';
+    if ($revision == $expected_revision) {
+      $severity = REQUIREMENT_OK;
+      $value = $t('Correct version "@expected".', array('@expected' => $expected_revision));
+      $description = NULL;
+    }
+    else {
+      $value = $t('Incorrect version "@version". See the instructions in README.txt.', array('@version' => $revision));
+      $description = $t('The version of the library in the SolrPhpClient directory is "@version" compared to the expected "@expected"', array('@version' => $revision, '@expected' => $expected_revision));
+      $severity = REQUIREMENT_ERROR;
+    }
+    $requirements['SolrPhpClient'] = array(
+      'title' => $title,
+      'value' => $value,
+      'description' => $description,
+      'severity' => $severity,
+    );
+  }
+  else {
+    $requirements['SolrPhpClient'] = array(
+        'title' => $title,
+        'value' => $t('<em>Missing</em>.  See the instructions in README.txt'),
+        'description' => $t('The Solr PHP library must be present in a sub-directory named SolrPhpClient.'),
+        'severity' => REQUIREMENT_ERROR,
+    );
+  }
+  return $requirements;
+}
 
 /**
  * Implementation of hook_install().
@@ -56,19 +125,23 @@ function apachesolr_schema() {
       'changed' => array('changed', 'status'),
       ),
     'primary key' => array('nid'),
-    );
+  );
+  $table = drupal_get_schema_unprocessed('system', 'cache');
+  $table['description'] = 'Cache table for apachesolr to store Luke data and indexing information.';
+  $schema['cache_apachesolr'] = $table;
 
   return $schema;
 }
 
 /**
- * Implementation of hook_uninstall()
+ * Implementation of hook_uninstall().
  */
 function apachesolr_uninstall() {
   variable_del('apachesolr_host');
   variable_del('apachesolr_port');
   variable_del('apachesolr_path');
   variable_del('apachesolr_rows');
+  variable_del('apachesolr_facet_show_children');
   variable_del('apachesolr_facet_query_limits');
   variable_del('apachesolr_facet_query_limit_default');
   variable_del('apachesolr_site_hash');
@@ -76,8 +149,11 @@ function apachesolr_uninstall() {
   variable_del('apachesolr_mlt_blocks');
   variable_del('apachesolr_cron_limit');
   variable_del('apachesolr_enabled_facets');
+  variable_del('apachesolr_exclude_nodeapi_types');
   // Remove tables.
   drupal_uninstall_schema('apachesolr');
+  // Remove blocks.
+  db_query('DELETE FROM {blocks} WHERE module = "apachesolr"');
 }
 
 /**
@@ -113,7 +189,7 @@ function apachesolr_update_6000() {
   db_create_table($ret, 'apachesolr_search_node', $schema['apachesolr_search_node']);
   // Populate table
   $ret[] = update_sql("INSERT INTO {apachesolr_search_node} (nid, status, changed)
-                       SELECT n.nid, n.status, GREATEST(n.created, n.changed, c.last_comment_timestamp) AS changed
+                       SELECT n.nid, n.status, GREATEST(n.created, n.changed, COALESCE(c.last_comment_timestamp, 0)) AS changed
                        FROM {node} n LEFT JOIN {apachesolr_search_node} asn ON n.nid = asn.nid
                        LEFT JOIN {node_comment_statistics} c ON n.nid = c.nid
                        WHERE asn.changed IS NULL");
@@ -139,11 +215,10 @@ function apachesolr_update_6001() {
  */
 function apachesolr_update_6002() {
   $ret = array();
-   // Make sure no nodes end up with a timestamp that's in the future.
-   $time = (int) time();
-   $ret[] = update_sql("UPDATE {apachesolr_search_node} SET changed = $time WHERE changed > $time");
-
-   return $ret;
+  // Make sure no nodes end up with a timestamp that's in the future.
+  $time = (int) time();
+  $ret[] = update_sql("UPDATE {apachesolr_search_node} SET changed = $time WHERE changed > $time");
+  return $ret;
 }
 
 /**
@@ -174,5 +249,44 @@ function apachesolr_update_6004() {
     $ret[] = update_sql("DROP TABLE {apachesolr_mlt}");
   }
   $ret[] = update_sql("DELETE FROM {system} WHERE name = 'apachesolr_mlt'");
+  return $ret;
+}
+
+
+/**
+ * Add a separate cache table for more efficient cache clearing in memcached situations.
+ */
+function apachesolr_update_6005() {
+  $ret = array();
+  $table = drupal_get_schema_unprocessed('system', 'cache');
+  $table['description'] = 'Cache table for apachesolr to store Luke data and indexing information.';
+  db_create_table($ret, 'cache_apachesolr', $table);
+  return $ret;
+}
+
+/**
+ * Move excluded comment types into a new variable.
+ */
+function apachesolr_update_6006() {
+  $exclude_comment_types = variable_get('apachesolr_exclude_comments_types', NULL);
+  if (is_array($exclude_comment_types)) {
+    $exclude = array();
+    foreach ($exclude_comment_types as $type) {
+      $exclude[$type]['comment'] = TRUE;
+    }
+    variable_set('apachesolr_exclude_nodeapi_types', $exclude);
+  }
+  variable_del('apachesolr_exclude_comments_types');
+  return array();
+}
+
+/**
+ * Fix block caching settings.
+ */
+function apachesolr_update_6007() {
+  $ret = array();
+
+  $ret[] = update_sql("UPDATE {blocks} set cache = " . (BLOCK_CACHE_PER_ROLE | BLOCK_CACHE_PER_PAGE) . " WHERE module LIKE 'apachesolr%' AND cache = " . BLOCK_CACHE_PER_PAGE . " AND delta != 'currentsearch' AND delta != 'sort'");
+
   return $ret;
 }

@@ -1,11 +1,10 @@
 <?php
-// $Id: apachesolr_image.module,v 1.1.2.1.2.4 2009/02/09 14:12:23 pwolanin Exp $
 
 /**
  * Implementation of hook_apachesolr_update_index().
  */
-function apachesolr_image_apachesolr_update_index(&$document, $node) {
-  if ($node->type == 'image') {
+function apachesolr_image_apachesolr_update_index(&$document, $node, $namespace) {
+  if ($node->type == 'image' && $document->entity == 'node') {
     $areas = array();
     // A problem here - small images do not get a derived thumbnail.
     $sizes = image_get_derivative_sizes($node->images['_original']);
@@ -20,8 +19,8 @@ function apachesolr_image_apachesolr_update_index(&$document, $node) {
     }
     if ($image_path) {
       $document->ss_image_relative = $image_path;
-      // TODO - support multi-site too.
-      // $document->ss_image_absolute = file_create_url($image_path);
+      // Support multi-site too.
+      $document->ss_image_absolute = file_create_url($image_path);
     }
   }
 }
@@ -29,7 +28,7 @@ function apachesolr_image_apachesolr_update_index(&$document, $node) {
 /**
  * Implementation of hook_apachesolr_modify_query().
  */
-function apachesolr_image_apachesolr_modify_query(&$query, &$params) {
+function apachesolr_image_apachesolr_modify_query(&$query, &$params, $caller) {
   // Also retrieve image thumbnail links.
   $params['fl'] .= ',ss_image_relative';
 }
@@ -45,8 +44,8 @@ function apachesolr_image_apachesolr_process_results(&$results) {
   }
 }
 
-function theme_apachesolr_image_snippet($item){
- return '<span class="apachesolr-image-result">'. theme('image', $item['node']->ss_image_relative, $item['title'], $item['title'], array('align' => 'left')) .'</span>'. $item['snippet'] . '<br clear="all"/>';
+function theme_apachesolr_image_snippet($item) {
+  return '<span class="apachesolr-image-result">'. theme('image', $item['node']->ss_image_relative, $item['title'], $item['title'], array('align' => 'left')) .'</span>'. $item['snippet'] . '<br clear="all"/>';
 }
 
 /**
