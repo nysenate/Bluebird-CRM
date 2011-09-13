@@ -140,14 +140,13 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	//Construct some arrays and values to be passed to the tag tab
 	if ( $formName == 'CRM_Tag_Form_Tag' ) {
-		//CRM_Core_Error::debug($form);
 	
 		$contactId = $form->getVar( '_entityID' );
 		
 		//Construct list of tags, comma-separated
 		$contactTagsList = array();
 		$contactTags = CRM_Core_BAO_EntityTag::getContactTags( $contactId );
-		//CRM_Core_Error::debug($contactTags);
+		
         if ( !empty( $contactTags ) ) {
             $contactTagsList = stripslashes( implode( ', ', $contactTags ) );
         }
@@ -172,7 +171,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$legpos_list = array();
 		$legpos_description = array();
 		$legpositions = CRM_Core_BAO_EntityTag::getChildEntityTagDetails( 292, $contactId );
-		//CRM_Core_Error::debug($legpositions);
+
 		foreach ( $legpositions as $legposition ) {
 			if ( $legposition['description'] && $legposition['description'] != "No description available." ) {
 				$legpos_description[] = $legposition['description'];
@@ -187,7 +186,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	//contact form edits
 	if ( $formName == 'CRM_Contact_Form_Contact' ) {
-		//CRM_Core_Error::debug($form->_elementIndex);
 		
 		//set New York as default state
 		//we could potentially have as many as 6 addresses, so let's set US and NY default for all
@@ -253,17 +251,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$form->setDefaults( $defaults );
 	}
 	
-	//remove primary field export option
-	/*if ( $formName == 'CRM_Export_Form_Select' ) {
-
-		$exportOptions = $form->_elements[1];
-		unset( $exportOptions->_elements[0] );
-
-	}*/
-	
 	//3674 add limit submit js to all submit buttons
 	if ( isset( $form->_elementIndex['buttons'] ) ) {
-		//CRM_Core_Error::debug($form);
 		$buttons =& $form->getElement( 'buttons' );
 		$formID = $form->_attributes['id'];
 		$formAction = $form->_attributes['action'];
@@ -279,7 +268,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		                          '_qf_Map_next', 
 								  '_qf_PDF_submit',
 								  '_qf_PDF_cancel',
-								  '_qf_Contact_upload_view' //we will process, but handle separately
+								  '_qf_Contact_upload_view', //handle separately
 								 );
 		$btnExcludeValue = array( 'PDF', 
 		                          'Print Contact List' );
@@ -361,7 +350,6 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 	
 	unset($tasks[19]); //remove pdf letter creation task, #2284
-	//unset($tasks[24]); //remove delete permanently task, #2373
 	
 }
 
@@ -401,13 +389,17 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
 	$errors = array( );
 	
 	//4272 ensure that target/with contact is set when activity created from contact record
-	if ( $formName == 'CRM_Activity_Form_Activity' && $form->_context == 'activity' ) {
+	if ( $formName == 'CRM_Activity_Form_Activity' && 
+	     $form->_context == 'activity' && 
+		 $form->_action != 8 ) { //exclude delete
 
         if ( empty($fields['target_contact_id']) ) {
             $errors['target_contact_id'] = ts( 'Please add at least one target contact.' );
         }
         return empty( $errors ) ? true : $errors;
 	}
+	
+
 }
 
 
