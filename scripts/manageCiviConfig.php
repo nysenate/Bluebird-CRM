@@ -3,7 +3,7 @@
 // Author: Ken Zalewski
 // Organization: New York State Senate
 // Date: 2010-11-23
-// Revised: 2011-04-21
+// Revised: 2011-09-09
 //
 
 function getOptionValues($dbcon, $name)
@@ -95,7 +95,8 @@ function updateUrlPref($dbcon, $optname, $optval)
 } // updateUrlPref()
 
 
-function updateCiviConfig($dbcon, $civicfg, $crmhost, $appdir, $datadir)
+function updateCiviConfig($dbcon, $civicfg,
+                          $crmhost, $appdir, $datadir, $incemail, $incwild)
 {
   $http_prefix = "http://$crmhost";  // no longer necessary
   $data_prefix = "$datadir/$crmhost/civicrm";  // no longer necessary
@@ -103,6 +104,8 @@ function updateCiviConfig($dbcon, $civicfg, $crmhost, $appdir, $datadir)
 
   $cb = $civicfg['backend'];
   $cb['civiAbsoluteURL'] = "$http_prefix/";
+  $cb['includeEmailInName'] = $incemail;
+  $cb['includeWildCardInName'] = $incwild;
 
   /***  
      The remainder of these parameters are deprecated in config_backend.
@@ -147,7 +150,7 @@ function nullifyCiviConfig($dbcon)
 
 $prog = basename($argv[0]);
 
-if ($argc != 6 && $argc != 9) {
+if ($argc != 6 && $argc != 11) {
   echo "Usage: $prog cmd dbhost dbuser dbpass dbname [crmhost] [appdir] [datadir]\n";
   echo "   cmd can be: list, update, or nullify\n";
   exit(1);
@@ -158,9 +161,11 @@ else {
   $dbuser = $argv[3];
   $dbpass = $argv[4];
   $dbname = $argv[5];
-  $crmhost = ($argc == 9) ? $argv[6] : "";
-  $appdir = ($argc == 9) ? $argv[7] : "";
-  $datadir = ($argc == 9) ? $argv[8] : "";
+  $crmhost = ($argc == 11) ? $argv[6] : "";
+  $appdir = ($argc == 11) ? $argv[7] : "";
+  $datadir = ($argc == 11) ? $argv[8] : "";
+  $incemail = ($argc == 11) ? $argv[9] : 0;
+  $incwild = ($argc == 11) ? $argv[10] : 0;
 
   $dbcon = mysql_connect($dbhost, $dbuser, $dbpass);
   if (!$dbcon) {
@@ -184,7 +189,7 @@ else {
   else if (is_array($civiConfig)) {
     if ($cmd == "update") {
       echo "Updating the CiviCRM configuration.\n";
-      if (updateCiviConfig($dbcon, $civiConfig, $crmhost, $appdir, $datadir) === false) {
+      if (updateCiviConfig($dbcon, $civiConfig, $crmhost, $appdir, $datadir, $incemail, $incwild) === false) {
         $rc = 1;
       }
     }
