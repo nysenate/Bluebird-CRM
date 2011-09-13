@@ -1,5 +1,4 @@
 <?php
-// $Id: bootstrap.inc,v 1.206.2.13 2009/09/14 13:33:39 goba Exp $
 
 /**
  * @file
@@ -43,19 +42,92 @@ define('CACHE_AGGRESSIVE', 2);
 define('CACHE_EXTERNAL', 3);
 
 /**
+ * Log message severity -- Emergency: system is unusable.
  *
- * Severity levels, as defined in RFC 3164 http://www.faqs.org/rfcs/rfc3164.html
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
  * @see watchdog()
  * @see watchdog_severity_levels()
  */
-define('WATCHDOG_EMERG',    0); // Emergency: system is unusable
-define('WATCHDOG_ALERT',    1); // Alert: action must be taken immediately
-define('WATCHDOG_CRITICAL', 2); // Critical: critical conditions
-define('WATCHDOG_ERROR',    3); // Error: error conditions
-define('WATCHDOG_WARNING',  4); // Warning: warning conditions
-define('WATCHDOG_NOTICE',   5); // Notice: normal but significant condition
-define('WATCHDOG_INFO',     6); // Informational: informational messages
-define('WATCHDOG_DEBUG',    7); // Debug: debug-level messages
+define('WATCHDOG_EMERG', 0);
+
+/**
+ * Log message severity -- Alert: action must be taken immediately.
+ *
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
+ * @see watchdog()
+ * @see watchdog_severity_levels()
+ */
+define('WATCHDOG_ALERT', 1);
+
+/**
+ * Log message severity -- Critical: critical conditions.
+ *
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
+ * @see watchdog()
+ * @see watchdog_severity_levels()
+ */
+define('WATCHDOG_CRITICAL', 2);
+
+/**
+ * Log message severity -- Error: error conditions.
+ *
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
+ * @see watchdog()
+ * @see watchdog_severity_levels()
+ */
+define('WATCHDOG_ERROR', 3);
+
+/**
+ * Log message severity -- Warning: warning conditions.
+ *
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
+ * @see watchdog()
+ * @see watchdog_severity_levels()
+ */
+define('WATCHDOG_WARNING', 4);
+
+/**
+ * Log message severity -- Notice: normal but significant condition.
+ *
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
+ * @see watchdog()
+ * @see watchdog_severity_levels()
+ */
+define('WATCHDOG_NOTICE', 5);
+
+/**
+ * Log message severity -- Informational: informational messages.
+ *
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
+ * @see watchdog()
+ * @see watchdog_severity_levels()
+ */
+define('WATCHDOG_INFO', 6);
+
+/**
+ * Log message severity -- Debug: debug-level messages.
+ *
+ * The WATCHDOG_* constant definitions correspond to the logging severity levels
+ * defined in RFC 3164, section 4.1.1: http://www.faqs.org/rfcs/rfc3164.html
+ *
+ * @see watchdog()
+ * @see watchdog_severity_levels()
+ */
+define('WATCHDOG_DEBUG', 7);
 
 /**
  * First bootstrap phase: initialize configuration.
@@ -148,6 +220,11 @@ define('LANGUAGE_LTR', 0);
  * Language written right to left. Possible value of $language->direction.
  */
 define('LANGUAGE_RTL', 1);
+
+// Hide E_DEPRECATED messages.
+if (defined('E_DEPRECATED')) {
+  error_reporting(error_reporting() & ~E_DEPRECATED);
+}
 
 /**
  * Start the timer with the specified name. If you start and stop
@@ -306,7 +383,7 @@ function conf_init() {
   global $base_url, $base_path, $base_root;
 
   // Export the following settings.php variables to the global namespace
-  global $db_url, $db_slave_url, $db_prefix, $cookie_domain, $conf, $installed_profile, $update_free_access;
+  global $db_url, $db_slave_url, $db_prefix, $db_collation, $cookie_domain, $conf, $installed_profile, $update_free_access;
   $conf = array();
 
   if (isset($_SERVER['HTTP_HOST'])) {
@@ -374,6 +451,13 @@ function conf_init() {
     // We escape the hostname because it can be modified by a visitor.
     if (!empty($_SERVER['HTTP_HOST'])) {
       $cookie_domain = check_plain($_SERVER['HTTP_HOST']);
+      // Strip leading periods, www., and port numbers from cookie domain.
+      $cookie_domain = ltrim($cookie_domain, '.');
+      if (strpos($cookie_domain, 'www.') === 0) {
+        $cookie_domain = substr($cookie_domain, 4);
+      }
+      $cookie_domain = explode(':', $cookie_domain);
+      $cookie_domain = '.'. $cookie_domain[0];
     }
   }
   // To prevent session cookies from being hijacked, a user can configure the
@@ -385,13 +469,6 @@ function conf_init() {
   if (ini_get('session.cookie_secure')) {
     $session_name .= 'SSL';
   }
-  // Strip leading periods, www., and port numbers from cookie domain.
-  $cookie_domain = ltrim($cookie_domain, '.');
-  if (strpos($cookie_domain, 'www.') === 0) {
-    $cookie_domain = substr($cookie_domain, 4);
-  }
-  $cookie_domain = explode(':', $cookie_domain);
-  $cookie_domain = '.'. $cookie_domain[0];
   // Per RFC 2109, cookie domains must contain at least one dot other than the
   // first. For hosts such as 'localhost' or IP Addresses we don't set a cookie domain.
   if (count(explode('.', $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
@@ -422,7 +499,7 @@ function conf_init() {
  * the above, depending on where the module is located.
  *
  * @param $type
- *   The type of the item (i.e. theme, theme_engine, module).
+ *   The type of the item (i.e. theme, theme_engine, module, profile).
  * @param $name
  *   The name of the item for which the filename is requested.
  * @param $filename
@@ -479,17 +556,36 @@ function drupal_get_filename($type, $name, $filename = NULL) {
  * with variable_set() as well as those explicitly specified in the configuration
  * file.
  */
-function variable_init($conf = array()) {
+function variable_init($conf = array(), $regenerate = FALSE, $recursion_depth = 0) {
   // NOTE: caching the variables improves performance by 20% when serving cached pages.
-  if ($cached = cache_get('variables', 'cache')) {
+  if (!$regenerate && $cached = cache_get('variables', 'cache')) {
     $variables = $cached->data;
   }
   else {
-    $result = db_query('SELECT * FROM {variable}');
-    while ($variable = db_fetch_object($result)) {
-      $variables[$variable->name] = unserialize($variable->value);
+    if (defined('MAINTENANCE_MODE') || lock_acquire('variable_cache_regenerate')) {
+      $result = db_query('SELECT * FROM {variable}');
+      while ($variable = db_fetch_object($result)) {
+        $variables[$variable->name] = unserialize($variable->value);
+      }
+      cache_set('variables', $variables);
+      if (!defined('MAINTENANCE_MODE')) {
+        lock_release('variable_cache_regenerate');
+      }
     }
-    cache_set('variables', $variables);
+    else {
+      // Wait for another request that is already doing this work.
+      lock_wait('variable_cache_regenerate');
+
+      // Run the function again. Try a limited number of times to avoid 
+      // infinite recursion if the database connection is invalid for  
+      // some reason, e.g., mysqld restart, loss of network, etc.
+      $recursion_depth++;
+      if ($recursion_depth < 50) {
+        return variable_init($conf, $regenerate, $recursion_depth);
+      }
+
+      $variables = array();
+    }
   }
 
   foreach ($conf as $name => $value) {
@@ -500,7 +596,11 @@ function variable_init($conf = array()) {
 }
 
 /**
- * Return a persistent variable.
+ * Returns a persistent variable.
+ *
+ * Case-sensitivity of the variable_* functions depends on the database
+ * collation used. To avoid problems, always use lower case for persistent
+ * variable names.
  *
  * @param $name
  *   The name of the variable to return.
@@ -518,7 +618,11 @@ function variable_get($name, $default) {
 }
 
 /**
- * Set a persistent variable.
+ * Sets a persistent variable.
+ *
+ * Case-sensitivity of the variable_* functions depends on the database
+ * collation used. To avoid problems, always use lower case for persistent
+ * variable names.
  *
  * @param $name
  *   The name of the variable to set.
@@ -529,7 +633,7 @@ function variable_get($name, $default) {
  * @see variable_del(), variable_get()
  */
 function variable_set($name, $value) {
-  global $conf;
+  global $conf, $db_prefix;
 
   $serialized_value = serialize($value);
   db_query("UPDATE {variable} SET value = '%s' WHERE name = '%s'", $serialized_value, $name);
@@ -537,13 +641,24 @@ function variable_set($name, $value) {
     @db_query("INSERT INTO {variable} (name, value) VALUES ('%s', '%s')", $name, $serialized_value);
   }
 
-  cache_clear_all('variables', 'cache');
-
   $conf[$name] = $value;
+
+  // The write-through rebuild optimization isn't compatible with SimpleTest.
+  // Because array-based prefixes don't work with SimpleTest, we can assume
+  // that a non-string prefix indicates lack of SimpleTest operations.
+  if (is_string($db_prefix) && strpos($db_prefix, 'simpletest') === 0) {
+    cache_clear_all('variables', 'cache');
+  }
+  
+  variable_cache_rebuild();
 }
 
 /**
- * Unset a persistent variable.
+ * Unsets a persistent variable.
+ *
+ * Case-sensitivity of the variable_* functions depends on the database
+ * collation used. To avoid problems, always use lower case for persistent
+ * variable names.
  *
  * @param $name
  *   The name of the variable to undefine.
@@ -551,15 +666,32 @@ function variable_set($name, $value) {
  * @see variable_get(), variable_set()
  */
 function variable_del($name) {
-  global $conf;
+  global $conf, $db_prefix;
 
   db_query("DELETE FROM {variable} WHERE name = '%s'", $name);
 
   unset($conf[$name]);
 
-  cache_set('variables', $conf);
+  // The write-through rebuild optimization isn't compatible with SimpleTest.
+  // Because array-based prefixes don't work with SimpleTest, we can assume
+  // that a non-string prefix indicates lack of SimpleTest operations.
+  if (is_string($db_prefix) && strpos($db_prefix, 'simpletest') === 0) {
+    cache_clear_all('variables', 'cache');
+  }
+  
+  variable_cache_rebuild();
 }
 
+/**
+ * Schedules a rebuild of the variable cache on shutdown.
+ */
+function variable_cache_rebuild() {
+  static $shutdown_registered = FALSE;
+  if (!$shutdown_registered) {
+    register_shutdown_function('variable_init', array(), TRUE);
+    $shutdown_registered = TRUE;
+  }
+}
 
 /**
  * Retrieve the current page from the cache.
@@ -622,7 +754,7 @@ function bootstrap_invoke_all($hook) {
  * including a theme, engine, module, etc., more than once.
  *
  * @param $type
- *   The type of item to load (i.e. theme, theme_engine, module).
+ *   The type of item to load (i.e. theme, theme_engine, module, profile).
  * @param $name
  *   The name of the item to load.
  *
@@ -673,7 +805,7 @@ function drupal_set_header($name = NULL, $value = NULL, $append = FALSE) {
   // Support the Drupal 6 header API
   if (!isset($value)) {
     if (strpos($name, ':') !== FALSE) {
-      $parts = explode(':', $name);
+      $parts = explode(':', $name, 2);
       $name = trim($parts[0]);
       $value = trim($parts[1]);
     }
@@ -939,12 +1071,14 @@ function drupal_page_cache_header(stdClass $cache) {
     header('Vary: Accept-Encoding', FALSE);
     // If page_compression is enabled, the cache contains gzipped data.
     if ($return_compressed) {
+      ini_set('zlib.output_compression', '0');
       header('Content-Encoding: gzip');
     }
     else {
       // The client does not support compression, so unzip the data in the
       // cache. Strip the gzip header and run uncompress.
       $cache->data = gzinflate(substr(substr($cache->data, 10), 0, -8));
+      header('X-PF-Uncompressing: 1');
     }
   }
 
@@ -969,7 +1103,7 @@ function bootstrap_hooks() {
 function drupal_unpack($obj, $field = 'data') {
   if ($obj->$field && $data = unserialize($obj->$field)) {
     foreach ($data as $key => $value) {
-      if (!isset($obj->$key)) {
+      if (!empty($key) && !isset($obj->$key)) {
         $obj->$key = $value;
       }
     }
@@ -989,11 +1123,35 @@ function referer_uri() {
 /**
  * Encode special characters in a plain-text string for display as HTML.
  *
- * Uses drupal_validate_utf8 to prevent cross site scripting attacks on
+ * Also validates strings as UTF-8 to prevent cross site scripting attacks on
  * Internet Explorer 6.
+ *
+ * @param $text
+ *   The text to be checked or processed.
+ * @return
+ *   An HTML safe version of $text, or an empty string if $text is not
+ *   valid UTF-8.
+ *
+ * @see drupal_validate_utf8().
  */
 function check_plain($text) {
-  return drupal_validate_utf8($text) ? htmlspecialchars($text, ENT_QUOTES) : '';
+  static $php525;
+
+  if (!isset($php525)) {
+    $php525 = version_compare(PHP_VERSION, '5.2.5', '>=');
+  }
+  // We duplicate the preg_match() to validate strings as UTF-8 from
+  // drupal_validate_utf8() here. This avoids the overhead of an additional
+  // function call, since check_plain() may be called hundreds of times during
+  // a request. For PHP 5.2.5+, this check for valid UTF-8 should be handled
+  // internally by PHP in htmlspecialchars().
+  // @see http://www.php.net/releases/5_2_5.php
+  // @todo remove this when support for either IE6 or PHP < 5.2.5 is dropped.
+
+  if ($php525) {
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+  }
+  return (preg_match('/^./us', $text) == 1) ? htmlspecialchars($text, ENT_QUOTES, 'UTF-8') : '';
 }
 
 /**
@@ -1029,6 +1187,7 @@ function drupal_validate_utf8($text) {
   if (strlen($text) == 0) {
     return TRUE;
   }
+  // For performance reasons this logic is duplicated in check_plain().
   return (preg_match('/^./us', $text) == 1);
 }
 
@@ -1062,7 +1221,8 @@ function request_uri() {
  * Log a system message.
  *
  * @param $type
- *   The category to which this message belongs.
+ *   The category to which this message belongs. Can be any string, but the
+ *   general practice is to use the name of the module calling watchdog().
  * @param $message
  *   The message to store in the log. See t() for documentation
  *   on how $message and $variables interact. Keep $message
@@ -1072,7 +1232,8 @@ function request_uri() {
  *   NULL if message is already translated or not possible to
  *   translate.
  * @param $severity
- *   The severity of the message, as per RFC 3164
+ *   The severity of the message, as per RFC 3164. Possible values are
+ *   WATCHDOG_ERROR, WATCHDOG_WARNING, etc.
  * @param $link
  *   A link to associate with the message.
  *
@@ -1096,7 +1257,7 @@ function watchdog($type, $message, $variables = array(), $severity = WATCHDOG_NO
     );
 
   // Call the logging hooks to log/process the message
-  foreach (module_implements('watchdog', TRUE) as $module) {
+  foreach (module_implements('watchdog') as $module) {
     module_invoke($module, 'watchdog', $log_message);
   }
 }
@@ -1240,13 +1401,27 @@ function drupal_anonymous_user($session = '') {
  *     DRUPAL_BOOTSTRAP_PATH: set $_GET['q'] to Drupal path of request.
  *     DRUPAL_BOOTSTRAP_FULL: Drupal is fully loaded, validate and fix input data.
  */
-function drupal_bootstrap($phase) {
+function drupal_bootstrap($phase = NULL) {
   static $phases = array(DRUPAL_BOOTSTRAP_CONFIGURATION, DRUPAL_BOOTSTRAP_EARLY_PAGE_CACHE, DRUPAL_BOOTSTRAP_DATABASE, DRUPAL_BOOTSTRAP_ACCESS, DRUPAL_BOOTSTRAP_SESSION, DRUPAL_BOOTSTRAP_LATE_PAGE_CACHE, DRUPAL_BOOTSTRAP_LANGUAGE, DRUPAL_BOOTSTRAP_PATH, DRUPAL_BOOTSTRAP_FULL), $phase_index = 0;
 
-  while ($phase >= $phase_index && isset($phases[$phase_index])) {
-    $current_phase = $phases[$phase_index];
-    unset($phases[$phase_index++]);
-    _drupal_bootstrap($current_phase);
+  if (isset($phase)) {
+    while ($phase >= $phase_index && isset($phases[$phase_index])) {
+      $current_phase = $phases[$phase_index];
+      unset($phases[$phase_index++]);
+      _drupal_bootstrap($current_phase);
+    }
+  }
+  
+  return $phase_index;
+}
+
+/**
+ * Redirect to the installer if an essential table is missing.
+ */
+function detect_installation_or_run_installer() {
+  if (variable_get('pressflow_smart_start', FALSE) && !db_table_exists('access')) {
+    include_once 'includes/install.inc';
+    install_goto('install.php');
   }
 }
 
@@ -1281,17 +1456,25 @@ function _drupal_bootstrap($phase) {
       // running tests. However, for security reasons, it is imperative that we
       // validate we ourselves made the request.
       $GLOBALS['simpletest_installed'] = TRUE;
-      if (isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], "simpletest") !== FALSE) && !drupal_valid_test_ua($_SERVER['HTTP_USER_AGENT'])) {
-        header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden');
-        exit;
-      }
       if (isset($_SERVER['HTTP_USER_AGENT']) && preg_match("/^(simpletest\d+);/", $_SERVER['HTTP_USER_AGENT'], $matches)) {
+        if (!drupal_valid_test_ua($_SERVER['HTTP_USER_AGENT'])) {
+          header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden');
+          exit;
+        }
         $db_prefix .= $matches[1];
       }
 
       // Initialize the default database.
       require_once './includes/database.inc';
       db_set_active();
+      // Allow specifying alternate lock implementations in settings.php, like
+      // those using APC or memcached.
+      require_once variable_get('lock_inc', './includes/lock.inc');
+      lock_init();
+      
+      // Detect if an installation is present.
+      detect_installation_or_run_installer();
+
       break;
 
     case DRUPAL_BOOTSTRAP_ACCESS:
@@ -1488,18 +1671,18 @@ function ip_address() {
     // Only use parts of the X-Forwarded-For (XFF) header that have followed a trusted route.
     // Specifically, identify the leftmost IP address in the XFF header that is not one of ours.
     // An XFF header is: X-Forwarded-For: client1, proxy1, proxy2
-    if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && variable_get('reverse_proxy', 0)) {
+    if (isset($_SERVER['HTTP_' . variable_get('x_forwarded_for_header', 'X_FORWARDED_FOR')]) && variable_get('reverse_proxy', 0)) {
       // Load trusted reverse proxy server IPs.
       $reverse_proxy_addresses = variable_get('reverse_proxy_addresses', array());
       
       // Turn XFF header into an array.
-      $forwarded = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-      
-      // Tack direct client IP onto end of forwarded array.
-      $forwarded[] = $ip_address;
+      $forwarded = explode(',', $_SERVER['HTTP_' . variable_get('x_forwarded_for_header', 'X_FORWARDED_FOR')]);
       
       // Trim the forwarded IPs; they may have been delimited by commas and spaces.
       $forwarded = array_map('trim', $forwarded);
+
+      // Tack direct client IP onto end of forwarded array.
+      $forwarded[] = $ip_address;
 
       // Eliminate all trusted IPs.
       $untrusted = array_diff($forwarded, $reverse_proxy_addresses);
@@ -1567,7 +1750,7 @@ function drupal_session_commit() {
   if (empty($user->uid) && empty($_SESSION)) {
     if (drupal_session_started() && drupal_save_session()) {
       // Destroy empty anonymous sessions.
-      session_destroy();
+      drupal_session_destroy();
     }
   }
   else if (drupal_save_session()) {
@@ -1646,11 +1829,23 @@ function drupal_save_session($status = NULL) {
   }
   return $save_session;
 }
+	
+/**
+ * Returns the current bootstrap phase for this Drupal process.
+ *
+ * The current phase is the one most recently completed by drupal_bootstrap().
+ *
+ * @see drupal_bootstrap()
+ */
+function drupal_get_bootstrap_phase() {
+  return drupal_bootstrap();
+}
 
 /**
  * Validate the HMAC and timestamp of a user agent header from simpletest.
  */
 function drupal_valid_test_ua($user_agent) {
+//  global $dbatabases;
   global $db_url;
 
   list($prefix, $time, $salt, $hmac) = explode(';', $user_agent);
@@ -1658,7 +1853,9 @@ function drupal_valid_test_ua($user_agent) {
   // We use the database credentials from settings.php to make the HMAC key, since
   // the database is not yet initialized and we can't access any Drupal variables.
   // The file properties add more entropy not easily accessible to others.
+//  $filepath = DRUPAL_ROOT . '/includes/bootstrap.inc';
   $filepath = './includes/bootstrap.inc';
+//  $key = sha1(serialize($databases) . filectime($filepath) . fileinode($filepath), TRUE);
   $key = sha1(serialize($db_url) . filectime($filepath) . fileinode($filepath), TRUE);
   // The HMAC must match.
   return $hmac == base64_encode(hash_hmac('sha1', $check_string, $key, TRUE));
@@ -1676,7 +1873,9 @@ function drupal_generate_test_ua($prefix) {
     // We use the database credentials to make the HMAC key, since we
     // check the HMAC before the database is initialized. filectime()
     // and fileinode() are not easily determined from remote.
-    $filepath = './includes/bootstrap.inc';
+//    $filepath = DRUPAL_ROOT . '/includes/bootstrap.inc';
+    $filepath = './includes/bootstrap.inc';                
+//    $key = sha1(serialize($databases) . filectime($filepath) . fileinode($filepath), TRUE);
     $key = sha1(serialize($db_url) . filectime($filepath) . fileinode($filepath), TRUE);
   }
    // Generate a moderately secure HMAC based on the database credentials.
@@ -1691,4 +1890,20 @@ function drupal_generate_test_ua($prefix) {
 function drupal_is_cli() {
   return ((!isset($_SERVER['SERVER_SOFTWARE']) || $_SERVER['SERVER_SOFTWARE'] == 'PHP CLI')
     && (php_sapi_name() == 'cli' || (is_numeric($_SERVER['argc']) && $_SERVER['argc'] > 0)));
+}
+
+/**
+ * Destroys all data registered to a session.
+ *
+ * Placed in bootstrap.inc instead of session.inc as session.inc may be
+ * overridden by other session persistance layers (eg., memcache).
+ *
+ * @ingroup php_wrappers
+ */
+function drupal_session_destroy() {
+  session_destroy();
+  
+  // Workaround PHP 5.2 fatal error "Failed to initialize storage module".
+  // @see http://bugs.php.net/bug.php?id=32330
+  session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy_sid', 'sess_gc');
 }

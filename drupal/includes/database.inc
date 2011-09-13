@@ -1,5 +1,4 @@
 <?php
-// $Id: database.inc,v 1.92.2.8 2009/09/14 10:49:34 goba Exp $
 
 /**
  * @file
@@ -448,6 +447,32 @@ function db_rewrite_sql($query, $primary_table = 'n', $primary_field = 'nid',  $
 }
 
 /**
+ * Adds the DISTINCT flag to the supplied query and returns the altered query.
+ *
+ * The supplied query should not contain a DISTINCT flag. This will not, and
+ * never did guarantee that you will obtain distinct values of $table.$field.
+ *
+ * @param $table
+ *   Unused. Kept to retain API compatibility.
+ * @param $field
+ *   Unused. Kept to retain API compatibility.
+ * @param $query
+ *   Query to which the DISTINCT flag should be applied.
+ *
+ * @return
+ *   SQL query with the DISTINCT flag set.
+ */
+function db_distinct_field($table, $field, $query) {
+  $matches = array();
+  if (!preg_match('/^SELECT\s*DISTINCT/i', $query, $matches)) {
+    // Only add distinct to the outer SELECT to avoid messing up subqueries.
+    $query = preg_replace('/^SELECT/i', 'SELECT DISTINCT', $query);
+  }
+
+  return $query;
+}
+
+/**
  * Restrict a dynamic table, column or constraint name to safe characters.
  *
  * Only keeps alphanumeric and underscores.
@@ -487,7 +512,6 @@ function db_escape_table($string) {
  *   - 'fields': An associative array ('fieldname' => specification)
  *     that describes the table's database columns.  The specification
  *     is also an array.  The following specification parameters are defined:
- *
  *     - 'description': A string describing this field and its purpose.
  *       References to other tables should be enclosed in
  *       curly-brackets.  For example, the node table vid field
@@ -506,7 +530,6 @@ function db_escape_table($string) {
  *       datatypes will be used (e.g. on MySQL, TINYINT vs. INT vs. BIGINT).
  *       'normal', the default, selects the base type (e.g. on MySQL,
  *       INT, VARCHAR, BLOB, etc.).
- *
  *       Not all sizes are available for all data types. See
  *       db_type_map() for possible combinations.
  *     - 'not null': If true, no NULL values will be allowed in this
@@ -525,10 +548,8 @@ function db_escape_table($string) {
  *       the precision (total number of significant digits) and scale
  *       (decimal digits right of the decimal point).  Both values are
  *       mandatory.  Ignored for other field types.
- *
  *     All parameters apart from 'type' are optional except that type
  *     'numeric' columns must specify 'precision' and 'scale'.
- *
  *  - 'primary key': An array of one or more key column specifiers (see below)
  *    that form the primary key.
  *  - 'unique keys': An associative array of unique keys ('keyname' =>

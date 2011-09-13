@@ -1,4 +1,3 @@
-// $Id: teaser.js,v 1.12.2.1 2009/05/20 11:50:54 goba Exp $
 
 /**
  * Auto-attach for teaser behavior.
@@ -88,7 +87,7 @@ Drupal.behaviors.teaser = function(context) {
       Drupal.behaviors.textarea(teaser.parentNode);
     }
     // Set initial visibility
-    if ($(teaser).is('[@disabled]')) {
+    if ($(teaser).is(':disabled')) {
       $(teaser).parent().hide();
     }
 

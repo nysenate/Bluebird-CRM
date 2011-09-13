@@ -1,5 +1,4 @@
 <?php
-// $Id: update.install,v 1.4.2.2 2009/01/06 15:46:38 goba Exp $
 
 /**
  * Implementation of hook_install().
@@ -28,7 +27,6 @@ function update_uninstall() {
   foreach ($variables as $variable) {
     variable_del($variable);
   }
-  menu_rebuild();
 }
 
 /**

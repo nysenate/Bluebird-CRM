@@ -1,5 +1,4 @@
 <?php
-// $Id: form.inc,v 1.265.2.31 2009/12/07 15:54:52 goba Exp $
 
 /**
  * @defgroup forms Form builder functions
@@ -62,7 +61,9 @@
  *   Any additional arguments are passed on to the functions called by
  *   drupal_get_form(), including the unique form constructor function.
  *   For example, the node_edit form requires that a node object be passed
- *   in here when it is called.
+ *   in here when it is called. These are available to implementations of
+ *   hook_form_alter() and hook_form_FORM_ID_alter() as the array
+ *   $form['#parameters'].
  * @return
  *   The rendered form.
  */
@@ -100,7 +101,7 @@ function drupal_get_form($form_id) {
       array_unshift($args_temp, $form_id);
 
       $form = call_user_func_array('drupal_retrieve_form', $args_temp);
-      $form_build_id = 'form-'. md5(uniqid(mt_rand(), true));
+      $form_build_id = 'form-'. md5(uniqid(mt_rand(), TRUE));
       $form['#build_id'] = $form_build_id;
       drupal_prepare_form($form_id, $form, $form_state);
       // Store a copy of the unprocessed form for caching and indicate that it
@@ -132,13 +133,13 @@ function drupal_get_form($form_id) {
   // fields.
   //
   // If $form_state['storage'] or $form_state['rebuild'] has been set
-  // and the form has been submitted, we know that we're in a complex
-  // multi-part process of some sort and the form's workflow is NOT 
+  // and input has been processed, we know that we're in a complex
+  // multi-part process of some sort and the form's workflow is NOT
   // complete. We need to construct a fresh copy of the form, passing
   // in the latest $form_state in addition to any other variables passed
   // into drupal_get_form().
 
-  if ((!empty($form_state['storage']) || !empty($form_state['rebuild'])) && !empty($form_state['submitted']) && !form_get_errors()) {
+  if ((!empty($form_state['storage']) || !empty($form_state['rebuild'])) && !empty($form_state['process_input']) && !form_get_errors()) {
     $form = drupal_rebuild_form($form_id, $form_state, $args);
   }
 
@@ -195,7 +196,7 @@ function drupal_rebuild_form($form_id, &$form_state, $args, $form_build_id = NUL
 
   if (!isset($form_build_id)) {
     // We need a new build_id for the new version of the form.
-    $form_build_id = 'form-'. md5(mt_rand());
+    $form_build_id = 'form-'. md5(uniqid(mt_rand(), TRUE));
   }
   $form['#build_id'] = $form_build_id;
   drupal_prepare_form($form_id, $form, $form_state);
@@ -248,9 +249,14 @@ function form_get_cache($form_build_id, &$form_state) {
 }
 
 /**
- * Retrieves a form using a form_id, populates it with $form_state['values'],
- * processes it, and returns any validation errors encountered. This
- * function is the programmatic counterpart to drupal_get_form().
+ * Retrieves, populates, and processes a form.
+ *
+ * This function allows you to supply values for form elements and submit a
+ * form for processing. Compare to drupal_get_form(), which also builds and
+ * processes a form, but does not allow you to supply values.
+ *
+ * There is no return value, but you can check to see if there are errors by
+ * calling form_get_errors().
  *
  * @param $form_id
  *   The unique string identifying the desired form. If a function
@@ -270,7 +276,6 @@ function form_get_cache($form_build_id, &$form_state) {
  *   For example, the node_edit form requires that a node object be passed
  *   in here when it is called.
  * For example:
- *
  * @code
  * // register a new user
  * $form_state = array();
@@ -401,6 +406,7 @@ function drupal_process_form($form_id, &$form, &$form_state) {
   // Only process the form if it is programmed or the form_id coming
   // from the POST data is set and matches the current form_id.
   if ((!empty($form['#programmed'])) || (!empty($form['#post']) && (isset($form['#post']['form_id']) && ($form['#post']['form_id'] == $form_id)))) {
+    $form_state['process_input'] = TRUE;
     drupal_validate_form($form_id, $form, $form_state);
 
     // form_clean_id() maintains a cache of element IDs it has seen,
@@ -1986,7 +1992,7 @@ function theme_image_button($element) {
     (!empty($element['#value']) ? ('value="'. check_plain($element['#value']) .'" ') : '') .
     'id="'. $element['#id'] .'" '.
     drupal_attributes($element['#attributes']) .
-    ' src="'. base_path() . $element['#src'] .'" '.
+    ' src="'. file_create_url($element['#src']) .'" '.
     (!empty($element['#title']) ? 'alt="'. check_plain($element['#title']) .'" title="'. check_plain($element['#title']) .'" ' : '' ) .
     "/>\n";
 }

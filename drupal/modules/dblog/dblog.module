@@ -1,5 +1,4 @@
 <?php
-// $Id: dblog.module,v 1.21.2.2 2008/04/09 21:11:46 goba Exp $
 
 /**
  * @file
@@ -126,6 +125,9 @@ function _dblog_get_message_types() {
   return $types;
 }
 
+/**
+ * Implementation of hook_watchdog().
+ */
 function dblog_watchdog($log = array()) {
   $current_db = db_set_active();
   db_query("INSERT INTO {watchdog}
