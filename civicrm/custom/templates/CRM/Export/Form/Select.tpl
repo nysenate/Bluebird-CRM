@@ -28,14 +28,14 @@
 <div class="crm-block crm-form-block crm-export-form-block">
 
  <div id="help">
-    <p>{ts}<strong>Export PRIMARY fields</strong> provides the most commonly used data values. This includes primary address information, preferred phone and email. Select this option and click <strong>Continue</strong> to immediately generate and save the export file.{/ts}</p>
+    <p>{ts}<strong>Export PRIMARY fields</strong> provides the most commonly used data values. This includes primary address information, preferred phone and email. Select this option and click <strong>Continue</strong> to immediately generate and save the export file.{/ts}</p>{*NYSS*}
     <p>{ts}Click <strong>Select fields for export</strong> and then <strong>Continue</strong> to choose a subset of fields for export. This option allows you to export multiple specific locations (Home, Work, etc.) as well as custom data. You can also save your selections as a 'field mapping' so you can use it again later.{/ts}</p>
  </div>
 
  {* WizardHeader.tpl provides visual display of steps thru the wizard as well as title for current step *}
-{*include file="CRM/common/WizardHeader.tpl"*}{*LCD*}
+{*include file="CRM/common/WizardHeader.tpl"*}{*NYSS*}
 {*debug*}
-<h3>Export All or Selected Fields</h3>{*LCD*}
+<h3>Export All or Selected Fields</h3>{*NYSS*}
 
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
  <div id="export-type">
@@ -64,6 +64,29 @@
     <div class="content crm-content-mergeSameAddress">
         &nbsp;{$form.merge_same_address.html}
     </div>
+    <div id='greetings' class="content crm-content-greetings class='hiddenElement'">
+      <table class="form-layout-compressed">
+        <tr>
+           <td>{$form.postal_greeting.label}</td>
+           <td>{$form.postal_greeting.html}</td>
+        </tr>
+        <tr id='postal_greeting_other_wrapper' class='hiddenElement'>
+           <td>{$form.postal_greeting_other.label}</td>
+           <td>{$form.postal_greeting_other.html}</td>
+        </tr>
+        <tr><td></td><td></td></tr>
+        <tr>
+           <td>{$form.addressee.label}</td>
+           <td>{$form.addressee.html}</td>
+        </tr>
+        <tr id='addressee_other_wrapper' class='hiddenElement'>
+           <td>{$form.addressee_other.label}</td>
+           <td>{$form.addressee_other.html}</td>
+        </tr>
+      </table>
+      <div class="clear">&nbsp;</div>
+    </div>
+
     <div class="content crm-content-mergeSameHousehold">
         &nbsp;{$form.merge_same_household.html}
     </div>
@@ -88,24 +111,51 @@
 </div>
 {literal}
 
-<script type="text/javascript">
-//NYSS hide mailing export option when mapping option selected (temp)
-    function showMappingOption( ) {
+  <script type="text/javascript">
+     function showMappingOption( ) {
 		var element = document.getElementsByName("exportOption");
 		if ( element[1].checked ) { 
 	  		show('map');
-	  		//hide('postalMailingExport');
 			cj('#_qf_Select_next-top').val('Continue >> ');
 			cj('#_qf_Select_next-bottom').val('Continue >> ');
         } else {
 	  		hide('map');
-	  		//show('postalMailingExport');
 			cj('#_qf_Select_next-top').val('Export ');
 			cj('#_qf_Select_next-bottom').val('Export ');
 		}
-	} 
-   	showMappingOption( );
-	cj('#_qf_Select_cancel-top').val('Back');
-	cj('#_qf_Select_cancel-bottom').val('Back');
-</script>
+	 } 
+   	 showMappingOption( );
+	 cj('#_qf_Select_cancel-top').val('Back');
+	 cj('#_qf_Select_cancel-bottom').val('Back');
+
+     var matchingContacts = '';
+     {/literal}{if $matchingContacts}{literal}
+       matchingContacts = {/literal}'{$matchingContacts}'{literal};
+     {/literal}{/if}{literal}
+
+     function showGreetingOptions( )
+     {
+        var mergeAddress = cj( "input:checkbox[name='merge_same_address[merge_same_address]']:checked" ).val( );
+	
+        if ( matchingContacts && mergeAddress ) {
+            cj( "#greetings" ).show( );
+        } else {
+            cj( "#greetings" ).hide( );
+	}
+     }
+
+     function showOther( ele ) 
+     {
+        if ( cj('option:selected', ele).text( ) == '{/literal}{ts}Other{/ts}{literal}' ) {
+	   cj('#' + cj(ele).attr('id') + '_other_wrapper').show( );  
+        } else {	
+          cj('#' + cj(ele).attr('id') + '_other').val('');
+	  cj('#' + cj(ele).attr('id') + '_other_wrapper').hide( );
+	}
+     }
+
+     showGreetingOptions( );
+     showOther(cj('#postal_greeting'));
+     showOther(cj('#addressee'));
+  </script>
 {/literal}
