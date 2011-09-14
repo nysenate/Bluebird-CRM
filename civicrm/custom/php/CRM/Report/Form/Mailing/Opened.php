@@ -36,7 +36,7 @@
 
 require_once 'CRM/Report/Form.php';
 
-class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
+class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 
     protected $_summary      = null;
 
@@ -96,14 +96,16 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 		$this->_columns['civicrm_mailing'] = array(
 			'dao' => 'CRM_Mailing_DAO_Mailing',
 			'fields' => array(
-                              'mailing_name' => array('name' => 'name',
+                              'mailing_name' => array(
+                                                      'name' => 'name',           
                                                       'title' => ts('Mailing'),
-                                                      'default' => true,
+                                                      'default' => true
                                                       ),
-                              'mailing_name_alias' => array( 'name' => 'name',
-                                                             'required' => true,
-                                                             'no_display' => true 
-                                                             ),
+                              'mailing_name_alias' => array(
+                                                            'name' => 'name',
+                                                            'required' => true,
+                                                            'no_display' => true ),
+                              
                               ),
 			'filters' => array(
 				'mailing_name' => array(
@@ -113,7 +115,7 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 					'type'=> CRM_Utils_Type::T_STRING,
 					'options' => self::mailing_select( ),
 					'operator' => 'like',
-				),					
+				),                              
 			),
             'order_bys'  =>
             array( 'mailing_name' =>
@@ -125,34 +127,24 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 		$this->_columns['civicrm_email']  = array( 
 			'dao'=> 'CRM_Core_DAO_Email',
 			'fields'=> array( 
-				'email' => array( 
-					 'title' => ts( 'Email' ),
-					 'no_repeat'  => true,
-					 'required' => true,
-				),
-			),
+                             'email' => array(
+                                              'title' => ts( 'Email' ),
+                                              'no_repeat'  => true,
+                                              'required' => true,
+                                              ),
+                              ),
+            'order_bys'  =>
+            array( 'email' =>
+                   array( 'title' => ts( 'Email'), 'default_order' => 'ASC') ),
 			'grouping'  => 'contact-fields', 
 		);
-        
+		
         $this->_columns['civicrm_phone'] = array( 
                                                  'dao' => 'CRM_Core_DAO_Phone',
                                                  'fields' => array( 'phone' => null),
                                                  'grouping'  => 'contact-fields',
-                                                  );
-
-		$this->_columns['civicrm_mailing_trackable_url'] = array(
-			'dao' => 'CRM_Mailing_DAO_TrackableURL',
-			'fields' => array(
-				'url' => array(
-					'title' => ts('Click through URL'),
-				),
-			),
-            'order_bys'  =>
-            array( 'url' =>
-                   array( 'title' => ts( 'Click through URL' ) ) ),
-            'grouping'  => 'mailing-fields',
-		);
-		
+                                                 );
+        
 		$this->_columns['civicrm_group'] = array( 
 			'dao'    => 'CRM_Contact_DAO_Group',
 			'alias'  => 'cgroup',
@@ -201,11 +193,12 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
         }
 
         if ( CRM_Utils_Array::value('charts', $this->_params) ) {
-            $select[] = "COUNT(civicrm_mailing_event_trackable_url_open.id) as civicrm_mailing_click_count";
-            $this->_columnHeaders["civicrm_mailing_click_count"]['title'] = ts('Click Count'); 
+            $select[] = "COUNT(civicrm_mailing_event_opened.id) as civicrm_mailing_opened_count";
+            $this->_columnHeaders["civicrm_mailing_opened_count"]['title'] = ts('Opened Count'); 
         }
 
         $this->_select = "SELECT " . implode( ', ', $select ) . " ";
+		//print_r($this->_select);
     }
 
     static function formRule( $fields, $files, $self ) {  
@@ -222,16 +215,15 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 					ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
 				INNER JOIN civicrm_email {$this->_aliases['civicrm_email']}
 					ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
-				INNER JOIN civicrm_mailing_event_trackable_url_open
-					ON civicrm_mailing_event_trackable_url_open.event_queue_id = civicrm_mailing_event_queue.id
-				INNER JOIN civicrm_mailing_trackable_url {$this->_aliases['civicrm_mailing_trackable_url']}
-					ON civicrm_mailing_event_trackable_url_open.trackable_url_id = {$this->_aliases['civicrm_mailing_trackable_url']}.id
+				INNER JOIN civicrm_mailing_event_opened
+					ON civicrm_mailing_event_opened.event_queue_id = civicrm_mailing_event_queue.id
 				INNER JOIN civicrm_mailing_job
 					ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
 				INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
 					ON civicrm_mailing_job.mailing_id = {$this->_aliases['civicrm_mailing']}.id
 					AND civicrm_mailing_job.is_test = 0
 			";
+		
         if ( $this->_phoneField ) {
             $this->_from .= "
             LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
@@ -244,10 +236,10 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
         if ( CRM_Utils_Array::value('charts', $this->_params) ) {
             $this->_groupBy = " GROUP BY {$this->_aliases['civicrm_mailing']}.id";
         } else {
-            $this->_groupBy  = " GROUP BY civicrm_mailing_event_trackable_url_open.id";
+            $this->_groupBy  = " GROUP BY civicrm_mailing_event_opened.id";
         }
     }
-
+    
     function postProcess( ) {
 
         $this->beginPostProcess( );
@@ -270,14 +262,14 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
             return;
         }
 
-        $chartInfo  = array( 'legend'      => ts('Mail Clickthrough Report'),
+        $chartInfo  = array( 'legend'      => ts('Mail Opened Report'),
                              'xname'       => ts('Mailing'),
-                             'yname'       => ts('Clicks'),
+                             'yname'       => ts('Opened'),
                              'xLabelAngle' => 20,
-                             'tip'         => ts('Clicks: %1', array(1 => '#val#')),
+                             'tip'         => ts('Mail Opened: %1', array(1 => '#val#')),
                              );
         foreach( $rows as $row ) {
-            $chartInfo['values'][$row['civicrm_mailing_mailing_name_alias']] = $row['civicrm_mailing_click_count']; 
+            $chartInfo['values'][$row['civicrm_mailing_mailing_name_alias']] = $row['civicrm_mailing_opened_count']; 
         }
         
         // build the chart.

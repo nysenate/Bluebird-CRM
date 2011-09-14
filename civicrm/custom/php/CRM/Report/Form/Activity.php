@@ -38,14 +38,24 @@ require_once 'CRM/Report/Form.php';
 
 class CRM_Report_Form_Activity extends CRM_Report_Form {
   
-    protected $_addressField         = false;
-    protected $_emailField         = false;
 	protected $_phoneField         = false; //NYSS
     protected $_customGroupExtends = array( 'Activity' );
 
     function __construct( ) {
         $config = CRM_Core_Config::singleton( );
         $campaignEnabled = in_array( "CiviCampaign", $config->enableComponents );
+        if ( $campaignEnabled ){
+            require_once 'CRM/Campaign/BAO/Campaign.php';
+            require_once 'CRM/Campaign/PseudoConstant.php';
+            $getCampaigns = CRM_Campaign_BAO_Campaign::getPermissionedCampaigns( null, null, true, false, true );
+            $this->activeCampaigns = $getCampaigns['campaigns'];
+            asort( $this->activeCampaigns );
+            $this->engagementLevels = CRM_Campaign_PseudoConstant::engagementLevel();
+        }
+        $this->activityTypes = CRM_Core_PseudoConstant::activityType( true, false, false, 'label', true );        
+        asort( $this->activityTypes );
+        
+
 		//NYSS altered titles to be trimmed and consistent
         $this->_columns = array(  
                                 'civicrm_contact'      =>
@@ -118,6 +128,11 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                      'title'     => ts( 'Target Email' ),
                                                      'alias'     => 'civicrm_email_target', ),
                                               ),
+                                       'order_bys' =>             
+                                       array( 'source_contact_email'  =>
+                                              array('name'  => 'email',
+                                                    'title' => ts( 'Source Contact Email'),
+                                                    'alias' => 'civicrm_email_source' ) ),
                                        ),
                                 
                                 //NYSS add phone
@@ -185,13 +200,13 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                                      'options'      => CRM_Core_PseudoConstant::activityStatus(), ),
                                               ),
-                                       'group_bys' =>             
+                                       'order_bys' =>             
                                        array( 'source_contact_id'  =>
-                                              array('title'    => ts( 'Added By' ) ),
+                                              array('title'    => ts( 'Source Contact' ), 'default_weight' => '0' ),
                                               'activity_date_time' => 
-                                              array( 'title'   => ts( 'Activity Date' ) ),
+                                              array( 'title'   => ts( 'Activity Date' ), 'default_weight' => '1' ),
                                               'activity_type_id'   =>
-                                              array( 'title'   => ts( 'Activity Type' ) ),
+                                              array( 'title'   => ts( 'Activity Type' ), 'default_weight' => '2' ),
                                               ),
                                        'grouping' => 'activity-fields',
                                        'alias'    => 'activity'
@@ -228,17 +243,33 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                        'alias'   => 'case_activity'
                                        ),
  
-                                  ) + $this->addAddressFields();
+                                  ) + $this->addAddressFields(false, true);
         
         if ( $campaignEnabled ) {
-            // Add display column and filter for Survey Results if CiviCampaign is enabled
+            // Add display column and filter for Survey Results, Campaign and Engagement Index if CiviCampaign is enabled
+            
             $this->_columns['civicrm_activity']['fields']['result']   = array('title' => 'Survey Result',
                                                                               'default' => 'false');
             $this->_columns['civicrm_activity']['filters']['result']  = array( 'title'        => ts( 'Survey Result' ),
                                                                                'operator'     => 'like',
                                                                                'type'       =>  CRM_Utils_Type::T_STRING  );
-
+            if ( !empty( $this->activeCampaigns ) ){
+                $this->_columns['civicrm_activity']['fields']['campaign_id']  = array( 'title' => 'Campaign',
+                                                                                       'default' => 'false' );
+                $this->_columns['civicrm_activity']['filters']['campaign_id'] = array( 'title'        => ts( 'Campaign' ),
+                                                                                       'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                                                                                       'options'     => $this->activeCampaigns  );
+            }
+            if ( !empty( $this->engagementLevels ) ) {
+                $this->_columns['civicrm_activity']['fields']['engagement_level']  = array( 'title' => 'Engagement Index',
+                                                                                            'default' => 'false' );
+                $this->_columns['civicrm_activity']['filters']['engagement_level'] = array( 'title'        => ts( 'Engagement Index' ),
+                                                                                            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                                                                                            'options'     => $this->engagementLevels  );                
+            }
         }
+        $this->_groupFilter = true; 
+        $this->_tagFilter = true;
         parent::__construct( );
     }
 
@@ -251,12 +282,6 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
                          CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
-                        if ( $tableName == 'civicrm_email' ) {
-                            $this->_emailField = true;
-                        } 
-                        if ( $tableName == 'civicrm_address' ) {
-                            $this->_addressField = true;
-                        }
 						//NYSS
 						if ( $tableName == 'civicrm_phone' ) {
                             $this->_phoneField = true;
@@ -264,8 +289,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 
                         if ( !CRM_Utils_Array::value( 'activity_type_id', $this->_params['group_bys'] ) &&
                              ( in_array( $fieldName, array('contact_assignee', 'assignee_contact_id' ) ) || 
-                               in_array( $fieldName, array( 'contact_target', 'target_contact_id' ) ) ) ) { 
-                            $select[] = "GROUP_CONCAT(DISTINCT {$field['dbAlias']}  ORDER BY {$field['dbAlias']} SEPARATOR '{$seperator}') as {$tableName}_{$fieldName} ";
+                               in_array( $fieldName, array( 'contact_target', 'target_contact_id' ) ) ) ) {
+                            $orderByRef = "activity_assignment_civireport.assignee_contact_id";
+                            if ( in_array( $fieldName, array( 'contact_target', 'target_contact_id' ) ) ) {
+                                $orderByRef = "activity_target_civireport.target_contact_id";
+                            }
+                            $select[] = "GROUP_CONCAT(DISTINCT {$field['dbAlias']}  ORDER BY {$orderByRef} SEPARATOR '{$seperator}') as {$tableName}_{$fieldName}";
                         } else {
                             $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                         }
@@ -309,7 +338,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
              LEFT JOIN civicrm_case_contact 
                     ON civicrm_case_contact.case_id = civicrm_case.id ";
         
-        if ( $this->_emailField ) {
+        if ( $this->isTableSelected('civicrm_email') ) {
             $this->_from .= "
             LEFT JOIN civicrm_email civicrm_email_source 
                    ON {$this->_aliases['civicrm_activity']}.source_contact_id = civicrm_email_source.contact_id AND
@@ -323,6 +352,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                    ON {$this->_aliases['civicrm_activity_assignment']}.assignee_contact_id = civicrm_email_assignee.contact_id AND 
                       civicrm_email_assignee.is_primary = 1 ";
         }
+        $this->addAddressFromClause();
+
 		//NYSS
 		if ( $this->_phoneField ) {
             $this->_from .= "
@@ -404,24 +435,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
     }
 
     function groupBy( ) {
-        $this->_groupBy   = array();
-        if ( ! empty($this->_params['group_bys']) ) {
-            foreach ( $this->_columns as $tableName => $table ) {
-                if ( ! empty($table['group_bys']) ) {
-                    foreach ( $table['group_bys'] as $fieldName => $field ) {
-                        if ( CRM_Utils_Array::value( $fieldName, $this->_params['group_bys'] ) ) {
-                            $this->_groupBy[] = $field['dbAlias'];
-                        }
-                    }
-                }
-            }
-        }
-        $this->_groupBy[] = "{$this->_aliases['civicrm_activity']}.id";
-        $this->_groupBy   = "GROUP BY " . implode( ', ', $this->_groupBy ) . " ";
-    }
-
-    function orderBy( ) {
-        $this->_orderBy = "ORDER BY contact_civireport.sort_name, {$this->_aliases['civicrm_activity']}.id";
+        $this->_groupBy   = "GROUP BY {$this->_aliases['civicrm_activity']}.id";
     }
 
     function buildACLClause( $tableAlias ) {
@@ -465,8 +479,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
         $activityStatus = CRM_Core_PseudoConstant::activityStatus();
         $viewLinks      = false;
         $seperator      = CRM_CORE_DAO::VALUE_SEPARATOR;
-		$context        = CRM_Utils_Request::retrieve( 'context', 'String', $this, false, 'report' ); //NYSS 3983
-
+        $context        = CRM_Utils_Request::retrieve( 'context', 'String', $this, false, 'report' );
+ 
         require_once 'CRM/Core/Permission.php';
         if ( CRM_Core_Permission::check( 'access CiviCRM' ) ) {
             $viewLinks  = true;
@@ -527,11 +541,20 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                 if ( $value = $row['civicrm_activity_activity_type_id'] ) {
                     $rows[$rowNum]['civicrm_activity_activity_type_id'] = $activityType[$value];
                     if ( $viewLinks ) {
+                        // Check for target contact id(s) and use the first contact id in that list for view activity link if found,
+                        // else use source contact id
+                        if ( !empty( $rows[$rowNum]['civicrm_activity_target_target_contact_id'] ) ) {
+                            $targets = explode( $seperator, $rows[$rowNum]['civicrm_activity_target_target_contact_id']);
+                            $cid = $targets[0];
+                        } else {
+                            $cid = $rows[$rowNum]['civicrm_activity_source_contact_id'];
+                        }
+
                         // case activities get a special view link
                         if ( $rows[$rowNum]['civicrm_case_activity_case_id'] ) {
                             $url = CRM_Utils_System::url( "civicrm/case/activity/view"  , 
-                                                          'reset=1&cid=' . $rows[$rowNum]['civicrm_activity_source_contact_id'] .
-                                                          '&aid=' . $rows[$rowNum]['civicrm_activity_id'] . '&caseID=' . $rows[$rowNum]['civicrm_case_activity_case_id'] . '&context=' . $context, //NYSS 3983
+                                                          'reset=1&cid=' . $cid .
+                                                          '&aid=' . $rows[$rowNum]['civicrm_activity_id'] . '&caseID=' . $rows[$rowNum]['civicrm_case_activity_case_id'] . '&context=' . $context,
                                                           $this->_absoluteUrl );
                         } else {
                             if ( $value ==  19 ) { //NYSS 3986
@@ -560,6 +583,21 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                     $entryFound = true;
                 }
             }
+            
+            if ( array_key_exists('civicrm_activity_campaign_id', $row ) ) {
+                if ( $value = $row['civicrm_activity_campaign_id'] ) {
+                    $rows[$rowNum]['civicrm_activity_campaign_id'] = $this->activeCampaigns[$value];
+                    $entryFound = true;
+                }
+            }
+
+            if ( array_key_exists('civicrm_activity_engagement_level', $row ) ) {
+                if ( $value = $row['civicrm_activity_engagement_level'] ) {
+                    $rows[$rowNum]['civicrm_activity_engagement_level'] = $this->engagementLevels[$value];
+                    $entryFound = true;
+                }
+            }
+
             $entryFound =  $this->alterDisplayAddressFields($row,$rows,$rowNum,'activity','List all activities for this ')?true:$entryFound;
  
             if ( !$entryFound ) {
