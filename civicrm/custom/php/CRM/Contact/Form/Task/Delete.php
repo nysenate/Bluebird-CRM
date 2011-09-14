@@ -177,7 +177,10 @@ class CRM_Contact_Form_Task_Delete extends CRM_Contact_Form_Task {
         } elseif ( $context == 'search' ) {
             $urlParams .= "&qfKey={$this->controller->_key}";
             $urlString = 'civicrm/contact/search';
-        } else {
+        } elseif ( $context == 'smog' ) { //NYSS 3820
+            $urlParams .= "&qfKey={$this->controller->_key}&context=smog";
+            $urlString = 'civicrm/group/search';
+		} else {
             $urlParams = "reset=1";
             $urlString = 'civicrm/dashboard';
         }
