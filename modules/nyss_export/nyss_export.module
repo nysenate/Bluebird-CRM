@@ -1,6 +1,8 @@
 <?php 
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
-	//CRM_Core_Error::debug($_POST); exit();
+	//CRM_Core_Error::debug($_POST); 
+	//CRM_Core_Error::debug($headerRows);
+	//CRM_Core_Error::debug($sqlColumns); exit();
 	
 	//field exclusions; only implement for primary export option
 	if ( $_POST['exportOption'] == 1 ) {
@@ -11,19 +13,25 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 							   'Geo Code 1',
 							   'Geo Code 2',
 							   'Address Name',
-							   'Master Address ID',
+							   'Master Address Belongs To',
 							   'County',
 							   'World Region',
 							   'Im Service Provider',
 							   'Group(s)',
 							   'Tag(s)',
-							   'Note(s)'
+							   'Note(s)',
+							   'Contact Hash',
+							   'Image Url'
 							 );
 		foreach ( $headerRows as $key => $headerRow ) {
 			if ( in_array( $headerRow, $headerRemove ) ) {
 				unset( $headerRows[$key] );
 			}
 		}
+		
+		//4308 alter preferred mail header
+		$pmf = array_search( 'Preferred Mail Format', $headerRows);
+		$headerRows[$pmf] = 'Preferred Email Format';
 	
 		$sqlRemove = array( 'signature_text',
 		                    'signature_html',
@@ -38,7 +46,9 @@ function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns,
 							'provider_id',
 							'groups',
 							'tags',
-							'notes'
+							'notes',
+							'hash',
+							'image_url'
 						  );
 		foreach ( $sqlRemove as $sqlField ) {
 			unset( $sqlColumns[$sqlField] );
