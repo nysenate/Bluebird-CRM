@@ -91,6 +91,13 @@ cj(function() {
           cj('#now').attr( 'checked', false );
        }
    });
+   //NYSS 4180
+   cj('#now').change( function( ) {
+       if ( cj(this).attr('checked') ) {
+	       cj('#start_date_display').val('');
+	   }
+   });
+
 });
 {/literal}
 </script>
