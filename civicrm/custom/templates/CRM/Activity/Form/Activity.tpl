@@ -111,7 +111,8 @@
 	     {if $action eq 4}
             <h3>{$activityTypeName}</h3>
 	     {else}	   
-             {if $context eq 'standalone' or $context eq 'search' or $context eq 'smog'}
+             {if $context eq 'standalone' or $context eq 'search' or $context eq 'smog' or $context eq 'activity'}
+             {*NYSS 3153*}
                 <tr class="crm-activity-form-block-activity_type_id">
                    <td class="label">{$form.activity_type_id.label}</td><td class="view-value">{$form.activity_type_id.html}</td>
                 </tr>

@@ -664,7 +664,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
 
         //freeze for update mode.
         if ( $this->_action & CRM_Core_Action::UPDATE ) {
-            $element->freeze( );
+            //$element->freeze( ); //NYSS 3153
         }
        
         foreach ( $this->_fields as $field => $values ) {
