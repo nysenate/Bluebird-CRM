@@ -162,7 +162,7 @@ $.TokenList = function (input, url_or_data, settings) {
 	var keep_focus=new Array();
 
     // Create a new text input an attach keyup events
-    var input_box = $("<input type=\"text\" autocomplete=\"off\">")
+    var input_box = $("<input type=\"text\" autocomplete=\"off\" maxlength=\"64\">") //NYSS 3550
         .css({
             outline: "none"
         })
