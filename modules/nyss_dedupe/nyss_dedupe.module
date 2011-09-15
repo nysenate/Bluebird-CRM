@@ -9,8 +9,7 @@ function dedupe_reset($o, $table, &$tableQueries) {
 }
 
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
-CRM_Core_Error::debug('o',$o);
-CRM_Core_Error::debug('tableQueries',$tableQueries);
+
     //don't run these during user account/contact creation
     if( $o->noRules || $table != 'table')
         return;
@@ -27,7 +26,6 @@ CRM_Core_Error::debug('tableQueries',$tableQueries);
         //    produces no false positives. False negatives can be dealth with during manual dedupe.
         } else {
             nyss_dedupe_strict_default_record($o, $table, $tableQueries);
-
         }
 
     } elseif($o->name=='Level 3 (street + lname + fname + city + suffix)') {
@@ -110,7 +108,7 @@ function nyss_dedupe_strict_default_internal($o, $table, &$tableQueries) {
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
           AND t1.id <> t2.id
-		  AND t1.id < t2.id
+          AND t1.id < t2.id
           AND t1.last_name IS NOT NULL
           AND t1.first_name IS NOT NULL
           AND a1.postal_code IS NOT NULL
@@ -132,7 +130,7 @@ function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
           AND t1.id <> t2.id
-		  AND t1.id < t2.id
+          AND t1.id < t2.id
           AND t1.last_name IS NOT NULL
           AND t1.first_name IS NOT NULL
           AND a1.street_address IS NOT NULL
