@@ -28,12 +28,19 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
             nyss_dedupe_strict_default_record($o, $table, $tableQueries);
         }
 
+    } elseif($o->name=='Level 2 (fname + lname + city + birth)') {
+
+        if (empty($o->params)) {
+		    dedupe_reset($o, $table, $tableQueries);
+            nyss_dedupe_indiv_level2_internal($o, $table, $tableQueries);
+        }
+
     } elseif($o->name=='Level 3 (street + lname + fname + city + suffix)') {
-        dedupe_reset($o, $table, $tableQueries);
         
         // The primary fuzzy rule gets called internally when X, Y, and Z happen.
         // CiviCRM handles the record dedupe well enough, only override the internal dedupe for now...
         if (empty($o->params)) {
+		    dedupe_reset($o, $table, $tableQueries);
             nyss_dedupe_fuzzy_default_internal($o, $table, $tableQueries);
         }
 
@@ -47,7 +54,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
             nyss_dedupe_strict_email_record($o, $table, $tableQueries);
         }
     }
-	CRM_Core_Error::debug('tableQueries2',$tableQueries);
+
 }
 
 function nyss_dedupe_strict_email_record($o, $table, &$tableQueries) {
@@ -107,13 +114,32 @@ function nyss_dedupe_strict_default_internal($o, $table, &$tableQueries) {
                  a1.street_address = a2.street_address
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
-          AND t1.id <> t2.id
           AND t1.id < t2.id
           AND t1.last_name IS NOT NULL
           AND t1.first_name IS NOT NULL
           AND a1.postal_code IS NOT NULL
           AND a1.street_address IS NOT NULL
     ";
+}
+
+function nyss_dedupe_indiv_level2_internal($o, $table, &$tableQueries) {
+    //now set custom query; make sure weight matches what is configured in system
+    $tableQueries['civicrm_contact.last_name.5'] = "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
+                                       t1.last_name = t2.last_name AND
+                                       t1.birth_date = t2.birth_date )
+          INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.city=a2.city
+        WHERE t1.contact_type = 'Individual'
+          AND t2.contact_type = 'Individual'
+          AND t1.id < t2.id
+          AND t1.last_name IS NOT NULL
+          AND t1.first_name IS NOT NULL
+          AND t1.birth_date IS NOT NULL
+          AND t1.birth_date != ''
+          AND a1.city IS NOT NULL";
 }
 
 function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
@@ -129,7 +155,6 @@ function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
           INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.street_address=a2.street_address AND a1.city=a2.city
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
-          AND t1.id <> t2.id
           AND t1.id < t2.id
           AND t1.last_name IS NOT NULL
           AND t1.first_name IS NOT NULL
