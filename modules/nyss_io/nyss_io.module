@@ -1,6 +1,6 @@
 <?php
 
-define(NYSSIODEBUG,true);
+define("NYSSIODEBUG",true);
 
 require_once(dirname(__FILE__) . '/nyss_lib.php');
 require_once(dirname(__FILE__) . '/nyss_io.php');

@@ -111,7 +111,7 @@ function nyss_dedupe_strict_default_internal($o, $table, &$tableQueries) {
           INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
           INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND
                      a1.postal_code = a2.postal_code AND
-                 a1.street_address = a2.street_address
+                     a1.street_address = a2.street_address
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
           AND t1.id < t2.id
@@ -152,7 +152,9 @@ function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
                                        IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
                                        IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
           INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
-          INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.street_address=a2.street_address AND a1.city=a2.city
+          INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND 
+                                     a1.street_address=a2.street_address AND 
+									 a1.city=a2.city
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
           AND t1.id < t2.id
