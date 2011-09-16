@@ -170,7 +170,7 @@ class CRM_Utils_SAGE
 
         if(!self::validateResponse($xml)) {
             $msg = "SAGE Warning: Lookup for [$params] has failed.\n";
-            $session->setStatus(ts());
+            $session->setStatus(ts($msg));
             return false;
         }
 
@@ -196,6 +196,7 @@ class CRM_Utils_SAGE
 
     private static function validateResponse($xml)
     {
+    	 
         //Fail silently if the XML response from SAGE was invalid
         //XML and could not be parsed into a simplexml object
         if (!$xml)
@@ -204,7 +205,6 @@ class CRM_Utils_SAGE
         //SAGE reports invalid requests with the message object so
         //we treat it like an error flag on the reponse tree.
         if (!empty($xml->message)) {
-            $session->setStatus(ts('SAGE Warning: '.$xml->message));
             return false;
         }
 

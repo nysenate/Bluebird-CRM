@@ -1,122 +1,99 @@
 <?php
 
-function dedupe_reset($o, $table, &$tableQueries) {
-    // All of our dedupe methods essentially wipe the ruleset clean and insert our own
-    // more expressive set of rule logic and thresholds.
-    $o->threshold = 5;
-    foreach(array_keys($tableQueries) as $key)
-        unset($tableQueries[$key]);
-}
-
-function dedupe_limit_results($o, &$tableQueries) {
-	reset($tableQueries);
-	$key = key($tableQueries);
-
-	if( !empty($o->contactIds) ) {
-	    $cids = implode(',',$o->contactIds);
-        $tableQueries[$key] .= " AND t1.id <> t2.id AND t1.id IN (".$cids.") OR t2.id IN (".$cids.") ";
-    } else {
-        $tableQueries[$key] .= " AND t1.id < t2.id";
-    }
-}
-
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 
     //don't run these during user account/contact creation
     if( $o->noRules || $table != 'table')
         return;
 
-    if ($o->name=='Level 1 (fname + mname + lname + suffix + street + postal)') {
-        dedupe_reset($o, $table, $tableQueries);
-        
-        // The primary strict dedupe rule can be used with different behavior in two different scenarios
-        //
-        // 1) No parameters are passed in. Contruct query to dedupe internally against other contacts
-        if (empty($o->params)) {
-            nyss_dedupe_strict_default_internal($o, $table, $tableQueries);
-			dedupe_limit_results($o, $tableQueries);
-        // 2) We have parameters. Construct a dedupe query with the given parameters that
-        //    produces no false positives. False negatives can be dealth with during manual dedupe.
-        } else {
-            nyss_dedupe_strict_default_record($o, $table, $tableQueries);
+    $ruleMap = array(
+        'Individual 1 (fname + mname + lname + suffix + street + postal)' => array(
+            'internal' => 'nyss_dedupe_indiv1_internal',
+            'record' => 'nyss_dedupe_indiv1_record'
+        ),
+        'Individual 2 (fname + lname + city + birth)' => array(
+            'internal' => 'nyss_dedupe_indiv2_internal',
+            'record' => '',
+        ),
+        'Individual 3 (street + lname + fname + city + suffix)' => array(
+            'internal' => 'nyss_dedupe_indiv3_internal',
+            'record' => ''
+        ),
+        'Individual 4 (fname + lname + email)' => array(
+            'internal' => 'nyss_dedupe_indiv4_internal',
+            'record' => ''
+        ),
+        'Individual 5 (email | street + lname)' => array(
+            'internal' => 'nyss_dedupe_indiv5_internal',
+            'record' => ''
+        ),
+        'Organization 1 (name + street + city + email)' => array(
+            'internal' => 'nyss_dedupe_org1_internal',
+            'record' => ''
+        ),
+        'Organization 2 (name + street + city + zip)' => array(
+            'internal' => 'nyss_dedupe_org2_internal',
+            'record' => ''
+        ),
+        'Organization 3 (name + street + city)' => array(
+            'internal' => 'nyss_dedupe_org3_internal',
+            'record' => ''
+        ),
+        'Household 1 (name + street + city + email)' => array(
+            'internal' => 'nyss_dedupe_house1_internal',
+            'record' => ''
+        ),
+        'Household 2 (name + street + city + zip)' => array(
+            'internal' => 'nyss_dedupe_house2_internal',
+            'record' => ''
+        ),
+        'Household 3 (name + street + city)' => array(
+            'internal' => 'nyss_dedupe_house3_internal',
+            'record' => ''
+        )
+    );
+
+    $ruleName = $o->name;
+    $ruleType = empty($o->params) ? 'internal' : 'record';
+
+    // If its a rule that we've overridden
+    if(array_key_exists($ruleName, $ruleMap) && $rule=$ruleMap[$ruleName][$ruleType]) {
+        //Set some default override values, individual rule functions can override these
+        $o->threshold = 5;
+        // Build our customized query, allow override of $o values.
+        $query = call_user_func($rule, $o);
+
+        // For internal queries, make sure to respect the contactIds constraints
+        // Also avoid mirror results, i.e. (1,2) and (2,1)
+        // Verify that t1.id and t2.id are not the same as well.
+        if($ruleType == 'internal') {
+            if( !empty($o->contactIds) ) {
+                $cids = implode(',',$o->contactIds);
+                $query .= "t1.id IN($cids) AND ( t2.id NOT IN($cids) OR (t2.id IN($cids) AND t1.id < t2.id) )";
+            } else {
+                $query .= " AND t1.id < t2.id";
+            }
         }
 
-    } elseif($o->name=='Level 2 (fname + lname + city + birth)') {
+        // Wipe the query array clean and insert our customized query.
+        foreach(array_keys($tableQueries) as $key)
+            unset($tableQueries[$key]);
 
-        if (empty($o->params)) {
-		    dedupe_reset($o, $table, $tableQueries);
-            nyss_dedupe_indiv_level2_internal($o, $table, $tableQueries);
-			dedupe_limit_results($o, $tableQueries);
-        }
-
-    } elseif($o->name=='Level 3 (street + lname + fname + city + suffix)') {
-        
-        // The primary fuzzy rule gets called internally when X, Y, and Z happen.
-        // CiviCRM handles the record dedupe well enough, only override the internal dedupe for now...
-        if (empty($o->params)) {
-		    dedupe_reset($o, $table, $tableQueries);
-            nyss_dedupe_fuzzy_default_internal($o, $table, $tableQueries);
-			dedupe_limit_results($o, $tableQueries);
-        }
-
-    } elseif($o->name=='NYSS - Strict Email') {
-        dedupe_reset($o, $table, $tableQueries);
-        
-        // The fuzzy address rule matches contacts where the address is the only difference.
-        if (empty($o->params)) {
-            // This rule is currently meaningless in the internal context
-        } else {
-            nyss_dedupe_strict_email_record($o, $table, $tableQueries);
-        }
+        // Allow for a '' query return to do nothing
+        if($query == '')
+            $tableQueries['civicrm.custom.5'] = $query;
     }
-//CRM_Core_Error::debug($tableQueries);
+
+    //CRM_Core_Error::debug($tableQueries);
 }
 
-function nyss_dedupe_strict_email_record($o, $table, &$tableQueries) {
-    require_once 'CRM/Core/DAO.php';
+/*
+ * individual rules
+ * internal deduping
+ */
 
-    $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
-    $civicrm_email = CRM_Utils_Array::value('civicrm_email',$o->params);
-    $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
-
-    //We can't dedupe anything without a first and last name
-    if( empty($civicrm_contact['first_name']) || empty($civicrm_contact['last_name']) )
-        return;
-
-    // Since definitely have first and last name, escape them upfront.
-    $first_name = CRM_Core_DAO::escapeString($civicrm_contact['first_name']);
-    $last_name = CRM_Core_DAO::escapeString($civicrm_contact['last_name']);
-
-    // If we have an email, match on fname + lname + email
-    if ($email = CRM_Core_DAO::escapeString(CRM_Utils_Array::value('email',$civicrm_email,''))) {
-        $tableQueries['civicrm_contact.email.5'] = "
-            SELECT contact.id id1, 5 weight
-            FROM civicrm_contact as contact
-              JOIN civicrm_email as email on email.contact_id = contact.id
-            WHERE contact.contact_type = 'Individual'
-              AND contact.first_name = '{$first_name}'
-              AND contact.last_name = '{$last_name}'
-              AND email.email = '{$email}'
-        ";
-
-    // If we have an address, match on fname + lname + street_address
-    } elseif ($street_address = CRM_Core_DAO::escapeString(CRM_Utils_Array::value('street_address',$civicrm_address,''))) {
-        $tableQueries['civicrm_contact.email.5'] = "
-            SELECT contact.id id1, 5 weight
-            FROM civicrm_contact as contact
-              JOIN civicrm_address as address on address.contact_id = contact.id
-            WHERE contact.contact_type = 'Individual'
-              AND contact.first_name = '{$first_name}'
-              AND contact.last_name = '{$last_name}'
-              AND address.street_address = '{$street_address}'
-        ";
-
-    // If we have no address or email, then we can't do a match
-    } else {}
-}
-
-function nyss_dedupe_strict_default_internal($o, $table, &$tableQueries) {
-    $tableQueries['civicrm_contact.last_name.5'] = "
+function nyss_dedupe_indiv1_internal($o) {
+    return "
         SELECT t1.id id1, t2.id id2, 5 weight
         FROM civicrm_contact t1
           JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
@@ -136,9 +113,8 @@ function nyss_dedupe_strict_default_internal($o, $table, &$tableQueries) {
     ";
 }
 
-function nyss_dedupe_indiv_level2_internal($o, $table, &$tableQueries) {
-    //now set custom query; make sure weight matches what is configured in system
-    $tableQueries['civicrm_contact.last_name.5'] = "
+function nyss_dedupe_indiv2_internal($o) {
+    return "
         SELECT t1.id id1, t2.id id2, 5 weight
         FROM civicrm_contact t1
           JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
@@ -155,9 +131,8 @@ function nyss_dedupe_indiv_level2_internal($o, $table, &$tableQueries) {
           AND a1.city IS NOT NULL";
 }
 
-function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
-    //now set custom query; make sure weight matches what is configured in system
-    $tableQueries['civicrm_contact.last_name.5'] = "
+function nyss_dedupe_indiv3_internal($o) {
+    return "
         SELECT t1.id id1, t2.id id2, 5 weight
         FROM civicrm_contact t1
           JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
@@ -165,8 +140,8 @@ function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
                                        IFNULL(t1.middle_name,0) = IFNULL(t2.middle_name,0) AND
                                        IFNULL(t1.suffix_id,0) = IFNULL(t2.suffix_id,0) )
           INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
-          INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND 
-                                     a1.street_address=a2.street_address AND 
+          INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND
+                                     a1.street_address=a2.street_address AND
 									 a1.city=a2.city
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
@@ -176,7 +151,30 @@ function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
           AND a1.city IS NOT NULL";
 }
 
-function nyss_dedupe_strict_default_record($o, $table, &$tableQueries) {
+function nyss_dedupe_indiv4_internal($o) {
+    return "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON ( t1.first_name = t2.first_name AND
+                                       t1.last_name = t2.last_name )
+          INNER JOIN civicrm_email e1 on t1.id=e1.contact_id
+          INNER JOIN civicrm_email e2 on t2.id=e2.contact_id AND
+                                         e1.email=e2.email AND
+									     e1.is_primary=1 AND
+										 e2.is_primary=1
+        WHERE t1.contact_type = 'Individual'
+          AND t2.contact_type = 'Individual'
+          AND t1.last_name IS NOT NULL
+          AND t1.first_name IS NOT NULL
+          AND e1.email IS NOT NULL";
+}
+
+/*
+ * individual rules
+ * record import
+ */
+
+function nyss_dedupe_indiv1_record($o) {
     // construct abbreviation and punctuation replacements list for street_address
     // the idea here is to replicate the behavior of the USPS API as closely as possible.
     $abbrevs = array( ','           => ' ',
@@ -240,10 +238,195 @@ function nyss_dedupe_strict_default_record($o, $table, &$tableQueries) {
         $where .= " AND a1.street_address IS NULL";
 
 
-    $tableQueries['civicrm_contact.last_name.5'] = "
-        SELECT t1.id id1, 10 weight
+    return "SELECT t1.id id1, 10 weight
+            FROM civicrm_contact t1
+              INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
+            $where
+        ";
+}
+
+function nyss_dedupe_indiv5_record($o) {
+    //strict email
+	require_once 'CRM/Core/DAO.php';
+
+    $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
+    $civicrm_email = CRM_Utils_Array::value('civicrm_email',$o->params);
+    $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
+
+    //We can't dedupe anything without a first and last name
+    if( empty($civicrm_contact['first_name']) || empty($civicrm_contact['last_name']) )
+        return;
+
+    // Since definitely have first and last name, escape them upfront.
+    $first_name = CRM_Core_DAO::escapeString($civicrm_contact['first_name']);
+    $last_name = CRM_Core_DAO::escapeString($civicrm_contact['last_name']);
+
+    // If we have an email, match on fname + lname + email
+    if ($email = CRM_Core_DAO::escapeString(CRM_Utils_Array::value('email',$civicrm_email,''))) {
+        return "SELECT contact.id id1, 5 weight
+                FROM civicrm_contact as contact
+                  JOIN civicrm_email as email on email.contact_id = contact.id
+                WHERE contact.contact_type = 'Individual'
+                  AND contact.first_name = '{$first_name}'
+                  AND contact.last_name = '{$last_name}'
+                  AND email.email = '{$email}'";
+
+    // If we have an address, match on fname + lname + street_address
+    } elseif ($street_address = CRM_Core_DAO::escapeString(CRM_Utils_Array::value('street_address',$civicrm_address,''))) {
+        return "SELECT contact.id id1, 5 weight
+                FROM civicrm_contact as contact
+                  JOIN civicrm_address as address on address.contact_id = contact.id
+                WHERE contact.contact_type = 'Individual'
+                  AND contact.first_name = '{$first_name}'
+                  AND contact.last_name = '{$last_name}'
+                  AND address.street_address = '{$street_address}'";
+
+    // If we have no address or email, then we can't do a match
+    } else { return ''; }
+}
+
+
+/*
+ * organization rules
+ * internal deduping
+ */
+
+function nyss_dedupe_org1_internal($o) {
+    //name + street + city + email
+    return "
+        SELECT t1.id id1, t2.id id2, 5 weight
         FROM civicrm_contact t1
-          INNER JOIN civicrm_address a1 on t1.id=a1.contact_id
-        $where
-    ";
+          JOIN civicrm_contact t2 ON t1.organization_name = t2.organization_name
+          INNER JOIN civicrm_address a1 ON t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 ON t2.id=a2.contact_id AND
+		                                   a1.street_address=a2.street_address AND
+										   a1.city=a2.city
+          INNER JOIN civicrm_email e1 ON t1.id=e1.contact_id
+		  INNER JOIN civicrm_email e2 ON t1.id=e2.contact_id AND
+		                                 e1.email=e2.email AND
+										 e1.is_primary=1 AND
+										 e2.is_primary=1
+		WHERE t1.contact_type = 'Organization'
+          AND t2.contact_type = 'Organization'
+          AND t1.organization_name IS NOT NULL
+          AND e1.email IS NOT NULL
+          AND e1.email != ''
+		  AND a1.street_address IS NOT NULL
+		  AND a1.street_address != ''
+          AND a1.city IS NOT NULL
+		  AND a1.city != ''";
+}
+
+function nyss_dedupe_org2_internal($o) {
+    //name + street + city + zip
+    return "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON t1.organization_name = t2.organization_name
+          INNER JOIN civicrm_address a1 ON t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 ON t2.id=a2.contact_id AND
+		                                   a1.street_address=a2.street_address AND
+										   a1.city=a2.city AND
+										   a1.postal_code=a2.postal_code
+		WHERE t1.contact_type = 'Organization'
+          AND t2.contact_type = 'Organization'
+          AND t1.organization_name IS NOT NULL
+		  AND a1.street_address IS NOT NULL
+		  AND a1.street_address != ''
+          AND a1.city IS NOT NULL
+		  AND a1.city != ''
+		  AND a1.postal_code IS NOT NULL
+		  AND a1.postal_code != ''";
+}
+
+function nyss_dedupe_org3_internal($o) {
+    //name + street + city
+    return "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON t1.organization_name = t2.organization_name
+          INNER JOIN civicrm_address a1 ON t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 ON t2.id=a2.contact_id AND
+		                                   a1.street_address=a2.street_address AND
+										   a1.city=a2.city
+		WHERE t1.contact_type = 'Organization'
+          AND t2.contact_type = 'Organization'
+          AND t1.organization_name IS NOT NULL
+		  AND a1.street_address IS NOT NULL
+		  AND a1.street_address != ''
+          AND a1.city IS NOT NULL
+		  AND a1.city != ''";
+}
+
+
+/*
+ * household rules
+ * internal deduping
+ */
+
+function nyss_dedupe_house1_internal($o) {
+    //name + street + city + email
+	return "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON t1.household_name = t2.household_name
+          INNER JOIN civicrm_address a1 ON t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 ON t2.id=a2.contact_id AND
+		                                   a1.street_address=a2.street_address AND
+										   a1.city=a2.city
+          INNER JOIN civicrm_email e1 ON t1.id=e1.contact_id
+		  INNER JOIN civicrm_email e2 ON t1.id=e2.contact_id AND
+		                                 e1.email=e2.email AND
+										 e1.is_primary=1 AND
+										 e2.is_primary=1
+		WHERE t1.contact_type = 'Household'
+          AND t2.contact_type = 'Household'
+          AND t1.household_name IS NOT NULL
+          AND e1.email IS NOT NULL
+          AND e1.email != ''
+		  AND a1.street_address IS NOT NULL
+		  AND a1.street_address != ''
+          AND a1.city IS NOT NULL
+		  AND a1.city != ''";
+}
+
+function nyss_dedupe_house2_internal($o) {
+    //name + street + city + zip
+	return "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON t1.household_name = t2.household_name
+          INNER JOIN civicrm_address a1 ON t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 ON t2.id=a2.contact_id AND
+		                                   a1.street_address=a2.street_address AND
+										   a1.city=a2.city AND
+										   a1.postal_code=a2.postal_code
+		WHERE t1.contact_type = 'Household'
+          AND t2.contact_type = 'Household'
+          AND t1.household_name IS NOT NULL
+		  AND a1.street_address IS NOT NULL
+		  AND a1.street_address != ''
+          AND a1.city IS NOT NULL
+		  AND a1.city != ''
+          AND a1.postal_code IS NOT NULL
+		  AND a1.postal_code != ''";
+}
+
+function nyss_dedupe_house3_internal($o) {
+    //name + street + city
+    return "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact t1
+          JOIN civicrm_contact t2 ON t1.household_name = t2.household_name
+          INNER JOIN civicrm_address a1 ON t1.id=a1.contact_id
+          INNER JOIN civicrm_address a2 ON t2.id=a2.contact_id AND
+		                                   a1.street_address=a2.street_address AND
+										   a1.city=a2.city
+		WHERE t1.contact_type = 'Household'
+          AND t2.contact_type = 'Household'
+          AND t1.household_name IS NOT NULL
+		  AND a1.street_address IS NOT NULL
+		  AND a1.street_address != ''
+          AND a1.city IS NOT NULL
+		  AND a1.city != ''";
 }
