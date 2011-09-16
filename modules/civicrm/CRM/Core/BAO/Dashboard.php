@@ -219,7 +219,7 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard
         $dashletInfo = array( );
         
         $params   = array( 1 => array( $dashletID, 'Integer' ) );
-        $query = "SELECT label, url, fullscreen_url FROM civicrm_dashboard WHERE id = %1";
+        $query = "SELECT label, url, is_fullscreen, fullscreen_url FROM civicrm_dashboard WHERE id = %1"; //NYSS 3812
         $dashboadDAO = CRM_Core_DAO::executeQuery( $query, $params );
         $dashboadDAO->fetch( );
 
@@ -261,7 +261,8 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard
         }
 
         $dashletInfo = array( 'title'      => $dashboadDAO->label,
-                              'content'    => $dao->content);
+                              'content'    => $dao->content,
+							  'fullscreen' => $dashboadDAO->is_fullscreen); //NYSS
 
         if ( $dao->is_fullscreen ) {                       
             $fullscreenUrl = $dashboadDAO->fullscreen_url;
