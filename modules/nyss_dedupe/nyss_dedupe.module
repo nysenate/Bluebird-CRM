@@ -8,6 +8,18 @@ function dedupe_reset($o, $table, &$tableQueries) {
         unset($tableQueries[$key]);
 }
 
+function dedupe_limit_results($o, &$tableQueries) {
+	reset($tableQueries);
+	$key = key($tableQueries);
+
+	if( !empty($o->contactIds) ) {
+	    $cids = implode(',',$o->contactIds);
+        $tableQueries[$key] .= " AND t1.id <> t2.id AND t1.id IN (".$cids.") OR t2.id IN (".$cids.") ";
+    } else {
+        $tableQueries[$key] .= " AND t1.id < t2.id";
+    }
+}
+
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 
     //don't run these during user account/contact creation
@@ -22,6 +34,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         // 1) No parameters are passed in. Contruct query to dedupe internally against other contacts
         if (empty($o->params)) {
             nyss_dedupe_strict_default_internal($o, $table, $tableQueries);
+			dedupe_limit_results($o, $tableQueries);
         // 2) We have parameters. Construct a dedupe query with the given parameters that
         //    produces no false positives. False negatives can be dealth with during manual dedupe.
         } else {
@@ -33,6 +46,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         if (empty($o->params)) {
 		    dedupe_reset($o, $table, $tableQueries);
             nyss_dedupe_indiv_level2_internal($o, $table, $tableQueries);
+			dedupe_limit_results($o, $tableQueries);
         }
 
     } elseif($o->name=='Level 3 (street + lname + fname + city + suffix)') {
@@ -42,6 +56,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         if (empty($o->params)) {
 		    dedupe_reset($o, $table, $tableQueries);
             nyss_dedupe_fuzzy_default_internal($o, $table, $tableQueries);
+			dedupe_limit_results($o, $tableQueries);
         }
 
     } elseif($o->name=='NYSS - Strict Email') {
@@ -54,7 +69,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
             nyss_dedupe_strict_email_record($o, $table, $tableQueries);
         }
     }
-
+//CRM_Core_Error::debug($tableQueries);
 }
 
 function nyss_dedupe_strict_email_record($o, $table, &$tableQueries) {
@@ -114,7 +129,6 @@ function nyss_dedupe_strict_default_internal($o, $table, &$tableQueries) {
                      a1.street_address = a2.street_address
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
-          AND t1.id < t2.id
           AND t1.last_name IS NOT NULL
           AND t1.first_name IS NOT NULL
           AND a1.postal_code IS NOT NULL
@@ -134,7 +148,6 @@ function nyss_dedupe_indiv_level2_internal($o, $table, &$tableQueries) {
           INNER JOIN civicrm_address a2 on t2.id=a2.contact_id AND a1.city=a2.city
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
-          AND t1.id < t2.id
           AND t1.last_name IS NOT NULL
           AND t1.first_name IS NOT NULL
           AND t1.birth_date IS NOT NULL
@@ -157,7 +170,6 @@ function nyss_dedupe_fuzzy_default_internal($o, $table, &$tableQueries) {
 									 a1.city=a2.city
         WHERE t1.contact_type = 'Individual'
           AND t2.contact_type = 'Individual'
-          AND t1.id < t2.id
           AND t1.last_name IS NOT NULL
           AND t1.first_name IS NOT NULL
           AND a1.street_address IS NOT NULL
