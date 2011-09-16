@@ -338,8 +338,10 @@ class CRM_Admin_Page_AJAX
                         $positiontag_name = $positiontag; 
                     }
 
-                    //do lookup to see if tag exists in system already, else construct using standard format
-                    $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292 and name = '{$positiontag_name}'";
+                    // Do lookup to see if tag exists in system already,
+                    // else construct using standard format
+                    // kz:4315 - escape position tag name
+                    $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292 and name = '".str_replace("'", "''", $positiontag_name)."'";
 
                     $dao = CRM_Core_DAO::executeQuery( $query );
                     if ( $dao->fetch( ) ) {
