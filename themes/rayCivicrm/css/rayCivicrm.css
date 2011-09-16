@@ -1355,8 +1355,11 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*News RSS*/
-#newsFeeds .newsTitle {
+#newsFeeds .newsTitle a {
 	color: #7FCDFE;
 	font-weight: bold;
 	font-size: 110%;
+}
+#newsFeeds a.more_news {
+	color: #7FCDFE;
 }
