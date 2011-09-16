@@ -48,6 +48,8 @@ class CRM_Admin_Page_AJAX
         CRM_Utils_System::civiExit();
     }
     
+
+
     /**
      * Function to process drag/move action for menu tree
      */
@@ -56,6 +58,8 @@ class CRM_Admin_Page_AJAX
         echo CRM_Core_BAO_Navigation::processNavigation( $_GET );           
         CRM_Utils_System::civiExit();
     }
+
+
 
     /**
      * Function to build status message while 
@@ -211,9 +215,12 @@ class CRM_Admin_Page_AJAX
         echo json_encode( $statusMessage );
         CRM_Utils_System::civiExit();
     }
-    
-    static function getTagList( ) {
-        $name     = CRM_Utils_Type::escape( $_GET['name'], 'String' );
+
+
+
+    static function getTagList( )
+    {
+        $name = CRM_Utils_Type::escape( $_GET['name'], 'String' );
         $parentId = CRM_Utils_Type::escape( $_GET['parentId'], 'Integer' );
         
         $isSearch = null;
@@ -221,153 +228,139 @@ class CRM_Admin_Page_AJAX
             $isSearch = CRM_Utils_Type::escape( $_GET['search'], 'Integer' );
         }
 
-        $tags = array( );
+        $tags = array();
 
-	  //NYSS treat issue codes and keywords using normal method
-      if ( $parentId != 292 || $isSearch ) {
-            
-        // always add current search term as possible tag
-        // here we append :::value to determine if existing / new tag should be created
-        if ( !$isSearch ) {
-            $tags[] = array( 'name' => $name,
-                             'id'   => $name. ":::value" );            
-        }
-
-        $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
-        $dao = CRM_Core_DAO::executeQuery( $query );
-        
-        while( $dao->fetch( ) ) {
-            // make sure we return tag name entered by user only if it does not exists in db
-            if ( $name == $dao->name ) {
-                $tags = array();
+        //NYSS treat issue codes and keywords using normal method
+        if ( $parentId != 292 || $isSearch ) {
+            // always add current search term as possible tag
+            // here we append :::value to determine if existing / new tag should be created
+            if ( !$isSearch ) {
+              $tags[] = array( 'name' => $name, 'id' => $name. ":::value" );
             }
-            // escape double quotes, which break results js
-            $tags[] = array( 'name' =>  addcslashes($dao->name, '"'),
-                             'id'   => $dao->id );
+
+            $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
+            $dao = CRM_Core_DAO::executeQuery( $query );
+        
+            while ( $dao->fetch() ) {
+                // make sure we return tag name entered by user only if it does not exists in db
+                if ( $name == $dao->name ) {
+                    $tags = array();
+                }
+                // escape double quotes, which break results js
+                $tags[] = array( 'name' => addcslashes($dao->name, '"'),
+                                 'id'   => $dao->id );
+            }
+        
+            echo json_encode($tags);
+            CRM_Utils_System::civiExit();
         }
+        elseif ( $parentId == 292 ) {
+            /* NYSS leg positions should retrieve list from open leg and
+            ** create value in tag table.
+            */
+            $billNo = $name; 
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL,"http://open.nysenate.gov/legislation/search/?term=otype:bill+AND+oid:(" . $billNo . "+OR+" . $billNo . "*)&searchType=&format=json&pageSize=10");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            $content = curl_exec($ch);
+            $json = array();
+            $json = json_decode($content, true);
+            curl_close($ch);
+                            
+            function cmp($a, $b) {
+                $a1 = str_split($a['id']);
+                $b1 = str_split($b['id']);
+                $a1_c = count($a1);
+                $b1_c = count($b1);
         
-        echo json_encode($tags);         
-        CRM_Utils_System::civiExit( );
+                $a1_num = '';
+                $b1_num = '';
+                if (preg_match( "/^[A-Z]+$/",$a1[$a1_c-1])) {
+                    for ($i=1; $i<$a1_c - 1; $i++) {
+                        $a1_num .= $a1[$i] ;
+                    }
+                    $a1_num = intval($a1_num);
+                }
+                else {
+                    for ($i=1; $i<= $a1_c - 1; $i++) {
+                        $a1_num .= $a1[$i] ;
+                    }
+                    $a1_num = intval($a1_num);            
+                }
+                if (preg_match( "/^[A-Z]+$/",$b1[$b1_c-1])) {
+                    for ($i=1; $i<$b1_c - 1; $i++) {
+                        $b1_num .= $b1[$i] ;
+                    }
+                    $b1_num = intval($b1_num);
+                }
+                else { 
+                    for ($i=1; $i<= $b1_c - 1; $i++) {
+                        $b1_num .= $b1[$i] ;
+                    }
+                    $b1_num = intval($b1_num);            
+                }
 
-      //NYSS leg positions should retrieve list from open leg and create value in tag table
-      } elseif ( $parentId == 292 ) {
-        
-        		$billNo = $name; 
-        		$ch = curl_init();
+                if ($a1 == $b1) 
+                    return 0;
+                elseif ($a1[0] < $b1[0])
+                    return -1;
+                elseif ($a1[0] > $b1[0])
+                    return 1;
+                else {
+                    if ($a1_num < $b1_num)
+                        return -1;
+                    elseif ($a1_num > $b1_num)
+                        return 1;
+                    else {
+                        if ($a1 < $b1)
+                            return -1;
+                        elseif ($a1 > $b1)
+                            return 1;
+                    }
+                }
+            }
 
-				curl_setopt($ch, CURLOPT_URL,"http://open.nysenate.gov/legislation/search/?term=otype:bill+AND+oid:(" . $billNo . "+OR+" . $billNo . "*)&searchType=&format=json&pageSize=10");
-        		
-        		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-				$content = curl_exec($ch);
-				
-				$json = array();
-		 		$json = json_decode($content, true);
-       
-				curl_close($ch);
-							
-        		function cmp($a, $b)
-				{
-	
-					$a1 = str_split($a['id']);
-					$b1 = str_split($b['id']);
-					$a1_c = count($a1);
-					$b1_c = count($b1);
-		
-					$a1_num = '';
-					$b1_num = '';
-					if (preg_match( "/^[A-Z]+$/",$a1[$a1_c-1])){
-					for ($i=1; $i<$a1_c - 1; $i++)
- 			 			{
-  						$a1_num .= $a1[$i] ;
-  						}
-						$a1_num = intval($a1_num);
-					}
-				else {
-					for ($i=1; $i<= $a1_c - 1; $i++)
- 			 			{
-  						$a1_num .= $a1[$i] ;
-  						}
-						$a1_num = intval($a1_num);			
-						}
-					if (preg_match( "/^[A-Z]+$/",$b1[$b1_c-1])){ 
-						for ($i=1; $i<$b1_c - 1; $i++)
- 			 				{
-  							$b1_num .= $b1[$i] ;
-  							}
-						$b1_num = intval($b1_num);
-						}
-					else { 
-						for ($i=1; $i<= $b1_c - 1; $i++)
- 			 				{
-  							$b1_num .= $b1[$i] ;
-  							}
-						$b1_num = intval($b1_num);			
-						}
+            usort($json, "cmp");
 
-						if ($a1 == $b1) 
-            				return 0;
-        				elseif ($a1[0] < $b1[0])
-        					return -1;
-        				elseif ($a1[0] > $b1[0])
-        					return 1;
-        				else {
-        					if ($a1_num < $b1_num)
-        						return -1;
-        					elseif ($a1_num > $b1_num)
-        						return 1;
-        					else
-        						{
-        					if($a1 < $b1)
-        						return -1;
-        					elseif ($a1 > $b1)
-        						return 1;
-        					}
-        				}
-					}
-				usort($json, "cmp");
-				
-        		for ($j=0; $j < count($json); $j++){
+            for ($j=0; $j < count($json); $j++) {
+                //construct positions
+                $positiontags = array();
+                $positiontags[] = $json[$j]['id'];
+                $positiontags[] = $json[$j]['id'].' - FOR';
+                $positiontags[] = $json[$j]['id'].' - AGAINST';
 
+                //construct tags array
+                foreach ( $positiontags as $positiontag ) {
+                    //add sponsor to display if exists
+                    if ( $json[$j]['sponsor'] ) { 
+                        $positiontag_name = $positiontag.' ('.$json[$j]['sponsor'].')'; 
+                    } else { 
+                        $positiontag_name = $positiontag; 
+                    }
 
-					//construct positions
-					$positiontags = array();
-					$positiontags[] = $json[$j]['id'];
-					$positiontags[] = $json[$j]['id'].' - FOR';
-					$positiontags[] = $json[$j]['id'].' - AGAINST';
+                    //do lookup to see if tag exists in system already, else construct using standard format
+                    $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292 and name = '{$positiontag_name}'";
 
-					
-					//construct tags array
-					foreach ( $positiontags as $positiontag ) {
-						
-						//add sponsor to display if exists
-        	 			if ( $json[$j]['sponsor'] ) { 
-						    $positiontag_name = $positiontag.' ('.$json[$j]['sponsor'].')'; 
-					    } else { 
-						    $positiontag_name = $positiontag; 
-						}
+                    $dao = CRM_Core_DAO::executeQuery( $query );
+                    if ( $dao->fetch( ) ) {
+                        $tagID = $dao->id;
+                    } else {
+                        $tagID = $positiontag_name.':::value';
+                    }
 
-						//do lookup to see if tag exists in system already, else construct using standard format
-			            $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292 and name = '{$positiontag_name}'";
-			            $dao   = CRM_Core_DAO::executeQuery( $query );
-			            if ( $dao->fetch( ) ) {
-        	                $tagID = $dao->id;
-        	            } else {
-							$tagID = $positiontag_name.':::value';
-						}
-
-	   	 				$tags[] = array('name'    => $positiontag_name,
-										'id'      => $tagID,
-										'sponsor' => $json[$j]['sponsor'] );
-      				} //end foreach
-					
-				}
-                   	
-        	echo json_encode($tags );
-        	CRM_Utils_System::civiExit( );
-        	
-      } //end leg pos condition
+                    $tags[] = array('name'    => $positiontag_name,
+                                    'id'      => $tagID,
+                                    'sponsor' => $json[$j]['sponsor'] );
+                } //end foreach
+            }
+                       
+            echo json_encode($tags);
+            CRM_Utils_System::civiExit();
+        } //end leg pos condition
     }
-    
+
+
+
     static function mergeTagList( ) {
         $name   = CRM_Utils_Type::escape( $_GET['s'],      'String' );
         $fromId = CRM_Utils_Type::escape( $_GET['fromId'], 'Integer' );
@@ -412,15 +405,17 @@ LIMIT $limit";
         CRM_Utils_System::civiExit( );
     }
 
-    static function processTags( ) {
+
+
+    static function processTags() {
         $skipTagCreate = $skipEntityAction = $entityId = null;
-        $action           = CRM_Utils_Type::escape( $_POST['action'], 'String' );
-        $parentId         = CRM_Utils_Type::escape( $_POST['parentId'], 'Integer' );
+        $action = CRM_Utils_Type::escape( $_POST['action'], 'String' );
+        $parentId = CRM_Utils_Type::escape( $_POST['parentId'], 'Integer' );
         if ( $_POST['entityId'] ) {
-            $entityId     = CRM_Utils_Type::escape( $_POST['entityId'], 'Integer' );
+            $entityId = CRM_Utils_Type::escape( $_POST['entityId'], 'Integer' );
         }
-        
-        $entityTable       = CRM_Utils_Type::escape( $_POST['entityTable'], 'String' );
+
+        $entityTable = CRM_Utils_Type::escape($_POST['entityTable'], 'String');
 
         if ( $_POST['skipTagCreate'] ) {
             $skipTagCreate = CRM_Utils_Type::escape( $_POST['skipTagCreate'], 'Integer' );
@@ -439,18 +434,18 @@ LIMIT $limit";
         if ( isset( $tagValue[1] ) && $tagValue[1] == 'value' ) {
             $createNewTag = true;
         }
-		
-		//NYSS - retrieve OpenLeg ID and construct URL
-		$bill_url = '';
-		$sponsor = CRM_Utils_Type::escape( $_POST['sponsor'], 'String' );
-		if ( $parentId == 292 ) {
-			$ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
-			if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
-			$ol_url = 'http://open.nysenate.gov/legislation/bill/'.$ol_id;
-			$sponsor = ( $sponsor ) ? ' ('.$sponsor.')' : '';
-			$bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>'.$sponsor;
-		}
-		        
+        
+        //NYSS - retrieve OpenLeg ID and construct URL
+        $bill_url = '';
+        $sponsor = CRM_Utils_Type::escape( $_POST['sponsor'], 'String' );
+        if ( $parentId == 292 ) {
+            $ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
+            if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
+            $ol_url = 'http://open.nysenate.gov/legislation/bill/'.$ol_id;
+            $sponsor = ( $sponsor ) ? ' ('.$sponsor.')' : '';
+            $bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>'.$sponsor;
+        }
+                
         require_once 'CRM/Core/BAO/EntityTag.php';
         $tagInfo = array( );
         // if action is select
@@ -460,12 +455,12 @@ LIMIT $limit";
             // else create new tag
             if ( !$skipTagCreate && $createNewTag ) {
                 //NYSS 3667 strip spaces for new tags
-				require_once 'CRM/Utils/String.php';
-				$tagID = CRM_Utils_String::stripSpaces($tagID);
-				
-				$params = array( 'name'      => $tagID, 
+                require_once 'CRM/Utils/String.php';
+                $tagID = CRM_Utils_String::stripSpaces($tagID);
+                
+                $params = array( 'name'      => $tagID, 
                                  'parent_id' => $parentId,
-								 'description' => $bill_url ); //LCD
+                                 'description' => $bill_url ); //LCD
 
                 require_once 'CRM/Core/BAO/Tag.php';
                 $tagObject = CRM_Core_BAO_Tag::add( $params, CRM_Core_DAO::$_nullArray );
@@ -504,6 +499,8 @@ LIMIT $limit";
         CRM_Utils_System::civiExit( );
     } 
 
+
+
     function mappingList(  ) {
         $params = array( 'mappingID' );
         foreach ( $params as $param ) {
@@ -511,7 +508,7 @@ LIMIT $limit";
         }
 
         if ( !$mappingID ) {
-            echo json_encode( array('error_msg' => 'required params missing.' ) );
+            echo json_encode(array('error_msg' => 'required params missing.'));
             CRM_Utils_System::civiExit( );
         }
 
@@ -528,6 +525,8 @@ LIMIT $limit";
         echo json_encode( $elements );
         CRM_Utils_System::civiExit( );
     } 
+
+
 
     function mappingList1(  ) {
         $params = array( 'mappingID' );
@@ -554,6 +553,8 @@ LIMIT $limit";
         CRM_Utils_System::civiExit( );
     } 
    
+
+
     static function mergeTags( ) {
         $tagAId = CRM_Utils_Type::escape( $_POST['fromId'], 'Integer' );
         $tagBId   = CRM_Utils_Type::escape( $_POST['toId'],   'Integer' );
@@ -567,11 +568,10 @@ LIMIT $limit";
             foreach ( $result['tagB_used_for'] as &$val ) {
                 $val = $usedFor[$val];
             }
-            $result['tagB_used_for'] = implode( ', ', $result['tagB_used_for'] );
+            $result['tagB_used_for'] = implode(', ', $result['tagB_used_for']);
         }
 
         echo json_encode( $result );
         CRM_Utils_System::civiExit( );
-    } 
-
+    }
 }
