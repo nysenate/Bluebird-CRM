@@ -494,7 +494,7 @@
         if (!widget.settings) {
           delete widget.controls.settings;
         }
-        if (!widget.fullscreenUrl) {
+        if (widget.fullscreen != 1) { //NYSS
           delete widget.controls.fullscreen;
         }
 
