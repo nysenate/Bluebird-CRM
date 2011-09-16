@@ -1353,3 +1353,10 @@ ul.token-input-list-facebook { width:265px;}
 .report-layout h1 {
 	font-size: 16px;
 }
+
+/*News RSS*/
+#newsFeeds .newsTitle {
+	color: #7FCDFE;
+	font-weight: bold;
+	font-size: 110%;
+}

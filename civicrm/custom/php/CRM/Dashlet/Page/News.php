@@ -46,12 +46,42 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
      * List RSS feed as dashlet
      *
      * @return none
-     *
      * @access public
      */
- function run( ) {
+    function run( ) {
 
+        function rss_to_array($tag, $array, $url) {
+            $doc = new DOMdocument();
+            $doc->load($url);
+            $rss_array = array();
+            $items = array();
+            foreach($doc->getElementsByTagName($tag) AS $node) {
+			    foreach($array AS $key => $value) {
+                    $items[$value] = $node->getElementsByTagName($value)->item(0)->nodeValue;
+					if ( $value == 'pubDate' ) {
+						$items[$value] = date("l, M j, Y g:ia", strtotime($items[$value]));
+					}
+                }
+                array_push($rss_array, $items);
+            }
+            return $rss_array;
+        }
+		
+		$rss_tags = array( 'title',
+                           'link',
+                           'link2',
+                           'linkOD',
+                           'description',
+                           'pubDate',
+                           'category',
+                         );
+        $rss_item_tag = 'item';
+        $rss_url = 'http://senateonline.senate.state.ny.us/BluebirdNews.nsf/feed.rss';
+        
+        $rssfeed = rss_to_array($rss_item_tag,$rss_tags,$rss_url);
+        
+		$this->assign('newsfeed', $rssfeed);
 
-     return parent::run( );
- }
+        return parent::run( );
+    }
 }

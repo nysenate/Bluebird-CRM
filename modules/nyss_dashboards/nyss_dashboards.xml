@@ -12,6 +12,11 @@
      <page_callback>CRM_Dashlet_Page_Twitter</page_callback>
   </item>  
   <item>
+     <path>civicrm/dashlet/news</path>
+     <title>Bluebird News</title>
+     <page_callback>CRM_Dashlet_Page_News</page_callback>
+  </item>
+  <item>
      <path>civicrm/dashlet/allCases</path>
      <title>All Cases Dashlet</title>
      <page_callback>CRM_Dashlet_Page_AllCases</page_callback>

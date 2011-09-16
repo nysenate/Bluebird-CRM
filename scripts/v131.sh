@@ -57,6 +57,12 @@ INSERT INTO civicrm_option_value ( option_group_id, label, value, name, filter, 
   ( 42, 'Dear Friends', 13, 'Dear Friends', 4, 13 );"
 $execSql -i $instance -c "$mergegreetings"
 
+## 3812 news dashlet
+news="
+INSERT INTO civicrm_dashboard (domain_id, label, url, permission, permission_operator, column_no, is_minimized, is_fullscreen, is_active, is_reserved, weight, fullscreen_url) VALUES
+(1, 'Bluebird News', 'civicrm/dashlet/news&reset=1&snippet=4', 'access CiviCRM', NULL, 0, 0, 0, 1, 1, 1, 'civicrm/dashlet/news&reset=1&snippet=4&context=dashletFullscreen');"
+$execSql -i $instance -c "$news"
+
 
 ### Cleanup ###
 
