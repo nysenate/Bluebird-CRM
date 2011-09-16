@@ -27,11 +27,16 @@
 <div id="newsFeeds">
 	
     {foreach from=$newsfeed key=newskey item=newsitem}
+         {if $smarty.get.context != 'dashletFullscreen'}
+              {assign var="desc" value=$newsitem.description|truncate:100}
+         {else}
+              {assign var="desc" value=$newsitem.description}
+         {/if}
          <div class="newsFeed">
-              <div class="newsTitle">{$newsitem.title}</div>
-              <div class="newsDesc">{$newsitem.description}</div>
+              <div class="newsTitle"><a href="{$newsitem.link}" target="_blank">{$newsitem.title}</a></div>
+              <div class="newsDesc">{$desc}</div>
               <div class="created-date">{$newsitem.pubDate}</div>
          </div>
     {/foreach}
-    
+    &raquo;&nbsp;<a href="http://senateonline.senate.state.ny.us/BluebirdNews.nsf/" target="_blank" class="more_news">View more news items</a>
 </div>
