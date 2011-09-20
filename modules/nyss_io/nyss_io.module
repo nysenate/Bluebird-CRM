@@ -677,7 +677,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                 $group_params["contact_id.$index"] = $contact_id;
         }
 
-        if (!$dryrun) {
+        if ( !$dryrun ) {
         // Create the GroupContact joins for each of these contacts
             $groupcontact = civicrm_group_contact_add( $group_params );
         } else {
@@ -697,11 +697,20 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
    		drupal_mail_send($message);
   	}
-
+	
     $num_updated = count($updated_contacts);
     $num_created = count($new_contacts);
     nyss_out('status',"$num_updated updated, $num_created created.", true);
   	nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
+	
+	//run duplicate primary flag cleanup
+	if ( !$dryrun ) {
+		$bbconfig = get_bluebird_instance_config();
+		$dupePriScript = $bbconfig['app.rootdir'].'/scripts/fixDupePrimary.sh '.$bbconfig['shortname'];
+		
+		$dupePriCleanup = shell_exec( $dupePriScript );
+		nyss_out('status', $dupePriCleanup, true);
+	}
 
   	nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
 
@@ -1046,4 +1055,8 @@ function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) 
 	$string = implode(' ',$fixedWords);
 
     return $string;
+}
+
+function cacheGreetings(  ) {
+
 }
