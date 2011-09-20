@@ -1551,30 +1551,30 @@ ORDER BY name";
      * @return array - array reference of all greetings.
      *
      */
-	public static function greeting( $filter, $columnName = 'label' )
+    public static function greeting( $filter, $columnName = 'label' )
     { 
-		$index = $filter['greeting_type'] .'_'.$columnName;
-		$filterCondition = null;
-	    if ( ! CRM_Utils_Array::value( $index, self::$greeting ) ) {
-			if ( CRM_Utils_Array::value( 'contact_type', $filter ) ) {
-				$filterVal = 'v.filter =';
-				switch( $filter['contact_type'] ) {
-				case 'Individual': 
-					$filterVal .= "1";
-					break;
-				case 'Household':
-					$filterVal .= "2";
-					break;
-				case 'Organization':
-					$filterVal .= "3";
-					break;
-				}			
-				$filterCondition .= "AND (v.filter = 0 OR {$filterVal}) "; 
-			}	 
-			   
+        $index = $filter['greeting_type'] .'_'.$columnName;
+        $filterCondition = null;
+        if ( ! CRM_Utils_Array::value( $index, self::$greeting ) ) {
+            if ( CRM_Utils_Array::value( 'contact_type', $filter ) ) {
+                $filterVal = 'v.filter =';
+                switch( $filter['contact_type'] ) {
+                case 'Individual': 
+                    $filterVal .= "1";
+                    break;
+                case 'Household':
+                    $filterVal .= "2";
+                    break;
+                case 'Organization':
+                    $filterVal .= "3";
+                    break;
+                }            
+                $filterCondition .= "AND (v.filter = 0 OR {$filterVal}) "; 
+            }     
+               
             require_once 'CRM/Core/OptionGroup.php';
             self::$greeting[$index] = CRM_Core_OptionGroup::values( $filter['greeting_type'], null, null, null, 
-																	$filterCondition, $columnName );
+                                                                    $filterCondition, $columnName );
         }
         return self::$greeting[$index];
     }
