@@ -22,10 +22,10 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 function run()
 {
   $prog = basename(__FILE__);
-  $shortopts = 'c:f';
-  $longopts = array('ct=', 'force');
+  $shortopts = 'c:nf';
+  $longopts = array('ct=', 'dry-run', 'force');
   $stdusage = civicrm_script_usage();
-  $usage = "[--ct|-c {Individual|Household|Organization}] [--force|-f]";
+  $usage = "[--ct|-c {Individual|Household|Organization}] [--dry-run|-n] [--force|-f]";
   $contactOpts = array(
     'i' => 'Individual',
     'h' => 'Household',
@@ -77,10 +77,15 @@ function run()
   echo "[{$optlist['site']}] Executed query; about to update greetings for ".$dao->count()." matching contacts...\n";
   $cnt = 0;
 
-  while ($dao->fetch()) {
-    echo "Processing contact id {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
-    CRM_Contact_BAO_Contact::processGreetings($dao);
-    $cnt++;
+  if ($optlist['dry-run'] == true) {
+    echo "(The dry-run option is enabled.  No contacts will be updated.)\n";
+  }
+  else {
+    while ($dao->fetch()) {
+      echo "Processing contact id {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
+      CRM_Contact_BAO_Contact::processGreetings($dao);
+      $cnt++;
+    }
   }
 
   echo "[{$optlist['site']}] Finished processing $cnt contacts.\n";
