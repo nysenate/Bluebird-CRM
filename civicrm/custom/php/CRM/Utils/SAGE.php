@@ -183,7 +183,7 @@ class CRM_Utils_SAGE
         } else {
             //Don't change imported addresses, assume they are correct as given
             $url_components = explode( '/', CRM_Utils_System::currentPath() );
-            if ( $url_components[1] != 'import' )
+            if (count($url_components) > 1 && $url_components[1] != 'import' )
                 self::storeAddress($values, $xml->address->extended, $addr_field);
         }
 
@@ -264,10 +264,8 @@ class CRM_Utils_SAGE
         $values['postal_code_suffix'] = (string)$xml->zip4;
         $values[$addr_field] = self::normalizeAddr((string)$xml->address2, $values[$addr_field]);
 
-error_log("kz: values: ".print_r($values, true));
         #Since standardization could change the street address, fix the parts
         self::fixStreetAddressParts($values);
-error_log("kz: values: ".print_r($values, true));
     }
 
 
@@ -340,7 +338,7 @@ error_log("kz: values: ".print_r($values, true));
 
         //NYSS 3800 - Retain original street number if alphanumerics match.
         //    http://senatedev.nysenate.gov/issues/show/3800
-        $regex = '/^[\d][:alnum:]*\-?[:alnum:]+/';
+        $regex = '/^[\d][[:alnum:]]*\-?[[:alnum:]]+/';
         if (preg_match($regex, $orig_addr, $matches)) {
             $street_number_in = $matches[0];
 
