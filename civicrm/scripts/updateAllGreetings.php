@@ -22,10 +22,10 @@ error_reporting(E_ERROR | E_PARSE | E_WARNING);
 function run()
 {
   $prog = basename(__FILE__);
-  $shortopts = 'c:';
-  $longopts = array('ct=');
+  $shortopts = 'c:f';
+  $longopts = array('ct=', 'force');
   $stdusage = civicrm_script_usage();
-  $usage = "[--ct|-c {Individual|Household|Organization}]";
+  $usage = "[--ct|-c {Individual|Household|Organization}] [--force|-f]";
   $contactOpts = array(
     'i' => 'Individual',
     'h' => 'Household',
@@ -64,16 +64,28 @@ function run()
 
   require_once 'CRM/Contact/BAO/Contact.php';
   $dao = new CRM_Contact_BAO_Contact();
+
   if ($contactType) {
     $dao->contact_type = $contactType;
   }
+
+  if ($optlist['force'] == false) {
+    $dao->whereAdd('addressee_display is null or email_greeting_display is null or postal_greeting_display is null');
+  }
+
   $dao->find(false);
+  echo "[{$optlist['site']}] Executed query; about to update greetings for ".$dao->count()." matching contacts...\n";
+  $cnt = 0;
+
   while ($dao->fetch()) {
     echo "Processing contact id {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
     CRM_Contact_BAO_Contact::processGreetings($dao);
+    $cnt++;
   }
+
+  echo "[{$optlist['site']}] Finished processing $cnt contacts.\n";
 }
 
 
 run();
-echo "\n\n Greeting is updated for contact(s). (Done) \n";
+
