@@ -1554,6 +1554,8 @@ ORDER BY name";
     public static function greeting( $filter, $columnName = 'label' )
     { 
         $index = $filter['greeting_type'] .'_'.$columnName;
+        $index .= CRM_Utils_Array::value( 'contact_type', $filter ) ? "_{$filter['contact_type']}" : '';
+
         $filterCondition = null;
         if ( ! CRM_Utils_Array::value( $index, self::$greeting ) ) {
             if ( CRM_Utils_Array::value( 'contact_type', $filter ) ) {
