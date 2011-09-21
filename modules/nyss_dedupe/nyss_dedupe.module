@@ -79,12 +79,11 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         foreach(array_keys($tableQueries) as $key)
             unset($tableQueries[$key]);
 
-        // Allow for a '' query return to do nothing
-        if($query == '')
-            $tableQueries['civicrm.custom.5'] = $query;
+        // Set tableQueries
+        $tableQueries['civicrm.custom.5'] = $query;
     }
 
-    //CRM_Core_Error::debug($tableQueries);
+    //CRM_Core_Error::debug($tableQueries);exit();
 }
 
 /*
