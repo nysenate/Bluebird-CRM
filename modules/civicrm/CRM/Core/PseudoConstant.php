@@ -1035,7 +1035,8 @@ WHERE  id = %1";
      *
      */
     public static function &staticGroup( $onlyPublic = false,
-                                         $groupType  = null )
+                                         $groupType  = null,
+										 $excludeHidden = true )
     {
         if ( ! self::$staticGroup ) {
             $condition = 'saved_search_id = 0 OR saved_search_id IS NULL';
@@ -1046,6 +1047,10 @@ WHERE  id = %1";
                 require_once 'CRM/Contact/BAO/Group.php';
                 $condition .= ' AND ' . CRM_Contact_BAO_Group::groupTypeCondition( $groupType );
             }
+			//NYSS
+			if ( $excludeHidden ) {
+			    $condition .= ' AND is_hidden != 1 ';
+			}
             
             self::populate( self::$staticGroup, 'CRM_Contact_DAO_Group', false, 'title', 'is_active', $condition, 'title' );
         }
