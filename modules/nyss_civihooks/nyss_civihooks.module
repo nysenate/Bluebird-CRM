@@ -232,6 +232,9 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		//3527 set deceased to no
 		$defaults['is_deceased'] = 0;
 		
+		//4332 clear activity creator/assigned
+		$defaults['activity_role'] = 0;
+		
 		$form->setDefaults( $defaults );
 	
 	}
