@@ -132,7 +132,7 @@ class CRM_Utils_Address_SAGE
 
         //NYSS 3800 - Retain original street number if alphanumerics match.
         //    http://senatedev.nysenate.gov/issues/show/3800
-        $regex = '/^[\d][:alnum:]*\-?[:alnum:]+/';
+        $regex = '/^[\d][[:alnum:]]*\-?[[:alnum:]]+/';
         if (preg_match($regex, $addr2_orig, $matches)) {
             $street_number_in = $matches[0];
 
