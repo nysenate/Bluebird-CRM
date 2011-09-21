@@ -51,6 +51,16 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
         // set the error message path to display
         $errorFile = $this->assign('errorFile', $this->get('errorFile') );
         
+        //NYSS - Collect the set of fuzzy rules to show the user
+        require_once 'CRM/Dedupe/DAO/RuleGroup.php';
+        $dao = new CRM_Dedupe_DAO_RuleGroup();
+        $dao->level = 'Fuzzy';
+        $dao->contact_type = 'Individual';
+        $dao->find();
+        $this->fuzzyRules = array();
+        while($dao->fetch())
+            $this->fuzzyRules[$dao->id] = $dao->name;
+
         $totalRowCount     = $this->get('totalRowCount');
         $relatedCount      = $this->get('relatedCount');
         $totalRowCount    += $relatedCount;
@@ -102,6 +112,10 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
         $this->assign('dupeActionString', $dupeActionString);
         
         $properties = array( 'totalRowCount', 'validRowCount', 'invalidRowCount', 'conflictRowCount', 'downloadConflictRecordsUrl', 'downloadErrorRecordsUrl', 'duplicateRowCount', 'downloadDuplicateRecordsUrl','downloadMismatchRecordsUrl', 'groupAdditions', 'tagAdditions', 'unMatchCount', 'unparsedAddressCount' );
+
+        //NYSS
+        $properties[] = 'importGroupId';
+
         foreach ( $properties as $property ) {
             $this->assign( $property, $this->get( $property ) );
         }
@@ -117,6 +131,9 @@ class CRM_Import_Form_Summary extends CRM_Core_Form {
      * @access public
      */
     public function buildQuickForm( ) {
+        //NYSS
+        $this->add('select', 'fuzzyRules', ts('Dedupe with a different rule'), $this->fuzzyRules, false, array());
+
         $this->addButtons( array(
                                  array ( 'type'      => 'next',
                                          'name'      => ts('Done'),

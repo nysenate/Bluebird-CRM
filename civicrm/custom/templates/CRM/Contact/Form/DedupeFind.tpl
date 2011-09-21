@@ -33,6 +33,14 @@
        <td class="label">{$form.group_id.label}</td>
        <td>{$form.group_id.html}</td>
      </tr>
+     <tr>
+        <td></td>
+        <td class="help">NEW: You can now run use contacts from previous imports as a dedupe group.</td>
+     </tr>
+     <tr>
+        <td class="label">{$form.import_group_id.label}</td>
+        <td>{$form.import_group_id.html}</td>
+     </tr>
    </table>
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>

@@ -37,6 +37,21 @@
       {ts}The Import Wizard allows you to easily import contact records from other applications into CiviCRM. For example, if your organization has contacts in MS Access&reg; or Excel&reg;, and you want to start using CiviCRM to store these contacts, you can 'import' them here (after preparing and converting them to .csv format).{/ts} {help id='choose-data-source-intro'}
   </div>
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>
+
+  {* NYSS - Start *}
+  <div id="choose-import-job-name" class="form-item">
+    <fieldset>
+      <legend>{ts}Choose Import Job Name{/ts}</legend>
+      <table class="form-layout">
+        <tr>
+            <td class="label">{$form.import_job_name.label}</td>
+            <td>{$form.import_job_name.html}</td>
+        </tr>
+      </table>
+    </fieldset>
+  </div>
+  {* NYSS - End *}
+
   <div id="choose-data-source" class="form-item">
       <h3>{ts}Choose Data Source{/ts}</h3>
       <table class="form-layout">
