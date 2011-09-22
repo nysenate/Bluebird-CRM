@@ -2249,6 +2249,10 @@ UNION
      *
      */
      static function processGreetings( &$contact ) {
+         //retrieve default greetings
+		 $defaultGreetings = CRM_Core_PseudoConstant::greetingDefaults();
+		 $contactDefaults  = $defaultGreetings[$contact->contact_type];
+
          // store object values to an array
          $contactDetails = array( );    
          CRM_Core_DAO::storeValues( $contact, $contactDetails );
@@ -2269,8 +2273,12 @@ UNION
              $emailGreeting = CRM_Core_PseudoConstant::greeting( $filter );
              $emailGreetingString = $emailGreeting[ $contact->email_greeting_id ];
              $updateQueryString[] = " email_greeting_custom = NULL ";
-         } else if( $contact->email_greeting_custom ) {     
-             $updateQueryString[] = " email_greeting_display = NULL ";
+         } else {     
+             reset($contactDefaults['email_greeting']);
+			 $emailGreetingID     = key($contactDefaults['email_greeting']);
+			 $emailGreetingString = $contactDefaults['email_greeting'][$emailGreetingID];
+			 $updateQueryString[] = " email_greeting_id = $emailGreetingID ";
+			 $updateQueryString[] = " email_greeting_custom = NULL ";
          }
               
          if ( $emailGreetingString ) {
@@ -2281,15 +2289,19 @@ UNION
 
          //postal greetings
          if ( $contact->postal_greeting_custom != 'null' && $contact->postal_greeting_custom ) {
-            $postalGreetingString = $contact->postal_greeting_custom;
+             $postalGreetingString = $contact->postal_greeting_custom;
          } else if ( $contact->postal_greeting_id != 'null' && $contact->postal_greeting_id ) {
-            $filter =  array( 'contact_type'  => $contact->contact_type, 
-                              'greeting_type' => 'postal_greeting' );
-            $postalGreeting = CRM_Core_PseudoConstant::greeting( $filter);    
-            $postalGreetingString = $postalGreeting[ $contact->postal_greeting_id ];
-            $updateQueryString[]  = " postal_greeting_custom = NULL ";
-         } elseif ( $contact->postal_greeting_custom ) {
-            $updateQueryString[] = " postal_greeting_display = NULL ";
+             $filter =  array( 'contact_type'  => $contact->contact_type, 
+                               'greeting_type' => 'postal_greeting' );
+             $postalGreeting = CRM_Core_PseudoConstant::greeting( $filter);    
+             $postalGreetingString = $postalGreeting[ $contact->postal_greeting_id ];
+             $updateQueryString[]  = " postal_greeting_custom = NULL ";
+         } else {     
+             reset($contactDefaults['postal_greeting']);
+			 $postalGreetingID     = key($contactDefaults['postal_greeting']);
+			 $postalGreetingString = $contactDefaults['postal_greeting'][$postalGreetingID];
+			 $updateQueryString[]  = " postal_greeting_id = $postalGreetingID ";
+			 $updateQueryString[]  = " postal_greeting_custom = NULL ";
          }
 
          if ( $postalGreetingString ) {
@@ -2300,16 +2312,20 @@ UNION
 
          // addressee
          if ( $contact->addressee_custom != 'null' && $contact->addressee_custom ) {
-            $addresseeString = $contact->addressee_custom;
+             $addresseeString = $contact->addressee_custom;
          } else if ( $contact->addressee_id != 'null' && $contact->addressee_id ) {
-            $filter = array( 'contact_type'  => $contact->contact_type, 
-                             'greeting_type' => 'addressee' );
+             $filter = array( 'contact_type'  => $contact->contact_type, 
+                              'greeting_type' => 'addressee' );
 
-            $addressee = CRM_Core_PseudoConstant::greeting( $filter ); 
-            $addresseeString     = $addressee[ $contact->addressee_id ];
-            $updateQueryString[] = " addressee_custom = NULL ";
-         } else if( $contact->addressee_custom ){
-            $updateQueryString[] = " addressee_display = NULL ";
+             $addressee = CRM_Core_PseudoConstant::greeting( $filter ); 
+             $addresseeString     = $addressee[ $contact->addressee_id ];
+             $updateQueryString[] = " addressee_custom = NULL ";
+         } else {     
+             reset($contactDefaults['addressee']);
+			 $addresseeID         = key($contactDefaults['addressee']);
+			 $addresseeString     = $contactDefaults['addressee'][$addresseeID];
+			 $updateQueryString[] = " addressee_id = $addresseeID ";
+			 $updateQueryString[] = " addressee_custom = NULL ";
          }
 
          if ( $addresseeString ) {
