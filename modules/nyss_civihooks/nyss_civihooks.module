@@ -274,7 +274,8 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 								  '_qf_Contact_upload_view', //handle separately
 								 );
 		$btnExcludeValue = array( 'PDF', 
-		                          'Print Contact List' );
+		                          'Print Contact List',
+								  'File on case' );
 		
 		foreach ( $buttons->_elements as $key=>$button ) {
 			$btnType = $buttons->_elements[$key]->_attributes['type'];
