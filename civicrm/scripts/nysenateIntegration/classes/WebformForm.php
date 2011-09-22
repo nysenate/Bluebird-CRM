@@ -50,8 +50,7 @@
 		}
 		
 		function getFormContacts($start_date, $end_date, $start_id, $end_id, $limit = 1000) {
-			$instances = FormHelper::get_instances();
-			
+						
 			$values = $this->getRawEntries(
 				$start_date, $end_date, $start_id, $end_id, $limit
 			);
