@@ -68,6 +68,14 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
      */
     public function buildQuickForm()
     {
+        //NYSS 4053 - Allow crunching on import groups too!
+        require_once 'api/api.php';
+        $params = array('version'=>3, 'group_type'=>'imported_contacts');
+        $result = civicrm_api('group', 'get', $params);
+        $importGroups = array(''=>'- All Contacts -');
+        foreach($result['values'] as $gid => $fields)
+            $importGroups[$gid] = $fields['title'];
+        $this->add('select', 'import_group_id', ts('OR Select Import Group'), $importGroups);
 
         $groupList = CRM_Core_PseudoConstant::group( );
         $groupList[''] = ts('- All Contacts -') ;
@@ -104,8 +112,12 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
             CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/contact/deduperules','reset=1') );
             return;
         }
-        if ( $values['group_id'] ) {
-            $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->rgid}&gid={$values['group_id']}" );
+
+        // NYSS 4053 - Now check multiple places for the group id.
+        if ( $gid = CRM_Utils_Array::value('group_id',$values) ) {
+            $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->rgid}&gid=$gid" );
+        } else if($gid = CRM_Utils_Array::value('import_group_id',$values)) {
+            $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->rgid}&gid=$gid" );
         } else {
             $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->rgid}" );
         }
