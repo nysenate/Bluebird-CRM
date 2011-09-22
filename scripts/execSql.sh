@@ -84,7 +84,7 @@ fi
 
 if [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
-  mysqldump -h $dbhost -u $dbuser -p$dbpass $dbname $tabname
+  mysqldump -R -h $dbhost -u $dbuser -p$dbpass $dbname $tabname
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
