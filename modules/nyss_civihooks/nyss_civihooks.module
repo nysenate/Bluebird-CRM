@@ -345,6 +345,11 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		}
 	}
 	
+	//4339
+	if ( $formName == 'CRM_Export_Form_Select' && !$form->getVar('_title') ) {
+		CRM_Utils_System::setTitle( ts('Export All or Selected Fields') );
+	}
+	
 	//CRM_Core_Error::debug($formName);
 	//CRM_Core_Error::debug($form);
 	
