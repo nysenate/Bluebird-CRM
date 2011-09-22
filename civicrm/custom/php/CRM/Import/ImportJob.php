@@ -77,7 +77,7 @@ class CRM_Import_ImportJob {
     
     protected $_parser;
     
-    public function __construct( $tableName = null, $createSql = null, $createTable = false ) {
+    public function __construct( $tableName, $createSql = null, $createTable = false ) {
         $dao = new CRM_Core_DAO();
         $db = $dao->getDatabaseConnection();
         
@@ -86,10 +86,11 @@ class CRM_Import_ImportJob {
                 CRM_Core_Error::fatal('Either an existing table name or an SQL query to build one are required');
             }
             
-            // FIXME: we should regen this table's name if it exists rather than drop it
+            // NYSS 4053
             if ( !$tableName ) {
-                $tableName = 'civicrm_import_job_' . md5(uniqid(rand(), true));  
+                CRM_Core_Error::fatal('Table name is no longer optional');
             }
+
             $db->query("DROP TABLE IF EXISTS $tableName");
             $db->query("CREATE TABLE $tableName ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci $createSql");
         }
@@ -273,6 +274,19 @@ class CRM_Import_ImportJob {
                       
         $contactIds = $this->_parser->getImportedContacts( );
         
+        // NYSS 4053 - New Dedupe Process Hook
+        // Create a new group and add all the newly imported contacts to it!
+        // Make sure to save the new group id to the import record
+        $group_params = array(  'title'       => substr($this->_tableName, 19),
+                                'description' => '',
+                                'is_active'   => true,
+                                'is_hidden'   => true,
+                                'group_type'  => 'imported_contacts' );
+        $group = CRM_Contact_BAO_Group::create($group_params);
+        $gc_result = CRM_Contact_BAO_GroupContact::addContactsToGroup($contactIds, $group->id);
+        $form->set('importGroupId',$group->id);
+        CRM_Core_DAO::executeQuery("UPDATE civicrm_import_jobs SET contact_group_id={$group->id} where table_name='{$this->_tableName}'");
+
         //get the related contactIds. CRM-2926
         $relatedContactIds = $this->_parser->getRelatedImportedContacts( );
         if ( $relatedContactIds ) { 

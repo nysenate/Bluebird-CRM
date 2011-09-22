@@ -165,6 +165,39 @@
 
  </table>
  
+{* NYSS - Start *}
+{literal}
+<script>
+cj(document).ready(function() {
+	var ruleSelector = cj('#fuzzyRules');
+	var gid = {/literal}{$importGroupId}{literal};
+    cj('#findFuzziesButton').click(function() {
+        var rgid = ruleSelector.val();
+        window.open('/civicrm/contact/dedupefind?reset=1&action=update&rgid='+rgid+'&gid='+gid);
+        return false;
+    });
+});
+</script>
+{/literal}
+{if $validRowCount}
+<div id="choose-import-job-name" class="form-item">
+    <fieldset>
+        <legend>{ts}Dedupe New Contacts{/ts}</legend>
+        <table class="form-layout">
+            <tr>
+                <td class="label">{$form.fuzzyRules.label}</td>
+                <td>{$form.fuzzyRules.html}</td>
+            </tr>
+            <tr>
+                <td class="label">Show dupes in new window</td>
+                <td><input type="button" value="Find" id="findFuzziesButton"/></td>
+            </tr>
+        </table>
+    </fieldset>
+  </div>
+{/if}
+{* NYSS - End *}
+
  <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="bottom"}</div>
 </div>
  

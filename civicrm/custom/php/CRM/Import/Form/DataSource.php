@@ -136,6 +136,9 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         $this->add('select', 'dataSource', ts('Data Source'), $dataSources, true,
                    array('onchange' => 'buildDataSourceFormBlock(this.value);'));
             
+        // NYSS - Have them enter a human readable (and unique) name!
+        $this->add('text', 'import_job_name', 'Import Job Name', '', true);
+
         // duplicate handling options
         $duplicateOptions = array();        
         $duplicateOptions[] = HTML_QuickForm::createElement('radio',
@@ -263,40 +266,59 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             // Setup the params array 
             $this->_params = $this->controller->exportValues( $this->_name );
 
-            $storeParams = array( 'onDuplicate'     => 'onDuplicate',
+            // NYSS - Reformat and add the import_job_name parameter
+            // Request the following additional parameters from the import controller
+            // Also persist these values in the session for future pages
+            foreach ( array(  'onDuplicate'     => 'onDuplicate',
                                   'dedupe'          => 'dedupe',
                                   'contactType'     => 'contactType',
                                   'contactSubType'  => 'subType',
                                   'dateFormats'     => 'dateFormats',
                                   'savedMapping'    => 'savedMapping',
-                                  );
+                              'import_job_name' => 'import_job_name') as
+                              $storeName        => $storeValueName ) {
 
-            foreach ( $storeParams as $storeName => $storeValueName ) {
                 $$storeName = $this->exportValue( $storeValueName );
                 $this->set( $storeName, $$storeName );
             }
 
+            // NYSS - Why was it being inconsistent in setting the values to the session?
+            // A couple values from the controller page need to be added to the session as well
             $this->set('dataSource', $this->_params['dataSource'] );
             $this->set('skipColumnHeader', CRM_Utils_Array::value( 'skipColumnHeader', $this->_params ) );
-            
-            $session = CRM_Core_Session::singleton();
-            $session->set('dateTypes', $dateFormats);
+            $this->set('dateTypes', $dateFormats);
 
-            // Get the PEAR::DB object
+            
+            // NYSS
+            // Make a record for the preferences with a unique name and user id!
+            // TODO: How do you raise an error when the name turns out not unique?
+            $user_id = $_REQUEST['DRUPAL_UID'];
+            $importJobName = str_replace(' ','_',$this->_params['import_job_name']);
+            $importTableName = $this->_params['import_table_name'] = "civicrm_import_job_$importJobName";
+
+            // NYSS
+            // Make a new entry into the civicrm_import_jobs table. This should save all import job related
+            // Settings so that the job can be resumed by anyone with permissions at a later point in time.
+            // I'll be adding settings here as I discover their location and relevance to the process.
             $dao = new CRM_Core_DAO();
             $db = $dao->getDatabaseConnection();
-            
-            //hack to prevent multiple tables.
-            $this->_params['import_table_name'] = $this->get( 'importTableName' );
-            if ( !$this->_params['import_table_name'] ) {
-                $this->_params['import_table_name'] = 'civicrm_import_job_' . md5(uniqid(rand(), true));
-            }
+            $db->simpleQuery(
+                "INSERT INTO civicrm_import_jobs
+                    (name, table_name, source_file, file_type, field_separator, created_by)
+                 VALUES
+                    ( '$importJobName',
+                      '{$this->_params['import_table_name']}',
+                      '{$this->_params['uploadFile']['name']}',
+                      '{$this->_params['dataSource']}',
+                      '{$this->_params['fieldSeparator']}',
+                      $user_id
+                    )"
+            );
             
             require_once $this->_dataSourceClassFile;
             eval( "$this->_dataSource::postProcess( \$this->_params, \$db );" );
             
             // We should have the data in the DB now, parse it
-            $importTableName = $this->get( 'importTableName' );
             $fieldNames = $this->_prepareImportTable( $db, $importTableName );
             $mapper = array( );
 
