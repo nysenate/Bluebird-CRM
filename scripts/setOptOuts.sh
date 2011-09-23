@@ -88,7 +88,7 @@ sql="$selccnt where id in ( $selcid where $emailchk $primchk and e.contact_id no
 ccnt3=`$execSql -q -i $instance -c "$sql"`
 
 # The master condition for determining opted out contacts.
-cond="id in ( $selcid where $emailchk $bulkchk union all ( $selcid where $emailchk $primchk and e.contact_id not in ( $bulkonly ) ) )"
+cond="id in ( $selcid where $emailchk $bulkchk union all ( $selcid where $emailchk $primchk and e.contact_id not in ( $bulkonly ) ) ) and is_opt_out=0"
 
 echo "Counting matching contacts with either matching bulk e-mail or matching primary with no bulk e-mail"
 sql="$selccnt where $cond;"
