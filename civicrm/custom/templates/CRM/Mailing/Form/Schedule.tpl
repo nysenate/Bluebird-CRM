@@ -95,6 +95,7 @@ cj(function() {
    cj('#now').change( function( ) {
        if ( cj(this).attr('checked') ) {
 	       cj('#start_date_display').val('');
+		   cj('#start_date_time').val('');
 	   }
    });
 
