@@ -87,18 +87,27 @@
 .BBtree dt {
 	cursor:pointer;padding-left:5px;font-weight:normal;font-size:12px;
 }
+.BBtree dt:hover, .BBtree dt.subChecked:hover, .BBtree dt.checked:hover {
+	background-color:#DEDEDE;
+}
 .BBtree dt.lv-0 {
 	font-weight:bold;
 }
 .BBtree dt.subChecked {
 	background-color: #F1F8EB;
 	border: 1px dashed #B0D730;
-	margin: 0 -1px -1px;
+	margin: -1 -1px 0px;
 }
 .BBtree dt.checked {
 	background-color: #F1F8EB;
 	border: 1px solid #B0D730;
 	margin: 0 -1px -1px;
+}
+.BBtree .fCB {
+	margin-top:0px;
+}
+.ui-dialog-content.BBtree .fCB {
+	margin-top:-30px;
 }
 .BBtree .fCB ul{
 margin:0;
@@ -178,9 +187,29 @@ margin:0;
 <script>
 var globalDisplayObj;
 cj(document).ready(function() {	
-	callTagList();
+	callTagList('pageLoad');
 });
-function callTagList() {
+function startIteration(dataObject, displayObj){
+	alert(dataObject.id);
+	displayObj.tLvl++;
+	displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+dataObject.id+'">';
+	/*if(dataObject.children.length > 0) {
+		cj.each(dataObject.children, function(i, tID){
+			displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+'" id="tagLabel_'+tID.id+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag" title="'+tID.description+'">'+tID.name+'</div></dt>';
+			if(tID.children.length > 0) {
+				startIteration(tID.children,displayObj);
+			}
+		});
+	}*/
+	displayObj.output += '</dl>';
+	displayObj.tLvl--;
+
+}
+function writeTagList(){
+
+}
+function callTagList(locLoad) {
+	var dataObject = new Object();
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
 		data: {
@@ -197,32 +226,12 @@ function callTagList() {
 			cj.each(data.message, function(i,tID){
 				/*have to note when you step in and out of levels*/
 				displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
-				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+'" id="tagLabel_'+tID.id+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div></dt>';
+				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+'" id="tagLabel_'+tID.id+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag" title="'+tID.description+'">'+tID.name+'</div></dt>';
+				dataObject = tID;
 				if(tID.children.length > 0){
 					/*this is where the first iteration goes in*/
-					displayObj.tLvl = displayObj.tLvl+1;
-					displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
-					cj.each(tID.children, function(i, cID){
-						displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+isItemChecked(cID.is_checked,cID.id)+'" id="tagLabel_'+cID.id+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div></dt>';
-						if(cID.children.length > 0){
-							displayObj.tLvl = displayObj.tLvl+1;
-							displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+cID.id+'">';
-							cj.each(cID.children, function(i, iID){
-								displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+isItemChecked(iID.is_checked,iID.id)+'" id="tagLabel_'+iID.id+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div></dt>';
-								if(iID.children.length > 0){
-									displayObj.tLvl = displayObj.tLvl+1;
-									displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+iID.id+'">';
-									cj.each(iID.children, function(i, jID){
-										displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+isItemChecked(jID.is_checked,jID.id)+'" id="tagLabel_'+jID.id+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div></dt>';
-									});
-									displayObj.output += '</dl>';
-									displayObj.tLvl = displayObj.tLvl-1;
-								}
-							});
-							displayObj.output += '</dl>';
-							displayObj.tLvl = displayObj.tLvl-1;
-						}
-					});
+					alert(dataObject.id);
+					startIteration(dataObject.children, displayObj);
 					displayObj.output += '</dl>';
 					displayObj.tLvl = displayObj.tLvl-1;
 				}
@@ -233,7 +242,7 @@ function callTagList() {
 		}
 	});
 	setTimeout("postJSON()",2500);
-	setTimeout("hoverFunctionality()",2500);
+	setTimeout(function(){hoverFunctionality(locLoad)},2500);
 }
 
 function isItemChecked(dataObj,tagLabel){
@@ -294,10 +303,17 @@ function postJSON() {
 	runParentFinder();
 }
 
-function hoverFunctionality() {
-	cj('#civiTree').css('background-color: #000');
+function hoverFunctionality(locLoad) {
+	var treeLoc;
+	switch(locLoad){
+		case 'pageLoad': treeLoc = '';
+		case 'popLoad': treeLoc = '.ui-dialog-content';
+		default: treeLoc = '';
+	}
+	
+	cj('#civiTree' + treeLoc).css('background-color: #000');
 	/*the following is all post-load*/
-	cj('#civiTree dt').hover(
+	cj('#civiTree' + treeLoc +' dt').hover(
 		function(){
 			var tagLabel = cj(this).attr('id');
 			addControlBox(tagLabel);
@@ -307,7 +323,7 @@ function hoverFunctionality() {
 			removeControlBox(tagLabel);
 		}
 	);
-	cj('#civiTree dt').click(function() {
+	cj('#civiTree' + treeLoc +'  dt').click(function() {
 		
 		if(cj(this).hasClass('lv-0'))
 		{
@@ -340,8 +356,6 @@ function hoverFunctionality() {
 			}
 		}
 	});
-	return '1';
-
 }
 function makeModalAdd(tagLabel){
 	
@@ -408,7 +422,6 @@ function makeModalAdd(tagLabel){
 	});
 }
 function makeModalRemove(tagLabel){
-	
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		draggable: false,
@@ -458,12 +471,75 @@ function makeModalRemove(tagLabel){
 		} 
 	});
 }
+function makeModalUpdate(tagLabel){
+	
+	cj("#dialog").show( );
+	cj("#dialog").dialog({
+		draggable: false,
+		height: 300,
+		width: 300,
+		title: "Add New Tag",
+		modal: true, 
+		bgiframe: true,
+		close:{ },
+		overlay: { 
+			opacity: 0.2, 
+			background: "black" 
+		},
+		open: function() {
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('dt#' + tagLabel + ' .tag').html();
+			
+			var updateDialogInfo = '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
+			updateDialogInfo += '<div class="modalInputs">';
+			updateDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" /></div>';
+			updateDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" /></div>';
+			updateDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved"/></div>';
+			cj('#dialog').html(updateDialogInfo);
+			cj('#dialog input:[name=tagName]').focus();
+		},
+		buttons: {
+			"Done": function () {
+				tagUpdate = new Object();
+				tagUpdate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
+				tagUpdate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
+				tagUpdate.parentId = cj('#dialog .modalInputs .parentName').attr('id').replace('tagLabel_', '');
+				tagUpdate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
+				cj.ajax({
+					url: '/civicrm/ajax/tag/create',
+					data: {
+						name: tagUpdate.tagName,
+						description: tagUpdate.tagDescription,
+						parent_id: tagUpdate.parentId,
+						is_reserved: tagUpdate.isReserved	
+					},
+					dataType: 'json',
+					success: function(data, status, XMLHttpRequest) {
+						if(data.code != 1)
+						{
+							alert(data.message);
+						}
+						cj('#dialog').dialog('close');
+						cj('#dialog').dialog('destroy');
+						callTagList();
+					}
+				});
+			},
+			"Cancel": function() { 
+				callTagList();
+				cj(this).dialog("close"); 
+				cj(this).dialog("destroy"); 
+			}
+		} 
+	});
+}
 function makeModalTree(){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		draggable: false,
 		height: 500,
-		width: 300,
+		width: 400,
 		title: "Title Goes here",
 		modal: true, 
 		bgiframe: true,
@@ -483,6 +559,7 @@ function makeModalTree(){
 		},
 		buttons: {
 			"Cancel": function() { 
+				callTagList();
 				cj(this).dialog("close"); 
 				cj(this).dialog("destroy"); 
 			}
@@ -492,12 +569,12 @@ function makeModalTree(){
 function addControlBox(tagLabel) {
 	var floatControlBox;
 	var tagMouse = 'dt#'+tagLabel;
-	floatControlBox = '<span class="fCB" style="padding:1px 0;margin-top:0px;float:right;" onmouseover="cj(\''+ tagMouse +'\').addClass(\'activeFCB\');" onmouseout="cj(\''+ tagMouse +'\').removeClass(\'activeFCB\');">';
+	floatControlBox = '<span class="fCB" style="padding:1px 0;float:right;" onmouseover="cj(\''+ tagMouse +'\').addClass(\'activeFCB\');" onmouseout="cj(\''+ tagMouse +'\').removeClass(\'activeFCB\');">';
 	floatControlBox += '<ul>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModal()"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModal()"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalUpdate()"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalTree()"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
 	if(cj(tagMouse).hasClass('checked')){
 		floatControlBox += '<input type="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
@@ -541,20 +618,20 @@ function checkRemoveAdd(tagLabel) {
 			dataType: 'json',
 			success: function(data, status, XMLHttpRequest) {
 				if(data.code != 1) {alert('fails');}
-				cj('dt#'+tagLabel).removeClass('checked');
+				findIDLv(tagLabel);
 			}
 		});
 	}
 }
-function removeCheck(tagLabel) {
+function findIDLv(tagLabel) {
 	var idLv = cj('dt#'+tagLabel).attr('class').split(' ');
 	if(idLv.length > 0)
 	{
-		for(var i; i = 0; i++){
+		for(var i = 0; i < idLv.length; i++){
 			var checkForLv = idLv[i].search('lv\-.*');
 			if(checkForLv >= 0)
 			{
-				var tagLv = idLv[i].replace('lv\-','')
+				var tagLv = idLv[i].replace('lv\-','');
 				break;
 			}
 			else
@@ -564,7 +641,23 @@ function removeCheck(tagLabel) {
 			
 		}
 	}
+	var tagLvLabel = tagLabel;
+	for(tagLv; tagLv >= 0; tagLv--){
+		var findSibMatch = 0;
+		findSibMatch += cj('dt#'+tagLvLabel).siblings('.subChecked').length;
+		findSibMatch += cj('dt#'+tagLvLabel).siblings('.checked').length;
+		if(findSibMatch == 0){
+			tagLvLabel = cj('dt#'+tagLvLabel).parent().attr('id');
+			cj('dt#'+tagLvLabel).removeClass('checked');
+			cj('dt#'+tagLvLabel).removeClass('subChecked');
+			break;
+		}
+		else{ break;}
+	}
 	cj('dt#'+tagLabel).removeClass('checked');
+}
+function idParentTree(tagLv) {
+	
 }
 function removeControlBox(tagLabel) {
 	cj('dt#'+tagLabel + ' .fCB').remove();
