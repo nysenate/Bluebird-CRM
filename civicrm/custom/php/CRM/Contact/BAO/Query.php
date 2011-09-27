@@ -814,6 +814,8 @@ class CRM_Contact_BAO_Query
                     $locationTypeJoin[$tName] = " ( $aName.location_type_id = $ltName.id ) ";
                     $processed[$aName] = 1;
                     $addAddress = true;
+					//LCD 4369 - we need to set the join clause so that the alias value is retained
+					$this->_whereTables[$tName] = $addressJoin;
                 }
 
                 $cond = $elementType = '';
