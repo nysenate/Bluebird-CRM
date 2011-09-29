@@ -28,9 +28,9 @@
 	
     {foreach from=$newsfeed key=newskey item=newsitem}
          {if $smarty.get.context != 'dashletFullscreen'}
-              {assign var="desc" value=$newsitem.description|truncate:100}
+              {assign var="desc" value=$newsitem.encoded|truncate:100}
          {else}
-              {assign var="desc" value=$newsitem.description}
+              {assign var="desc" value=$newsitem.encoded}
          {/if}
          <div class="newsFeed">
               <div class="newsTitle"><a href="{$newsitem.link}" target="_blank">{$newsitem.title}</a></div>

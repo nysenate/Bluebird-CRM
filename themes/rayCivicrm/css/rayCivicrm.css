@@ -1360,6 +1360,7 @@ ul.token-input-list-facebook { width:265px;}
 	font-weight: bold;
 	font-size: 110%;
 }
-#newsFeeds a.more_news {
+#newsFeeds a.more_news,
+#newsFeeds a {
 	color: #B4E2FE;
 }

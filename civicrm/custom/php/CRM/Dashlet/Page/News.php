@@ -56,7 +56,7 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
             $rss_array = array();
             $items = array();
             foreach($doc->getElementsByTagName($tag) AS $node) {
-			    foreach($array AS $key => $value) {
+				foreach($array AS $key => $value) {
                     $items[$value] = $node->getElementsByTagName($value)->item(0)->nodeValue;
 					if ( $value == 'pubDate' ) {
 						$items[$value] = date("l, M j, Y g:ia", strtotime($items[$value]));
@@ -68,18 +68,21 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
         }
 		
 		$rss_tags = array( 'title',
-                           'link',
-                           'link2',
-                           'linkOD',
-                           'description',
                            'pubDate',
+                           'description',
+                           'link',
                            'category',
+                           'creator',
+                           'comments',
+                           'guid',
+                           'encoded',
                          );
         $rss_item_tag = 'item';
         $rss_url = 'http://senateonline.senate.state.ny.us/BluebirdNews.nsf/feed.rss';
         
         $rssfeed = rss_to_array($rss_item_tag,$rss_tags,$rss_url);
-        
+        //CRM_Core_Error::debug($rssfeed);
+		
 		$this->assign('newsfeed', $rssfeed);
 
         return parent::run( );
