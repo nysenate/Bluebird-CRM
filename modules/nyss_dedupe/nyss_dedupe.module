@@ -24,8 +24,8 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
             'record' => ''
         ),
         'Individual 5 (email | street + lname)' => array(
-            'internal' => 'nyss_dedupe_indiv5_internal',
-            'record' => ''
+            'internal' => '',
+            'record' => 'nyss_dedupe_indiv5_record'
         ),
         'Organization 1 (name + street + city + email)' => array(
             'internal' => 'nyss_dedupe_org1_internal',
