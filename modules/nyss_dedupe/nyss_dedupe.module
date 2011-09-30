@@ -69,7 +69,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         if($ruleType == 'internal') {
             if( !empty($o->contactIds) ) {
                 $cids = implode(',',$o->contactIds);
-                $query .= "contact1.contact_id IN($cids) AND ( contact2.contact_id NOT IN($cids) OR (contact2.contact_id IN($cids) AND contact1.contact_id < contact2.contact_id) )";
+                $query .= " AND contact1.contact_id IN($cids) AND ( contact2.contact_id NOT IN($cids) OR (contact2.contact_id IN($cids) AND contact1.contact_id < contact2.contact_id) )";
             } else {
                 $query .= " AND contact1.contact_id < contact2.contact_id";
             }
@@ -127,8 +127,9 @@ function nyss_dedupe_indiv2_internal($o) {
             WHERE contact1.contact_type = 'Individual'
               AND contact1.last_name IS NOT NULL
               AND contact1.first_name IS NOT NULL
-              AND contact1.birth_date IS NOT NLL
-              AND address1.city IS NOT NULL";
+              AND contact1.birth_date IS NOT NULL
+              AND address1.city IS NOT NULL
+              ";
 }
 
 function nyss_dedupe_indiv3_internal($o) {
@@ -148,7 +149,8 @@ function nyss_dedupe_indiv3_internal($o) {
               AND contact1.last_name IS NOT NULL
               AND contact1.first_name IS NOT NULL
               AND address1.street_address IS NOT NULL
-              AND address1.city IS NOT NULL";
+              AND address1.city IS NOT NULL
+              ";
 }
 
 function nyss_dedupe_indiv4_internal($o) {
@@ -168,7 +170,8 @@ function nyss_dedupe_indiv4_internal($o) {
               AND contact1.first_name IS NOT NULL
               AND email1.email IS NOT NULL
               AND email1.email != ''
-              AND email1.is_primary=1";
+              AND email1.is_primary=1
+              ";
 }
 
 /*
@@ -208,7 +211,8 @@ function nyss_dedupe_indiv1_record($o) {
     return "SELECT contact.contact_id id1, 10 weight
             FROM shadow_contact as contact
               INNER JOIN shadow_address as address on address.contact_id=contact.contact_id
-            $where";
+            $where
+            ";
 }
 
 function nyss_dedupe_indiv5_record($o) {
@@ -231,7 +235,8 @@ function nyss_dedupe_indiv5_record($o) {
                 WHERE contact.contact_type = 'Individual'
                   AND contact.first_name = BB_NORMALIZE(%1)
                   AND contact.last_name = BB_NORMALIZE(%2)
-                  AND email.email = %3", array(
+                  AND email.email = %3
+                  ", array(
                     1 => array($civicrm_contact['first_name'], 'String'),
                     2 => array($civicrm_contact['last_name'], 'String'),
                     3 => array($email, 'String')
@@ -246,7 +251,8 @@ function nyss_dedupe_indiv5_record($o) {
                 WHERE contact.contact_type = 'Individual'
                   AND contact.first_name = BB_NORMALIZE(%1)
                   AND contact.last_name = BB_NORMALIZE(%2)
-                  AND address.street_address = BB_NORMALIZE_ADDR(%3)", array(
+                  AND address.street_address = BB_NORMALIZE_ADDR(%3)
+                  ", array(
                         1 => array($civicrm_contact['first_name'], 'String'),
                         2 => array($civicrm_contact['last_name'], 'String'),
                         3 => array($street_address, 'String')
@@ -285,7 +291,8 @@ function nyss_dedupe_org1_internal($o) {
               AND address1.street_address IS NOT NULL
               AND address1.city IS NOT NULL
               AND email1.email IS NOT NULL
-              AND email1.email != ''";
+              AND email1.email != ''
+              ";
 }
 
 function nyss_dedupe_org2_internal($o) {
@@ -305,7 +312,8 @@ function nyss_dedupe_org2_internal($o) {
               AND contact1.organization_name IS NOT NULL
               AND address1.street_address IS NOT NULL
               AND address1.city IS NOT NULL
-              AND address1.postal_code IS NOT NULL";
+              AND address1.postal_code IS NOT NULL
+              ";
 }
 
 function nyss_dedupe_org3_internal($o) {
@@ -323,7 +331,8 @@ function nyss_dedupe_org3_internal($o) {
             WHERE contact1.contact_type = 'Organization'
               AND contact1.organization_name IS NOT NULL
               AND address1.street_address IS NOT NULL
-              AND address1.city IS NOT NULL";
+              AND address1.city IS NOT NULL
+              ";
 }
 
 
@@ -355,7 +364,8 @@ function nyss_dedupe_house1_internal($o) {
               AND address1.city IS NOT NULL
               AND email1.is_primary = 1
               AND email1.email IS NOT NULL
-              AND email1.email != ''";
+              AND email1.email != ''
+              ";
 }
 
 function nyss_dedupe_house2_internal($o) {
@@ -375,7 +385,8 @@ function nyss_dedupe_house2_internal($o) {
               AND contact1.household_name IS NOT NULL
               AND address1.street_address IS NOT NULL
               AND address1.postal_code IS NOT NULL
-              AND address1.city IS NOT NULL";
+              AND address1.city IS NOT NULL
+              ";
 }
 
 function nyss_dedupe_house3_internal($o) {
@@ -393,7 +404,8 @@ function nyss_dedupe_house3_internal($o) {
             WHERE contact1.contact_type = 'Household'
               AND contact1.household_name IS NOT NULL
               AND address1.street_address IS NOT NULL
-              AND address1.city IS NOT NULL";
+              AND address1.city IS NOT NULL
+              ";
 }
 
 function nyss_dedupe_fuzzy_address_internal($o, $table, &$tableQueries) {
@@ -414,7 +426,8 @@ function nyss_dedupe_fuzzy_address_internal($o, $table, &$tableQueries) {
           AND contact1.contact_id <> contact2.contact_id
           AND contact1.last_name IS NOT NULL
           AND contact1.first_name IS NOT NULL
-          AND address1.postal_code IS NOT NULL";
+          AND address1.postal_code IS NOT NULL
+          ";
 
     if( !empty($o->contactIds) )
           $tableQueries['civicrm.street_address.5'] .= " AND contact1.contact_id in (".implode(', ',$o->contactIds).")";
@@ -449,7 +462,7 @@ function nyss_dedupe_fuzzy_address_record($o, $table, &$tableQueries) {
         FROM shadow_contact as contact
             INNER JOIN shadow_address address on address.contact_id=contact.contact_id
         $where
-    ";
+        ";
 
     // echo "<pre>{$tableQueries['civicrm.street_address.5']}</pre>"; exit();
 }
