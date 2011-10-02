@@ -65,7 +65,7 @@ $execSql -i $instance -c "$mergegreetings"
 ## 3812 news dashlet
 news="
 INSERT INTO civicrm_dashboard (domain_id, label, url, permission, permission_operator, column_no, is_minimized, is_fullscreen, is_active, is_reserved, weight, fullscreen_url) VALUES
-(1, 'Bluebird News', 'civicrm/dashlet/news&reset=1&snippet=4', 'access CiviCRM', NULL, 0, 1, 0, 1, 1, 1, 'civicrm/dashlet/news&reset=1&snippet=4&context=dashletFullscreen');"
+(1, 'Bluebird News', 'civicrm/dashlet/news&reset=1&snippet=4', 'access CiviCRM', NULL, 0, 1, 1, 1, 1, 1, 'civicrm/dashlet/news&reset=1&snippet=4&context=dashletFullscreen');"
 $execSql -i $instance -c "$news"
 
 ## reset dedupe rules
@@ -131,6 +131,12 @@ INSERT INTO civicrm_dedupe_rule (id, dedupe_rule_group_id, rule_table, rule_fiel
 SET FOREIGN_KEY_CHECKS=1;"
 $execSql -i $instance -c "$deduperules"
 
+## enable mailing panel in advanced search
+advsearch="
+UPDATE civicrm_preferences 
+SET advanced_search_options = '123456101316171819'
+WHERE id = 1;"
+$execSql -i $instance -c "$advsearch"
 
 ### Cleanup ###
 
