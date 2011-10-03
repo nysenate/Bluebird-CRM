@@ -27,6 +27,10 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
             'internal' => '',
             'record' => 'nyss_dedupe_indiv5_record'
         ),
+        'Individual Omis' => array(
+            'internal' => 'nyss_dedupe_individual_omis_internal',
+            'record' => 'nyss_dedupe_individual_omis_record',
+        ),
         'Organization 1 (name + street + city + email)' => array(
             'internal' => 'nyss_dedupe_org1_internal',
             'record' => ''
@@ -465,4 +469,54 @@ function nyss_dedupe_fuzzy_address_record($o, $table, &$tableQueries) {
         ";
 
     // echo "<pre>{$tableQueries['civicrm.street_address.5']}</pre>"; exit();
+}
+
+function nyss_dedupe_individual_omis_internal($o) {
+    return "
+        SELECT t1.id id1, t2.id id2, 5 weight
+        FROM civicrm_contact AS t1
+          JOIN civicrm_contact AS t2 ON (
+            t1.first_name = t2.first_name AND
+            t1.last_name = t2.last_name AND
+            t1.contact_type = t2.contact_type)
+          JOIN civicrm_address AS address1 ON address1.contact_id = t1.id
+          JOIN civicrm_address AS address2 ON (
+            address2.contact_id = t2.id AND
+            address2.street_address = address1.street_address)
+        WHERE t1.contact_type = 'Individual'
+          AND (t1.suffix_id IS NULL OR t2.suffix_id IS NULL OR t1.suffix_id = t2.suffix_id)
+          AND (t1.middle_name IS NULL OR t2.middle_name IS NULL OR t1.middle_name = t2.middle_name)
+          AND (t1.birth_date IS NULL OR t2.birth_date IS NULL OR t1.birth_date = t2.birth_date)
+          ";
+}
+
+function nyss_dedupe_individual_omis_record($o) {
+    $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
+    $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
+
+    // Since definitely have first and last name, escape them upfront.
+    $first_name = CRM_Core_DAO::escapeString($civicrm_contact['first_name']);
+    $last_name = CRM_Core_DAO::escapeString($civicrm_contact['last_name']);
+    $street_address = CRM_Core_DAO::escapeString($civicrm_address['street_address']);
+
+    $query = "
+        SELECT t1.id id1, 5 weight
+        FROM civicrm_contact AS t1
+          JOIN civicrm_address AS address ON t1.id=address.contact_id
+        WHERE t1.contact_type = 'Individual'
+          AND t1.first_name = '$first_name'
+          AND t1.last_name = '$last_name'
+          AND address.street_address = '$street_address'
+          ";
+
+    if($birth_date = CRM_Core_DAO::escapeString($civicrm_contact['birth_date']))
+        $query .= " AND (t1.birth_date IS NULL or t1.birth_date = '$birth_date')\n";
+
+    if($suffix_id = CRM_Core_DAO::escapeString($civicrm_contact['suffix_id']))
+        $query .= " AND (t1.suffix_id IS NULL or t1.suffix_id = $suffix_id)\n";
+
+    if($middle_name = CRM_Core_DAO::escapeString($civicrm_contact['middle_name']))
+        $query .= " AND (t1.middle_name IS NULL or t1.middle_name = '$middle_name')\n";
+
+    return $query;
 }
