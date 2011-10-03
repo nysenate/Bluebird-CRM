@@ -345,6 +345,9 @@ ADD UNIQUE INDEX `unique_entity_id` ( `entity_id` )";
     {
         $queries = array();
 
+        // NYSS - Explicitly require the file.
+        // Don't assume that you somehow already have it.
+        require_once 'CRM/Core/DAO/Domain.php';
         $domain = new CRM_Core_DAO_Domain;
         $domain->find(true);
         $locales = explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales);
