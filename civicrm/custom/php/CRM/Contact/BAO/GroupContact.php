@@ -72,6 +72,11 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
         $groupContact->copyValues( $params );
         CRM_Contact_BAO_SubscriptionHistory::create($params);
         $groupContact->save( );
+
+        //NYSS - Clear the PrevNextCache entries
+        require_once 'CRM/Core/BAO/PrevNextCache.php';
+        CRM_Core_BAO_PrevNextCache::clearGroup($groupContact->group_id);
+
         return $groupContact;
     }
 
@@ -195,6 +200,10 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
             CRM_ACL_BAO_Cache::resetCache( );
         }
 
+        //NYSS - Clear the PrevNextCache entries
+        require_once 'CRM/Core/BAO/PrevNextCache.php';
+        CRM_Core_BAO_PrevNextCache::clearGroup($groupContact->group_id);
+
         // reset the group contact cache for all group(s)
         // if this group is being used as a smart group
         require_once 'CRM/Contact/BAO/GroupContactCache.php';
@@ -272,6 +281,10 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
             require_once 'CRM/ACL/BAO/Cache.php';
             CRM_ACL_BAO_Cache::resetCache( );
         }
+
+        //NYSS - Clear the PrevNextCache entries
+        require_once 'CRM/Core/BAO/PrevNextCache.php';
+        CRM_Core_BAO_PrevNextCache::clearGroup($groupContact->group_id);
 
         // reset the group contact cache for all group(s)
         // if this group is being used as a smart group
@@ -602,6 +615,10 @@ AND civicrm_group_contact.group_id = %2";
                         'method'    => $method,
                         'tracking'  => $tracking
         );
+
+        //NYSS - Clear the PrevNextCache entries
+        require_once 'CRM/Core/BAO/PrevNextCache.php';
+        CRM_Core_BAO_PrevNextCache::clearGroup($groupContact->group_id);
 
         CRM_Contact_BAO_SubscriptionHistory::create($params);
         return null;    
