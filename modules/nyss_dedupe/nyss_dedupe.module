@@ -154,7 +154,7 @@ function nyss_dedupe_indiv3_internal($o) {
 }
 
 function nyss_dedupe_indiv4_internal($o) {
-    return "SELECT contact1_contact_id id1, contact2.contact_id id2, 5 weight
+    return "SELECT contact1.contact_id id1, contact2.contact_id id2, 5 weight
             FROM shadow_contact AS contact1
               JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
@@ -164,7 +164,7 @@ function nyss_dedupe_indiv4_internal($o) {
               INNER JOIN civicrm_email AS email2 ON (
                     contact2.contact_id = email2.contact_id AND
                     email1.email = email2.email AND
-                    email1.is_primary = email2.is_primary
+                    email1.is_primary = email2.is_primary)
             WHERE contact1.contact_type = 'Individual'
               AND contact1.last_name IS NOT NULL
               AND contact1.first_name IS NOT NULL
@@ -273,7 +273,7 @@ function nyss_dedupe_org1_internal($o) {
     //name + street + city + email
     return "SELECT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
             FROM shadow_contact AS contact1
-              JOIN civicrm_contact AS contact2 ON (
+              JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
                     contact1.organization_name = contact2.organization_name)
               INNER JOIN shadow_address address1 ON contact1.contact_id = address1.contact_id
@@ -284,8 +284,8 @@ function nyss_dedupe_org1_internal($o) {
               INNER JOIN civicrm_email email1 ON contact1.contact_id=email1.contact_id
               INNER JOIN civicrm_email email2 ON (
                     contact2.contact_id=email2.contact_id AND
-                    email1.email=e2.email AND
-                    email1.is_primary = email2.is_primary1)
+                    email1.email=email2.email AND
+                    email1.is_primary = email2.is_primary)
             WHERE contact1.contact_type = 'Organization'
               AND contact1.organization_name IS NOT NULL
               AND address1.street_address IS NOT NULL
@@ -323,9 +323,9 @@ function nyss_dedupe_org3_internal($o) {
               JOIN shadow_contact contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
                     contact1.organization_name = contact2.organization_name)
-              INNER JOIN shadow_address address1 ON contact1.id = address1.contact_id
+              INNER JOIN shadow_address address1 ON contact1.contact_id = address1.contact_id
               INNER JOIN shadow_address address2 ON (
-                    contact2.id = address2.contact_id AND
+                    contact2.contact_id = address2.contact_id AND
                     address1.street_address = address2.street_address AND
                     address1.city = address2.city)
             WHERE contact1.contact_type = 'Organization'
@@ -348,14 +348,14 @@ function nyss_dedupe_house1_internal($o) {
               JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
                     contact1.household_name = contact2.household_name)
-              INNER JOIN shadow_address AS address1 ON contact1.id = address1.contact_id
+              INNER JOIN shadow_address AS address1 ON contact1.contact_id = address1.contact_id
               INNER JOIN shadow_address AS address2 ON (
-                    contact2.id = address2.contact_id AND
+                    contact2.contact_id = address2.contact_id AND
                     address1.street_address = address2.street_address AND
                     address1.city = address2.city)
-              INNER JOIN civicrm_email AS email1 ON contact1.id = email1.contact_id
+              INNER JOIN civicrm_email AS email1 ON contact1.contact_id = email1.contact_id
               INNER JOIN civicrm_email AS email2 ON (
-                    contact1.id = email2.contact_id AND
+                    contact1.contact_id = email2.contact_id AND
                     email1.email = email2.email AND
                     email1.is_primary = email2.is_primary)
             WHERE contact1.contact_type = 'Household'
