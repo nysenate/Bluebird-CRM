@@ -16,7 +16,7 @@ CREATE TABLE shadow_contact (
     suffix_id varchar(255),
     birth_date date,
     contact_type varchar(255),
-    INDEX (first_name, middle_name, last_name),
+    INDEX (first_name, last_name, middle_name),
     INDEX (household_name),
     INDEX (organization_name),
     INDEX (birth_date)
