@@ -644,7 +644,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 	} //end add to group
 
-	//Add all new contacts to the email only exclusion group
+	//Add all new contacts to the email only group
     if ( $form_state['values']['emailimport'] == 1 ) {
 
         //Create the group if it doesn't already exist
@@ -676,10 +676,19 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             else
                 $group_params["contact_id.$index"] = $contact_id;
         }
+		
+		//we also need to set these new contacts to 'do_not_mail'
+		$new_contacts_list = ( !empty($new_contacts) ) ? implode( ',', $new_contacts ) : 0;
+		$setDNM = "UPDATE civicrm_contact SET do_not_mail = 1 WHERE id IN ( $new_contacts_list );";
 
         if ( !$dryrun ) {
-        // Create the GroupContact joins for each of these contacts
+            // Create the GroupContact joins for each of these contacts
             $groupcontact = civicrm_group_contact_add( $group_params );
+			
+			//set do not mail
+			$dao = &CRM_Core_DAO::executeQuery( $setDNM );
+			CRM_Core_DAO::freeResult( );
+			
         } else {
             nyss_out('status',"Adding "+count($new_contacts)+" to the Email Only group",true);
         }

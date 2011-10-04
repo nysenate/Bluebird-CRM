@@ -66,9 +66,9 @@ WHERE contact_type = 'Individual' AND ( last_name = '' OR last_name IS NULL )";
         CRM_Core_DAO::executeQuery( $query );
     }
 	
-	//4175 exclude Email Only group
+	//4403 exclude Mailing Exclusions group
 	if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
-		$gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Only';" );
+		$gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
 		if ( $gid ) { //continue if group found
 			$query = "
 DELETE exp

@@ -114,8 +114,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
 	
-	//retrieve Email Only group id
-	$eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Only';" );
+	//retrieve Mailing Exclusions group id
+	$eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
 	if ( !$eogid ) $eogid = 0; //prevent errors if group is not found
 
     $this->_contactIds = array_unique($this->_contactIds);
@@ -143,7 +143,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql .= " LEFT JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7) ";
     $sql .= " LEFT JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
 	
-	//join with group to exclude Email Only
+	//join with group to exclude Mailing_Exclusions
 	$sql .= " LEFT JOIN civicrm_group_contact cgc ON cgc.contact_id = c.id AND status = 'Added' AND group_id = $eogid ";
 	
 	//join with temp table to limit to search results
@@ -160,7 +160,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	//exclude impossibly old contacts
 	$sql .= " AND ( c.birth_date IS NULL OR c.birth_date = '' OR c.birth_date > '1901-01-01' ) ";
 	
-	//exclude email only group
+	//exclude mailing exclusion group
 	$sql .= " AND ( cgc.id IS NULL ) "; 
 	
 	//order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
