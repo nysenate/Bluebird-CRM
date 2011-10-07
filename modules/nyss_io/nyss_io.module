@@ -410,7 +410,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		//if street_unit value exists, and there is no "apt" text, prepend to value
 		if ( isset($l['street_unit']) && $l['street_unit'] ) {
 			$needle_found = 0;
-			$unit_needles = array ( 'apt', 'unit', 'super', 'sup', 'supt', 'ste', 'rm', 'pvt', 'fl', 'bsmt' );
+			$unit_needles = array ( 'apt', 'unit', 'super', 'sup', 'supt', 'ste', 'rm', 'pvt', 'fl', 'bsmt', 'lot' );
 			foreach ( $unit_needles as $unit_needle ) {
 				$needle_search = stripos( $l['street_unit'], $unit_needle );
 				if ( $needle_search !== false ) { $needle_found = 1; }
