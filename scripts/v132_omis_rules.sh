@@ -29,7 +29,7 @@ fi
 
 ###### Begin Upgrade Scripts ######
 
-$execSQL -i $instance -c "
+$execSql -i $instance -c "
     INSERT INTO civicrm_dedupe_rule_group
       (contact_type, threshold, level, is_default, name)
     VALUES
