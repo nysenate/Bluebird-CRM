@@ -71,3 +71,8 @@ function nyss_stripSpaces( $string ) {
         
 	return preg_replace( $pat, $rep, $string );
 }
+
+function convertLowerCase ( $string ) {
+
+	return strtolower($string);
+}

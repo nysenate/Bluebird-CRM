@@ -147,6 +147,7 @@ $nyss_iofields['civicrm_email'] = array(
 	'email' => array(
 		'fld' => 'email',
 		'required' => true,
+        'handler' => 'convertLowerCase',
 	),
 	'email_location_type_id' => array(
 		'fld' => 'location_type_id',
