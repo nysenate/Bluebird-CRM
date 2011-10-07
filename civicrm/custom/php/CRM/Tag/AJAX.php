@@ -44,7 +44,7 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         return $root;
     }
 
-    static function _build_node($source, $entity_tags) {
+    static function _build_node($source, $entity_tags, $entity_counts) {
         $node = array();
         foreach(self::$TAG_FIELDS as $field)
             $node[$field] = $source->$field;
@@ -52,6 +52,9 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         //A node is checked if there is a applicable entity tag for it.
         if($entity_tags !== null)
             $node['is_checked'] = in_array($source->id, $entity_tags);
+
+        if($entity_counts !== null)
+            $node['entity_count'] = CRM_Utils_Array::value($node['id'], $entity_counts, 1);
 
         $node['children'] = array();
         return $node;
@@ -67,7 +70,47 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
     }
 
     static function tag_tree() {
-        $entity_type = self::_require('entity_type', $_GET, "`entity_type` parameter is required.");
+
+        $entity_type = CRM_Core_DAO::escapeString(self::_require('entity_type', $_GET, "`entity_type` parameter is required."));
+
+        //If they request entity counts, build that into the tree as well.
+        if(CRM_Utils_Array::value('entity_counts', $_GET)) {
+
+            // There is definitely nothing like this in the civicrm_api. Using
+            // the DAO layer is way too slow when we get to hundreds of results.
+            // Hand rolled SQL it is...
+            $dao = new CRM_Core_DAO();
+            $conn = $dao->getDatabaseConnection()->connection;
+            $result = mysql_query("
+                SELECT tag.id, count(entity_tag.entity_id) as entity_count
+                FROM civicrm_tag as tag
+                  LEFT JOIN civicrm_entity_tag as entity_tag ON (
+                         tag.id = entity_tag.tag_id AND
+                         entity_tag.entity_table = '$entity_type')
+                  LEFT JOIN $entity_type as entity ON (
+                         entity.id = entity_tag.entity_id AND
+                         entity.is_deleted = 0)
+                WHERE tag.used_for LIKE '%$entity_type%'
+                GROUP BY tag.id", $conn);
+
+            while($row = mysql_fetch_assoc($result))
+                $entity_counts[$row['id']] = $row['entity_count'];
+
+            /*
+            // A PHP workhorse method. Its probably better to make the database do the work.
+            $result = mysql_query("
+                SELECT tag.id
+                FROM civicrm_tag as tag
+                  JOIN civicrm_entity_tag as entity_tag ON tag.id = entity_tag.tag_id
+                  JOIN civicrm_contact as entity ON entity.id = entity_tag.entity_id
+                WHERE tag.used_for LIKE '%civicrm_contact%'
+                  AND entity.is_deleted = 0
+                  AND entity_tag.entity_table = 'civicrm_contact'", $conn);
+
+            while($row = mysql_fetch_assoc($result))
+                $entity_counts[$row['id']]++;# = $row['entity_count'];
+            */
+        }
 
         // If they pass in an entity_id we can also get information on which tags apply
         // to the specified entity and include that along with the tree
@@ -79,8 +122,6 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                 'entity_type'=>CRM_Core_DAO::escapeString($entity_type),
                 'entity_id'=>CRM_Core_DAO::escapeString($entity_id));
             $result = civicrm_api('entity_tag', 'get', $params);
-
-            $entity_tags = array();
             foreach($result['values'] as $entity_tag)
                 $entity_tags[] = $entity_tag['tag_id'];
         }
@@ -92,17 +133,18 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         //Can't use the API because it doesn't support sorting (yet) and we need
         //the tags to be sorted in alphabetical order on each level.
         $tags = new CRM_Core_BAO_Tag();
-        $tags->used_for = CRM_Core_DAO::escapeString($entity_type);
+        $tags->used_for = $entity_type;
         $tags->orderBy('name');
         $tags->find();
 
+
         // Sort all the tags into root and nodes buckets. This simpifies the process
         // to building the root nodes by moving tags from the nodes bucket.
-        while ($tags->fetch()) {
-            if (!$tags->parent_id && $tags->is_tagset==0)
-                $roots[] = self::_build_node($tags, $entity_tags);
+        while($tags->fetch()) {
+            if (!$tags->parent_id)
+                $roots[] = self::_build_node($tags, $entity_tags, $entity_counts);
             else
-                $nodes[] = self::_build_node($tags, $entity_tags);
+                $nodes[] = self::_build_node($tags, $entity_tags ,$entity_counts);
         }
 
         // Recursively build the tree from each "root" using the "nodes"
