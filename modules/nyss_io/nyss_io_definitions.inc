@@ -10,33 +10,34 @@ $nyss_iofields['civicrm_contact'] = array(
 		'PK'=> true,
 	),
 	'first_name' => array(
-		'fld' => 'first_name',
+		'fld'     => 'first_name',
 		'handler' => 'convertProperCase',
 	),
 	/*'mid' => array(
 		'fld' => 'middle_name',
 	),*/
 	'middle_name' => array(
-		'fld' => 'middle_name',
+		'fld'     => 'middle_name',
+		'handler' => 'convertProperCase',
 	),
 	'last_name' => array(
-		'fld' => 'last_name',
+		'fld'     => 'last_name',
         'handler' => 'convertProperCase',
 	),
 	'prefix_id' => array(
-		'fld' => 'prefix_id',
+		'fld'     => 'prefix_id',
 	),
 	'suffix_id' => array(
-		'fld' => 'suffix_id',
+		'fld'     => 'suffix_id',
 	),
 	/*'gender' => array(
-		'fld' => 'gender_id',
+		'fld'     => 'gender_id',
 	),*/
 	'gender_id' => array(
-		'fld' => 'gender_id',
+		'fld'     => 'gender_id',
 	),
 	'birth_date' => array(
-		'fld' => 'birth_date',
+		'fld'     => 'birth_date',
 	),
 	/*'is' => array(
 		'fld' => 'is_deleted',
