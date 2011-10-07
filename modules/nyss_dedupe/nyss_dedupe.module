@@ -69,7 +69,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 
         // For internal queries, make sure to respect the contactIds constraints
         // Also avoid mirror results, i.e. (1,2) and (2,1)
-        // Verify that t1.id and t2.id are not the same as well.
+        // Verify that conact1._contact_id and contact2.contact_id are not the same as well.
         if($ruleType == 'internal') {
             if( !empty($o->contactIds) ) {
                 $cids = implode(',',$o->contactIds);
