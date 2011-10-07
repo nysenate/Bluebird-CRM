@@ -709,7 +709,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $params = array(
         'contact_id'       => $contactID,
         'location_type_id' => LOC_TYPE_HOME,
-        'email'            => $ctRow['OCOMPANY'],
+        'email'            => strtolower($ctRow['OCOMPANY']),
         'is_primary'       => 1,
       );
 
@@ -723,7 +723,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $params = array(
         'contact_id'       => $contactID,
         'location_type_id' => LOC_TYPE_HOME,
-        'email'            => $ctRow['EMAIL'],
+        'email'            => strtolower($ctRow['EMAIL']),
         'is_primary'       => 1,
       );
 
