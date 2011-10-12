@@ -197,6 +197,9 @@ margin:0;
 {/literal}
 {literal}
 <script type="text/javascript">
+var cidpre = /cid=\d*/.exec(document.location.search);
+var cidsplit = /\d.*/.exec(cidpre);
+var cid = cidsplit[0];
 cj(document).ready(function() {	
 	
 	resetBBTree('main', 'init');
@@ -207,6 +210,7 @@ function callTagListModal(treeLoc) {
 		url: '/civicrm/ajax/tag/tree',
 		data: {
 			entity_type: 'civicrm_contact',
+			entity_id: cid
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -271,6 +275,7 @@ function callTagListMain(treeLoc) {
 		url: '/civicrm/ajax/tag/tree',
 		data: {
 			entity_type: 'civicrm_contact',
+			entity_id: cid
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
