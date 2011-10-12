@@ -244,9 +244,6 @@ margin:0;
 {/literal}
 {literal}
 <script type="text/javascript">
-var cid = 0;
-var cidpre = /cid=\d*/.exec(document.location.search);
-cid = /\d.*/.exec(cidpre);
 cj(document).ready(function() {	
 	
 	resetBBTree('main', 'init');
@@ -688,15 +685,15 @@ function makeModalUpdate(tagLabel){
 			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
 			tagInfo.description = cj('.BBtree.edit dt#' + tagLabel).attr('description');
 			tagInfo.reserved = cj('.BBtree.edit dt#'+tagLabel).hasClass('isReserved');
-			var updateDialogInfo;
+			var updateDialogInfo = '';
 			if(tagInfo.reserved == true){
 			tagInfo.reserved = 'checked';} else {
-			tagInfo.reserved = '';
+			tagInfo.reserved = '';}
 			updateDialogInfo += '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
 			updateDialogInfo += '<div class="modalInputs">';
 			updateDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" value="'+tagInfo.name+'" /></div>';
 			updateDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+tagInfo.description+'"/></div>';
-			updateDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '+tagInfo.reserved+'/></div>';}
+			updateDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '+tagInfo.reserved+'/></div>';
 			cj('#dialog').html(updateDialogInfo);
 			cj('#dialog input:[name=tagName]').focus();
 		},
@@ -889,12 +886,12 @@ function addControlBox(tagLabel) {
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';*/
+	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';	if(cj(tagMouse).hasClass('checked')){
 		floatControlBox += '<input type="checkbox" class="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
 	} else {
 		floatControlBox += '<input type="checkbox" class="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
-	}
+	}*/
 	floatControlBox += '</span>';
 	if(tagMouse != 'dt#tagLabel_291')
 	{

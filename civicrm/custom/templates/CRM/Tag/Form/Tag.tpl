@@ -336,7 +336,8 @@ entityID={$entityID};
 entityTable='{$entityTable}';
 {literal}
 var cidpre = /cid=\d*/.exec(document.location.search);
-var cid = /\d.*/.exec(cidpre);
+var cidsplit = /\d.*/.exec(cidpre);
+var cid = cidsplit[0];
 function hideStatus( ) {
     cj( '#restmsg' ).hide( );
 }
@@ -349,6 +350,7 @@ function callTagListModal(treeLoc) {
 		url: '/civicrm/ajax/tag/tree',
 		data: {
 			entity_type: 'civicrm_contact',
+			entity_id: cid
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -413,6 +415,7 @@ function callTagListMain(treeLoc) {
 		url: '/civicrm/ajax/tag/tree',
 		data: {
 			entity_type: 'civicrm_contact',
+			entity_id: cid
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
