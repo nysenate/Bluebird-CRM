@@ -27,6 +27,10 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
             'internal' => '',
             'record' => 'nyss_dedupe_indiv5_record'
         ),
+        'Individual Omis' => array(
+            'internal' => 'nyss_dedupe_individual_omis_internal',
+            'record' => 'nyss_dedupe_individual_omis_record',
+        ),
         'Organization 1 (name + street + city + email)' => array(
             'internal' => 'nyss_dedupe_org1_internal',
             'record' => ''
@@ -65,7 +69,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 
         // For internal queries, make sure to respect the contactIds constraints
         // Also avoid mirror results, i.e. (1,2) and (2,1)
-        // Verify that t1.id and t2.id are not the same as well.
+        // Verify that conact1._contact_id and contact2.contact_id are not the same as well.
         if($ruleType == 'internal') {
             if( !empty($o->contactIds) ) {
                 $cids = implode(',',$o->contactIds);
@@ -465,4 +469,54 @@ function nyss_dedupe_fuzzy_address_record($o, $table, &$tableQueries) {
         ";
 
     // echo "<pre>{$tableQueries['civicrm.street_address.5']}</pre>"; exit();
+}
+
+function nyss_dedupe_individual_omis_internal($o) {
+    return "
+        SELECT contact1.contact_id id1,  contact2.contact_id id2, 5 weight
+        FROM shadow_contact AS contact1
+          JOIN shadow_contact AS contact2 ON (
+            contact1.first_name = contact2.first_name AND
+            contact1.last_name = contact2.last_name AND
+            contact1.contact_type = contact2.contact_type)
+          JOIN shadow_address AS address1 ON address1.contact_id = contact1.contact_id
+          JOIN shadow_address AS address2 ON (
+            address2.contact_id =  contact2.contact_id AND
+            address2.street_address = address1.street_address)
+        WHERE contact1.contact_type = 'Individual'
+          AND (contact1.suffix_id IS NULL OR contact2.suffix_id IS NULL OR contact1.suffix_id = contact2.suffix_id)
+          AND (contact1.middle_name IS NULL OR contact2.middle_name IS NULL OR contact1.middle_name = contact2.middle_name)
+          AND (contact1.birth_date IS NULL OR contact2.birth_date IS NULL OR contact1.birth_date = contact2.birth_date)
+          ";
+}
+
+function nyss_dedupe_individual_omis_record($o) {
+    $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
+    $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
+
+    // Since definitely have first and last name, escape them upfront.
+    $first_name = CRM_Core_DAO::escapeString($civicrm_contact['first_name']);
+    $last_name = CRM_Core_DAO::escapeString($civicrm_contact['last_name']);
+    $street_address = CRM_Core_DAO::escapeString($civicrm_address['street_address']);
+
+    $query = "
+        SELECT contact1.contact_id id1, 5 weight
+        FROM shadow_contact AS contact1
+          JOIN shadow_address AS address1 ON contact1.contact_id=address1.contact_id
+        WHERE contact1.contact_type = 'Individual'
+          AND contact1.first_name = BB_NORMALIZE('$first_name')
+          AND contact1.last_name = BB_NORMALIZE('$last_name')
+          AND address1.street_address = BB_NORMALIZE_ADDR('$street_address')
+          ";
+
+    if($birth_date = CRM_Core_DAO::escapeString($civicrm_contact['birth_date']))
+        $query .= " AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')\n";
+
+    if($suffix_id = CRM_Core_DAO::escapeString($civicrm_contact['suffix_id']))
+        $query .= " AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)\n";
+
+    if($middle_name = CRM_Core_DAO::escapeString($civicrm_contact['middle_name']))
+        $query .= " AND (contact1.middle_name IS NULL or contact1.middle_name = '$middle_name')\n";
+
+    return $query;
 }

@@ -34,5 +34,7 @@ $execSql -f $script_dir/../modules/nyss_dedupe/shadow.sql -i $instance
 ## future we might want to take a better approach and be more change proof.
 $execSql -i $instance -c "
     UPDATE civicrm_contact SET contact_type='Individual' WHERE contact_type='Individual';
+    UPDATE civicrm_contact SET contact_type='Organization' WHERE contact_type='Organization';
+    UPDATE civicrm_contact SET contact_type='Household' WHERE contact_type='Household';
     UPDATE civicrm_address SET name=NULL WHERE name IS NULL;
 "
