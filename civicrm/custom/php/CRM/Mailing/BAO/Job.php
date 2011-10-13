@@ -566,6 +566,11 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                                                         $this->id,
                                                         'status' );
                 if ( $status != 'Running' ) {
+				    //NYSS
+					$this->writeToDB( $deliveredParams,
+                                      $targetParams,
+                                      $mailing,
+                                      $job_date );
                     return false;
                 }
             }
@@ -589,23 +594,26 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
             } else {
                 /* Register the delivery event */
                 $deliveredParams[] = $field['id'];
+				$targetParams[]    = $field['contact_id']; //NYSS
 				
                 //NYSS 4234
 				$count++;
                 if ( $count % CRM_Core_DAO::BULK_MAIL_INSERT_COUNT == 0 ) {
-                    CRM_Mailing_Event_BAO_Delivered::bulkCreate( $deliveredParams );
+                    //CRM_Mailing_Event_BAO_Delivered::bulkCreate( $deliveredParams );
+					$this->writeToDB( $deliveredParams,
+                                      $targetParams,
+                                      $mailing,
+                                      $job_date );
                     $count = 0;
-                    $deliveredParams = array( );
+                    //$deliveredParams = array( );
                 }
-				
             }
             
-            $targetParams[] = $field['contact_id'];
-
+            //$targetParams[] = $field['contact_id'];
             unset( $result );
         }
 
-        if ( ! empty( $deliveredParams ) ) {
+        /*if ( ! empty( $deliveredParams ) ) {
             CRM_Mailing_Event_BAO_Delivered::bulkCreate( $deliveredParams );
         }
                                                          
@@ -613,9 +621,14 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
             // add activity record for every mail that is send
             $activityTypeID = CRM_Core_OptionGroup::getValue( 'activity_type',
                                                               'Bulk Email',
-                                                              'name' );
+                                                              'name' );*/
         
-            $activity = array('source_contact_id'    => $mailing->scheduled_id,
+		$result = $this->writeToDB( $deliveredParams,
+                                    $targetParams,
+                                    $mailing,
+                                    $job_date ); 
+
+            /*$activity = array('source_contact_id'    => $mailing->scheduled_id,
                               'target_contact_id'    => $targetParams,
                               'activity_type_id'     => $activityTypeID,
                               'source_record_id'     => $this->mailing_id,
@@ -650,7 +663,8 @@ AND    civicrm_activity.source_record_id = %2";
             }
         }
         
-        return true;
+        return true;*/
+		return $results; //NYSS
     }
     
     /**
@@ -735,14 +749,86 @@ AND    status IN ( 'Scheduled', 'Running', 'Paused' )
       // jobs that are approved
       require_once 'CRM/Mailing/Info.php';
       if ( CRM_Mailing_Info::workflowEnabled( ) ) {
-	require_once 'CRM/Core/OptionGroup.php';
+	  //NYSS
+	/*require_once 'CRM/Core/OptionGroup.php';
 	$approveOptionID = CRM_Core_OptionGroup::getValue( 'mail_approval_status',
 							   'Approved',
 							   'name' );
 	if ( $approveOptionID ) {
 	  return " AND m.approval_status_id = $approveOptionID ";
-	}
-      }
+	}*/
+    	  require_once 'CRM/Core/OptionGroup.php';
+          $approveOptionID = CRM_Core_OptionGroup::getValue( 'mail_approval_status',
+                                                             'Approved',
+                                                             'name' );
+          if ( $approveOptionID ) {
+              return " AND m.approval_status_id = $approveOptionID ";
+          }
+	  }
       return '';
     }
+	
+	//NYSS
+	public function writeToDB ( &$deliveredParams,
+                                &$targetParams,
+                                &$mailing,
+                                $job_date ) {
+        static $activityTypeID = null;
+
+        if ( ! empty( $deliveredParams ) ) {
+            CRM_Mailing_Event_BAO_Delivered::bulkCreate( $deliveredParams );
+            $deliveredParams = array( );
+        }
+
+        $result = true;
+        if ( ! empty( $targetParams ) &&
+             ! empty($mailing->scheduled_id) ) {
+
+            if ( ! $activityTypeID ) {
+                $activityTypeID = CRM_Core_OptionGroup::getValue( 'activity_type',
+                                                                  'Bulk Email',
+                                                                  'name' );
+                if ( ! $activityTypeID ) {
+                    CRM_Core_Error::fatal( );
+                }
+            }
+        
+            $activity = array('source_contact_id'    => $mailing->scheduled_id,
+                              'target_contact_id'    => $targetParams,
+                              'activity_type_id'     => $activityTypeID,
+                              'source_record_id'     => $this->mailing_id,
+                              'activity_date_time'   => $job_date,
+                              'subject'              => $mailing->subject,
+                              'status_id'            => 2,
+                              'deleteActivityTarget' => false,
+                              'campaign_id'          => $mailing->campaign_id
+                              );
+
+            //check whether activity is already created for this mailing.
+            //if yes then create only target contact record.  
+            $query  = "
+SELECT id
+FROM   civicrm_activity
+WHERE  civicrm_activity.activity_type_id = %1
+AND    civicrm_activity.source_record_id = %2";
+        
+            $queryParams = array( 1 => array( $activityTypeID  , 'Integer' ),
+                                  2 => array( $this->mailing_id, 'Integer' ) );
+            $activityID  = CRM_Core_DAO::singleValueQuery( $query,
+                                                           $queryParams );    
+        
+            if ( $activityID ) {
+                $activity['id'] = $activityID;  
+            }
+
+            require_once 'CRM/Activity/BAO/Activity.php';
+            if (is_a(CRM_Activity_BAO_Activity::create($activity),
+                     'CRM_Core_Error')) {
+                $result = false;
+            }
+        }
+
+        return $result;
+    }
+	
 }
