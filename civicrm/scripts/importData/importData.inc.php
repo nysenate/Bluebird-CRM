@@ -466,6 +466,12 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       if (isset($aPrefix[$ctRow['INSIDE1']])) {
         $prefix_id = $aPrefix[$ctRow['INSIDE1']];
       }
+      else if ($ctRow['SEX'] == 'M') {
+        $prefix_id = $aPrefix['Mr.'];
+      }
+      else if ($ctRow['SEX'] == 'F') {
+        $prefix_id = $aPrefix['Ms.'];
+      }
 
       // normalize the OMIS suffix into one of the accepted Bluebird suffixes
       $suffix = $aSuffixLookup[$ctRow['SUFFIX']]['suffix'];
@@ -709,7 +715,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $params = array(
         'contact_id'       => $contactID,
         'location_type_id' => LOC_TYPE_HOME,
-        'email'            => $ctRow['OCOMPANY'],
+        'email'            => strtolower($ctRow['OCOMPANY']),
         'is_primary'       => 1,
       );
 
@@ -723,7 +729,7 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
       $params = array(
         'contact_id'       => $contactID,
         'location_type_id' => LOC_TYPE_HOME,
-        'email'            => $ctRow['EMAIL'],
+        'email'            => strtolower($ctRow['EMAIL']),
         'is_primary'       => 1,
       );
 
@@ -1352,13 +1358,7 @@ function importIssueCodes($importSet)
 
 function getOptions($strGroup)
 {
-  $session =& CRM_Core_Session::singleton();
- 
-  $dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray);
-  $dao->fetch();
-  $optionGroupID = $dao->id;
-
-  $dao = &CRM_Core_DAO::executeQuery("SELECT name, label, value from civicrm_option_value where option_group_id=$optionGroupID;", CRM_Core_DAO::$_nullArray);
+  $dao = &CRM_Core_DAO::executeQuery("select name, label, value from civicrm_option_value where option_group_id=(select id from civicrm_option_group where name='$strGroup');", CRM_Core_DAO::$_nullArray);
 
   $options = array();
 
