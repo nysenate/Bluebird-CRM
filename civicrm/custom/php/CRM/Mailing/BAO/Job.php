@@ -561,7 +561,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
             // to avoid making too many DB calls for this rare case
             // lets do it once every 101 times (a random number lobo picked up)
             // another option is to just do this once per deliverGroup
-            if ( $key % 101 == 0 ) {
+            /*if ( $key % 101 == 0 ) {
                 $status =  CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Job',
                                                         $this->id,
                                                         'status' );
@@ -573,7 +573,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                                       $job_date );
                     return false;
                 }
-            }
+            }*/
              
             $result = $mailer->send($recipient, $headers, $body, $this->id);
                 
@@ -606,6 +606,17 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                                       $job_date );
                     $count = 0;
                     //$deliveredParams = array( );
+					
+					// hack to stop mailing job at run time, CRM-4246.
+                    // to avoid making too many DB calls for this rare case
+                    // lets do it when we snapshot
+                    $status =  CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Job',
+                                                            $this->id,
+                                                            'status' );
+                    if ( $status != 'Running' ) {
+                        return false;
+                    }
+					
                 }
             }
             
@@ -826,6 +837,8 @@ AND    civicrm_activity.source_record_id = %2";
                      'CRM_Core_Error')) {
                 $result = false;
             }
+			
+			$targetParams = array( ); //NYSS
         }
 
         return $result;
