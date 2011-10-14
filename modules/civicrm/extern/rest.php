@@ -26,7 +26,7 @@
  +--------------------------------------------------------------------+
 */
 
-session_start( );
+//session_start( );
 
 require_once '../civicrm.config.php';
 require_once 'CRM/Core/Config.php';
@@ -43,7 +43,6 @@ if ( isset( $_GET['json'] ) &&
 } else {
     header( 'Content-Type: text/xml' );
 }
-
 echo $rest->run( );
 
 

@@ -226,7 +226,7 @@ class CRM_Contribute_Form_Contribution extends CRM_Core_Form
             $processors = CRM_Core_PseudoConstant::paymentProcessor( false, false, "billing_mode IN ( 1, 3 )" );
             // at this stage only Authorize.net has been tested to support future start dates so if it's enabled let the template know 
             // to show receive date
-            $processorsSupportingFutureStartDate = array('Authorize.net');   
+            $processorsSupportingFutureStartDate = array('Authorize');   
             $processorsSupportingFutureStartDate  = array_intersect($processors,$processorsSupportingFutureStartDate);
             if (!empty($processorsSupportingFutureStartDate )){
                 $this->assign( 'processorSupportsFutureStartDate', true );                 
@@ -1128,7 +1128,7 @@ WHERE  contribution_id = {$this->_id}
         //Credit Card Contribution.
         if ( $this->_mode ) {
             $unsetParams = array( 'trxn_id', 'payment_instrument_id', 'contribution_status_id',
-                                   'cancel_date', 'cancel_reason' );
+                                  'cancel_date', 'cancel_reason' );
             foreach ( $unsetParams as $key ) {
                 if ( isset( $submittedValues[$key] ) ) {
                     unset( $submittedValues[$key] );

@@ -242,6 +242,8 @@ class CRM_UF_Page_Group extends CRM_Core_Page
         // add jquery files
         $profile = CRM_Utils_String::addJqueryFiles( $profile );
         
+        // prevent jquery conflict
+        $profile .= '<script type="text/javascript">jQuery.noConflict(true);</script>'; 
         $this->assign('profile', htmlentities($profile, ENT_NOQUOTES, 'UTF-8'));
         //get the title of uf group
         if ($gid) {

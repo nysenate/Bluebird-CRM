@@ -65,7 +65,7 @@ function civicrm_api3_entity_tag_get( $params ) {
     $values =& CRM_Core_BAO_EntityTag::getTag( $entityID, $entityTable );
     $result = array( );
     foreach ( $values as $v ) {
-        $result[] = array( 'tag_id' => $v );
+        $result[$v] = array( 'tag_id' => $v );
     }
     return civicrm_api3_create_success($result,$params);
 

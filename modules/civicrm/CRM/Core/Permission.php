@@ -508,5 +508,31 @@ class CRM_Core_Permission {
         
         return $componentName;
     }
+
+    /**
+     * Get all the contact emails for users that have a specific permission
+     *
+     * @param string $permissionName name of the permission we are interested in
+     *
+     * @return string a comma separated list of email addresses
+     */
+    public static function permissionEmails( $permissionName ) {
+        $config = CRM_Core_Config::singleton( );
+        require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userPermissionClass ) . '.php' );
+        return eval( 'return ' . $config->userPermissionClass . '::permissionEmails( $permissionName );' );
+    }
+
+    /**
+     * Get all the contact emails for users that have a specific role
+     *
+     * @param string $roleName name of the role we are interested in
+     *
+     * @return string a comma separated list of email addresses
+     */
+    public static function roleEmails( $roleName ) {
+        $config   = CRM_Core_Config::singleton( );
+        require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userRoleClass ) . '.php' );
+        return eval( 'return ' . $config->userRoleClass . '::roleEmails( $roleName );' );
+    }
     
-  }
+}

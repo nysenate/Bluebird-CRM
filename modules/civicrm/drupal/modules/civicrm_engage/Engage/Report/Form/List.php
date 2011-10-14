@@ -50,9 +50,7 @@ class Engage_Report_Form_List extends CRM_Report_Form {
      *
      */
     const 
-        CG_CONSTITUENT_INDIVIDUAL_TABLE = 'civicrm_value_core_info',
         CF_CONSTITUENT_TYPE_NAME = 'constituent_type',
-        CF_PRIMARY_LANG_NAME     = 'primary_language',
         CF_OTHER_NAME_NAME       = 'other_name',
         CG_VOTER_INFO_TABLE      = 'civicrm_value_voter_info',
         CF_PARTY_REG_NAME        = 'party_registration',
@@ -97,7 +95,20 @@ class Engage_Report_Form_List extends CRM_Report_Form {
     protected $_voterInfoField   = false;
      
     protected $_contributionField   = false; 
+
+    /**
+     *  Constituent individual table name has changed
+     *  between versions of civicrm. Populate this field
+     *  dynamically to ensure backward compatability
+     */
+    protected $_constituentIndividualTable  = false;
     
+    /**
+     * Langauage field might be primary or secondary
+     * depending on version...
+     */
+    protected $_langaugeName  = false;
+
     protected $_summary      = null;
 
     /**
@@ -163,6 +174,25 @@ class Engage_Report_Form_List extends CRM_Report_Form {
     protected $_vhCol;
 
     function __construct( ) {
+        // Find the invidual constituent table (varies between versions) 
+        $query = "SELECT table_name FROM civicrm_custom_group g"
+          . " JOIN civicrm_custom_field f ON g.id = f.custom_group_id"
+          . " WHERE column_name='". self::CF_CONSTITUENT_TYPE_NAME ."' AND"
+          . " ( g.table_name = 'civicrm_value_core_info' OR g.table_name "
+          . " = 'civicrm_value_constituent_info' )";
+        $dao = CRM_Core_DAO::executeQuery( $query );
+        $dao->fetch( );
+        $this->_constituentIndividualTable = $dao->table_name;
+
+        // Find the language field name (varies between versions - either
+        // primary_langauge or secondary_language) 
+        $query = "SELECT column_name FROM civicrm_custom_field"
+          . " WHERE column_name = 'primary_language' OR"
+          . " column_name = 'secondary_language'";
+        $dao = CRM_Core_DAO::executeQuery( $query );
+        $dao->fetch( );
+        $this->_languageName = $dao->column_name;
+
         //  Find the Voter Info custom data group
         $query = "SELECT id, table_name FROM civicrm_custom_group"
             . " WHERE table_name='". self::CG_VOTER_INFO_TABLE ."'";
@@ -172,7 +202,7 @@ class Engage_Report_Form_List extends CRM_Report_Form {
         $this->_voterInfoTable = $dao->table_name;
 
         //  From Voter Info custom data group get Party Registration info
-        $query = "SELECT column_name, option_group_ID"
+        $query = "SELECT column_name, option_group_id"
             . " FROM civicrm_custom_field"
             . " WHERE custom_group_id={$voterInfoID}"
             . " AND column_name='". self::CF_PARTY_REG_NAME ."'";
@@ -189,7 +219,7 @@ class Engage_Report_Form_List extends CRM_Report_Form {
         }
 
         //  From Voter Info custom data group get Voter History info
-        $query = "SELECT column_name, option_group_ID"
+        $query = "SELECT column_name, option_group_id"
             . " FROM civicrm_custom_field"
             . " WHERE custom_group_id={$voterInfoID}"
             . " AND column_name='". self::CF_VOTER_HISTORY_NAME ."'";
@@ -206,7 +236,7 @@ SELECT ov.label, ov.value FROM civicrm_option_value ov
 WHERE ov.option_group_id = (
     SELECT cf.option_group_id FROM civicrm_custom_field cf
     WHERE  cf.custom_group_id = (
-        SELECT cg.id FROM civicrm_custom_group cg WHERE cg.table_name='". self::CG_CONSTITUENT_INDIVIDUAL_TABLE ."' ) AND cf.column_name='" . self::CF_CONSTITUENT_TYPE_NAME . "'
+        SELECT cg.id FROM civicrm_custom_group cg WHERE cg.table_name='". $this->_constituentIndividualTable ."' ) AND cf.column_name='" . self::CF_CONSTITUENT_TYPE_NAME . "'
 )";
         $dao = CRM_Core_DAO::executeQuery( $query );
         while ( $dao->fetch() ) {
@@ -224,13 +254,13 @@ WHERE ov.option_group_id = (
         $query = "
 SELECT column_name 
 FROM   civicrm_custom_field 
-WHERE custom_group_id={$demoTableID} AND column_name = '" . self::CF_PRIMARY_LANG_NAME . "' LIMIT 1";
+WHERE custom_group_id={$demoTableID} AND column_name = '" . $this->_languageName . "' LIMIT 1";
         $dao = CRM_Core_DAO::executeQuery( $query );
         $dao->fetch( );
         $this->_demoLangCol = $dao->column_name;
 
         // ** Core Info ** //
-        $query = "SELECT id, table_name FROM civicrm_custom_group WHERE table_name='" . self::CG_CONSTITUENT_INDIVIDUAL_TABLE . "'";
+        $query = "SELECT id, table_name FROM civicrm_custom_group WHERE table_name='" . $this->_constituentIndividualTable . "'";
         $dao = CRM_Core_DAO::executeQuery( $query );
         $dao->fetch( );
         $coreInfoTableID = $dao->id;
@@ -353,7 +383,7 @@ ORDER BY ov.label
         }
     }
 
-    function whereGroupClause( $clause ) {
+    function engageWhereGroupClause( $clause ) {
         $smartGroupQuery = ""; 
         require_once 'CRM/Contact/DAO/Group.php';
         require_once 'CRM/Contact/BAO/SavedSearch.php';

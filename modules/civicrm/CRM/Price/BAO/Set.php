@@ -188,6 +188,7 @@ WHERE     ct.id = cp.contribution_type_id AND
                 break;
 
             case 'civicrm_contribution':
+            case 'civicrm_membership':
                 $usedBy[$table] = 1;
                 break;
                 
@@ -287,21 +288,34 @@ WHERE     ct.id = cp.contribution_type_id AND
     }
 
     /**
-     * Find a price_set_id associatied with the given table and id
+     * Find a price_set_id associatied with the given table, id and usedFor
+     * Used For value for events:1, contribution:2, membership:3
      *
      * @param string $entityTable
-     * @param integer $entityId
+     * @param int    $entityId
+     * @param int    $usedFor ( price set that extends/used for particular component )
+     *
      * @return integer|false price_set_id, or false if none found
      */
-    public static function getFor( $entityTable, $entityId ) 
+    public static function getFor( $entityTable, $entityId, $usedFor = null )
     {
         if ( !$entityTable || !$entityId ) return false;  
-        
-        require_once 'CRM/Price/DAO/SetEntity.php';
-        $dao = new CRM_Price_DAO_SetEntity( );
-        $dao->entity_table = $entityTable;
-        $dao->entity_id    = $entityId;
-        $dao->find( true );
+
+        $sql = 'SELECT ps.id as price_set_id 
+                FROM civicrm_price_set ps
+                INNER JOIN civicrm_price_set_entity pse ON ps.id = pse.price_set_id
+                WHERE pse.entity_table = %1 AND pse.entity_id = %2';
+
+        $params = array( 1 => array( $entityTable, 'String' ),
+                         2 => array( $entityId, 'Integer' ) );
+        if ( $usedFor ) {
+            $sql .= ' AND ps.extends = %3 ';
+            $params[3] = array( $usedFor, 'Integer' );
+        }
+
+        $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+        $dao->fetch();
+
         return (isset($dao->price_set_id)) ? $dao->price_set_id : false; 
     }
 
@@ -409,7 +423,8 @@ WHERE     ct.id = cp.contribution_type_id AND
                              'active_on',
                              'expire_on',
                              'javascript',
-                             'visibility_id'
+                             'visibility_id',
+                             'is_required'
                              );
         if ( $required == true ) {
             $priceFields[] = 'is_required';   
@@ -463,13 +478,15 @@ AND ( expire_on IS NULL OR expire_on >= {$currentTime} )
 
         // also get the pre and post help from this price set
         $sql = "
-SELECT help_pre, help_post
+SELECT extends, contribution_type_id, help_pre, help_post
 FROM   civicrm_price_set
 WHERE  id = %1";
         $dao =& CRM_Core_DAO::executeQuery( $sql, $params );
         if ( $dao->fetch( ) ) {
-            $setTree[$setID]['help_pre'] = $dao->help_pre;
-            $setTree[$setID]['help_post'] = $dao->help_post;
+            $setTree[$setID]['extends']              = $dao->extends;
+            $setTree[$setID]['contribution_type_id'] = $dao->contribution_type_id;
+            $setTree[$setID]['help_pre']             = $dao->help_pre;
+            $setTree[$setID]['help_post']            = $dao->help_post;
         }
 
         return $setTree;
@@ -516,8 +533,6 @@ WHERE  id = %1";
             
             //get the price set fields participant count.
             if ( $entityTable == 'civicrm_event' ) {
-                require_once "CRM/Price/BAO/Set.php";
-                
                 //get option count info.
                 $form->_priceSet['optionsCountTotal'] = self::getPricesetCount( $priceSetId );
                 if ( $form->_priceSet['optionsCountTotal'] ) {
@@ -568,7 +583,8 @@ WHERE  id = %1";
 
         require_once 'CRM/Price/BAO/LineItem.php';
         foreach ( $fields as $id => $field ) {
-            if ( empty( $params["price_{$id}"] ) && $params["price_{$id}"] == null ) {
+            if ( !CRM_Utils_Array::value( "price_{$id}", $params ) || 
+                 ( empty( $params["price_{$id}"] ) && $params["price_{$id}"] == null ) ) {
                 // skip if nothing was submitted for this field
                 continue;
             }
@@ -680,7 +696,8 @@ WHERE  id = %1";
         
           
         $validFieldsOnly = true;
-        if ( CRM_Utils_System::getClassName($form) == 'CRM_Contribute_Form_Contribution' ) {
+        $className = CRM_Utils_System::getClassName( $form );
+        if ( in_array($className, array('CRM_Contribute_Form_Contribution', 'CRM_Member_Form_Membership') ) ) {
             $validFieldsOnly = false;
         }
 
@@ -688,21 +705,28 @@ WHERE  id = %1";
         $form->_priceSet = CRM_Utils_Array::value( $priceSetId, $priceSet );
         $form->assign( 'priceSet',  $form->_priceSet );
         require_once 'CRM/Core/PseudoConstant.php';
-        $className = CRM_Utils_System::getClassName( $form );
         
+        $component = 'contribution';
+        if ( $className == 'CRM_Member_Form_Membership') {
+            $component = 'membership';
+        }
+
         if ( $className == 'CRM_Contribute_Form_Contribution_Main' ) {
             $feeBlock =& $form->_values['fee'];
+            if ( !empty($form->_useForMember) ) {
+                $component = 'membership';
+            }
         } else {
             $feeBlock =& $form->_priceSet['fields'];
         }
         
         // call the hook.
         require_once 'CRM/Utils/Hook.php';
-        CRM_Utils_Hook::buildAmount( 'contribution', $form, $feeBlock );
+        CRM_Utils_Hook::buildAmount( $component, $form, $feeBlock );
         
         foreach ( $feeBlock as $field ) {
             if ( CRM_Utils_Array::value( 'visibility', $field ) == 'public' || 
-                 $className == 'CRM_Contribute_Form_Contribution' ) {
+                 !$validFieldsOnly ) {
                 
                 $options = CRM_Utils_Array::value( 'options', $field );
                 if ( !is_array( $options ) ) continue; 
@@ -716,6 +740,31 @@ WHERE  id = %1";
                                                           $options );
             }
         }
+    }
+    
+    /** 
+     * Function to set daefult the price set fields.
+     * 
+     * @return array $defaults 
+     * @access public 
+     */ 
+    static function setDefaultPriceSet( &$form, &$defaults ) {
+        if ( !isset($form->_priceSet) || empty($form->_priceSet['fields']) ) {
+            return $defaults;
+        }
+        
+        foreach( $form->_priceSet['fields'] as $key => $val ) {
+            foreach ( $val['options'] as $keys => $values ) {
+                if ( $values['is_default'] ) {
+                    if ( $val['html_type'] == 'CheckBox') {
+                        $defaults["price_{$key}"][$keys] = 1;
+                    } else {
+                        $defaults["price_{$key}"] = $keys;
+                    }
+                }
+            }
+        }
+        return $defaults;
     }
     
     /**
@@ -832,6 +881,92 @@ INNER JOIN  civicrm_price_set pset    ON ( pset.id = field.price_set_id )
         
         return $pricesetFieldCount[$sid];
     }
+
+    public static function getMembershipCount( $ids )
+    {
+        $queryString = "
+SELECT       count( pfv.id ) AS count, pfv.id AS id
+FROM         civicrm_price_field_value pfv
+INNER JOIN    civicrm_membership_type mt ON mt.id = pfv.membership_type_id
+WHERE        pfv.id IN ( $ids )
+GROUP BY     mt.member_of_contact_id";
+
+        $crmDAO = CRM_Core_DAO::executeQuery( $queryString );
+        $count = array();
+
+        while ( $crmDAO->fetch() ) {
+            $count[$crmDAO->id] = $crmDAO->count;
+        }
+
+        return $count;
+
+    }
+
+    /**
+     * Function to check if auto renew option should be shown
+     * 
+     * @param int $priceSetId price set id
+     * 
+     * @return int $autoRenewOption ( 0:hide, 1:optional 2:required )
+     */
+    public static function checkAutoRenewForPriceSet( $priceSetId ) {
+        // auto-renew option should be visible if membership types associated with all the fields has
+        // been set for auto-renew option
+        // Auto renew checkbox should be frozen if for all the membership type auto renew is required
+
+        // get the membership type auto renew option and check if required or optional
+        $query = 'SELECT mt.auto_renew, mt.duration_interval, mt.duration_unit
+            FROM civicrm_price_field_value pfv 
+            INNER JOIN civicrm_membership_type mt ON pfv.membership_type_id = mt.id
+            INNER JOIN civicrm_price_field pf ON pfv.price_field_id = pf.id
+            WHERE pf.price_set_id = %1
+            AND   pf.is_active = 1
+            AND   pfv.is_active = 1';
+        
+        $params = array( 1 => array( $priceSetId, 'Integer') );
+        
+        $dao = CRM_Core_DAO::executeQuery( $query, $params );
+        $autoRenewOption = 2;
+        $interval = $unit = array();
+        while ( $dao->fetch( ) ) {
+            if ( !$dao->auto_renew ) {
+                $autoRenewOption = 0;
+                break;
+            }
+            if ( $dao->auto_renew == 1 ) {
+                $autoRenewOption = 1;
+            }
+
+            $interval[$dao->duration_interval] = $dao->duration_interval;
+            $unit[$dao->duration_unit        ] = $dao->duration_unit;
+        }
+        
+        if ( count($interval) == 1 && count($unit) == 1 && $autoRenewOption > 0 ) {
+            return $autoRenewOption;
+        } else {
+            return 0;
+        }
+    }
+    
+    /**
+     * Function to retrieve auto renew frequency and interval
+     *   
+     * @param int $priceSetId price set id
+     *
+     * @return array associate array of frequency interval and unit
+     * @static
+     * @access public
+     */
+    public static function getRecurDetails ( $priceSetId ) {
+        $query = 'SELECT mt.duration_interval, mt.duration_unit
+            FROM civicrm_price_field_value pfv 
+            INNER JOIN civicrm_membership_type mt ON pfv.membership_type_id = mt.id
+            INNER JOIN civicrm_price_field pf ON pfv.price_field_id = pf.id
+            WHERE pf.price_set_id = %1 LIMIT 1';
+        
+        $params = array( 1 => array( $priceSetId, 'Integer') );
+        $dao = CRM_Core_DAO::executeQuery( $query, $params ); 
+        $dao->fetch();
+        return array( $dao->duration_interval, $dao->duration_unit );
+    }   
 }
-
-

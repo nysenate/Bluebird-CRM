@@ -24,7 +24,10 @@
  +--------------------------------------------------------------------+
 *}
 <div id="pricesetTotal" class="crm-section section-pricesetTotal">
-	<div class="label" id="pricelabel"><label>Total Fee(s)</label></div>
+	<div class="label" id="pricelabel"><label>
+         {if ( $extends eq 'Contribution' ) || ( $extends eq 'Membership' )}
+           {ts}Total Amount{/ts}{else}{ts}Total Fee(s){/ts}
+         {/if}</label></div>
 	<div class="content view-value" id="pricevalue" ></div>
 </div>
 

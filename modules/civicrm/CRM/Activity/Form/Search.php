@@ -338,7 +338,7 @@ class CRM_Activity_Form_Search extends CRM_Core_Form
         if ( ! CRM_Utils_Array::value( 'activity_test', $this->_formValues ) ) {
             $this->_formValues["activity_test"] = 0;
         }
-        if ( ! CRM_Utils_Array::value( 'activity_contact_name', $this->_formValues ) ) {
+        if ( ! CRM_Utils_Array::value( 'activity_contact_name', $this->_formValues ) && ! CRM_Utils_Array::value( 'contact_id', $this->_formValues ) ) {
             $this->_formValues['activity_role'] = null;
         }
         require_once 'CRM/Core/BAO/CustomValue.php';
@@ -451,10 +451,10 @@ class CRM_Activity_Form_Search extends CRM_Core_Form
         if ( ! $this->_force ) {
             return;
         }
-        $status = CRM_Utils_Request::retrieve( 'status', 'String', CRM_Core_DAO::$_nullObject );
+        $status = CRM_Utils_Request::retrieve( 'status', 'String', $this );
         if ( $status ) {
-            $this->_formValues['activity_status_id'] = $status;
-            $this->_defaults  ['activity_status_id'] = $status;
+            $this->_formValues['activity_status'] = $status;
+            $this->_defaults  ['activity_status'] = $status;
         }
 
         $survey = CRM_Utils_Request::retrieve( 'survey', 'Positive',
@@ -462,15 +462,22 @@ class CRM_Activity_Form_Search extends CRM_Core_Form
         if ( $survey ) {
             $this->_formValues['activity_survey_id'] = $survey;
         }
-        $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive', CRM_Core_DAO::$_nullObject );
+        $cid = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this );
         
         if ( $cid ) {
             $cid = CRM_Utils_Type::escape( $cid, 'Integer' );
             if ( $cid > 0 ) {
                 $this->_formValues['contact_id'] = $cid;
-                require_once 'CRM/Contact/BAO/Contact.php';
-                list( $display, $image ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $cid );
-                $this->_defaults['sort_name'] = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $cid, 'sort_name' );
+
+                $activity_role = CRM_Utils_Request::retrieve( 'activity_role', 'Positive', $this );
+
+                if ( $activity_role ) {
+                    $this->_formValues['activity_role'] = $activity_role;
+                } else {
+                    require_once 'CRM/Contact/BAO/Contact.php';
+                    list( $display, $image ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $cid );
+                    $this->_defaults['sort_name'] = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $cid, 'sort_name' );
+                }
                 // also assign individual mode to the template
                 $this->_single = true;
             }

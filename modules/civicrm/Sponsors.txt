@@ -1,0 +1,89 @@
+************************************************
+Sponsors for 3.4 / 4.0 Make-it-Happen Projects
+************************************************
+The following people and organizations sponsored new and improved features for the 3.4 / 4.0 release.
+
+ACORN Canada http://acorncanada.org 
+Allora Consulting http://alloraconsulting.com
+American Friends Service Committee http://afsc.org/
+Australian Greens http://greens.org.au
+BREAZE http://breaze.org.au
+Canadian Paramedics http://www.peelparamedics.com
+Community Builders Australia Pty Ltd 
+Corvair Society of America (CORSA) http://www.corvair.org/
+Donor Depot http://donordepot.com 
+Energetica http://energetica.com.au
+Fuzion http://fuzion.co.nz
+Gold Strategy Group http://www.goldstrategygroup.com 
+JMA Consulting http://jmaconsulting.biz
+Joomkit Ltd http://joomkit.com
+Kabissa - Space for Change in Africa http://kabissa.org
+NS Web Solutions http://nswebsolutions.com
+NAMI Louisville  http://namilouisville.org
+Progressive Technology Project http://www.progressivetech.org
+RVTC http://rvtc.us
+Volunteer Honduras http://www.volunteerhonduras.org
+
+Briney, Matthew
+Brownsberger, Will
+Burden, Monica
+Calleeuw, Bart
+Cimpian, Casti
+Clarke, Jill
+Cheryl
+Day, Janette
+Gold, Ariel
+Kehilat Hadar 
+Malkoun, Anthony
+Matsushita, Jun
+McNaughton, Eileen
+Murray, Joe
+Peter Davis
+Shaughnessy, Brian
+Spagarino, Andres
+Speleo
+Stuart, josh
+Tabletguy
+Watts, Danny
+Wistreich, Nic
+
+****************************************
+Sponsors for 3.3 Make-it-Happen Projects
+****************************************
+The following people and organizations sponsored new and improved features for the 3.3 release.
+
+JMA Consulting: http://jmaconsulting.biz/
+Emergency Picnic: http://emergencypicnic.net/
+Thomas Carlson
+Micheas Herman
+T.J. Hellman
+Gold Strategy Group: http://www.goldstrategygroup.com
+Laura Velkei
+John Barclay
+Matthew Briney: http://emotivellc.com
+2020Media: http://www.2020media.com/
+Social Contxt: http://socialcontxt.com/
+Impari Systems Inc: http://www.imparisystems.com/
+Alpha: http://uk.alpha.org
+Cambridge Union: http://www.cus.org
+St Ethelburga's: http://stethelburgas.org
+Joomkit: http://www.joomkit.com
+International Mountain Biking Assocation: http://www.imba.com/
+Niro Solutions: http://www.nirosolutions.com/
+Fuzion: http://fuzion.co.nz
+ArtD Webdesign
+CivicActions: http://civicactions.com/
+NES Alumni and Friends Nonprofit Partnership: https://www.nesalumni.org/en
+Gold Strategy Group: http://www.goldstrategygroup.com
+Creative Commons: http://creativecommons.org/
+Community Builders Australia Pty Ltd: http://www.communitybuilders.com.au/
+Australian Greens: http://greens.org.au/
+NES Alumni and Friends Nonprofit Partnership: https://www.nesalumni.org/en
+Data-Scribe: http://www.datascribe.biz/
+Rayogram: http://www.rayogram.com/
+GingerFeet LLC: http://www.gingerfeet.com/
+Kabissa: http://kabissa.org
+Beth Hynes-Ciernia
+
+More details at:
+http://wiki.civicrm.org/confluence/display/CRMDOC33/Make+it+Happen!

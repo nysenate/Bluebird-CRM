@@ -2584,7 +2584,8 @@ class DB_DataObject extends DB_DataObject_Overload
             }
             
 
-            if ($v & DB_DATAOBJECT_STR) {
+            if ($v & DB_DATAOBJECT_STR ||
+                $v & DB_DATAOBJECT_TXT) {
                 $this->whereAdd(" $kSql  = " . $this->_quote((string) (
                         ($v & DB_DATAOBJECT_BOOL) ? 
                             // this is thanks to the braindead idea of postgres to 

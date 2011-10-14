@@ -199,6 +199,8 @@ WHERE     %2.id = %1";
                                    'line_total'           => $qty * $price,
                                    'participant_count'    => $qty * $participantsPerField,
                                    'max_value'            => CRM_Utils_Array::value( 'max_value', $options[$oid] ),
+                                   'membership_type_id'   => CRM_Utils_Array::value( 'membership_type_id', $options[$oid] ),
+                                   'auto_renew'           => CRM_Utils_Array::value( 'auto_renew', $options[$oid] ),
                                    'html_type'            => $fields['html_type'] );
         }
     }

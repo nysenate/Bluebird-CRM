@@ -302,14 +302,26 @@ SELECT     civicrm_email.id as email_id
      * Get the group details to which given email belongs
      * 
      * @param string $email     email of the contact
+     * @param int    $contactID contactID if we want an exact match
+     *
      * @return array $groups    array of group ids
      * @access public
      */
-    function getContactGroups($email) {
-        $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
-        $email = $strtolower( $email );
+    function getContactGroups($email, $contactID = null) {
+        if ( $contactID ) {
+            $query = "
+                 SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title 
+                 FROM civicrm_group_contact group_a
+                 LEFT JOIN civicrm_group ON civicrm_group.id = group_a.group_id
+                 LEFT JOIN civicrm_contact ON ( group_a.contact_id = civicrm_contact.id )
+                 WHERE civicrm_contact.id = %1";
+        
+            $params = array( 1 => array( $contactID, 'Integer' ) );
+        } else {
+            $strtolower = function_exists('mb_strtolower') ? 'mb_strtolower' : 'strtolower';
+            $email = $strtolower( $email );
 
-        $query = "
+            $query = "
                  SELECT DISTINCT group_a.group_id, group_a.status, civicrm_group.title 
                  FROM civicrm_group_contact group_a
                  LEFT JOIN civicrm_group ON civicrm_group.id = group_a.group_id
@@ -317,7 +329,9 @@ SELECT     civicrm_email.id as email_id
                  LEFT JOIN civicrm_email ON civicrm_contact.id = civicrm_email.contact_id
                  WHERE civicrm_email.email = %1";
         
-        $params = array( 1 => array( $email, 'String' ) );
+            $params = array( 1 => array( $email, 'String' ) );
+        }
+
         $dao =& CRM_Core_DAO::executeQuery( $query, $params );
         $groups = array();
         while ( $dao->fetch( ) ) {
@@ -342,14 +356,14 @@ SELECT     civicrm_email.id as email_id
      * @public
      * @return void
      */
- function commonSubscribe( &$groups, &$params, $contactId = null, $context = null) 
+    function commonSubscribe( &$groups, &$params, $contactId = null, $context = null) 
     {
-        $contactGroups = CRM_Mailing_Event_BAO_Subscribe::getContactGroups($params['email']);
+        $contactGroups = CRM_Mailing_Event_BAO_Subscribe::getContactGroups($params['email'], $contactId);
         $group = array( );
         $success = null;
         foreach ( $groups as $groupID ) {
             $title = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Group', $groupID, 'title');
-            if ( array_key_exists( $groupID, $contactGroups ) ) {
+            if ( array_key_exists( $groupID, $contactGroups ) && $contactGroups[$groupID]['status'] != 'Removed' ) {
                 $group[$groupID]['title']  = $contactGroups[$groupID]['title'];
                 
                 $group[$groupID]['status'] = $contactGroups[$groupID]['status'];

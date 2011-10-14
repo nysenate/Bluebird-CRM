@@ -722,17 +722,44 @@ SELECT g.*
  WHERE g.id IN ( $ids )
 ";
                 $dao =& CRM_Core_DAO::executeQuery( $query );
+                $allGroupIDs = array();
+                $cachedGroupIDs = array();
                 while ( $dao->fetch( ) ) {
                     // currently operation is restrcited to VIEW/EDIT
                     if ( $dao->where_clause ) {
-                        $clauses[] = $dao->where_clause;
+                        $allGroupIDs[] = $dao->id;
                         if ( $dao->select_tables ) {
+                            $tmpTables = array();
+                            foreach ( unserialize( $dao->select_tables ) as $tmpName => $tmpInfo ) {
+                                if ($tmpName == '`civicrm_group_contact-' . $dao->id . '`') {
+                                    $tmpName = '`civicrm_group_contact-ACL`';
+                                    $tmpInfo = str_replace('civicrm_group_contact-' . $dao->id, 'civicrm_group_contact-ACL', $tmpInfo);
+                                }
+                                elseif ($tmpName == '`civicrm_group_contact_cache_' . $dao->id . '`') {
+                                    $tmpName = '`civicrm_group_contact_cache-ACL`';
+                                    $tmpInfo = str_replace('civicrm_group_contact_cache_' . $dao->id, 'civicrm_group_contact_cache-ACL', $tmpInfo);
+                                }
+                                $tmpTables[$tmpName] = $tmpInfo;
+                            }
                             $tables = array_merge( $tables,
-                                                   unserialize( $dao->select_tables ) );
+                                                   $tmpTables );
                         }
                         if ( $dao->where_tables ) {
+                            $tmpTables = array();
+                            foreach ( unserialize( $dao->where_tables ) as $tmpName => $tmpInfo ) {
+                                if ($tmpName == '`civicrm_group_contact-' . $dao->id . '`') {
+                                    $tmpName = '`civicrm_group_contact-ACL`';
+                                    $tmpInfo = str_replace('civicrm_group_contact-' . $dao->id, 'civicrm_group_contact-ACL', $tmpInfo);
+                                }
+                                elseif ($tmpName == '`civicrm_group_contact_cache_' . $dao->id . '`') {
+                                    $tmpName = '`civicrm_group_contact_cache-ACL`';
+                                    $tmpInfo = str_replace('civicrm_group_contact_cache_' . $dao->id, 'civicrm_group_contact_cache-ACL', $tmpInfo);
+                                    $cachedGroupIDs[] = $dao->id;
+                                }
+                                $tmpTables[$tmpName] = $tmpInfo;
+                            }
                             $whereTables = array_merge( $whereTables,
-                                                        unserialize( $dao->where_tables ) );
+                                                        $tmpTables );
                         }
                     }
                     
@@ -743,6 +770,14 @@ SELECT g.*
                         require_once 'CRM/Contact/BAO/GroupContactCache.php';
                         CRM_Contact_BAO_GroupContactCache::load( $dao );
                     }
+                }
+
+                if ( $allGroupIDs ) {
+                    $clauses[] = '( `civicrm_group_contact-ACL`.group_id IN (' . join( ', ',  $allGroupIDs) . ') AND `civicrm_group_contact-ACL`.status IN ("Added") )';
+                }
+
+                if ( $cachedGroupIDs ) {
+                    $clauses[] = '`civicrm_group_contact_cache-ACL`.group_id IN (' . join( ', ',  $cachedGroupIDs) . ')';
                 }
             }
         }

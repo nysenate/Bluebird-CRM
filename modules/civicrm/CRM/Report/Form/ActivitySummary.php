@@ -63,6 +63,9 @@ class CRM_Report_Form_ActivitySummary extends CRM_Report_Form {
                                                      'title'    => ts( 'Contact' ),
                                                      'default'  => true ),
                                               ),
+                                       'order_bys' =>             
+                                       array( 'sort_name'  =>
+                                              array( 'title' => ts( 'Contact Name') ) ),
                                        'grouping' => 'contact-fields',
                                        ),
                                 
@@ -72,6 +75,9 @@ class CRM_Report_Form_ActivitySummary extends CRM_Report_Form {
                                        array( 'email'   =>
                                               array( 'title'   => 'Email',
                                                      'default' => true ) ),
+                                       'order_bys' =>             
+                                       array( 'email'  =>
+                                              array( 'title' => ts( 'Email') ) ),
                                        'grouping' => 'contact-fields',
                                        ),
                                 
@@ -123,6 +129,12 @@ class CRM_Report_Form_ActivitySummary extends CRM_Report_Form {
                                               'activity_type_id'   =>
                                               array( 'title'      => ts( 'Activity Type' ),
                                                      'default'    => true ),
+                                              ),
+                                       'order_bys' =>             
+                                       array( 'activity_date_time'  =>
+                                              array( 'title' => ts( 'Activity Date' ) ),
+                                              'activity_type_id'  =>
+                                              array( 'title' => ts( 'Activity Type' ) )
                                               ),
                                        'grouping' => 'activity-fields',
                                        'alias'    => 'activity'
@@ -354,23 +366,12 @@ class CRM_Report_Form_ActivitySummary extends CRM_Report_Form {
                 }
             }
             
-            if ( in_array( "{$this->_aliases['civicrm_contact']}.id", $this->_groupBy ) ) {
-                $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact']}.id ";
-            }
-            $this->_groupBy = "GROUP BY " . implode( ', ', $this->_groupBy ) . " {$this->_rollup} ";
-            
+            $this->_groupBy = "GROUP BY " . implode( ', ', $this->_groupBy );            
         } else {
             $this->_groupBy = "GROUP BY {$this->_aliases['civicrm_contact']}.id ";
-            $this->_orderBy = "ORDER BY {$this->_aliases['civicrm_contact']}.sort_name, {$this->_aliases['civicrm_contact']}.id ";
         }
     }
     
-    function orderBy( ) {
-        if ( !$this->_orderBy ) {
-            $this->_orderBy = "";
-        }
-    }
-
     function formRule ( $fields, $files, $self ) {
         $errors = array();
         $contactFields = array( 'sort_name', 'email', 'phone' );

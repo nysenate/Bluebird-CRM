@@ -660,6 +660,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
         $this->assign( 'id',
                        CRM_Utils_Array::value( 'uf_group_id', $this->_formValues ) );
         $operator = CRM_Utils_Array::value( 'operator', $this->_formValues, 'AND' );
+        $this->set( 'queryOperator', $operator );
         if ( $operator == 'OR' ) {
             $this->assign( 'operator', ts( 'OR' ) );
         } else {

@@ -89,22 +89,28 @@ class CRM_ACL_API {
      * @return string the group where clause for this user
      * @access public
      */
-    public static function whereClause( $type, &$tables, &$whereTables, $contactID = null, $onlyDeleted = false, $skipDeleteClause = false ) {
+    public static function whereClause( $type,
+                                        &$tables,
+                                        &$whereTables,
+                                        $contactID = null,
+                                        $onlyDeleted = false,
+                                        $skipDeleteClause = false ) {
+        // the default value which is valid for rhe final AND
+        $deleteClause = ' ( 1 ) ';
+        if ( ! $skipDeleteClause ) {
+            if (CRM_Core_Permission::check('access deleted contacts') and $onlyDeleted) {
+                $deleteClause = '(contact_a.is_deleted)';
+            } else {
+                // CRM-6181
+                $deleteClause = '(contact_a.is_deleted = 0)';
+            }
+        }
+
         // first see if the contact has edit / view all contacts
         if ( CRM_Core_Permission::check( 'edit all contacts' ) ||
              ( $type == self::VIEW &&
                CRM_Core_Permission::check( 'view all contacts' ) ) ) {
-            $deleteClause = ' ( 1 ) ';
-
-            if ( !$skipDeleteClause ) {
-                if (CRM_Core_Permission::check('access deleted contacts') and $onlyDeleted) {
-                    $deleteClause = '(contact_a.is_deleted)';
-                } else {
-                    // CRM-6181
-                    $deleteClause = '(contact_a.is_deleted = 0)';
-                }
-            }
-            return $deleteClause;            
+            return $skipDeleteClause ? ' ( 1 ) ' : $deleteClause;
         }
 
         if ( $contactID == null ) {
@@ -117,9 +123,14 @@ class CRM_ACL_API {
         }
 
         require_once 'CRM/ACL/BAO/ACL.php';
-        return CRM_ACL_BAO_ACL::whereClause( $type, $tables, $whereTables, $contactID );
+        return implode( ' AND ',
+                        array( CRM_ACL_BAO_ACL::whereClause( $type,
+                                                             $tables,
+                                                             $whereTables,
+                                                             $contactID ),
+                               $deleteClause ) );
     }
-
+    
     /**
      * get all the groups the user has access to for the given operation
      *

@@ -144,7 +144,8 @@ class CRM_Contribute_Form_ContributionView extends CRM_Core_Form
         
         require_once 'CRM/Price/BAO/Set.php';
         $lineItems = array( );
-        if ( $id && CRM_Price_BAO_Set::getFor( 'civicrm_contribution', $id ) ) {
+        if ( $id && ( CRM_Price_BAO_Set::getFor( 'civicrm_contribution', $id, CRM_Core_Component::getComponentID( 'CiviContribute' ) )
+                      || CRM_Price_BAO_Set::getFor( 'civicrm_contribution', $id, CRM_Core_Component::getComponentID( 'CiviMember' ) ) ) ) {
             require_once 'CRM/Price/BAO/LineItem.php';
             $lineItems[] = CRM_Price_BAO_LineItem::getLineItems( $id, 'contribution' );
         }

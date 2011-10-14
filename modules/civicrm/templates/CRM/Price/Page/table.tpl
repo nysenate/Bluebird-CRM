@@ -51,7 +51,7 @@
 {/if}
 {if $context EQ "Contribution"}
     {if $action eq 8}
-        {ts}If you no longer want to use this price set, click the contribution page title below, and modify the contribution amounts configuration.{/ts}
+        {ts}If you no longer want to use this price set, click the contribution page title below, and modify the Amounts or Memmbership tab configuration.{/ts}
     {else}
         {ts}This price set is used by the contribution page(s) listed below. Click the contribution page title to change or remove the price set.{/ts}
     {/if}
@@ -65,7 +65,7 @@
 
       {foreach from=$usedBy.civicrm_contribution_page item=contributionPage key=id}
            <tr>
-               <td><a href="{crmURL p="civicrm/admin/contribute/amount" q="action=update&reset=1&id=`$id`"}" title="{ts}Change or remove the price set used for this contribution page.{/ts}">{$contributionPage.title}</a></td>
+               <td><a href="{crmURL p="civicrm/admin/contribute/settings" q="action=update&reset=1&id=`$id`"}" title="{ts}Change or remove the price set used for this contribution page.{/ts}">{$contributionPage.title}</a></td>
                <td>{$contributionPage.type}</td>
                <td>{$contributionPage.startDate|truncate:10:''|crmDate}{if $contributionPage.endDate}&nbsp;to&nbsp;{$contributionPage.endDate|truncate:10:''|crmDate}{/if}</td>
            </tr>

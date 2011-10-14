@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
-<!-- This xml file defines the custom data, option values, and profiles to be used with CiviEngage -->
+<!-- This xml file defines the custom data, option values, and profiles to be used with CiviEngage, PB / CiviEngage v2.0 -->
 <CustomData>	
   <CustomGroups>
-    <CustomGroup>
-      <name>Primary_Contact</name>
-      <title>Primary Contact</title>
-      <extends>Organization</extends>
-      <style>Inline</style>
-      <collapse_display>0</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>1</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_primary_contact</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
     <CustomGroup>
       <name>Voter_Info</name>
       <title>Voter Info</title>
@@ -30,9 +16,9 @@
       <is_multiple>0</is_multiple>
       <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
-<!-- Constituent_Info_Individuals uses civicrm_value_core_info table name, a name remnant from pilot project -->
+<!-- Constituent_Info_Individuals uses civicrm_value_core_info table name, a name remnant from pilot project; renamed to civicrm_value_consituent_info -->
     <CustomGroup>
-      <name>Constituent_Info__Individuals</name>
+      <name>Constituent_Info_Individuals</name>
       <title>Constituent Info - Individuals</title>
       <extends>Individual</extends>
       <style>Inline</style>
@@ -41,7 +27,7 @@
       <help_post></help_post>
       <weight>4</weight>
       <is_active>1</is_active>
-      <table_name>civicrm_value_core_info</table_name>
+      <table_name>civicrm_value_constituent_info</table_name>
       <is_multiple>0</is_multiple>
       <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
@@ -59,23 +45,9 @@
       <is_multiple>0</is_multiple>
       <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
-    <CustomGroup>
-      <name>Leadership_Level</name>
-      <title>Leadership Level</title>
-      <extends>Activity</extends>
-      <style>Inline</style>
-      <collapse_display>0</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>6</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_leadership_level</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
 <!-- Constituent_Info_Organizations uses civicrm_value_contact_info table name, a name remnant from pilot project -->
     <CustomGroup>
-      <name>Constituent_Info__Organizations</name>
+      <name>Constituent_Info_Organizations</name>
       <title>Constituent Info - Organizations</title>
       <extends>Organization</extends>
       <style>Inline</style>
@@ -92,7 +64,8 @@
       <name>Grant_Info</name>
       <title>Grant Info</title>
       <extends>Organization</extends>
-      <style>Tab</style>
+	    <extends_entity_column_value>:;:;:;Foundation:;:;:;</extends_entity_column_value>
+      <style>Inline</style>
       <collapse_display>0</collapse_display>
       <help_pre></help_pre>
       <help_post></help_post>
@@ -133,52 +106,6 @@
       <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
     <CustomGroup>
-      <name>Contribution_Source</name>
-      <title>Contribution Source</title>
-      <extends>Contribution</extends>
-      <style>Inline</style>
-      <collapse_display>1</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>11</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_contribution_source</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
-    <CustomGroup>
-      <name>Walk_List_Responses</name>
-      <title>Walk List Responses</title>
-      <extends>Activity</extends>
-      <extends_entity_column_value_option_group>activity_type</extends_entity_column_value_option_group>
-      <extends_entity_column_value_option_value>Door Knock</extends_entity_column_value_option_value>
-      <style>Inline</style>
-      <collapse_display>1</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>12</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_door_knock_responses</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
-    <CustomGroup>
-      <name>Call_List_Responses</name>
-      <title>Call List Responses</title>
-      <extends>Activity</extends>
-      <extends_entity_column_value_option_group>activity_type</extends_entity_column_value_option_group>
-      <extends_entity_column_value_option_value>Phone Call</extends_entity_column_value_option_value>
-      <style>Inline</style>
-      <collapse_display>1</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>13</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_phone_bank_responses</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
-    <CustomGroup>
       <name>Event_Details</name>
       <title>Event Details</title>
       <extends>Event</extends>
@@ -193,20 +120,6 @@
       <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
     <CustomGroup>
-      <name>Activity_Source_Details</name>
-      <title>Activity Source Details</title>
-      <extends>Activity</extends>
-      <style>Inline</style>
-      <collapse_display>0</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>16</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_source_details</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
-    <CustomGroup>
       <name>Communication_Details</name>
       <title>Communication Details</title>
       <extends>Contact</extends>
@@ -217,22 +130,6 @@
       <weight>2</weight>
       <is_active>1</is_active>
       <table_name>civicrm_value_communication_details</table_name>
-      <is_multiple>0</is_multiple>
-      <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
-    <CustomGroup>
-      <name>Event_Campaign_Details</name>
-      <title>Event Campaign Details</title>
-      <extends>Event</extends>
-      <extends_entity_column_value_option_group>event_type</extends_entity_column_value_option_group>
-      <extends_entity_column_value_option_value>Campaign</extends_entity_column_value_option_value>
-      <style>Inline</style>
-      <collapse_display>0</collapse_display>
-      <help_pre></help_pre>
-      <help_post></help_post>
-      <weight>15</weight>
-      <is_active>1</is_active>
-      <table_name>civicrm_value_event_campaign_details</table_name>
       <is_multiple>0</is_multiple>
       <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
@@ -266,32 +163,32 @@
     </CustomGroup>
 <!-- new groups -->
     <CustomGroup>
-        <name>Media_Info__Org</name>
-        <title>Media Info - Org</title>
+        <name>Media_Outlet_Info</name>
+        <title>Media Outlet Info</title>
         <extends>Organization</extends>
-	    <extends_entity_column_value>:;:;:;Media_Info__Org:;:;:;</extends_entity_column_value>
-        <style>Tab</style>
+	    <extends_entity_column_value>:;:;:;Media_Outlet:;:;:;</extends_entity_column_value>
+        <style>Inline</style>
         <collapse_display>0</collapse_display>
         <help_pre></help_pre>
         <help_post></help_post>
         <weight>19</weight>
         <is_active>1</is_active>
-        <table_name>civicrm_value_media_info__org_19</table_name>
+        <table_name>civicrm_value_media_outlet_info_19</table_name>
         <is_multiple>0</is_multiple>
         <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
     <CustomGroup>
-        <name>Media_Info_Ind</name>
-        <title>Media Info - Ind</title>
+        <name>Media_Info</name>
+        <title>Media Info</title>
         <extends>Individual</extends>
-	    <extends_entity_column_value>:;:;:;Media_Info:;:;:;</extends_entity_column_value>
-        <style>Tab</style>
+	    <extends_entity_column_value>:;:;:;Media_Contact:;:;:;</extends_entity_column_value>
+        <style>Inline</style>
         <collapse_display>0</collapse_display>
         <help_pre></help_pre>
         <help_post></help_post>
         <weight>20</weight>
         <is_active>1</is_active>
-        <table_name>civicrm_value_media_info__ind_20</table_name>
+        <table_name>civicrm_value_media_info_20</table_name>
         <is_multiple>0</is_multiple>
         <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
@@ -299,8 +196,8 @@
         <name>Funder_Info</name>
         <title>Funder Info</title>
         <extends>Individual</extends>
-	    <extends_entity_column_value>:;:;:;Funder:;:;:;</extends_entity_column_value>
-        <style>Tab</style>
+	    <extends_entity_column_value>:;:;:;Funder_Contact:;:;:;</extends_entity_column_value>
+        <style>Inline</style>
         <collapse_display>0</collapse_display>
         <help_pre></help_pre>
         <help_post></help_post>
@@ -311,125 +208,29 @@
         <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
 	    <CustomGroup>
-        <name>Elected_Info</name>
-        <title>Elected Info</title>
+        <name>Elected_Official_Info</name>
+        <title>Elected Official Info</title>
         <extends>Individual</extends>
-	    <extends_entity_column_value>:;:;:;Elected_Info__Ind:;:;:;</extends_entity_column_value>
-        <style>Tab</style>
-        <collapse_display>0</collapse_display>
-        <help_pre></help_pre>
-        <help_post></help_post>
-        <weight>21</weight>
-        <is_active>1</is_active>
-        <table_name>civicrm_value_elected_info_22</table_name>
-        <is_multiple>0</is_multiple>
-        <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>
-	<CustomGroup>
-        <name>Membership_Source_Details</name>
-        <title>Membership Source Details</title>
-        <extends>Membership</extends>
+	    <extends_entity_column_value>:;:;:;Elected_Official:;:;:;</extends_entity_column_value>
         <style>Inline</style>
         <collapse_display>0</collapse_display>
         <help_pre></help_pre>
         <help_post></help_post>
         <weight>22</weight>
         <is_active>1</is_active>
-        <table_name>civicrm_value_membership_source_details_23</table_name>
+        <table_name>civicrm_value_elected_official_info_22</table_name>
         <is_multiple>0</is_multiple>
         <collapse_adv_display>0</collapse_adv_display>
     </CustomGroup>
-    <CustomGroup>
-        <name>Survey_Activity_Details</name>
-        <title>Survey Activity Details</title>
-        <extends>Activity</extends>
-        <style>Inline</style>
-        <collapse_display>0</collapse_display>
-        <help_pre></help_pre>
-        <help_post></help_post>
-        <weight>23</weight>
-        <is_active>1</is_active>
-        <table_name>civicrm_value_survey_activity_details</table_name>
-        <is_multiple>0</is_multiple>
-        <collapse_adv_display>0</collapse_adv_display>
-    </CustomGroup>  
   </CustomGroups>
   <CustomFields>
     <CustomField>
-      <label>Name</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>1</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>name</column_name>
-      <custom_group_name>Primary_Contact</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Title</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>0</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>92</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>title</column_name>
-      <custom_group_name>Primary_Contact</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Email</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>0</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>98</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>email</column_name>
-      <custom_group_name>Primary_Contact</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Phone</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>0</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>106</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>phone</column_name>
-      <custom_group_name>Primary_Contact</custom_group_name>
-    </CustomField>
-    <CustomField>
       <label>Precinct</label>
-      <data_type>Float</data_type>
+      <data_type>String</data_type>
       <html_type>Text</html_type>
       <is_required>0</is_required>
       <is_searchable>1</is_searchable>
-      <is_search_range>1</is_search_range>
+      <is_search_range>0</is_search_range>
       <weight>93</weight>
       <is_active>1</is_active>
       <is_view>0</is_view>
@@ -506,7 +307,7 @@
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>party_registration</column_name>
-      <option_group_name>party_registration_20090826152659</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
       <custom_group_name>Voter_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -558,7 +359,7 @@
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>county_name</column_name>
-      <option_group_name>county_name_20090921132351</option_group_name>
+      <option_group_name>county_name_options</option_group_name>
       <custom_group_name>Voter_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -579,7 +380,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>voter_history</column_name>
-      <option_group_name>voter_history_20090929101544</option_group_name>
+      <option_group_name>voter_history_values</option_group_name>
       <custom_group_name>Voter_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -598,8 +399,8 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>constituent_type</column_name>
-      <option_group_name>constituent_type_ind</option_group_name>
-      <custom_group_name>Constituent_Info__Individuals</custom_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
+      <custom_group_name>Constituent_Info_Individuals</custom_group_name>
     </CustomField>
 	<CustomField>
         <label>Constituent Type - Org</label>
@@ -617,8 +418,8 @@ N - New</help_post>
         <note_columns>60</note_columns>
         <note_rows>4</note_rows>
         <column_name>constituent_type_org</column_name>
-        <option_group_name>constituent_type_org</option_group_name>
-        <custom_group_name>Constituent_Info__Organizations</custom_group_name>
+        <option_group_name>constituent_type_org_values</option_group_name>
+        <custom_group_name>Constituent_Info_Organizations</custom_group_name>
     </CustomField>
     <CustomField>
       <label>Staff Responsible</label>
@@ -635,8 +436,8 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>staff_responsible</column_name>
-      <option_group_name>staff_responsible_20090901181905</option_group_name>
-      <custom_group_name>Constituent_Info__Individuals</custom_group_name>
+      <option_group_name>staff_responsible_values</option_group_name>
+      <custom_group_name>Constituent_Info_Individuals</custom_group_name>
     </CustomField>
     <CustomField>
       <label>Date Started</label>
@@ -654,7 +455,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>date_started</column_name>
-      <custom_group_name>Constituent_Info__Individuals</custom_group_name>
+      <custom_group_name>Constituent_Info_Individuals</custom_group_name>
     </CustomField>
     <CustomField>
       <label>Other Name</label>
@@ -672,7 +473,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>other_name</column_name>
-      <custom_group_name>Constituent_Info__Individuals</custom_group_name>
+      <custom_group_name>Constituent_Info_Individuals</custom_group_name>
     </CustomField>
     <CustomField>
       <label>How Started</label>
@@ -690,8 +491,8 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>how_started</column_name>
-      <option_group_name>how_started_20090929083619</option_group_name>
-      <custom_group_name>Constituent_Info__Individuals</custom_group_name>
+      <option_group_name>how_started_options</option_group_name>
+      <custom_group_name>Constituent_Info_Individuals</custom_group_name>
     </CustomField>
     <CustomField>
       <label>Leadership Level</label>
@@ -708,7 +509,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>leadership_level</column_name>
-      <option_group_name>leadership_level_20090826153735</option_group_name>
+      <option_group_name>leadership_level_values</option_group_name>
       <custom_group_name>Grassroots_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -728,7 +529,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>issues_interest</column_name>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
+      <option_group_name>issue_areas_options</option_group_name>
       <custom_group_name>Grassroots_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -747,7 +548,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>volunteer_interests</column_name>
-      <option_group_name>volunteer_interests_20090903201346</option_group_name>
+      <option_group_name>volunteer_interests_options</option_group_name>
       <custom_group_name>Grassroots_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -765,26 +566,8 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>member_status</column_name>
-      <option_group_name>member_status_20090930123623</option_group_name>
+      <option_group_name>member_status_values</option_group_name>
       <custom_group_name>Grassroots_Info</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Leadership Level</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>28</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>leadership_level</column_name>
-      <option_group_name>leadership_level_20090826153735</option_group_name>
-      <custom_group_name>Leadership_Level</custom_group_name>
     </CustomField>
     <CustomField>
       <label>Average Amount</label>
@@ -819,7 +602,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>funding_areas</column_name>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
+      <option_group_name>issue_areas_options</option_group_name>
       <custom_group_name>Grant_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -907,7 +690,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>multiyear_grant</column_name>
-      <option_group_name>multiyear_grant_20091103175442</option_group_name>
+      <option_group_name>multiyear_grant_status</option_group_name>
       <custom_group_name>Proposal_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -943,7 +726,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>proposal_status</column_name>
-      <option_group_name>proposal_status_20091124143715</option_group_name>
+      <option_group_name>proposal_status_values</option_group_name>
       <custom_group_name>Proposal_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1039,7 +822,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>invitation_response</column_name>
-      <option_group_name>invitation_response_20091123100320</option_group_name>
+      <option_group_name>invitation_response_options</option_group_name>
       <custom_group_name>Participant_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1077,7 +860,7 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>second_call_response</column_name>
-      <option_group_name>invitation_response_20091123100320</option_group_name>
+      <option_group_name>invitation_response_options</option_group_name>
       <custom_group_name>Participant_Info</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1115,320 +898,8 @@ N - New</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>reminder_response</column_name>
-      <option_group_name>invitation_response_20091123100320</option_group_name>
+      <option_group_name>invitation_response_options</option_group_name>
       <custom_group_name>Participant_Info</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Contact Attended?</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>78</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>contact_attended</column_name>
-      <option_group_name>contact_attended__20091123100701</option_group_name>
-      <custom_group_name>Participant_Info</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Participant Campaign Code</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>82</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>participant_campaign_code</column_name>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-      <custom_group_name>Participant_Info</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Contribution Campaign Code</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>21</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>campaign_source_code</column_name>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-      <custom_group_name>Contribution_Source</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Contribution Campaign Method</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>49</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>campaign_method</column_name>
-      <option_group_name>campaign_method_20090909215244</option_group_name>
-      <custom_group_name>Contribution_Source</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Is this a Field Canvass Campaign</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>24</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>is_this_a_field_engage_campaign</column_name>
-      <option_group_name>is_this_a_phone_bank__20090910084851</option_group_name>
-      <custom_group_name>Walk_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Walk List Q1</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>25</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q1</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Walk_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Walk List Q2</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>29</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q2</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Walk_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Walk List Q3</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>31</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q3</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Walk_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Walk List Q4</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>38</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q4</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Walk_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Walk List Status</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>39</weight>
-      <help_post>NH - Not Home
-MV - Moved
-D - Deceased
-WA - Wrong Address</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>walk_list_status</column_name>
-      <option_group_name>walk_list_status_20091001142548</option_group_name>
-      <custom_group_name>Walk_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Is this a Call List?</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>13</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>is_this_a_phone_bank</column_name>
-      <option_group_name>is_this_a_phone_bank__20090910084851</option_group_name>
-      <custom_group_name>Call_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Call List Status</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>51</weight>
-      <help_post>NH - Not Home
-MV - Moved
-D - Deceased
-WN - Wrong Number</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>call_list_status</column_name>
-      <option_group_name>call_list_status_20090922131641</option_group_name>
-      <custom_group_name>Call_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Call List Q1</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>18</weight>
-      <help_post>Y - Yes
-N - No
-U - Undecided
-D - Declined</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q1</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Call_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Call List Q2</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>44</weight>
-      <help_post>Y - Yes
-N - No
-U - Undecided
-D - Declined</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q2</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Call_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Call List Q3</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>45</weight>
-      <help_post>Y - Yes
-N - No
-U - Undecided
-D - Declined</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q3</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Call_List_Responses</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Call List Q4</label>
-      <data_type>String</data_type>
-      <html_type>Radio</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>50</weight>
-      <help_post>Y - Yes
-N - No
-U - Undecided
-D - Declined</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q4</column_name>
-      <option_group_name>q1_20090922131907</option_group_name>
-      <custom_group_name>Call_List_Responses</custom_group_name>
     </CustomField>
     <CustomField>
       <label>Event Contact Person</label>
@@ -1445,44 +916,8 @@ D - Declined</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>event_contact_person</column_name>
-      <option_group_name>staff_responsible_20090901181905</option_group_name>
+      <option_group_name>staff_responsible_values</option_group_name>
       <custom_group_name>Event_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Event Campaign Code</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>11</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>event_source_code</column_name>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-      <custom_group_name>Event_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Activity Campaign Code</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>4</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>activity_source_code</column_name>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-      <custom_group_name>Activity_Source_Details</custom_group_name>
     </CustomField>
     <CustomField>
       <label>Best time to Contact</label>
@@ -1500,7 +935,7 @@ D - Declined</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>best_time_to_contact</column_name>
-      <option_group_name>best_time_to_contact_20091102160221</option_group_name>
+      <option_group_name>best_time_to_contact_options</option_group_name>
       <custom_group_name>Communication_Details</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1519,7 +954,7 @@ D - Declined</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>communication_status</column_name>
-      <option_group_name>communication_status_20091103160300</option_group_name>
+      <option_group_name>communication_status_options</option_group_name>
       <custom_group_name>Communication_Details</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1574,78 +1009,6 @@ D - Declined</help_post>
       <custom_group_name>Communication_Details</custom_group_name>
     </CustomField>
     <CustomField>
-      <label>Q1 Text</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>3</weight>
-      <help_post>Question 1 for Phone bank or Field Canvass</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q1_text</column_name>
-      <custom_group_name>Event_Campaign_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Q2 Text</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>5</weight>
-      <help_post>Question 2 for Phone bank or Field Canvass</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q2_text</column_name>
-      <custom_group_name>Event_Campaign_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Q3 Text</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>7</weight>
-      <help_post>Question 3 for Phone bank or Field Canvass</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q3_text</column_name>
-      <custom_group_name>Event_Campaign_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Q4 Text</label>
-      <data_type>String</data_type>
-      <html_type>Text</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>9</weight>
-      <help_post>Question 4 for Phone bank or Field Canvass</help_post>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>q4_text</column_name>
-      <custom_group_name>Event_Campaign_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
       <label>Rating</label>
       <data_type>String</data_type>
       <html_type>Select</html_type>
@@ -1660,7 +1023,7 @@ D - Declined</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>rating</column_name>
-      <option_group_name>rating_20091201142049</option_group_name>
+      <option_group_name>rating_values</option_group_name>
       <custom_group_name>Organizational_Details</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1679,25 +1042,7 @@ D - Declined</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>ethnicity</column_name>
-      <option_group_name>ethnicity_20090901181604</option_group_name>
-      <custom_group_name>Demographics</custom_group_name>
-    </CustomField>
-    <CustomField>
-      <label>Primary Language</label>
-      <data_type>String</data_type>
-      <html_type>Select</html_type>
-      <is_required>0</is_required>
-      <is_searchable>1</is_searchable>
-      <is_search_range>0</is_search_range>
-      <weight>123</weight>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <text_length>255</text_length>
-      <date_format>M:;:;:;d:;:;:;Y</date_format>
-      <note_columns>60</note_columns>
-      <note_rows>4</note_rows>
-      <column_name>primary_language</column_name>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>ethnicity_options</option_group_name>
       <custom_group_name>Demographics</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1715,7 +1060,7 @@ D - Declined</help_post>
       <note_columns>60</note_columns>
       <note_rows>4</note_rows>
       <column_name>secondary_language</column_name>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
       <custom_group_name>Demographics</custom_group_name>
     </CustomField>
     <CustomField>
@@ -1735,331 +1080,163 @@ D - Declined</help_post>
       <column_name>kids</column_name>
       <custom_group_name>Demographics</custom_group_name>
     </CustomField>
-	<CustomField>
+    <CustomField>
         <label>Media Type - Org</label>
-        <data_type>String</data_type>
+      <data_type>String</data_type>
         <html_type>CheckBox</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>3</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
         <options_per_line>3</options_per_line>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>media_type__org_78</column_name>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
-		<custom_group_name>Media_Info__Org</custom_group_name>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+        <column_name>media_type_org_78</column_name>
+		<option_group_name>media_type_org_options</option_group_name>
+		<custom_group_name>Media_Outlet_Info</custom_group_name>
     </CustomField>
     <CustomField>
         <label>Media Type - Ind</label>
-        <data_type>String</data_type>
+      <data_type>String</data_type>
         <html_type>CheckBox</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>4</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
         <options_per_line>3</options_per_line>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>media_type__ind_79</column_name>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
-		<custom_group_name>Media_Info_Ind</custom_group_name>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+        <column_name>media_type_ind_79</column_name>
+		<option_group_name>media_type_org_options</option_group_name>
+		<custom_group_name>Media_Info</custom_group_name>
     </CustomField>
     <CustomField>
         <label>Beat</label>
-        <data_type>String</data_type>
+      <data_type>String</data_type>
         <html_type>CheckBox</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>6</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
         <column_name>beat_80</column_name>
-		<option_group_name>beat_20100306140017</option_group_name>
-		<custom_group_name>Media_Info_Ind</custom_group_name>
+		<option_group_name>beat_options</option_group_name>
+		<custom_group_name>Media_Info</custom_group_name>
     </CustomField>
     <CustomField>
         <label>Media Issue Interest</label>
-        <data_type>String</data_type>
+      <data_type>String</data_type>
         <html_type>CheckBox</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>8</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
+      <weight>8</weight>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
         <options_per_line>3</options_per_line>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
         <column_name>media_issue_interest_82</column_name>
-		<option_group_name>funding_areas_20090903195322</option_group_name>
-        <custom_group_name>Media_Info_Ind</custom_group_name>
+		<option_group_name>issue_areas_options</option_group_name>
+        <custom_group_name>Media_Info</custom_group_name>
     </CustomField>
     <CustomField>
         <label>Funder Program Areas</label>
         <data_type>Memo</data_type>
         <html_type>TextArea</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>2</weight>
         <attributes>rows=4, cols=60</attributes>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
         <column_name>funder_program_areas_84</column_name>
 		<custom_group_name>Funder_Info</custom_group_name>
     </CustomField>
     <CustomField>
         <label>Funder Issue Interest</label>
-        <data_type>String</data_type>
-        <html_type>CheckBox</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <data_type>String</data_type>
+      <html_type>CheckBox</html_type>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>3</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <options_per_line>3</options_per_line>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <options_per_line>3</options_per_line>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
         <column_name>funder_issue_interest_85</column_name>
-		<option_group_name>funding_areas_20090903195322</option_group_name>
+		<option_group_name>issue_areas_options</option_group_name>
         <custom_group_name>Funder_Info</custom_group_name>
     </CustomField>
-	<CustomField>
+    <CustomField>
         <label>Elected Level</label>
-        <data_type>String</data_type>
+      <data_type>String</data_type>
         <html_type>Radio</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>1</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <options_per_line>3</options_per_line>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <options_per_line>3</options_per_line>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
         <column_name>elected_level_82</column_name>
-		<option_group_name>elected_level_20100408172900</option_group_name>
-        <custom_group_name>Elected_Info</custom_group_name>
+		<option_group_name>elected_level_options</option_group_name>
+        <custom_group_name>Elected_Official_Info</custom_group_name>
     </CustomField>
     <CustomField>
-        <label>Role</label>
-        <data_type>String</data_type>
+        <label>Elected Staffer Role</label>
+      <data_type>String</data_type>
         <html_type>Select</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>2</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>role_83</column_name>
-		<option_group_name>role_20100408173746</option_group_name>
-        <custom_group_name>Elected_Info</custom_group_name>
-    </CustomField>
-	<CustomField>
-        <label>Membership Source Code</label>
-        <data_type>String</data_type>
-        <html_type>Select</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>1</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>membership_source_code_84</column_name>
-		<option_group_name>campaign_source_code_20090909215114</option_group_name>
-        <custom_group_name>Membership_Source_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Membership Source Campaign Method</label>
-        <data_type>String</data_type>
-        <html_type>Select</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>2</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>membership_source_campaign_metho_85</column_name>
-		<option_group_name>campaign_method_20090909215244</option_group_name>
-        <custom_group_name>Membership_Source_Details</custom_group_name>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
+        <column_name>elected_staffer_role_83</column_name>
+		<option_group_name>elected_staffer_role_options</option_group_name>
+        <custom_group_name>Elected_Official_Info</custom_group_name>
     </CustomField>
     <CustomField>
         <label>Ward</label>
-        <data_type>String</data_type>
-        <html_type>Text</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
+      <data_type>String</data_type>
+      <html_type>Text</html_type>
+      <is_required>0</is_required>
+      <is_searchable>1</is_searchable>
+      <is_search_range>0</is_search_range>
         <weight>94</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <date_format>M:;:;:;d:;:;:;Y</date_format>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
+      <is_active>1</is_active>
+      <is_view>0</is_view>
+      <text_length>255</text_length>
+      <date_format>M:;:;:;d:;:;:;Y</date_format>
+      <note_columns>60</note_columns>
+      <note_rows>4</note_rows>
         <column_name>ward</column_name>
         <custom_group_name>Voter_Info</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Survey</label>
-        <data_type>Int</data_type>
-        <html_type>Text</html_type>
-        <is_required>1</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>1</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <date_format>M:;:;:;d:;:;:;Y</date_format>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>survey_id</column_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Status</label>
-        <data_type>String</data_type>
-        <html_type>Select</html_type>
-        <is_required>1</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>2</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>16</text_length>
-        <date_format>M:;:;:;d:;:;:;Y</date_format>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>status_id</column_name>
-        <option_group_name>survey_status_201011040411</option_group_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Interviewer Id</label>
-        <data_type>ContactReference</data_type>
-        <html_type>Autocomplete-Select</html_type>
-        <is_required>1</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>3</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>interviewer_id</column_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Interviewer Name</label>
-        <data_type>String</data_type>
-        <html_type>Text</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>4</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>interviewer_display_name</column_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Interviewer Email</label>
-        <data_type>String</data_type>
-        <html_type>Text</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>5</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>interviewer_email</column_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Interviewer Ip</label>
-        <data_type>String</data_type>
-        <html_type>Text</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>6</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>interviewer_ip</column_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Subject</label>
-        <data_type>String</data_type>
-        <html_type>Text</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>7</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>255</text_length>
-        <date_format>M:;:;:;d:;:;:;Y</date_format>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>subject_display_name</column_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
-    </CustomField>
-    <CustomField>
-        <label>Result</label>
-        <data_type>String</data_type>
-        <html_type>Select</html_type>
-        <is_required>0</is_required>
-        <is_searchable>1</is_searchable>
-        <is_search_range>0</is_search_range>
-        <weight>8</weight>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <text_length>64</text_length>
-        <date_format>M:;:;:;d:;:;:;Y</date_format>
-        <note_columns>60</note_columns>
-        <note_rows>4</note_rows>
-        <column_name>result_id</column_name>
-        <option_group_name>survey_result_201011040411</option_group_name>
-        <custom_group_name>Survey_Activity_Details</custom_group_name>
     </CustomField>
   </CustomFields>
   <OptionGroups>
@@ -2076,169 +1253,130 @@ D - Declined</help_post>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>report_template</name>
-      <description>Report Template</description>
-      <is_reserved>0</is_reserved>
+      <name>party_registration_options</name>
+      <label>Party Registration Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>party_registration_20090826152659</name>
-      <label>Party Registration</label>
+      <name>county_name_options</name>
+      <label>County Name Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>county_name_20090921132351</name>
-      <label>County Name</label>
+      <name>voter_history_values</name>
+      <label>Voter History Values</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>voter_history_20090929101544</name>
-      <label>Voter History</label>
+      <name>constituent_type_ind_values</name>
+      <label>Constituent Type Values</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>constituent_type_ind</name>
-      <label>Constituent Type</label>
+      <name>staff_responsible_values</name>
+      <label>Staff Responsible Values</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>staff_responsible_20090901181905</name>
-      <label>Staff Responsible</label>
+      <name>how_started_options</name>
+      <label>How Started Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>how_started_20090929083619</name>
-      <label>How Started</label>
+      <name>leadership_level_values</name>
+      <label>Leadership Level Values</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>leadership_level_20090826153735</name>
-      <label>Leadership Level</label>
+      <name>issue_areas_options</name>
+      <label>Issue Areas Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>funding_areas_20090903195322</name>
-      <label>Funding Areas</label>
+      <name>volunteer_interests_options</name>
+      <label>Volunteer Interests Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>volunteer_interests_20090903201346</name>
-      <label>Volunteer Interests</label>
+      <name>member_status_values</name>
+      <label>Member Status Values</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>member_status_20090930123623</name>
-      <label>Member Status</label>
+      <name>multiyear_grant_status</name>
+      <label>Multiyear Grant Status</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>multiyear_grant_20091103175442</name>
-      <label>Multiyear Grant</label>
+      <name>proposal_status_values</name>
+      <label>Proposal Status Values</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>proposal_status_20091124143715</name>
-      <label>Proposal Status</label>
+      <name>invitation_response_options</name>
+      <label>Invitation Response Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>invitation_response_20091123100320</name>
-      <label>Invitation Response</label>
+      <name>best_time_to_contact_options</name>
+      <label>Best time to Contact Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>contact_attended__20091123100701</name>
-      <label>Contact Attended?</label>
+      <name>communication_status_options</name>
+      <label>Communication Status Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>campaign_source_code_20090909215114</name>
-      <label>Campaign Source Code</label>
+      <name>rating_values</name>
+      <label>Rating Values</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>campaign_method_20090909215244</name>
-      <label>Campaign Method</label>
+      <name>ethnicity_options</name>
+      <label>Ethnicity Options</label>
       <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-      <name>is_this_a_phone_bank__20090910084851</name>
-      <label>Is this a Phone Bank?</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>q1_20090922131907</name>
-      <label>Q1</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>walk_list_status_20091001142548</name>
-      <label>Walk List Status</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>call_list_status_20090922131641</name>
-      <label>Call List Status</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>best_time_to_contact_20091102160221</name>
-      <label>Best time to Contact</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>communication_status_20091103160300</name>
-      <label>Communication Status</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>rating_20091201142049</name>
-      <label>Rating</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>ethnicity_20090901181604</name>
-      <label>Ethnicity</label>
-      <is_active>1</is_active>
-    </OptionGroup>
-    <OptionGroup>
-      <name>primary_language_20090901181728</name>
-      <label>Primary Language</label>
+      <name>secondary_language_options</name>
+      <label>Secondary Language Options</label>
       <is_active>1</is_active>
     </OptionGroup>	
 	<OptionGroup>
-        <name>media_type__org_20100306135440</name>
-        <label>Media Type - Org</label>
+        <name>media_type_org_options</name>
+        <label>Media Type - Org Options</label>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-        <name>beat_20100306140017</name>
-        <label>Beat</label>
+        <name>beat_options</name>
+        <label>Beat Options</label>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-        <name>constituent_type_org</name>
-        <label>Constituent Type - Org</label>
+        <name>constituent_type_org_values</name>
+        <label>Constituent Type - Org Values</label>
         <is_active>1</is_active>
     </OptionGroup>
 	<OptionGroup>
-        <name>elected_level_20100408172900</name>
-        <label>Elected Level</label>
+        <name>elected_level_options</name>
+        <label>Elected Level Options</label>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-        <name>role_20100408173746</name>
-        <label>Role</label>
+        <name>elected_staffer_role_options</name>
+        <label>Elected Staffer Role Options</label>
         <is_active>1</is_active>
     </OptionGroup>
     <OptionGroup>
-        <name>survey_status_201011040411</name>
-        <label>Survey Status</label>
+        <name>survey_q1_response_options</name>
+        <label>Survey Q1 Response Options</label>
         <is_active>1</is_active>
     </OptionGroup>
+	<!-- must use civicrm_survey naming convention in option group name to appear in default options in CiviCRM -->
     <OptionGroup>
-        <name>survey_result_201011040411</name>
-        <label>Survey Result</label>
+        <name>civicrm_survey_default_results_set_options</name>
+        <label>Survey Default Results Set Options</label>
+		<description>Default options for Results Set for Surveys</description>
         <is_active>1</is_active>
     </OptionGroup>  
   </OptionGroups>
@@ -2323,17 +1461,6 @@ D - Declined</help_post>
       <option_group_name>activity_type</option_group_name>
     </OptionValue>
     <OptionValue>
-      <label>Campaign</label>
-      <name>Campaign</name>
-      <filter>0</filter>
-      <is_default>0</is_default>
-      <weight>9</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>event_type</option_group_name>
-    </OptionValue>
-    <OptionValue>
       <label>Direct Action</label>
       <name>Direct_Action</name>
       <filter>0</filter>
@@ -2363,7 +1490,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>party_registration_20090826152659</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Republican</label>
@@ -2373,7 +1500,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>party_registration_20090826152659</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Green</label>
@@ -2383,7 +1510,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>party_registration_20090826152659</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Libertarian</label>
@@ -2393,7 +1520,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>party_registration_20090826152659</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Other</label>
@@ -2403,7 +1530,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>party_registration_20090826152659</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Undeclared</label>
@@ -2413,7 +1540,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>party_registration_20090826152659</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Independent</label>
@@ -2423,17 +1550,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>party_registration_20090826152659</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Los Angeles</label>
-      <value>Los Angeles</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>county_name_20090921132351</option_group_name>
+      <option_group_name>party_registration_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>add county here</label>
@@ -2443,7 +1560,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>county_name_20090921132351</option_group_name>
+      <option_group_name>county_name_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>A</label>
@@ -2453,7 +1570,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>voter_history_20090929101544</option_group_name>
+      <option_group_name>voter_history_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>O</label>
@@ -2463,7 +1580,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>voter_history_20090929101544</option_group_name>
+      <option_group_name>voter_history_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>N</label>
@@ -2473,7 +1590,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>voter_history_20090929101544</option_group_name>
+      <option_group_name>voter_history_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Volunteer</label>
@@ -2483,7 +1600,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Activist</label>
@@ -2493,7 +1610,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Member</label>
@@ -2503,7 +1620,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Donor</label>
@@ -2513,7 +1630,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Consultant</label>
@@ -2523,7 +1640,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Ally</label>
@@ -2533,8 +1650,9 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
+	<!-- Remove Elected Official constitutent type after migration is finished -->
     <OptionValue>
       <label>Elected Official</label>
       <value>Elected Official</value>
@@ -2543,7 +1661,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Board Member</label>
@@ -2553,7 +1671,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Lead Organizer</label>
@@ -2563,7 +1681,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Intern</label>
@@ -2574,7 +1692,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Staff</label>
@@ -2585,8 +1703,9 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>constituent_type_ind</option_group_name>
+      <option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
+	<!-- Media Contact constitutent type after migration is finished -->
 	<OptionValue>
         <label>Media Contact</label>
         <value>Media_Contact</value>
@@ -2596,7 +1715,8 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_ind</option_group_name>
+		<option_group_name>constituent_type_ind_values</option_group_name>
+	<!-- Remove Funder constitutent type after migration is finished -->
     </OptionValue>
 		<OptionValue>
         <label>Funder</label>
@@ -2607,17 +1727,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_ind</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Jane</label>
-      <value>Jane</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>staff_responsible_20090901181905</option_group_name>
+		<option_group_name>constituent_type_ind_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Add Staff Name Here</label>
@@ -2627,7 +1737,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>staff_responsible_20090901181905</option_group_name>
+      <option_group_name>staff_responsible_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Meeting</label>
@@ -2637,7 +1747,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>how_started_20090929083619</option_group_name>
+      <option_group_name>how_started_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Event</label>
@@ -2647,7 +1757,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>how_started_20090929083619</option_group_name>
+      <option_group_name>how_started_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Phone</label>
@@ -2657,7 +1767,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>how_started_20090929083619</option_group_name>
+      <option_group_name>how_started_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Action</label>
@@ -2667,7 +1777,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>how_started_20090929083619</option_group_name>
+      <option_group_name>how_started_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Training</label>
@@ -2677,7 +1787,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>how_started_20090929083619</option_group_name>
+      <option_group_name>how_started_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>1</label>
@@ -2687,7 +1797,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>leadership_level_20090826153735</option_group_name>
+      <option_group_name>leadership_level_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>2</label>
@@ -2697,7 +1807,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>leadership_level_20090826153735</option_group_name>
+      <option_group_name>leadership_level_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>3</label>
@@ -2707,7 +1817,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>leadership_level_20090826153735</option_group_name>
+      <option_group_name>leadership_level_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>4</label>
@@ -2717,7 +1827,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>leadership_level_20090826153735</option_group_name>
+      <option_group_name>leadership_level_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>5</label>
@@ -2727,18 +1837,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>leadership_level_20090826153735</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Civil Rights</label>
-      <value>Civil Rights</value>
-      <name>Civil_Rights</name>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
+      <option_group_name>leadership_level_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Economic Justice</label>
@@ -2749,18 +1848,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Environment</label>
-      <value>Environment</value>
-      <name>Environment</name>
-      <is_default>0</is_default>
-      <weight>7</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
+      <option_group_name>issue_areas_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Environmental Justice</label>
@@ -2771,18 +1859,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Health Care</label>
-      <value>Health Care</value>
-      <name>Health_Care</name>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
+      <option_group_name>issue_areas_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Immigrant Rights</label>
@@ -2793,18 +1870,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Peace</label>
-      <value>Peace</value>
-      <name>Peace</name>
-      <is_default>0</is_default>
-      <weight>8</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
+      <option_group_name>issue_areas_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Workers Rights</label>
@@ -2815,7 +1881,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>funding_areas_20090903195322</option_group_name>
+      <option_group_name>issue_areas_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Canvassing</label>
@@ -2826,7 +1892,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>volunteer_interests_20090903201346</option_group_name>
+      <option_group_name>volunteer_interests_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Office/Admin</label>
@@ -2837,7 +1903,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>volunteer_interests_20090903201346</option_group_name>
+      <option_group_name>volunteer_interests_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Phone Banking</label>
@@ -2848,7 +1914,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>volunteer_interests_20090903201346</option_group_name>
+      <option_group_name>volunteer_interests_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Tabling</label>
@@ -2859,7 +1925,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>volunteer_interests_20090903201346</option_group_name>
+      <option_group_name>volunteer_interests_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Inactive</label>
@@ -2869,7 +1935,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>member_status_20090930123623</option_group_name>
+      <option_group_name>member_status_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Deceased</label>
@@ -2879,7 +1945,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>member_status_20090930123623</option_group_name>
+      <option_group_name>member_status_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Active</label>
@@ -2890,7 +1956,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>member_status_20090930123623</option_group_name>
+      <option_group_name>member_status_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Yes</label>
@@ -2900,7 +1966,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>multiyear_grant_20091103175442</option_group_name>
+      <option_group_name>multiyear_grant_status</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Accepted</label>
@@ -2910,7 +1976,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>proposal_status_20091124143715</option_group_name>
+      <option_group_name>proposal_status_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Pending</label>
@@ -2920,7 +1986,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>proposal_status_20091124143715</option_group_name>
+      <option_group_name>proposal_status_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Rejected</label>
@@ -2930,7 +1996,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>proposal_status_20091124143715</option_group_name>
+      <option_group_name>proposal_status_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Resubmitted</label>
@@ -2940,7 +2006,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>proposal_status_20091124143715</option_group_name>
+      <option_group_name>proposal_status_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Yes</label>
@@ -2950,7 +2016,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>invitation_response_20091123100320</option_group_name>
+      <option_group_name>invitation_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>No</label>
@@ -2960,7 +2026,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>invitation_response_20091123100320</option_group_name>
+      <option_group_name>invitation_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Left Message</label>
@@ -2970,7 +2036,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>invitation_response_20091123100320</option_group_name>
+      <option_group_name>invitation_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Not Home</label>
@@ -2980,237 +2046,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>invitation_response_20091123100320</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Yes</label>
-      <value>Y</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>contact_attended__20091123100701</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>No</label>
-      <value>N</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>contact_attended__20091123100701</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Summer 2009 Phone Bank Healthcare</label>
-      <value>Summer2009Phone</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Spring 2009 Canvass Housing</label>
-      <value>Spring2009Canvass</value>
-      <is_default>0</is_default>
-      <weight>3</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Fall 2009 House Party Workers</label>
-      <value>Fall2009House</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Spring 2010 Field Canvass</label>
-      <value>Spring2010FieldCanvass</value>
-      <is_default>0</is_default>
-      <weight>4</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>campaign_source_code_20090909215114</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Door Knock</label>
-      <value>Door Knock</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>campaign_method_20090909215244</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Phone Bank</label>
-      <value>Phone Bank</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>campaign_method_20090909215244</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>House Party</label>
-      <value>House Party</value>
-      <is_default>0</is_default>
-      <weight>3</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>campaign_method_20090909215244</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Yes</label>
-      <value>Y</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>is_this_a_phone_bank__20090910084851</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>No</label>
-      <value>N</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>is_this_a_phone_bank__20090910084851</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Y</label>
-      <value>Y</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>q1_20090922131907</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>N</label>
-      <value>N</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>q1_20090922131907</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>U</label>
-      <value>U</value>
-      <is_default>0</is_default>
-      <weight>3</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>q1_20090922131907</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>D</label>
-      <value>D</value>
-      <is_default>0</is_default>
-      <weight>4</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>q1_20090922131907</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>NH</label>
-      <value>NH</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>walk_list_status_20091001142548</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>MV</label>
-      <value>MV</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>walk_list_status_20091001142548</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>D</label>
-      <value>D</value>
-      <is_default>0</is_default>
-      <weight>3</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>walk_list_status_20091001142548</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>WA</label>
-      <value>WA</value>
-      <is_default>0</is_default>
-      <weight>4</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>walk_list_status_20091001142548</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>NH</label>
-      <value>NH</value>
-      <is_default>0</is_default>
-      <weight>1</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>call_list_status_20090922131641</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>MV</label>
-      <value>MV</value>
-      <is_default>0</is_default>
-      <weight>2</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>call_list_status_20090922131641</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>D</label>
-      <value>D</value>
-      <is_default>0</is_default>
-      <weight>3</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>call_list_status_20090922131641</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>WN</label>
-      <value>WN</value>
-      <is_default>0</is_default>
-      <weight>4</weight>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>call_list_status_20090922131641</option_group_name>
+      <option_group_name>invitation_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Morning</label>
@@ -3220,7 +2056,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>best_time_to_contact_20091102160221</option_group_name>
+      <option_group_name>best_time_to_contact_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Afternoon</label>
@@ -3230,7 +2066,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>best_time_to_contact_20091102160221</option_group_name>
+      <option_group_name>best_time_to_contact_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Evening</label>
@@ -3240,7 +2076,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>best_time_to_contact_20091102160221</option_group_name>
+      <option_group_name>best_time_to_contact_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Bad Address</label>
@@ -3250,7 +2086,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>communication_status_20091103160300</option_group_name>
+      <option_group_name>communication_status_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Bad Phone</label>
@@ -3260,7 +2096,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>communication_status_20091103160300</option_group_name>
+      <option_group_name>communication_status_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Bad Email</label>
@@ -3270,7 +2106,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>communication_status_20091103160300</option_group_name>
+      <option_group_name>communication_status_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Supporter or Ally</label>
@@ -3280,7 +2116,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>rating_20091201142049</option_group_name>
+      <option_group_name>rating_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Our Network</label>
@@ -3291,7 +2127,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>rating_20091201142049</option_group_name>
+      <option_group_name>rating_values</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Latino</label>
@@ -3301,7 +2137,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>ethnicity_20090901181604</option_group_name>
+      <option_group_name>ethnicity_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>African-American</label>
@@ -3311,7 +2147,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>ethnicity_20090901181604</option_group_name>
+      <option_group_name>ethnicity_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Asian</label>
@@ -3321,7 +2157,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>ethnicity_20090901181604</option_group_name>
+      <option_group_name>ethnicity_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Spanish</label>
@@ -3331,7 +2167,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Russian</label>
@@ -3341,7 +2177,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Chinese</label>
@@ -3351,7 +2187,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Mandarin</label>
@@ -3361,7 +2197,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Cantonese</label>
@@ -3371,7 +2207,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>Lao</label>
@@ -3381,7 +2217,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>primary_language_20090901181728</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
     </OptionValue>
     <OptionValue>
       <label>English</label>
@@ -3392,31 +2228,7 @@ D - Declined</help_post>
       <is_optgroup>0</is_optgroup>
       <is_reserved>0</is_reserved>
       <is_active>1</is_active>
-      <option_group_name>primary_language_20090901181728</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Phonebank List</label>
-      <value>contact/phonebank</value>
-      <name>Engage_Report_Form_CallList</name>
-      <description>Phonebank List</description>
-      <weight>50</weight>
-      <is_default>0</is_default>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>report_template</option_group_name>
-    </OptionValue>
-    <OptionValue>
-      <label>Walk List</label>
-      <value>contact/walklist</value>
-      <name>Engage_Report_Form_WalkList</name>
-      <description>Walk List</description>
-      <weight>51</weight>
-      <is_default>0</is_default>
-      <is_optgroup>0</is_optgroup>
-      <is_reserved>0</is_reserved>
-      <is_active>1</is_active>
-      <option_group_name>report_template</option_group_name>
+      <option_group_name>secondary_language_options</option_group_name>
     </OptionValue>
 	<OptionValue>
         <label>Member Organization</label>
@@ -3427,8 +2239,9 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
+	<!-- Remember to remove Media Organization option value after migration -->
 	<OptionValue>
         <label>Media Organization</label>
         <value>Media Organization</value>
@@ -3438,7 +2251,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
 	<OptionValue>
         <label>Affiliate Organization</label>
@@ -3449,8 +2262,9 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
+	<!-- Remember to remove Foundation option value after migration -->
     <OptionValue>
         <label>Foundation</label>
         <value>Foundation</value>
@@ -3460,7 +2274,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
 	    <OptionValue>
         <label>Elected Official Office</label>
@@ -3471,7 +2285,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Government</label>
@@ -3482,7 +2296,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
 	<OptionValue>
         <label>Nonprofit</label>
@@ -3493,7 +2307,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Business</label>
@@ -3504,7 +2318,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>constituent_type_org</option_group_name>
+		<option_group_name>constituent_type_org_values</option_group_name>
     </OptionValue>
 <!-- <New option values -->
 <OptionValue>
@@ -3528,7 +2342,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Blog</label>
@@ -3539,7 +2353,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Magazine</label>
@@ -3550,7 +2364,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Newspaper</label>
@@ -3561,7 +2375,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Radio</label>
@@ -3572,7 +2386,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>TV</label>
@@ -3583,7 +2397,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Online</label>
@@ -3594,7 +2408,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Photography</label>
@@ -3605,7 +2419,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Weekly</label>
@@ -3616,7 +2430,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>media_type__org_20100306135440</option_group_name>
+		<option_group_name>media_type_org_options</option_group_name>
     </OptionValue>
 	<OptionValue>
         <label>Economic Development</label>
@@ -3627,7 +2441,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>beat_20100306140017</option_group_name>
+		<option_group_name>beat_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Employment</label>
@@ -3638,7 +2452,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>beat_20100306140017</option_group_name>
+		<option_group_name>beat_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Environment</label>
@@ -3649,7 +2463,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>beat_20100306140017</option_group_name>
+		<option_group_name>beat_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Health</label>
@@ -3660,7 +2474,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>beat_20100306140017</option_group_name>
+		<option_group_name>beat_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Human Interest</label>
@@ -3671,7 +2485,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>beat_20100306140017</option_group_name>
+		<option_group_name>beat_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Immigration</label>
@@ -3682,7 +2496,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>beat_20100306140017</option_group_name>
+		<option_group_name>beat_options</option_group_name>
     </OptionValue>
 	<OptionValue>
         <label>City Council</label>
@@ -3693,7 +2507,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>elected_level_20100408172900</option_group_name>
+		<option_group_name>elected_level_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>State Assembly</label>
@@ -3704,7 +2518,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>elected_level_20100408172900</option_group_name>
+		<option_group_name>elected_level_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>State Senate</label>
@@ -3715,7 +2529,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>elected_level_20100408172900</option_group_name>
+		<option_group_name>elected_level_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Chief of Staff</label>
@@ -3726,7 +2540,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>role_20100408173746</option_group_name>
+		<option_group_name>elected_staffer_role_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Legislative Director</label>
@@ -3737,7 +2551,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>role_20100408173746</option_group_name>
+		<option_group_name>elected_staffer_role_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Scheduler</label>
@@ -3748,7 +2562,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-		<option_group_name>role_20100408173746</option_group_name>
+		<option_group_name>elected_staffer_role_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Upper Level Staff</label>
@@ -3759,7 +2573,7 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-	<option_group_name>role_20100408173746</option_group_name>
+	<option_group_name>elected_staffer_role_options</option_group_name>
     </OptionValue>
     <OptionValue>
         <label>Lower Level Staff</label>
@@ -3770,106 +2584,107 @@ D - Declined</help_post>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-	<option_group_name>role_20100408173746</option_group_name>
+	<option_group_name>elected_staffer_role_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Complete</label>
-        <value>C</value>
-        <name>survey_status_complete</name>
-        <is_default>1</is_default>
+      <label>Yes</label>
+      <value>Y</value>
+      <is_default>0</is_default>
         <weight>1</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_status_201011040411</option_group_name>
+      <option_group_name>survey_q1_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Held Pending</label>
-        <value>H</value>
-        <name>survey_status_held_pending</name>
+      <label>No</label>
+      <value>N</value>
         <is_default>0</is_default>
         <weight>2</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_status_201011040411</option_group_name>
+      <option_group_name>survey_q1_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Released</label>
-        <value>R</value>
-        <name>survey_status_released</name>
+      <label>Undecided</label>
+      <value>U</value>
         <is_default>0</is_default>
         <weight>3</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_status_201011040411</option_group_name>
+      <option_group_name>survey_q1_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Expired</label>
-        <value>X</value>
-        <name>survey_status_expired</name>
+      <label>Declined</label>
+      <value>D</value>
         <is_default>0</is_default>
         <weight>4</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_status_201011040411</option_group_name>
+      <option_group_name>survey_q1_response_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Available</label>
-        <value>A</value>
-        <name>survey_result_available</name>
-        <is_default>1</is_default>
+      <label>Completed</label>
+      <value>C</value>
+      <is_default>0</is_default>
         <weight>1</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_result_201011040411</option_group_name>
+      <option_group_name>civicrm_survey_default_results_set_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Committed</label>
-        <value>C</value>
-        <name>survey_result_committed</name>
+      <label>Not Home</label>
+      <value>NH</value>
         <is_default>0</is_default>
         <weight>2</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_result_201011040411</option_group_name>
+      <option_group_name>civicrm_survey_default_results_set_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Favorable</label>
-        <value>F</value>
-        <name>survey_result_favorable</name>
+      <label>Moved</label>
+      <value>MV</value>
         <is_default>0</is_default>
         <weight>3</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_result_201011040411</option_group_name>
+      <option_group_name>civicrm_survey_default_results_set_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Unsure</label>
-        <value>M</value>
-        <name>survey_result_unsure</name>
+      <label>Wrong Address</label>
+      <value>WA</value>
         <is_default>0</is_default>
         <weight>4</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_result_201011040411</option_group_name>
+      <option_group_name>civicrm_survey_default_results_set_options</option_group_name>
     </OptionValue>
     <OptionValue>
-        <label>Unfavorable</label>
-        <value>U</value>
-        <name>survey_result_unfavorable</name>
+      <label>Wrong Number</label>
+      <value>WN</value>
         <is_default>0</is_default>
         <weight>5</weight>
         <is_optgroup>0</is_optgroup>
         <is_reserved>0</is_reserved>
         <is_active>1</is_active>
-        <option_group_name>survey_result_201011040411</option_group_name>
+      <option_group_name>civicrm_survey_default_results_set_options</option_group_name>
+    </OptionValue>
+	<OptionValue>
+      <label>Deceased</label>
+      <value>DE</value>
+      <is_default>0</is_default>
+      <weight>6</weight>
+      <is_optgroup>0</is_optgroup>
+      <is_reserved>0</is_reserved>
+      <is_active>1</is_active>
+      <option_group_name>civicrm_survey_default_results_set_options</option_group_name>
     </OptionValue>
   </OptionValues>
   <ProfileGroups>
@@ -3922,7 +2737,7 @@ D - Declined</help_post>
       <is_cms_user>0</is_cms_user>
       <name>update_voter_info</name>
     </ProfileGroup>
-<!-- <Kept original update_core_info as remnant from pilot project -->
+<!-- <Kept original update_core_info as remnant from pilot project renaming to update_constituent_info -->
     <ProfileGroup>
       <is_active>1</is_active>
       <group_type>Individual</group_type>
@@ -3933,7 +2748,7 @@ D - Declined</help_post>
       <is_uf_link>0</is_uf_link>
       <is_update_dupe>0</is_update_dupe>
       <is_cms_user>0</is_cms_user>
-      <name>update_core_info</name>
+      <name>update_constituent_info</name>
     </ProfileGroup>
 	<ProfileGroup>
         <is_active>1</is_active>
@@ -4188,7 +3003,7 @@ D - Declined</help_post>
       <profile_group_name>update_voter_info</profile_group_name>
     </ProfileField>
     <ProfileField>
-      <field_name>custom.civicrm_value_core_info.constituent_type</field_name>
+      <field_name>custom.civicrm_value_constituent_info.constituent_type</field_name>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <is_required>0</is_required>
@@ -4199,21 +3014,7 @@ D - Declined</help_post>
       <is_searchable>0</is_searchable>
       <label>Constituent Type</label>
       <field_type>Individual</field_type>
-      <profile_group_name>update_core_info</profile_group_name>
-    </ProfileField>
-    <ProfileField>
-      <field_name>custom.civicrm_value_demographics.primary_language</field_name>
-      <is_active>1</is_active>
-      <is_view>0</is_view>
-      <is_required>0</is_required>
-      <weight>2</weight>
-      <help_post></help_post>
-      <visibility>User and User Admin Only</visibility>
-      <in_selector>0</in_selector>
-      <is_searchable>0</is_searchable>
-      <label>Primary Language</label>
-      <field_type>Individual</field_type>
-      <profile_group_name>update_core_info</profile_group_name>
+      <profile_group_name>update_constituent_info</profile_group_name>
     </ProfileField>
     <ProfileField>
       <field_name>custom.civicrm_value_demographics.kids</field_name>
@@ -4227,10 +3028,10 @@ D - Declined</help_post>
       <is_searchable>0</is_searchable>
       <label>Kids?</label>
       <field_type>Individual</field_type>
-      <profile_group_name>update_core_info</profile_group_name>
+      <profile_group_name>update_constituent_info</profile_group_name>
     </ProfileField>
     <ProfileField>
-      <field_name>custom.civicrm_value_core_info.date_started</field_name>
+      <field_name>custom.civicrm_value_constituent_info.date_started</field_name>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <is_required>0</is_required>
@@ -4241,10 +3042,10 @@ D - Declined</help_post>
       <is_searchable>0</is_searchable>
       <label>Date Started</label>
       <field_type>Individual</field_type>
-      <profile_group_name>update_core_info</profile_group_name>
+      <profile_group_name>update_constituent_info</profile_group_name>
     </ProfileField>
     <ProfileField>
-      <field_name>custom.civicrm_value_core_info.staff_responsible</field_name>
+      <field_name>custom.civicrm_value_constituent_info.staff_responsible</field_name>
       <is_active>1</is_active>
       <is_view>0</is_view>
       <is_required>0</is_required>
@@ -4255,7 +3056,7 @@ D - Declined</help_post>
       <is_searchable>0</is_searchable>
       <label>Staff Responsible</label>
       <field_type>Individual</field_type>
-      <profile_group_name>update_core_info</profile_group_name>
+      <profile_group_name>update_constituent_info</profile_group_name>
     </ProfileField>
     <ProfileField>
       <field_name>custom.civicrm_value_voter_info.voter_history</field_name>
@@ -4386,20 +3187,6 @@ N - New</help_post>
 		<profile_group_name>update_event_invite_responses</profile_group_name>
     </ProfileField>
 	<ProfileField>
-	    <field_name>custom.civicrm_value_Participant_Info.contact_attended</field_name>
-        <is_active>1</is_active>
-        <is_view>0</is_view>
-        <is_required>0</is_required>
-        <weight>7</weight>
-        <help_post></help_post>
-        <visibility>User and User Admin Only</visibility>
-        <in_selector>0</in_selector>
-        <is_searchable>0</is_searchable>
-        <label>Contact Attended?</label>
-        <field_type>Participant</field_type>
-		<profile_group_name>update_event_invite_responses</profile_group_name>
-    </ProfileField>
-	<ProfileField>
         <field_name>participant_role_id</field_name>
         <is_active>1</is_active>
         <is_view>0</is_view>
@@ -4412,7 +3199,7 @@ N - New</help_post>
         <label>Participant Role</label>
         <field_type>Participant</field_type>
 		<profile_group_name>update_event_invite_responses</profile_group_name>
-	</ProfileField>
+    </ProfileField>
   </ProfileFields>
   <ProfileJoins>
     <ProfileJoin>
@@ -4449,7 +3236,7 @@ N - New</help_post>
       <is_active>1</is_active>
       <module>Profile</module>
       <weight>1</weight>
-      <profile_group_name>update_core_info</profile_group_name>
+      <profile_group_name>update_constituent_info</profile_group_name>
     </ProfileJoin>
   </ProfileJoins>
 </CustomData>

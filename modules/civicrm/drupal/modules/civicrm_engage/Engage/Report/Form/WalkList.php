@@ -256,7 +256,7 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
                     //var_dump($clause);
                     if ( ! empty( $clause ) ) {
                         if ( CRM_Utils_Array::value( 'group', $field ) ) {
-                            $clauses[] = $this->whereGroupClause( $clause );
+                            $clauses[] = $this->engageWhereGroupClause( $clause );
                         } else {
                             $clauses[] = $clause;
                         }
@@ -408,8 +408,9 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
         foreach( $rows as $key => $value ) {
 
             $dob = $value['civicrm_contact_birth_date'];
-            $age = empty( $dob ) ? 'null' : $this->dob2age( $dob );
+            $age = empty( $dob ) ? 0 : $this->dob2age( $dob );
             $sex = $gender[ CRM_Utils_Array::value('civicrm_contact_gender_id',$value) ];
+            $sex = is_null($sex) ? '' : $sex;
             $lang = strtoupper( substr( $value[ $this->_demoTable
                                       . '_' . $this->_demoLangCol], 0, 2 ) );
             $party = substr( $value[ "{$this->_voterInfoTable}_{$this->_partyCol}" ], 0, 1 );
@@ -418,51 +419,75 @@ class Engage_Report_Form_WalkList extends Engage_Report_Form_List {
                                    . '_' . $this->_coreTypeCol];
             $on = $value[ $this->_coreInfoTable
                                    . '_' . $this->_coreOtherCol];
-            $otherName = empty( $on ) ? 'null' : "'{$on}'";
-            $type = null;
+            $otherName = empty( $on ) ? 0 : "'{$on}'";
+            $type = '';
             if ( !empty( $contactType ) ) {
                 $type = $this->hexOne2str($contactType);
             }
             $contact_id = (int)$value['civicrm_contact_id'];
 
-            $state = null;
+            $state = '';
             if (!empty( $value['civicrm_address_state_province_id'] ) ) {
                 $state = CRM_Core_PseudoConstant::stateProvince(
                             $value['civicrm_address_state_province_id'] );
             }
 
             $sStreetNumber = $value['civicrm_address_street_number'];
-            $iStreetNumber = $value['civicrm_address_street_number']? (int)$value['civicrm_address_street_number']: 'null';
-            $odd           = $value['civicrm_address_street_number']? ((int)$value['civicrm_address_street_number']%2):'null';
+            $iStreetNumber = $value['civicrm_address_street_number']? (int)$value['civicrm_address_street_number']: 0;
+            $odd           = $value['civicrm_address_street_number']? ((int)$value['civicrm_address_street_number']%2):0;
+            $apt_number           = $value['civicrm_address_street_number']? $value['civicrm_address_street_number']:'';
+            $phone_number           = $value['civicrm_phone_phone']? $value['civicrm_phone_phone']:'';
             $query = "INSERT INTO {$tempTable} SET
-                       street_name     = \"{$value['civicrm_address_street_name']}\",
-                       s_street_number = '{$sStreetNumber}',
-                       i_street_number = {$iStreetNumber},
-                       odd             = {$odd},
-                       apt_number      = '{$value['civicrm_address_street_unit']}',
-                       city            = \"{$value['civicrm_address_city']}\",
-                       state           = '{$state}',
-                       zip             = '{$value['civicrm_address_postal_code']}',
-                       name            = \"{$value['civicrm_contact_display_name']}\",
-                       phone           = '{$value['civicrm_phone_phone']}',
-                       age             = {$age},
-                       sex             = '{$sex}',
-                       lang            = '{$lang}',
-                       party           = '{$party}',
-                       vh              = '{$vh}',
-                       contact_type    = '{$type}',
-                       other_name      = {$otherName},
-                       contact_id      = {$contact_id}";
+                       street_name     = %1,
+                       s_street_number = %2,
+                       i_street_number = %3,
+                       odd             = %4, 
+                       apt_number      = %5,
+                       city            = %6,
+                       state           = %7,
+                       zip             = %8,
+                       name            = %9,
+                       phone           = %10,
+                       age             = %11,
+                       sex             = %12,
+                       lang            = %13,
+                       party           = %14,
+                       vh              = %15,
+                       contact_type    = %16,
+                       other_name      = %17,
+                       contact_id      = %18";
+            $params = array(
+              1 => array( $value['civicrm_address_street_name'] ? $value['civicrm_address_street_name'] : '', 'String'),
+              2 => array( (String)$sStreetNumber, 'String'),
+              3 => array( $iStreetNumber, 'Integer'),
+              4 => array( $odd, 'Integer'),
+              5 => array( $apt_number, 'String'),
+              6 => array( $value['civicrm_address_city'] ? $value['civicrm_address_city'] : '', 'String'),
+              7 => array( $state, 'String'),
+              8 => array( $value['civicrm_address_postal_code'] ? $value['civicrm_address_postal_code'] : '', 'String'),
+              9 => array( $value['civicrm_contact_display_name'] ? $value['civicrm_contact_display_name'] : '', 'String'),
+              10 => array( $phone_number, 'String'),
+              11 => array(  $age, 'Integer'),
+              12 => array( $sex, 'String'),
+              13 => array( $lang, 'String'),
+              14 => array( $party, 'String'),
+              15 => array( $vh, 'String'),
+              16 => array(  $type, 'String'),
+              17 => array(  $otherName, 'String'),
+              18 => array(  $contact_id, 'Integer'),
+            );
+
             if(!empty($contAmount)){
-              $query .=",total_amount      = '{$value['civicrm_contribution_cont_total_amount']}'";
+              $query .=",total_amount      = %19";
+              $total_amount = $value['civicrm_contribution_cont_total_amount'] ? $value['civicrm_contribution_cont_total_amount'] : '';
+              $params[19] = array($total_amount, 'String');
             }
             if(!empty($receiveDate)){
-               $query .=",date_received      = '{$value['civicrm_contribution_cont_receive_date']}'";         
+              $query .=",date_received      = %20";
+              $date_received = $value['civicrm_contribution_cont_receive_date'] ? $value['civicrm_contribution_cont_receive_date'] : '';
+              $params[20] = array( $date_received, 'String');
             }
-             					 
-             					 
-
-            CRM_Core_DAO::executeQuery($query);
+            CRM_Core_DAO::executeQuery($query,$params);
         } 
 
         //  With the data normalized and in a table, we can

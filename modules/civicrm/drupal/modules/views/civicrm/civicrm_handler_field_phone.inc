@@ -21,7 +21,7 @@ class civicrm_handler_field_phone extends views_handler_field {
     
     function options_form(&$form, &$form_state) {
         parent::options_form($form, $form_state);
-        $phoneOptions = array();
+        $phoneOptions = array( 0=>'Any' );
         foreach(self::$_phoneType as $id => $type){
             $phoneOptions[$id] = $type;
         }
@@ -37,7 +37,7 @@ class civicrm_handler_field_phone extends views_handler_field {
     function ensure_my_table() {
         if (!isset($this->table_alias)) {
             if (!method_exists($this->query, 'ensure_table')) { vpr_trace(); exit; }
-            if(isset($this->options['phone_type'])){
+            if(isset($this->options['phone_type']) && $this->options['phone_type']){
                 $join = $this->get_join();
                 $join->extra = array(
                                      array(

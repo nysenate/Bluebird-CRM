@@ -67,19 +67,20 @@ class CRM_Utils_Cache {
      */
     static function &singleton( ) {
         if (self::$_singleton === null ) {
-            if ( defined( 'CIVICRM_USE_MEMCACHE' ) && CIVICRM_USE_MEMCACHE ) {
+            if ( defined( 'CIVICRM_USE_MEMCACHE' ) &&
+                 CIVICRM_USE_MEMCACHE ) {
                 require_once 'CRM/Utils/Cache/Memcache.php';
                 $settings = self::getCacheSettings( );
                 self::$_singleton = new CRM_Utils_Cache_Memcache( $settings['host'],
                                                                   $settings['port'],
                                                                   $settings['timeout'],
                                                                   $settings['prefix'] );
-            } else if ( defined( 'CIVICRM_USE_ARRAYCACHE' ) && CIVICRM_USE_ARRAYCACHE) { //NYSS
-                require_once 'CRM/Utils/Cache/Arraycache.php';
-                self::$_singleton = new CRM_Utils_Cache_Arraycache();
-
+            } else if ( defined( 'CIVICRM_USE_ARRAYCACHE' ) && 
+                        CIVICRM_USE_ARRAYCACHE ) {
+                require_once 'CRM/Utils/Cache/ArrayCache.php';
+                self::$_singleton = new CRM_Utils_Cache_ArrayCache();
             } else {
-                self::$_singleton = new CRM_Utils_Cache();
+                self::$_singleton = new CRM_Utils_Cache( );
             }
         }
         return self::$_singleton;

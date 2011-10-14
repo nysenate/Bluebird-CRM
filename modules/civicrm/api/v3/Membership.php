@@ -160,7 +160,7 @@ function civicrm_api3_membership_get($params)
     $contactID = $activeOnly = $membershipTypeId = $membershipType = null;
    
       $contactID        = CRM_Utils_Array::value( 'contact_id', $params );
-      if(is_array($params['filters'])){
+      if(!empty($params['filters']) && is_array($params['filters'])){
         $activeOnly       = CRM_Utils_Array::value( 'is_current', $params['filters'], false );
       }
       $activeOnly       = CRM_Utils_Array::value( 'active_only', $params, $activeOnly );

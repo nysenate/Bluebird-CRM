@@ -80,7 +80,7 @@
         {/strip}
         {if $addMoreFields}
         <div class="action-link">
-            <a href="{crmURL q="reset=1&action=add&fid=$fid"}" class="button"><span>&raquo; {ts 1=$fieldTitle}New Option for '%1'{/ts}</span></a>
+            <a href="{crmURL q="reset=1&action=add&fid=$fid&sid=$sid"}" class="button"><span>&raquo; {ts 1=$fieldTitle}New Option for '%1'{/ts}</span></a>
         </div>
 	{/if}
     </div>
@@ -89,7 +89,7 @@
     {if $action eq 16}
         <div class="messages status">
           <img src="{$config->resourceBase}i/Inform.gif" alt="{ts}status{/ts}"/> 
-           {capture assign=crmURL}{crmURL p='civicrm/admin/price/field/option' q="action=add&fid=$fid"}{/capture}{ts 1=$fieldTitle 2=$crmURL}There are no options for the price field '%1', <a href='%2'>add one</a>.{/ts}
+           {capture assign=crmURL}{crmURL p='civicrm/admin/price/field/option' q="action=add&fid=$fid&sid=$sid"}{/capture}{ts 1=$fieldTitle 2=$crmURL}There are no options for the price field '%1', <a href='%2'>add one</a>.{/ts}
         </div>
     {/if}
 {/if}

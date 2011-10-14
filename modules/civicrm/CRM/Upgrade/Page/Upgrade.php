@@ -179,6 +179,15 @@ SELECT  count( id ) as statusCount
                 $config = CRM_Core_Config::singleton( );
                 $preUpgradeMessage .= '<br />' . ts( "As per <a href='%1'>the related blog post</a>, we are making contact names, addresses and mailings monolingual; the values entered for the default locale (%2) will be preserved and values for other locales removed.", array( 1 => 'http://civicrm.org/blogs/shot/multilingual-civicrm-3440-making-some-fields-monolingual', 2 => $config->lcMessages ) );
             }
+
+            if ( version_compare( $currentVer, '3.4.6' ) == -1 &&
+                 version_compare( $latestVer,  '3.4.6' ) >= 0 ) {
+                $googleProcessorExists = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_payment_processor WHERE payment_processor_type = 'Google_Checkout' AND is_active = 1 LIMIT 1;" );
+
+                if ( $googleProcessorExists ) {
+                    $preUpgradeMessage .= '<br />' . ts( 'To continue using Google Checkout Payment Processor with latest version of CiviCRM, requires updating merchant account settings. Please refer "Set API callback URL and other settings" section of <a href="%1" target="_blank"><strong>Google Checkout Configuration</strong></a> doc.', array( 1 => 'http://wiki.civicrm.org/confluence/x/zAJTAg' ) );
+                }
+            }
             
             $template->assign( 'currentVersion',  $currentVer);
             $template->assign( 'newVersion',      $latestVer );

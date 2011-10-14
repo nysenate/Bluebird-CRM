@@ -1,14 +1,14 @@
 <?php
 
-/**
- * Copyright (C) 2006 Google Inc.
- * 
+/*
+ * Copyright (C) 2007 Google Inc.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,253 +16,210 @@
  * limitations under the License.
  */
 
- /* This class is instantiated everytime any notification or 
+ /* This class is instantiated everytime any notification or
   * order processing commands are received.
-  * 
-  * It has a SendReq function to post different requests to the Google Server
-  * Send functions are provided for most of the commands that are supported
-  * by the server 
-  * Refer demo/responsehandlerdemo.php for different use case scenarios 
+  *
+  * Refer demo/responsehandlerdemo.php for different use case scenarios
   * for this code
   */
- 
+
+
+  /**
+   * Handles the response to notifications sent by the Google Checkout server.
+   */
   class GoogleResponse {
     var $merchant_id;
     var $merchant_key;
-    var $server_url;
     var $schema_url;
-    var $base_url;
-    var $checkout_url;
-    var $checkout_diagnose_url;
-    var $request_url;
-    var $request_diagnose_url;
 
+    var $log;
     var $response;
-    var $root;
-    var $data;
+    var $root='';
+    var $data=array();
     var $xml_parser;
 
-    function GoogleResponse($id, $key, $response, $server_type ="checkout") {
+    /**
+     * @param string $id the merchant id
+     * @param string $key the merchant key
+     */
+    function GoogleResponse($id=null, $key=null) {
       $this->merchant_id = $id;
       $this->merchant_key = $key;
-
-      if($server_type == "sandbox") 
-        $this->server_url = "https://sandbox.google.com/checkout/";
-      else
-        $this->server_url = "https://checkout.google.com/";  
-
       $this->schema_url = "http://checkout.google.com/schema/2";
-      $this->base_url = $this->server_url."cws/v2/Merchant/" . 
-          $this->merchant_id;
-      $this->checkout_url =  $this->base_url . "/checkout";
-      $this->checkout_diagnose_url = $this->base_url . "/checkout/diagnose";
-      $this->request_url = $this->base_url . "/request";
-      $this->request_diagnose_url = $this->base_url . "/request/diagnose";
-
-      $this->response = $response;
-
-      if(strpos(__FILE__, ':') !== false)
-        $path_delimiter = ';';
-      else
-        $path_delimiter = ':';
-
-      ini_set('include_path', ini_get('include_path').$path_delimiter.'.');
-      require_once('xml-processing/xmlparser.php');
-      $this->xml_parser = new XmlParser($response);
-      $this->root = $this->xml_parser->GetRoot();
-      $this->data = $this->xml_parser->GetData();
+      require_once(dirname(__FILE__).'/googlelog.php');
+      $this->log = new GoogleLog('', '', L_OFF);
     }
 
-    function HttpAuthentication($headers) {
-      if(isset($headers['Authorization'])) {
-        $auth_encode = $headers['Authorization'];
-        $auth = base64_decode(substr($auth_encode, 
-            strpos($auth_encode, " ") + 1));
-        $compare_mer_id = substr($auth, 0, strpos($auth,":"));
-        $compare_mer_key = substr($auth, strpos($auth,":")+1);
+    /**
+     * @param string $id the merchant id
+     * @param string $key the merchant key
+     */
+    function SetMerchantAuthentication($id, $key){
+      $this->merchant_id = $id;
+      $this->merchant_key = $key;
+    }
+
+    function SetLogFiles($errorLogFile, $messageLogFile, $logLevel=L_ERR_RQST) {
+      $this->log = new GoogleLog($errorLogFile, $messageLogFile, $logLevel);
+    }
+
+    /**
+     * Verifies that the authentication sent by Google Checkout matches the
+     * merchant id and key
+     *
+     * @param string $headers the headers from the request
+     */
+    function HttpAuthentication($headers=null, $die=true) {
+      if(!is_null($headers)) {
+        $_SERVER = $headers;
+      }
+      if(isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+        $compare_mer_id = $_SERVER['PHP_AUTH_USER'];
+        $compare_mer_key = $_SERVER['PHP_AUTH_PW'];
+      }
+  //  IIS Note::  For HTTP Authentication to work with IIS,
+  // the PHP directive cgi.rfc2616_headers must be set to 0 (the default value).
+      else if(isset($_SERVER['HTTP_AUTHORIZATION'])){
+        list($compare_mer_id, $compare_mer_key) = explode(':',
+            base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'],
+            strpos($_SERVER['HTTP_AUTHORIZATION'], " ") + 1)));
+      } else if(isset($_SERVER['Authorization'])) {
+        list($compare_mer_id, $compare_mer_key) = explode(':',
+            base64_decode(substr($_SERVER['Authorization'],
+            strpos($_SERVER['Authorization'], " ") + 1)));
       } else {
+        $this->SendFailAuthenticationStatus(
+              "Failed to Get Basic Authentication Headers",$die);
         return false;
       }
-      if($compare_mer_id != $this->merchant_id || 
-          $compare_mer_key != $this->merchant_key) 
+      if($compare_mer_id != $this->merchant_id
+         || $compare_mer_key != $this->merchant_key) {
+        $this->SendFailAuthenticationStatus("Invalid Merchant Id/Key Pair",$die);
         return false;
+      }
       return true;
     }
 
-    function SendChargeOrder($google_order, $amount='', $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <charge-order xmlns=\"".$this->schema_url.
-                   "\" google-order-number=\"". $google_order. "\">";
-      if ($amount != '') {
-        $postargs .= "<amount currency=\"USD\">" . $amount . "</amount>";
-	  }
-	  $postargs .= "</charge-order>";
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(), 
-          $postargs, $message_log); 
-    }
-
-    function SendRefundOrder($google_order, $amount, $reason, $comment, $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <refund-order xmlns=\"".$this->schema_url.
-                   "\" google-order-number=\"". $google_order. "\">
-                   <reason>". $reason . "</reason>
-                   <amount currency=\"USD\">".htmlentities($amount)."</amount>
-                   <comment>". htmlentities($comment) . "</comment>
-                  </refund-order>";
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(), 
-          $postargs, $message_log); 
-    }
-
-    function SendCancelOrder($google_order, $reason, $comment, $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <cancel-order xmlns=\"".$this->schema_url.
-                   "\" google-order-number=\"". $google_order. "\">
-                   <reason>". htmlentities($reason) . "</reason>
-                   <comment>". htmlentities($comment) . "</comment>
-                  </cancel-order>";
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
-    function SendTrackingData($google_order, $carrier, $tracking_no, $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <add-tracking-data xmlns=\"". $this->schema_url . 
-                   "\" google-order-number=\"". $google_order . "\">
-                   <tracking-data>
-                   <carrier>". htmlentities($carrier) . "</carrier>
-                   <tracking-number>". $tracking_no . "</tracking-number>
-                   </tracking-data>
-                   </add-tracking-data>";
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
-    function SendMerchantOrderNumber($google_order, $merchant_order, $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <add-merchant-order-number xmlns=\"". $this->schema_url . 
-                   "\" google-order-number=\"". $google_order . "\">
-                     <merchant-order-number>" . $merchant_order . 
-                     "</merchant-order-number>
-                   </add-merchant-order-number>";     
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
-    function SendBuyerMessage($google_order, $message, $send_mail="true",$message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <send-buyer-message xmlns=\"". $this->schema_url . 
-                   "\" google-order-number=\"". $google_order . "\">
-                     <message>" . $message . "</message>
-                     <send-mail>" . $send_mail . "</send-mail>
-                   </send-buyer-message>";     
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
-    function SendProcessOrder($google_order, $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                  <process-order xmlns=\"".$this->schema_url    .
-                  "\" google-order-number=\"". $google_order. "\"/> ";
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
-    function SendDeliverOrder($google_order, $carrier, $tracking_no, $send_mail = "true", $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <deliver-order xmlns=\"". $this->schema_url . 
-                   "\" google-order-number=\"". $google_order . "\">
-                   <tracking-data>
-                   <carrier>". htmlentities($carrier) . "</carrier>
-                   <tracking-number>". $tracking_no . "</tracking-number>
-                   </tracking-data>
-                   <send-email>". $send_mail . "</send-email>
-                   </deliver-order>";  
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
-    function SendArchiveOrder($google_order, $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <archive-order xmlns=\"".$this->schema_url.
-                   "\" google-order-number=\"". $google_order. "\"/>";
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
-    function SendUnarchiveOrder($google_order, $message_log) {
-      $postargs = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                   <unarchive-order xmlns=\"".
-                   $this->schema_url."\" google-order-number=\"". 
-                   $google_order. "\"/>";
-      return $this->SendReq($this->request_url, $this->GetAuthenticationHeaders(),
-          $postargs, $message_log);
-    }
-
     function ProcessMerchantCalculations($merchant_calc) {
+      $this->SendOKStatus();
       $result = $merchant_calc->GetXML();
       echo $result;
     }
 
-    function GetAuthenticationHeaders() {
-      $headers = array();
-      $headers[] = "Authorization: Basic ".base64_encode(
-          $this->merchant_id.':'.$this->merchant_key);
-      $headers[] = "Content-Type: application/xml";
-      $headers[] = "Accept: application/xml";
-      return $headers; 
+// Notification API
+    function ProcessNewOrderNotification() {
+      $this->SendAck();
+    }
+    function ProcessRiskInformationNotification() {
+      $this->SendAck();
+    }
+    function ProcessOrderStateChangeNotification() {
+      $this->SendAck();
+    }
+//   Amount Notifications
+    function ProcessChargeAmountNotification() {
+      $this->SendAck();
+    }
+    function ProcessRefundAmountNotification() {
+      $this->SendAck();
+    }
+    function ProcessChargebackAmountNotification() {
+      $this->SendAck();
+    }
+    function ProcessAuthorizationAmountNotification() {
+      $this->SendAck();
     }
 
-    function SendReq($url, $header_arr, $postargs, $message_log) {
-      // Get the curl session object
-      $session = curl_init($url);
+    function SendOKStatus() {
+      header('HTTP/1.0 200 OK');
+    }
 
-      // Set the POST options.
-      curl_setopt($session, CURLOPT_POST, true);
-      curl_setopt($session, CURLOPT_HTTPHEADER, $header_arr);
-      curl_setopt($session, CURLOPT_POSTFIELDS, $postargs);
-      curl_setopt($session, CURLOPT_HEADER, true);
-      curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
-
-      // Do the POST and then close the session
-      $response = curl_exec($session);
-      if (curl_errno($session)) {
-	    die(curl_error($session));
+    /**
+     * Set the response header indicating an erroneous authentication from
+     * Google Checkout
+     *
+     * @param string $msg the message to log
+     */
+    function SendFailAuthenticationStatus($msg="401 Unauthorized Access",
+                                                                   $die=true) {
+      $this->log->logError($msg);
+      header('WWW-Authenticate: Basic realm="GoogleCheckout PHPSample Code"');
+      header('HTTP/1.0 401 Unauthorized');
+      if($die) {
+       die($msg);
       } else {
-        curl_close($session);
+      echo $msg;
       }
-
-      // Get HTTP Status code from the response
-      $status_code = array();
-      preg_match('/\d\d\d/', $response, $status_code);
-
-      // Check for errors
-      switch( $status_code[0] ) {
-        case 200:
-          // Success
-          break;
-        case 503:
-          die('Error 503: Service unavailable.');
-          break;
-        case 403:
-          die('Error 403: Forbidden.');
-          break;
-        case 400:
-          die('Error 400: Bad request.');
-          break;
-        default:
-          echo $response;
-          die('Error :' . $status_code[0]);
-      }
-      fwrite($message_log, sprintf("\n\r%s:- %s\n",date("D M j G:i:s T Y"),
-          $response));
     }
 
-    function SendAck() {
+    /**
+     * Set the response header indicating a malformed request from Google
+     * Checkout
+     *
+     * @param string $msg the message to log
+     */
+    function SendBadRequestStatus($msg="400 Bad Request", $die=true) {
+      $this->log->logError($msg);
+      header('HTTP/1.0 400 Bad Request');
+      if($die) {
+       die($msg);
+      } else {
+      echo $msg;
+      }
+    }
+
+    /**
+     * Set the response header indicating that an internal error ocurred and
+     * the notification sent by Google Checkout can't be processed right now
+     *
+     * @param string $msg the message to log
+     */
+    function SendServerErrorStatus($msg="500 Internal Server Error",
+                                                                   $die=true) {
+      $this->log->logError($msg);
+      header('HTTP/1.0 500 Internal Server Error');
+      if($die) {
+       die($msg);
+      } else {
+        echo $msg;
+      }
+    }
+    
+    /**
+     * Send an acknowledgement in response to Google Checkout's request
+     * @param string $serial serial number of notification for acknowledgement 
+     */
+    function SendAck($serial=null, $die=true) {
+      $this->SendOKStatus();
       $acknowledgment = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" .
-                        "<notification-acknowledgment xmlns=\"" . 
-                        $this->schema_url . "\"/>";
-      echo $acknowledgment;
+                        "<notification-acknowledgment xmlns=\"" .
+                        $this->schema_url . "\"";
+      if(isset($serial)) {
+        $acknowledgment .=" serial-number=\"" . $serial."\"";
+      }                  
+      $acknowledgment .= " />";
+      $this->log->LogResponse($acknowledgment);
+      if($die) {
+        die($acknowledgment);
+      } else {
+        echo $acknowledgment;
+      }
     }
 
+    /**
+     * @access private
+     */
+    function GetParsedXML($request=null){
+      if(!is_null($request)) {
+        $this->log->LogRequest($request);
+        $this->response = $request;
+        require_once(dirname(__FILE__).'/xml-processing/gc_xmlparser.php');
+
+        $this->xml_parser = new gc_XmlParser($request);
+        $this->root = $this->xml_parser->GetRoot();
+        $this->data = $this->xml_parser->GetData();
+      }
+      return array($this->root, $this->data);
+    }
   }
 ?>

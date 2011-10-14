@@ -41,6 +41,7 @@
  */
 require_once 'api/v3/utils.php';
 require_once 'CRM/Core/BAO/CustomField.php';
+require_once 'CRM/Core/BAO/CustomGroup.php';
 require_once 'CRM/Core/BAO/CustomValueTable.php';
 
 
@@ -152,7 +153,9 @@ function civicrm_api3_custom_value_get($params) {
       $getParams['custom_' . $id] = 1;
     }
   }
+
   $result = CRM_Core_BAO_CustomValueTable::getValues($getParams);
+  
   if ($result['is_error']) {
     return civicrm_api3_create_error($result['error_message']);
   } else {
@@ -170,10 +173,25 @@ function civicrm_api3_custom_value_get($params) {
         continue;
       }
       $info = array_pop(CRM_Core_BAO_CustomField::getNameFromID( $i ));
+      $id = $i. "." . $n;// id is the index for returned results
       if (!$n) {
         $n = 0;
+        $id = $i;
       }
-      $values[$info['group_name']][$n][$info['field_name']] = $value;
+      if(CRM_Utils_Array::value('format.field_names',$params)){
+        $id = $info['field_name'];
+      }else{ 
+        $id = $i;
+      }   
+      $values[$id]['entity_id'] =  $getParams['entityID'];
+      if(CRM_Utils_Array::value('entityType',$getParams)){
+        $values[$n]['entity_table'] =  $getParams['entityType'];
+      } 
+      //set 'latest' -useful for multi fields but set for single for consistency
+      $values[$id]['latest'] = $value;
+      $values[$id]['id'] = $id;
+      $values[$id][$n] = $value;
+    
     }
     return civicrm_api3_create_success($values, $params);
   }

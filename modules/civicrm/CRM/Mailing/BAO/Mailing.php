@@ -965,7 +965,7 @@ AND civicrm_contact.is_opt_out =0";
     public function &compose($job_id, $event_queue_id, $hash, $contactId, 
                              $email, &$recipient, $test, 
                              $contactDetails, &$attachments, $isForward = false, 
-                             $fromEmail = null, $replyEmail = null ) 
+                             $fromEmail = null, $replyToEmail = null ) 
     {
         require_once 'CRM/Utils/Token.php';
         require_once 'CRM/Activity/BAO/Activity.php';
@@ -984,8 +984,8 @@ AND civicrm_contact.is_opt_out =0";
             $headers['From'] = "<{$fromEmail}>";
         } 
 
-        if ( $replyEmail && ( $fromEmail != $replyEmail ) ) {
-            $headers['Reply-To'] = "<{$replyEmail}>";
+        if ( $replyToEmail && ( $fromEmail != $replyToEmail ) ) {
+            $headers['Reply-To'] = "{$replyToEmail}";
         }
         
         if ( defined( 'CIVICRM_MAIL_SMARTY' ) &&

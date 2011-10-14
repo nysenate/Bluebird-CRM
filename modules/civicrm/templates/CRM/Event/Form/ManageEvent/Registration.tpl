@@ -32,7 +32,7 @@
           <span class='profile_bottom_add_link'>&nbsp;<a href="javascript:addProfileBottomAdd()">{ts}add profile{/ts}</a></span>
       </td>
     </tr>
-  </table
+  </table>
   {/if}
   {if $addProfileBottom}
    <table class="form-layout-compressed">
@@ -42,7 +42,7 @@
            <span class='profile_bottom_link'>&nbsp;<a href="javascript:addProfileBottom()">{ts}add profile{/ts}</a></span>
        </td>
      </tr>
-   </table
+   </table>
   {/if}
 {else}
 {assign var=eventID value=$id}

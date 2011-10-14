@@ -37,6 +37,8 @@
 require_once 'CRM/Core/Payment.php';
 require_once 'Google/library/googlecart.php';
 require_once 'Google/library/googleitem.php';
+require_once 'Google/library/googlesubscription.php';
+require_once 'Google/library/googlerequest.php';
 
 class CRM_Core_Payment_Google extends CRM_Core_Payment { 
     /**
@@ -128,22 +130,80 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
     function doTransferCheckout( &$params, $component ) {
         $component = strtolower( $component );
         
-        $url = rtrim( $this->_paymentProcessor['url_site'], '/' ) . '/cws/v2/Merchant/' . 
-            $this->_paymentProcessor['user_name'] . '/checkout';
+        if ( CRM_Utils_Array::value( 'is_recur', $params ) &&
+             $params['contributionRecurID'] ) {
+            return $this->doRecurCheckout( $params, $component );
+        }
 
         //Create a new shopping cart object
         $merchant_id  = $this->_paymentProcessor['user_name'];   // Merchant ID
         $merchant_key = $this->_paymentProcessor['password'];    // Merchant Key
         $server_type  = ( $this->_mode == 'test' ) ? 'sandbox' : '';
         
-        $cart  = new GoogleCart($merchant_id, $merchant_key, $server_type); 
-        $item1 = new GoogleItem($params['item_name'],'', 1, $params['amount'], $params['currencyID']);
+        $cart  = new GoogleCart($merchant_id, $merchant_key, $server_type, $params['currencyID']); 
+        $item1 = new GoogleItem($params['item_name'],'', 1, $params['amount']);
         $cart->AddItem($item1);
+
+        $this->submitPostParams( $params, $component, $cart );
+    }
+
+    function doRecurCheckout( &$params, $component ) {
+        $intervalUnit   = CRM_Utils_Array::value( 'frequency_unit', $params );
+        if ( $intervalUnit == 'week' ) {
+            $intervalUnit = 'WEEKLY';
+        } else if ( $intervalUnit == 'year' ) {
+            $intervalUnit = 'YEARLY';
+        } else if ( $intervalUnit == 'day' ) {
+            $intervalUnit = 'DAILY';
+        } else if ( $intervalUnit == 'month' ) {
+            $intervalUnit = 'MONTHLY';
+        }
+
+        $merchant_id  = $this->_paymentProcessor['user_name'];   // Merchant ID
+        $merchant_key = $this->_paymentProcessor['password'];    // Merchant Key
+        $server_type  = ( $this->_mode == 'test' ) ? 'sandbox' : '';
+
+        $itemName     = CRM_Utils_Array::value( 'item_name', $params );
+        $description  = CRM_Utils_Array::value( 'description', $params );
+        $amount       = CRM_Utils_Array::value( 'amount', $params );
+        $installments = CRM_Utils_Array::value( 'installments', $params );
+                        
+        $cart = new GoogleCart($merchant_id, $merchant_key, $server_type, $params['currencyID']); 
+        $item = new GoogleItem($itemName, $description, 1, $amount);
+        $subscription_item = new GoogleSubscription("merchant", $intervalUnit, $amount, $installments);
+                
+        $item->SetSubscription($subscription_item);
+        $cart->AddItem($item);
+
+        $this->submitPostParams( $params, $component, $cart ); 
+
+    }
+
+    /**  
+     * Builds appropriate parameters for checking out to google and submits the post params
+     *  
+     * @param array  $params    name value pair of contribution data
+     * @param string $component event/contribution
+     * @param object $cart      object of googel cart
+     *  
+     * @return void  
+     * @access public 
+     *  
+     */  
+    function submitPostParams( $params, $component, $cart )
+    {
+        $url = rtrim( $this->_paymentProcessor['url_site'], '/' ) . '/cws/v2/Merchant/' . 
+            $this->_paymentProcessor['user_name'] . '/checkout';
 
         if ( $component == "event" ) {
             $privateData = "contactID={$params['contactID']},contributionID={$params['contributionID']},contributionTypeID={$params['contributionTypeID']},eventID={$params['eventID']},participantID={$params['participantID']},invoiceID={$params['invoiceID']}";
-        } elseif ( $component == "contribute" ) {
+        } else if ( $component == "contribute" ) {
             $privateData = "contactID={$params['contactID']},contributionID={$params['contributionID']},contributionTypeID={$params['contributionTypeID']},invoiceID={$params['invoiceID']}";
+
+            $contributionRecurID = CRM_Utils_Array::value( 'contributionRecurID', $params );
+            if ( $contributionRecurID ) {
+                $privateData .= ",contributionRecurID=$contributionRecurID";
+            }
 
             $membershipID = CRM_Utils_Array::value( 'membershipID', $params );
             if ( $membershipID ) {
@@ -160,7 +220,7 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
                 }
             }
         }
-        
+
         // Allow further manipulation of the arguments via custom hooks ..
         CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $privateData );
 
@@ -175,7 +235,6 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
                                                 "_qf_ThankYou_display=1&qfKey={$params['qfKey']}",
                                                 true, null, false );
         }
-
         $cart->SetContinueShoppingUrl( $returnURL );
 
         $cartVal      = base64_encode($cart->GetXML());
@@ -293,11 +352,80 @@ class CRM_Core_Payment_Google extends CRM_Core_Payment {
     }
     
     static function getArrayFromXML( $xmlData ) {
-        require_once 'Google/library/xml-processing/xmlparser.php';
-        $xmlParser = new XmlParser($xmlData);
+        require_once 'Google/library/xml-processing/gc_xmlparser.php';
+        $xmlParser = new gc_XmlParser($xmlData);
         $root      = $xmlParser->GetRoot();
         $data      = $xmlParser->GetData();
         
         return array( $root, $data );
+    }
+
+    function &error( $errorCode = null, $errorMessage = null ) {
+        $e =& CRM_Core_Error::singleton( );
+        if ( $errorCode ) {
+            $e->push( $errorCode, 0, null, $errorMessage );
+        } else {
+            $e->push( 9001, 0, null, 'Unknown System Error.' );
+        }
+        return $e;
+    }
+
+    /**
+     * Set a field to the specified value.  Value must be a scalar (int,
+     * float, string, or boolean)
+     *
+     * @param string $field
+     * @param mixed $value
+     * @return bool false if value is not a scalar, true if successful
+     */ 
+    function _setParam( $field, $value ) {
+        if ( ! is_scalar($value) ) {
+            return false;
+        } else {
+            $this->_params[$field] = $value;
+        }
+    }
+
+    /**
+     * Get the value of a field if set
+     *
+     * @param string $field the field
+     * @return mixed value of the field, or empty string if the field is
+     * not set
+     */
+    function _getParam( $field ) {
+        return CRM_Utils_Array::value( $field, $this->_params, '' );
+    }
+
+    function cancelSubscriptionURL( $entityID = null, $entity = null ) 
+    {
+        if ( $entityID && $entity == 'membership' ) {
+            require_once 'CRM/Contact/BAO/Contact/Utils.php';
+            $contactID = CRM_Core_DAO::getFieldValue( "CRM_Member_DAO_Membership", $entityID, "contact_id" );
+            $checksumValue = CRM_Contact_BAO_Contact_Utils::generateChecksum( $contactID, null, 'inf' );
+
+            return CRM_Utils_System::url( 'civicrm/contribute/unsubscribe', 
+                                          "reset=1&mid={$entityID}&cs={$checksumValue}", true, null, false, false );
+        }
+
+        return ( $this->_mode == 'test' ) ?
+            'https://sandbox.google.com/checkout/' : 'https://checkout.google.com/';
+    }
+
+    function cancelSubscription( ) 
+    {
+        $orderNo = $this->_getParam( 'subscriptionId' );
+
+        $merchant_id  = $this->_paymentProcessor['user_name'];
+        $merchant_key = $this->_paymentProcessor['password'];
+        $server_type  = ( $this->_mode == 'test' ) ? 'sandbox' : '';
+        
+        $googleRequest = new GoogleRequest( $merchant_id, $merchant_key, $server_type );
+        $result = $googleRequest->SendCancelItems($orderNo, array(), 'Cancelled by admin', '');
+
+        if ( $result[0] != 200 ) {
+            return self::error($result[0], $result[1]);
+        }
+        return true;
     }
 }

@@ -113,7 +113,7 @@ SELECT id
         $this->add( 'select', 'payment_processor_id', ts( 'Payment Processor' ),
                     array(''=>ts( '- select -' )) + $paymentProcessor, null, array( 'onchange' => "showRecurring( this.value );" ) );
         
-        require_once "CRM/Contribute/BAO/ContributionPage.php";
+        require_once 'CRM/Contribute/BAO/ContributionPage.php';
         
         //check if selected payment processor supports recurring payment
         if ( !empty( $recurringPaymentProcessor ) ) {
@@ -156,7 +156,7 @@ SELECT id
             $this->addElement( 'checkbox', 'is_pledge_active', ts('Pledges') , 
                                null, array('onclick' => "showHideAmountBlock( this, 'is_pledge_active' ); return showHideByValue('is_pledge_active',true,'pledgeFields','table-row','radio',false);") );
             $this->addCheckBox( 'pledge_frequency_unit', ts( 'Supported pledge frequencies' ), 
-                                CRM_Core_OptionGroup::values( "recur_frequency_units", false, false, false, null, 'name' ),
+                                CRM_Core_OptionGroup::values( 'recur_frequency_units', false, false, false, null, 'name' ),
                                 null, null, null, null,
                                 array( '&nbsp;&nbsp;', '&nbsp;&nbsp;', '&nbsp;&nbsp;', '<br/>' ));
             $this->addElement( 'checkbox', 'is_pledge_interval', ts('Allow frequency intervals') );
@@ -251,6 +251,33 @@ SELECT id
     {  
         $errors = array( );
 
+        //as for separate membership payment we has to have
+        //contribution amount section enabled, hence to disable it need to
+        //check if separate membership payment enabled, 
+        //if so disable first separate membership payment option  
+        //then disable contribution amount section. CRM-3801,
+        
+        require_once 'CRM/Member/DAO/MembershipBlock.php';
+        $membershipBlock = new CRM_Member_DAO_MembershipBlock( );
+        $membershipBlock->entity_table = 'civicrm_contribution_page';
+        $membershipBlock->entity_id = $self->_id;
+        $membershipBlock->is_active = 1;
+        $hasMembershipBlk = false;
+        if ( $membershipBlock->find( true ) ) {
+            if ( CRM_Utils_Array::value('amount_block_is_active', $fields) &&
+                 ($setID = CRM_Price_BAO_Set::getFor('civicrm_contribution_page',  $self->_id)) ) {
+                $extends = CRM_Core_DAO::getFieldValue( 'CRM_Price_DAO_Set', $setID, 'extends' );
+                if ( $extends && $extends == CRM_Core_Component::getComponentID( 'CiviMember' ) ) {
+                    $errors['amount_block_is_active'] = ts( 'You cannot use a Membership Price Set when the Contribution Amounts section is enabled. Click the Memberships tab above, and select your Membership Price Set on that form. Membership Price Sets may include additional fields for non-membership options that require an additional fee (e.g. magazine subscription) or an additional voluntary contribution.' );
+                    return $errors;
+                }
+            }
+            $hasMembershipBlk = true;
+            if ( $membershipBlock->is_separate_payment && !$fields['amount_block_is_active'] ) {
+                $errors['amount_block_is_active'] = ts( 'To disable Contribution Amounts section you need to first disable Separate Membership Payment option from Membership Settings.' );
+            }
+        }
+
         $minAmount = CRM_Utils_Array::value( 'min_amount', $fields );
         $maxAmount = CRM_Utils_Array::value( 'max_amount', $fields );
         if ( ! empty( $minAmount) && ! empty( $maxAmount ) ) {
@@ -268,32 +295,13 @@ SELECT id
             if ( empty( $fields['pay_later_receipt'] ) ) {
                 $errors['pay_later_receipt'] = ts( 'Please enter the instructions to be sent to the contributor when they choose to \'pay later\'.' );
             }
-        }
-        
-        //as for separate membership payment we has to have
-        //contribution amount section enabled, hence to disable it need to
-        //check if separate membership payment enabled, 
-        //if so disable first separate membership payment option  
-        //then disable contribution amount section. CRM-3801,
-        
-        require_once 'CRM/Member/DAO/MembershipBlock.php';
-        $membershipBlock = new CRM_Member_DAO_MembershipBlock( );
-        $membershipBlock->entity_table = 'civicrm_contribution_page';
-        $membershipBlock->entity_id = $self->_id;
-        $membershipBlock->is_active = 1;
-        $hasMembershipBlk = false;
-        if ( $membershipBlock->find( true ) ) {
-            $hasMembershipBlk = true;
-            if ( $membershipBlock->is_separate_payment && !$fields['amount_block_is_active'] ) {
-                $errors['amount_block_is_active'] = ts( 'To disable Contribution Amounts section you need to first disable Separate Membership Payment option from Membership Settings.' );
-            }
-        }
+        }      
         
         // don't allow price set w/ membership signup, CRM-5095
         if ( $priceSetId = CRM_Utils_Array::value( 'price_set_id', $fields ) ) {
             // don't allow price set w/ membership.
             if ( $hasMembershipBlk ) {
-                $errors['price_set_id'] = ts( 'You cannot enable both Price Set and Membership Signup on the same online contribution page.' );  
+                $errors['price_set_id'] = ts( 'You cannot enable both a Contribution Price Set and Membership Signup on the same online contribution page.' );  
             }
         } else {
             if ( isset( $fields['is_recur'] ) ) {
@@ -331,6 +339,15 @@ SELECT id
                             ts ( 'If you want to enable the \'Contribution Amounts section\', you need to either \'Allow Other Amounts\' and/or enter at least one row in the \'Fixed Contribution Amounts\' table.' );
                     }
                 }
+            }
+        }
+
+        if ( CRM_Utils_Array::value( 'is_recur_interval', $fields ) ) {
+            $paymentProcessorType = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_PaymentProcessor', 
+                                                                 $fields['payment_processor_id'], 
+                                                                 'payment_processor_type' );
+            if ( $paymentProcessorType == 'Google_Checkout' ) {
+                $errors['is_recur_interval'] = ts( 'Google Checkout does not support recurring intervals' );
             }
         }
       

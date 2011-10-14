@@ -18,7 +18,7 @@
     <tr class="{cycle values="odd-row,even-row"}">
         <td class="crm-event-searchtaskhooksample-display_name">{$row.display_name}</td>
         <td class="crm-event-searchtaskhooksample-amount">{$row.amount}</td>
-        <td class="crm-event-searchtaskhooksample-register_date>{$row.register_date}</td>
+        <td class="crm-event-searchtaskhooksample-register_date">{$row.register_date}</td>
         <td class="crm-event-searchtaskhooksample-source">{$row.source}</td>
     </tr>
   {/foreach}

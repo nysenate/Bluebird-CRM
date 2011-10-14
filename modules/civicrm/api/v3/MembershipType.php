@@ -41,6 +41,7 @@
  * Files required for this package
  */
 require_once 'api/v3/utils.php';
+require_once 'CRM/Member/BAO/MembershipType.php';
 
 /**
  * API to Create or update a Membership Type
@@ -82,28 +83,7 @@ function civicrm_api3_membership_type_get($params)
 {
 
     civicrm_api3_verify_mandatory($params);
-
-    require_once 'CRM/Member/BAO/MembershipType.php';
-    $membershipTypeBAO = new CRM_Member_BAO_MembershipType();
-
-    $properties = array_keys($membershipTypeBAO->fields());
-
-    foreach ($properties as $name) {
-      if (array_key_exists($name, $params)) {
-        $membershipTypeBAO->$name = $params[$name];
-      }
-    }
-    if ( $membershipTypeBAO->find() ) {
-      $membershipType = array();
-      while ( $membershipTypeBAO->fetch() ) {
-        _civicrm_api3_object_to_array( clone($membershipTypeBAO), $membershipType );
-        $membershipTypes[$membershipTypeBAO->id] = $membershipType;
-      }
-    } else {
-      return civicrm_api3_create_success(array(),$params,'membership_type','create',$membershipTypeBAO);
-    }
-    return civicrm_api3_create_success($membershipTypes,$params,'membership_type','create',$membershipTypeBAO);
-
+    return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 }
 
 /**
@@ -122,7 +102,7 @@ function civicrm_api3_membership_type_delete( $params ) {
     civicrm_api3_verify_mandatory($params,null,array('id'));
 
     require_once 'CRM/Member/BAO/MembershipType.php';
-    $memberDelete = CRM_Member_BAO_MembershipType::del( $params['id'] );
+    $memberDelete = CRM_Member_BAO_MembershipType::del( $params['id'] , 1);
     return $memberDelete ?
     civicrm_api3_create_success(  $memberDelete ) :
     civicrm_api3_create_error('Error while deleting membership type. id : ' . $params['id']);

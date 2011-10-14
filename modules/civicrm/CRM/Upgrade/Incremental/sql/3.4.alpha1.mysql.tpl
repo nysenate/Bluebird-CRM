@@ -92,12 +92,11 @@ CREATE TABLE civicrm_prevnext_cache (
   PRIMARY KEY ( id )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 
--- NYSS - already implemented
 -- CRM-7489
--- ALTER TABLE `civicrm_tag`
--- ADD `created_date` DATETIME NULL DEFAULT NULL COMMENT 'Date and time that tag was created.',
--- ADD `created_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_contact, who created this tag',
--- ADD CONSTRAINT FK_civicrm_tag_created_id FOREIGN KEY (created_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL;
+ALTER TABLE `civicrm_tag`
+ADD `created_date` DATETIME NULL DEFAULT NULL COMMENT 'Date and time that tag was created.',
+ADD `created_id` int(10) unsigned default NULL COMMENT 'FK to civicrm_contact, who created this tag',
+ADD CONSTRAINT FK_civicrm_tag_created_id FOREIGN KEY (created_id) REFERENCES civicrm_contact(id) ON DELETE SET NULL;
 
 -- CRM-7494
     UPDATE  civicrm_option_value value 

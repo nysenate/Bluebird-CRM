@@ -80,26 +80,9 @@ function civicrm_api3_uf_join_create($params)
 function civicrm_api3_uf_join_get($params)
 { 
 
-    civicrm_api3_verify_one_mandatory($params,null,array('id','entity_table','entity_id','weight'));
-    $ufJoinDAO = new CRM_Core_DAO_UFJoin();
-    //get the unique name of fields from the schema 
-    $fields = array_keys($ufJoinDAO->fields());
-    foreach ( $fields as $name) {
-        if (array_key_exists($name, $params)) {
-            $ufJoinDAO->$name = $params[$name];
-        }
-    }
+    civicrm_api3_verify_one_mandatory($params);
+	  return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 
-    if ( ! $ufJoinDAO->find() ) {
-        return civicrm_api3_create_success(array());
-    }
-
-    while ($ufJoinDAO->fetch()) {
-      _civicrm_api3_object_to_array($ufJoinDAO, $ufJoin[$ufJoinDAO->id]);
-    }
-  
-    return civicrm_api3_create_success($ufJoin,$params,'uf_join','get',$dao);
-    
 
 }
 

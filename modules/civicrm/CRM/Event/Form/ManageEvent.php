@@ -160,8 +160,8 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form
         }
         
         require_once 'CRM/Event/PseudoConstant.php';
-        $statusTypes        = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 1');
-        $statusTypesPending = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 0');
+        $statusTypes        = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 1', 'label' );
+        $statusTypesPending = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 0', 'label' );
         $findParticipants['statusCounted'] = implode( ', ', array_values( $statusTypes ) );
         $findParticipants['statusNotCounted'] = implode( ', ', array_values( $statusTypesPending ) );
         $this->assign('findParticipants', $findParticipants);

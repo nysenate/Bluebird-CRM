@@ -2,6 +2,9 @@
 
 class CRM_Utils_Cache_Arraycache {
 
+    /**
+     * The cache storage container, an in memory array by default
+     */
     private $_cache;
 
     function __construct( ) {
@@ -13,7 +16,7 @@ class CRM_Utils_Cache_Arraycache {
     }
 
     function get( $key ) {
-        return CRM_Utils_Array::value($key,$this->_cache);
+        return CRM_Utils_Array::value($key, $this->_cache);
     }
 
     function delete( $key ) {
@@ -25,6 +28,4 @@ class CRM_Utils_Cache_Arraycache {
         $this->_cache = array();
     }
 
-};
-
-?>
+}

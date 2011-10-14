@@ -175,6 +175,7 @@ class CRM_Grant_Selector_Search extends CRM_Core_Selector_Base implements CRM_Co
 
         $this->_query = new CRM_Contact_BAO_Query( $this->_queryParams, null, null, false, false,
                                                     CRM_Contact_BAO_Query::MODE_GRANT );
+        $this->_query->_distinctComponentClause = " DISTINCT(civicrm_grant.id)";
         
     }//end of constructor
 

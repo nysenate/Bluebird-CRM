@@ -168,6 +168,7 @@ class CRM_Admin_Form_Setting_Smtp extends CRM_Admin_Form_Setting
         $mailingDomain->find(true);
         if ( $mailingDomain->mailing_backend ) {
             $values = unserialize( $mailingDomain->mailing_backend );
+            require_once "CRM/Core/BAO/Setting.php";
             CRM_Core_BAO_Setting::formatParams( $formValues, $values );
         }
         

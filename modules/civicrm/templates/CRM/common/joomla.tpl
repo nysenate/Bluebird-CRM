@@ -39,7 +39,7 @@
   <tr>
 {if $sidebarLeft}
     <td id="sidebar-left" valign="top">
-        <div id="civi-sidebar-logo" style="margin: 0 0 .25em .25em"><img src="{$config->resourceBase}i/logo_words_small.png" title="{ts}CiviCRM{/ts}/></div><div class="spacer"></div>
+        <div id="civi-sidebar-logo" style="margin: 0 0 .25em .25em"><img src="{$config->resourceBase}i/logo_words_small.png" title="{ts}CiviCRM{/ts}"/></div><div class="spacer"></div>
        {$sidebarLeft}
     </td>
 {/if}

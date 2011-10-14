@@ -133,7 +133,9 @@ class CRM_Contribute_BAO_Widget extends CRM_Contribute_DAO_Widget {
                     $endDate = CRM_Utils_Date::unixTime( $dao->end_date );
                     if ( $endDate &&
                     $endDate < $now ) {
-                        $data['is_active'] = false;                    
+                        $data['is_active'] = false;
+                        $data['campaign_start'] = ts( 'Campaign ended on %1', array( 1 => CRM_Utils_Date::customFormat( $dao->end_date, 
+                            $config->dateformatFull ) ) );
                     } else if ( $startDate >= $now ) {
                         $data['campaign_start'] = ts( 'Campaign starts on %1', array( 1 => CRM_Utils_Date::customFormat( $dao->start_date, 
                             $config->dateformatFull ) ) );

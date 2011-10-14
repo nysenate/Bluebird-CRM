@@ -49,7 +49,10 @@
 </div>
 {literal}
 <script type="text/javascript">
-var target_contact = target_contact_id = selectedCaseId = contactId = '';
+var target_contact = '';
+var target_contact_id = '';
+var selectedCaseId = '';
+var contactId = '';
 
 var unclosedCaseUrl = {/literal}"{crmURL p='civicrm/case/ajax/unclosed' h=0 q='excludeCaseIds='}{$currentCaseId}"{literal};
 cj( "#unclosed_cases" ).autocomplete( unclosedCaseUrl, { width : 250, selectFirst : false, matchContains:true
@@ -157,23 +160,24 @@ function fileOnCase( action, activityID, currentCaseId ) {
 						      if ( action == 'file' ) {
 						      	 var curPath = document.location.href;
 						       	 if ( curPath.indexOf( 'civicrm/contact/view' ) != -1 ) { 
-							     //hide current activity row.
- 							     cj( "#crm-activity_" + activityID ).hide( );
-							     var visibleRowCount = 0;
-							     cj('[id^="'+ 'crm-activity' +'"]::visible').each(function() {
-  							        visibleRowCount++;
-							     } );
-							     if ( visibleRowCount < 1 ) {
-							     	reloadWindow = true;
-							     }  
-							 } 
-							 if ( curPath.indexOf( 'civicrm/contact/view/activity' ) != -1 ) {
-							    redirectToCase = true; 
-							 }
-						      }  
+                                    //hide current activity row.
+                                    cj( "#crm-activity_" + activityID ).hide( );
+							        var visibleRowCount = 0;
+							        cj('[id^="'+ 'crm-activity' +'"]::visible').each(function() {
+  							            visibleRowCount++;
+							        } );
+							        if ( visibleRowCount < 1 ) {
+							     	    reloadWindow = true;
+							        }  
+                                 } 
+                                 if ( ( curPath.indexOf( 'civicrm/contact/view/activity' ) != -1 ) ||
+                                      ( curPath.indexOf( 'civicrm/activity' ) != -1 ) ) {
+                                     redirectToCase = true; 
+                                 }
+                              }  
 						     
 						      if ( redirectToCase ) {
-						          window.location.href = caseUrl + selectedCaseId + '&cid=' + contactId + context;
+                                 window.location.href = caseUrl;
 						      } else if ( reloadWindow ) { 
 						      	  window.location.reload( ); 
 						      } else {

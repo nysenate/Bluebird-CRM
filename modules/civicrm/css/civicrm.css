@@ -1558,6 +1558,11 @@ table.campaign td,
 }
 
 #crm-container .crm-actions-ribbon li.crm-delete-action {
+    margin-left: 30px;
+}
+
+#crm-container .crm-actions-ribbon li.crm-previous-action,
+#crm-container .crm-actions-ribbon li.crm-next-action {
     float:right;
     margin:0px 0px 0px 8px;
 }
@@ -1766,6 +1771,15 @@ div.grippie {
     padding          : 4px;
     LINE-HEIGHT      : 1.4em;
     clear:both;
+}
+
+#crm-container div#contactTopBar {
+	float: left;
+	clear: none;
+}
+#crm-container div#crm-contact-thumbnail {
+	padding: 4px;
+	float: right;
 }
 
 #crm-container div.contact_panel, 
@@ -2301,18 +2315,19 @@ span.icon {
     color:#333;
 }
 
-.light-icon, .ui-widget-content .light-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-icons_3e3e3e_256x240.png")}
-.dark-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-icons_222222_256x240.png")}
+.light-icon, .ui-widget-content .light-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_454545_256x240.png")}
+.dark-icon {background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_888888_256x240.png")}
 .red-icon {background-image:url("../i/icons/jquery-ui-8A1F11.png")}
 
 .edit-icon { background-position: -66px -114px;}
-
+.previous-icon { background-position: -82px -161px;}
+.next-icon { background-position: -66px -161px;}
 .add-icon { background-position: -2px -193px;}
 .back-icon { background-position: -2px -65px;}
 .delete-icon { background-position: -179px -99px;}
 .details-icon { background-position: -129px -112px;}
 .button:hover .delete-icon {
-    background-image:url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-icons_8d2c27_256x240.png")!important;
+    background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_cd0a0a_256x240.png")!important;
 }
 
 .restore-icon { background-position:0px -66px;background-image:url("../i/icons/jquery-ui-91CE00.png"); }
@@ -2727,7 +2742,7 @@ div#civicrm-dashboard form {
 .ui-widget-content .ui-state-focus, 
 .ui-widget-header .ui-state-focus { 
 border: 0px solid #70716b; 
-background: #484e4c url("../packages/jquery/jquery-ui-1.8.11/css/custom-theme/images/ui-bg_flat_40_70716b_40x100.png") 50% 50% repeat-x; 
+background: #484e4c url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-bg_flat_0_aaaaaa_40x100.png") 50% 50% repeat-x; 
 font-weight: normal; 
 color: #f5f6f1; 
 }

@@ -9,7 +9,7 @@ function participant_status_type_delete_example(){
 $params = array( 
   'version' => 3,
   'name' => 'test status',
-  'label' => 'I'm a test',
+  'label' => "I'm a test",
   'class' => 'Positive',
   'is_reserved' => 0,
   'is_active' => 1,
