@@ -24,223 +24,7 @@
  +--------------------------------------------------------------------+
 *}
 {literal}
-<style>
-#mainTabContainer ul.token-input-list-facebook, #tagSelect ul.token-input-list-facebook {
-  width: 310px;
-}
-#mainTabContainer div#Tag .tag-section, #tagSelect .tag-section {
-  float: right;
-  margin-right: 50px;
-  width: 310px;
-}
-#crm-container div.form-item .BBtree *, #crm-container .crm-form-block .BBtree * {
-	text-align:left; float:left; font-size: 1em; padding:0px;
-}
-#crm-container div.form-item .BBtree * dl, #crm-container .crm-form-block .BBtree * dl {
-	padding-left:10px;
-}
-#crm-container div.form-item .BBtree* dt, #crm-container .crm-form-block .BBtree * dt {
-	width:auto;
-	min-width:0;
-	display:inline;
-	line-height:18px;
-}
-.BBtree.ui-dialog-content{
-	font-size:95%;
-}
-.BBtree.edit {
-	width:335px;
-	padding:10px;
-	line-height:150%;
-	overflow-x:hidden;
-	overflow-y:scroll;
-	height:580px;
-	background-color:#fff;
-	
-}
-.BBtree.edit.manage {
-	width: 455px;
-	float:left;
-}
-* .BBtree dl {
-	margin: 0; padding-left:25px; width:250px;
-
-}
-.BBtree dt .fCB {display:none;}
-.BBtree dt:hover .fCB {display:inline;}
-.BBtree.ui-dialog-content dt:hover .fCB {display:none;}
-.BBtree dt .treeButton {
-	 background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/icons-3e3e3e.png") no-repeat -32px -15px;
-	 height:16px; width:15px; float:left; margin:0px 5px 0 0;
-}
-.BBtree.loadingGif {
-	 background: url("/sites/default/themes/rayCivicrm/images/loading.gif") no-repeat scroll center white;
-}
-.BBtree dl.lv-0 {
-	float:left;
-}
-.BBtree dt.lv-0 .treeButton {
-	background-position: -32px -15px;
-}
-.BBtree dt.lv-0.open .treeButton {
-	background-position: -64px -15px;
-}
-.BBtree dt div.treeButton.open {
-	background-position:-64px -15px;
-}
-.BBtree dt div.treeButton.open.stub, .BBtree dt>div.stub {
-	background-position:-79px -143px; cursor:default;
-}
-.BBtree dt div.tag {
-	width:150px;
-}
-.BBtree dt {
-	cursor:pointer;padding-left:5px;font-weight:normal;font-size:12px; line-height:18px; 
-}
-.BBtree dt:hover, .BBtree dt.subChecked:hover, .BBtree dt.checked:hover {
-	background-color:#DEDEDE;
-}
-.BBtree dt.lv-0 {
-	font-weight:bold;
-}
-.BBtree.edit dt.subChecked {
-	background-color: #F1F8EB;
-	border: 1px dashed #B0D730;
-	margin: -1 -1px 0px;
-}
-.BBtree.edit dt.checked {
-	background-color: #F1F8EB;
-	border: 1px solid #B0D730;
-	margin: 0 -1px -1px;
-}
-.BBtree .fCB {
-	margin-top:0px;
-}
-.BBtree.tab .fCB, .BBtree.manage .fCB {
-	margin-top:-18px;
-}
-.ui-dialog-content.BBtree .fCB {
-	margin-top:-30px;
-}
-.BBtree .fCB ul{
-margin:0;
-}
-.BBtree .fCB li, div.block-civicrm .BBtree .fCB li, #crm-container .BBtree .fCB li{
-	list-style-type:none;
-	background: url('/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png') transparent no-repeat;
-}
-.BBtree.edit .fCB .checkbox{
-	top: .25em\9; margin-left:2px\9;
-}
-.BBtree.modal input[type=radio]{
-	float:right; margin-top:-15px; margin-top:-18px\9;
-}
-/*adjust the following to choose the default open portion for the drop-down*/
-.BBtree dl.lv-2, .BBtree dl.lv-3, .BBtree dl.lv-4, .BBtree dl.lv-5, .BBtree dl.lv-6 {
-	display:none;
-}
-/*this will remove check boxes from individual levels*/
-.BBtree dl.lv-0{
-	width:320px !important;
-}
-.BBtree.edit dt.lv-0{
-	width:295px !important;
-}
-.BBtree.edit.tab dl.lv-0{
-	margin-left:-35px;
-}
-.BBtree.edit dl.lv-1{
-	width:285px !important;
-}
-.BBtree.edit dt.lv-1{
-	width:285px !important;
-}
-.BBtree.edit dl.lv-2{
-	width:275px !important;
-}
-.BBtree.edit dt.lv-2{
-	width:275px !important;
-}
-.BBtree.edit dl.lv-3{
-	width:265px !important;
-}
-.BBtree.edit dt.lv-3{
-	width:265px !important;
-}
-.BBtree.edit dl.lv-4{
-	width:255px !important;
-}
-.BBtree.edit dt.lv-4 {
-	width:255px !important;
-}
-.BBtree.edit dl.lv-5{
-	width:245px !important;
-}
-.BBtree.edit dt.lv-5{
-	width:245px !important;
-}
-.BBtree.manage dt.lv-0{
-	width:420px !important;
-}
-.BBtree.manage dl.lv-1{
-	width:400px !important;
-}
-.BBtree.manage dt.lv-1{
-	width:395px !important;
-}
-.BBtree.manage dl.lv-2{
-	width:375px !important;
-}
-.BBtree.manage dt.lv-2{
-	width:370px !important;
-}
-.BBtree.manage dl.lv-3{
-	width:350px !important;
-}
-.BBtree.manage dt.lv-3{
-	width:345px !important;
-}
-.BBtree.manage dl.lv-4{
-	width:325px !important;
-}
-.BBtree.manage dt.lv-4 {
-	width:320px !important;
-}
-.BBtree.manage dl.lv-5{
-	width:300px !important;
-}
-.BBtree.manage dt.lv-5{
-	width:295px !important;
-}
-
-.BBtree. dl.lv-0{
-	width:300px;
-}
-.BBtree dl.lv-1{
-	width:275px;
-}
-.BBtree dl.lv-2{
-	width:250px;
-}
-.BBtree dl.lv-3{
-	width:225px;
-}
-.BBtree dl.lv-4{
-	width:200px;
-}
-.BBtree dt.lv-4 div.tag {
-	width:145px;
-}
-.BBtree dl.lv-5{
-	width:175px;
-}
-.BBtree dt.lv-5 div.tag {
-	width:120px;
-}
-.crm-tagListInfo {
-	float:left;
-}
-</style>
+<link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />
 {/literal}
 {literal}
 <script type="text/javascript">
@@ -329,58 +113,62 @@ function callTagListMain(treeLoc) {
 			cj.each(data.message, function(i,tID){
 				if(tID.id == '291')
 				{				
-					/*have to note when you step in and out of levels*/
-					displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
-					displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagLabel_'+tID.id+'" description="'+tID.description+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div>';
-
-					var tIDLabel = 'tagLabel_'+tID.id;
-					displayObj.output += addControlBox(tIDLabel)+'</dt>';
-					if(tID.children.length > 0){
-						/*this is where the first iteration goes in*/
-						displayObj.tLvl = displayObj.tLvl+1;
-						displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
-						cj.each(tID.children, function(i, cID){
-							displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+isItemChecked(cID.is_checked,cID.id)+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+cID.description+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div>';
-							var cIDLabel = 'tagLabel_'+cID.id;
-							displayObj.output += addControlBox(cIDLabel)+'</dt>';
-							if(cID.children.length > 0){
-								displayObj.tLvl = displayObj.tLvl+1;
-								displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+cID.id+'">';
-								cj.each(cID.children, function(i, iID){
-									displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+isItemChecked(iID.is_checked,iID.id)+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+iID.description+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div>';
-									var iIDLabel = 'tagLabel_'+iID.id;
-									displayObj.output += addControlBox(iIDLabel)+'</dt>';
-									if(iID.children.length > 0){
-										displayObj.tLvl = displayObj.tLvl+1;
-										displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+iID.id+'">';
-										cj.each(iID.children, function(i, jID){
-											displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+isItemChecked(jID.is_checked,jID.id)+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+jID.description+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div>';
-											var jIDLabel = 'tagLabel_'+jID.id;
-											displayObj.output += addControlBox(jIDLabel)+'</dt>';
-											if(jID.children.length > 0){
-												displayObj.tLvl = displayObj.tLvl+1;
-												displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
-												cj.each(jID.children, function(i, kID){
-													displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+isItemChecked(kID.is_checked,jID.id)+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+kID.description+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag">'+kID.name+'</div>';
-													var kIDLabel = 'tagLabel_'+kID.id;
-													displayObj.output += addControlBox(kIDLabel)+'</dt>';
-												});
-												displayObj.output += '</dl>';
-												displayObj.tLvl = displayObj.tLvl-1;
-											}
-										});
-										displayObj.output += '</dl>';
-										displayObj.tLvl = displayObj.tLvl-1;
-									}
-								});
-								displayObj.output += '</dl>';
-								displayObj.tLvl = displayObj.tLvl-1;
-							}
-						});
-						displayObj.output += '</dl>';
-						displayObj.tLvl = displayObj.tLvl-1;
-					}
+				/*have to note when you step in and out of levels*/
+				displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
+				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagLabel_'+tID.id+'" description="'+tID.description+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div>';
+				
+				var tIDLabel = 'tagLabel_'+tID.id;
+				displayObj.output += addControlBox(tIDLabel)+'</dt>';
+				if(tID.children.length > 0){
+					/*this is where the first iteration goes in*/
+					displayObj.tLvl = displayObj.tLvl+1;
+					displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
+					cj.each(tID.children, function(i, cID){
+						var cIDChecked = isItemChecked(cID.is_checked,cID.id);
+						displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+cIDChecked+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+cID.description+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div>';
+						var cIDLabel = 'tagLabel_'+cID.id;
+						displayObj.output += addControlBox(cIDLabel, cIDChecked)+'</dt>';
+						if(cID.children.length > 0){
+							displayObj.tLvl = displayObj.tLvl+1;
+							displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+cID.id+'">';
+							cj.each(cID.children, function(i, iID){
+								var iIDChecked = isItemChecked(iID.is_checked,iID.id);
+								displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+iIDChecked+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+iID.description+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div>';
+								var iIDLabel = 'tagLabel_'+iID.id;
+								displayObj.output += addControlBox(iIDLabel, iIDChecked)+'</dt>';
+								if(iID.children.length > 0){
+									displayObj.tLvl = displayObj.tLvl+1;
+									displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+iID.id+'">';
+									cj.each(iID.children, function(i, jID){
+										var jIDChecked = isItemChecked(jID.is_checked,jID.id);
+										displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+jIDChecked+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+jID.description+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div>';
+										var jIDLabel = 'tagLabel_'+jID.id;
+										displayObj.output += addControlBox(jIDLabel, jIDChecked)+'</dt>';
+										if(jID.children.length > 0){
+											displayObj.tLvl = displayObj.tLvl+1;
+											displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
+											cj.each(jID.children, function(i, kID){
+												var kIDChecked = isItemChecked(kID.is_checked,kID.id);
+												displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+kIDChecked+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+kID.description+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag">'+kID.name+'</div>';
+												var kIDLabel = 'tagLabel_'+kID.id;
+												displayObj.output += addControlBox(kIDLabel, kIDChecked)+'</dt>';
+											});
+											displayObj.output += '</dl>';
+											displayObj.tLvl = displayObj.tLvl-1;
+										}
+									});
+									displayObj.output += '</dl>';
+									displayObj.tLvl = displayObj.tLvl-1;
+								}
+							});
+							displayObj.output += '</dl>';
+							displayObj.tLvl = displayObj.tLvl-1;
+						}
+					});
 					displayObj.output += '</dl>';
+					displayObj.tLvl = displayObj.tLvl-1;
+				}
+				displayObj.output += '</dl>';
 				}
 
 			});
@@ -461,11 +249,18 @@ function hoverTreeSlider(treeLoc){
 	cj('.BBtree.edit dt').hover(
 	function(){
 		var tagCount = 0;
-		cj('.crm-tagListInfo .tagInfoBody .tagName span').html(cj(this + ' .tag').html());
-		cj('.crm-tagListInfo .tagInfoBody .tagID span').html(cj(this).attr('tid'));
+		var tagName = cj(this).children('.tag').html();
+		var tagId = cj(this).attr('tid');
+		var isReserved = 'False';
+		if(cj(this).hasClass('isReserved') == true)
+		{
+			isReserved = 'True';
+		}
+		cj('.crm-tagListInfo .tagInfoBody .tagName span').html(tagName);
+		cj('.crm-tagListInfo .tagInfoBody .tagId span').html(tagId);
 		cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(cj(this).attr('description'));
-		cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html(cj(this).hasClass('isReserved'));
-		cj('.crm-tagListInfo .tagInfoBody .tagCount span').html(tagInfo.tagCount);
+		cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html(isReserved);
+		cj('.crm-tagListInfo .tagInfoBody .tagCount span').html(tagCount);
 	}, 
 	function() {
 		cj('.crm-tagListInfo .tagInfoBody .tagName span').html('');
@@ -877,7 +672,7 @@ function modalSelectOnClick() {
 		]);
 	});
 }
-function addControlBox(tagLabel) {
+function addControlBox(tagLabel, IDChecked) {
 	var floatControlBox;
 	var tagMouse = 'dt#'+tagLabel;
 	floatControlBox = '<span class="fCB" style="padding:1px 0;float:right;">';
@@ -887,7 +682,8 @@ function addControlBox(tagLabel) {
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
 	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';	if(cj(tagMouse).hasClass('checked')){
+	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
+	if(IDChecked == ' checked'){
 		floatControlBox += '<input type="checkbox" class="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
 	} else {
 		floatControlBox += '<input type="checkbox" class="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
@@ -968,18 +764,6 @@ function findIDLv(tagLabel) {
 	cj('dt#'+tagLabel).removeClass('checked');
 }
 </script>
-<style>
-	.crm-tagListInfo {
-		padding:15px;
-	}
-	.tagInfoBody {
-		margin-top:15px;
-	}
-	.tagInfoBody div {
-		margin-top:2px;
-		line-height:24px;
-	}
-</style>
 {/literal}
 {capture assign=docLink}{docURL page="Tags Admin"}{/capture}
 {if $action eq 1 or $action eq 2 or $action eq 8}
@@ -1011,7 +795,7 @@ function findIDLv(tagLabel) {
 			<div class="tagId">Tag ID: <span></span></div>
 			<div class="tagDescription">Tag Description: <span></span></div>
 			<div class="tagReserved">Reserved: <span></span></div>
-			<div class="tagCount">Records with this Tag: <span></span></div>
+			<!--<div class="tagCount">Records with this Tag: <span></span></div>-->
 		</div>
             </div>
         </div>
