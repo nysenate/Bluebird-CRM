@@ -23,79 +23,13 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{* this template is used for adding/editing tags  *}
 {literal}
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/sites/default/themes/rayCivicrm/nyss_skin/tags.css" />
-<style>
-/*.hit {ldelim}padding-left:10px;{rdelim}*/ /*NYSS*/
-.tree li {ldelim}padding-left:10px;{rdelim}
-#Tag .tree .collapsable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-expanded.png') no-repeat left 8px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag .tree .expandable .hit {ldelim}background:url('{$config->resourceBase}/i/menu-collapsed.png') no-repeat left 6px;padding-left: 9px;cursor:pointer{rdelim}
-#Tag #tagtree .highlighted {ldelim}background-color:lightgrey;{rdelim}
-.jstree-icon {ldelim}border: 1px solid white;{rdelim} /*NYSS*/
-</style>
 {/literal}
-{*NYSS*}
-<div id="TagGroups" class="view-content">
-<h3>{if !$hideContext}{ts}Tags{/ts}{/if}</h3>
-    <div id="dialog">
-    
-    </div>
-    {*NYSS add list of Issue Codes*}
-    {if $contactIssueCode_list}
-    	<div class="contactTagsList help"><strong>Issue Codes: </strong>{$contactIssueCode_list}</div>
-    	<div class="clear"></div>
-    {/if}
-    <div id="crm-tagListWrap">
-	    <div class="BBtree edit tab" style="float:left">
-	    			
-	    </div>
-	    <div style="float:right; width:400px;">
-    {include file="CRM/common/Tag.tpl"}
-    </div>
-        {*NYSS add list of leg positions with descriptions*}
-        {if $legpositions}
-        <div class="clear_left"></div>
-        <div class="legpositions help"><span class="label">Legislative Position Descriptions</span><br />
-        	<ul>
-            {foreach from=$legpositions item="legposition"}
-            	{if $legposition.description && $legposition.description neq 'No description available.'}
-                	<li><strong>{$legposition.name}</strong> :: {$legposition.description}</li>
-                {/if}
-            {/foreach}
-            </ul>
-        </div>
-        {/if}
-    </div>
-
-    {* Show Edit Tags link if in View mode *}
-    {if $permission EQ 'edit' AND $action eq 16}
-        <!--</fieldset>-->
-    {else}
-       <div class="form-item unobstructive">{$form.buttons.html}</div>
-       <!--</fieldset>-->
-    {/if}
-  
-
-    
-</div>
-
-<script type="text/javascript">
-
-options = {ldelim} ajaxURL:"{crmURL p='civicrm/ajax/rest' h=0}"
-       ,closetxt:'<div class="ui-icon ui-icon-close" style="float:left"></div>'
-      {rdelim} 
-entityID={$entityID};
-entityTable='{$entityTable}';
 {literal}
-var pageType = 'edit';
-var cidpre = /cid=\d*/.exec(document.location.search);
-var cidsplit = /\d.*/.exec(cidpre);
-var cid = cidsplit[0];
-function hideStatus( ) {
-    cj( '#restmsg' ).hide( );
-}
+<script type="text/javascript">
 cj(document).ready(function() {	
+	
 	resetBBTree('main', 'init');
 });
 function callTagListModal(treeLoc) {
@@ -104,7 +38,6 @@ function callTagListModal(treeLoc) {
 		url: '/civicrm/ajax/tag/tree',
 		data: {
 			entity_type: 'civicrm_contact',
-			entity_id: cid
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -169,7 +102,6 @@ function callTagListMain(treeLoc) {
 		url: '/civicrm/ajax/tag/tree',
 		data: {
 			entity_type: 'civicrm_contact',
-			entity_id: cid
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -312,6 +244,30 @@ function hoverTreeSlider(treeLoc){
 	});
 	cj(treeLoc + ' dt .selectRadio').click(function(e) {
 			e.stopPropagation();
+	});
+	cj('.BBtree.edit dt').unbind('mouseenter mouseleave');
+	cj('.BBtree.edit dt').hover(
+	function(){
+		var tagCount = 0;
+		var tagName = cj(this).children('.tag').html();
+		var tagId = cj(this).attr('tid');
+		var isReserved = 'False';
+		if(cj(this).hasClass('isReserved') == true)
+		{
+			isReserved = 'True';
+		}
+		cj('.crm-tagListInfo .tagInfoBody .tagName span').html(tagName);
+		cj('.crm-tagListInfo .tagInfoBody .tagId span').html(tagId);
+		cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html(cj(this).attr('description'));
+		cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html(isReserved);
+		cj('.crm-tagListInfo .tagInfoBody .tagCount span').html(tagCount);
+	}, 
+	function() {
+		cj('.crm-tagListInfo .tagInfoBody .tagName span').html('');
+		cj('.crm-tagListInfo .tagInfoBody .tagID span').html('');
+		cj('.crm-tagListInfo .tagInfoBody .tagDescription span').html('');
+		cj('.crm-tagListInfo .tagInfoBody .tagReserved span').html('');
+		cj('.crm-tagListInfo .tagInfoBody .tagCount span').html('');
 	});
 }
 
@@ -524,6 +480,73 @@ function makeModalUpdate(tagLabel){
 			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
 			tagInfo.description = cj('.BBtree.edit dt#' + tagLabel).attr('description');
 			tagInfo.reserved = cj('.BBtree.edit dt#'+tagLabel).hasClass('isReserved');
+			var updateDialogInfo = '';
+			if(tagInfo.reserved == true){
+			tagInfo.reserved = 'checked';} else {
+			tagInfo.reserved = '';}
+			updateDialogInfo += '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
+			updateDialogInfo += '<div class="modalInputs">';
+			updateDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" value="'+tagInfo.name+'" /></div>';
+			updateDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+tagInfo.description+'"/></div>';
+			updateDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '+tagInfo.reserved+'/></div>';
+			cj('#dialog').html(updateDialogInfo);
+			cj('#dialog input:[name=tagName]').focus();
+		},
+		buttons: {
+			"Done": function () {
+				tagUpdate = new Object();
+				tagUpdate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
+				tagUpdate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
+				tagUpdate.currentId = tagLabel.replace('tagLabel_', '');
+				tagUpdate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
+				cj.ajax({
+					url: '/civicrm/ajax/tag/update',
+					data: {
+						name: tagUpdate.tagName,
+						description: tagUpdate.tagDescription,
+						id: tagUpdate.currentId,
+						is_reserved: tagUpdate.isReserved	
+					},
+					dataType: 'json',
+					success: function(data, status, XMLHttpRequest) {
+						if(data.code != 1)
+						{
+							alert(data.message);
+						}
+						cj('#dialog').dialog('close');
+						cj('#dialog').dialog('destroy');
+						resetBBTree('main');
+					}
+				});
+			},
+			"Cancel": function() { 
+			
+				cj(this).dialog("close"); 
+				cj(this).dialog("destroy"); 
+			}
+		} 
+	});
+}
+function makeModalMerge(tagLabel){
+	cj("#dialog").show( );
+	cj("#dialog").dialog({
+		draggable: false,
+		height: 300,
+		width: 300,
+		title: "Update Tag",
+		modal: true, 
+		bgiframe: true,
+		close:{ },
+		overlay: { 
+			opacity: 0.2, 
+			background: "black" 
+		},
+		open: function() {
+			tagInfo = new Object();
+			tagInfo.id = tagLabel;
+			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
+			tagInfo.description = cj('.BBtree.edit dt#' + tagLabel).attr('description');
+			tagInfo.reserved = cj('.BBtree.edit dt#'+tagLabel).hasClass('isReserved');
 			var updateDialogInfo;
 			if(tagInfo.reserved == true){
 			tagInfo.reserved = 'checked';} else {
@@ -564,7 +587,7 @@ function makeModalUpdate(tagLabel){
 				});
 			},
 			"Cancel": function() { 
-			
+
 				cj(this).dialog("close"); 
 				cj(this).dialog("destroy"); 
 			}
@@ -651,23 +674,22 @@ function modalSelectOnClick() {
 }
 function addControlBox(tagLabel, IDChecked) {
 	var floatControlBox;
-	var tagMouse = '.BBtree.edit dt#'+tagLabel;
+	var tagMouse = 'dt#'+tagLabel;
 	floatControlBox = '<span class="fCB" style="padding:1px 0;float:right;">';
 	floatControlBox += '<ul>';
-	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';*/
+	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
-	
 	if(IDChecked == ' checked'){
 		floatControlBox += '<input type="checkbox" class="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
 	} else {
 		floatControlBox += '<input type="checkbox" class="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
-	}
+	}*/
 	floatControlBox += '</span>';
-	if(tagMouse != '.BBtree.edit dt#tagLabel_291')
+	if(tagMouse != 'dt#tagLabel_291')
 	{
 		return(floatControlBox);
 	} else { return ''; }
@@ -743,11 +765,41 @@ function findIDLv(tagLabel) {
 }
 </script>
 {/literal}
+{capture assign=docLink}{docURL page="Tags Admin"}{/capture}
+{if $action eq 1 or $action eq 2 or $action eq 8}
+    {include file="CRM/Admin/Form/Tag.tpl"}	
+{else}
+<div class="crm-content-block">
+    <div id="help">
+        {ts 1=$docLink}Tags can be assigned to any contact record, and are a convenient way to find contacts. You can create as many tags as needed to organize and segment your records.{/ts} {$docLink}
+    </div>
+        <div id="dialog"></div>
+	<!--
+	Add this back in when tabs are realized.
+	<div class="crm-tagTabHeader">
+		<ul>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>-->
+	
+	<div id="crm-tagListWrap">
+	    <div class="BBtree edit manage">
 
-{if $action eq 1 or $action eq 2 }
- <script type="text/javascript">
- {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
-    on_load_init_check(fname);
- </script>
+	    </div>
+	    <div class="crm-tagListInfo">
+		<h1 class="header title">Tag Info</h1>
+		<div class="tagInfoBody">
+			<div class="tagName">Tag Name: <span></span></div>
+			<div class="tagId">Tag ID: <span></span></div>
+			<div class="tagDescription">Tag Description: <span></span></div>
+			<div class="tagReserved">Reserved: <span></span></div>
+			<!--<div class="tagCount">Records with this Tag: <span></span></div>-->
+		</div>
+            </div>
+        </div>
+        
+</div>
+
 {/if}
