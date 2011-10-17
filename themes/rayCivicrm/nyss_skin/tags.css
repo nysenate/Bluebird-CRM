@@ -31,6 +31,10 @@
 	background-color:#fff;
 	
 }
+.BBtree.edit.tab {
+	width:336px;
+}
+
 .BBtree.edit.manage {
 	width: 455px;
 	float:left;
@@ -77,7 +81,12 @@
 .BBtree dt {
 	cursor:pointer;padding-left:5px;font-weight:normal;font-size:12px; line-height:18px; 
 }
-
+.BBtree.manage.edit dt {
+	margin-bottom:-18px\9; 
+}
+.BBtree.manage.edit dt.lv-0 {
+	margin-bottom:0px\9; 
+}
 .BBtree dt.lv-0 {
 	font-weight:bold;
 }
@@ -100,6 +109,9 @@
 .BBtree.tab .fCB, .BBtree.manage .fCB {
 	margin-top:-18px;
 }
+.BBtree.tab .fCB {
+	margin-top:-24px\9;
+}
 .ui-dialog-content.BBtree .fCB {
 	margin-top:-30px;
 }
@@ -112,6 +124,9 @@ margin:0;
 }
 .BBtree.edit .fCB .checkbox{
 	top: .25em\9; margin-left:2px\9;
+}
+.BBtree.edit.tab .fCB .checkbox{
+	top: .5em\9; 
 }
 .BBtree.modal input[type=radio]{
 	float:right; margin-top:-15px; margin-top:-18px\9;
