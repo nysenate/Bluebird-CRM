@@ -146,12 +146,12 @@ function civicrm_api3_relationship_delete( $params ) {
 function civicrm_api3_relationship_get($params) 
 {
 
-        civicrm_api3_verify_mandatory($params, null,array('contact_id'));
- 
-        require_once 'CRM/Contact/BAO/Relationship.php';
-        $relationships= array();
-        $contactID     = $params['contact_id'];
-        $relationships = CRM_Contact_BAO_Relationship::getRelationship($contactID,
+        civicrm_api3_verify_mandatory($params); 
+        if(!CRM_Utils_Array::value('contact_id',$params)){
+           $relationships = _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params,FALSE);
+        }else{
+             $relationships= array();
+             $relationships = CRM_Contact_BAO_Relationship::getRelationship($params['contact_id'],
                                         CRM_Utils_Array::value('status_id',$params),
                                          0,
                                          0,
@@ -159,23 +159,10 @@ function civicrm_api3_relationship_get($params)
 
      
     
-        //handle custom data.
-        require_once 'CRM/Core/BAO/CustomGroup.php';
-
-        foreach ( $relationships as $relationshipId => $values ) {
-            $groupTree =& CRM_Core_BAO_CustomGroup::getTree( 'Relationship', CRM_Core_DAO::$_nullObject, $relationshipId, false,
-                                                             $values['civicrm_relationship_type_id'] );
-            $formatTree = CRM_Core_BAO_CustomGroup::formatGroupTree( $groupTree, 1, CRM_Core_DAO::$_nullObject );
-        
-            $defaults = array( );
-            CRM_Core_BAO_CustomGroup::setDefaults( $formatTree, $defaults );
-        
-            if ( !empty( $defaults ) ) {
-                foreach ( $defaults as $key => $val ) {
-                    $relationships[$relationshipId][$key] = $val;
-                }
-            }
         }
+        foreach ( $relationships as $relationshipId => $values ) {
+               _civicrm_api3_custom_data_get($relationships[$relationshipId],'Relationship',$relationshipId);
+         }
     
         
         return civicrm_api3_create_success( $relationships ,$params);

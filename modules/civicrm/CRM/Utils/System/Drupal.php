@@ -349,6 +349,14 @@ class CRM_Utils_System_Drupal {
             }
         }
         
+        // CRM-6948: When using loadBootStrap, it's implicit that CiviCRM has already loaded its settings, which means that define(CIVICRM_CLEANURL) was correctly set.
+        // So we correct it
+        $config = CRM_Core_Config::singleton();
+        $config->cleanURL = (int)variable_get('clean_url', '0'); 
+        
+        // CRM-8655: Drupal wasn't available during bootstrap, so hook_civicrm_config never executes
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::config( $config );
     }
     
     static function cmsRootPath( ) 

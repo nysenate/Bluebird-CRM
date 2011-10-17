@@ -291,6 +291,10 @@ class CRM_Report_Form_Campaign_SurveyDetails extends CRM_Report_Form {
                 implode( ' , ', array_keys(  $surveyActivityTypes ) ) . ' ) )';
         }
         
+        // always filter out deleted activities (so contacts that have been released
+        // don't show up in the report).
+        $clauses[] = "( {$this->_aliases['civicrm_activity']}.is_deleted = 0 )";
+
         if ( empty( $clauses ) ) {
             $this->_where = "WHERE ( 1 ) ";
         } else {

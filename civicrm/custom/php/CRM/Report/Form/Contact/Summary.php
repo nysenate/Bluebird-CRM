@@ -115,8 +115,13 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                                  array( 'title'   => ts( 'State / Province' ), 
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                         'options' => CRM_Core_PseudoConstant::stateProvince( ), ), 
-                                 ), 
-                          ),
+                                 ),
+                          'order_bys'   =>
+                          array( 'state_province_id' => array( 'title' => 'State/Province'),
+                                 'city' => array( 'title' => 'City'),
+                                 'postal_code' => array( 'title' => 'Postal Code'),
+                                 ),
+                           ),
                   'civicrm_country' =>
                   array( 'dao'      => 'CRM_Core_DAO_Country',
                          'fields'   =>
@@ -175,9 +180,11 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                             $this->_countryField = true;
                         }
 
-                        $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
+                        $alias = "{$tableName}_{$fieldName}";
+                        $select[] = "{$field['dbAlias']} as {$alias}";
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
+                        $this->_selectAliases[] = $alias;
                     }
                 }
             }

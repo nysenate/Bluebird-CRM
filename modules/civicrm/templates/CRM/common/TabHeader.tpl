@@ -64,7 +64,12 @@ function stopSpinner( ) {
                 var url = cj.data(ui.tab, 'load.tabs');
                 {/literal}{if $config->userFramework eq 'Drupal'}{literal}
                     var actionUrl = url.split( '?' );
-                    var actualUrl = actionUrl[0];
+                    {/literal}{if $config->cleanURL}{literal}
+                      var actualUrl = actionUrl[0];
+                    {/literal}{else}{literal}
+                      var getParams = actionUrl[1].split( '&' );
+                      var actualUrl = actionUrl[0] + '?' + getParams[0];
+                    {/literal}{/if}{literal}
                 {/literal}{else}{literal}
                     var actionUrl = url.split( '&' );
                     var actualUrl = actionUrl[0] + '&' + actionUrl[1];

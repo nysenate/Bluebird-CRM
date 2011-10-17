@@ -49,8 +49,8 @@ class CRM_Contribute_Form_ContributionPage_Custom extends CRM_Contribute_Form_Co
      */
     public function buildQuickForm()
     {
-        require_once "CRM/Core/BAO/UFGroup.php";
-        require_once "CRM/Contact/BAO/ContactType.php";
+        require_once 'CRM/Core/BAO/UFGroup.php';
+        require_once 'CRM/Contact/BAO/ContactType.php';
         $types    = array_merge( array( 'Contact', 'Individual','Contribution','Membership'),
                                  CRM_Contact_BAO_ContactType::subTypes( 'Individual' ) );
         
@@ -98,7 +98,8 @@ class CRM_Contribute_Form_ContributionPage_Custom extends CRM_Contribute_Form_Co
             
         require_once 'CRM/Core/BAO/UFJoin.php';
 
-        $ufJoinParams = array( 'entity_table' => 'civicrm_contribution_page',  
+        $ufJoinParams = array( 'module'       => 'CiviContribute',
+                               'entity_table' => 'civicrm_contribution_page',  
                                'entity_id'    => $this->_id );
         list( $defaults['custom_pre_id'],
               $defaults['custom_post_id'] ) = 
@@ -190,7 +191,7 @@ class CRM_Contribute_Form_ContributionPage_Custom extends CRM_Contribute_Form_Co
             $membershipEnable = true;
         }
         
-        require_once "CRM/Core/BAO/UFField.php";
+        require_once 'CRM/Core/BAO/UFField.php';
         if ( $fields['custom_pre_id'] ) {
             $preProfileType  = CRM_Core_BAO_UFField::getProfileType( $fields['custom_pre_id'] );
         }

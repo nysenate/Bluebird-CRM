@@ -579,25 +579,27 @@ AND    cf.id IN ( $fieldIDList )
                 $fieldIDs[] = (int ) $idx;
             }
         }
+
         $default = array('Contact', 'Individual', 'Household', 'Organization');
-        if (!($type = $params['entityType']) || in_array($params['entityType'], $default)) {
-          $type = NULL;
-        }
-        else {
-          require_once 'CRM/Core/SelectValues.php';
-          $entities = CRM_Core_SelectValues::customGroupExtends( );
-          if (!array_key_exists($type, $entities)) {
-            if (in_array($type, $entities)) {
-              $type = $entities[$type];
-              if (in_array($type, $default)) {
-                $type = NULL;
-              }
+        if  ( ! ( $type = CRM_Utils_Array::value( 'entityType', $params ) ) ||
+              in_array( $params['entityType'], $default ) ) {
+            $type = NULL;
+        } else {
+            require_once 'CRM/Core/SelectValues.php';
+            $entities = CRM_Core_SelectValues::customGroupExtends( );
+            if (!array_key_exists($type, $entities)) {
+                if (in_array($type, $entities)) {
+                    $type = $entities[$type];
+                    if (in_array($type, $default)) {
+                        $type = NULL;
+                    }
+                }
+                else {
+                    return CRM_Core_Error::createAPIError( ts( 'Invalid entity type' ) . ': "' . $type . '"' );
+                }
             }
-            else {
-              return CRM_Core_Error::createAPIError( ts( 'Invalid entity type' ) . ': "' . $type . '"' );
-            }
-          }
         }
+
         $values = self::getEntityValues( $params['entityID'],
                                          $type,
                                          $fieldIDs );

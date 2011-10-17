@@ -356,6 +356,13 @@ LEFT JOIN civicrm_action_mapping cam ON (cam.id = cas.mapping_id)
             require_once 'CRM/Core/Smarty/resources/String.php';
             civicrm_smarty_register_string_resource( );
             $smarty =& CRM_Core_Smarty::singleton( );
+
+            // $tokenParams is flat (i.e. keys include dots); these are hard to access in Smarty
+            require_once 'CRM/Utils/Array.php';
+            foreach (CRM_Utils_Array::unflatten('.', $tokenParams) as $key => $value) {
+                $smarty->assign($key, $value);
+            }
+            
             foreach( array( 'text', 'html') as $elem) {
                 $$elem = $smarty->fetch("string:{$$elem}");
             }

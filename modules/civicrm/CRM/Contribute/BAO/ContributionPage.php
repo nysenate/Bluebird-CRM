@@ -85,7 +85,8 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
 
         // get the profile ids
         require_once 'CRM/Core/BAO/UFJoin.php'; 
-        $ufJoinParams = array( 'entity_table' => 'civicrm_contribution_page',   
+        $ufJoinParams = array( 'module'       => 'CiviContribute',
+                               'entity_table' => 'civicrm_contribution_page',   
                                'entity_id'    => $id );   
         list( $values['custom_pre_id'],
               $values['custom_post_id'] ) = CRM_Core_BAO_UFJoin::getUFGroupIds( $ufJoinParams ); 
@@ -277,7 +278,12 @@ class CRM_Contribute_BAO_ContributionPage extends CRM_Contribute_DAO_Contributio
                 $tplParams['onBehalfName']  = $displayName;
                 $tplParams['onBehalfEmail'] = $email;
 
-                $profileId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', 'on_behalf_organization', 'id', 'name' );
+                require_once 'CRM/Core/BAO/UFJoin.php'; 
+                $ufJoinParams    = array( 'module'       => 'onBehalf',
+                                          'entity_table' => 'civicrm_contribution_page',   
+                                          'entity_id'    => $values['id'] );   
+                $OnBehalfProfile = CRM_Core_BAO_UFJoin::getUFGroupIds( $ufJoinParams );
+                $profileId       = $OnBehalfProfile[0]; 
                 self::buildCustomDisplay( $profileId, 'onBehalfProfile' , $userID, $template,
                                           $params['onbehalf_profile'], $fieldTypes );
             }

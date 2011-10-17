@@ -77,7 +77,7 @@ class CRM_Import_ImportJob {
     
     protected $_parser;
     
-    public function __construct( $tableName, $createSql = null, $createTable = false ) {
+    public function __construct( $tableName = null, $createSql = null, $createTable = false ) {
         $dao = new CRM_Core_DAO();
         $db = $dao->getDatabaseConnection();
         

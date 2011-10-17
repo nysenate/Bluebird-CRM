@@ -1777,7 +1777,7 @@ class CRM_Import_Parser_Contact extends CRM_Import_Parser
             $csType = $relCsType;
         }
 
-        //Cache the addressCustomFields for speed
+        //NYSS Cache the addressCustomFields for speed
         static $addressCustomFields = null;
         if($addressCustomFields == null)
             $addressCustomFields = CRM_Core_BAO_CustomField::getFields( 'Address' );

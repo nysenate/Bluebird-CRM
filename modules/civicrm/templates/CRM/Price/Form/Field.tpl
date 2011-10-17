@@ -195,6 +195,22 @@
 <script type="text/javascript">
     option_html_type(this.form);
 </script>
+{literal}
+     <script type="text/javascript">
+     
+     function calculateRowValues( row ) {
+      var mtype = cj("#membership_type_id_"+row).val();
+      var postUrl = "{/literal}{crmURL p='civicrm/ajax/memType' h=0}{literal}";
+
+      cj.post( postUrl, {mtype: mtype}, function( data ) {
+       	       cj("#option_amount_"+ row).val( data.total_amount );   
+	       cj("#option_label_"+ row).val( data.name );   
+      }, 'json');  
+     }
+
+    {/literal}
+</script>
+
 
 {* Give link to view/edit choice options if in edit mode and html_type is one of the multiple choice types *}
 {if $action eq 2 AND ($form.data_type.value.1.0 eq 'CheckBox' OR $form.data_type.value.1.0 eq 'Radio' OR $form.data_type.value.1.0 eq 'Select') }
@@ -202,3 +218,4 @@
         <a href="{crmURL p="civicrm/admin/event/field/option" q="reset=1&action=browse&fid=`$id`"}" class="button"><span>{ts}Multiple Choice Options{/ts}</span></a>
     </div>
 {/if}
+

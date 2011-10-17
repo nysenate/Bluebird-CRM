@@ -242,13 +242,11 @@ AND    co.id IN ( $contribIDs )";
         // get the missing pieces for each contribution
         $contribIDs = implode( ',', $this->_contributionIds );
         $details = self::getDetails( $contribIDs );
-
         $template = CRM_Core_Smarty::singleton( );
-
+        
         // for each contribution id, we just call the baseIPN stuff 
         foreach ( $this->_rows as $row ) {
             $input = $ids = $objects = array( );
-            
             $input['component'] = $details[$row['contribution_id']]['component'];
 
             $ids['contact'     ]      = $row['contact_id'];
@@ -321,12 +319,14 @@ WHERE     c.id IN ( $contributionIDs )";
         $rows = array( );
         $dao = CRM_Core_DAO::executeQuery( $query,
                                            CRM_Core_DAO::$_nullArray );
+        $rows = array();
+
         while ( $dao->fetch( ) ) {
-            $rows[$dao->contribution_id] = array( 'component'   => $dao->participant_id ? 'event' : 'contribute',
-                                                  'contact'     => $dao->contact_id,
-                                                  'membership'  => $dao->membership_id,
-                                                  'participant' => $dao->participant_id,
-                                                  'event'       => $dao->event_id );
+            $rows[$dao->contribution_id]['component']   = $dao->participant_id ? 'event' : 'contribute';
+            $rows[$dao->contribution_id]['contact']     = $dao->contact_id;
+            $rows[$dao->contribution_id]['membership'][] = $dao->membership_id;
+            $rows[$dao->contribution_id]['participant'] = $dao->participant_id;
+            $rows[$dao->contribution_id]['event']       = $dao->event_id;
         }
         return $rows;
     }

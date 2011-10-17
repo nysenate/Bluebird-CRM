@@ -393,8 +393,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                                    $recipients->email_id,
                                    $recipients->contact_id );
                 $count++;
-                //if ( $count % CRM_Core_DAO::BULK_INSERT_COUNT == 0 ) {
-				if ( $count % CRM_Core_DAO::BULK_MAIL_INSERT_COUNT == 0 ) { //NYSS 4234
+                if ( $count % CRM_Core_DAO::BULK_MAIL_INSERT_COUNT == 0 ) {
                     CRM_Mailing_Event_BAO_Queue::bulkCreate( $params, $now );
                     $count = 0;
                     $params = array( );
@@ -523,7 +522,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
         // get the return properties
         $returnProperties = $mailing->getReturnProperties( );
         $params = $targetParams = $deliveredParams = array( );
-		$count  = 0; //NYSS 4234
+        $count  = 0;
 
         foreach ( $fields as $key => $field ) {
             $params[] = $field['contact_id'];
@@ -561,7 +560,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
             // to avoid making too many DB calls for this rare case
             // lets do it once every 101 times (a random number lobo picked up)
             // another option is to just do this once per deliverGroup
-            if ( $key % 101 == 0 ) {
+            /*if ( $key % 101 == 0 ) {
                 $status =  CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Job',
                                                         $this->id,
                                                         'status' );
@@ -573,7 +572,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                                       $job_date );
                     return false;
                 }
-            }
+            }*/
              
             $result = $mailer->send($recipient, $headers, $body, $this->id);
                 
@@ -606,6 +605,17 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                                       $job_date );
                     $count = 0;
                     //$deliveredParams = array( );
+					
+					// hack to stop mailing job at run time, CRM-4246.
+                    // to avoid making too many DB calls for this rare case
+                    // lets do it when we snapshot
+                    $status =  CRM_Core_DAO::getFieldValue( 'CRM_Mailing_DAO_Job',
+                                                            $this->id,
+                                                            'status' );
+                    if ( $status != 'Running' ) {
+                        return false;
+                    }
+					
                 }
             }
             
@@ -826,6 +836,8 @@ AND    civicrm_activity.source_record_id = %2";
                      'CRM_Core_Error')) {
                 $result = false;
             }
+			
+			$targetParams = array( ); //NYSS
         }
 
         return $result;

@@ -510,7 +510,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
                     $this->assign( 'target_contact', $target_contact );
                 } else {    
                     $this->assign( 'target_contact', $this->formatContactValues( $target_contact ) );
-                }
+                } 
             }
             
             if ( !CRM_Utils_Array::crmIsEmptyArray( $defaults['assignee_contact'] ) ) {

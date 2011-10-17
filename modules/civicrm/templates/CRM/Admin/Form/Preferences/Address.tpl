@@ -59,7 +59,7 @@
         <table class="form-layout">
              <tr class="crm-preferences-address-form-block-description">
                 <td colspan="2">
-    	            <span class="description">{ts 1=http://www.usps.com/webtools/address.htm}CiviCRM includes an optional plugin for interfacing the the United States Postal Services (USPS) Address Standardization web service. You must register to use the USPS service at <a href='%1' target='_blank'>%1</a>. If you are approved, they will provide you with a User ID and the URL for the service.{/ts}</span>
+    	            <span class="description">{ts 1=https://www.usps.com/business/webtools-address-information.htm}CiviCRM includes an optional plugin for interfacing the the United States Postal Services (USPS) Address Standardization web service. You must register to use the USPS service at <a href='%1' target='_blank'>%1</a>. If you are approved, they will provide you with a User ID and the URL for the service.{/ts}</span>
     	        </td>
             </tr>
             <tr class="crm-preferences-address-form-block-address_standardization_provider">

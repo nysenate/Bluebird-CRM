@@ -255,8 +255,7 @@ class CRM_Core_Payment_PayflowPro extends CRM_Core_Payment {
             
         }
         
- 		
-        
+        CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $payflow_query_array ); 
         $payflow_query = $this->convert_to_nvp( $payflow_query_array );
         
         /*

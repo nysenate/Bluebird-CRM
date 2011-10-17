@@ -6,12 +6,12 @@ Check SocialNetwork.drupal as an example
 *}
 
 {capture assign=petitionURL}{crmURL p='civicrm/petition/sign' q="sid=$petition_id" a=true}{/capture}
-<h2>Help spread the word about our petition</h2>
+<h2>{ts}Help spread the word about our petition{/ts}</h2>
 <div class="crm-section">
 	<p>{ts}Please help us and let your friends, colleagues and followers know about our campaign.{/ts}</p>
 </div>
 
-<h3>Do you use Facebook or Twitter ?</h3>
+<h3>{ts}Do you use Facebook or Twitter ?{/ts}</h3>
 <div id="crm_socialnetwork" class="crm-section">
 	<p>{ts}Share it on Facebook or tweet it on Twitter.{/ts}</p>
 	<div class="crm_fb_tweet_buttons">

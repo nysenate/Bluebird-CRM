@@ -57,6 +57,8 @@
             {ts}Contribution Total{/ts}:
         {elseif $context EQ "Event"}
             {ts}Event Total{/ts}: 
+        {else}
+            {ts}Total Amount{/ts}: 
         {/if}
     {$totalAmount|crmMoney}
     </div>

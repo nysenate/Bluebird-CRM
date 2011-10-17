@@ -87,7 +87,9 @@
             {else}
               <tr class="crm-admin-options-form-block-value">
                 <td class="label">{$form.value.label}</td>
-                <td>{$form.value.html}</td>
+                <td>{$form.value.html}<br />
+                    <span class="description">{ts}The option value is stored in your database.{/ts}</span>
+                </td>
               </tr>
             {/if}
             {if $form.name.html} {* Get the name value also *}

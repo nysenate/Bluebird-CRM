@@ -249,13 +249,29 @@ function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
                                     'mailing.scheduleUrl', 
                                     'mailing.html', 
                                     'mailing.creatorEmail', 
-                                    'mailing.creator' );
+                                    'mailing.creator' );                
         $settings['toEmail'] = CRM_Utils_Token::replaceMailingTokens( $settings['to'],      $mailing, null, $tokens );
         $settings['html']    = CRM_Utils_Token::replaceMailingTokens( $settings['message'], $mailing, null, $tokens );
         $settings['subject'] = CRM_Utils_Token::replaceMailingTokens( $settings['subject'], $mailing, null, $tokens );
 		
-		//get the default from email address if not set
-		if ( empty($settings['from']) ) { //NYSS
+        // also allow some user permission tokens for the toEmail
+        $tokens['user'] = array( 'user.permission-schedule mailings',
+                                 'user.permission-create_mailings',
+                                 'user.permission-approve_mailings' );
+        $settings['toEmail'] = CRM_Utils_Token::replaceUserTokens( $settings['to'], $tokens );
+
+        // if email has got comma's in it, split it up
+        // and stuff the rest into the cc parameter
+        if ( strpos( $settings['toEmail'], ',' ) !== false ) {
+            $emails = explode( ',', $settings['toEmail'] );
+
+            $firstEmail = array_shift( $emails );
+            $settings['toEmail'] = trim( $firstEmail );
+            $settings['cc'] = implode( ',', $emails );
+        }
+            
+		// get the default from email address if not set
+		if ( empty($settings['from']) ) {
     		require_once 'CRM/Core/OptionGroup.php';
     		$defaultAddress = CRM_Core_OptionGroup::values( 'from_email_address', null, null, null, ' AND is_default = 1' );
     		$settings['from'] = $defaultAddress[1];
@@ -268,18 +284,20 @@ function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
 
 function rules_action_civicrm_mailing_send_email_form( $settings = array(), &$form ) {
     civicrm_initialize();
-    //get the default from email address if not set //NYSS
+
+    // get the default from email address if not set
 	if ( empty($settings['from']) ) {
     	require_once 'CRM/Core/OptionGroup.php';
     	$defaultAddress = CRM_Core_OptionGroup::values( 'from_email_address', null, null, null, ' AND is_default = 1' );
     	$settings['from'] = $defaultAddress[1];
 	}
 
-    if ( !CRM_Utils_Array::value('subject', $settings ) )
-    $settings['subject'] = 'New Email: {mailing.subject}';
+    if ( ! CRM_Utils_Array::value('subject', $settings ) ) {
+        $settings['subject'] = 'New Email: {mailing.subject}';
+    }
     
     if ( !CRM_Utils_Array::value('message', $settings ) ) {
-    $settings['message'] = '
+        $settings['message'] = '
 A new mailing has been scheduled: {mailing.name}
 
 {mailing.viewUrl}

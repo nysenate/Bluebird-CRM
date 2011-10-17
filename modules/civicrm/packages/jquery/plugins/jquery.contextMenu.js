@@ -1,21 +1,19 @@
 // jQuery Context Menu Plugin
 //
-// Version 1.00
+// Version 1.01
 //
 // Cory S.N. LaViska
 // A Beautiful Site (http://abeautifulsite.net/)
 //
-// Visit http://abeautifulsite.net/notebook/80 for usage and more information
+// More info: http://abeautifulsite.net/2008/09/jquery-context-menu-plugin/
 //
 // Terms of Use
 //
-// This software is licensed under a Creative Commons License and is copyrighted
-// (C)2008 by Cory S.N. LaViska.
+// This plugin is dual-licensed under the GNU General Public License
+//   and the MIT License and is copyright A Beautiful Site, LLC.
 //
-// For details, visit http://creativecommons.org/licenses/by/3.0/us/
-//
-;(function($) {
-	$.fn.extend({
+if(jQuery)( function() {
+	$.extend($.fn, {
 		
 		contextMenu: function(o, callback) {
 			// Defaults
@@ -25,8 +23,6 @@
 			// 0 needs to be -1 for expected results (no fade)
 			if( o.inSpeed == 0 ) o.inSpeed = -1;
 			if( o.outSpeed == 0 ) o.outSpeed = -1;
-            // move contextmenu elements to end of DOM so that they get positioned correctly
-        	$(".contextMenu").addClass('crm-contextmenu').remove().appendTo('body');
 			// Loop each context menu
 			$(this).each( function() {
 				var el = $(this);
@@ -36,9 +32,12 @@
 				// Simulate a true right click
 				$(this).mousedown( function(e) {
 					var evt = e;
-					evt.stopPropagation();
+					// move contextmenu elements to end of DOM so that they get positioned correctly
+                    $(".contextMenu").addClass('crm-contextmenu').remove().appendTo('body');
+
+                    evt.stopPropagation();
 					$(this).mouseup( function(e) {
-					    e.stopPropagation();
+						e.stopPropagation();
 						var srcElement = $(this);
 						$(this).unbind('mouseup');
 						if( evt.button == 2 ) {
@@ -69,7 +68,8 @@
 								d.innerWidth = document.body.clientWidth;
 							}
 							(e.pageX) ? x = e.pageX : x = e.clientX + d.scrollLeft;
-							(e.pageY) ? y = e.pageY : x = e.clientY + d.scrollTop;
+							(e.pageY) ? y = e.pageY : y = e.clientY + d.scrollTop;
+							
 							// Show the menu
 							$(document).unbind('click');
 							$(menu).css({ top: y, left: x }).fadeIn(o.inSpeed);
@@ -140,7 +140,7 @@
 					$('#' + o.menu).each(function() { $(this).bind('mousedown.disableTextSelect', function() { return false; }); });
 				}
 				// Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
-				$(el).add('UL.contextMenu').bind('contextmenu', function() { return false; });
+				$(el).add($('UL.contextMenu')).bind('contextmenu', function() { return false; });
 				
 			});
 			return $(this);

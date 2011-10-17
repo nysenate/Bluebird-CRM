@@ -99,7 +99,7 @@
         <th>&nbsp;</th>
         <th> Column</th>
         <th> Order</th>
-        <th> Create section header</th>
+        <th> Section Header / Group By</th>
         </tr>
 
 	{section name=rowLoop start=1 loop=6}

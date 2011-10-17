@@ -380,9 +380,7 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
                         // 3. remove tag A, if tag A is getting merged into B
                         "DELETE FROM civicrm_tag WHERE id = %2",
                         // 4. remove duplicate entity tag records
-                        "DELETE et1.* from civicrm_entity_tag et1 
-INNER JOIN ( SELECT * FROM civicrm_entity_tag 
-GROUP BY entity_table, entity_id, tag_id HAVING count(*) > 1 ) et2 ON et1.id = et2.id",
+                        "DELETE et2.* from civicrm_entity_tag et1 INNER JOIN civicrm_entity_tag et2 ON et1.entity_table = et2.entity_table AND et1.entity_id = et2.entity_id AND et1.tag_id = et2.tag_id WHERE et1.id < et2.id",
                          );
         $tables = array( 'civicrm_entity_tag', 'civicrm_tag' );
 

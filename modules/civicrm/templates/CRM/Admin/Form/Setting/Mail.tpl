@@ -23,10 +23,10 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 *}
-{capture assign=docLink}{docURL page="CiviMail Admin" text="CiviMail Administration Guide"}{/capture}
+{capture assign=docLink}{docURL page="CiviMail Mailer Settings" text="CiviMail Mailer Settings and Optimization"}{/capture}
 <div class="crm-block crm-form-block crm-mail-form-block">
 <div id="help">
-    {ts 1=$docLink}These settings are used to configure mailer properties for the optional CiviMail component. They are NOT used for the built-in 'Send Email to Contacts' feature. Refer to the %1 for more information.{/ts}
+    {ts 1=$docLink}These settings are used to configure mailer properties for the optional CiviMail component and may allow you to significantly optimize performance. Please read the %1 documentation, and make sure you understand it before modifying default values. (These settings are NOT used for the built-in 'Send Email to Contacts' feature).{/ts}
 </div>
 <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl" location="top"}</div>                         
       <table class="form-layout-compressed">
@@ -36,7 +36,7 @@
         </tr>
         <tr class="crm-mail-form-block-mailerJobSize">
             <td class="label">{$form.mailerJobSize.label}</td><td>{$form.mailerJobSize.html}<br />    
-            <span class="description">{ts}If you want to utilize multi-threading enter the size you want your sub jobs to be split into (0 = disables multi-threading and processes mail as one single job - batch limits still apply){/ts}</span></td>
+            <span class="description">{ts}If you want to utilize multi-threading enter the size you want your sub jobs to be split into. Recommended values are between 1,000 and 10,000. Use a lower value if your server has multiple cron jobs running simultaneously, but do not use values smaller than 1,000. Enter "0" to disable multi-threading and process mail as one single job - batch limits still apply.{/ts}</span></td>
         </tr>
         <tr class="crm-mail-form-block-mailerJobsMax">
             <td class="label">{$form.mailerJobsMax.label}</td><td>{$form.mailerJobsMax.html}<br />    

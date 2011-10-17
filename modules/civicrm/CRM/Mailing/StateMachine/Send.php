@@ -65,6 +65,10 @@ class CRM_Mailing_StateMachine_Send extends CRM_Core_StateMachine {
             if ( CRM_Core_Permission::check( 'schedule mailings' ) ) {
                 $this->_pages['CRM_Mailing_Form_Schedule'] = null;
             }
+
+            if ( CRM_Core_Permission::check( 'approve mailings' ) ) {
+                $this->_pages['CRM_Mailing_Form_Approve'] = null;
+            }
         } else {
             $this->_pages['CRM_Mailing_Form_Schedule'] = null;
         }

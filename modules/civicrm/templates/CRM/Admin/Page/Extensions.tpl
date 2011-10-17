@@ -27,7 +27,7 @@
 {if $action eq 1 or $action eq 2 or $action eq 8}
    {include file="CRM/Admin/Form/Extensions.tpl"}
 {else}
-    {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&destination=/civicrm/admin/extensions?reset=1"}{/capture}
+    {capture assign='adminURL'}{crmURL p='civicrm/admin/setting/path' q="reset=1&civicrmDestination=/civicrm/admin/extensions?reset=1"}{/capture}
     {if !$extEnabled }
       <div class="crm-content-block crm-block">
         <div class="messages status">

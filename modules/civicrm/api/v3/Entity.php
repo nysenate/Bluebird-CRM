@@ -17,6 +17,7 @@ function civicrm_api3_entity_get ($params) {
          $entities [] = substr ($file, 0, -4); // without the ".php"
        }
     }
+    $entities = array_diff($entities, array('Generic'));
     sort($entities);
     return civicrm_api3_create_success ($entities);
 

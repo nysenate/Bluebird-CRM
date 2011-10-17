@@ -82,7 +82,7 @@ function civicrm_og_sync_nodeapi( &$node, $op, $a3 = null, $a4 = null ) {
     require_once 'CRM/Bridge/OG/Drupal.php';
 
     $title  = trim( $node->title );
-    $params = array( 'name'        => $title,
+    $params = array( 'name'        => substr(trim($title),0,49),// length of 49 so that the admin group can fit ': administrator' afterwards within 64 char field
                      'title'       => $title,
                      'description' => trim( $node->og_description ),
                      'is_active'   => 1,
@@ -187,7 +187,7 @@ function _civicrm_og_sync_create_group ( $nid, $uid ) {
     // create the CiviCRM groups if they dont exist
     $node = node_load(array('nid' => $nid ));
     $title  = trim( $node->title );
-    $params = array( 'name'        => $title,
+    $params = array( 'name'        => substr(trim($title),0,49),// length of 49 so that the admin group can fit ': administrator' afterwards within 64 char field
                      'title'       => $title,
                      'description' => trim( $node->og_description ),
                      'is_active'   => 1,
@@ -286,7 +286,7 @@ function civicrm_og_sync_enable()
         $node = node_load(array('nid' => $result['nid']));
 
         $title  = trim( $node->title );
-        $params = array( 'name'        => $title,
+        $params = array( 'name'        => substr(trim($title),0,49),// length of 49 so that the admin group can fit ': administrator' afterwards within 64 char field
                          'title'       => $title,
                          'description' => trim( $node->og_description ),
                          'is_active'   => 1,

@@ -62,6 +62,29 @@
     <div class="content crm-content-mergeSameAddress">
         &nbsp;{$form.merge_same_address.html}
     </div>
+    <div id='greetings' class="content crm-content-greetings class='hiddenElement'">
+      <table class="form-layout-compressed">
+        <tr>
+           <td>{$form.postal_greeting.label}</td>
+           <td>{$form.postal_greeting.html}</td>
+        </tr>
+        <tr id='postal_greeting_other_wrapper' class='hiddenElement'>
+           <td>{$form.postal_greeting_other.label}</td>
+           <td>{$form.postal_greeting_other.html}</td>
+        </tr>
+        <tr><td></td><td></td></tr>
+        <tr>
+           <td>{$form.addressee.label}</td>
+           <td>{$form.addressee.html}</td>
+        </tr>
+        <tr id='addressee_other_wrapper' class='hiddenElement'>
+           <td>{$form.addressee_other.label}</td>
+           <td>{$form.addressee_other.html}</td>
+        </tr>
+      </table>
+      <div class="clear">&nbsp;</div>
+    </div>
+
     <div class="content crm-content-mergeSameHousehold">
         &nbsp;{$form.merge_same_household.html}
     </div>
@@ -96,6 +119,36 @@
 	  hide('map');
 	}
      } 
-   showMappingOption( );
+     showMappingOption( );
+
+     var matchingContacts = '';
+     {/literal}{if $matchingContacts}{literal}
+       matchingContacts = {/literal}'{$matchingContacts}'{literal};
+     {/literal}{/if}{literal}
+
+     function showGreetingOptions( )
+     {
+        var mergeAddress = cj( "input:checkbox[name='merge_same_address[merge_same_address]']:checked" ).val( );
+	
+        if ( matchingContacts && mergeAddress ) {
+            cj( "#greetings" ).show( );
+        } else {
+            cj( "#greetings" ).hide( );
+	}
+     }
+
+     function showOther( ele ) 
+     {
+        if ( cj('option:selected', ele).text( ) == '{/literal}{ts}Other{/ts}{literal}' ) {
+	   cj('#' + cj(ele).attr('id') + '_other_wrapper').show( );  
+        } else {	
+          cj('#' + cj(ele).attr('id') + '_other').val('');
+	  cj('#' + cj(ele).attr('id') + '_other_wrapper').hide( );
+	}
+     }
+
+     showGreetingOptions( );
+     showOther(cj('#postal_greeting'));
+     showOther(cj('#addressee'));
   </script>
 {/literal}

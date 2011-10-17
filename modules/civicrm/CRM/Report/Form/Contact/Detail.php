@@ -41,17 +41,12 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
     const  
         ROW_COUNT_LIMIT = 10;
     
-    protected $_summary      = null;
-    
-    protected $_emailField   = false;
-    
-    protected $_phoneField   = false;
-    
-    protected $_addressField = false;
+    protected $_summary = null;
 
     protected $_customGroupExtends = array( 'Contact', 'Individual', 'Household', 'Organization' );
 
     function __construct( ) {
+        $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
         $this->_columns = 
             array( 'civicrm_contact' =>
                    array( 'dao'       => 'CRM_Contact_DAO_Contact',
@@ -70,6 +65,10 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  'sort_name' =>
                                  array( 'title'      => ts( 'Contact Name' ),),),
                           'grouping'  => 'contact-fields',
+                          'order_bys'  =>
+                          array( 'sort_name' =>
+                                 array( 'title' => ts( 'Last Name, First Name'), 'default' => '1', 'default_weight' => '0',  'default_order' => 'ASC' )
+                          ),
                           ),
                    
                    'civicrm_address' =>
@@ -81,10 +80,25 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  'postal_code'       => null,
                                  'state_province_id' => 
                                  array( 'title'   => ts( 'State/Province' ), ),
-                                 'country_id'        => 
-                                 array( 'title'   => ts( 'Country' ),  
-                                        'default' => true ), 
                                  ),
+                          'order_bys'   =>
+                          array( 'state_province_id' => array( 'title' => 'State/Province'),
+                                 'city' => array( 'title' => 'City'),
+                                 'postal_code' => array( 'title' => 'Postal Code'),
+                                 ),
+                          ),
+
+                   'civicrm_country' =>
+                   array( 'dao'      => 'CRM_Core_DAO_Country',
+                          'fields'   =>
+                          array( 'name' =>
+                                 array( 'title' => 'Country', 'default' => true),
+                                 ),
+                          'order_bys'   =>
+                          array( 'name' =>
+                                 array( 'title' => 'Country'),
+                                 ),
+                          'grouping' => 'contact-fields',
                           ),
                    
                    'civicrm_email'   =>
@@ -96,6 +110,11 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                         ),
                                  ),
                           'grouping'  => 'contact-fields',
+                          'order_bys'  =>
+                          array( 'email' =>
+                                 array( 'title' => ts( 'Email' ),
+                                        )
+                                 ),
                           ),
                    
                    'civicrm_contribution'   =>
@@ -289,14 +308,6 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( CRM_Utils_Array::value( 'required', $field ) ||
                          CRM_Utils_Array::value( $fieldName, $this->_params['fields'] ) ) {
-                        
-                        if ( $tableName == 'civicrm_address' ) {
-                            $this->_addressField = true;
-                        } else if ( $tableName == 'civicrm_email' ) {
-                            $this->_emailField = true;
-                        } else if ( $tableName == 'civicrm_phone' ) {
-                            $this->_phoneField = true;
-                        }
                         //isolate the select clause compoenent wise
                         if ( in_array( $table['alias'], $this->_component ) ) {
                             $select[$table['alias']][] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
@@ -347,25 +358,34 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}";
         
-        if ( $this->_addressField ) {
+        if ( $this->isTableSelected('civicrm_country') || $this->isTableSelected('civicrm_address') ) {
             $this->_from .= "
             LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_address']}.contact_id AND 
                       {$this->_aliases['civicrm_address']}.is_primary = 1 ) ";
         }
-        if ( $this->_emailField ) {
+
+        if ( $this->isTableSelected('civicrm_email') ) {
             $this->_from .= "
             LEFT JOIN  civicrm_email {$this->_aliases['civicrm_email']} 
                    ON ({$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_email']}.contact_id AND
                       {$this->_aliases['civicrm_email']}.is_primary = 1) ";
         }
 
-        if ( $this->_phoneField ) {
+        if (  $this->isTableSelected('civicrm_phone') ) {
             $this->_from .= "
             LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
                    ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_phone']}.contact_id AND 
                       {$this->_aliases['civicrm_phone']}.is_primary = 1 ";
-        }   
+        }
+
+       if ($this->isTableSelected('civicrm_country')) {
+            $this->_from .= "
+            LEFT JOIN civicrm_country {$this->_aliases['civicrm_country']}
+                   ON {$this->_aliases['civicrm_address']}.country_id = {$this->_aliases['civicrm_country']}.id AND
+                      {$this->_aliases['civicrm_address']}.is_primary = 1 ";
+       }
+ 
         $this->_from .= "{$group}";
         
         foreach( $this->_component as $val ) {
@@ -469,10 +489,6 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         }            
         
         $this->_where .= " GROUP BY {$this->_aliases['civicrm_contact']}.id ";
-    }
-
-    function orderBy( ) {
-        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_contact']}.sort_name ";
     }
 
     function clauseComponent( ) {
@@ -700,13 +716,6 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                 $entryFound = true;
             }
             
-            // handle country
-            if ( array_key_exists('civicrm_address_country_id', $row) ) {
-                if ( $value = $row['civicrm_address_country_id'] ) {
-                    $rows[$rowNum]['civicrm_address_country_id'] = CRM_Core_PseudoConstant::country( $value, false );
-                }
-                $entryFound = true;
-            }
             if ( array_key_exists('civicrm_address_state_province_id', $row) ) {
                 if ( $value = $row['civicrm_address_state_province_id'] ) {
                     $rows[$rowNum]['civicrm_address_state_province_id'] = CRM_Core_PseudoConstant::stateProvince( $value, false );

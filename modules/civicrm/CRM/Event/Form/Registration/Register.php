@@ -896,6 +896,10 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
         }
         
         $params ['defaultRole'] = 1;
+        if ( array_key_exists('participant_role', $params ) ) {
+            $params['participant_role_id'] = $params['participant_role'];
+        }
+
         if ( array_key_exists('participant_role_id', $params ) ) {
             $params['defaultRole'] = 0;
         }
@@ -1068,7 +1072,8 @@ class CRM_Event_Form_Registration_Register extends CRM_Event_Form_Registration
                 $participantCount[$participantNum] = 'participant';
             }
         }
-        
+
+        $registerByID = null;
         foreach ( $params as $key => $value ) {
             if ( $value != 'skip') {
                 $fields = null;

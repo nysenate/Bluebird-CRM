@@ -55,7 +55,7 @@ require_once 'CRM/Core/DAO/OptionGroup.php';
  * @param string $activity_type Which class of contact is being created.
  *            Valid values = 'SMS', 'Meeting', 'Event', 'PhoneCall'.
  * {@schema Activity/Activity.xml}
- *
+ * {@getfields activity}
  * @return CRM_Activity|CRM_Error Newly created Activity object
  *
  * @todo Eileen 2 Feb - custom data fields per test are non std

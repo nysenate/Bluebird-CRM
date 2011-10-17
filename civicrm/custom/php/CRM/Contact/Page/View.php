@@ -98,9 +98,11 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
         $qfKey = CRM_Utils_Request::retrieve( 'key', 'String', $this );
         //validate the qfKey
         require_once 'CRM/Utils/Rule.php';
-        if ( !CRM_Utils_Rule::qfKey( $qfKey ) ) $qfKey = null;
+        if ( ! CRM_Utils_Rule::qfKey( $qfKey ) ) {
+            $qfKey = null;
+        }
         $this->assign( 'searchKey', $qfKey );
-        
+
         // retrieve the group contact id, so that we can get contact id
         $gcid = CRM_Utils_Request::retrieve( 'gcid', 'Positive', $this );
         
@@ -115,6 +117,27 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
         }
         $this->assign( 'contactId', $this->_contactId );
         
+        // see if we can get prev/next positions from qfKey
+        $navContacts = array( 'prevContactID'   => null,
+                              'prevContactName' => null,
+                              'nextContactID'   => null,
+                              'nextContactName' => null );
+        if ( $qfKey ) {
+            require_once 'CRM/Core/BAO/PrevNextCache.php';
+            $pos = CRM_Core_BAO_PrevNextCache::getPositions( "civicrm search $qfKey",
+                                                             $this->_contactId,
+                                                             $this->_contactId );
+            if ( isset( $pos['prev'] ) ) {
+                $navContacts['prevContactID'  ] = $pos['prev']['id1'];
+                $navContacts['prevContactName'] = $pos['prev']['data'];
+            }
+            if ( isset( $pos['next'] ) ) {
+                $navContacts['nextContactID'  ] = $pos['next']['id1'];
+                $navContacts['nextContactName'] = $pos['next']['data'];
+            }
+        }
+        $this->assign( $navContacts );
+
         $path = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid=' . $this->_contactId );
         CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('View Contact'),
                                                           'url'   => $path ) ) );

@@ -176,9 +176,15 @@ class CRM_Contact_Form_Task extends CRM_Core_Form
                  $sortByCharacter != 1 ) {
                 $params[] = array( 'sortByCharacter', '=', $sortByCharacter, 0, 0 );
             }
+            $queryOperator = $form->get( 'queryOperator' );
+            if ( ! $queryOperator ) {
+                $queryOperator = 'AND';
+            }
             $dao =& $selector->contactIDQuery( $params, $form->_action, $sortID,
                                                CRM_Utils_Array::value( 'display_relationship_type',
-                                                                       $fv ) );
+                                                                       $fv ),
+                                               $queryOperator );
+
 
             $form->_contactIds = array( );
             if ( $useTable ) {

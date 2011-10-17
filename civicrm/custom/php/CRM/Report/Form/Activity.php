@@ -131,7 +131,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                        'order_bys' =>             
                                        array( 'source_contact_email'  =>
                                               array('name'  => 'email',
-                                                    'title' => ts( 'Source Contact Email'),
+                                                    'title' => ts( 'Added by Contact Email'), //NYSS
                                                     'alias' => 'civicrm_email_source' ) ),
                                        ),
                                 
@@ -202,7 +202,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                               ),
                                        'order_bys' =>             
                                        array( 'source_contact_id'  =>
-                                              array('title'    => ts( 'Source Contact' ), 'default_weight' => '0' ),
+                                              array('title'    => ts( 'Added by Contact' ), 'default_weight' => '0' ), //NYSS
                                               'activity_date_time' => 
                                               array( 'title'   => ts( 'Activity Date' ), 'default_weight' => '1' ),
                                               'activity_type_id'   =>
@@ -529,7 +529,6 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                             $url = CRM_Utils_System::url( "civicrm/contact/view", 
                                                           'reset=1&cid=' . $value );
                             $link[] = "<a title='".$onHover."' href='" . $url . "'>{$targetNames[$id]}</a>";
-                            
                         }
                         $rows[$rowNum]['civicrm_contact_contact_target'] = implode( '; ',$link );
                     }

@@ -78,7 +78,7 @@ class CRM_Activity_Form_Task_Batch extends CRM_Activity_Form_Task {
         
         //get the contact read only fields to display.
         require_once 'CRM/Core/BAO/Preferences.php';
-        $readOnlyFields = array_merge( array( 'sort_name' => ts( 'Name' ) ),
+        $readOnlyFields = array_merge( array( 'sort_name' => ts( 'Added By' ), 'target_sort_name' => ts('With Contact') ),
                                        CRM_Core_BAO_Preferences::valueOptions( 'contact_autocomplete_options',
                                                                                true, null, false, 'name', true ) );
         
@@ -234,23 +234,23 @@ class CRM_Activity_Form_Task_Batch extends CRM_Activity_Form_Task {
                     $value['activity_date_time'] = CRM_Utils_Date::processDate( $value['activity_date_time'], $value['activity_date_time_time'] );
                 }
                 
-                if ( $value['activity_status_id'] ) {
+                if ( CRM_Utils_Array::value( 'activity_status_id', $value ) ) {
                     $value['status_id'] = $value['activity_status_id'];
                 }
                 
-                if ( $value['activity_details'] ) {
+                if ( CRM_Utils_Array::value( 'activity_details', $value ) ) {
                     $value['details'] = $value['activity_details'];
                 }
                 
-                if ( $value['activity_duration'] ) {
+                if ( CRM_Utils_Array::value( 'activity_duration', $value ) ) {
                     $value['duration'] = $value['activity_duration'];
                 }
                 
-                if ( $value['activity_location'] ) {
+                if ( CRM_Utils_Array::value( 'activity_location', $value ) ) {
                     $value['location'] = $value['activity_location'];
                 }
                 
-                if ( $value['activity_subject'] ) {
+                if ( CRM_Utils_Array::value( 'activity_subject', $value ) ) {
                     $value['subject'] = $value['activity_subject'];
                 }
                 

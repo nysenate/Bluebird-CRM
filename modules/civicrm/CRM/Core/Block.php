@@ -491,7 +491,7 @@ class CRM_Core_Block {
         $config = CRM_Core_Config::singleton( );
         
         require_once 'CRM/Event/BAO/Event.php';
-        $info = CRM_Event_BAO_Event::getCompleteInfo( );
+        $info = CRM_Event_BAO_Event::getCompleteInfo( date("Ymd") );
 
         if ( $info ) {
             $session = CRM_Core_Session::singleton( );

@@ -289,9 +289,19 @@ class CRM_Core_Invoke
                                                             true );
             }
 
+            // make sure that this profile enables mapping
+            // CRM-8609
+            $isMap = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup',
+                                                  $profileGID,
+                                                  'is_map' );
+            if ( ! $isMap ) {
+                CRM_Core_Error::statusBounce( ts('This profile does not have the map feature turned on.') );
+            }
+            
             $profileView = CRM_Utils_Request::retrieve( 'pv', 'Integer',
                                                         $controller,
                                                         false );
+
             // set the userContext stack
             $session = CRM_Core_Session::singleton();
             if ( $profileView ) {

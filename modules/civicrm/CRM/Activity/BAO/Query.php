@@ -325,20 +325,6 @@ class CRM_Activity_BAO_Query
                                      'civicrm_activity', 'activity_date', 'activity_date_time', ts('Activity Date') );
 
             break;
-        case 'activity_taglist':
-            $taglist = $value;
-            $value = array( );
-            foreach( $taglist as $val ) {
-                if ( $val ) {
-                    $val = explode(',', $val );
-                    foreach( $val as $tId ) {
-                        if ( is_numeric( $tId ) ) {
-                            $value[$tId] = 1;
-                        }
-                    }
-                }
-            } 
-
         case 'activity_id':
             if ( empty($value) ) {
                 break;
@@ -355,6 +341,20 @@ class CRM_Activity_BAO_Query
             $query->_where[$grouping][] = "civicrm_activity.id IN (". implode( ",", $value) .")";
             $query->_qill[$grouping ][] = ts( 'Activity Id(s)  %1', array(1 => implode($value) ) );             
             break;
+
+        case 'activity_taglist':
+            $taglist = $value;
+            $value = array( );
+            foreach( $taglist as $val ) {
+                if ( $val ) {
+                    $val = explode(',', $val );
+                    foreach( $val as $tId ) {
+                        if ( is_numeric( $tId ) ) {
+                            $value[$tId] = 1;
+                        }
+                    }
+                }
+            } 
             
         case 'activity_tags':
             require_once'CRM/Core/BAO/Tag.php';
@@ -428,17 +428,10 @@ class CRM_Activity_BAO_Query
                     break;
 
                 default: 
-                    if ( $mode == CRM_Contact_BAO_QUERY::MODE_CONTACTS ) {  
-                        $from .= " $side JOIN civicrm_activity_target ON civicrm_activity_target.target_contact_id = contact_a.id ";
-                        $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.id = civicrm_activity_target.activity_id
+                    $from .= " $side JOIN civicrm_activity_target ON civicrm_activity_target.target_contact_id = contact_a.id ";
+                    $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.id = civicrm_activity_target.activity_id
                             AND civicrm_activity.is_deleted = 0 
                             AND civicrm_activity.is_current_revision = 1 )";
-                    } else {
-                        $from .= " $side JOIN civicrm_activity_target ON civicrm_activity_target.target_contact_id = contact_a.id ";
-                        $from .= " $side JOIN civicrm_activity ON ( civicrm_activity.source_contact_id = contact_a.id 
-                            AND civicrm_activity.is_deleted = 0 
-                            AND civicrm_activity.is_current_revision = 1 )";
-                    }
                 }
             }
             break;
@@ -508,7 +501,6 @@ class CRM_Activity_BAO_Query
         
         $activityRoles  = array( 1 => ts( 'Created by' ), 2 => ts( 'Assigned to' ) );
         $form->addRadio( 'activity_role', null, $activityRoles, null, '<br />');
-        $form->setDefaults( array( 'activity_role' => 1 ) );
         
         $form->addElement( 'text', 'activity_contact_name', ts( 'Contact Name' ), CRM_Core_DAO::getAttribute( 'CRM_Contact_DAO_Contact', 'sort_name' ) );
         

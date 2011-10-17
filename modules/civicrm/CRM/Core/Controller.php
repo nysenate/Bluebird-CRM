@@ -211,7 +211,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
         require_once 'CRM/Utils/Request.php';
 
         // also retrieve and store destination in session
-        $this->_destination = CRM_Utils_Request::retrieve( 'destination', 'String', $this,
+        $this->_destination = CRM_Utils_Request::retrieve( 'civicrmDestination', 'String', $this,
                                                            false, null, $_REQUEST );
     }
 
@@ -698,7 +698,7 @@ class CRM_Core_Controller extends HTML_QuickForm_Controller {
         }
         
         $this->_destination = $url;
-        $this->set( 'destination', $this->_destination );
+        $this->set( 'civicrmDestination', $this->_destination );
     }
 
 

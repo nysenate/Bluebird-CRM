@@ -327,6 +327,13 @@ class CRM_Core_PseudoConstant
      * @static
      */
     private static $activityContacts;
+
+    /**
+     * auto renew options
+     * @var array
+     * @static
+     */
+    private static $autoRenew;
     
     /**
      * populate the object from the database. generic populate
@@ -1043,7 +1050,7 @@ WHERE  id = %1";
      */
     public static function &staticGroup( $onlyPublic = false,
                                          $groupType  = null,
-										 $excludeHidden = true )
+                                         $excludeHidden = true )
     {
         if ( ! self::$staticGroup ) {
             $condition = 'saved_search_id = 0 OR saved_search_id IS NULL';
@@ -1054,10 +1061,10 @@ WHERE  id = %1";
                 require_once 'CRM/Contact/BAO/Group.php';
                 $condition .= ' AND ' . CRM_Contact_BAO_Group::groupTypeCondition( $groupType );
             }
-			//NYSS
-			if ( $excludeHidden ) {
-			    $condition .= ' AND is_hidden != 1 ';
-			}
+
+            if ( $excludeHidden ) {
+                $condition .= ' AND is_hidden != 1 ';
+            }
             
             self::populate( self::$staticGroup, 'CRM_Contact_DAO_Group', false, 'title', 'is_active', $condition, 'title' );
         }
@@ -1563,7 +1570,7 @@ ORDER BY name";
      * @return array - array reference of all greetings.
      *
      */
-    public static function greeting( $filter, $columnName = 'label' )
+	public static function greeting( $filter, $columnName = 'label' )
     { 
         //NYSS update to v4.1 codebase for contact_type construction
 		$index = $filter['greeting_type']  . '_' . $columnName;

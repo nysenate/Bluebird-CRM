@@ -248,9 +248,11 @@ class CRM_Contribute_Form_ContributionPage extends CRM_Core_Form
                 $defaults['goal_amount'] = CRM_Utils_Money::format($defaults['goal_amount'], null, '%a');
             }
             
-            // get price set id.
+            // get price set of type contributions
             require_once 'CRM/Price/BAO/Set.php';
-            $this->_priceSetID = CRM_Price_BAO_Set::getFor( 'civicrm_contribution_page', $this->_id );
+            //this is the value for stored in db if price set extends contribution
+            $usedFor = 2;
+            $this->_priceSetID = CRM_Price_BAO_Set::getFor( 'civicrm_contribution_page', $this->_id, $usedFor );
             if ( $this->_priceSetID ) $defaults['price_set_id'] = $this->_priceSetID;
             
             if ( CRM_Utils_Array::value( 'end_date', $defaults ) ) {
