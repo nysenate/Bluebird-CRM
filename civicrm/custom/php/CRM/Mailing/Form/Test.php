@@ -143,7 +143,8 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
         $mailing = new CRM_Mailing_BAO_Mailing( );
         $mailing->id = $options['mailing_id'];
         $mailing->find( true );
-        $fromEmail = $mailing->from_email;
+        $fromEmail    = $mailing->from_email;
+        $replyToEmail = $mailing->replyto_email;
         
         require_once 'CRM/Core/BAO/File.php';
         $attachments =& CRM_Core_BAO_File::getEntityFile( 'civicrm_mailing',

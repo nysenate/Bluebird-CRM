@@ -393,8 +393,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                                    $recipients->email_id,
                                    $recipients->contact_id );
                 $count++;
-                //if ( $count % CRM_Core_DAO::BULK_INSERT_COUNT == 0 ) {
-				if ( $count % CRM_Core_DAO::BULK_MAIL_INSERT_COUNT == 0 ) { //NYSS 4234
+                if ( $count % CRM_Core_DAO::BULK_MAIL_INSERT_COUNT == 0 ) {
                     CRM_Mailing_Event_BAO_Queue::bulkCreate( $params, $now );
                     $count = 0;
                     $params = array( );
@@ -523,7 +522,7 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
         // get the return properties
         $returnProperties = $mailing->getReturnProperties( );
         $params = $targetParams = $deliveredParams = array( );
-		$count  = 0; //NYSS 4234
+        $count  = 0;
 
         foreach ( $fields as $key => $field ) {
             $params[] = $field['contact_id'];

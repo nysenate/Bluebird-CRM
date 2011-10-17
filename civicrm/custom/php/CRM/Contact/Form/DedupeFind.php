@@ -38,13 +38,13 @@ require_once 'CRM/Admin/Form.php';
 
 /**
  * This class generates form components for DedupeRules
- *
+ * 
  */
 class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
 {
     /**
      * defined defaults
-     *
+     * 
      */
 
     public $_defaults;
@@ -80,19 +80,19 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
         $groupList = CRM_Core_PseudoConstant::group( );
         $groupList[''] = ts('- All Contacts -') ;
         asort($groupList);
-
+        
         $this->add('select'  , 'group_id', ts('Select Group'), $groupList );
         $this->addButtons( array(
                                  array ( 'type'      => 'next',
                                          'name'      => ts('Continue'),
                                          'isDefault' => true   ),
                                  //hack to support cancel button functionality
-                                 array ( 'type'      => 'submit',
+                                 array ( 'type'      => 'submit', 
                                          'name'      => ts('Cancel') ),
                                  )
                            );
     }
-
+    
     function setDefaultValues()
     {
         return $this->_defaults;
@@ -104,7 +104,7 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
      * @access public
      * @return None
      */
-    public function postProcess()
+    public function postProcess() 
     {
         $values = $this->exportValues();
         if ( CRM_Utils_Array::value( '_qf_DedupeFind_submit', $_POST ) ) {
@@ -121,10 +121,10 @@ class CRM_Contact_Form_DedupeFind extends CRM_Admin_Form
         } else {
             $url = CRM_Utils_System::url( 'civicrm/contact/dedupefind', "reset=1&action=update&rgid={$this->rgid}" );
         }
-
+        
         CRM_Utils_System::redirect($url);
     }
-
+    
 }
 
 

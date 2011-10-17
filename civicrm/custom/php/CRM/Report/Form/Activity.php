@@ -529,7 +529,6 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                             $url = CRM_Utils_System::url( "civicrm/contact/view", 
                                                           'reset=1&cid=' . $value );
                             $link[] = "<a title='".$onHover."' href='" . $url . "'>{$targetNames[$id]}</a>";
-                            
                         }
                         $rows[$rowNum]['civicrm_contact_contact_target'] = implode( '; ',$link );
                     }

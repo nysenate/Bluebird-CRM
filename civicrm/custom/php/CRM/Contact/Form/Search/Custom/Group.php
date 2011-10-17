@@ -59,9 +59,9 @@ class CRM_Contact_Form_Search_Custom_Group
 
         $this->_includeGroups   = CRM_Utils_Array::value( 'includeGroups', $this->_formValues, array( ) );
         $this->_excludeGroups   = CRM_Utils_Array::value( 'excludeGroups', $this->_formValues, array( ) ); 
-        $this->_includeTags     = CRM_Utils_Array::value( 'includeTags', $this->_formValues  , array( ) );
+        $this->_includeTags     = CRM_Utils_Array::value( 'includeTags', $this->_formValues  , array( ) ); 
         $this->_excludeTags     = CRM_Utils_Array::value( 'excludeTags', $this->_formValues  , array( ) );
-		
+
         //define variables
         $this->_allSearch = false; 
         $this->_groups    = false;
@@ -185,7 +185,7 @@ class CRM_Contact_Form_Search_Custom_Group
         $outt->setButtonAttributes('add', array('value' => ts('Add >>')));;
         $int->setButtonAttributes('remove',  array('value' => ts('<< Remove')));;
         $outt->setButtonAttributes('remove', array('value' => ts('<< Remove')));;
-         
+        
         /**
          * if you are using the standard template, this array tells the template what elements
          * are part of the search criteria

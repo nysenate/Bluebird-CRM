@@ -1069,31 +1069,20 @@ class CRM_Contact_BAO_Query
             if ( isset( $this->_distinctComponentClause ) ) {
                 $select = "SELECT count( {$this->_distinctComponentClause} )";
             } else {
-                $select = ( $this->_useDistinct ) ?	
-                    'SELECT count(DISTINCT contact_a.id)' :
-                    'SELECT count(*)';
+                $select = 'SELECT count(*)';
             }
             $from = $this->_simpleFromClause;
+            if ( $this->_useDistinct ) {
+                $this->_useGroupBy = true;
+            }
         } else if ( $sortByChar ) {  
             $select = 'SELECT DISTINCT UPPER(LEFT(contact_a.sort_name, 1)) as sort_name';
             $from = $this->_simpleFromClause;
         } else if ( $groupContacts ) { 
-            //NYSS 3629/J 8084
-			/*$select = ( $this->_useDistinct ) ?
-                'SELECT DISTINCT(contact_a.id) as id' :
-                'SELECT contact_a.id as id'; 
-//            $select = 'SELECT contact_a.id as id';
-//            if ( $this->_useDistinct ) {
-//                $this->_useGroupBy = true;
-//            }
-			*/
-			// CRM-5954 - changing SELECT DISTINCT( contact_a.id ) -> SELECT ... GROUP BY contact_a.id
-            // but need to measure performance
-            $select = 'SELECT contact_a.id as id';
+            $select = 'SELECT contact_a.id as id'; 
             if ( $this->_useDistinct ) {
                 $this->_useGroupBy = true;
             }
-			//NYSS end
             $from = $this->_simpleFromClause;
         } else {
             if ( CRM_Utils_Array::value( 'group', $this->_paramLookup ) ) {
@@ -1123,11 +1112,8 @@ class CRM_Contact_BAO_Query
             }
             if ( $this->_useDistinct && !isset( $this->_distinctComponentClause) ) {
                 if ( !( $this->_mode & CRM_Contact_BAO_Query::MODE_ACTIVITY ) ) {
-                    //NYSS 3629/J 8084
-					/*
-                     $this->_select['contact_id'] = 'DISTINCT(contact_a.id) as contact_id';
-                    */
                     // CRM-5954
+                    $this->_select['contact_id'] = 'DISTINCT(contact_a.id) as contact_id';
                     $this->_useGroupBy = true;
                     $this->_select['contact_id'] ='contact_a.id as contact_id';
 					//NYSS end
@@ -2949,20 +2935,41 @@ WHERE  id IN ( $groupIDs )
             $value = array( $value );
         }
 
-        $stateClause = 
-            'civicrm_state_province.id IN (' . 
-            implode( ',', $value ) .
-            ')';
+        // check if the values are ids OR names of the states
+        $inputFormat = 'id';
+        foreach ( $value as $v ) {
+            if ( ! is_numeric( $v ) ) {
+                $inputFormat = 'name';
+                break;
+            }
+        }
+        
+        $names = array( );
+        if ( $inputFormat == 'id' ) {
+            $stateClause = 
+                'civicrm_state_province.id IN (' . 
+                implode( ',', $value ) .
+                ')';
+
+            $stateProvince = CRM_Core_PseudoConstant::stateProvince();
+            foreach ( $value as $id ) {
+                $names[] = $stateProvince[$id];
+            }
+        } else {
+            $inputClause = array( );
+            foreach ( $value as $name ) {
+                $name = trim($name);
+                $inputClause[] = "'$name'";
+            }
+            $stateClause = 
+                'civicrm_state_province.name IN (' . 
+                implode( ',', $inputClause ) .
+                ')';
+            $names = $value;
+        }
 
         $this->_tables['civicrm_state_province'] = 1;
         $this->_whereTables['civicrm_state_province'] = 1;
-            
-        $stateProvince =& CRM_Core_PseudoConstant::stateProvince();
-        $names = array( );
-        foreach ( $value as $id ) {
-            $names[] = $stateProvince[$id];
-        }
-            
 
         $countryValues = $this->getWhereValues( 'country', $grouping );
         list( $countryClause, $countryQill ) = $this->country( $countryValues, true );
