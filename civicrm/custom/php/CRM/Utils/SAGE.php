@@ -73,14 +73,14 @@ class CRM_Utils_SAGE
         // QQQ: Why is this the only place we do the state lookup?
         $stateProvince = self::getStateProvince($values, $stateName);
         list($addr_field, $addr) = self::getAddress($values);
-
+        
         //Construct and send the API Request. Note the service=geocoder.
         //Without it SAGE will default to Yahoo as the geocoding provider.
         //geocoder is the Senate's own geocoding provider, which uses the
         //open source "geocoder" project.
         $url = 'xml/geocode/extended/extended?';
         $params = http_build_query(array(
-                'service' => 'geocoder',
+                'service' => CRM_Utils_Array::value('service', $values, "geocode"),
                 'addr2' => str_replace(',', '', $addr),
                 'state' => $stateProvince,
                 'city' => CRM_Utils_Array::value('city', $values, ""),
