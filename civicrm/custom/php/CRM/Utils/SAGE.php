@@ -80,7 +80,7 @@ class CRM_Utils_SAGE
         //open source "geocoder" project.
         $url = 'xml/geocode/extended/extended?';
         $params = http_build_query(array(
-                'service' => CRM_Utils_Array::value('service', $values, "geocode"),
+                'service' => CRM_Utils_Array::value('service', $values, "geocoder"),
                 'addr2' => str_replace(',', '', $addr),
                 'state' => $stateProvince,
                 'city' => CRM_Utils_Array::value('city', $values, ""),
