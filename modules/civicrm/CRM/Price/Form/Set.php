@@ -95,7 +95,18 @@ class CRM_Price_Form_Set extends CRM_Core_Form
     static function formRule( $fields, $files, $options ) 
     {
         $errors = array( );
-        
+        $count = count($fields['extends']);
+        //price sets configured for membership
+        if ( array_key_exists( CRM_Core_Component::getComponentID( 'CiviMember' ), $fields['extends'] ) ) {
+            if ( $count > 1 ) {
+                $errors['extends'] = ts('If you plan on using this price set for membership signup and renewal, you can not also use it for Events or Contributions. However, a membership price set may include additional fields for non-membership options that require an additional fee (e.g. magazine subscription).');
+            }
+
+            if ( CRM_Utils_System::isNull( $fields['contribution_type_id'] ) ) {
+                $errors['contribution_type_id'] = ts('Contribution Type (Membership Fees) is a required field.');
+            }            
+            
+        }
         //checks the given price set doesnot start with digit
         $title = $fields['title']; 
         $asciiValue = ord( $title{0} );//gives the ascii value
@@ -132,6 +143,7 @@ class CRM_Price_Form_Set extends CRM_Core_Form
         require_once 'CRM/Core/Config.php';
         require_once 'CRM/Core/Component.php';
         $config = CRM_Core_Config::singleton( );
+        $showContribution = false;
         $components = array( 'CiviEvent'      => array( 'title'  => ts( 'Event' ),  
                                                         'extend' => CRM_Core_Component::getComponentID( 'CiviEvent' ),
                                                         'tables' => array( 'civicrm_event', 
@@ -139,7 +151,12 @@ class CRM_Price_Form_Set extends CRM_Core_Form
                              'CiviContribute' => array( 'title'  => ts( 'Contribution' ),
                                                         'extend' => CRM_Core_Component::getComponentID( 'CiviContribute' ),
                                                         'tables' => array( 'civicrm_contribution', 
-                                                                           'civicrm_contribution_page' ) ) );
+                                                                           'civicrm_contribution_page' ) ),
+                             'CiviMember'     => array( 'title'  => ts( 'Membership' ),
+                                                        'extend' => CRM_Core_Component::getComponentID( 'CiviMember' ),
+                                                        'tables' => array( 'civicrm_membership', 
+                                                                           'civicrm_contribution_page' ) ),
+                             );
         foreach ( $components as $compName => $compValues ) {
             // take only enabled components.
             if ( !in_array( $compName, $config->enableComponents ) ) continue;
@@ -148,15 +165,20 @@ class CRM_Price_Form_Set extends CRM_Core_Form
             //if price set is used than freeze it.
             if ( !empty( $priceSetUsedTables ) ) {
                 foreach ( $compValues['tables'] as $table ) {
+
                     if ( in_array( $table, $priceSetUsedTables ) ) {
                         $option->freeze( );
+                        if ($compValues['title'] == 'Membership') {
+                            $showContribution = true;
+                        }
                         break;
                     }
                 }
             }
             $extends[] = $option;
         }
-
+        $this->assign( 'showContribution', $showContribution );
+        
         if ( CRM_Utils_System::isNull( $extends ) ) {
             $this->assign( 'extends', false );
         } else {
@@ -166,7 +188,11 @@ class CRM_Price_Form_Set extends CRM_Core_Form
         $this->addGroup( $extends, 'extends', ts('Used For'), '&nbsp;', true );
 
         $this->addRule( 'extends', ts('%1 is a required field.', array(1 => ts('Used For'))), 'required' );
-
+        require_once 'CRM/Contribute/PseudoConstant.php';
+        $this->add( 'select', 'contribution_type_id', 
+                    ts( 'Contribution Type (Membership Fees)' ), 
+                    array(''=>ts( '- select -' )) + CRM_Contribute_PseudoConstant::contributionType( ) );
+        
         // help text
         $this->add( 'textarea', 'help_pre', ts('Pre-form Help'), 
                     CRM_Core_DAO::getAttribute( 'CRM_Price_DAO_Set', 'help_pre' ) );
@@ -233,6 +259,7 @@ class CRM_Price_Form_Set extends CRM_Core_Form
         $nameLength          = CRM_Core_DAO::getAttribute( 'CRM_Price_DAO_Set', 'name' );
         $params['name']      = CRM_Utils_String::titleToVar( $params['title'], CRM_Utils_Array::value( 'maxlength' , $nameLength ) );
         $params['is_active'] = CRM_Utils_Array::value( 'is_active', $params, false );
+        $params['contribution_type_id'] = CRM_Utils_Array::value( 'contribution_type_id', $params, false );
         
         $compIds = array( );
         $extends = CRM_Utils_Array::value( 'extends', $params );

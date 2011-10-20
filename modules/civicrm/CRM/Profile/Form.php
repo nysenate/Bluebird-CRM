@@ -201,6 +201,13 @@ class CRM_Profile_Form extends CRM_Core_Form
         } 
         
         $this->_activityId = CRM_Utils_Request::retrieve('aid', 'Positive', $this, false, 0, 'GET');
+        if (is_numeric($this->_activityId)) {
+          require_once 'CRM/Activity/BAO/Activity.php';
+          $latestRevisionId = CRM_Activity_BAO_Activity::getLatestActivityId($this->_activityId);
+          if ($latestRevisionId) { 
+            $this->_activityId = $latestRevisionId;
+          }
+        }
         $this->_isContactActivityProfile = CRM_Core_BAO_UFField::checkContactActivityProfileType( $this->_gid );
             
         //get values for captch and dupe update.
@@ -1018,7 +1025,9 @@ class CRM_Profile_Form extends CRM_Core_Form
         //mailing type group
         if ( ! empty ( $mailingType ) ) {
             require_once 'CRM/Mailing/Event/BAO/Subscribe.php';
-            CRM_Mailing_Event_BAO_Subscribe::commonSubscribe( $mailingType, $result,null, 'profile' );
+            // we send in the contactID so we match the same groups and are exact, rather than relying on email
+            // CRM-8710
+            CRM_Mailing_Event_BAO_Subscribe::commonSubscribe( $mailingType, $result, $this->_id, 'profile' );
         }
 
         require_once 'CRM/Core/BAO/UFGroup.php'; 

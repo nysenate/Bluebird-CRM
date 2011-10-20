@@ -119,7 +119,11 @@ WHERE  entity_id = $contactID
     }
 
     if ( ! empty( $clauses ) ) {
-        $where .= ' AND (' . implode( ' OR ', $clauses ) . ')';
+        if ( ! empty( $where )  ) {
+            $where .= ' AND (' . implode( ' OR ', $clauses ) . ')';
+        } else {
+            $where .= ' (' . implode( ' OR ', $clauses ) . ')';
+        }
     }
 }
 
@@ -1399,4 +1403,78 @@ function civitest_civicrm_alterAPIPermissions($entity, $action, &$params, &$perm
     if ($entity == 'event' and $action == 'get' and $params['title'] == 'CiviCon 2038') {
         $params['check_permissions'] = false;
     }
+}
+
+/**
+ * Modify the search results for the contact and contribute forms. Note that to see
+ * this work, you will need to also modify the template for the values to be displayed.
+ * Ahh, alternatively you can cheat and overwrite the values of the existing columns
+ */
+function civitest_civicrm_searchColumns( $objectName, &$headers,  &$values, &$selector ) {
+
+    if ( $objectName == 'Contact' ) {
+
+        // Lets move a few header around, and overwrite stuff we dont need
+
+        // move email to postal slot
+        $headers[5] = $headers[7];
+
+        // move phone to country slot
+        $headers[6] = $headers[8];
+
+        // lets change the title of the last two columns to fields we need
+        $headers[7]['name'] = 'Source';
+        unset( $headers[7]['sort'] );
+
+        $headers[8]['name'] = 'Job Title';
+        unset( $headers[8]['sort'] );
+
+        foreach ( $values as $id => $value ) {
+            // the below is not a good solution from a performance perspective
+            // you might want to consider using the GET on all the contact IDs
+            // and then looping on the result set
+            $result = civicrm_api( 'Contact', 'GetSingle',
+                                   array( 'version' => 3,
+                                          'id' => $value['contact_id'],
+                                          'return.contact_source' => 1,
+                                          'return.job_title' => 1 ) );
+
+            // store this value so it gets passed to the template
+            $values[$id]['source'] = $result['contact_source'];
+            $values[$id]['job_title'] = $result['job_title'];
+        }
+
+        // remember to modify CRM/Contact/Form/Selector.tpl to see the changes
+    }
+
+    if ( $objectName == 'Contribute' ) {
+        // rename type to total amount
+        foreach ( $headers as $id => $header ) {
+            if ( $header['name'] == 'Type' ) {
+                $headers[$id]['name'] = 'Total';
+                unset( $headers[$id]['sort'] );
+            }
+        }
+
+        // the below structure is not very optimal from a performance perspective
+        // you are doing 'n' queries, one for each contact_id
+        // a better query would be to group all the contact ids and do
+        // SELECT SUM(total_amount), contact_id FROM   civicrm_contribution WHERE contact_id
+        //  IN ( CONTACT_ID_LIST ) GROUP BY contact_id
+        // and then loop around the result set
+        foreach ( $values as $id => $value ) {
+            $sql = "
+SELECT SUM(total_amount)
+FROM   civicrm_contribution
+WHERE  contact_id = %1
+";
+            $values[$id]['total'] = CRM_Core_DAO::singleValueQuery( $sql,
+                                                                    array( 1 => array( $value['contact_id'],
+                                                                                       'Integer' ) ) );
+            // this is cheating, but allows us NOT to modify the template
+            // override the values that we are not using
+            $values[$id]['contribution_type'] = $values[$id]['total'];
+        }
+    }
+
 }

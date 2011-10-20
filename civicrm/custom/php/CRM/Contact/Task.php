@@ -158,7 +158,7 @@ class CRM_Contact_Task
                                            );
             }
 			
-			if( CRM_Contact_BAO_ContactType::isActive( 'Household' ) ) {
+            if( CRM_Contact_BAO_ContactType::isActive( 'Household' ) ) {
                 $label = CRM_Contact_BAO_ContactType::getLabel( 'Household' );
                 self::$_tasks[9] = array( 'title'  => ts( 'Add Contacts to %1',
                                                           array( 1=> $label ) ) ,
@@ -199,7 +199,7 @@ class CRM_Contact_Task
             }
             
             if ( CRM_Core_Permission::access( 'CiviMail' ) ) { 
-                self::$_tasks[20] = array( 'title'  => ts( 'Schedule/Send a Mass Mailing' ),
+                self::$_tasks[20] = array( 'title'  => ts( 'Create a Mass Email' ),
                                            'class'  => array( 'CRM_Mailing_Form_Group',
                                                               /*'CRM_Mailing_Form_Settings',*/ //NYSS 3369
                                                               'CRM_Mailing_Form_Upload',
@@ -210,7 +210,7 @@ class CRM_Contact_Task
                                            );
             } elseif ( CRM_Mailing_Info::workflowEnabled( ) && 
                        CRM_Core_Permission::check( 'create mailings' ) ) { 
-                self::$_tasks[20] = array( 'title'  => ts( 'Create a Mass Mailing' ),
+                self::$_tasks[20] = array( 'title'  => ts( 'Create a Mass Email' ),
                                            'class'  => array( 'CRM_Mailing_Form_Group',
                                                               /*'CRM_Mailing_Form_Settings',*/ //NYSS 3369
                                                               'CRM_Mailing_Form_Upload',

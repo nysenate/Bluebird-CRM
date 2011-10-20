@@ -192,7 +192,7 @@ INSERT INTO civicrm_location_type ( name, description, is_reserved, is_active )
             
             // replace display_name fields by sort_name
             if ( !isset($formValues['membership_start_date_relative']) &&
-                 !iseet($formValues['membership_end_date_relative']) ) {
+                 !isset($formValues['membership_end_date_relative']) ) {
                 $formValues['membership_start_date_relative'] = '0';
                 $formValues['membership_start_date_from']     = '';
                 $formValues['membership_start_date_to']       = '';
@@ -232,6 +232,79 @@ INSERT INTO civicrm_location_type ( name, description, is_reserved, is_active )
 
         $upgrade = new CRM_Upgrade_Form( );
         $upgrade->assign( 'alterContactDashboard', $alterContactDashboard );
+        $upgrade->processSQL( $rev );
+    }
+
+    function upgrade_3_4_6( $rev ) 
+    {
+        require_once 'CRM/Report/DAO/Instance.php';
+        $modifiedReportIds = array( 'event/summary', 'activity', 'Mailing/bounce', 'Mailing/clicks', 'Mailing/opened' );
+        
+        $instances = CRM_Core_DAO::executeQuery("SELECT id, form_values, report_id FROM civicrm_report_instance WHERE report_id IN ('". implode("','", $modifiedReportIds )."')");
+        while( $instances->fetch( ) ) {
+            $formValues = unserialize( $instances->form_values );
+            
+            switch( $instances->report_id ) {
+            case 'event/summary':
+                $eventDates = array( 'event_start_date_from', 'event_start_date_to', 'event_end_date_from', 'event_end_date_to');
+                foreach ( $eventDates as $date ) {
+                    if ( isset( $formValues[$date] ) && $formValues[$date] == ' ' ) {
+                        $formValues[$date] = '';
+                    }
+                }
+                break;
+                
+            case 'activity':
+                if ( isset($formValues['group_bys']) ) {
+                    if ( is_array($formValues['group_bys']) ) {
+                        $orderBy = array( );
+                        $count = 0;
+                        foreach( $formValues['group_bys'] as $col => $isSet ) {
+                            if ( !$isSet ) continue;
+
+                            $orderBy[++$count] = array( 'column' => $col,
+                                                        'order'  => 'ASC' );
+                        }
+                        if ( !empty($orderBy) ) {
+                            $formValues['order_bys'] = $orderBy;
+                        }
+                    }
+                    unset($formValues['group_bys']);               
+                }
+                break;
+                
+            case 'Mailing/bounce':
+            case 'Mailing/clicks':
+            case 'Mailing/opened':
+                $formValues['fields']['mailing_name'] = 1;
+                break;            
+            }
+   
+            // save updated instance criteria
+            $dao = new CRM_Report_DAO_Instance( );
+            $dao->id = $instances->id;
+            $dao->form_values = serialize( $formValues );
+            $dao->save( );
+            $dao->free( );
+        }
+
+        $bulkEmailActivityType = CRM_Core_DAO::singleValueQuery("
+SELECT v.id
+FROM   civicrm_option_value v, 
+       civicrm_option_group g 
+WHERE  v.option_group_id = g.id 
+  AND  g.name      = %1 
+  AND  g.is_active = 1  
+  AND  v.name      = %2", array( 1 => array('activity_type', 'String'),
+                                 2 => array('Bulk Email', 'String') ) );
+
+        // CRM-8852, reset contact field cache
+        require_once 'CRM/Core/BAO/Cache.php';
+        CRM_Core_BAO_Cache::deleteGroup( 'contact fields' );
+
+        $upgrade = new CRM_Upgrade_Form( );
+        $upgrade->assign('bulkEmailActivityType', $bulkEmailActivityType);
+
         $upgrade->processSQL( $rev );
     }
   }

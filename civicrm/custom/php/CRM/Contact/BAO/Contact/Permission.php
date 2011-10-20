@@ -46,11 +46,11 @@ class CRM_Contact_BAO_Contact_Permission {
      * @access public
      * @static
      */
-    static function allow( $id, $type = CRM_Core_Permission::VIEW )
+    static function allow( $id, $type = CRM_Core_Permission::VIEW ) 
     {
         $tables     = array( );
         $whereTables       = array( );
-
+       
         # FIXME: push this somewhere below, to not give this permission so many rights
         $isDeleted = (bool) CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $id, 'is_deleted');
         if (CRM_Core_Permission::check('access deleted contacts') and $isDeleted) {
@@ -69,7 +69,7 @@ class CRM_Contact_BAO_Contact_Permission {
         $from       = CRM_Contact_BAO_Query::fromClause( $whereTables );
 
         $query = "
-SELECT count(DISTINCT contact_a.id)
+SELECT count(DISTINCT contact_a.id) 
        $from
 WHERE contact_a.id = %1 AND $permission";
         $params = array( 1 => array( $id, 'Integer' ) );
@@ -129,6 +129,7 @@ AND    $operationClause
         require_once 'CRM/Contact/BAO/Query.php';
         $from       = CRM_Contact_BAO_Query::fromClause( $whereTables );
 
+        //NYSS
         require_once 'CRM/Core/DAO.php';
         $count = CRM_Core_DAO::singleValueQuery("SELECT count(*) $from WHERE $permission GROUP BY contact_a.id");
         for($i=0; $i < $count; $i+=CRM_Core_DAO::BULK_INSERT_COUNT) {
@@ -176,7 +177,7 @@ AND    $operationClause
 
         // fill cache
         self::cache( $contactID );
-
+                
         $sql = "
 SELECT id
 FROM   civicrm_acl_contact_cache
@@ -211,17 +212,17 @@ AND    $operationClause LIMIT 1";
         $contactID = CRM_Utils_Type::escape( $contactID, 'Integer' );
 
         self::cache( $contactID );
-
+        
         if( is_array($contactAlias) && !empty($contactAlias) ) {
             //More than one contact alias
             $clauses = array();
             foreach( $contactAlias as $k => $alias ) {
-                $clauses[] = " INNER JOIN civicrm_acl_contact_cache aclContactCache_{$k} ON {$alias}.id = aclContactCache_{$k}.contact_id AND aclContactCache_{$k}.user_id = $contactID ";
+                $clauses[] = " INNER JOIN civicrm_acl_contact_cache aclContactCache_{$k} ON {$alias}.id = aclContactCache_{$k}.contact_id AND aclContactCache_{$k}.user_id = $contactID ";  
             }
-
+            
             $fromClause = implode(" ", $clauses );
             $whereClase = null;
-
+            
         } else {
             $fromClause = " INNER JOIN civicrm_acl_contact_cache aclContactCache ON {$contactAlias}.id = aclContactCache.contact_id ";
             $whereClase = " aclContactCache.user_id = $contactID ";
@@ -233,15 +234,15 @@ AND    $operationClause LIMIT 1";
 
     /**
       * Function to get the permission base on its relationship
-      *
+      * 
       * @param int $selectedContactId contact id of selected contact
-      * @param int $contactId contact id of the current contact
+      * @param int $contactId contact id of the current contact 
       *
       * @return booleab true if logged in user has permission to view
       * selected contact record else false
       * @static
       */
-    static function relationship( $selectedContactID, $contactID = null )
+    static function relationship( $selectedContactID, $contactID = null ) 
     {
         $session   = CRM_Core_Session::singleton( );
         if ( ! $contactID ) {
@@ -281,7 +282,7 @@ WHERE  (( contact_id_a = %1 AND contact_id_b = %2 AND is_permission_a_b = 1 ) OR
                 $message = ts( 'You do not have permission to edit this contact record. Contact the site administrator if you need assistance.' );
                 require_once 'CRM/Utils/System.php';
                 CRM_Utils_System::setUFMessage( $message );
-
+                
                 $config = CRM_Core_Config::singleton( );
                 CRM_Core_Error::statusBounce( $message,
                                               $config->userFrameworkBaseURL );

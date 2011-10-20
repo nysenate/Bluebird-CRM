@@ -375,7 +375,7 @@ LIMIT    0, {$limit}
     static function getPermissionedEmployer( ) 
     {
         $cid       = CRM_Utils_Type::escape( $_GET['cid'], 'Integer' );
-        $name      = trim(CRM_Utils_Type::escape( $_GET['name'], 'String')); 
+        $name      = trim(CRM_Utils_Type::escape( $_GET['s'], 'String')); 
         $name      = str_replace( '*', '%', $name );
 
         require_once 'CRM/Contact/BAO/Relationship.php';
@@ -707,8 +707,12 @@ WHERE sort_name LIKE '%$name%'";
                     $queryString = " ( cc.sort_name LIKE '%$name%' OR ce.email LIKE '%$name%' ) ";
                 }
             } elseif ( $cid = CRM_Utils_Array::value( 'cid', $_GET ) ) {
-                $cid = CRM_Utils_Type::escape( $cid, 'Integer' );
-				$queryString = " cc.id IN ( $cid )";
+                //check cid for interger
+                $contIDS = explode( ',', $cid );
+                foreach ( $contIDS as $contID ) {
+                    CRM_Utils_Type::escape( $contID, 'Integer' );
+                }
+                $queryString = " cc.id IN ( $cid )";
 			}
 
             if ( $queryString ) {

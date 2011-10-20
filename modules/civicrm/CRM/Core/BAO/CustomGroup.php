@@ -340,14 +340,30 @@ LEFT JOIN civicrm_custom_field ON (civicrm_custom_field.custom_group_id = civicr
         }
 
         if ( $subType ) {
-            $subType  = CRM_Core_DAO::VALUE_SEPARATOR . 
-                trim($subType, CRM_Core_DAO::VALUE_SEPARATOR) . CRM_Core_DAO::VALUE_SEPARATOR;
+            $subTypeClause = '';
+
+            if ( strpos($subType, ',' ) ) {
+                $subTypeParts = explode(',',  $subType);
+                $subTypeClauses = array( );
+                foreach($subTypeParts as $subTypePart ) {
+                    $subTypePart = CRM_Core_DAO::VALUE_SEPARATOR . 
+                        trim($subTypePart, CRM_Core_DAO::VALUE_SEPARATOR) . CRM_Core_DAO::VALUE_SEPARATOR;
+                    $subTypeClauses[] =  "civicrm_custom_group.extends_entity_column_value LIKE '%$subTypePart%'";
+                }
+                $subTypeClause = '(' . implode(' OR ',  $subTypeClauses) ." OR civicrm_custom_group.extends_entity_column_value IS NULL )";
+            } else {
+                $subType  = CRM_Core_DAO::VALUE_SEPARATOR . 
+                    trim($subType, CRM_Core_DAO::VALUE_SEPARATOR) . CRM_Core_DAO::VALUE_SEPARATOR;
+                
+                $subTypeClause = "( civicrm_custom_group.extends_entity_column_value LIKE '%$subType%'
+   OR   civicrm_custom_group.extends_entity_column_value IS NULL )";
+            }
+            
             $strWhere = "
 WHERE civicrm_custom_group.is_active = 1 
   AND civicrm_custom_field.is_active = 1 
   AND civicrm_custom_group.extends IN ($in)
-  AND ( civicrm_custom_group.extends_entity_column_value LIKE '%$subType%'
-   OR   civicrm_custom_group.extends_entity_column_value IS NULL )
+  AND $subTypeClause
 ";
             if ( $subName ) {
                 $strWhere .= " AND civicrm_custom_group.extends_entity_column_id = {$subName} ";

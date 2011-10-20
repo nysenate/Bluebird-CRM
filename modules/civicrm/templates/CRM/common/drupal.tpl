@@ -87,6 +87,6 @@ cj(function() {
 </script>
 {/literal}
 {* We need to set jquery $ object back to $*}
-<script type="text/javascript">jQuery.noConflict(true);</script>
+
 </div> {* end crm-container div *}
 

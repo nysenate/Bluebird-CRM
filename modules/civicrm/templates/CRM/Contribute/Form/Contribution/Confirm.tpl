@@ -53,10 +53,13 @@
 
     {if $amount GT 0 OR $minimum_fee GT 0 OR ( $priceSetID and $lineItem ) }
     <div class="crm-group amount_display-group">
+        {if !$useForMember}
         <div class="header-dark">
             {if !$membershipBlock AND $amount OR ( $priceSetID and $lineItem ) }{ts}Contribution Amount{/ts}{else}{ts}Membership Fee{/ts} {/if}
         </div>
+        {/if}
         <div class="display-block">
+            {if !$useForMember}
             {if $lineItem and $priceSetID}
             {if !$amount}{assign var="amount" value=0}{/if}
             {assign var="totalAmount" value=$amount}
@@ -79,6 +82,8 @@
                     {$membership_name} {ts}Membership{/ts}: <strong>{$minimum_fee|crmMoney}</strong>
                 {/if}
             {/if}
+            {/if}
+
             {if $is_recur}
                 {if $membershipBlock} {* Auto-renew membership confirmation *}
                     <br />
@@ -144,19 +149,13 @@
     {/if}
     
     {if $onbehalfProfile}
-      {foreach from=$onbehalfProfile item=field key=cname}
-         {if $field.groupTitle}
-            {assign var=groupTitle  value=$field.groupTitle} 
-         {/if}
-      {/foreach}
       <div class="crm-group onBehalf_display-group">
-         <div class="header-dark">
-            {$groupTitle}
+         {include file="CRM/UF/Form/Block.tpl" fields=$onbehalfProfile}
+         <div class="crm-section organization_email-section">
+            <div class="label">{ts}Organization Email{/ts}</div>
+            <div class="content">{$onBehalfEmail}</div>
+            <div class="clear"></div>
          </div>
-         <fieldset class="label-left">
-            {include file="CRM/UF/Form/Block.tpl" fields=$onbehalfProfile}
-            <div class="label">Email &nbsp;&nbsp;{$onBehalfEmail}</div>
-         </fieldset>
       </div>
     {/if}
     

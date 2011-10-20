@@ -153,6 +153,31 @@ class CRM_Utils_Array {
     }
 
     /**
+     * Convert an array with path-like keys into a tree of arrays
+     *
+     * @param $delim A path delimiter
+     * @param $arr A one-dimensional array indexed by string keys
+     * @return array-encoded tree
+     */
+    function unflatten($delim, &$arr) {
+        $result = array();
+        foreach ($arr as $key => $value) {
+            $path = explode($delim, $key);
+            $node =& $result;
+            while (count($path) > 1) {
+                $key = array_shift($path);
+                if (!isset($node[$key])) {
+                    $node[$key] = array();
+                }
+                $node =& $node[$key];
+            }
+            $key = array_shift($path); // last part of path
+            $node[$key] = $value;
+        }
+        return $result;
+    }
+
+    /**
      * Funtion to merge to two arrays recursively
      * 
      * @param array $a1 

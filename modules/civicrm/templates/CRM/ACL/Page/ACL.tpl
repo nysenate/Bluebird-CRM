@@ -39,7 +39,7 @@
 </div>
 
 {if $rows}
-<div class=""
+<div class="">
 <div id="ltype">
     {strip}
 	{* handle enable/disable actions*}

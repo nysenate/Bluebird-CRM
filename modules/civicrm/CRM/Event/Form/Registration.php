@@ -772,11 +772,14 @@ class CRM_Event_Form_Registration extends CRM_Core_Form
                                                     $participant->id,
                                                     'Participant' );
 
-        $createPayment = ( $this->_params['amount'] != 0 ) ? true : false;
+        $createPayment = ( CRM_Utils_Array::value( 'amount', $this->_params, 0 ) != 0 ) ? true : false;
+
         // force to create zero amount payment, CRM-5095
-        if ( !$createPayment && $contribution->id
-             && ($this->_params['amount'] == 0) 
-             && $this->_priceSetId && $this->_lineItem ) {
+        // we know the amout is zero since createPayment is false
+        if ( ! $createPayment &&
+             ( isset( $contribution ) && $contribution->id ) &&
+             $this->_priceSetId &&
+             $this->_lineItem ) {
             $createPayment = true;
         }
         
@@ -868,7 +871,7 @@ WHERE  v.option_group_id = g.id
                                    'register_date' => ( $registerDate ) ? $registerDate : date( 'YmdHis' ),
                                    'source'        => isset( $params['participant_source'] ) ?
                                                       $params['participant_source']:$params['description'],
-                                   'fee_level'     => $params['amount_level'],
+                                   'fee_level'     => CRM_Utils_Array::value( 'amount_level', $params ),
                                    'is_pay_later'  => CRM_Utils_Array::value( 'is_pay_later', $params, 0 ),
                                    'fee_amount'    => CRM_Utils_Array::value( 'fee_amount', $params ),
                                    'registered_by_id' => CRM_Utils_Array::value( 'registered_by_id', $params ),

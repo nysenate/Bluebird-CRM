@@ -37,11 +37,31 @@
 require_once 'CRM/Core/DAO/Cache.php';
 
 /**
- * BAO object for crm_log table
+ * BAO object for civicrm_cache table. This is a database cache and is persisted across sessions. Typically we use
+ * this to store meta data (like profile fields, custom fields etc).
+ *
+ * The group_name column is used for grouping together all cache elements that logically belong to the same set.
+ * Thus all session cache entries are grouped under 'CiviCRM Session'. This allows us to delete all entries of
+ * a specific group if needed.
+ *
+ * The path column allows us to differentiate between items in that group. Thus for the session cache, the path is
+ * the unique form name for each form (per user)
  */
 
 class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
 {
+
+    /**
+     * Retrieve an item from the DB cache
+     *
+     * @param string $group (required) The group name of the item
+     * @param string $path  (required) The path under which this item is stored
+     * @param int    $componentID The optional component ID (so componenets can share the same name space)
+     *
+     * @return object The data if present in cache, else null
+     * @static
+     * @access public
+     */
     static function &getItem( $group, $path, $componentID = null ) {
         $dao = new CRM_Core_DAO_Cache( );
 
@@ -57,6 +77,18 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
         return $data;
     }
 
+    /**
+     * Store an item in the DB cache
+     *
+     * @param object $data  (required) A reference to the data that will be serialized and stored
+     * @param string $group (required) The group name of the item
+     * @param string $path  (required) The path under which this item is stored
+     * @param int    $componentID The optional component ID (so componenets can share the same name space)
+     *
+     * @return void
+     * @static
+     * @access public
+     */
     static function setItem( &$data,
                              $group, $path, $componentID = null ) {
         $dao = new CRM_Core_DAO_Cache( );
@@ -69,12 +101,21 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
         $dao->data         = serialize( $data );
         $dao->created_date = date( 'Ymdhis' );
 
-        // CRM_Core_Error::debug_var( "Saving $group, $path on {$dao->created_date}", $data );
         $dao->save( );
         
         $dao->free( );
     }
 
+    /**
+     * Delete all the cache elements that belong to a group OR
+     * delete the entire cache if group is not specified
+     *
+     * @param string $group The group name of the entries to be deleted
+     * 
+     * @return void
+     * @static
+     * @access public
+     */
     static function deleteGroup( $group = null ) {
         $dao = new CRM_Core_DAO_Cache( );
         
@@ -91,16 +132,34 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
         CRM_Utils_System::flushCache( );
     }
 
+    /**
+     * The next two functions are internal functions used to store and retrieve session from
+     * the database cache. This keeps the session to a limited size and allows us to
+     * create separate session scopes for each form in a tab
+     *
+     */
+
+    /**
+     * This function takes entries from the session array and stores it in the cache.
+     * It also deletes the entries from the $_SESSION object (for a smaller session size)
+     *
+     * @param array $names Array of session values that should be persisted
+     *                     This is either a form name + qfKey or just a form name
+     *                     (in the case of profile)
+     * @param boolean $resetSession Should session state be reset on completion of DB store?
+     *
+     * @return void
+     * @static
+     * @access private
+     */
     static function storeSessionToCache( $names,
                                          $resetSession = true ) {
-        // CRM_Core_Error::debug_var( 'names in store', $names );
         foreach ( $names as $key => $sessionName ) {
             if ( is_array( $sessionName ) ) {
                 if ( ! empty( $_SESSION[$sessionName[0]][$sessionName[1]] ) ) {
                     self::setItem( $_SESSION[$sessionName[0]][$sessionName[1]],
                                    'CiviCRM Session',
                                    "{$sessionName[0]}_{$sessionName[1]}" );
-                    // CRM_Core_Error::debug_var( "session value for: {$sessionName[0]}_{$sessionName[1]}",
                     // $_SESSION[$sessionName[0]][$sessionName[1]] );
                     if ( $resetSession ) {
                         $_SESSION[$sessionName[0]][$sessionName[1]] = null;
@@ -112,7 +171,6 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
                     self::setItem( $_SESSION[$sessionName],
                                    'CiviCRM Session',
                                    $sessionName );
-                    // CRM_Core_Error::debug_var( "session value for: {$sessionName}",
                     // $_SESSION[$sessionName] );
                     if ( $resetSession ) {
                         $_SESSION[$sessionName] = null;
@@ -122,38 +180,45 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
             }
         }
 
-        // CRM_Core_Error::debug_var( 'SESSION STATE STORE', $_SESSION );
         self::cleanupCache( );
     }
 
+    /* Retrieve the session values from the cache and populate the $_SESSION array
+     *
+     * @param array $names Array of session values that should be persisted
+     *                     This is either a form name + qfKey or just a form name
+     *                     (in the case of profile)
+     *
+     * @return void
+     * @static
+     * @access private
+     */
     static function restoreSessionFromCache( $names ) {
-        // CRM_Core_Error::debug_var( 'names in restore', $names );
         foreach ( $names as $key => $sessionName ) {
             if ( is_array( $sessionName ) ) {
                 $value = self::getItem( 'CiviCRM Session',
                                         "{$sessionName[0]}_{$sessionName[1]}" );
                 if ( $value ) {
-                    // CRM_Core_Error::debug( "session value for: {$sessionName[0]}_{$sessionName[1]}", $value ); 
                     $_SESSION[$sessionName[0]][$sessionName[1]] = $value;
-                } else {
-                    // CRM_Core_Error::debug_var( "session value for: {$sessionName[0]}_{$sessionName[1]} is null", $value );
                 }
             } else {
                 $value = self::getItem( 'CiviCRM Session',
                                         $sessionName );
                 if ( $value ) {
-                    // CRM_Core_Error::debug( "session value for: {$sessionName}", $value );
                     $_SESSION[$sessionName] = $value;
-                } else {
-                    // CRM_Core_Error::debug_var( "session value for: {$sessionName} is null", $value );
                 }
             }
         }
-
-        // CRM_Core_Error::debug_var( 'SESSION STATE RESTORE', $_SESSION );
-        // CRM_Core_Error::debug_var( 'REQUEST', $_REQUEST );
     }
 
+    /**
+     * Do periodic cleanup of the CiviCRM session table. Also delete all session cache entries
+     * which are a couple of days old. This keeps the session cache to a manageable size
+     *
+     * @return void
+     * @static
+     * @access private
+     */
     static function cleanupCache( ) {
         // clean up the session cache every $cacheCleanUpNumber probabilistically
         $cacheCleanUpNumber     = 1396;
@@ -162,6 +227,11 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
         $cacheTimeIntervalDays  = 2;
 
         if ( mt_rand( 1, 100000 ) % 1396 == 0 ) {
+
+            // delete all PrevNext caches
+            require_once 'CRM/Core/BAO/PrevNextCache.php';
+            CRM_Core_BAO_PrevNextCache::cleanupCache( );
+
             $sql = "
 DELETE FROM civicrm_cache
 WHERE       group_name = 'CiviCRM Session'

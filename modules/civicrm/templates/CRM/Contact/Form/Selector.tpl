@@ -166,7 +166,7 @@ cj(".selector tr").contextMenu({
         }
         eval( 'locationUrl = locationUrl.replace( /changeid/, contactId );');
         var destination = "{/literal}{crmURL q='force=1' h=0}{literal}";
-        window.location = locationUrl + '&destination=' + encodeURIComponent(destination);
+        window.location = locationUrl + '&civicrmDestination=' + encodeURIComponent(destination);
    });
 
     cj('.selector').crmrowhighlighter( );

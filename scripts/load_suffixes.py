@@ -54,7 +54,14 @@ pairs = dict()
 for row in container.findAll('tr'):
     cells = row.findAll('td')
     if cells[1].text != '&nbsp;':
-        pairs[cells[1].text] = cells[2].text
+
+        #Catch and correct a type on their page
+        if cells[1].text == 'CT' and cells[2].text == 'CTS':
+            pairs['cts'] = 'cts'
+
+        #The rest of the values should be correct
+        else:
+            pairs[cells[1].text.lower()] = cells[2].text.lower()
 
 # Don't worry about connecting to the database, just construct the SQL
 values = [" ('{0}','{1}')".format(a, b) for a, b in pairs.iteritems()]
@@ -69,4 +76,5 @@ CREATE TABLE address_abbreviations (
 -- Our official USPS abreviation mappings
 INSERT INTO address_abbreviations
     (raw_value, normalized)
-VALUES """+', '.join(values)+";";
+VALUES """+', '.join(values)+";"
+

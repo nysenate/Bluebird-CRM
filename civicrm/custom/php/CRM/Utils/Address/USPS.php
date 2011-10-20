@@ -59,7 +59,7 @@ class CRM_Utils_Address_USPS {
         }
 
         $address2 = str_replace( ',', '', $values['street_address'] );
-
+        
         //NYSS - LCD current code passes supp add 1 to Address1 field; but API intends address unit data for that field
 		//altered to pass street_unit
 		//http://senatedev.senate.state.ny.us/issues/show/2388

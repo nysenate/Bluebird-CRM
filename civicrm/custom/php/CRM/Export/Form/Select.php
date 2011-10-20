@@ -255,31 +255,13 @@ FROM   {$this->_componentTable}
         $this->addGroup( $exportOptions, 'exportOption', ts('Export Type'), '<br/>' );
 
         if ( $this->_matchingContacts ) {
-            $greetings = array( 'postal_greeting' => 'postal_greeting_other',
-                                'addressee'       => 'addressee_other' );
+            $this->_greetingOptions = self::getGreetingOptions( );
             
-            foreach ( $greetings as $key => $value ) {
-                $params        = array( );
-                $optionGroupId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionGroup', $key, 'id', 'name' );
-                
-                CRM_Core_DAO::commonRetrieveAll( 'CRM_Core_DAO_OptionValue', 'option_group_id', $optionGroupId, 
-                                                 $params, array( 'label', 'filter' ) );
-                
-                $this->_options[$key] = array( '' => ts( 'List of names' ) );
-
-                $greetingCount = 1;
-                foreach ( $params as $id => $field ) {
-                    if ( CRM_Utils_Array::value( 'filter', $field ) == 4 ) {
-                        $this->_options[$key][$greetingCount++] = ts( $field['label'] );
-                    }
-                }
-
-                $this->_options[$key][$greetingCount] = ts( 'Other' );
-                                
+            foreach ( $this->_greetingOptions as $key => $value ) {
                 $fieldLabel = ts( '%1 (merging > 2 contacts)', array( 1 => ucwords( str_replace( '_', ' ', $key ) ) ) );
                 $this->addElement( 'select', $key, $fieldLabel,
-                                   $this->_options[$key], array( 'onchange' => "showOther(this);" ) );
-                $this->addElement( 'text', $value, '' );
+                                   $value, array( 'onchange' => "showOther(this);" ) );
+                $this->addElement( 'text', "{$key}_other", '' );
             }
         }
 
@@ -330,7 +312,7 @@ FROM   {$this->_componentTable}
             foreach ( $greetings as $key => $value ) {
                 $otherOption = CRM_Utils_Array::value( $key, $params );
                 
-                if ( ( CRM_Utils_Array::value( $otherOption, $self->_options[$key] ) == 'Other' ) &&
+                if ( ( CRM_Utils_Array::value( $otherOption, $self->_greetingOptions[$key] ) == 'Other' ) &&
                      !CRM_Utils_Array::value( $value, $params ) ) {
                     
                     $label = ucwords( str_replace( '_', ' ', $key ) );
@@ -359,12 +341,14 @@ FROM   {$this->_componentTable}
         // all submitted options or any other argument
         $exportParams = $this->controller->exportValues( $this->_name );
         
-        foreach ( $this->_options as $key => $value ) {
-            if ( $option = CRM_Utils_Array::value( $key, $exportParams ) ) {
-                if ( $this->_options[$key][$option] == 'Other' ) {
-                    $exportParams[$key] = '';
-                } else {
-                    $exportParams[$key] = $this->_options[$key][$option];
+        if ( !empty( $this->_greetingOptions ) ) {
+            foreach ( $this->_greetingOptions as $key => $value ) {
+                if ( $option = CRM_Utils_Array::value( $key, $exportParams ) ) {
+                    if ( $this->_greetingOptions[$key][$option] == 'Other' ) {
+                        $exportParams[$key] = '';
+                    } else {
+                        $exportParams[$key] = $this->_greetingOptions[$key][$option];
+                    }
                 }
             }
         }
@@ -467,6 +451,34 @@ FROM   {$this->_componentTable}
         if ( !empty( $mappings ) ) {
             $this->add('select','mapping', ts('Use Saved Field Mapping'), array('' => '-select-') + $mappings );
         }
+    }
+
+    static function getGreetingOptions( )
+    {
+        $options   = array( );
+        $greetings = array( 'postal_greeting' => 'postal_greeting_other',
+                            'addressee'       => 'addressee_other' );
+            
+        foreach ( $greetings as $key => $value ) {
+            $params        = array( );
+            $optionGroupId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_OptionGroup', $key, 'id', 'name' );
+            
+            CRM_Core_DAO::commonRetrieveAll( 'CRM_Core_DAO_OptionValue', 'option_group_id', $optionGroupId, 
+                                             $params, array( 'label', 'filter' ) );
+            
+            $greetingCount = 1;
+            $options[$key] = array( "$greetingCount" => ts( 'List of names' ) );
+            
+            foreach ( $params as $id => $field ) {
+                if ( CRM_Utils_Array::value( 'filter', $field ) == 4 ) {
+                    $options[$key][++$greetingCount] = ts( $field['label'] );
+                }
+            }
+            
+            $options[$key][++$greetingCount] = ts( 'Other' );
+        }
+
+        return $options;
     }
 
 }

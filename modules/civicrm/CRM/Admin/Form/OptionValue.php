@@ -162,6 +162,7 @@ class CRM_Admin_Form_OptionValue extends CRM_Admin_Form
             if ( $this->_gName == 'addressee' ) {
                 $values[] =  ts('Organization'); 
             }
+            $values[4] = ts('Multiple Contact Merge');
             $this->add( 'select', 'contactOptions', ts('Contact Type'),array('' => '-select-' ) + $values, true );
         } 
         

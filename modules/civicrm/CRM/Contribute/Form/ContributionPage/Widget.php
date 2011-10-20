@@ -140,7 +140,7 @@ class CRM_Contribute_Form_ContributionPage_Widget extends CRM_Contribute_Form_Co
     
         require_once 'CRM/Core/ShowHideBlocks.php';
         $showHide = new CRM_Core_ShowHideBlocks( );
-        $showHide->addHide( "id-colors" );
+        $showHide->addHide( 'id-colors' );
         $showHide->addToTemplate( );
         return $defaults;
     }

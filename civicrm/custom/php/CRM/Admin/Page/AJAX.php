@@ -215,12 +215,9 @@ class CRM_Admin_Page_AJAX
         echo json_encode( $statusMessage );
         CRM_Utils_System::civiExit();
     }
-
-
-
-    static function getTagList( )
-    {
-        $name = CRM_Utils_Type::escape( $_GET['name'], 'String' );
+    
+    static function getTagList( ) {
+        $name     = CRM_Utils_Type::escape( $_GET['name'], 'String' );
         $parentId = CRM_Utils_Type::escape( $_GET['parentId'], 'Integer' );
         
         $isSearch = null;
@@ -360,9 +357,7 @@ class CRM_Admin_Page_AJAX
             CRM_Utils_System::civiExit();
         } //end leg pos condition
     }
-
-
-
+    
     static function mergeTagList( ) {
         $name   = CRM_Utils_Type::escape( $_GET['s'],      'String' );
         $fromId = CRM_Utils_Type::escape( $_GET['fromId'], 'Integer' );
@@ -407,17 +402,15 @@ LIMIT $limit";
         CRM_Utils_System::civiExit( );
     }
 
-
-
-    static function processTags() {
+    static function processTags( ) {
         $skipTagCreate = $skipEntityAction = $entityId = null;
-        $action = CRM_Utils_Type::escape( $_POST['action'], 'String' );
-        $parentId = CRM_Utils_Type::escape( $_POST['parentId'], 'Integer' );
+        $action           = CRM_Utils_Type::escape( $_POST['action'], 'String' );
+        $parentId         = CRM_Utils_Type::escape( $_POST['parentId'], 'Integer' );
         if ( $_POST['entityId'] ) {
-            $entityId = CRM_Utils_Type::escape( $_POST['entityId'], 'Integer' );
+            $entityId     = CRM_Utils_Type::escape( $_POST['entityId'], 'Integer' );
         }
-
-        $entityTable = CRM_Utils_Type::escape($_POST['entityTable'], 'String');
+        
+        $entityTable       = CRM_Utils_Type::escape( $_POST['entityTable'], 'String' );
 
         if ( $_POST['skipTagCreate'] ) {
             $skipTagCreate = CRM_Utils_Type::escape( $_POST['skipTagCreate'], 'Integer' );
@@ -510,7 +503,7 @@ LIMIT $limit";
         }
 
         if ( !$mappingID ) {
-            echo json_encode(array('error_msg' => 'required params missing.'));
+            echo json_encode( array('error_msg' => 'required params missing.' ) );
             CRM_Utils_System::civiExit( );
         }
 
@@ -570,10 +563,11 @@ LIMIT $limit";
             foreach ( $result['tagB_used_for'] as &$val ) {
                 $val = $usedFor[$val];
             }
-            $result['tagB_used_for'] = implode(', ', $result['tagB_used_for']);
+            $result['tagB_used_for'] = implode( ', ', $result['tagB_used_for'] );
         }
 
         echo json_encode( $result );
         CRM_Utils_System::civiExit( );
-    }
+    } 
+
 }

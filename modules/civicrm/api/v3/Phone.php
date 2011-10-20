@@ -140,26 +140,10 @@ function civicrm_api3_phone_delete( $params )
 
 }
 
+
 /**
- * Retrieve one or more phones 
+ *  civicrm_api('Phone','Get') to retrieve one or more phones is implemented by
+ *  function civicrm_api3_phone_get ($params) into the file Phone/Get.php
+ *  Could have been implemented here in this file too, but we moved it to illustrate the feature with a real usage.
  *
- * @param  mixed[]  (reference ) input parameters
- * 
- * {@schema Core/Phone.xml}
- * {@example PhoneDelete.php 0}
- * @param  array $params  an associative array of name/value pairs.
- *
- * @return  array details of found phones else error
- * @access public
  */
-
-function civicrm_api3_phone_get($params) 
-{   
-
-    civicrm_api3_verify_mandatory($params);
-
-    return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
- 
-
-}
-

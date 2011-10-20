@@ -137,7 +137,7 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
         // get the requested action
         $action = CRM_Utils_Request::retrieve('action', 'String',
                                               $this, false, 'browse'); // default to 'browse'
-        
+
         // assign vars to templates
         $this->assign('action', $action);
         $sid = CRM_Utils_Request::retrieve('sid', 'Positive',
@@ -154,7 +154,7 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
             $this->preview($sid) ;
         } else if ($action & CRM_Core_Action::COPY) {
             $session = CRM_Core_Session::singleton();
-            CRM_Core_Session::setStatus("A copy of the price set has been created" );
+            CRM_Core_Session::setStatus(ts('A copy of the price set has been created') );
             $this->copy( );
         } else {
             require_once 'CRM/Price/BAO/Set.php';
@@ -180,8 +180,9 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
                     CRM_Utils_System::appendBreadCrumb( ts('Price Sets'), $url );
                     $this->assign( 'usedPriceSetTitle', CRM_Price_BAO_Set::getTitle( $sid ) );
                     $this->assign( 'usedBy', $usedBy );
-                    $comps = array( "Event"        => "civicrm_event", 
-                                    "Contribution" => "civicrm_contribution_page" );
+
+                    $comps = array( 'Event'        => 'civicrm_event', 
+                                    'Contribution' => 'civicrm_contribution_page' );
                     $priceSetContexts = array( );
                     foreach ( $comps as $name => $table ) {
                         if ( array_key_exists( $table, $usedBy ) ) {
@@ -261,7 +262,8 @@ class CRM_Price_Page_Set extends CRM_Core_Page {
         $priceSet = array();
         require_once 'CRM/Core/Component.php';
         $comps = array( 'CiviEvent'      => ts( 'Event' ),
-                        'CiviContribute' => ts( 'Contribution' ) );
+                        'CiviContribute' => ts( 'Contribution' ),
+                        'CiviMember'     => ts( 'Membership' ) );
         
         $dao = new CRM_Price_DAO_Set();
         if ( defined( 'CIVICRM_EVENT_PRICE_SET_DOMAIN_ID' ) && CIVICRM_EVENT_PRICE_SET_DOMAIN_ID ) {

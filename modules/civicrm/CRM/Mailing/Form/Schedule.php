@@ -288,7 +288,9 @@ require_once 'CRM/Mailing/BAO/Mailing.php';
         //when user perform mailing from search context 
         //redirect it to search result CRM-3711.
         $ssID    = $this->get( 'ssID' );
-        if ( $ssID && $this->_searchBasedMailing ) {
+        if ( $ssID && 
+             $this->_searchBasedMailing &&
+             ! CRM_Mailing_Info::workflowEnabled( ) ) {
             if ( $this->_action == CRM_Core_Action::BASIC ) {
                 $fragment = 'search';
             } else if ( $this->_action == CRM_Core_Action::PROFILE ) {

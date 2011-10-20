@@ -4815,7 +4815,8 @@ VALUES
   (@option_group_id_report, 'Grant Report (Statistics)', 'grant/statistics', 'CRM_Report_Form_Grant_Statistics', NULL, 0, NULL, 42, 'Shows statistics for Grants.', 0, 0, 1, @grantCompId, NULL),
   (@option_group_id_report, 'Survey Report (Detail)',    'survey/detail', 'CRM_Report_Form_Campaign_SurveyDetails',  NULL, 0, NULL, 43, 'Detailed report for canvassing, phone-banking, walk lists or other surveys.', 0, 0, 1, @campaignCompId, NULL),
   (@option_group_id_report, 'Personal Campaign Page Report', 'contribute/pcp', 'CRM_Report_Form_Contribute_PCP', NULL, 0, NULL, 44, 'Shows Personal Campaign Page Report', 0, 0, 1, @contributeCompId, NULL),
-  (@option_group_id_report , 'Pledge Summary Report', 'pledge/summary', 'CRM_Report_Form_Pledge_Summary', NULL, 0, NULL, 45, 'Pledge Summary Report', 0, 0, 1, @pledgeCompId, NULL),			
+  (@option_group_id_report , 'Pledge Summary Report', 'pledge/summary', 'CRM_Report_Form_Pledge_Summary', NULL, 0, NULL, 45, 'Pledge Summary Report', 0, 0, 1, @pledgeCompId, NULL),
+  (@option_group_id_report , 'Contribution History By Relationship Report',                   'contribute/history',              'CRM_Report_Form_Contribute_History',              NULL, 0, NULL, 46,  'List contact\\\'s donation history, grouped by year, along with contributions attributed to any of the contact\\\'s related contacts.', 0, 0, 1, @contributeCompId, NULL),			
   (@option_group_id_acs, 'Scheduled',  1, 'Scheduled',  NULL, 0, 1,    1, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Completed',  2, 'Completed',  NULL, 0, NULL, 2, NULL, 0, 1, 1, NULL, NULL),
   (@option_group_id_acs, 'Cancelled',  3, 'Cancelled',  NULL, 0, NULL, 3, NULL, 0, 1, 1, NULL, NULL),
@@ -5350,7 +5351,7 @@ VALUES
  ('PayPal_Standard',    'PayPal - Website Payments Standard', NULL,1,0,'Merchant Account Email',NULL,NULL,NULL,'Payment_PayPalImpl','https://www.paypal.com/',NULL,'https://www.paypal.com/',NULL,'https://www.sandbox.paypal.com/',NULL,'https://www.sandbox.paypal.com/',NULL,4,1),
  ('PayPal',             'PayPal - Website Payments Pro',      NULL,1,0,'User Name','Password','Signature',NULL,'Payment_PayPalImpl','https://www.paypal.com/','https://api-3t.paypal.com/','https://www.paypal.com/','https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif','https://www.sandbox.paypal.com/','https://api-3t.sandbox.paypal.com/','https://www.sandbox.paypal.com/','https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif',3, 1 ),
  ('PayPal_Express',     'PayPal - Express',       NULL,1,0,'User Name','Password','Signature',NULL,'Payment_PayPalImpl','https://www.paypal.com/','https://api-3t.paypal.com/',NULL,'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif','https://www.sandbox.paypal.com/','https://api-3t.sandbox.paypal.com/',NULL,'https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif',2,NULL),
- ('Google_Checkout',    'Google Checkout',        NULL,1,0,'Merchant ID','Key',NULL,NULL,'Payment_Google','https://checkout.google.com/',NULL,NULL,'https://checkout.google.com/buttons/checkout.gif?merchant_id=YOURMERCHANTIDHERE&w=160&h=43&style=white&variant=text&loc=en_US','https://sandbox.google.com/checkout/',NULL,NULL,'https://sandbox.google.com/checkout/buttons/checkout.gif?merchant_id=YOURMERCHANTIDHERE&w=160&h=43&style=white&variant=text&loc=en_US',4,NULL),
+ ('Google_Checkout',    'Google Checkout',        NULL,1,0,'Merchant ID','Key',NULL,NULL,'Payment_Google','https://checkout.google.com/',NULL,'https://checkout.google.com/','https://checkout.google.com/buttons/checkout.gif?merchant_id=YOURMERCHANTIDHERE&w=160&h=43&style=white&variant=text&loc=en_US','https://sandbox.google.com/checkout/',NULL,'https://sandbox.google.com/checkout/','https://sandbox.google.com/checkout/buttons/checkout.gif?merchant_id=YOURMERCHANTIDHERE&w=160&h=43&style=white&variant=text&loc=en_US',4,1),
  ('Moneris',            'Moneris',                NULL,1,0,'User Name','Password','Store ID',NULL,'Payment_Moneris','https://www3.moneris.com/',NULL,NULL,NULL,'https://esqa.moneris.com/',NULL,NULL,NULL,1,1),
  ('AuthNet',            'Authorize.Net',          NULL,1,0,'API Login','Payment Key','MD5 Hash',NULL,'Payment_AuthorizeNet','https://secure.authorize.net/gateway/transact.dll',NULL,'https://api.authorize.net/xml/v1/request.api',NULL,'https://test.authorize.net/gateway/transact.dll',NULL,'https://apitest.authorize.net/xml/v1/request.api',NULL,1,1),
  ('PayJunction',        'PayJunction',            NULL,1,0,'User Name','Password',NULL,NULL,'Payment_PayJunction','https://payjunction.com/quick_link',NULL,NULL,NULL,'https://www.payjunctionlabs.com/quick_link',NULL,NULL,NULL,1,1),
@@ -13552,14 +13553,18 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
 
 {/if}
+{if !$lineItem}
 ===========================================================
 {ts}Membership Information{/ts}
 
 ===========================================================
 {ts}Membership Type{/ts}: {$membership_name}
+{/if}
 {if ! $cancelled}
+{if !$lineItem}
 {ts}Membership Start Date{/ts}: {$mem_start_date}
 {ts}Membership End Date{/ts}: {$mem_end_date}
+{/if}
 {if $formValues.total_amount}
 ===========================================================
 {ts}Membership Fee{/ts}
@@ -13568,6 +13573,24 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {if $formValues.contributionType_name}
 {ts}Contribution Type{/ts}: {$formValues.contributionType_name}
 {/if}
+{if $lineItem}
+{foreach from=$lineItem item=value key=priceset}
+{capture assign=ts_item}{ts}Item{/ts}{/capture}
+{capture assign=ts_qty}{ts}Qty{/ts}{/capture}
+{capture assign=ts_each}{ts}Each{/ts}{/capture}
+{capture assign=ts_total}{ts}Total{/ts}{/capture}
+{capture assign=ts_start_date}{ts}Membership Start Date{/ts}{/capture}
+{capture assign=ts_end_date}{ts}Membership End Date{/ts}{/capture}
+{$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_start_date|string_format:"%20s"} {$ts_end_date|string_format:"%20s"}
+--------------------------------------------------------------------------------------------------
+
+{foreach from=$value item=line}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$line.start_date|string_format:"%20s"} {$line.end_date|string_format:"%20s"}
+{/foreach}
+{/foreach}
+--------------------------------------------------------------------------------------------------
+{/if}
+
 {ts}Amount{/ts}: {$formValues.total_amount|crmMoney}
 {if $receive_date}
 {ts}Received Date{/ts}: {$receive_date|truncate:10:\'\'|crmDate}
@@ -13611,8 +13634,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {foreach from=$customValues item=value key=customName}
  {$customName} : {$value}
 {/foreach}
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+{/if}', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -13650,6 +13672,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
   <tr>
    <td>
     <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+     {if !$lineItem}
      <tr>
       <th {$headerStyle}>
        {ts}Membership Information{/ts}
@@ -13663,7 +13686,9 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        {$membership_name}
       </td>
      </tr>
+     {/if}
      {if ! $cancelled}
+     {if !$lineItem}
       <tr>
        <td {$labelStyle}>
         {ts}Membership Start Date{/ts}
@@ -13680,6 +13705,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
         {$mem_end_date}
        </td>
       </tr>
+      {/if}
       {if $formValues.total_amount}
        <tr>
         <th {$headerStyle}>
@@ -13696,6 +13722,47 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
          </td>
         </tr>
        {/if}
+
+       {if $lineItem}
+       {foreach from=$lineItem item=value key=priceset}
+         <tr>
+          <td colspan="2" {$valueStyle}>
+           <table> {* FIXME: style this table so that it looks like the text version (justification, etc.) *}
+            <tr>
+             <th>{ts}Item{/ts}</th>
+             <th>{ts}Qty{/ts}</th>
+             <th>{ts}Each{/ts}</th>
+             <th>{ts}Total{/ts}</th>
+	     <th>{ts}Membership Start Date{/ts}</th>
+	     <th>{ts}Membership End Date{/ts}</th>
+            </tr>
+            {foreach from=$value item=line}
+             <tr>
+              <td>
+	      {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}	
+              </td>
+              <td>
+               {$line.qty}
+              </td>
+              <td>
+               {$line.unit_price|crmMoney}
+              </td>
+              <td>
+               {$line.line_total|crmMoney}
+              </td>
+              <td>
+               {$line.start_date}
+              </td>
+	      <td>
+               {$line.end_date}
+              </td>
+             </tr>
+            {/foreach}
+           </table>
+          </td>
+         </tr>
+       {/foreach}
+      {/if}
        <tr>
         <td {$labelStyle}>
          {ts}Amount{/ts}
@@ -13831,14 +13898,18 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
 
 {/if}
+{if !$lineItem}
 ===========================================================
 {ts}Membership Information{/ts}
 
 ===========================================================
 {ts}Membership Type{/ts}: {$membership_name}
+{/if}
 {if ! $cancelled}
+{if !$lineItem}
 {ts}Membership Start Date{/ts}: {$mem_start_date}
 {ts}Membership End Date{/ts}: {$mem_end_date}
+{/if}
 {if $formValues.total_amount}
 ===========================================================
 {ts}Membership Fee{/ts}
@@ -13847,6 +13918,24 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {if $formValues.contributionType_name}
 {ts}Contribution Type{/ts}: {$formValues.contributionType_name}
 {/if}
+{if $lineItem}
+{foreach from=$lineItem item=value key=priceset}
+{capture assign=ts_item}{ts}Item{/ts}{/capture}
+{capture assign=ts_qty}{ts}Qty{/ts}{/capture}
+{capture assign=ts_each}{ts}Each{/ts}{/capture}
+{capture assign=ts_total}{ts}Total{/ts}{/capture}
+{capture assign=ts_start_date}{ts}Membership Start Date{/ts}{/capture}
+{capture assign=ts_end_date}{ts}Membership End Date{/ts}{/capture}
+{$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_start_date|string_format:"%20s"} {$ts_end_date|string_format:"%20s"}
+--------------------------------------------------------------------------------------------------
+
+{foreach from=$value item=line}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$line.start_date|string_format:"%20s"} {$line.end_date|string_format:"%20s"}
+{/foreach}
+{/foreach}
+--------------------------------------------------------------------------------------------------
+{/if}
+
 {ts}Amount{/ts}: {$formValues.total_amount|crmMoney}
 {if $receive_date}
 {ts}Received Date{/ts}: {$receive_date|truncate:10:\'\'|crmDate}
@@ -13890,8 +13979,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {foreach from=$customValues item=value key=customName}
  {$customName} : {$value}
 {/foreach}
-{/if}
-', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+{/if}', '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -13929,6 +14017,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
   <tr>
    <td>
     <table style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse; width:100%;">
+     {if !$lineItem}
      <tr>
       <th {$headerStyle}>
        {ts}Membership Information{/ts}
@@ -13942,7 +14031,9 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        {$membership_name}
       </td>
      </tr>
+     {/if}
      {if ! $cancelled}
+     {if !$lineItem}
       <tr>
        <td {$labelStyle}>
         {ts}Membership Start Date{/ts}
@@ -13959,6 +14050,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
         {$mem_end_date}
        </td>
       </tr>
+      {/if}
       {if $formValues.total_amount}
        <tr>
         <th {$headerStyle}>
@@ -13975,6 +14067,47 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
          </td>
         </tr>
        {/if}
+
+       {if $lineItem}
+       {foreach from=$lineItem item=value key=priceset}
+         <tr>
+          <td colspan="2" {$valueStyle}>
+           <table> {* FIXME: style this table so that it looks like the text version (justification, etc.) *}
+            <tr>
+             <th>{ts}Item{/ts}</th>
+             <th>{ts}Qty{/ts}</th>
+             <th>{ts}Each{/ts}</th>
+             <th>{ts}Total{/ts}</th>
+	     <th>{ts}Membership Start Date{/ts}</th>
+	     <th>{ts}Membership End Date{/ts}</th>
+            </tr>
+            {foreach from=$value item=line}
+             <tr>
+              <td>
+	      {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}	
+              </td>
+              <td>
+               {$line.qty}
+              </td>
+              <td>
+               {$line.unit_price|crmMoney}
+              </td>
+              <td>
+               {$line.line_total|crmMoney}
+              </td>
+              <td>
+               {$line.start_date}
+              </td>
+	      <td>
+               {$line.end_date}
+              </td>
+             </tr>
+            {/foreach}
+           </table>
+          </td>
+         </tr>
+       {/foreach}
+      {/if}
        <tr>
         <td {$labelStyle}>
          {ts}Amount{/ts}
@@ -14111,7 +14244,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}Please print this receipt for your records.{/ts}
 {/if}
 
-{if $membership_assign}
+{if $membership_assign && !$useForMember}
 ===========================================================
 {ts}Membership Information{/ts}
 
@@ -14128,7 +14261,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}Membership Fee{/ts}
 
 ===========================================================
-{if $membership_amount }
+{if !$useForMember && $membership_amount }
 {ts 1=$membership_name}%1 Membership{/ts}: {$membership_amount|crmMoney}
 {if $amount}
 {if ! $is_separate_payment }
@@ -14139,7 +14272,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {/if}
 -------------------------------------------
 {ts}Total{/ts}: {$amount+$membership_amount|crmMoney}
-{elseif $lineItem and $priceSetID}
+{elseif !$useForMember && $lineItem and $priceSetID}
 {foreach from=$lineItem item=value key=priceset}
 ---------------------------------------------------------
 {capture assign=ts_item}{ts}Item{/ts}{/capture}
@@ -14155,6 +14288,23 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
 {ts}Total Amount{/ts}: {$amount|crmMoney}
 {else}
+{if $useForMember && $lineItem}
+{foreach from=$lineItem item=value key=priceset}
+{capture assign=ts_item}{ts}Item{/ts}{/capture}
+{capture assign=ts_qty}{ts}Qty{/ts}{/capture}
+{capture assign=ts_each}{ts}Each{/ts}{/capture}
+{capture assign=ts_total}{ts}Total{/ts}{/capture}
+{capture assign=ts_start_date}{ts}Membership Start Date{/ts}{/capture}
+{capture assign=ts_end_date}{ts}Membership End Date{/ts}{/capture}
+{$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_start_date|string_format:"%20s"} {$ts_end_date|string_format:"%20s"}
+--------------------------------------------------------------------------------------------------
+
+{foreach from=$value item=line}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$line.start_date|string_format:"%20s"} {$line.end_date|string_format:"%20s"}
+{/foreach}
+{/foreach}
+--------------------------------------------------------------------------------------------------
+{/if}
 {ts}Amount{/ts}: {$amount|crmMoney} {if $amount_level } - {$amount_level} {/if}
 {/if}
 {elseif $membership_amount}
@@ -14340,7 +14490,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
   </table>
   <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
 
-     {if $membership_assign}
+     {if $membership_assign && !$useForMember}
       <tr>
        <th {$headerStyle}>
         {ts}Membership Information{/ts}
@@ -14386,7 +14536,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        </th>
       </tr>
 
-      {if $membership_amount}
+      {if !$useForMember && $membership_amount}
 
        <tr>
         <td {$labelStyle}>
@@ -14426,7 +14576,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
         </td>
        </tr>
 
-      {elseif $lineItem and $priceSetID}
+      {elseif !$useForMember && $lineItem and $priceSetID}
 
        {foreach from=$lineItem item=value key=priceset}
         <tr>
@@ -14468,7 +14618,46 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        </tr>
 
       {else}
-
+       {if $useForMember && $lineItem}
+       {foreach from=$lineItem item=value key=priceset}
+        <tr>
+         <td colspan="2" {$valueStyle}>
+          <table> {* FIXME: style this table so that it looks like the text version (justification, etc.) *}
+           <tr>
+            <th>{ts}Item{/ts}</th>
+            <th>{ts}Qty{/ts}</th>
+            <th>{ts}Each{/ts}</th>
+            <th>{ts}Total{/ts}</th>
+	    <th>{ts}Membership Start Date{/ts}</th>
+	    <th>{ts}Membership End Date{/ts}</th>
+           </tr>
+           {foreach from=$value item=line}
+            <tr>
+             <td>
+             {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
+             </td>
+             <td>
+              {$line.qty}
+             </td>
+             <td>
+              {$line.unit_price|crmMoney}
+             </td>
+             <td>
+              {$line.line_total|crmMoney}
+             </td>
+             <td>
+              {$line.start_date}
+             </td>
+	     <td>
+              {$line.end_date}
+             </td>
+            </tr>
+           {/foreach}
+          </table>
+         </td>
+        </tr>
+       {/foreach}
+       {/if}
        <tr>
         <td {$labelStyle}>
          {ts}Amount{/ts}
@@ -14797,7 +14986,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}Please print this receipt for your records.{/ts}
 {/if}
 
-{if $membership_assign}
+{if $membership_assign && !$useForMember}
 ===========================================================
 {ts}Membership Information{/ts}
 
@@ -14814,7 +15003,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {ts}Membership Fee{/ts}
 
 ===========================================================
-{if $membership_amount }
+{if !$useForMember && $membership_amount }
 {ts 1=$membership_name}%1 Membership{/ts}: {$membership_amount|crmMoney}
 {if $amount}
 {if ! $is_separate_payment }
@@ -14825,7 +15014,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 {/if}
 -------------------------------------------
 {ts}Total{/ts}: {$amount+$membership_amount|crmMoney}
-{elseif $lineItem and $priceSetID}
+{elseif !$useForMember && $lineItem and $priceSetID}
 {foreach from=$lineItem item=value key=priceset}
 ---------------------------------------------------------
 {capture assign=ts_item}{ts}Item{/ts}{/capture}
@@ -14841,6 +15030,23 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
 
 {ts}Total Amount{/ts}: {$amount|crmMoney}
 {else}
+{if $useForMember && $lineItem}
+{foreach from=$lineItem item=value key=priceset}
+{capture assign=ts_item}{ts}Item{/ts}{/capture}
+{capture assign=ts_qty}{ts}Qty{/ts}{/capture}
+{capture assign=ts_each}{ts}Each{/ts}{/capture}
+{capture assign=ts_total}{ts}Total{/ts}{/capture}
+{capture assign=ts_start_date}{ts}Membership Start Date{/ts}{/capture}
+{capture assign=ts_end_date}{ts}Membership End Date{/ts}{/capture}
+{$ts_item|string_format:"%-30s"} {$ts_qty|string_format:"%5s"} {$ts_each|string_format:"%10s"} {$ts_total|string_format:"%10s"} {$ts_start_date|string_format:"%20s"} {$ts_end_date|string_format:"%20s"}
+--------------------------------------------------------------------------------------------------
+
+{foreach from=$value item=line}
+{capture assign=ts_item}{if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description} {$line.description}{/if}{/capture}{$ts_item|truncate:30:"..."|string_format:"%-30s"} {$line.qty|string_format:"%5s"} {$line.unit_price|crmMoney|string_format:"%10s"} {$line.line_total|crmMoney|string_format:"%10s"} {$line.start_date|string_format:"%20s"} {$line.end_date|string_format:"%20s"}
+{/foreach}
+{/foreach}
+--------------------------------------------------------------------------------------------------
+{/if}
 {ts}Amount{/ts}: {$amount|crmMoney} {if $amount_level } - {$amount_level} {/if}
 {/if}
 {elseif $membership_amount}
@@ -15026,7 +15232,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
   </table>
   <table width="500" style="border: 1px solid #999; margin: 1em 0em 1em; border-collapse: collapse;">
 
-     {if $membership_assign}
+     {if $membership_assign && !$useForMember}
       <tr>
        <th {$headerStyle}>
         {ts}Membership Information{/ts}
@@ -15072,7 +15278,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        </th>
       </tr>
 
-      {if $membership_amount}
+      {if !$useForMember && $membership_amount}
 
        <tr>
         <td {$labelStyle}>
@@ -15112,7 +15318,7 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
         </td>
        </tr>
 
-      {elseif $lineItem and $priceSetID}
+      {elseif !$useForMember && $lineItem and $priceSetID}
 
        {foreach from=$lineItem item=value key=priceset}
         <tr>
@@ -15154,7 +15360,46 @@ or want to inquire about reinstating your registration for this event.{/ts}</p>
        </tr>
 
       {else}
-
+       {if $useForMember && $lineItem}
+       {foreach from=$lineItem item=value key=priceset}
+        <tr>
+         <td colspan="2" {$valueStyle}>
+          <table> {* FIXME: style this table so that it looks like the text version (justification, etc.) *}
+           <tr>
+            <th>{ts}Item{/ts}</th>
+            <th>{ts}Qty{/ts}</th>
+            <th>{ts}Each{/ts}</th>
+            <th>{ts}Total{/ts}</th>
+	    <th>{ts}Membership Start Date{/ts}</th>
+	    <th>{ts}Membership End Date{/ts}</th>
+           </tr>
+           {foreach from=$value item=line}
+            <tr>
+             <td>
+             {if $line.html_type eq \'Text\'}{$line.label}{else}{$line.field_title} - {$line.label}{/if} {if $line.description}<div>{$line.description|truncate:30:"..."}</div>{/if}
+             </td>
+             <td>
+              {$line.qty}
+             </td>
+             <td>
+              {$line.unit_price|crmMoney}
+             </td>
+             <td>
+              {$line.line_total|crmMoney}
+             </td>
+             <td>
+              {$line.start_date}
+             </td>
+	     <td>
+              {$line.end_date}
+             </td>
+            </tr>
+           {/foreach}
+          </table>
+         </td>
+        </tr>
+       {/foreach}
+       {/if}
        <tr>
         <td {$labelStyle}>
          {ts}Amount{/ts}
@@ -16595,7 +16840,10 @@ VALUES
     ( @domainID, 'civicrm/member&reset=1',                              'Dashboard',           'Dashboard',       'access CiviMember', '', @memberlastID, '1', NULL, 1 ), 
     ( @domainID, 'civicrm/member/add&reset=1&action=add&context=standalone', 'New Membership', 'New Membership',  'access CiviMember,edit memberships', 'AND', @memberlastID, '1', NULL, 2 ), 
     ( @domainID, 'civicrm/member/search&reset=1',                       'Find Members',        'Find Members',    'access CiviMember', '', @memberlastID, '1', NULL, 3 ), 
-    ( @domainID, 'civicrm/member/import&reset=1',                       'Import Memberships',      'Import Members',  'access CiviMember,edit memberships', 'AND', @memberlastID, '1', NULL, 4 );
+    ( @domainID, 'civicrm/member/import&reset=1',                       'Import Memberships',  'Import Members',  'access CiviMember,edit memberships', 'AND', @memberlastID, '1', 1, 4 ),
+    ( @domainID, 'civicrm/admin/price&reset=1&action=add',              'New Price Set',       'New Price Set',   'access CiviMember,administer CiviCRM', 'AND',  @memberlastID, '1', NULL, 5 ),
+    ( @domainID, 'civicrm/admin/price&reset=1',                         'Manage Price Sets',   'Manage Price Sets', 'access CiviMember,administer CiviCRM', 'AND',  @memberlastID, '1', NULL, 6 );
+
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -16856,7 +17104,9 @@ INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES     
     ( @domainID, 'civicrm/admin/member/membershipType&reset=1',    'Membership Types',        'Membership Types',        'access CiviMember,administer CiviCRM', 'AND', @adminMemberlastID, '1', NULL, 1 ), 
-    ( @domainID, 'civicrm/admin/member/membershipStatus&reset=1',  'Membership Status Rules', 'Membership Status Rules', 'access CiviMember,administer CiviCRM', 'AND', @adminMemberlastID, '1', NULL, 2 );
+    ( @domainID, 'civicrm/admin/member/membershipStatus&reset=1',  'Membership Status Rules', 'Membership Status Rules', 'access CiviMember,administer CiviCRM', 'AND', @adminMemberlastID, '1', 1, 2 ),
+    ( @domainID, 'civicrm/admin/price&reset=1&action=add',         'New Price Set',           'New Price Set',           'access CiviMember,administer CiviCRM', 'AND', @adminMemberlastID, '1', NULL, 3 ),
+    ( @domainID, 'civicrm/admin/price&reset=1',                    'Manage Price Sets',       'Manage Price Sets',       'access CiviMember,administer CiviCRM', 'AND', @adminMemberlastID, '1', NULL, 4 );
 
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -17179,7 +17429,7 @@ UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES    
-    ( @domainID, 'Event Income Report (Summary)', 'event/summary', 'Provides an overview of event income. You can include key information such as event ID, registration, attendance, and income generated to help you determine the success of an event.', 'access CiviEvent', 'a:18:{s:6:"fields";a:2:{s:5:"title";s:1:"1";s:13:"event_type_id";s:1:"1";}s:5:"id_op";s:2:"in";s:8:"id_value";a:0:{}s:16:"event_type_id_op";s:2:"in";s:19:"event_type_id_value";a:0:{}s:25:"event_start_date_relative";s:1:"0";s:21:"event_start_date_from";s:1:" ";s:19:"event_start_date_to";s:1:" ";s:23:"event_end_date_relative";s:1:"0";s:19:"event_end_date_from";s:1:" ";s:17:"event_end_date_to";s:0:"";s:11:"description";s:181:"Provides an overview of event income. You can include key information such as event ID, registration, attendance, and income generated to help you determine the success of an event.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviEvent";s:9:"parent_id";s:3:"174";s:6:"charts";s:0:"";}');
+    ( @domainID, 'Event Income Report (Summary)', 'event/summary', 'Provides an overview of event income. You can include key information such as event ID, registration, attendance, and income generated to help you determine the success of an event.', 'access CiviEvent', 'a:18:{s:6:"fields";a:2:{s:5:"title";s:1:"1";s:13:"event_type_id";s:1:"1";}s:5:"id_op";s:2:"in";s:8:"id_value";a:0:{}s:16:"event_type_id_op";s:2:"in";s:19:"event_type_id_value";a:0:{}s:25:"event_start_date_relative";s:1:"0";s:21:"event_start_date_from";s:1:"";s:19:"event_start_date_to";s:1:"";s:23:"event_end_date_relative";s:1:"0";s:19:"event_end_date_from";s:1:"";s:17:"event_end_date_to";s:0:"";s:11:"description";s:181:"Provides an overview of event income. You can include key information such as event ID, registration, attendance, and income generated to help you determine the success of an event.";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:16:"access CiviEvent";s:9:"parent_id";s:3:"174";s:6:"charts";s:0:"";}');
 SET @instanceID:=LAST_INSERT_ID();
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -17239,7 +17489,7 @@ UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
-    ( @domainID, 'Mail Bounce Report', 'Mailing/bounce', 'Bounce Report for mailings', 'access CiviMail', 'a:39:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:11:"bounce_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:19:"bounce_type_name_op";s:2:"eq";s:22:"bounce_type_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:26:"Bounce Report for mailings";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+    ( @domainID, 'Mail Bounce Report', 'Mailing/bounce', 'Bounce Report for mailings', 'access CiviMail', 'a:33:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:11:"bounce_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:19:"bounce_type_name_op";s:2:"eq";s:22:"bounce_type_name_value";s:0:"";s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:9:"order_bys";a:1:{i:1;a:1:{s:6:"column";s:1:"-";}}s:11:"description";s:26:"Bounce Report for mailings";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -17263,7 +17513,7 @@ UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
-    ( @domainID, 'Mail Opened Report', 'Mailing/opened', 'Display contacts who opened emails from a mailing', 'access CiviMail', 'a:37:{s:6:"fields";a:4:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:49:"Display contacts who opened emails from a mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+    ( @domainID, 'Mail Opened Report', 'Mailing/opened', 'Display contacts who opened emails from a mailing', 'access CiviMail', 'a:31:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:12:"mailing_name";s:1:"1";s:5:"email";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:9:"order_bys";a:1:{i:1;a:1:{s:6:"column";s:1:"-";}}s:11:"description";s:49:"Display contacts who opened emails from a mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -17275,7 +17525,7 @@ UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @
 INSERT INTO `civicrm_report_instance`
     ( `domain_id`, `title`, `report_id`, `description`, `permission`, `form_values`)
 VALUES 
-    ( @domainID, 'Mail Clickthrough Report', 'Mailing/clicks', 'Display clicks from each mailing', 'access CiviMail', 'a:37:{s:6:"fields";a:5:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:5:"email";s:1:"1";s:3:"url";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:17:"custom_9_relative";s:1:"0";s:13:"custom_9_from";s:0:"";s:11:"custom_9_to";s:0:"";s:12:"custom_10_op";s:2:"in";s:15:"custom_10_value";a:0:{}s:12:"custom_11_op";s:3:"has";s:15:"custom_11_value";s:0:"";s:11:"description";s:32:"Display clicks from each mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
+    ( @domainID, 'Mail Clickthrough Report', 'Mailing/clicks', 'Display clicks from each mailing', 'access CiviMail', 'a:31:{s:6:"fields";a:6:{s:2:"id";s:1:"1";s:10:"first_name";s:1:"1";s:9:"last_name";s:1:"1";s:12:"mailing_name";s:1:"1";s:5:"email";s:1:"1";s:3:"url";s:1:"1";}s:12:"sort_name_op";s:3:"has";s:15:"sort_name_value";s:0:"";s:9:"source_op";s:3:"has";s:12:"source_value";s:0:"";s:6:"id_min";s:0:"";s:6:"id_max";s:0:"";s:5:"id_op";s:3:"lte";s:8:"id_value";s:0:"";s:15:"mailing_name_op";s:2:"in";s:18:"mailing_name_value";a:0:{}s:6:"gid_op";s:2:"in";s:9:"gid_value";a:0:{}s:8:"tagid_op";s:2:"in";s:11:"tagid_value";a:0:{}s:11:"custom_1_op";s:2:"in";s:14:"custom_1_value";a:0:{}s:11:"custom_2_op";s:2:"in";s:14:"custom_2_value";a:0:{}s:17:"custom_3_relative";s:1:"0";s:13:"custom_3_from";s:0:"";s:11:"custom_3_to";s:0:"";s:9:"order_bys";a:1:{i:1;a:1:{s:6:"column";s:1:"-";}}s:11:"description";s:32:"Display clicks from each mailing";s:13:"email_subject";s:0:"";s:8:"email_to";s:0:"";s:8:"email_cc";s:0:"";s:10:"permission";s:15:"access CiviMail";s:6:"groups";s:0:"";s:6:"charts";s:0:"";s:9:"domain_id";i:1;}');
 SET @instanceID:=LAST_INSERT_ID( );
 INSERT INTO civicrm_navigation
     ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
@@ -17296,4 +17546,4 @@ VALUES
     ( @domainID, CONCAT('civicrm/report/instance/', @instanceID, '&reset=1'), 'Survey Report (Detail)', 'Survey Report (Detail)', 'administer CiviCampaign,manage campaign,interview campaign contacts', 'OR', @reportlastID, '1', NULL, @instanceID+2 );
 UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
 
- UPDATE civicrm_domain SET version = '3.4.5';
+ UPDATE civicrm_domain SET version = '3.4.6';

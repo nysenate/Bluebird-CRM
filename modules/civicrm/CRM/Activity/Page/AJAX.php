@@ -152,28 +152,33 @@ class CRM_Activity_Page_AJAX
         $customParams = $htmlType = array( );
         $customValues = CRM_Core_BAO_CustomValueTable::getEntityValues( $activityID, 'Activity' );
 
-        $fieldIds = implode( ', ', array_keys( $customValues ) );
-        $sql      = "SELECT id FROM civicrm_custom_field WHERE html_type = 'File' AND id IN ( {$fieldIds} )";
-        $result   = CRM_Core_DAO::executeQuery( $sql );
+        if ( !empty( $customValues ) ) {
+            $fieldIds = implode( ', ', array_keys( $customValues ) );
+            $sql      = "SELECT id FROM civicrm_custom_field WHERE html_type = 'File' AND id IN ( {$fieldIds} )";
+            $result   = CRM_Core_DAO::executeQuery( $sql );
         
-        while ( $result->fetch( ) ) {
-            $htmlType[] = $result->id;
-        }
+            while ( $result->fetch( ) ) {
+                $htmlType[] = $result->id;
+            }
                 
-        foreach ( $customValues as $key => $value ) {
-            if ( $value ) {
-                if ( in_array( $key, $htmlType ) ) {
-                    $fileValues = CRM_Core_BAO_File::path( $value, $activityID );
-                    $customParams["custom_{$key}_-1"] = array( 'name' => $fileValues[0],
-                                                               'path' => $fileValues[1] );
-                } else {
-                    $customParams["custom_{$key}_-1"] = $value;
+            foreach ( $customValues as $key => $value ) {
+                if ( $value ) {
+                    if ( in_array( $key, $htmlType ) ) {
+                        $fileValues = CRM_Core_BAO_File::path( $value, $activityID );
+                        $customParams["custom_{$key}_-1"] = array( 'name' => $fileValues[0],
+                                                                   'path' => $fileValues[1] );
+                    } else {
+                        $customParams["custom_{$key}_-1"] = $value;
+                    }
                 }
             }
-        }
-        CRM_Core_BAO_CustomValueTable::postProcess( $customParams, CRM_Core_DAO::$_nullArray, 'civicrm_activity',
-                                                    $mainActivityId, 'Activity' );
+
+            CRM_Core_BAO_CustomValueTable::postProcess( $customParams, CRM_Core_DAO::$_nullArray,
+                                                        'civicrm_activity',
+                                                        $mainActivityId, 'Activity' );
         
+        }
+
         // copy activity attachments ( if any )
         require_once "CRM/Core/BAO/File.php";
         CRM_Core_BAO_File::copyEntityFile( 'civicrm_activity', $activityID, 'civicrm_activity', $mainActivityId );

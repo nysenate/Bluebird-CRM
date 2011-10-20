@@ -135,6 +135,12 @@ class CRM_Price_DAO_FieldValue extends CRM_Core_DAO
      */
     public $weight;
     /**
+     * FK to Membership Type
+     *
+     * @var int unsigned
+     */
+    public $membership_type_id;
+    /**
      * Is this default price field option
      *
      * @var boolean
@@ -167,6 +173,7 @@ class CRM_Price_DAO_FieldValue extends CRM_Core_DAO
         if (!(self::$_links)) {
             self::$_links = array(
                 'price_field_id' => 'civicrm_price_field:id',
+                'membership_type_id' => 'civicrm_membership_type:id',
             );
         }
         return self::$_links;
@@ -241,6 +248,12 @@ class CRM_Price_DAO_FieldValue extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_INT,
                     'title' => ts('Weight') ,
                     'default' => '',
+                ) ,
+                'membership_type_id' => array(
+                    'name' => 'membership_type_id',
+                    'type' => CRM_Utils_Type::T_INT,
+                    'default' => 'UL',
+                    'FKClassName' => 'CRM_Member_DAO_MembershipType',
                 ) ,
                 'is_default' => array(
                     'name' => 'is_default',

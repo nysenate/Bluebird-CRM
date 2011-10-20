@@ -129,6 +129,7 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
                 $defaultArray[$params['default_option']] = 1;
             }
         }  
+
         for ( $index = 1; $index <= $maxIndex; $index++ ) {
             
             if ( CRM_Utils_Array::value( $index, $params['option_label'] ) &&
@@ -141,6 +142,7 @@ class CRM_Price_BAO_Field extends CRM_Price_DAO_Field
                                  'count'          => CRM_Utils_Array::value( $index, $params['option_count'], null ),
                                  'max_value'      => CRM_Utils_Array::value( $index, $params['option_max_value'], null ),
                                  'description'    => CRM_Utils_Array::value( $index, $params['option_description'], null ),
+                                 'membership_type_id' => CRM_Utils_Array::value( $index, $params['membership_type_id'], null ),
                                  'weight'         => $params['option_weight'][$index],
                                  'is_active'      => 1,
                                  'is_default'     => CRM_Utils_Array::value( $index, $defaultArray )

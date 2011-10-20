@@ -103,7 +103,7 @@ class CRM_Contact_Page_View_GroupContact extends CRM_Core_Page {
 		}
 		//NYSS LCD end
 		
-		$this->assign( 'contactId', $this->_contactId );
+        $this->assign( 'contactId', $this->_contactId );
 
         // check logged in url permission
         require_once 'CRM/Contact/Page/View.php';

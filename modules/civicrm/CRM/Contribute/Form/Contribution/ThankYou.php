@@ -40,6 +40,11 @@ require_once 'CRM/Contribute/Form/ContributionBase.php';
  * form for thank-you / success page - 3rd step of online contribution process
  */
 class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_ContributionBase {
+    /**
+     * membership price set status
+     *
+     */
+    public $_useForMember;
 
     /**
      * Function to set variables up before form is built
@@ -99,6 +104,8 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
         
         $this->assign( 'lineItem', $this->_lineItem );
         $this->assign( 'priceSetID', $this->_priceSetId );
+        $this->assign(  'useForMember', $this->get('useForMember'));
+
         $params = $this->_params;
      
         $honor_block_is_active = $this->get( 'honor_block_is_active'); 
@@ -150,7 +157,12 @@ class CRM_Contribute_Form_Contribution_ThankYou extends CRM_Contribute_Form_Cont
         $this->buildCustom( $this->_values['custom_pre_id'] , 'customPre' , true );
         $this->buildCustom( $this->_values['custom_post_id'], 'customPost', true );
         if ( CRM_Utils_Array::value( 'hidden_onbehalf_profile', $params ) ) {
-            $profileId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', 'on_behalf_organization', 'id', 'name' );
+            require_once 'CRM/Core/BAO/UFJoin.php'; 
+            $ufJoinParams    = array( 'module'       => 'onBehalf',
+                                      'entity_table' => 'civicrm_contribution_page',   
+                                      'entity_id'    => $this->_id );   
+            $OnBehalfProfile = CRM_Core_BAO_UFJoin::getUFGroupIds( $ufJoinParams );
+            $profileId       = $OnBehalfProfile[0];
 
             $fieldTypes = array( 'Contact', 'Organization' );
             if ( is_array( $this->_membershipBlock ) && !empty( $this->_membershipBlock ) ) {

@@ -39,8 +39,40 @@
         <div class="report-pager">
             {include file="CRM/common/pager.tpl" location="top" noForm=0}
         </div>
+
+        {* pre-compile section header here, rather than doing it every time under foreach *}
+        {capture assign=sectionHeaderTemplate}
+            {assign var=columnCount value=$columnHeaders|@count}
+            {assign var=l value=$smarty.ldelim}
+            {assign var=r value=$smarty.rdelim}
+            {foreach from=$sections item=section key=column name=sections}
+                {counter assign="h"}
+                {$l}isValueChange value=$row.{$column} key="{$column}" assign=isValueChanged{$r}
+                {$l}if $isValueChanged{$r}
+
+                    {$l}if $sections.{$column}.type & 4{$r}
+                        {$l}assign var=printValue value=$row.{$column}|crmDate{$r}
+                    {$l}elseif $sections.{$column}.type eq 1024{$r}
+                        {$l}assign var=printValue value=$row.{$column}|crmMoney{$r}
+                    {$l}else{$r}
+                        {$l}assign var=printValue value=$row.{$column}{$r}
+                    {$l}/if{$r}
+
+                    <tr><th colspan="{$columnCount}">
+                        <h{$h}>{$section.title}: {$l}$printValue|default:"<em>none</em>"{$r}
+                            ({$l}sectionTotal key=$row.{$column} depth={$smarty.foreach.sections.index}{$r})
+                        </h{$h}>
+                    </th></tr>
+                    {if $smarty.foreach.sections.last}
+                        <tr>{$l}$tableHeader{$r}</tr>
+                    {/if}
+                {$l}/if{$r}
+            {/foreach}
+        {/capture}
+
         {foreach from=$rows item=row}
                 	<table class="report-layout crm-report_contact_civireport">
+                        {eval var=$sectionHeaderTemplate}
                             <tr>
                                 {foreach from=$columnHeaders item=header key=field}
                                     {if !$skip}

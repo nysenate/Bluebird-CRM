@@ -52,6 +52,11 @@
           {/if}
           </td>
         </tr>
+	<tr id="contribution_type_id" class="crm-price-set-form-block-contribution_type_id">
+	   <td class="label">{$form.contribution_type_id.label}</td>
+           <td>{$form.contribution_type_id.html}</td>
+           <td>&nbsp;</td>
+        </tr>
         <tr class="crm-price-set-form-block-help_pre">
 	   <td class="label">{$form.help_pre.label}</td>
            <td>{if $action == 2}{include file='CRM/Core/I18n/Dialog.tpl' table='civicrm_price_set' field='help_pre' id=$sid}{/if}{$form.help_pre.html}
@@ -87,3 +92,30 @@
     <a href="{crmURL p='civicrm/admin/price/field' q="action=browse&reset=1&sid=$sid"}" class="button"><span>{ts}Fields for this Set{/ts}</span></a>
     </div>
 {/if}
+ 
+
+{literal}
+<script type="text/javascript">
+    cj( function( ) {
+    	showHideContribution();
+	var showContribution = {/literal}"{$showContribution}"{literal};
+	if (showContribution) {
+	    cj("#contribution_type_id").show();
+	}
+    	cj("#extends\\[3\\]").click(function(){
+    	showHideContribution();	
+	});
+
+    });
+
+    function showHideContribution() {
+	if(cj("#extends\\[3\\]").attr('checked') ) {
+	      cj("#contribution_type_id").show();
+	} else {
+	      cj("#contribution_type_id").hide();
+	}
+
+}
+{/literal}
+
+</script>

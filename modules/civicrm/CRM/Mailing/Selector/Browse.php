@@ -552,18 +552,20 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         $whereClause = $this->whereClause( $params, false );
         
         $query = "
-   SELECT DISTINCT UPPER(LEFT(name, 1)) as sort_name
-     FROM civicrm_mailing
+SELECT DISTINCT UPPER(LEFT(name, 1)) as sort_name
+FROM civicrm_mailing
 LEFT JOIN civicrm_mailing_job ON (civicrm_mailing_job.mailing_id = civicrm_mailing.id)
 LEFT JOIN civicrm_contact createdContact ON ( civicrm_mailing.created_id = createdContact.id )
 LEFT JOIN civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = scheduledContact.id ) 
-      AND $whereClause
- ORDER BY LEFT(name, 1)
+WHERE $whereClause
+ORDER BY LEFT(name, 1)
 ";
+
         $dao = CRM_Core_DAO::executeQuery( $query, $params );
         
         $aToZBar = CRM_Utils_PagerAToZ::getAToZBar( $dao, $this->_parent->_sortByCharacter, true );
         $this->_parent->assign( 'aToZ', $aToZBar );
+        
     }
     
 }//end of class

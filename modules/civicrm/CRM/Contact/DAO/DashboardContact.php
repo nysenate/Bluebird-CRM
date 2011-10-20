@@ -130,7 +130,7 @@ class CRM_Contact_DAO_DashboardContact extends CRM_Core_DAO
     /**
      * dashlet content
      *
-     * @var text
+     * @var longtext
      */
     public $content;
     /**
@@ -217,7 +217,7 @@ class CRM_Contact_DAO_DashboardContact extends CRM_Core_DAO
                 ) ,
                 'content' => array(
                     'name' => 'content',
-                    'type' => CRM_Utils_Type::T_TEXT,
+                    'type' => CRM_Utils_Type::T_LONGTEXT,
                     'title' => ts('Content') ,
                 ) ,
                 'created_date' => array(
