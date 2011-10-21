@@ -36,10 +36,10 @@
  */
 
 function processQueue( &$config ) {
-  /*require_once 'CRM/Core/BAO/MailSettings.php';
+  require_once 'CRM/Core/BAO/MailSettings.php';
   if (CRM_Core_BAO_MailSettings::defaultDomain() == "FIXME.ORG") {
     CRM_Core_Error::fatal( ts( 'The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in our book</a>', array( 1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'), 2=> "http://en.flossmanuals.net/civicrm/ch042_system-configuration/")));
-  }*/
+  }
 
   //log the execution of script
   require_once 'CRM/Core/Error.php';

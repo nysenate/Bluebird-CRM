@@ -195,12 +195,7 @@ FROM   civicrm_mailing
             break;
             
         case 'CRM_Mailing_Form_Approve':
-            //NYSS
-			if ( $form->_mailingID ) {
-			    $mailingId = $form->_mailingID;
-			} else {
-			    $mailingId = $form->get( 'mid' );
-			}
+            $mailingId = $form->get( 'mid' );
             $eventName = 'mailing_approved';
             break;
             

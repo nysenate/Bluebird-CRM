@@ -63,9 +63,13 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
      */ 
     function preProcess( )
     {
-        parent::preProcess( );
         $this->_addProfileBottom = CRM_Utils_Array::value( 'addProfileBottom', $_GET, false );
         $this->_profileBottomNum = CRM_Utils_Array::value( 'addProfileNum', $_GET, 0 );
+        $this->_addProfileBottomAdd = CRM_Utils_Array::value( 'addProfileBottomAdd', $_GET, false );
+        $this->_profileBottomNumAdd = CRM_Utils_Array::value( 'addProfileNumAdd', $_GET, 0 );
+        
+        parent::preProcess( );
+        
         $this->assign('addProfileBottom', $this->_addProfileBottom);
         $this->assign('profileBottomNum', $this->_profileBottomNum);
 
@@ -77,10 +81,7 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
                 self::buildMultipleProfileBottom($this, $profileNum);
             }
         }
-
-
-        $this->_addProfileBottomAdd = CRM_Utils_Array::value( 'addProfileBottomAdd', $_GET, false );
-        $this->_profileBottomNumAdd = CRM_Utils_Array::value( 'addProfileNumAdd', $_GET, 0 );
+        
         $this->assign('addProfileBottomAdd', $this->_addProfileBottomAdd);
         $this->assign('profileBottomNumAdd', $this->_profileBottomNumAdd);
 
@@ -353,7 +354,12 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
 
         $profiles = CRM_Core_BAO_UFGroup::getProfiles( $types );
         
-        $mainProfiles = array('' => ts('- select -')) + $profiles;
+        if ( $prefix == 'additional_' ) {
+            $mainProfiles = array('' => ts('- same as for main contact -'), 'none' => ts('- no profile -')) + $profiles;
+        } else {
+            $mainProfiles = array('' => ts('- select -')) + $profiles;
+        }
+
         $element = $prefix ."custom_post_id_multiple[$count]";
         $form->add('select', $element, $name. '<br />' . ts('(bottom of page)'), $mainProfiles);
     }
@@ -659,8 +665,18 @@ class CRM_Event_Form_ManageEvent_Registration extends CRM_Event_Form_ManageEvent
                 }
             }
 
-            if (CRM_Utils_Array::value('additional_custom_post_id_multiple', $params)){
-                $ufAdd = array_merge ($ufAdd, $params['additional_custom_post_id_multiple']);
+            if (CRM_Utils_Array::value('additional_custom_post_id_multiple', $params)) {
+                $additionalPostMultiple = array( );
+                foreach( $params['additional_custom_post_id_multiple'] as $key => $value ) {
+                    if ( !$value && CRM_Utils_Array::value('custom_post_id', $params) ) {
+                        $additionalPostMultiple[$key] = $params['custom_post_id'];
+                    } else if ( $value == 'none' ) {
+                        continue;
+                    } else if ( $value ) {            
+                        $additionalPostMultiple[$key] = $value;
+                    }
+                }
+                $ufAdd = array_merge ($ufAdd, $additionalPostMultiple);
             }
 
             $ufAdd = array_values($ufAdd);            

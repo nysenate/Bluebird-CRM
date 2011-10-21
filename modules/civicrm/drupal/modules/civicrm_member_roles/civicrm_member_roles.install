@@ -24,9 +24,7 @@ function civicrm_member_roles_schema() {
     $schema['civicrm_member_roles_rules'] = array(
                                                   'fields' => array(
                                                                     'rule_id' => array(
-                                                                                       'type' => 'int', 
-                                                                                       'unsigned' => TRUE, 
-                                                                                       'not null' => TRUE,
+                                                                                       'type' => 'serial', 
                                                                                        ),
                                                                     'rid' => array(
                                                                                    'type' => 'int', 

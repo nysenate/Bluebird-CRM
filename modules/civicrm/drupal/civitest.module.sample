@@ -1478,3 +1478,59 @@ WHERE  contact_id = %1
     }
 
 }
+
+/**
+ * Hook implementations to get the display name of the
+ * shared address field
+ *
+ */
+
+/*
+ * Define the hook name
+ */
+function civitest_civicrm_tokens( &$tokens ) {
+    $tokens['sharedAddress'] = array( 'sharedAddress.orgName' );
+}
+
+
+/*
+ * Retrieve the values for the org names if this contact ID is linked
+ * to another address via the shared addres scheme (which uses a pointer in
+ * the civicrm_address table: master_id to point to the real address
+ */
+function civitest_civicrm_tokenValues( &$values, &$contactIDs ) {
+    if ( is_array( $contactIDs ) ) {
+        $contactIDString = ' ( ' . implode( ',', array_values( $contactIDs ) ) . ' ) ';
+        $single = false;
+    } else {
+        $contactIDString = "( $contactIDs )";
+        $single = true;
+    }
+
+    $query = "
+SELECT     slave.id as contact_id, master.display_name as org_name
+FROM       civicrm_contact master
+INNER JOIN civicrm_address addressMaster ON addressMaster.contact_id = master.id 
+INNER JOIN civicrm_address addressSlave ON addressSlave.master_id = addressMaster.id
+INNER JOIN civicrm_contact slave  ON addressSlave.contact_id = slave.id
+WHERE      slave.id IN $contactIDString 
+";
+
+    $dao = CRM_Core_DAO::executeQuery( $query );
+    while ( $dao->fetch( ) ) {
+        if ( empty( $dao->org_name ) ) {
+            continue;
+        }
+
+        if ( $single ) {
+            $value =& $values;
+        } else {
+            if ( ! array_key_exists( $dao->contact_id, $values ) ) {
+                $values[$dao->contact_id] = array( );
+            }
+            $value =& $values[$dao->contact_id];
+        }
+
+        $value['sharedAddress.orgName'] = $dao->org_name;
+    }
+}

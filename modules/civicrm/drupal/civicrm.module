@@ -53,24 +53,11 @@ function civicrm_html_head()
             if ( empty( $line ) ) {
                 continue;
             }
-            if ( strpos( $line, '.js' ) !== false ) {
-                drupal_add_js( drupal_get_path('module', 'civicrm' ) . '/../' . $line );
-            } else if ( strpos( $line, '.css' ) !== false ) {
+            if ( strpos( $line, '.css' ) !== false ) {
                 drupal_add_css( drupal_get_path('module', 'civicrm' ) . '/../' . $line );
             }
         }
         
-        // add localized calendar js
-        $localisation     = explode( '_', $config->lcMessages );
-        $localizationFile = drupal_get_path('module', 'civicrm' ) . '/../packages/jquery/jquery-ui-1.8.11/development-bundle/ui/i18n/jquery.ui.datepicker-'. $localisation[0] . '.js';
-        
-        if ( file_exists( $localizationFile ) ) {
-            drupal_add_js( $localizationFile );
-        }
-
-        // add Common.js
-        drupal_add_js( drupal_get_path('module', 'civicrm' ) . '/../js/Common.js' );
-
     }
     if ( isset( $config->customCSSURL ) && ! empty( $config->customCSSURL ) ) {
         $head  = "<style type=\"text/css\">@import url({$config->customCSSURL});</style>\n";
@@ -771,6 +758,9 @@ function civicrm_key_disable( ) {
 }
 
 function civicrm_enable( ) {
+    // set system weight higher than jQuery_update so Civi's preprocess can run
+    // last. This is the only way to make sure the jquery noconflict works.
+    db_query("UPDATE {system} SET weight = 100 WHERE name = 'civicrm'");
     menu_rebuild( );
 
     menu_link_maintain( 'civicrm', 'delete', 'civicrm', 'CiviCRM' );
@@ -902,34 +892,43 @@ function civicrm_preprocess_page(&$variables) {
   		} 
   	}
 
+    if ( ! civicrm_initialize( ) ) {
+      return;
+    }
     if ( in_array( arg(0), array('civicrm', 'user') ) ) { 
         // Move the CiviCRM jquery and jQuery UI libraries above Drupal's core jQuery
         // and relatively gracefully handle noConflict.
         $path = drupal_get_path('module', 'civicrm');
-        $scripts = drupal_add_js();
-        $val = array(
-          'cache' => TRUE,
-          'defer' => FALSE,
-          'preprocess' => TRUE,
-          );
-          
-        unset($scripts['module'][$path . '/../packages/jquery/jquery.js']);
-        $core = array(
-          $path . '/../packages/jquery/jquery.js' => $val,
-        );
-        
-        if (is_array($scripts['module'])) {
-          foreach ($scripts['module'] as $script => $val) {
-            if (strpos($script, $path) === 0) {
-              $core[$script] = $scripts['module'][$script];
-              unset($scripts['module'][$script]);
-            }
+        $scripts = array();
+        $val = array('cache' => TRUE, 'defer' => FALSE, 'preprocess' => TRUE);
+
+        $template = CRM_Core_Smarty::singleton( );
+        $buffer = $template->fetch( 'CRM/common/jquery.files.tpl' );
+        $lines  = preg_split( '/\s+/', $buffer );
+        foreach ( $lines as $line ) {
+          $line = trim( $line );
+          if ( empty( $line ) ) {
+            continue;
+          }
+          if ( strpos( $line, '.js' ) !== false ) {
+            $scripts[$path . '/../' . $line ] = $val;
           }
         }
-        
-        $core[$path . '/../js/noconflict.js'] = $val;
-        $scripts['core'] = $core + (is_array($scripts['core']) ? $scripts['core'] : array());
-        $variables['scripts'] = drupal_get_js('header', $scripts);
+
+        // add localized calendar js
+        $config = CRM_Core_Config::singleton( );
+        $localisation     = explode( '_', $config->lcMessages );
+        $localizationFile = $path . '/../packages/jquery/jquery-ui-1.8.11/development-bundle/ui/i18n/jquery.ui.datepicker-'. $localisation[0] . '.js';
+
+        if ( file_exists( $localizationFile ) ) {
+          $scripts[$localizationFile] = $val;
+        }
+
+        // add Common.js
+        $scripts[$path . '/../js/Common.js'] = $val;
+        $scripts[$path . '/../js/noconflict.js'] = $val;
+
+        $variables['scripts'] = drupal_get_js('header', array('core' => $scripts)) . $variables['scripts'];
     }
 }
 
