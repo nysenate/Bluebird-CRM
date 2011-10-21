@@ -307,4 +307,43 @@ WHERE  v.option_group_id = g.id
 
         $upgrade->processSQL( $rev );
     }
-  }
+    
+    function upgrade_3_4_7( $rev ) 
+    {
+        require_once 'CRM/Core/DAO.php';
+        $onBehalfProfileId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', 'on_behalf_organization', 'id', 'name' );
+        if ( ! $onBehalfProfileId ) {
+            CRM_Core_Error::fatal( );
+        }
+
+        $pages = CRM_Core_DAO::executeQuery("
+SELECT    civicrm_contribution_page.id 
+FROM      civicrm_contribution_page
+LEFT JOIN civicrm_uf_join ON entity_table = 'civicrm_contribution_page' AND entity_id = civicrm_contribution_page.id AND module = 'OnBehalf' 
+WHERE     is_for_organization = 1 
+AND       civicrm_uf_join.id IS NULL
+" );
+
+        while( $pages->fetch( ) ) {
+            $query = "
+INSERT INTO civicrm_uf_join
+    (is_active, module, entity_table, entity_id, weight, uf_group_id)
+VALUES
+    (1, 'OnBehalf', 'civicrm_contribution_page', %1, 1, %2)";
+
+            $params = array( 1 => array( $pages->id, 'Integer'),
+                             2 => array( $onBehalfProfileId, 'Integer') );
+            CRM_Core_DAO::executeQuery( $query, $params );
+        }
+
+        // CRM-8774
+        $config = CRM_Core_Config::singleton( );
+        if ( $config->userFramework == 'Drupal' ) {
+            db_query("UPDATE {system} SET weight = 100 WHERE name = 'civicrm'");
+            drupal_flush_all_caches();
+        }
+
+        $upgrade = new CRM_Upgrade_Form( );
+        $upgrade->processSQL( $rev );
+    }
+}

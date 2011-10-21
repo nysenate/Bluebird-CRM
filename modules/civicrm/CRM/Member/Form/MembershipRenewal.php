@@ -486,8 +486,8 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
         }
 
         if ( $this->_mode ) {
-            $formValues['total_amount'] = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType',
-                $this->_memType,'minimum_fee' );
+            $formValues['total_amount'] = CRM_Utils_Array::value('total_amount',$this->_params,CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType',
+                $this->_memType,'minimum_fee' ));
             $formValues['contribution_type_id'] = CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_MembershipType', 
                 $this->_memType,'contribution_type_id' );
 
@@ -715,7 +715,12 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
             CRM_Core_BAO_UFGroup::getValues( $this->_contactID, $customFields, $customValues , false, $members );
 
             $this->assign_by_ref( 'formValues', $formValues );
+            if(is_object($contribution)){
+               $this->assign('contributionID',$contribution->id);
+            }
             $this->assign( 'receive_date', $renewalDate );
+            $this->assign( 'membershipID', $this->_id );
+            $this->assign( 'contactID', $this->_contactID);
             $this->assign( 'module', 'Membership' );
             $this->assign( 'receiptType', 'membership renewal');
             $this->assign( 'mem_start_date', CRM_Utils_Date::customFormat( $renewMembership->start_date  ) );

@@ -268,18 +268,18 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
     /**
      * Map Provider 
      *
-     * @var string
+     * @var string //NYSS
      */
     public $mapProvider = null;
 
     /**
      * Map API Key 
      *
-     * @var string
+     * @var string //NYSS
      */
     public $mapAPIKey = null;
 
-    /**
+    /** //NYSS
      * Geocoding Provider 
      *
      * @var string
@@ -296,7 +296,7 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
     /**
      * How should we get geo code information if google map support needed
      *
-     * @var string
+     * @var string //NYSS
      */
     public $geocodeMethod    = '';
     

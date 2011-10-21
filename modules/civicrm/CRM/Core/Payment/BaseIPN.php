@@ -146,8 +146,8 @@ WHERE  contribution_id = %1 AND membership_id != %2";
                         $membership = new CRM_Member_DAO_Membership( );
                         $membership->id = $id;
                         if ( ! $membership->find( true ) ) {
-                            CRM_Core_Error::debug_log_message( "Could not find membership record: $membershipID" );
-                            echo "Failure: Could not find membership record: $membershipID<p>";
+                            CRM_Core_Error::debug_log_message( "Could not find membership record: $id" );
+                            echo "Failure: Could not find membership record: $id<p>";
                             return false;
                         }
                         $membership->join_date     = CRM_Utils_Date::isoToMysql( $membership->join_date      );
@@ -941,7 +941,12 @@ LIMIT 1;";
                             $url = $paymentObject->cancelSubscriptionURL( $membership->id, 'membership' );
                             $template->assign( 'cancelSubscriptionUrl', $url );
                         }
-                        CRM_Contribute_BAO_ContributionPage::sendMail( $ids['contact'], $values, $isTest, $returnMessageText );
+                        $result = CRM_Contribute_BAO_ContributionPage::sendMail( $ids['contact'], $values, 
+                                                                                 $isTest, $returnMessageText );
+                        if ( $returnMessageText ) {
+                            return $result;
+                        } // otherwise if its about sending emails, continue sending without return, as we
+                        // don't want to exit the loop.
                     }
                 }
             } else {

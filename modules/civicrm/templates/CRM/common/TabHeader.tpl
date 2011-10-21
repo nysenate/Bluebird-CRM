@@ -89,7 +89,7 @@ function stopSpinner( ) {
             },
             load: function(event, ui) {
             	stopSpinner();
-            	if (Drupal && Drupal.attachBehaviors) {
+            	if ((typeof(Drupal) != 'undefined') && Drupal.attachBehaviors) {
             	 Drupal.attachBehaviors(ui.panel);
             	}
             }

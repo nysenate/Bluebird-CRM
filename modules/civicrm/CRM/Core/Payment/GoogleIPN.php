@@ -175,7 +175,6 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
 
         if ( $contribution->invoice_id != $input['invoice'] ) {
             CRM_Core_Error::debug_log_message( "Invoice values dont match between database and IPN request" );
-            echo "Failure: Invoice values dont match between database and IPN request<p>";
             return;
         }
 
@@ -187,7 +186,6 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
         
         if ( $contribution->total_amount != $input['amount'] ) {
             CRM_Core_Error::debug_log_message( "Amount values dont match between database and IPN request" );
-            echo "Failure: Amount values dont match between database and IPN request<p>";
             return;
         }
 
@@ -212,7 +210,7 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
                     $ids['participant'] ;
             } else if ( $ids['membership'] ) {
                 $contribution->trxn_id = 
-                    $ids['membership'] . CRM_Core_DAO::VALUE_SEPARATOR .
+                    $ids['membership'][0] . CRM_Core_DAO::VALUE_SEPARATOR .
                     $ids['related_contact'] . CRM_Core_DAO::VALUE_SEPARATOR .
                     $ids['onbehalf_dupe_alert'];
             }
@@ -387,7 +385,7 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
      * @return array context of this call (test, module, payment processor id)
      * @static  
      */  
-    function getContext($privateData, $orderNo, $root, $response) {
+    function getContext($privateData, $orderNo, $root, $response, $serial) {
         require_once 'CRM/Contribute/DAO/Contribution.php';
 
         $contributionID   = $privateData['contributionID'];
@@ -400,7 +398,6 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
         if ( ! $contribution->find( true ) ) {
             CRM_Core_Error::debug_log_message( "getContext: Could not find contribution record with invoice id: $orderNo" );
             $response->SendAck($serial);
-            return;
         }
 
         $module = 'Contribute';
@@ -420,7 +417,6 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
             CRM_Core_Error::debug_log_message( "Contribution already handled (ContributionID = {$contribution->id})." );
             // There is no point in going further. Return ack so we don't receive the same ipn.
             $response->SendAck($serial);
-            return;
         }
 
         if ( $input['component'] == 'event' ) {
@@ -439,7 +435,6 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
             CRM_Core_Error::debug_log_message( "Payment processor could not be retrieved." );
             // There is no point in going further. Return ack so we don't receive the same ipn.
             $response->SendAck($serial);
-            return;
         }
 
         return array( $isTest, $input['component'], $ids['paymentProcessor'] );
@@ -487,7 +482,7 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
         
         // a dummy object to call get context and a parent function inside it.
         $ipn = new CRM_Core_Payment_GoogleIPN( $mode, $dummyProcessor );
-        list( $mode, $module, $paymentProcessorID ) = $ipn->getContext($privateData, $orderNo, $root, $response);
+        list( $mode, $module, $paymentProcessorID ) = $ipn->getContext($privateData, $orderNo, $root, $response, $serial);
         $mode = $mode ? 'test' : 'live';
 
         require_once 'CRM/Core/BAO/PaymentProcessor.php';
@@ -559,8 +554,10 @@ class CRM_Core_Payment_GoogleIPN extends CRM_Core_Payment_BaseIPN {
             switch($new_financial_state) {
 
             case 'CHARGEABLE':
-                $request->SendProcessOrder($data[$root]['google-order-number']['VALUE']);
-                $request->SendChargeOrder($data[$root]['google-order-number']['VALUE'],'');
+                // For google-handled subscriptions chargeorder needn't be initiated,
+                // assuming auto-charging is turned on.
+                //$request->SendProcessOrder($data[$root]['google-order-number']['VALUE']);
+                //$request->SendChargeOrder($data[$root]['google-order-number']['VALUE'],'');
                 break;
 
             case 'CHARGED':

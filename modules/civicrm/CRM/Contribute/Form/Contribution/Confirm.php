@@ -627,20 +627,23 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
             // if we find more than one contact, use the first one
             $contact_id  = CRM_Utils_Array::value( 0, $ids );
             
-            $greetingTypes = array( 'addressee'       => 'addressee_id', 
-                                    'email_greeting'  => 'email_greeting_id', 
-                                    'postal_greeting' => 'postal_greeting_id'
-                                    );
+            // CRM-8940 Do not reset greeting id's if we already have a contact
+            if ( ! $contact_id ) {
+                $greetingTypes = array( 'addressee'       => 'addressee_id', 
+                                        'email_greeting'  => 'email_greeting_id', 
+                                        'postal_greeting' => 'postal_greeting_id'
+                                        );
             
-            foreach( $greetingTypes  as $key => $value ) {
-                if( !array_key_exists( $key, $params ) ) {
-                    $defaultGreetingTypeId = CRM_Core_OptionGroup::values( $key, null, null, null, 
-                                                                           'AND is_default =1
-                                                                            AND (filter = 1 OR filter = 0 )',
-                                                                           'value' 
-                                                                           );
+                foreach( $greetingTypes  as $key => $value ) {
+                    if( !array_key_exists( $key, $params ) ) {
+                        $defaultGreetingTypeId = CRM_Core_OptionGroup::values( $key, null, null, null, 
+                                                                               'AND is_default =1
+                                                                                AND (filter = 1 OR filter = 0 )',
+                                                                               'value' 
+                                                                               );
                     
-                    $params[$key] = key( $defaultGreetingTypeId );
+                        $params[$key] = key( $defaultGreetingTypeId );
+                    }
                 }
             }
             
@@ -979,7 +982,7 @@ class CRM_Contribute_Form_Contribution_Confirm extends CRM_Contribute_Form_Contr
                                'contact_id'            => $contactID,
                                'contribution_type_id'  => $contributionType->id,
                                'contribution_page_id'  => $contributionPageId,
-                               'receive_date'          => ( CRM_Utils_Array::value( 'receive_date',  $params ) ) ? CRM_Utils_Date::processDate( $params['receive_date'], CRM_Utils_Array::value( 'receive_date_time', $params ) ) : date( 'YmdHis' ),
+                               'receive_date'          => ( CRM_Utils_Array::value( 'receive_date',  $params ) ) ? CRM_Utils_Date::processDate( $params['receive_date'] ) : date( 'YmdHis' ),
                                'non_deductible_amount' => $nonDeductibleAmount,
                                'total_amount'          => $params['amount'],
                                'amount_level'          => CRM_Utils_Array::value( 'amount_level', $params ),

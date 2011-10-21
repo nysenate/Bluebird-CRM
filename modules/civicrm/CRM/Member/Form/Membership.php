@@ -168,7 +168,11 @@ class CRM_Member_Form_Membership extends CRM_Member_Form
                         $renewUrl = CRM_Utils_System::url( 'civicrm/contact/view/membership',
                                                         "reset=1&action=renew&cid={$this->_contactID}&id={$hasMembership['id']}&context=membership&selectedChild=member" );
                     }
-                    CRM_Core_Session::setStatus( ts('This contact has an existing %1 membership record with %2 status and end date of %3. <a href="%4">Click here if you want to renew this membership</a> (rather than creating a new membership record). <a href="%5">Click here to view all existing and / or expired memberships for this contact.</a>', array( 1 => $hasMembership['membership_type'], 2 => $hasMembership['membership_status'], 3 => CRM_Utils_date::customformat($hasMembership['membership_end_date']), 4 => $renewUrl, 5 => $membershipTab ) ) );
+                    if ( $hasMembership['membership_end_date'] ) {
+                        CRM_Core_Session::setStatus( ts('This contact has an existing %1 membership record with %2 status and end date of %3. <a href="%4">Click here if you want to renew this membership</a> (rather than creating a new membership record). <a href="%5">Click here to view all existing and / or expired memberships for this contact.</a>', array( 1 => $hasMembership['membership_type'], 2 => $hasMembership['membership_status'], 3 => CRM_Utils_date::customformat($hasMembership['membership_end_date']), 4 => $renewUrl, 5 => $membershipTab ) ) );                        
+                    } else {
+                        CRM_Core_Session::setStatus( ts('This contact has an existing %1 membership record with %2 status. <a href="%3">Click here if you want to renew this membership</a> (rather than creating a new membership record). <a href="%4">Click here to view all existing and / or expired memberships for this contact.</a>', array( 1 => $hasMembership['membership_type'], 2 => $hasMembership['membership_status'], 3 => $renewUrl, 4 => $membershipTab ) ) );                        
+                    }
                 }
             }
         }
@@ -990,7 +994,6 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
                         'start_date',
                         'end_date',
                         'reminder_date',
-                        'receive_date'
                         );
         
         $calcDates = array( );
@@ -1269,7 +1272,7 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
                     $membershipTypeValues[$memType]['relate_contribution_id'] = $relateContribution;
                 }
 
-                $membershipParams = array_merge($params, $membershipTypeValues[$memType]);
+                $membershipParams = array_merge($membershipTypeValues[$memType],$params);
                 $membership = CRM_Member_BAO_Membership::create($membershipParams, $ids);
 
                 $createdMemberships[$memType] = $membership;
@@ -1358,12 +1361,16 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
         
         if ( !empty($lineItem) ) {
             foreach($lineItem[$priceSetId] as &$priceFieldOp) {
-                $priceFieldOp['start_date'] = CRM_Utils_Array::value('membership_type_id', $priceFieldOp) ?
-                    CRM_Utils_Date::customFormat($membershipTypeValues[$priceFieldOp['membership_type_id']]['start_date'], '%d%f %b, %Y') : '-';
-                $priceFieldOp['end_date'] = CRM_Utils_Array::value('membership_type_id', $priceFieldOp) ?
-                    CRM_Utils_Date::customFormat($membershipTypeValues[$priceFieldOp['membership_type_id']]['end_date'], '%d%f %b, %Y') : '-';
+                if ( CRM_Utils_Array::value( 'membership_type_id', $priceFieldOp) ) {
+                    $priceFieldOp['start_date'] = $membershipTypeValues[$priceFieldOp['membership_type_id']]['start_date'] ? CRM_Utils_Date::customFormat($membershipTypeValues[$priceFieldOp['membership_type_id']]['start_date'], '%d%f %b, %Y') : '-';
+                    
+                    $priceFieldOp['end_date'] = $membershipTypeValues[$priceFieldOp['membership_type_id']]['end_date'] ? CRM_Utils_Date::customFormat($membershipTypeValues[$priceFieldOp['membership_type_id']]['end_date'], '%d%f %b, %Y') : '-';
+                } else {
+                    $priceFieldOp['start_date'] = $priceFieldOp['end_date'] = 'N/A';
+                }
             }
         }
+      
         $this->assign( 'lineItem', !empty( $lineItem ) ? $lineItem : false );
 
         $receiptSend = false;
@@ -1438,7 +1445,7 @@ WHERE   id IN ( '. implode( ' , ', array_keys( $membershipType ) ) .' )';
             }
             $this->assign( 'module', 'Membership' );
             $this->assign( 'contactID', $this->_contactID );
-            $this->assign( 'membershipID', CRM_Utils_Array::value('membership_id', $params) );
+            $this->assign( 'membershipID', CRM_Utils_Array::value('membership_id', $params,CRM_Utils_Array::value('membership_id',$this->_defaultValues)));
             $this->assign( 'contributionID', isset($contribution)? $contribution->id : null );
             $this->assign('receiptType', 'membership signup');
             $this->assign( 'receive_date', CRM_Utils_Array::value('receive_date', $params) );            
