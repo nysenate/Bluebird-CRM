@@ -1,5 +1,5 @@
 <?php 
-if ($_POST['set_JobID']) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
+if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
 ?>
 
 <?php // $Id: page.tpl.php,v 1.15.4.7 2008/12/23 03:40:02 designerbrent Exp $ ?>

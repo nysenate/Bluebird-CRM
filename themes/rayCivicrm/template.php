@@ -25,7 +25,7 @@ function rayCivicrm_preprocess_page(&$vars) {
   if (!module_exists('page_title')) {
     // Fixup the $head_title and $title vars to display better.
     $title = drupal_get_title();
-    $headers = drupal_set_header();
+    $headers = implode(',', drupal_set_header()); //LCD
     
     // wrap taxonomy listing pages in quotes and prefix with topic
     if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
