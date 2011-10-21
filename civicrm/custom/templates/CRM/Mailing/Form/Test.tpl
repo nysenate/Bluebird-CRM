@@ -75,7 +75,7 @@
 <script type="text/javascript">
 cj(function() {
    cj().crmaccordions();
-   cj('iframe').iframeAutoHeight({heightOffset: 20}); 
+   $('iframe').iframeAutoHeight({heightOffset: 20}); 
 });
 </script>
 {/literal}
