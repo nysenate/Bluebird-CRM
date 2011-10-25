@@ -1100,6 +1100,10 @@ ul.token-input-list-facebook { width:265px;}
 	font-weight:bold;
 	padding:4px;
 }
+#crm-container div#contactTopBar {
+	clear: both;
+	float: none;
+}
 #crm-container #customData1 .custom_field-row td {
 	padding-bottom: 8px;
 }
