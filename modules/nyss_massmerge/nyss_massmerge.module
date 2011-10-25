@@ -5,7 +5,7 @@ define('NYSSDEDUPEDEBUG',TRUE);
 
 include ('nyss_massmerge_definitions.inc');
 
-civicrm_initialize();
+//civicrm_initialize();
 require_once('CRM/Dedupe/Finder.php');
 require_once('CRM/Core/Permission.php');
 
