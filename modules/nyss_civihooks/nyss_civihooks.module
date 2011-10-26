@@ -252,13 +252,27 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
 		$defaults['fields[bounce_reason]'] = 1;
 		$form->setDefaults( $defaults );
+		
+		//4388
+		$keepOptions = array( 'Syntax', 'Invalid' );
+		$bounceType  =& $form->getElement('bounce_type_name_value');
+		$typeOptions =& $bounceType->_options;
+		
+		foreach ( $typeOptions as $key => $option ) {
+			if ( !in_array( $option['text'], $keepOptions ) ) {
+				unset($typeOptions[$key]);
+			}
+		}
+		
+		//CRM_Core_Error::debug('bounceType',$bounceType);
+		//CRM_Core_Error::debug($form);
 	}
 	
 	//3674 add limit submit js to all submit buttons
 	if ( isset( $form->_elementIndex['buttons'] ) ) {
-		$buttons =& $form->getElement( 'buttons' );
-		$formID = $form->_attributes['id'];
-		$formAction = $form->_attributes['action'];
+		$buttons    =& $form->getElement( 'buttons' );
+		$formID     =  $form->_attributes['id'];
+		$formAction =  $form->_attributes['action'];
 		
 		//handle case add form differently as buttons element is constructed twice due to embedded form
 		if ( $formID == 'Case' && $formAction == '/civicrm/case/add' ) {
@@ -272,6 +286,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 								  '_qf_PDF_submit',
 								  '_qf_PDF_cancel',
 								  '_qf_Contact_upload_view', //handle separately
+								  '_qf_Relationship_upload', //4414
 								 );
 		$btnExcludeValue = array( 'PDF', 
 		                          'Print Contact List',

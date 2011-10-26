@@ -303,22 +303,44 @@ function highlightTabs( ) {
 //NYSS 3527 - set comm preferences
 function processDeceased( ) {
 	if ( cj("#is_deceased").is(':checked') ) {
-		document.getElementById('privacy[do_not_phone]').checked = true;
-		document.getElementById('privacy[do_not_email]').checked = true;
-		document.getElementById('privacy[do_not_mail]').checked  = true;
-		document.getElementById('privacy[do_not_sms]').checked   = true;
-		document.getElementById('is_opt_out').checked            = true;
-		document.getElementById('preferred_communication_method[1]').checked = false;
-		document.getElementById('preferred_communication_method[2]').checked = false;
-		document.getElementById('preferred_communication_method[3]').checked = false;
-		document.getElementById('preferred_communication_method[4]').checked = false;
-		document.getElementById('preferred_communication_method[5]').checked = false;
+		document.getElementById('privacy[do_not_phone]').checked  = true;
+		document.getElementById('privacy[do_not_phone]').disabled = true;
+		document.getElementById('privacy[do_not_email]').checked  = true;
+		document.getElementById('privacy[do_not_email]').disabled = true;
+		document.getElementById('privacy[do_not_mail]').checked   = true;
+		document.getElementById('privacy[do_not_mail]').disabled  = true;
+		document.getElementById('privacy[do_not_sms]').checked    = true;
+		document.getElementById('privacy[do_not_sms]').disabled   = true;
+		document.getElementById('is_opt_out').checked             = true;
+		document.getElementById('is_opt_out').disabled            = true;
+		
+		document.getElementById('preferred_communication_method[1]').checked  = false;
+		document.getElementById('preferred_communication_method[1]').disabled = true;
+		document.getElementById('preferred_communication_method[2]').checked  = false;
+		document.getElementById('preferred_communication_method[2]').disabled = true;
+		document.getElementById('preferred_communication_method[3]').checked  = false;
+		document.getElementById('preferred_communication_method[3]').disabled = true;
+		document.getElementById('preferred_communication_method[4]').checked  = false;
+		document.getElementById('preferred_communication_method[4]').disabled = true;
+		document.getElementById('preferred_communication_method[5]').checked  = false;
+		document.getElementById('preferred_communication_method[5]').disabled = true;
     } else {
 		document.getElementById('privacy[do_not_phone]').checked = false;
 		document.getElementById('privacy[do_not_email]').checked = false;
 		document.getElementById('privacy[do_not_mail]').checked  = false;
 		document.getElementById('privacy[do_not_sms]').checked   = false;
 		document.getElementById('is_opt_out').checked            = false;
+		
+		document.getElementById('privacy[do_not_phone]').disabled = false;
+		document.getElementById('privacy[do_not_email]').disabled = false;
+		document.getElementById('privacy[do_not_mail]').disabled  = false;
+		document.getElementById('privacy[do_not_sms]').disabled   = false;
+		document.getElementById('is_opt_out').disabled            = false;
+		document.getElementById('preferred_communication_method[1]').disabled = false;
+		document.getElementById('preferred_communication_method[2]').disabled = false;
+		document.getElementById('preferred_communication_method[3]').disabled = false;
+		document.getElementById('preferred_communication_method[4]').disabled = false;
+		document.getElementById('preferred_communication_method[5]').disabled = false;
     }
 }
  
