@@ -109,7 +109,7 @@ class CRM_Report_Form_Instance {
                     $user_roles[$value] = $value;
                 }
                 $form->addElement( 'advmultiselect',
-                                   'selectGroupRole',
+                                   'grouprole',
                                    ts( 'ACL Group/Role' ),
                                    $user_roles,
                                    array('size' => 5,
@@ -197,6 +197,14 @@ class CRM_Report_Form_Instance {
                     $form->_navigation['parent_id'] = $navigationDefaults['parent_id'];
                 }
             }
+            //NYSS
+            if ( CRM_Utils_Array::value( 'grouprole', $defaults ) ) {
+                foreach ( explode( CRM_Core_DAO::VALUE_SEPARATOR , $defaults['grouprole'] ) as $value ){
+                    $grouproles[] = $value;
+                }
+                $defaults['grouprole'] = $grouproles;
+            }
+
         } else {
             $defaults['description'] = $form->_description;
         }
@@ -231,9 +239,8 @@ class CRM_Report_Form_Instance {
         }
 
         //NYSS 3439 convert roles array to string
-		$params['grouprole'] = '';
-		if ( is_array($params['selectGroupRole']) ) {
-            foreach ($params['selectGroupRole'] as $key=>$value) {
+        if ( is_array($params['grouprole']) ) {
+            foreach ($params['grouprole'] as $key=>$value) {
                 $grouprole_array[$value] = $value;
             }
             $params['grouprole'] = implode( CRM_Core_DAO::VALUE_SEPARATOR,

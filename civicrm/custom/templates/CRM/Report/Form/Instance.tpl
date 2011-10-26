@@ -80,8 +80,8 @@
         </tr>
         {*NYSS 3439*}
         <tr class="crm-report-instanceForm-form-block-role">
-            <td class="report-label" width="20%">{$form.selectGroupRole.label}</td>
-            <td>{$form.selectGroupRole.html|crmReplace:class:huge}</td>
+            <td class="report-label" width="20%">{$form.grouprole.label}</td>
+            <td>{$form.grouprole.html|crmReplace:class:huge}</td>
         </tr>
     {/if}
     <tr class="crm-report-instanceForm-form-block-addToDashboard">
