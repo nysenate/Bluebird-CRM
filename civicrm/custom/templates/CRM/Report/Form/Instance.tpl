@@ -78,6 +78,11 @@
             <td class="report-label" width="20%">{$form.permission.label} {help id="id-report_perms" file="CRM/Report/Form/Settings.hlp"}</td>
             <td>{$form.permission.html|crmReplace:class:huge}</td>
         </tr>
+        {*NYSS 3439*}
+        <tr class="crm-report-instanceForm-form-block-role">
+            <td class="report-label" width="20%">{$form.selectGroupRole.label}</td>
+            <td>{$form.selectGroupRole.html|crmReplace:class:huge}</td>
+        </tr>
     {/if}
     <tr class="crm-report-instanceForm-form-block-addToDashboard">
 	    <td class="report-label">{$form.addToDashboard.label} {help id="id-dash_avail" file="CRM/Report/Form/Settings.hlp"}</td>

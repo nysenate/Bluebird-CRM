@@ -51,6 +51,10 @@ SET is_active = 0
 WHERE label = 'New Price Set' OR label = 'Manage Price Sets';"
 $execSql -i $instance -c "$nav"
 
+## 3439 report permissions by role
+rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
+$execSql -i $instance -c "$rpt"
+
 
 ### Cleanup ###
 
