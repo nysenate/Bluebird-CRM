@@ -16,11 +16,12 @@ readConfig=$script_dir/readConfig.sh
 rebuildCache=$script_dir/rebuildCachedValues.sh
 force_ok=0
 dry_run=0
+verbose=0
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--dry-run] [--ok] instanceName" >&2
+  echo "Usage: $prog [--dry-run] [--verbose] [--ok] instanceName" >&2
 }
 
 
@@ -33,6 +34,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --ok) force_ok=1 ;;
     -n|--dry-run) dry_run=1 ;;
+    -v|--verbose) verbose=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -91,7 +93,7 @@ if [ $cnt4 -gt 0 ]; then
     else
       echo "Skipping update for $cnt4 addresses" >&2
     fi
-  else
+  elif [ $verbose -eq 1 ]; then
     echo "Invalid e-mail addresses that are on hold:"
     sql="select email from civicrm_email where $condinvalidinactive order by email;"
     $execSql -q -i $instance -c "$sql" || exit 1
