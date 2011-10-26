@@ -239,7 +239,7 @@ class CRM_Report_Form_Instance {
             $params['grouprole'] = implode( CRM_Core_DAO::VALUE_SEPARATOR,
                                             array_keys($grouprole_array) );
         }
-		
+
         // add to dashboard
         $dashletParams = array( );
         if ( CRM_Utils_Array::value( 'addToDashboard', $params ) ) {
@@ -258,8 +258,11 @@ class CRM_Report_Form_Instance {
         $dao->copyValues( $params );
 
         if ( $config->userFramework == 'Joomla' ) {
-            $dao->permission = NULL;
+            $dao->permission = 'null';
         }
+
+        //NYSS
+        if ( empty($params['grouprole']) ) $dao->grouprole = 'null';
 
         // unset all the params that we use
         $fields = array( 'title', 'to_emails', 'cc_emails', 'header', 'footer',
