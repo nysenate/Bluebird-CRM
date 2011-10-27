@@ -38,6 +38,12 @@
 <p>If a contact unsubscribes via the unsubscription link in this mailing, they will be unsubscribed from this group.  If they are already in the group, then they will be removed.  If the contact is not yet in this group, they will first be added and then unsubscribed</p>
 <p>Contacts who are in the Unsubscription Group but do not match your search critera will not be included in the mailing.  If you wish to include these contacts please include the group using the form below</p>
 {/htxt}
+{*NYSS*}
+{htxt id="dedupe-email"}
+<p>CiviCRM will always dedupe your mailing based on unique contact records. For example, if a contact is in three of the groups you are including in your mailing, they will only be sent one copy of the email.</p>
+<p>However, if the same email is used for multiple contacts, that email address will receive multiple copies of the email -- one for each contact using that address.</p>
+<p>Selecting this option will ensure only one email is sent to each address. Note that when using this option and including contact tokens in your email content, the email with it's respective tokens will only be created for one of the matching contacts.</p>
+{/htxt}
 
 {htxt id="include-groups"}
 <p>{ts}Determine the contacts in your database who should receive this mailing by first selecting one or more <strong>Included Groups</strong>. (Groups must be assigned the <strong>Mailing List</strong> type to be available on this screen - you can update this for an existing group from <strong>Manage Groups &raquo; Settings</strong>.){/ts}</p>
