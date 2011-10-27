@@ -117,7 +117,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
     // and does not play a role in the queries generated
     function &getRecipients($job_id, $mailing_id = null,
                             $offset = NULL, $limit = NULL,
-                            $storeRecipients = false) 
+                            $storeRecipients = false, $dedupe_email = false) //NYSS 
     {
         $mailingGroup = new CRM_Mailing_DAO_Group();
         
@@ -134,6 +134,12 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
         require_once 'CRM/Contact/DAO/Group.php';
         $group      = CRM_Contact_DAO_Group::getTableName();
         $g2contact  = CRM_Contact_DAO_GroupContact::getTableName();
+
+        //NYSS
+        $groupBy = '';
+        if ( $dedupe_email ) {
+            $groupBy = " GROUP BY $email.email ";
+        }
       
         /* Create a temp table for contact exclusion */
         $mailingGroup->query(
@@ -250,10 +256,13 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $contact.is_opt_out = 0
                         AND             $contact.is_deceased = 0
                         AND            ($email.is_bulkmail = 1 OR $email.is_primary = 1)
+                        AND             $email.email IS NOT NULL
+                        AND             $email.email != ''
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    ORDER BY $email.is_bulkmail";
+                    $groupBy
+                    ORDER BY $email.is_bulkmail"; //NYSS
         $mailingGroup->query($query);
 
 
@@ -282,7 +291,8 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    ORDER BY $email.is_bulkmail");
+                    $groupBy
+                    ORDER BY $email.is_bulkmail");//NYSS
 
         
         $sql = "
@@ -369,7 +379,8 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    ORDER BY $email.is_bulkmail";
+                    $groupBy
+                    ORDER BY $email.is_bulkmail"; //NYSS
         $mailingGroup->query($query);
                     
         /* Get the emails with full override */
@@ -398,7 +409,8 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    ORDER BY $email.is_bulkmail");
+                    $groupBy
+                    ORDER BY $email.is_bulkmail"); //NYSS
                         
         $results = array();
 

@@ -55,6 +55,9 @@ $execSql -i $instance -c "$nav"
 rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
 $execSql -i $instance -c "$rpt"
 
+## 4219
+maildedupe="ALTER TABLE civicrm_mailing ADD dedupe_email TINYINT( 4 ) NULL ;"
+$execSql -i $instance -c "$maildedupe"
 
 ### Cleanup ###
 
