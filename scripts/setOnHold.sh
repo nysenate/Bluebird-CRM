@@ -64,6 +64,7 @@ selecnt="select count(*) from civicrm_email e, $tmpetab t"
 emailchk="e.email = t.email"
 bulkchk="and e.is_bulkmail = 1"
 primchk="and e.is_primary = 1"
+holdchk="and e.on_hold = 0"
 
 echo "Counting total matching e-mails" >&2
 sql="$selecnt where $emailchk;"
@@ -74,12 +75,17 @@ ecnt2=`$execSql -q -i $instance -c "$sql"`
 echo "Counting total matching primary e-mails" >&2
 sql="$selecnt where $emailchk $primchk;"
 ecnt3=`$execSql -q -i $instance -c "$sql"`
+echo "Counting total matching e-mails that are not on hold" >&2
+sql="$selecnt where $emailchk $holdchk;"
+ecnt4=`$execSql -q -i $instance -c "$sql"`
+
 
 echo "Total matching e-mail records: $ecnt1" >&2
 echo "[Matching e-mail records marked BULK: $ecnt2]" >&2
 echo "[Matching e-mail records marked PRIMARY: $ecnt3]" >&2
+echo "Matching e-mail records that are not ON-HOLD: $ecnt4" >&2
 
-if [ $ecnt1 -gt 0 -a $dry_run -eq 0 ]; then
+if [ $ecnt4 -gt 0 -a $dry_run -eq 0 ]; then
   do_update=1
   if [ $force_ok -eq 0 ]; then
     echo -n "Proceed with clean-up operation (N/y)? "
@@ -91,11 +97,11 @@ if [ $ecnt1 -gt 0 -a $dry_run -eq 0 ]; then
   fi
 
   if [ $do_update -eq 1 ]; then
-    echo "Activating on-hold status for $ecnt1 e-mail addresses" >&2
-    sql="update civicrm_email e, $tmpetab t set e.on_hold=1 where $emailchk;"
+    echo "Activating on-hold status for $ecnt4 e-mail addresses" >&2
+    sql="update civicrm_email e, $tmpetab t set e.on_hold=1 where $emailchk $holdchk;"
     $execSql -q -i $instance -c "$sql" || exit 1
   else
-    echo "Skipping update of on-hold status for $ecnt1 contacts" >&2
+    echo "Skipping update of on-hold status for $ecnt4 contacts" >&2
   fi
 
 fi
