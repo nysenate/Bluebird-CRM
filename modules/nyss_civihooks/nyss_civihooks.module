@@ -76,8 +76,9 @@ function nyss_civihooks_civicrm_contactListQuery( &$query, $name, $context, $id 
 	//office staff group ID to use for activity assignees and case roles
 	$groupID = '3';
 	
-	//LCD - limit activity assignees to office staff group
-    if ( $context == 'activity_assignee' && $groupID ) {
+	//limit activity assignees to office staff group
+    if ( ( $context == 'activity_assignee' || $context == 'case_activity_assignee' ) && 
+	     $groupID ) {
 
 		//echo $query;
 		$query = "

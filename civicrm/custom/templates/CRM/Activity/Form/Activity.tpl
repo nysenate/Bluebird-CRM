@@ -74,11 +74,8 @@
     {literal}
 
     var sourceDataUrl = "{/literal}{$dataUrl}{literal}";
-    var tokenDataUrl  = "{/literal}{$tokenUrl}{literal}";
     var tokenDataUrl_target  = "{/literal}{$tokenUrl}&context=activity_target{literal}";
     var tokenDataUrl_assignee  = "{/literal}{$tokenUrl}&context=activity_assignee{literal}";
-    //var assigneeDataUrl  = "{/literal}{crmURL p='civicrm/ajax/rest?fnName=civicrm/contact/search&json=1&return[contact_id]&group=3&context=activity_assignee'}{literal}";
-    
     var hintText = "{/literal}{ts}Type in a partial or complete name of an existing contact.{/ts}{literal}";
     cj( "#target_contact_id"  ).tokenInput( tokenDataUrl_target,   { prePopulate: target_contact,   theme: 'facebook', hintText: hintText });
     cj( "#assignee_contact_id").tokenInput( tokenDataUrl_assignee, { prePopulate: assignee_contact, theme: 'facebook', hintText: hintText });
