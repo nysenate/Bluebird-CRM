@@ -51,6 +51,13 @@ SET is_active = 0
 WHERE label = 'New Price Set' OR label = 'Manage Price Sets';"
 $execSql -i $instance -c "$nav"
 
+## 3439 report permissions by role
+rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
+$execSql -i $instance -c "$rpt"
+
+## 4219
+maildedupe="ALTER TABLE civicrm_mailing ADD dedupe_email TINYINT( 4 ) NULL ;"
+$execSql -i $instance -c "$maildedupe"
 
 ### Cleanup ###
 
