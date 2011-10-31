@@ -261,8 +261,7 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail"; //NYSS
+                    ORDER BY $email.is_bulkmail";
         $mailingGroup->query($query);
 
 
@@ -291,8 +290,7 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail");//NYSS
+                    ORDER BY $email.is_bulkmail");
 
         
         $sql = "
@@ -379,8 +377,7 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail"; //NYSS
+                    ORDER BY $email.is_bulkmail";
         $mailingGroup->query($query);
                     
         /* Get the emails with full override */
@@ -409,8 +406,7 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail"); //NYSS
+                    ORDER BY $email.is_bulkmail");
                         
         $results = array();
 
@@ -433,28 +429,28 @@ WHERE  mailing_id = %1
 ";
             $params = array( 1 => array( $mailing_id, 'Integer' ) );
             CRM_Core_DAO::executeQuery( $sql, $params );
+			
+			//NYSS CRM-3975
+            $groupBy = $groupJoin = '';
+            if ( $dedupeEmail ) {
+                $groupJoin = " INNER JOIN civicrm_email e ON e.email_id = i.email_id";
+                $groupBy = " GROUP BY e.email ";
+            }
 
-            $sql = "
+            //NYSS 4219
+			$sql = "
 INSERT INTO civicrm_mailing_recipients ( mailing_id, contact_id, email_id )
 SELECT %1, i.contact_id, i.email_id
 FROM       civicrm_contact contact_a
 INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
-           {$aclFrom}
+           $groupJoin
+		   {$aclFrom}
            {$aclWhere}
+		   $groupBy
 ORDER BY   i.contact_id, i.email_id
 ";
             CRM_Core_DAO::executeQuery( $sql, $params );
         }
-
-        $eq->query("
-SELECT     i.contact_id, i.email_id 
-FROM       civicrm_contact contact_a
-INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
-           {$aclFrom}
-           {$aclWhere}
-ORDER BY   i.contact_id, i.email_id
-           $limitString
-");
 
         /* Delete the temp table */
         $mailingGroup->reset();

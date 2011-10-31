@@ -495,6 +495,7 @@ class CRM_Mailing_DAO_Mailing extends CRM_Core_DAO
                     'type' => CRM_Utils_Type::T_INT,
                     'FKClassName' => 'CRM_Campaign_DAO_Campaign',
                 ) ,
+                //NYSS
                 'dedupe_email' => array(
                     'name' => 'dedupe_email',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
