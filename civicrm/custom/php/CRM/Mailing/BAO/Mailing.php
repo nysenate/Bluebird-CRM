@@ -117,7 +117,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
     // and does not play a role in the queries generated
     function &getRecipients($job_id, $mailing_id = null,
                             $offset = NULL, $limit = NULL,
-                            $storeRecipients = false, $dedupe_email = false) //NYSS 
+                            $storeRecipients = false, $dedupeEmail = false) //NYSS 
     {
         $mailingGroup = new CRM_Mailing_DAO_Group();
         
@@ -135,12 +135,6 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
         $group      = CRM_Contact_DAO_Group::getTableName();
         $g2contact  = CRM_Contact_DAO_GroupContact::getTableName();
 
-        //NYSS
-        $groupBy = '';
-        if ( $dedupe_email ) {
-            $groupBy = " GROUP BY $email.email ";
-        }
-      
         /* Create a temp table for contact exclusion */
         $mailingGroup->query(
             "CREATE TEMPORARY TABLE X_$job_id 
@@ -433,7 +427,7 @@ WHERE  mailing_id = %1
 			//NYSS CRM-3975
             $groupBy = $groupJoin = '';
             if ( $dedupeEmail ) {
-                $groupJoin = " INNER JOIN civicrm_email e ON e.email_id = i.email_id";
+                $groupJoin = " INNER JOIN civicrm_email e ON e.id = i.email_id";
                 $groupBy = " GROUP BY e.email ";
             }
 
