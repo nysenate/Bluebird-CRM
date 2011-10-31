@@ -1048,7 +1048,8 @@ SELECT $select
                         } else {
                             $timeElement = $elementName . '_time';
                             if ( substr( $elementName, -1 ) == ']' ) { 
-                                $timeElement = substr( $elementName, 0, $$elementName.length - 1).'_time]';
+                                //NYSS - The element name must remain quoted after adding time
+                                $timeElement = substr( $elementName, 0, strlen($elementName) - 2)."_time']";
                             }
                             list( $defaults[$elementName], $defaults[ $timeElement ] ) = 
                             CRM_Utils_Date::setDateDefaults( $value, null, $field['date_format'], $field['time_format'] );

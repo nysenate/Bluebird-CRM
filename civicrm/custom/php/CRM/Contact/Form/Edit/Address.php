@@ -96,6 +96,8 @@ class CRM_Contact_Form_Edit_Address
         $addressOptions = CRM_Core_BAO_Preferences::valueOptions( 'address_options', true, null, true );
         $attributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_Address');
         
+        //NYSS - we removed county_id from fields, so its not always present now...
+        require_once 'CRM/Utils/Array.php';
         $elements = array( 
                           'address_name'           => array( ts('Address Name')      ,  $attributes['address_name'], null ),
                           'street_address'         => array( ts('Street Address')    ,  $attributes['street_address'], null ),
@@ -104,7 +106,7 @@ class CRM_Contact_Form_Edit_Address
                           'city'                   => array( ts('City')              ,  $attributes['city'] , null ),
                           'postal_code'            => array( ts('Zip / Postal Code') ,  array_merge($attributes['postal_code'], array( 'class' => 'crm_postal_code' ) ), null ),
                           'postal_code_suffix'     => array( ts('Postal Code Suffix'),  array( 'size' => 4, 'maxlength' => 12, 'class' => 'crm_postal_code_suffix' ), null ),
-                          'county_id'              => array( ts('County')            ,  $attributes['county_id'], null ),
+                          'county_id'              => array( ts('County')            ,  CRM_Utils_Array::value('county_id',$attributes), null ),
                           'state_province_id'      => array( ts('State / Province')  ,  $attributes['state_province_id'],null ),
                           'country_id'             => array( ts('Country')           ,  $attributes['country_id'], null ), 
                           'geo_code_1'             => array( ts('Latitude') ,  array( 'size' => 9, 'maxlength' => 11 ), null ),
@@ -207,8 +209,10 @@ class CRM_Contact_Form_Edit_Address
             foreach ( $groupTree as $id => $group ) { 
                 foreach ( $group['fields'] as $fldId => $field ) {
                     $groupTree[$id]['fields'][$fldId]['element_custom_name'] = $field['element_name'];
+
+                    //NYSS - The field element name must be quoted for valid PHP
                     $groupTree[$id]['fields'][$fldId]['element_name'] = 
-                        "address[$blockId][{$field['element_name']}]";
+                        "address[$blockId]['{$field['element_name']}']";
                 }
             }
             $defaults = array( );
