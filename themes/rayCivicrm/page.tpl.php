@@ -1,4 +1,4 @@
-<?php 
+<?php
 if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['jobID'] = $_POST['set_JobID'];
 ?>
 
@@ -16,26 +16,26 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
   <!--[if lte IE 8]>
     <?php /*?><link rel="stylesheet" href="<?php print $path; ?>blueprint/blueprint/ie.css" type="text/css" media="screen, projection"><?php */?>
   	<link href="<?php print $path; ?>css/ie.css" rel="stylesheet"  type="text/css"  media="screen, projection" />
-  <![endif]-->  
+  <![endif]-->
   <!--[if lte IE 6]>
   	<link href="<?php print $path; ?>css/ie6.css" rel="stylesheet"  type="text/css"  media="screen, projection" />
   <![endif]-->
 
   <?php print $scripts ?>
-    
+
 </head>
 
-<?php 
+<?php
 	$rolesList = implode(', ',$user->roles);
 	$role = str_replace('authenticated user, ','', $rolesList).'&nbsp;';
 ?>
 
 <body class="<?php print $body_classes;?><?php print 'role-'.$role;?>">
 <?php //print_r($_SESSION); ?>
-<?php if ($user->uid && arg(0) == 'civicrm') { ?> 
+<?php if ($user->uid && arg(0) == 'civicrm') { ?>
  <?php if ($footer): ?>
       <div id="footer-bg"></div>
-      <?php if ($user->uid) { ?> 
+      <?php if ($user->uid) { ?>
     <?php if ($footer_message | $footer): ?>
       <div id="footer" class="clear span-24">
       	<div id="dashboard-link-wrapper">
@@ -51,7 +51,7 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
     <?php endif; ?>
   </div>
 <?php } ?>
-      
+
  <?php endif; ?>
 <?php } ?>
 <div class="container">
@@ -61,11 +61,11 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
    		<div id="messages">
    		 <?php print $messages; ?>
    		 </div>
-   		 
+
        <?php } ?>
        </div>
    </div>
-  
+
 
   <div id="header">
    <!-- <h1 id="logo">
@@ -77,27 +77,27 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
     <?php endif; ?>
     <?php if (isset($secondary_links)) : ?>
       <?php print theme('links', $secondary_links, array('id' => 'subnav', 'class' => 'links')) ?>
-    <?php endif; ?>    
+    <?php endif; ?>
   </div>
 
   <?php if ($left): ?>
     <div class="<?php print $left_classes; ?>"><?php print $left; ?></div>
   <?php endif ?>
-  <?php 
+  <?php
   if ($head_title != '' && arg(0) != 'civicrm' && $user->uid) {
   		$quickTitle = explode("|", $head_title);
         print '<a href="/" style="float:right;"> &raquo; back to Bluebird</a><h2><a href="/">'. $quickTitle[0] .'</a></h2> ';
-      }   
- ?> 
+      }
+ ?>
   <div class="clear span-24 main-container <?php if (arg(0) != 'civicrm') {?>standard-container<?php } ?>">
   <div id="breadcrumb"><?php print $breadcrumb; ?></div>
   <?php if ($user->uid && arg(0) == 'civicrm') { ?>
   	<div id="edit-profile">
     <?php /*?><a href="<?php print base_path(); ?>user/<?php print $user->uid; ?>/edit">
-  		<div class="icon settings-icon"></div>Update your Profile 
+  		<div class="icon settings-icon"></div>Update your Profile
   	</a><?php */?> <!--#2288-->
   		<a href="<?php print base_path(); ?>logout" class="logout">
-  			<div class="icon logout-icon"></div> Logout 
+  			<div class="icon logout-icon"></div> Logout
   		</a>
         <div class="sitedetails"><div class="icon key-icon"></div><span> <?php echo $role; ?> </span></div>
         <?php $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) ); ?>
@@ -118,7 +118,7 @@ $now = time() + (60 * 60 * $offset);
 	}elseif(date("G", $now) >= "12" && date("G", $now) <= "17"){ echo $afternoon;
 	}elseif(date("G", $now) >= "18" && date("G", $now) <= "20"){ echo $evening;
 	}else{ echo $night; }
-			
+
 ?>,
   			</div>
   			<div class="user-name">
@@ -131,17 +131,17 @@ $now = time() + (60 * 60 * $offset);
 					require_once "api/v2/UFGroup.php";
 					$uid = $user->uid;
 					$contactid = civicrm_uf_match_id_get( $uid );
-					
+
 					require_once "api/v2/Contact.php";
 					$params = array( 'contact_id' => $contactid );
 					$contactrecord = civicrm_contact_get( $params );
 					echo $contactrecord[$contactid]['first_name'];
 				?>
-                
+
   			</div>
   		</div>
   	</div>
-    <?php 
+    <?php
 	$job_roles = array( 'Superuser', 'SOS', 'Administrator' );
 	$jobuser = 0;
 	foreach ( $user->roles as $user_role ) {
@@ -149,27 +149,27 @@ $now = time() + (60 * 60 * $offset);
 	}
 	if ( $jobuser ) { ?>
     	<div class="sos_job">
-    	    [<?php if ( $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
+    	    [<?php if ( isset($_SESSION['CiviCRM']['jobID']) and $_SESSION['CiviCRM']['jobID'] ) { echo 'Job ID: '.$_SESSION['CiviCRM']['jobID'].' // '; } ?>
         	<a href="#" class="setJob" title="Set SOS JobID" onclick="setJobID( );return false;">Set Job#</a>]
         </div>
     <?php } ?>
-    
+
   	<?php } ?>
-  	
+
     <?php
 
       if ($tabs != '') {
         print '<div class="tabs">'. $tabs .'</div>';
-      }         
+      }
 
-      print $help; // Drupal already wraps this one in a class      
+      print $help; // Drupal already wraps this one in a class
       ?>
      <!-- <div class="crm-title">
 		<h1 class="title"><?php print $title; ?></h1>
       </div> -->
-    <?php 
+    <?php
       print $content;
-      
+
       print $feed_icons;
     ?>
     <script>
@@ -209,7 +209,7 @@ function setJobID( ) {
 		bgiframe: true,
 		overlay: { opacity: 0.5, background: "black" },
 		beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
-		buttons: { "Set ID": function() { $("#formSetJob").submit(); cj(this).dialog("close"); }}	
+		buttons: { "Set ID": function() { $("#formSetJob").submit(); cj(this).dialog("close"); }}
 	})
 }
 </script>
