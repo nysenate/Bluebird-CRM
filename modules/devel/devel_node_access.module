@@ -455,6 +455,9 @@ function devel_node_access_block($op = 'list', $delta = 0) {
             $tr = 't';
             array_shift($nids);  // remove the 0
             $accounts = array();
+            if (!isset($user->name)) {
+              $user->name = '';
+            }
             $variables += array(
               '!username' => theme('username', $user),
               '%uid' => $user->uid,

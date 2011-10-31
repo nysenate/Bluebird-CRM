@@ -18,7 +18,7 @@ function devel_drush_command() {
   $items['devel-reinstall'] = array(
     'description' => dt('Disable, Uninstall, and Install a list of projects.'),
     'arguments' => array(
-      'path' => dt('A space separated list of project names.'),
+      'projects' => dt('A space-separated list of project names.'),
     ),
     'aliases' => array('dre'),
   );
@@ -51,19 +51,6 @@ function devel_drush_command() {
   );
   return $items;
 }
-
-/**
- * Implementation of hook_drush_help().
- */
-function devel_drush_help($section) {
-  switch ($section) {
-    case 'drush:devel-reinstall':
-      return dt('Disable, Uninstall, and Install a list of projects.');
-    case 'drush:devel-download':
-      return dt("Downloads the FirePHP library from http://firephp.org/. Places it in the devel module directory. Skips download if library already present. This all happens automatically if you enable devel using drush.");
-  }
-}
-
 
 /**
  * A command callback. This is faster than 3 separate bootstraps.
@@ -102,11 +89,11 @@ function drush_devel_download() {
   if (is_dir($path)) {
     drush_log('FirePHP already present. No download required.', 'ok');
   }
-  elseif (drush_shell_exec('svn checkout http://firephp.googlecode.com/svn/branches/Library-FirePHPCore-0.3 ' . $path)) {
-    drush_log(dt('FirePHP has been checked out via svn to @path.', array('@path' => $path)), 'success');
+  elseif (drush_shell_exec('svn export http://firephp.googlecode.com/svn/branches/Library-FirePHPCore-0.3 ' . $path)) {
+    drush_log(dt('FirePHP has been exported via svn to @path.', array('@path' => $path)), 'success');
   }
   else {
-    drush_log(dt('Drush was unable to checkout FirePHP to @path.', array('@path' => $path)), 'error');
+    drush_log(dt('Drush was unable to export FirePHP to @path.', array('@path' => $path)), 'error');
   }
 }
 
@@ -114,8 +101,13 @@ function drush_devel_download() {
  * Implements drush_MODULE_post_COMMAND().
  */
 function drush_devel_post_pm_enable() {
-  $modules = func_get_args();
-  if (in_array('devel', $modules) && !drush_get_option('skip')) {
+  $extensions = func_get_args();
+  // Deal with comma delimited extension list.
+  if (strpos($extensions[0], ',') !== FALSE) {
+    $extensions = explode(',', $extensions[0]);
+  }
+
+  if (in_array('devel', $extensions) && !drush_get_option('skip')) {
     drush_devel_download();
   }
 }

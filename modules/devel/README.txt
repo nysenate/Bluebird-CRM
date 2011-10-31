@@ -34,6 +34,13 @@ COMPATIBILITY NOTES
 -  Modules that use AJAX should idenify their response as Content-type: text/javascript. The easiest way to do that is run your reply through drupal_json().
 
 
+DRUSH UNIT TEST
+==================
+See develDrushTest.php for an example of unit testing of the Drush integration.
+This uses Drush's own test framework, based on PHPUnit. To run the tests, use
+phpunit --bootstrap=/path/to/drush/tests/drush_testcase.inc. Note that we must name a file
+under /tests there.
+
 AUTHOR/MAINTAINER
 ======================
 Moshe Weitzman <weitzman at tejasa DOT com> http://cyrve.com
