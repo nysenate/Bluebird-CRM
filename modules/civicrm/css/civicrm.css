@@ -2570,7 +2570,7 @@ div.statusicon {
     display     : inline-block;
     cursor      : pointer;
     background-position:-48px -144px;
-    background-image:url(../packages/jquery/themes/smoothness/images/ui-icons_222222_256x240.png);
+    background-image:url("../packages/jquery/jquery-ui-1.8.11/css/smoothness/images/ui-icons_222222_256x240.png");    
     background-color:#CCC;
     width:16px;
     height:16px;

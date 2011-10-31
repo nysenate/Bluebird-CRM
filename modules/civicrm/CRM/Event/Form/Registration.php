@@ -624,9 +624,9 @@ class CRM_Event_Form_Registration extends CRM_Core_Form
                 }
             } else {
                 $fields = CRM_Core_BAO_UFGroup::getFields( $id, false, CRM_Core_Action::ADD,
-                                                               null , null, false, null,
-                                                               false, null, CRM_Core_Permission::CREATE,
-                                                               'field_name', true ); 
+                                                           null , null, false, null,
+                                                           false, null, CRM_Core_Permission::CREATE,
+                                                           'field_name', true ); 
             }
 
             if ( is_array( $fields ) ) {

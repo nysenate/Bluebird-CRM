@@ -1217,9 +1217,17 @@ function _civicrm_api3_basic_get($bao_name, &$params, $returnAsSuccess = TRUE){
 function _civicrm_api3_basic_create($bao_name, &$params){
 
     $args = array(&$params);
-    $bao = call_user_func_array(array($bao_name, 'create'), $args);
+    if (method_exists($bao_name, 'create')) {
+      $fct='create';
+    } elseif (method_exists($bao_name, 'add')) {
+      $fct='add';
+    }
+    if (!isset ($fct)) {
+        return civicrm_api3_create_error( 'Entity not created, missing create or add method for '.$bao_name );
+    }
+    $bao = call_user_func_array(array($bao_name, $fct), $args);
     if ( is_null( $bao) ) {
-        return civicrm_api3_create_error( 'Entity not created' );
+        return civicrm_api3_create_error( 'Entity not created '.$bao_name.'::'.$fct );
     } else {
         $values = array();
         _civicrm_api3_object_to_array($bao, $values[ $bao->id]);

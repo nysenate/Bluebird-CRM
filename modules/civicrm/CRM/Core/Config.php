@@ -465,7 +465,7 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
         if ( !$this->customFileUploadDir ) {
             $this->customFileUploadDir = $this->uploadDir;
         }
-        
+        //NYSS
         if ( $this->geoProvider ) {
             $this->geocodeMethod = 'CRM_Utils_Geocode_'. $this->geoProvider;
         }

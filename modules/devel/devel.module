@@ -72,13 +72,6 @@ function devel_menu() {
     'access arguments' => array('access devel information'),
     'menu_name' => 'devel',
   );
-  $items['devel/source'] = array(
-    'title' => 'Display the PHP code of any file in your Drupal installation',
-    'page callback' => 'devel_display_source',
-    'access arguments' => array('display source code'),
-    'type' => MENU_CALLBACK,
-    'menu_name' => 'devel',
-  );
   $items['devel/menu/reset'] = array(
     'title' => 'Rebuild menus',
     'description' => 'Rebuild menu based on hook_menu() and revert any custom changes. All menu items return to their default settings.',
@@ -260,64 +253,6 @@ function devel_theme() { // &$cache, $type, $theme, $path
 }
 
 /**
- * Page callback to display syntax hilighted source code
- *
- * note: the path for this function is received via $_GET['path']
- *  example http://www.example.com/devel/source?file=modules/node/node.module
- *
- * @param $standalone
- *   Set to FALSE to place the code inside a Drupal page. Otherwise code displays on its own.
- */
-function devel_display_source($standalone = TRUE) {
-  $path = $_GET['file'];
-  // take out the nasties
-  $path = str_replace('../', '', $path);
-  $output = devel_highlight_file($path, $standalone);
-  if ($output) {
-    if ($standalone) {
-      print $output;
-      exit();
-    }
-    return $output;
-  }
-  else {
-    drupal_set_message(t('Invalid file path'), 'error');
-    drupal_not_found();
-  }
-}
-
-/**
- * Return PHP highlighted file
- *
- * @param $path
- *   path to the file
- *    *warning* there is NO VALIDATION in this function
- *    Beware of paths such as '../../../../../etc/apache/httpd.conf'
- *
- * @param $standalone
- *   should the returned HTML be wrapped in a full <html> page or will it be output by Drupal?
- */
-function devel_highlight_file($path = NULL, $standalone = FALSE) {
-  if (file_exists($path)) {
-    $source = highlight_file($path, TRUE);
-    // add anchor links before all functions so that we can link to a function within the source
-    // ** commented out because regexes aren't working **
-    //$source = preg_replace('!(\/\*\*.*?\*\/.*?)<br.*?function.*?#0000BB">(.*?)<\/span>!', '<a id="$2"></a> $0', $source);
-    //$source = preg_replace('!(\/\*\*.*?\*\/).*?function.*?#0000BB">(.*?)<\/span>!', '<a id="$2"></a> $0', $source);
-    if ($standalone) {
-      $source = <<<EOT
-<head><title>$path</title></head>
-<body>$source</body>
-EOT;
-    }
-    return $source;
-  }
-  else {
-    return FALSE;
-  }
-}
-
-/**
  * Implementation of hook_init().
  */
 function devel_init() {
@@ -330,23 +265,25 @@ function devel_init() {
       // See http://www.firephp.org/.
       // Support Libraries API - http://drupal.org/project/libraries
       if (module_exists('libraries')) {
-        $firephp_path = libraries_get_path('FirePHPCore') . '/lib/FirePHPCore/';
+        $firephp_path = libraries_get_path('FirePHPCore');
+        $firephp_path = ($firephp_path ? $firephp_path . '/lib/FirePHPCore/' : '');
         $chromephp_path = libraries_get_path('chromephp');
       }
       else {
         $firephp_path = './'. drupal_get_path('module', 'devel') .'/FirePHPCore/lib/FirePHPCore/';
-        $chromephp_path = './' . drupal_get_path('module', 'devel') .'/chromephp';
+        $chromephp_path = './'. drupal_get_path('module', 'devel') .'/chromephp';
       }
-      // include FirePHP if exists...
-      if (file_exists($firephp_path .'fb.php')) {
+
+      // Include FirePHP if it exists.
+      if (!empty($firephp_path) && file_exists($firephp_path .'fb.php')) {
         include_once $firephp_path .'fb.php';
         include_once $firephp_path .'FirePHP.class.php';
       }
 
-      // include ChromePHP if exists...
-        if (file_exists($chromephp_path . '/ChromePhp.php')) {
-          include_once $chromephp_path . '/ChromePhp.php';
-        }
+      // Include ChromePHP if it exists.
+      if (!empty($chromephp_path) && file_exists($chromephp_path .= '/ChromePhp.php')) {
+        include_once $chromephp_path;
+      }
 
       // Add CSS for query log if should be displayed.
       if (variable_get('devel_query_display', 0)) {
@@ -566,11 +503,11 @@ function backtrace_error_handler($errno, $message, $filename, $line, $context) {
     $backtrace = debug_backtrace();
     array_shift($backtrace);
     $variables = array('%error' => $type, '%message' => $message, '%function' => $backtrace[0]['function'] .'()', '%file' => $filename, '%line' => $line);
-    $counter = 0;
+    $counter = count($backtrace);
 
     if (variable_get('error_level', 1) == 1) {
       foreach ($backtrace as $call) {
-        $nicetrace[$call['function'] .'<span class="'. $counter++ .'" />'] = $call;
+        $nicetrace[--$counter . ': ' . $call['function']] = $call;
       }
       print t('%error: %message in %function (line %line of %file).', $variables) ." =&gt;\n";
       krumo($nicetrace);
@@ -1190,6 +1127,7 @@ function devel_execute_block_form() {
  * Generates the execute form.
  */
 function devel_execute_form() {
+  drupal_add_css(drupal_get_path('module', 'devel') .'/devel.css');
   $form['execute']['code'] = array(
     '#type' => 'textarea',
     '#title' => t('PHP code to execute'),

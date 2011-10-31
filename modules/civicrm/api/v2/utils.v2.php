@@ -509,9 +509,7 @@ function _civicrm_required_formatted_contact(&$params)
  * @param <type> $params
  * @return <type>
  */
-//NYSS 3750
-function _civicrm_duplicate_formatted_contact( &$params,
-                                               $dedupeRuleGroupID = null )
+function _civicrm_duplicate_formatted_contact(&$params) 
 {
     $id = CRM_Utils_Array::value( 'id', $params );
     $externalId = CRM_Utils_Array::value( 'external_identifier', $params );
@@ -534,13 +532,7 @@ function _civicrm_duplicate_formatted_contact( &$params,
     } else {
         require_once 'CRM/Dedupe/Finder.php';
         $dedupeParams = CRM_Dedupe_Finder::formatParams($params, $params['contact_type']);
-        //NYSS 3750
-		//$ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict');
-		$ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams,
- 	                                            $params['contact_type'],
- 	                                            'Strict',
- 	                                            array( ),
- 	                                            $dedupeRuleGroupID );
+        $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict');
             
         if ( !empty($ids) ) {
             $ids = implode( ',', $ids );

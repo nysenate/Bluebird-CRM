@@ -136,14 +136,6 @@
                 </td>
             </tr>    
      {/if}
-    {if $contributionMode && $processorSupportsFutureStartDate}
-        <tr class="crm-contribution-form-block-receive_date">
-            <td class="label">{ts}Start Date{/ts}</td>
-            <td{$valueStyle}>{if $hideCalender neq true}{include file="CRM/common/jcalendar.tpl" elementName=receive_date}{else}{$receive_date|crmDate}{/if}<br />
-            <span class="description">{ts}You can set a start date for recurring contributions and the first payment will be on that date. For a single post-dated contribution you must select recurring and choose one installment{/ts}</span>
-            </td>
-        </tr>    
-      {/if}
 
         <tr class="crm-contribution-form-block-source"><td class="label">{$form.source.label}</td><td{$valueStyle}>{$form.source.html|crmReplace:class:huge} {help id="id-contrib_source"}</td></tr>
 

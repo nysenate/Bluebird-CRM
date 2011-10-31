@@ -1304,16 +1304,10 @@ class CRM_Utils_System {
      * @static
      */
     static function appendTPLFile( $fileName, &$content ) {
-        $config =& CRM_Core_Config::singleton( );
-        if ( isset( $config->customTemplateDir ) &&
-             $config->customTemplateDir ) {
-            $additionalTPLFile = str_replace( '.tpl', '.extra.tpl', $fileName );
-            // check if the file exists in the custom templates directory
-            $fileName = $config->customTemplateDir . DIRECTORY_SEPARATOR . $additionalTPLFile;
-            if ( file_exists( $fileName ) ) {
-                $template = CRM_Core_Smarty::singleton( );
-                $content .= $template->fetch( $fileName );
-            }
+        $template = CRM_Core_Smarty::singleton( );
+        $additionalTPLFile = str_replace( '.tpl', '.extra.tpl', $fileName );
+        if ( $template->template_exists( $additionalTPLFile ) ) {
+            $content .= $template->fetch( $additionalTPLFile );
         }
     }
 	

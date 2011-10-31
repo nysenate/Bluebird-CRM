@@ -209,8 +209,6 @@ class CRM_Price_Form_Field extends CRM_Core_Form
             if ( in_array( $memberComponentId, $this->_extendComponentId ) ) {
                 $this->_useForMember = 1;
                 $this->assign( 'useForMember', $this->_useForMember );
-
-                unset( $htmlTypes['Text'] );
             }
             $this->assign( 'useForEvent', false );
         }

@@ -75,7 +75,6 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
 
         //If they request entity counts, build that into the tree as well.
         if(CRM_Utils_Array::value('entity_counts', $_GET)) {
-
             // There is definitely nothing like this in the civicrm_api. Using
             // the DAO layer is way too slow when we get to hundreds of results.
             // Hand rolled SQL it is...
@@ -93,23 +92,12 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                 WHERE tag.used_for LIKE '%$entity_type%'
                 GROUP BY tag.id", $conn);
 
+            $entity_counts = array();
             while($row = mysql_fetch_assoc($result))
                 $entity_counts[$row['id']] = $row['entity_count'];
 
-            /*
-            // A PHP workhorse method. Its probably better to make the database do the work.
-            $result = mysql_query("
-                SELECT tag.id
-                FROM civicrm_tag as tag
-                  JOIN civicrm_entity_tag as entity_tag ON tag.id = entity_tag.tag_id
-                  JOIN civicrm_contact as entity ON entity.id = entity_tag.entity_id
-                WHERE tag.used_for LIKE '%civicrm_contact%'
-                  AND entity.is_deleted = 0
-                  AND entity_tag.entity_table = 'civicrm_contact'", $conn);
-
-            while($row = mysql_fetch_assoc($result))
-                $entity_counts[$row['id']]++;# = $row['entity_count'];
-            */
+        } else {
+            $entity_counts = null;
         }
 
         // If they pass in an entity_id we can also get information on which tags apply
@@ -122,8 +110,13 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
                 'entity_type'=>CRM_Core_DAO::escapeString($entity_type),
                 'entity_id'=>CRM_Core_DAO::escapeString($entity_id));
             $result = civicrm_api('entity_tag', 'get', $params);
+
+            $entity_tags = array();
             foreach($result['values'] as $entity_tag)
                 $entity_tags[] = $entity_tag['tag_id'];
+
+        } else {
+            $entity_tags = null;
         }
 
         // We need to build a list of tags ordered by hierarchy and sorted by

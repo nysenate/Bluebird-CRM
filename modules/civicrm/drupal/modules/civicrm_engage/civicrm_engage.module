@@ -71,6 +71,10 @@ function civicrm_engage_civicrm_buildForm( $formName, &$form ) {
 
 function civicrm_engage_civicrm_postProcess( $class, &$form ) {
     if ( is_a( $form, 'CRM_Contact_Form_Contact' ) ) {
+      if(array_key_exists('_qf_Contact_refresh_dedupe',$form->_submitValues)) {
+        // don't execute when checking for duplicates - it fails (CRM-8994)
+        return;
+      } else {
         $cgID      = _civicrm_engage_getCustomGroupID( CIVICRM_ENGAGE_CG_DEMOGRAPHICS_NAME );
         if ( empty ($cgID) ) {
             return;
@@ -93,6 +97,7 @@ function civicrm_engage_civicrm_postProcess( $class, &$form ) {
                                                         'Individual' );
         }
     }
+  }
 }
 
 function civicrm_engage_civicrm_pageRun( &$page ) {

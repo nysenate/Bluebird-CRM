@@ -64,8 +64,6 @@ class CRM_Utils_SAGE
         return true;
     }
 
-
-
     public static function format( &$values, $stateName=false )
     {
         $session = CRM_Core_Session::singleton();
@@ -73,14 +71,14 @@ class CRM_Utils_SAGE
         // QQQ: Why is this the only place we do the state lookup?
         $stateProvince = self::getStateProvince($values, $stateName);
         list($addr_field, $addr) = self::getAddress($values);
-
+        
         //Construct and send the API Request. Note the service=geocoder.
         //Without it SAGE will default to Yahoo as the geocoding provider.
         //geocoder is the Senate's own geocoding provider, which uses the
         //open source "geocoder" project.
-        $url = 'xml/geocode/extended/extended?';
+        $url = 'xml/geocode/extended?';
         $params = http_build_query(array(
-                'service' => 'geocoder',
+                'service' => CRM_Utils_Array::value('service', $values, "geocoder"),
                 'addr2' => str_replace(',', '', $addr),
                 'state' => $stateProvince,
                 'city' => CRM_Utils_Array::value('city', $values, ""),
@@ -141,9 +139,35 @@ class CRM_Utils_SAGE
         return true;
     }
 
+     public static function lookup_from_point( &$values, $overwrite_districts=true) {
+     	$url = 'xml/bluebirdDistricts/latlon/';
+     	
+     	$url = $url.
+     		CRM_Utils_Array::value('geo_code_1',$values,"").
+     		",".
+     		CRM_Utils_Array::value('geo_code_2',$values,"")
+     		."?";
+     	
+		$params = http_build_query(
+			array(
+				'key' => CRM_Core_Config::singleton()->geoAPIKey,
+			), '', '&');
+		
+		$request = new HTTP_Request(self::$base . $url . $params);
+		$request->sendRequest();
+		$xml = simplexml_load_string($request->getResponseBody());
+		
+		if(!self::validateResponse($xml)) {
+			$msg = "SAGE Warning: Lookup for [$params] has failed.\n";
+			$session->setStatus(ts($msg));
+			return false;
+		}
+		
+		self::storeDistricts($values, $xml, $overwrite_districts);
+        return true;
+     }
 
-
-    public static function lookup( &$values, $overwrite_districts=true) {
+    public static function lookup( &$values, $overwrite_districts=true, $overwrite_point=true) {
         $session = CRM_Core_Session::singleton();
 
         //The address could be stored in a couple different places
@@ -187,7 +211,7 @@ class CRM_Utils_SAGE
                 self::storeAddress($values, $xml->address->extended, $addr_field);
         }
 
-        self::storeGeocodes($values, $xml);
+        self::storeGeocodes($values, $xml, $overwrite_point);
         self::storeDistricts($values, $xml, $overwrite_districts);
         return true;
     }
@@ -270,11 +294,14 @@ class CRM_Utils_SAGE
 
 
 
-    private static function storeGeocodes( &$values, $xml )
+    private static function storeGeocodes( &$values, $xml, $overwrite)
     {
         //Forced type cast required to convert the simplexml objects to strings
-        $values['geo_code_1'] = (string)$xml->lat;
-        $values['geo_code_2'] = (string)$xml->lon;
+        if($overwrite || !$values["geo_code_1"])
+        	$values["geo_code_1"] = (string)$xml->lat;
+        if($overwrite || !$values["geo_code_2"])
+        	$values["geo_code_2"] = (string)$xml->lon;
+        
     }
 
 

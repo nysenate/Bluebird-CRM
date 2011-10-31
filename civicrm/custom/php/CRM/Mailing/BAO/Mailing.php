@@ -117,7 +117,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
     // and does not play a role in the queries generated
     function &getRecipients($job_id, $mailing_id = null,
                             $offset = NULL, $limit = NULL,
-                            $storeRecipients = false) 
+                            $storeRecipients = false, $dedupeEmail = false) //NYSS 
     {
         $mailingGroup = new CRM_Mailing_DAO_Group();
         
@@ -134,7 +134,7 @@ class CRM_Mailing_BAO_Mailing extends CRM_Mailing_DAO_Mailing
         require_once 'CRM/Contact/DAO/Group.php';
         $group      = CRM_Contact_DAO_Group::getTableName();
         $g2contact  = CRM_Contact_DAO_GroupContact::getTableName();
-      
+
         /* Create a temp table for contact exclusion */
         $mailingGroup->query(
             "CREATE TEMPORARY TABLE X_$job_id 
@@ -250,6 +250,8 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $contact.is_opt_out = 0
                         AND             $contact.is_deceased = 0
                         AND            ($email.is_bulkmail = 1 OR $email.is_primary = 1)
+                        AND             $email.email IS NOT NULL
+                        AND             $email.email != ''
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
@@ -421,28 +423,28 @@ WHERE  mailing_id = %1
 ";
             $params = array( 1 => array( $mailing_id, 'Integer' ) );
             CRM_Core_DAO::executeQuery( $sql, $params );
+			
+			//NYSS CRM-3975
+            $groupBy = $groupJoin = '';
+            if ( $dedupeEmail ) {
+                $groupJoin = " INNER JOIN civicrm_email e ON e.id = i.email_id";
+                $groupBy = " GROUP BY e.email ";
+            }
 
-            $sql = "
+            //NYSS 4219
+			$sql = "
 INSERT INTO civicrm_mailing_recipients ( mailing_id, contact_id, email_id )
 SELECT %1, i.contact_id, i.email_id
 FROM       civicrm_contact contact_a
 INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
-           {$aclFrom}
+           $groupJoin
+		   {$aclFrom}
            {$aclWhere}
+		   $groupBy
 ORDER BY   i.contact_id, i.email_id
 ";
             CRM_Core_DAO::executeQuery( $sql, $params );
         }
-
-        $eq->query("
-SELECT     i.contact_id, i.email_id 
-FROM       civicrm_contact contact_a
-INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
-           {$aclFrom}
-           {$aclWhere}
-ORDER BY   i.contact_id, i.email_id
-           $limitString
-");
 
         /* Delete the temp table */
         $mailingGroup->reset();

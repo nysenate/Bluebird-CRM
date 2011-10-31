@@ -63,7 +63,7 @@
               {$row.status}</td>
             {/if}
             <td>{$row.contact_type}</td>
-            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`"}">{$row.sort_name|truncate:26:"...":true}</a></td>{*NYSS*}
+            <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{$row.sort_name|truncate:26:"...":true}</a></td>{*NYSS*}
             {foreach from=$row item=value key=key} 
                {if ($key neq "checkbox") and ($key neq "action") and ($key neq "contact_type") and ($key neq "status") and ($key neq "sort_name") and ($key neq "contact_id") and ($key neq "contact_sub_type")}
                 <td>
@@ -166,7 +166,7 @@ cj(".selector tr").contextMenu({
         }
         eval( 'locationUrl = locationUrl.replace( /changeid/, contactId );');
         var destination = "{/literal}{crmURL q='force=1' h=0}{literal}";
-        window.location = locationUrl + '&destination=' + encodeURIComponent(destination);
+        window.location = locationUrl + '&civicrmDestination=' + encodeURIComponent(destination);
    });
 
     cj('.selector').crmrowhighlighter( );
