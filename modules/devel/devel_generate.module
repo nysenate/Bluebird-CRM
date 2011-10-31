@@ -45,6 +45,9 @@ function devel_generate_menu() {
   return $items;
 }
 
+/**
+ * Generates users using FormAPI.
+ */
 function devel_generate_users_form() {
   $form['num'] = array(
     '#type' => 'textfield',
@@ -77,11 +80,17 @@ function devel_generate_users_form() {
   return $form;
 }
 
+/**
+ * FormAPI submission to generate users.
+ */
 function devel_generate_users_form_submit($form_id, &$form_state) {
   module_load_include('inc', 'devel_generate');
   devel_create_users($form_state['values']['num'], $form_state['values']['kill_users'], $form_state['values']['time_range']);
 }
 
+/**
+ * Generates nodes using FormAPI.
+ */
 function devel_generate_content_form() {
   require_once('devel_generate.inc');
   $options = devel_generate_content_types();
@@ -182,6 +191,9 @@ function devel_generate_content_form() {
   return $form;
 }
 
+/**
+ * FormAPI submission to generate nodes.
+ */
 function devel_generate_content_form_submit($form_id, &$form_state) {
   $form_state['values']['node_types'] = array_filter($form_state['values']['node_types']);
   if (!$form_state['values']['kill_content'] && $form_state['values']['num_nodes'] <= 50 && $form_state['values']['max_comments'] <= 10) {
@@ -193,6 +205,9 @@ function devel_generate_content_form_submit($form_id, &$form_state) {
   }
 }
 
+/**
+ * Generates taxonomy vocabularies and terms using FormAPI.
+ */
 function devel_generate_taxonomy_form() {
   $form['num_vocab'] = array(
     '#type' => 'textfield',
@@ -224,6 +239,9 @@ function devel_generate_taxonomy_form() {
   return $form;
 }
 
+/**
+ * FormAPI submission to generate taxonomy vocabularies and terms.
+ */
 function devel_generate_taxonomy_form_submit($form_id, &$form_state) {
   require_once('devel_generate.inc');
   devel_generate_taxonomy_data($form_state['values']['num_vocab'], $form_state['values']['num_terms'], $form_state['values']['title_length'], $form_state['values']['kill_taxonomy']);
