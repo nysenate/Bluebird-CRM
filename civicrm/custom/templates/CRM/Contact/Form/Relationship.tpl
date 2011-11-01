@@ -371,7 +371,7 @@ cj( function( ) {
 
     cj('.pagerDisplay tbody tr .contact_select input').live('click', function () {
         var valueSelected = cj(this).val();	  
-        if ( cj(this).attr('checked') == true ) {   
+        if ( cj(this).attr('checked') ) { //NYSS
             contact_checked[valueSelected] =  valueSelected;
             countSelected++;
         } else if( contact_checked[valueSelected] ) {
@@ -392,7 +392,7 @@ cj( function( ) {
             if ( isRadio ) {
                 employer_checked = new Array();
             }
-            if ( cj(this).attr('checked') == true ) {
+            if ( cj(this).attr('checked') ) { //NYSS
                 // add validation to match with selected contacts
                 if( !contact_checked[valueSelected] ) {
                     alert('Current employer / Current employee should be among the selected contacts.');
