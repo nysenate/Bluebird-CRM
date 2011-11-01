@@ -692,7 +692,7 @@ function addControlBox(tagLabel, IDChecked) {
 	if(tagMouse != 'dt#tagLabel_291')
 	{
 		return(floatControlBox);
-	} else { return ''; }
+	} else { return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; }
 }
 function checkRemoveAdd(tagLabel) {
 	var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
