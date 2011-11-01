@@ -98,15 +98,10 @@ function run()
 	$batch = ($optlist['batch']) ? $optlist['batch'] : DEFAULT_ADDRESS_BATCH;
 	$threshold = ($optlist['threshold']) ? $optlist['threshold'] : DEFAULT_SLOW_REQUEST_THRESHOLD;
 
-	//processContacts($geocodeMethod, $parseStreetAddress, $optlist['start'],
-	//                $optlist['end'], $batch, $threshold ,$optlist['throttle']);
-
-	newProcessContacts($parseStreetAddress, $batch, $threshold, $optlist);
+	processContacts($parseStreetAddress, $batch, $threshold, $optlist);
 }
 
-function newProcessContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
-
-
+function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 
 	$start_time = microtime(true);
 
@@ -186,7 +181,7 @@ function newProcessContacts($parseStreetAddress, $batch,   $threshold, $optlist)
 		}
 		else if($optlist['geocode']) {
 			//data is representative of query which
-			//takes force in to consideration, any record
+			//takes force in t1o consideration, any record
 			//appearing here must be processed
 
 			$success = CRM_Utils_SAGE::format($address, true);

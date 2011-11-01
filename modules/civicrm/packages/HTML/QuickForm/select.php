@@ -151,7 +151,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
      */
     function setName($name)
     {
-        $this->updateAttributes(array('name' => $name));
+        $this->_attributes['name']=$name;
     } //end func setName
     
     // }}}
@@ -232,7 +232,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
      */
     function setSize($size)
     {
-        $this->updateAttributes(array('size' => $size));
+        $this->_attributes['size']=$size;
     } //end func setSize
     
     // }}}
@@ -264,9 +264,9 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
     function setMultiple($multiple)
     {
         if ($multiple) {
-            $this->updateAttributes(array('multiple' => 'multiple'));
+            $this->_attributes['multiple']='multiple';
         } else {
-            $this->removeAttribute('multiple');
+            unset($this->_attributes['multiple']);
         }
     } //end func setMultiple
     
@@ -501,7 +501,6 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
                 $strHtml .= $tabs . "\t<option" . $this->_getAttrString($option['attr']) . '>' .
                             $option['text'] . "</option>\n";
             }
-
             return $strHtml . $tabs . '</select>';
         }
     } //end func toHtml
@@ -604,15 +603,12 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
     function onQuickFormEvent($event, $arg, &$caller)
     {
         if ('updateValue' == $event) {
-            $value = $this->_findValue($caller->_constantValues);
-            if (null === $value) {
-                $value = $this->_findValue($caller->_submitValues);
+            $value = $this->_findValue($caller->_csValues);
                 // Fix for bug #4465 & #5269
                 // XXX: should we push this to element::onQuickFormEvent()?
                 if (null === $value && (!$caller->isSubmitted() || !$this->getMultiple())) {
                     $value = $this->_findValue($caller->_defaultValues);
                 }
-            }
             if (null !== $value) {
                 $this->setValue($value);
             }

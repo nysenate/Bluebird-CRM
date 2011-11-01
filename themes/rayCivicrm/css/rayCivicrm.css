@@ -1368,3 +1368,9 @@ ul.token-input-list-facebook { width:265px;}
 #newsFeeds a {
 	color: #B4E2FE;
 }
+
+/*summary overlay*/
+.crm-table-group-summary-leftcol,
+.crm-table-group-summary-rightcol {
+	width: 46%;
+}

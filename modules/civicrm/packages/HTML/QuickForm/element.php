@@ -381,13 +381,7 @@ class HTML_QuickForm_element extends HTML_Common
             case 'updateValue':
                 // constant values override both default and submitted ones
                 // default values are overriden by submitted
-                $value = $this->_findValue($caller->_constantValues);
-                if (null === $value) {
-                    $value = $this->_findValue($caller->_submitValues);
-                    if (null === $value) {
-                        $value = $this->_findValue($caller->_defaultValues);
-                    }
-                }
+                $value = $this->_findValue($caller->_finalValues);
                 if (null !== $value) {
                     $this->setValue($value);
                 }
@@ -432,7 +426,7 @@ class HTML_QuickForm_element extends HTML_Common
         static $idx = 1;
 
         if (!$this->getAttribute('id')) {
-            $this->updateAttributes(array('id' => 'qf_' . substr(md5(microtime() . $idx++), 0, 6)));
+            $this->_attributes['id'] = 'qf_' . substr(md5(microtime() . $idx++), 0, 6);
         }
     } // end func _generateId
 
