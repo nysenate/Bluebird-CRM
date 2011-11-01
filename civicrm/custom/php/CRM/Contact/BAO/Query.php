@@ -1113,7 +1113,11 @@ class CRM_Contact_BAO_Query
             if ( $this->_useDistinct && !isset( $this->_distinctComponentClause) ) {
                 if ( !( $this->_mode & CRM_Contact_BAO_Query::MODE_ACTIVITY ) ) {
                     // CRM-5954
-                    $this->_select['contact_id'] = 'DISTINCT(contact_a.id) as contact_id';
+                    //$this->_select['contact_id'] = 'DISTINCT(contact_a.id) as contact_id';
+					//NYSS
+					$this->_select['contact_id'] = 'contact_a.id as contact_id';
+                    $this->_useDistinct = false;
+					
                     $this->_useGroupBy = true;
                     $this->_select['contact_id'] ='contact_a.id as contact_id';
 					//NYSS end

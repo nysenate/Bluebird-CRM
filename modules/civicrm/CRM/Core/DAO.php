@@ -908,8 +908,11 @@ FROM   civicrm_domain
         if ( ! $_dao ) {
             $_dao = new CRM_Core_DAO( );
         }
-
-        $_dao->query( $queryStr, $i18nRewrite ); 
+		//NYSS
+		$result = $_dao->query( $queryStr, $i18nRewrite );
+        if ( is_a( $result, 'DB_Error' ) ) {
+            return $result;
+        }
         
         $result = $_dao->getDatabaseResult();
         $ret    = null;
