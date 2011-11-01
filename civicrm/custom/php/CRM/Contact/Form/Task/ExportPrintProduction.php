@@ -277,7 +277,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 			//construct prefix using gender if possible
 			if ( $aOut['gender_id'] == 'Male' ) $aOut['prefix_id'] = 'Mr.';
 			elseif ( $aOut['gender_id']=="Female" ) $aOut['prefix_id']="Ms.";
-			else $aOut['prefix_id']="M.";
+			else $aOut['prefix_id']="";
 			
 			//reconstruct postal_greeting if Dear Lastname; else assume it's been set purposely
 			if ( $aOut['postal_greeting_display'] == 'Dear '.$aOut['last_name'] ) {
@@ -287,7 +287,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 			//construct prefix using gender if possible
 			if ( $aOut['gender_id'] == 'Male' ) $aOut['prefix_id'] = 'Mr.';
 			elseif ( $aOut['gender_id']=="Female" ) $aOut['prefix_id']="Ms.";
-			else $aOut['prefix_id']="M.";
+			else $aOut['prefix_id']="";
 			
 			//reconstruct postal_greeting if Dear The Honorable Lastname; else assume it's been set purposely
 			if ( $aOut['postal_greeting_display'] == 'Dear The Honorable '.$aOut['last_name'] ) {
