@@ -2078,9 +2078,11 @@ class CRM_Contact_BAO_Query
                 $from .= " $side JOIN civicrm_im ON (contact_a.id = civicrm_im.contact_id AND civicrm_im.is_primary = 1) ";
                 continue;
 
+            //NYSS 4489
             case 'im_provider':
-                $from .= " $side JOIN civicrm_option_group option_group_imProvider ON option_group_imProvider.name = 'instant_messenger_service'";
-                $from .= " $side JOIN civicrm_im_provider im_provider ON (civicrm_im.provider_id = im_provider.id AND option_group_imProvider.id = im_provider.option_group_id)";
+                $from .= " $side JOIN civicrm_im ON (contact_a.id = civicrm_im.contact_id) ";
+				$from .= " $side JOIN civicrm_option_group option_group_imProvider ON option_group_imProvider.name = 'instant_messenger_service'";
+                $from .= " $side JOIN civicrm_option_value im_provider ON (civicrm_im.provider_id = im_provider.value AND option_group_imProvider.id = im_provider.option_group_id)";
                 continue;
                 
             case 'civicrm_openid':
