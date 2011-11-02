@@ -528,64 +528,83 @@ function makeModalUpdate(tagLabel){
 	});
 }
 function makeModalMerge(tagLabel){
+	tagInfo = new Object();
+	tagInfo.id = tagLabel;
+	tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
+	tagInfo.tid = cj('.BBtree.edit dt#' + tagLabel).attr('tid');
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
 		draggable: false,
 		height: 300,
 		width: 300,
-		title: "Update Tag",
+		title: "Merge Tag",
 		modal: true, 
 		bgiframe: true,
-		close:{ },
+		close: function(event, ui) { cj("#tag_name_modal").unautocomplete( ); },
 		overlay: { 
 			opacity: 0.2, 
 			background: "black" 
 		},
 		open: function() {
-			tagInfo = new Object();
-			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
-			tagInfo.description = cj('.BBtree.edit dt#' + tagLabel).attr('description');
-			tagInfo.reserved = cj('.BBtree.edit dt#'+tagLabel).hasClass('isReserved');
-			var updateDialogInfo;
-			if(tagInfo.reserved == true){
-			tagInfo.reserved = 'checked';} else {
-			tagInfo.reserved = '';
-			updateDialogInfo += '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
-			updateDialogInfo += '<div class="modalInputs">';
-			updateDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" value="'+tagInfo.name+'" /></div>';
-			updateDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+tagInfo.description+'"/></div>';
-			updateDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '+tagInfo.reserved+'/></div>';}
+			var updateDialogInfo = '';
+			updateDialogInfo += '<div class="modalHeader">Merge Tag ' + tagInfo.name + ' Into:</div>';
+			updateDialogInfo += '<input id="tag_name_modal" class="ac_input" type="text" autocomplete="off">';
+			updateDialogInfo += '<input id="tag_name_id" type="hidden" value="">';
 			cj('#dialog').html(updateDialogInfo);
-			cj('#dialog input:[name=tagName]').focus();
+			cj("#tag_name_modal").val( "" );
+			cj("#tag_name_id").val( null );
+
+			var tagUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTagList' h=0}"{literal};
+			tagUrl = tagUrl + "&fromId=" + tagInfo.tid;
+
+			cj("#tag_name_modal").autocomplete( tagUrl, {
+				width: 260,
+				selectFirst: false,
+				matchContains: true 
+			});
+
+			cj("#tag_name_modal").focus();
+			cj("#tag_name_modal").result(function(event, data, formatted) {
+				cj("input[id=tag_name_id]").val(data[1]);
+				if ( data[2] == 1 ) {
+				    cj('#used_for_warning').html("Warning: '" + fromTag + "' has different used-for options than the selected tag, which would be merged into the selected tag. Click Ok to proceed.");
+				} else {
+				    cj('#used_for_warning').html('');
+				}
+			});	
 		},
 		buttons: {
-			"Done": function () {
-				tagUpdate = new Object();
-				tagUpdate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
-				tagUpdate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
-				tagUpdate.currentId = tagLabel.replace('tagLabel_', '');
-				tagUpdate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
-				cj.ajax({
-					url: '/civicrm/ajax/tag/update',
-					data: {
-						name: tagUpdate.tagName,
-						description: tagUpdate.tagDescription,
-						id: tagUpdate.currentId,
-						is_reserved: tagUpdate.isReserved	
-					},
-					dataType: 'json',
-					success: function(data, status, XMLHttpRequest) {
-						if(data.code != 1)
-						{
-							alert(data.message);
+			"Ok": function() { 	    
+				if ( ! cj("#tag_name_modal").val( ) ) {
+					alert('{/literal}{ts escape="js"}Select valid tag from the list{/ts}{literal}.');
+					return false;
+				}
+				var toId = cj("#tag_name_id").val( );
+				if ( ! toId ) {
+					alert('{/literal}{ts escape="js"}Select valid tag from the list{/ts}{literal}.');
+					return false;
+				}
+				/* send synchronous request so that disabling any actions for slow servers*/
+				var postUrl = {/literal}"{crmURL p='civicrm/ajax/mergeTags' h=0 }"{literal}; 
+				var data    = 'fromId='+ tagInfo.tid + '&toId='+ toId + "&key={/literal}{crmKey name='civicrm/ajax/mergeTags'}{literal}";
+             			cj.ajax({ type     : "POST", 
+					url      : postUrl, 
+					data     : data, 
+					dataType : "json",
+					success  : function( values ) {
+						if ( values.status == true ) {
+							cj('#crm-tagListWrap').before('<div class="contactTagsList help" id="tagStatusBar"></div>');
+							var toIdTag = cj('#tagLabel_' + toId).attr('description');
+							var msg = "<ul style=\"margin: 0 1.5em\"><li>'" + tagInfo.name + "' has been merged with '" + toIdTag + "'. All records previously tagged with '" + tagInfo.name + "' are now tagged with '" + toIdTag + "'.</li></ul>";
+							cj('#tagLabel_' + tagInfo.tid).html(''); 
+							cj('#tagStatusBar').html(msg);
 						}
-						cj('#dialog').dialog('close');
-						cj('#dialog').dialog('destroy');
 						resetBBTree('main');
-					}
-				});
-			},
+                      			}
+                		});
+                		cj(this).dialog("close"); 
+				cj(this).dialog("destroy");
+ 			},
 			"Cancel": function() { 
 
 				cj(this).dialog("close"); 
@@ -681,8 +700,8 @@ function addControlBox(tagLabel, IDChecked) {
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
+	/*floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
 	if(IDChecked == ' checked'){
 		floatControlBox += '<input type="checkbox" class="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
 	} else {

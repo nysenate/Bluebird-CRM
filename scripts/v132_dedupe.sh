@@ -34,7 +34,6 @@ fi
 ## Currently supports a simple second pass dedupe process. Future expansion
 ## to import review and re-run is probable.
 $execSql -i $instance -c "
-    DROP TABLE IF EXISTS civicrm_import_jobs;
     CREATE TABLE civicrm_import_jobs (
       id int(10) unsigned NOT NULL AUTO_INCREMENT,
       name varchar(255) NOT NULL,
