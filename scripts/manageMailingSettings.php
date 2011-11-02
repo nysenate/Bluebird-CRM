@@ -107,6 +107,7 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
   $cb['enableComponentIDs'][] = 4;
   $cb['mailerBatchLimit']     = 2500;
   $cb['mailerJobSize']        = 2500;
+  $cb['mailerJobsMax']        = 3;
   
   $sql = "UPDATE civicrm_domain SET config_backend='".serialize($cb)."' WHERE id=1;";
   if ( !mysql_query($sql, $dbcon) ) {
@@ -114,25 +115,35 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
     $rc = false;
   }
   
+  return $rc;
+} //updateMailingBackend()
+
+function updateEmailReports( $dbcon ) {
+
   //enable civimail report menu items
   $sql = "UPDATE civicrm_navigation SET is_active = 1 WHERE id IN (240, 241, 242, 243)";
   $nav = mysql_query( $sql, $dbcon );
-  
+
+} //updateMailingBackend()
+
+function updateFromEmail( $dbcon, $emailFrom, $fromName, $smtpSubuser ) {
+
   //update the FROM email address
   if ( !$emailFrom ) $emailFrom = $smtpSubuser;
   $from = "\"$fromName\" <$emailFrom>";
   $sql = "UPDATE civicrm_option_value SET label = '{$from}', name = '{$from}' WHERE option_group_id = 30";
   $from_set   = mysql_query( $sql , $dbcon );
-  
+
+} //updateFromEmail()
+
+function cacheCleanup( $dbcon ) {
+
   //cache cleanup
   $cache_menu  = mysql_query( "TRUNCATE TABLE civicrm_menu", $dbcon );
   $cache_cache = mysql_query( "TRUNCATE TABLE civicrm_cache", $dbcon );
   $cache_nav   = mysql_query( "UPDATE civicrm_preferences SET navigation = null", $dbcon );
 
-  return $rc;
-} // updateMailingBackend()
-
-
+} //cacheCleanup()
 
 /*
  * We use sendgrid subuser accounts for each district.
@@ -210,7 +221,7 @@ $prog = basename($argv[0]);
 
 if ($argc != 17 && $argc != 20) {
   echo "Usage: $prog cmd dbhost dbuser dbpass dbname smtphost smtpport smtpauth smtpsubuser smtpsubpass instance fromName [crmhost] [appdir] [datadir]\n";
-  echo "   cmd can be: list, update-config, update-template, set-apps, update-all\n";
+  echo "   cmd can be: list, update-config, update-template, set-apps, update-all, update-from, update-reports\n";
   exit(1);
 }
 else {
@@ -260,12 +271,23 @@ else {
       if (updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName, $emailFrom) === false) {
         $rc = 1;
       }
+	  
     } elseif ( $cmd == "update-template" ) {
       echo "Resetting the header and footer to default values.\n";
       setHeaderFooter( $dbcon, $crmhost, $instance, $fromName );
+	  
     } elseif ( $cmd == "set-apps" ) {
       echo "Activating and configuring Sendgrid apps.\n";
       setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass );
+	  
+	} elseif ( $cmd == 'update-from' ) {
+	  echo "Setting FROM email address.\n";
+	  updateFromEmail( $dbcon, $emailFrom, $fromName, $smtpSubuser );
+	  
+	} elseif ( $cmd == 'update-reports' ) {
+	  echo "Enabling mailing reports.\n";
+	  updateEmailReports( $dbcon );
+	  
     } elseif ( $cmd == "update-all" ) {
       echo "1. Updating the CiviCRM mailing configuration.\n";
       updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName, $emailFrom);
@@ -274,12 +296,21 @@ else {
       setHeaderFooter( $dbcon, $crmhost, $instance, $fromName );
       echo "3. Activating and configuring Sendgrid apps.\n";
       setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass );
+	  echo "4. Setting FROM email address.\n";
+	  updateFromEmail( $dbcon, $emailFrom, $fromName, $smtpSubuser );
+	  echo "5. Enabling mailing reports.\n";
+	  updateEmailReports( $dbcon );
+	  
     } else {
       listMailingBackend($civiMailing);
+	  
     }
   } else {
     echo "$prog: CiviCRM mailing configuration is empty.\n";
   }
+  
+  echo "Clearing various caches gracefully (no session logout).\n";
+  cacheCleanup( $dbcon );
 
   mysql_close($dbcon);
   exit($rc);

@@ -16,7 +16,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--list] [--update-config] [--update-template] [--set-apps] [--update-all] instanceName" >&2
+  echo "Usage: $prog [--list] [--update-config] [--update-template] [--set-apps] [--update-all] [--update-from] [--update-reports] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -33,6 +33,8 @@ while [ $# -gt 0 ]; do
     --update-config) civi_op=update-config ;;
     --update-template) civi_op=update-template ;;
     --set-apps) civi_op=set-apps ;;
+    --update-from) civi_op=update-from ;;
+    --update-reports) civi_op=update-reports ;;
     --update-all) civi_op=update-all ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
