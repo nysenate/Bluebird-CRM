@@ -118,7 +118,7 @@ class Net_SMTP
      * @var int
      * @access private
      */
-    var $_timeout = 65; //NYSS
+    var $_timeout = 300; //NYSS
 
     /**
      * The most recent server response code.
