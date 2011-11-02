@@ -17,6 +17,7 @@ CREATE TABLE shadow_contact (
     birth_date date,
     contact_type varchar(255),
     INDEX (first_name, last_name, middle_name),
+    INDEX (last_name),
     INDEX (household_name),
     INDEX (organization_name),
     INDEX (birth_date)
@@ -44,7 +45,7 @@ DELIMITER |
 
 DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
 CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255))
-    RETURNS varchar(255)  DETERMINISTIC
+    RETURNS varchar(255) DETERMINISTIC
 
     BEGIN
         -- Start with the first alpha word occurance and loop
@@ -288,7 +289,7 @@ CREATE TRIGGER shadow_contact_insert_fn_trigger AFTER INSERT ON shadow_contact
         DECLARE CONTINUE HANDLER FOR NOT FOUND SET not_found = 'True';
 
         -- Records with a first name of NULL can be skipped here
-        IF NEW.first_name IS NOT NULL THEN
+        IF NEW.first_name IS NOT NULL AND NEW.first_name != '' THEN
 
             -- Loop over the matching first name groups
             OPEN find_fn;
