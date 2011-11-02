@@ -14,8 +14,8 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
-tmpotab=temp_email_optout
-optoutfile=
+tmpetab=temp_email_optout
+emailfile=
 force_ok=0
 dry_run=0
 
@@ -33,7 +33,7 @@ fi
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --file|-f) shift; optoutfile="$1" ;;
+    --file|-f) shift; emailfile="$1" ;;
     --ok) force_ok=1 ;;
     -n|--dry-run) dry_run=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
@@ -42,12 +42,12 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-if [ ! "$optoutfile" ]; then
+if [ ! "$emailfile" ]; then
   echo "$prog: Must specify the file of opted out e-mail addresses." >&2
   usage
   exit 1
-elif [ ! -r "$optoutfile" ]; then
-  echo "$prog: $optoutfile: File not found" >&2
+elif [ ! -r "$emailfile" ]; then
+  echo "$prog: $emailfile: File not found" >&2
   exit 1
 elif ! $readConfig --instance $instance --quiet; then
   echo "$prog: $instance: Instance not found in config file" >&2
@@ -57,12 +57,12 @@ fi
 echo "==> Processing CRM instance [$instance]" >&2
 
 echo "Loading opted out addresses into temporary table" >&2
-sql="drop table if exists $tmpotab; create table $tmpotab ( email varchar(64) collate utf8_unicode_ci, index ( email) ); load data local infile '$optoutfile' into table $tmpotab lines terminated by '\n' set email=lower(email);"
+sql="drop table if exists $tmpetab; create table $tmpetab ( email varchar(64) collate utf8_unicode_ci, index ( email) ); load data local infile '$emailfile' into table $tmpetab lines terminated by '\n' set email=lower(email);"
 $execSql -q -i $instance -c "$sql" || exit 1
 
 selccnt="select count(*) from civicrm_contact c"
-selecnt="select count(*) from civicrm_email e, $tmpotab t"
-selcid="select distinct e.contact_id from civicrm_email e, $tmpotab t"
+selecnt="select count(*) from civicrm_email e, $tmpetab t"
+selcid="select distinct e.contact_id from civicrm_email e, $tmpetab t"
 emailchk="e.email = t.email"
 bulkchk="and e.is_bulkmail = 1"
 primchk="and e.is_primary = 1"
@@ -121,7 +121,7 @@ if [ $optoutcnt -gt 0 -a $dry_run -eq 0 ]; then
 fi
 
 echo "Dropping temporary table" >&2
-sql="drop table $tmpotab;"
+sql="drop table $tmpetab;"
 $execSql -q -i $instance -c "$sql" || exit 1
 
 exit 0
