@@ -33,35 +33,35 @@ def load_data(filename, dest, census, nick_first=False):
 def load_census():
     dest = set()
 
-    with open(rel_path('source/nicknames/data.dat'),'r') as source:
+    with open(rel_path('source','data.dat'),'r') as source:
         for parts in [line.split(',') for line in source]:
             if parts[4] == '1': dest.add(parts[0].strip().lower())
 
-    with open(rel_path('source/nicknames/NAMES-F.TXT'),'r') as source:
+    with open(rel_path('source','NAMES-F.TXT'),'r') as source:
         for parts in [line.split(',') for line in source]:
             dest.add(parts[0].strip().lower())
 
-    with open(rel_path('source/nicknames/NAMES-M.TXT'),'r') as source:
+    with open(rel_path('source','NAMES-M.TXT'),'r') as source:
         for parts in [line.split(',') for line in source]:
             dest.add(parts[0].strip().lower())
 
-    with open(rel_path('source/nicknames/census_female.txt'),'r') as source:
+    with open(rel_path('source','census_female.txt'),'r') as source:
         for parts in [line.split(',') for line in source]:
             dest.add(parts[0].strip().lower())
 
-    with open(rel_path('source/nicknames/census_male.txt'),'r') as source:
+    with open(rel_path('source','census_male.txt'),'r') as source:
         for parts in [line.split(',') for line in source]:
             dest.add(parts[0].strip().lower())
 
-    with open(rel_path('source/nicknames/patch-f.txt'),'r') as source:
+    with open(rel_path('source','patch-f.txt'),'r') as source:
         for parts in [line.split(',') for line in source]:
             dest.add(parts[0].strip().lower())
 
-    with open(rel_path('source/nicknames/patch-m.txt'),'r') as source:
+    with open(rel_path('source','patch-m.txt'),'r') as source:
         for parts in [line.split(',') for line in source]:
             dest.add(parts[0].strip().lower())
 
-    with open(rel_path('source/nicknames/given_name.tsv'),'r') as source:
+    with open(rel_path('source','given_name.tsv'),'r') as source:
         for parts in [line.split('\t') for line in source]:
             dest.add(parts[0].strip().lower())
 
@@ -72,33 +72,35 @@ def print_stats(source, title):
     nicks = sum(len(l) for l in source.values())
     avg = nicks/float(names)
 
-    print "\t{0}".format(title)
-    print "\t--------------------------"
-    print "\t{0} Names, {1} Nicks, {2} Nicks per name (avg)".format(names, nicks, avg)
+    print
+    print "{0}".format(title)
+    print "--------------------------"
+    print "{0} Names, {1} Nicks, {2} Nicks per name (avg)".format(names, nicks, avg)
     print
 
 
 if __name__ == '__main__':
 
-    #print "Initializing..."
+    print "Initializing..."
     trash = set()
     all_in_one = defaultdict(set)
     male_nicknames = defaultdict(set)
     female_nicknames = defaultdict(set)
     unknown_nicknames = defaultdict(set)
 
-    #print "Loading Census Data..."
+    print "Loading Census Data..."
     census = load_census()
 
-    #print "Loading Miscellaneous internet spam..."
-    load_data(rel_path('source/nicknames/kknfa-female.txt'), female_nicknames, census)
-    load_data(rel_path('source/nicknames/censusdiggin-female.txt'), female_nicknames, census)
-    load_data(rel_path('source/nicknames/kknfa-male.txt'), male_nicknames, census)
-    load_data(rel_path('source/nicknames/censusdiggin-male.txt'), male_nicknames, census)
-    load_data(rel_path('source/nicknames/wikimedia.txt'), unknown_nicknames, census)
-    load_data(rel_path('source/nicknames/names1.1_fixed.txt'), unknown_nicknames, census)
-    load_data(rel_path('source/nicknames/topnames.txt'), unknown_nicknames, census, nick_first=True)
-    load_data(rel_path('source/nicknames/nireland.txt'), unknown_nicknames, census)
+    print "Loading Miscellaneous internet spam..."
+    load_data(rel_path('source','kknfa-female.txt'), female_nicknames, census)
+    load_data(rel_path('source','censusdiggin-female.txt'), female_nicknames, census)
+    load_data(rel_path('source','kknfa-male.txt'), male_nicknames, census)
+    load_data(rel_path('source','censusdiggin-male.txt'), male_nicknames, census)
+    load_data(rel_path('source','wikimedia.txt'), unknown_nicknames, census)
+    load_data(rel_path('source','names1.1_fixed.txt'), unknown_nicknames, census)
+    load_data(rel_path('source','topnames.txt'), unknown_nicknames, census, nick_first=True)
+    load_data(rel_path('source','nireland.txt'), unknown_nicknames, census)
+    load_data(rel_path('source','senate-mappings.txt'), unknown_nicknames, census)
 
     def sort_and_filter(source, dest):
         for given in source.keys():
@@ -106,39 +108,41 @@ if __name__ == '__main__':
                 if nick in census:
                     dest[given].add(nick)
 
-    #print "Sorting/Filtering Unknown Nicknames..."
+    print "Sorting/Filtering Unknown Nicknames..."
     sort_and_filter(unknown_nicknames, all_in_one)
-    #print "Sorting/Filtering Female Nicknames..."
+    print "Sorting/Filtering Female Nicknames..."
     sort_and_filter(female_nicknames, all_in_one)
-    #print "Sorting/Filtering Male Nicknames..."
+    print "Sorting/Filtering Male Nicknames..."
     sort_and_filter(male_nicknames, all_in_one)
 
     #If a nickname is listed as a given name, pull it into the original group
     nicknames = set(sum([list(i) for i in all_in_one.values()],[]))
     given_names = set(all_in_one.keys())
-    for nickname in set(nicknames & given_names):
-        for given, nicknames in all_in_one.iteritems():
-            if nickname in nicknames:
-                all_in_one[given] = all_in_one[given] | all_in_one[nickname]
-                del all_in_one[nickname]
-                break
 
-    #print_stats(all_in_one, "Nicknames")
+    for given in given_names:
+        for given2 in all_in_one.keys():
+            nicknames = all_in_one[given2]
+            #make sure its not listing itself as a nickname
+            if given in nicknames and given != given2:
+                all_in_one[given2] = all_in_one[given2] | all_in_one[given]
+                del all_in_one[given]
 
-    with open(rel_path('output/nicknames/names.txt'), 'w') as output:
+    print_stats(all_in_one, "Nicknames")
+
+    with open(rel_path('output','names.txt'), 'w') as output:
         for name in sorted(given_names | nicknames):
             output.write(name+'\n')
 
     #Persist the results to file, simple given-nick,nick format
-    with open(rel_path('output/nicknames/mapping.txt'), 'w') as output:
+    with open(rel_path('output','mapping.txt'), 'w') as output:
         for key, value in sorted(all_in_one.iteritems()):
             output.write(key+'-'+','.join(set(sorted(value)))+'\n')
 
-    with open(rel_path('output/nicknames/trash.txt'), 'w') as output:
+    with open(rel_path('output','trash.txt'), 'w') as output:
         for item in trash:
             output.write(item+'\n')
 
-    with open(rel_path('output/nicknames/nicknames.sql'), 'w') as output:
+    with open(rel_path('output','nicknames.sql'), 'w') as output:
         output.write("""\
 DROP TABLE IF EXISTS fn_group;
 CREATE TABLE fn_group (
