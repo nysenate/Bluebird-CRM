@@ -1,23 +1,42 @@
+#!/bin/sh
+#
+# dedupeSetup.sh - All in one dedupe setup script.
+#
+# Project: BluebirdCRM
+# Author: Graylin Kim
+# Organization: New York State Senate
+# Date: 2011-11-03
+# Revised: 2011-11-03
+#
+
 prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 dedupe_dir=$script_dir/../modules/nyss_dedupe
 
-if [[ $# -eq 0 || "$1" == '--help' || "$1" == '-h' ]]; then
+usage () {
     echo "Usage: $prog [--help|-h] <instance_name>"
-    exit 1
+}
+
+if [ $# -eq 0 ]; then
+    usage; exit 1;
 fi
 
-instance="$1"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) shift; usage; exit 1;;
+    -*) echo "Invalid option '$1'."; usage; exit 1;;
+    *) instance="$1"; shift;;
+  esac
+done
 
-if ! $readConfig --instance $instance --quiet; then
+if [ ! $readConfig --instance $instance --quiet ]; then
     echo "$prog: '$instance' instance not found in config file" >&2
     exit 1
 fi
 
-
-if [ ! "`$execSql -i $instance --quiet -s -c "SELECT id FROM civicrm_dedupe_rule_group WHERE name='Individual Omis'"`" ]; then
+if [ ! "`$execSql -i $instance --quiet -c "SELECT id FROM civicrm_dedupe_rule_group WHERE name='Individual Omis'"`" ]; then
     echo "Creating entries for the Omis ruleset"
     $execSql -i $instance -c "
         INSERT INTO civicrm_dedupe_rule_group
@@ -39,7 +58,6 @@ else
     echo "Existing Omis rule detected, no action taken."
 fi
 
-exit 1
 
 #Update suffixes tables
 echo "Rebuilding Suffix tables."
