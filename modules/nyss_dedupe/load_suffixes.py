@@ -32,6 +32,7 @@
 #
 #   sh scripts/execSql.sh -i testing -c "`scripts/load_suffixes.py`"
 
+import os
 
 from urllib2 import urlopen
 from BeautifulSoup import BeautifulSoup
@@ -65,7 +66,9 @@ for row in container.findAll('tr'):
 
 # Don't worry about connecting to the database, just construct the SQL
 values = [" ('{0}','{1}')".format(a, b) for a, b in pairs.iteritems()]
-print """
+
+with open(os.path.join(os.path.dirname(__file__),"output","suffixes.sql"),'w') as output:
+    output.write("""
 -- Our address lookup table
 DROP table IF EXISTS address_abbreviations;
 CREATE TABLE address_abbreviations (
@@ -76,5 +79,4 @@ CREATE TABLE address_abbreviations (
 -- Our official USPS abreviation mappings
 INSERT INTO address_abbreviations
     (raw_value, normalized)
-VALUES """+', '.join(values)+";"
-
+VALUES """+', '.join(values)+";");
