@@ -260,9 +260,9 @@ function addControlBox(tagLabel, IDChecked, tagID) {
 	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';*/
 	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
 	if(IDChecked == ' checked'){
-		floatControlBox += '<input id="tag['+tagID+']" name="tag['+tagID+']" type="checkbox" class="checkbox form-checkbox" value="1" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
+		floatControlBox += '<input id="tag['+tagID+']" name="tag['+tagID+']" type="checkbox" class="checkbox form-checkbox" value="1" checked></input></li></ul>';
 	} else {
-		floatControlBox += '<input id="tag['+tagID+']" name="tag['+tagID+']" type="checkbox" class="checkbox form-checkbox" value="1" onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
+		floatControlBox += '<input id="tag['+tagID+']" name="tag['+tagID+']" type="checkbox" class="checkbox form-checkbox" value="1"></input></li></ul>';
 	}
 	floatControlBox += '</span>';
 	if(tagMouse != '.BBtree.edit dt#tagLabel_291')
