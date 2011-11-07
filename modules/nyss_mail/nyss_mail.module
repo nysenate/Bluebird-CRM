@@ -5,7 +5,7 @@ define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 function nyss_mail_civicrm_alterMailParams( &$params, $context )
 {
     require_once 'SmtpApiHeader.php';
-	//CRM_Core_Error::debug($params);
+    //CRM_Core_Error::debug($params);
 
     /* Re-write any URLs in the message body of the form:
     **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
@@ -16,41 +16,44 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
     foreach ( $bodyvalues as $bodyvalue ) {
         $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
     }
-	
-	$hdr = new SmtpApiHeader(); 
-	
-	//universal settings
-	$bbconfig = get_bluebird_instance_config();
-	if ( !empty($bbconfig['senator.email.replyto']) ) {
-		$replyto = $bbconfig['senator.email.replyto'];
-	} elseif ( !empty($bbconfig['senator.email.from']) ) {
-		$replyto = $bbconfig['senator.email.from'];
-	} else {
-		$replyto = $bbconfig['smtp.subuser'];
-	}
-		
-	$params['Return-Path'] = '';
-    $params['List-Unsubscribe'] = '';
-	$params['Reply-To'] = $replyto;
-	
-	//set some values based on context
-	if ( $context == 'civimail' ) {
-		
-		$hdr->setCategory("BluebirdMail");
-		$hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
-		$hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>."); 
-		$hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
-		
-	} else {
 
-		//disable unsubscribe for non-CiviMail email
-		$hdr->setCategory("Bluebird Activity");
-		$hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
+    $hdr = new SmtpApiHeader(); 
 
-	}
-	
-	$hdr->addFilterSetting('domainkeys', 'enable', 0);
-	$params['X-SMTPAPI'] = $hdr->asJSON();
+    //universal settings
+    $bbconfig = get_bluebird_instance_config();
+    if ( !empty($bbconfig['senator.email.replyto']) ) {
+        $replyto = $bbconfig['senator.email.replyto'];
+    } elseif ( !empty($bbconfig['senator.email.from']) ) {
+        $replyto = $bbconfig['senator.email.from'];
+    } else {
+        $replyto = $bbconfig['smtp.subuser'];
+    }
+
+    //set some values based on context
+    if ( $context == 'civimail' ) {
+
+        $params['Return-Path'] = '';
+        $params['List-Unsubscribe'] = '';
+        $params['Reply-To'] = $replyto;
+
+        //Sendgrid headers
+        $hdr->setCategory("BluebirdMail");
+        $hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
+        $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>."); 
+        $hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
+
+    } else {
+
+        //$params['replyTo'] = $replyto;
+
+        //Sendgrid headers: disable unsubscribe for non-CiviMail email
+        $hdr->setCategory("Bluebird Activity");
+        $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
+
+    }
+
+    $hdr->addFilterSetting('domainkeys', 'enable', 0);
+    $params['X-SMTPAPI'] = $hdr->asJSON();
 
     //CRM_Core_Error::debug($params); exit();
 }
@@ -75,11 +78,11 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
         $baseGroup->freeze();
     
     }
-	
-	if ( $formName == 'CRM_Mailing_Form_Group' ) {
-	    $defaults['dedupe_email'] = true;
-		$form->setDefaults( $defaults );
-	}
+
+    if ( $formName == 'CRM_Mailing_Form_Group' ) {
+        $defaults['dedupe_email'] = true;
+        $form->setDefaults( $defaults );
+    }
     
     if ( $formName == 'CRM_Mailing_Form_Test' ) {
         //change button text
@@ -100,45 +103,45 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
             }
         }
     }
-	
-	if ( $formName == 'CRM_Mailing_Form_Group' ||
-	     $formName == 'CRM_Mailing_Form_Upload' ||
-		 $formName == 'CRM_Mailing_Form_Test' ||
-		 $formName == 'CRM_Mailing_Form_Schedule' ) {
-		CRM_Utils_System::setTitle( 'New Mass Email' );
+
+    if ( $formName == 'CRM_Mailing_Form_Group' ||
+         $formName == 'CRM_Mailing_Form_Upload' ||
+         $formName == 'CRM_Mailing_Form_Test' ||
+         $formName == 'CRM_Mailing_Form_Schedule' ) {
+        CRM_Utils_System::setTitle( 'New Mass Email' );
     }
-	
-	if ( $formName == 'CRM_Mailing_Form_Search' ) {
-		$parent = $form->controller->getParent();
-		$title  = $parent->getVar('_title');
-		
-		if ( $title == 'Draft and Unscheduled Mailings' ) {
-			CRM_Utils_System::setTitle( 'Draft and Unscheduled Email' );
-		} elseif ( $title == 'Scheduled and Sent Mailings' ) {
-			CRM_Utils_System::setTitle( 'Scheduled and Sent Email' );
-		} elseif ( $title == 'Archived Mailings' ) {
-			CRM_Utils_System::setTitle( 'Archived Email' );
-		}
-		
-		//CRM_Core_Error::debug($parent);
-	}
-	
-	//CRM_Core_Error::debug($formName);
-	//CRM_Core_Error::debug($form);
+    
+    if ( $formName == 'CRM_Mailing_Form_Search' ) {
+        $parent = $form->controller->getParent();
+        $title  = $parent->getVar('_title');
+        
+        if ( $title == 'Draft and Unscheduled Mailings' ) {
+            CRM_Utils_System::setTitle( 'Draft and Unscheduled Email' );
+        } elseif ( $title == 'Scheduled and Sent Mailings' ) {
+            CRM_Utils_System::setTitle( 'Scheduled and Sent Email' );
+        } elseif ( $title == 'Archived Mailings' ) {
+            CRM_Utils_System::setTitle( 'Archived Email' );
+        }
+
+        //CRM_Core_Error::debug($parent);
+    }
+
+    //CRM_Core_Error::debug($formName);
+    //CRM_Core_Error::debug($form);
 }
 
 function nyss_mail_civicrm_mailingGroups( &$form, &$groups, &$mailings ) {
 
-	//get seed group ID
-	$gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';" );
-	
-	if ( $form->_flagSubmitted && $gid ) {
-		//add group to form selection after submission
-		$form->_submitValues['includeGroups'][] = $gid;
-	} elseif ( array_key_exists($gid, $groups) ) {
-		//unset seed group on initial display so there's no confusion
-		unset($groups[$gid]);
-	}
+    //get seed group ID
+    $gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';" );
+
+    if ( $form->_flagSubmitted && $gid ) {
+        //add group to form selection after submission
+        $form->_submitValues['includeGroups'][] = $gid;
+    } elseif ( array_key_exists($gid, $groups) ) {
+        //unset seed group on initial display so there's no confusion
+        unset($groups[$gid]);
+    }
 }
 
 ?>
