@@ -689,6 +689,8 @@ function checkRemoveAdd(tagLabel) {
 				if(data.code != 1) {alert('fails');}
 				cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
 				giveParentsIndicator(tagLabel,'add');
+				var tabCounter = cj('li#tab_tag em').html();
+				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)+1);
 			}
 		});
 		
@@ -704,6 +706,8 @@ function checkRemoveAdd(tagLabel) {
 			success: function(data, status, XMLHttpRequest) {
 				if(data.code != 1) {alert('fails');}
 				findIDLv(tagLabel);
+				var tabCounter = cj('li#tab_tag em').html();
+				cj('li#tab_tag em').html('').html(parseFloat(tabCounter)-1);
 			}
 		});
 	}

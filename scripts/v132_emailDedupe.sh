@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# v132.sh
+# v132_emailDedupe.sh
 #
 # Project: BluebirdCRM
 # Author: Brian Shaughnessy
 # Organization: New York State Senate
-# Date: 2011-10-18
+# Date: 2011-11-04
 #
 
 prog=`basename $0`
@@ -35,26 +35,6 @@ formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="Sen
 
 ###### Begin Upgrade Scripts ######
 
-## run civicrm db upgrade using drush
-$drush $instance civicrm-upgrade-db
-
-
-### Drupal ###
-
-
-### CiviCRM ###
-
-## remove v3.4.6 nav items
-nav="
-UPDATE civicrm_navigation
-SET is_active = 0
-WHERE label = 'New Price Set' OR label = 'Manage Price Sets';"
-$execSql -i $instance -c "$nav"
-
-## 3439 report permissions by role
-rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
-$execSql -i $instance -c "$rpt"
-
-### Cleanup ###
-
-$script_dir/clearCache.sh $instance
+## 4219
+maildedupe="ALTER TABLE civicrm_mailing ADD dedupe_email TINYINT( 4 ) NULL ;"
+$execSql -i $instance -c "$maildedupe"

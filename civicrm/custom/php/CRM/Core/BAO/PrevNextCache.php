@@ -118,6 +118,13 @@ WHERE  cacheKey     = %3 AND
         CRM_Core_DAO::executeQuery( $sql, $params );
     }
 
+    function clearGroup( $groupId ) {
+        CRM_Core_DAO::executeQuery(
+            "DELETE FROM civicrm_prevnext_cache WHERE cacheKey LIKE %1",
+            array(1=>array("%_$groupId", 'String'))
+        );
+    }
+
     function retrieve( $cacheKey, $join = null, $where = null, $offset = 0, $rowCount = 0 ) 
     {
         $query = "
