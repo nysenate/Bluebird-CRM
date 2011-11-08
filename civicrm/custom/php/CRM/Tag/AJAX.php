@@ -124,12 +124,15 @@ class CRM_Tag_AJAX extends CRM_Core_Page {
         // big query and build the heirarchy with the recursive algorithm below.
         //
         //Can't use the API because it doesn't support sorting (yet) and we need
-        //the tags to be sorted in alphabetical order on each level.
-        $tags = new CRM_Core_BAO_Tag();
-        $tags->used_for = $entity_type;
-        $tags->orderBy('name');
-        $tags->find();
-
+        //the tags to be sorted in alphabetical order on each level. Can't use
+        //the DAO object because it doesn't support queries by LIKE. Atleast, I
+        //don't know how you would do it, maybe it can be done.
+        $tags = CRM_Core_DAO::executeQuery("
+                SELECT *
+                FROM civicrm_tag
+                WHERE used_for LIKE %1
+                ORDER BY name
+            ",array( 1 => array("%$entity_type%",'String')));
 
         // Sort all the tags into root and nodes buckets. This simpifies the process
         // to building the root nodes by moving tags from the nodes bucket.
