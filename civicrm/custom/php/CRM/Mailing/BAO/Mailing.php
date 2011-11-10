@@ -1101,6 +1101,9 @@ AND civicrm_contact.is_opt_out =0";
         $mailParams['toName' ] = $contact['display_name'];
         $mailParams['toEmail'] = $email;
 
+        //NYSS
+        $mailParams['job_id']  = $job_id;
+
         require_once 'CRM/Utils/Hook.php';
         CRM_Utils_Hook::alterMailParams( $mailParams, 'civimail' );
         

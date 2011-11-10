@@ -1368,3 +1368,31 @@ ul.token-input-list-facebook { width:265px;}
 #newsFeeds a {
 	color: #B4E2FE;
 }
+
+/*summary overlay*/
+.crm-table-group-summary-leftcol,
+.crm-table-group-summary-rightcol {
+	width: 46%;
+}
+
+/*delete button*/
+#crm-container .crm-actions-ribbon li.crm-delete-action {
+    margin-left: 60px;
+}
+#crm-container .crm-actions-ribbon li.crm-delete-action a.button {
+    background: url("/sites/all/modules/civicrm/i/crm-button-bg.gif") repeat-x scroll left top #70716B;
+	text-shadow: 0 1px 0 black;
+}
+#crm-container .crm-actions-ribbon li.crm-delete-action a.button span {
+    background: url("/sites/all/modules/civicrm/i/crm-button-bg.gif") no-repeat scroll right top transparent;
+	text-shadow: 0 1px 0 black;
+	border-radius: 0px 3px 3px 0px;
+}
+#crm-container .crm-actions-ribbon li.crm-delete-action a.button:hover {
+    background: url("/sites/all/modules/civicrm/i/crm-button-bg.gif") repeat-x scroll left -25px #70716B;
+	text-shadow: 0 1px 0 black;
+}
+#crm-container .crm-actions-ribbon li.crm-delete-action a.button:hover span {
+    background: url("/sites/all/modules/civicrm/i/crm-button-bg.gif") no-repeat scroll right -25px transparent;
+	text-shadow: 0 1px 0 black;
+}

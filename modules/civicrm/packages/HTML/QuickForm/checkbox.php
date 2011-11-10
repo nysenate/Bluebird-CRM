@@ -82,7 +82,7 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
         $this->_persistantFreeze = true;
         $this->_text = $text;
         $this->setType('checkbox');
-        $this->updateAttributes(array('value'=>1));
+        $this->_attributes['value']=1;
         $this->_generateId();
     } //end constructor
     
@@ -100,9 +100,9 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
     function setChecked($checked)
     {
         if (!$checked) {
-            $this->removeAttribute('checked');
+            unset($this->_attributes['checked']);
         } else {
-            $this->updateAttributes(array('checked'=>'checked'));
+            $this->_attributes['checked']='checked';
         }
     } //end func setChecked
 
@@ -248,17 +248,15 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
             case 'updateValue':
                 // constant values override both default and submitted ones
                 // default values are overriden by submitted
-                $value = $this->_findValue($caller->_constantValues);
-                if (null === $value) {
+                $isSubmitted = $caller->isSubmitted();
+                if ($isSubmitted) {
                     // if no boxes were checked, then there is no value in the array
                     // yet we don't want to display default value in this case
-                    if ($caller->isSubmitted()) {
-                        $value = $this->_findValue($caller->_submitValues);
+                    $value = $this->_findValue($caller->_csValues);
                     } else {
-                        $value = $this->_findValue($caller->_defaultValues);
-                    }
+                    $value = $this->_findValue($caller->_cdValues);
                 }
-                if (null !== $value || $caller->isSubmitted()) {
+                if (null !== $value || $isSubmitted) {
                     $this->setChecked($value);
                 }
                 break;

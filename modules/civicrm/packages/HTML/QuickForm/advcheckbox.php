@@ -154,7 +154,7 @@ class HTML_QuickForm_advcheckbox extends HTML_QuickForm_checkbox
         } else {
             $this->_values = $values;
         }
-        $this->updateAttributes(array('value' => $this->_values[1]));
+        $this->_attributes['value']=$this->_values[1];
         $this->setChecked($this->_currentValue == $this->_values[1]);
     }
 
@@ -247,13 +247,7 @@ class HTML_QuickForm_advcheckbox extends HTML_QuickForm_checkbox
             case 'updateValue':
                 // constant values override both default and submitted ones
                 // default values are overriden by submitted
-                $value = $this->_findValue($caller->_constantValues);
-                if (null === $value) {
-                    $value = $this->_findValue($caller->_submitValues);
-                    if (null === $value) {
-                        $value = $this->_findValue($caller->_defaultValues);
-                    }
-                }
+                $value = $this->_findValue($caller->_finalValues);
                 if (null !== $value) {
                     $this->setValue($value);
                 }

@@ -192,6 +192,14 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
                              $separator = '&nbsp;&nbsp;', 
                              $flatlist = true )
     {
+        //NYSS - cache this expensive stuff!
+        $cacheKey = "CRM_getTags_$usedFor_$parentId";
+        require_once "CRM/Utils/Cache.php";
+        $cache = CRM_Utils_Cache::singleton();
+        if($var = $cache->get($cacheKey)) {
+            return $var;
+        }
+
         // We need to build a list of tags ordered by hierarchy and sorted by
         // name. The heirarchy will be communicated by an accumulation of
         // '&nbsp;&nbsp;' in front of the name to give it a visual offset.
@@ -250,6 +258,8 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
             $tag = $tag[0].$tag[1];
         }
 
+        //NYSS - cache it!
+        $cache->set($cacheKey, $tags);
         return $tags;
     }
     
@@ -285,6 +295,13 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
         if ( $tag->delete( ) ) {
             CRM_Utils_Hook::post( 'delete', 'Tag', $id, $tag );
             CRM_Core_Session::setStatus( ts('Selected Tag has been Deleted Successfuly.') );
+
+            //NYSS
+            //Overkill for now. Need a way to have targetted invalidation.
+            require_once "CRM/Utils/Cache.php";
+            $cache = CRM_Utils_Cache::singleton();
+            $cache->flush();
+
             return true;
         }
         return false;
@@ -351,6 +368,12 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
                                                2 => array( $tag->id , 'Integer' ) ) );
         }
         
+        //NYSS
+        //Overkill for now. Need a way to have targetted invalidation.
+        require_once "CRM/Utils/Cache.php";
+        $cache = CRM_Utils_Cache::singleton();
+        $cache->flush();
+
         return $tag;
     }
 

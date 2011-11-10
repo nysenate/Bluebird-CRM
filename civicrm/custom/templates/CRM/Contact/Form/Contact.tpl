@@ -304,45 +304,40 @@ function highlightTabs( ) {
 function processDeceased( ) {
 	if ( cj("#is_deceased").is(':checked') ) {
 		document.getElementById('privacy[do_not_phone]').checked  = true;
-		document.getElementById('privacy[do_not_phone]').disabled = true;
+		document.getElementById('privacy[do_not_phone]').setAttribute('onclick', 'return false');
 		document.getElementById('privacy[do_not_email]').checked  = true;
-		document.getElementById('privacy[do_not_email]').disabled = true;
+		document.getElementById('privacy[do_not_email]').setAttribute('onclick', 'return false');
 		document.getElementById('privacy[do_not_mail]').checked   = true;
-		document.getElementById('privacy[do_not_mail]').disabled  = true;
+		document.getElementById('privacy[do_not_mail]').setAttribute('onclick', 'return false');
 		document.getElementById('privacy[do_not_sms]').checked    = true;
-		document.getElementById('privacy[do_not_sms]').disabled   = true;
+		document.getElementById('privacy[do_not_sms]').setAttribute('onclick', 'return false');
 		document.getElementById('is_opt_out').checked             = true;
-		document.getElementById('is_opt_out').disabled            = true;
+		document.getElementById('is_opt_out').setAttribute('onclick', 'return false');
 		
-		document.getElementById('preferred_communication_method[1]').checked  = false;
-		document.getElementById('preferred_communication_method[1]').disabled = true;
+		document.getElementById('preferred_communication_method[1]').checked = false;
+		document.getElementById('preferred_communication_method[1]').setAttribute('onclick', 'return false');
 		document.getElementById('preferred_communication_method[2]').checked  = false;
-		document.getElementById('preferred_communication_method[2]').disabled = true;
+		document.getElementById('preferred_communication_method[2]').setAttribute('onclick', 'return false');
 		document.getElementById('preferred_communication_method[3]').checked  = false;
-		document.getElementById('preferred_communication_method[3]').disabled = true;
+		document.getElementById('preferred_communication_method[3]').setAttribute('onclick', 'return false');
 		document.getElementById('preferred_communication_method[4]').checked  = false;
-		document.getElementById('preferred_communication_method[4]').disabled = true;
+		document.getElementById('preferred_communication_method[4]').setAttribute('onclick', 'return false');
 		document.getElementById('preferred_communication_method[5]').checked  = false;
-		document.getElementById('preferred_communication_method[5]').disabled = true;
+		document.getElementById('preferred_communication_method[5]').setAttribute('onclick', 'return false');
     } else {
-		document.getElementById('privacy[do_not_phone]').checked = false;
-		document.getElementById('privacy[do_not_email]').checked = false;
-		document.getElementById('privacy[do_not_mail]').checked  = false;
-		document.getElementById('privacy[do_not_sms]').checked   = false;
-		document.getElementById('is_opt_out').checked            = false;
-		
-		document.getElementById('privacy[do_not_phone]').disabled = false;
-		document.getElementById('privacy[do_not_email]').disabled = false;
-		document.getElementById('privacy[do_not_mail]').disabled  = false;
-		document.getElementById('privacy[do_not_sms]').disabled   = false;
-		document.getElementById('is_opt_out').disabled            = false;
-		document.getElementById('preferred_communication_method[1]').disabled = false;
-		document.getElementById('preferred_communication_method[2]').disabled = false;
-		document.getElementById('preferred_communication_method[3]').disabled = false;
-		document.getElementById('preferred_communication_method[4]').disabled = false;
-		document.getElementById('preferred_communication_method[5]').disabled = false;
+		document.getElementById('privacy[do_not_phone]').removeAttribute('onclick');
+		document.getElementById('privacy[do_not_email]').removeAttribute('onclick');
+		document.getElementById('privacy[do_not_mail]').removeAttribute('onclick');
+		document.getElementById('privacy[do_not_sms]').removeAttribute('onclick');
+		document.getElementById('is_opt_out').removeAttribute('onclick');
+		document.getElementById('preferred_communication_method[1]').removeAttribute('onclick');
+		document.getElementById('preferred_communication_method[2]').removeAttribute('onclick');
+		document.getElementById('preferred_communication_method[3]').removeAttribute('onclick');
+		document.getElementById('preferred_communication_method[4]').removeAttribute('onclick');
+		document.getElementById('preferred_communication_method[5]').removeAttribute('onclick');
     }
 }
+processDeceased();
  
 </script>
 {/literal}

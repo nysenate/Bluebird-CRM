@@ -17,6 +17,7 @@ CREATE TABLE shadow_contact (
     birth_date date,
     contact_type varchar(255),
     INDEX (first_name, last_name, middle_name),
+    INDEX (last_name),
     INDEX (household_name),
     INDEX (organization_name),
     INDEX (birth_date)
@@ -34,6 +35,7 @@ CREATE TABLE shadow_address (
     INDEX (city)
 ) ENGINE=InnoDB;
 
+
 -- Change the delimiter to make stored triggers/functions easier to write!
 DELIMITER |
 
@@ -43,7 +45,7 @@ DELIMITER |
 
 DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
 CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255))
-    RETURNS varchar(255)  DETERMINISTIC
+    RETURNS varchar(255) DETERMINISTIC
 
     BEGIN
         -- Start with the first alpha word occurance and loop
@@ -269,5 +271,95 @@ CREATE TRIGGER shadow_address_delete_trigger AFTER DELETE ON civicrm_address
     END
 |
 
+-- --------------------------------
+-- Triggers for first name groups
+-- --------------------------------
+DROP TRIGGER IF EXISTS shadow_contact_insert_fn_trigger |
+CREATE TRIGGER shadow_contact_insert_fn_trigger AFTER INSERT ON shadow_contact
+    FOR EACH ROW BEGIN
+        DECLARE new_fn_group_id INT;
+        DECLARE new_insert INT DEFAULT 1;
+        DECLARE not_found VARCHAR(5) DEFAULT 'False';
+
+        DECLARE find_fn CURSOR FOR
+            SELECT fn_group_id
+            FROM fn_group_name
+            WHERE name = NEW.first_name;
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET not_found = 'True';
+
+        -- Records with a first name of NULL can be skipped here
+        IF NEW.first_name IS NOT NULL AND NEW.first_name != '' THEN
+
+            -- Loop over the matching first name groups
+            OPEN find_fn;
+            insert_loop: LOOP
+                FETCH find_fn INTO new_fn_group_id;
+
+                IF not_found = 'True' THEN
+                    LEAVE insert_loop;
+                END IF;
+
+                -- Insert a new contact record for the fn_group
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+                SET new_insert = 0;
+            END LOOP;
+            CLOSE find_fn;
+
+            -- If we never found matches, insert a new record set instead
+            IF new_insert = 1 THEN
+                INSERT INTO fn_group (given, new) VALUES (NEW.first_name, 1);
+                SET new_fn_group_id = LAST_INSERT_ID();
+                INSERT INTO fn_group_name (fn_group_id, name) VALUES (new_fn_group_id, NEW.first_name);
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+            END IF;
+
+        END IF;
+    END
+|
+
+DROP TRIGGER IF EXISTS shadow_contact_update_fn_trigger |
+CREATE TRIGGER shadow_contact_update_fn_trigger AFTER UPDATE ON shadow_contact
+    FOR EACH ROW BEGIN
+        DECLARE new_fn_group_id INT;
+        DECLARE new_insert INT DEFAULT 1;
+        DECLARE not_found VARCHAR(5) DEFAULT 'False';
+
+        DECLARE find_fn CURSOR FOR
+            SELECT fn_group_id
+            FROM fn_group_name
+            WHERE name = NEW.first_name;
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET not_found = 'True';
+
+        -- Records with a first name of NULL can be skipped here
+        IF NEW.first_name IS NOT NULL THEN
+
+            -- Loop over the matching first name groups
+            OPEN find_fn;
+            insert_loop: LOOP
+                FETCH find_fn INTO new_fn_group_id;
+
+                IF not_found = 'True' THEN
+                    LEAVE insert_loop;
+                END IF;
+
+                -- Insert a new contact record for the fn_group
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+                SET new_insert = 0;
+            END LOOP;
+            CLOSE find_fn;
+
+            -- If we never found matches, insert a new record set instead
+            IF new_insert = 1 THEN
+                INSERT INTO fn_group (given, new) VALUES (NEW.first_name, 1);
+                SET new_fn_group_id = LAST_INSERT_ID();
+                INSERT INTO fn_group_name (fn_group_id, name) VALUES (new_fn_group_id, NEW.first_name);
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+            END IF;
+
+        END IF;
+    END
+|
 
 DELIMITER ;
