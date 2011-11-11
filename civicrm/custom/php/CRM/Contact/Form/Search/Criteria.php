@@ -96,6 +96,9 @@ class CRM_Contact_Form_Search_Criteria {
 
         // add checkbox for cms users only
         $form->addYesNo( 'uf_user', ts( 'CMS User?' ) );
+		
+		//NYSS 4279 tag all search  
+        $form->add('text', 'tag_search', ts('All tag search') ); 
  
         // add search profiles
         require_once 'CRM/Core/BAO/UFGroup.php';
