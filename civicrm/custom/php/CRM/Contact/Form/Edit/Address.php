@@ -212,7 +212,7 @@ class CRM_Contact_Form_Edit_Address
 
                     //NYSS - The field element name must be quoted for valid PHP
                     $groupTree[$id]['fields'][$fldId]['element_name'] = 
-                        "address[$blockId]['{$field['element_name']}']";
+                        "address[$blockId][{$field['element_name']}]";
                 }
             }
             $defaults = array( );
