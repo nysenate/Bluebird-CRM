@@ -3866,7 +3866,8 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
                                                         'do_not_email'                   => 1, 
                                                         'do_not_mail'                    => 1,
                                                         'do_not_sms'                     => 1,
-                                                        'do_not_trade'                   => 1, 
+                                                        'do_not_trade'                   => 1,
+                                                        'is_opt_out'                     => 1, //NYSS 4573
                                                         'location'                       => 
                                                         array( '1' => array ( 'location_type'      => 1,
                                                                               'street_address'     => 1,

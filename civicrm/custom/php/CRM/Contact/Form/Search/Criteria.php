@@ -182,7 +182,8 @@ class CRM_Contact_Form_Search_Criteria {
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_email', null, $t['do_not_email']);
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_mail' , null, $t['do_not_mail']);
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_sms' ,  null, $t['do_not_sms']);
-        //$privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_trade', null, $t['do_not_trade']); //NYSS - LCD #1453
+        //$privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_trade', null, $t['do_not_trade']); //NYSS 1453
+        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'is_opt_out',    null, $t['is_opt_out']); //NYSS 4573
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_toggle', null, $t['do_not_toggle']);
         
         $form->addGroup($privacy, 'privacy', ts('Privacy'), array( '&nbsp;', '&nbsp;', '&nbsp;', '<br/>' ) );
