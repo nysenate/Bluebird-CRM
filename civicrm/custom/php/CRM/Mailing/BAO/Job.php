@@ -514,7 +514,9 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
     }
 
     public function deliverGroup ( &$fields, &$mailing, &$mailer, &$job_date, &$attachments ) {
-        if ( ! is_object( $mailer ) ||
+        static $smtpConnectionErrors = 0; //NYSS
+		
+		if ( ! is_object( $mailer ) ||
              empty( $fields ) ) {
             CRM_Core_Error::fatal( );
         }
@@ -581,7 +583,30 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
             }
 
             if ( is_a( $result, 'PEAR_Error' ) ) {
-                /* Register the bounce event */
+                //NYSS
+                if ( strpos( $result['message'], 'Failed to write to socket' ) !== false ) {
+                    // lets log this message and code
+                    CRM_Core_Error::debug_log_message( "SMTP Socket Error. Message: {$result['message']}, Code: {$result['code']}" );
+
+                    // these are socket write errors which most likely means smtp connection errors
+                    // lets skip them
+                    $smtpConnectionErrors++;
+                    if ( $smtpConnectionErrors <= 5 ) {
+                        continue;
+                    }
+                                        
+                    // seems like we have too many of them in a row, we should
+                    // write stuff to disk and abort the cron job
+                    $this->writeToDB( $deliveredParams,
+                                      $targetParams,
+                                      $mailing,
+                                      $job_date );
+                        
+                    CRM_Core_Error::debug_log_message( "Too many SMTP Socket Errors. Exiting" );
+                    CRM_Utils_System::civiExit( );
+                }
+				
+				/* Register the bounce event */
                 require_once 'CRM/Mailing/BAO/BouncePattern.php';
                 require_once 'CRM/Mailing/Event/BAO/Bounce.php';
                 $params = array( 'event_queue_id' => $field['id'],
@@ -621,6 +646,14 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
             
             //$targetParams[] = $field['contact_id'];
             unset( $result );
+			
+			//NYSS
+			// seems like a successful delivery or bounce, lets decrement error count
+            // only if we have smtp connection errors
+            if ( $smtpConnectionErrors > 0 ) {
+                $smtpConnectionErrors--;
+            }
+
         }
 
         /*if ( ! empty( $deliveredParams ) ) {
