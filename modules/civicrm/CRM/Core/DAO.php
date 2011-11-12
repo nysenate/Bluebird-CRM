@@ -58,13 +58,14 @@ class CRM_Core_DAO extends DB_DataObject
 
         VALUE_SEPARATOR = "",
 
-        BULK_INSERT_COUNT     = 200,
+        BULK_INSERT_COUNT      = 200,
+		BULK_INSERT_HIGH_COUNT = 200,
 
         // special value for mail bulk inserts to avoid
         // potential duplication, assuming a smaller number reduces number of queries
         // by some factor, so some tradeoff. CRM-8678
         BULK_MAIL_INSERT_COUNT = 10;
-
+//NYSS 4530
     /**
      * the factory class for this application
      * @var object
