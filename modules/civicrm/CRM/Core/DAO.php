@@ -1177,6 +1177,17 @@ SELECT contact_id
         if ( ! $_dao ) {
             $_dao = new CRM_Core_DAO( );
         }
+		
+		//NYSS 4142
+		// CRM-9155
+        // ensure we escape the single characters % and _ which are mysql wild
+        // card characters and could come in via sortByCharacter
+        // note that mysql does not escape these characters
+        if ( $string && in_array( $string,
+                                  array( '%', '_', '%%', '_%' ) ) ) {
+            return '\\' . $string;
+        }
+		
         return $_dao->escape( $string );
     }
 

@@ -146,7 +146,7 @@ class CRM_Utils_PagerAToZ
                 $url = CRM_Utils_System::url( $path, "force=1&qfKey=$qfKey&sortByCharacter=" );
                 // we do it this way since we want the url to be encoded but not the link character
                 // since that seems to mess up drupal utf-8 encoding etc
-                $url .= $link;
+                $url .= urlencode( $link ); //NYSS 4142
                 $element['item']  = sprintf('<a href="%s" %s>%s</a>',
                                             $url,
                                             $klass,
