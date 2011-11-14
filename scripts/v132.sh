@@ -55,6 +55,10 @@ $execSql -i $instance -c "$nav"
 rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
 $execSql -i $instance -c "$rpt"
 
+## 4254 full screen navigation
+fsn="UPDATE civicrm_dashboard SET url = REPLACE( url, 'snippet=4', 'snippet=5' ), fullscreen_url = REPLACE( fullscreen_url, 'snippet=4', 'snippet=5' );"
+$execSql -i $instance -c "$fsn"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance

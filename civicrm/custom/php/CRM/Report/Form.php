@@ -1708,6 +1708,15 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
              $this->_force ) {
             $this->_params = $this->_formValues;
         }
+		
+		//NYSS 4254
+		// hack to fix params when submitted from dashboard, CRM-8532
+        // fields array is missing because form building etc is skipped
+        // in dashboard mode for report
+        if ( !CRM_Utils_Array::value( 'fields', $this->_params ) ) {
+            $this->_params = $this->_formValues;
+        }
+
         $this->_formValues = $this->_params ;
         if ( CRM_Core_Permission::check( 'administer Reports' ) &&
              isset( $this->_id ) && 
