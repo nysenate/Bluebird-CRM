@@ -83,7 +83,7 @@ $(document).ready(function() {
 		//console.log(e);
 		var fname   = e.target.name; //alert(fid); //form name
 		var faction = e.target.action; //action value
-		var factionmatch = faction.search("civicrm/report/instance"); //-1 if not found
+		var factionmatch = faction.search("civicrm/report/"); //-1 if not found
 		if ( submitted && 
 			 factionmatch == -1 &&
 			 fname != 'Select' && 
