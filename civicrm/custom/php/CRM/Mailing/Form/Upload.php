@@ -290,7 +290,7 @@ class CRM_Mailing_Form_Upload extends CRM_Core_Form
                           array ( 'type'      => 'cancel',
                                   'name'      => ts('Cancel') ),
                           );
-        if ( $this->_searchBasedMailing && $ssID ) {
+        if ( $this->_searchBasedMailing /*&& $ssID*/ ) { //NYSS 4448
             $buttons = array( array ( 'type'      => 'back',
                                       'name'      => ts('<< Previous') ),
                               array ( 'type'      => 'upload',

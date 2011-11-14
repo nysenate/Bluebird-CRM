@@ -1171,8 +1171,9 @@ ul.token-input-list-facebook { width:265px;}
 }
 
 /*advanced search contact tags/groups*/
-#advSearchContactTags .contact-issue-codes .label {
-	margin-top: 8px;
+#advSearchContactTags .contact-issue-codes .label,
+#advSearchContactTags .tag-free-search .label {
+	margin-top: 6px;
 }
 #advSearchContactTags .contact-issue-codes .crmasmContainer,
 #advSearchContactTags .contact-issue-codes .crmasmSelect {
@@ -1180,6 +1181,10 @@ ul.token-input-list-facebook { width:265px;}
 }
 #advSearchContactTags ul.token-input-list-facebook {
 	width: 320px;
+	clear: none;
+}
+#advSearchContactTags .tag-free-search input {
+	padding: 5px;
 }
 #advSearchContactTypesGroups .label {
 	margin-top: 8px;

@@ -835,7 +835,9 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
             // we'll ignore for now
             $config = CRM_Core_Config::singleton( );
             if ( $config->includeAlphabeticalPager ) {
-                if ($this->_reset || !$this->_sortByCharacter) {
+				//NYSS 4142
+                if ( $this->_reset ||
+                     ( $this->_sortByCharacter === null || $this->_sortByCharacter == '' ) ) {
                     $aToZBar = CRM_Utils_PagerAToZ::getAToZBar( $selector, $this->_sortByCharacter );
                     $this->set( 'AToZBar', $aToZBar );
                 }

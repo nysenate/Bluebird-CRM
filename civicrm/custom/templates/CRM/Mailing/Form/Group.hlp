@@ -40,7 +40,7 @@
 {/htxt}
 {*NYSS*}
 {htxt id="dedupe-email"}
-<p>CiviCRM will always dedupe your mailing based on unique contact records. For example, if a contact is in three of the groups you are including in your mailing, they will only be sent one copy of the email.</p>
+<p>Bluebird will always dedupe your mailing based on unique contact records. For example, if a contact is in three of the groups you are including in your mailing, they will only be sent one copy of the email.</p>
 <p>However, if the same email is used for multiple contacts, that email address will receive multiple copies of the email -- one for each contact using that address.</p>
 <p>Selecting this option will ensure only one email is sent to each address. Note that when using this option and including contact tokens in your email content, the email with it's respective tokens will only be created for one of the matching contacts.</p>
 {/htxt}

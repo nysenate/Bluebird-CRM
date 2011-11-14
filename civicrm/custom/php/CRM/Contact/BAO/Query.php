@@ -346,6 +346,9 @@ class CRM_Contact_BAO_Query
      * List of location specific fields
      */
     static $_locationSpecificFields = array ( 'street_address',
+	                                          'street_number', //NYSS 4150
+											  'street_name',
+											  'street_unit',
                                               'supplemental_address_1',
                                               'supplemental_address_2',
                                               'city',
@@ -1310,7 +1313,11 @@ class CRM_Contact_BAO_Query
             $this->group( $values );
             return;
 
-            // case tag comes from find contacts
+        // case tag comes from find contacts
+		//NYSS 4279
+		case 'tag_search':
+            $this->tagSearch( $values );
+            return;
         case 'tag':
         case 'contact_tags':
             $this->tag( $values );
@@ -1337,6 +1344,11 @@ class CRM_Contact_BAO_Query
 
         case 'street_address':
             $this->street_address( $values );
+            return;
+
+        //NYSS 4150
+		case 'street_number':
+            $this->street_number( $values );
             return;
 
         case 'sortByCharacter':
@@ -2479,6 +2491,30 @@ WHERE  id IN ( $groupIDs )
         }
     }
 
+    //NYSS 4279
+    /**
+ 	 * all tag search specific
+     *
+     * @return void
+     * @access public
+     */
+    function tagSearch( &$values ) {
+        list( $name, $op, $value, $grouping, $wildcard ) = $values;
+		
+		$op    = "LIKE";
+        $value = "%{$value}%";
+
+        $etTable = "`civicrm_entity_tag-" . $value ."`";
+        $tTable = "`civicrm_tag-" . $value ."`";
+        $this->_tables[$etTable] = $this->_whereTables[$etTable] =
+            " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND 
+	    {$etTable}.entity_table = 'civicrm_contact' )
+              LEFT JOIN civicrm_tag {$tTable} ON ( {$etTable}.tag_id = {$tTable}.id  ) ";
+
+        $this->_where[$grouping][] = "{$tTable}.name {$op} '". $value . "'";
+        $this->_qill[$grouping][]  = ts('Tagged %1', array( 1 => $op ) ). ' ' . $value;
+    }
+
     /**
      * where / qill clause for tag
      *
@@ -2760,6 +2796,40 @@ WHERE  id IN ( $groupIDs )
         } else {
             $this->_where[$grouping][] = " (civicrm_address.street_address $op $value )";
             $this->_qill[$grouping][]  = ts( 'Street' ) . " $op ";
+        }
+
+        $this->_tables['civicrm_address'] = $this->_whereTables['civicrm_address'] = 1; 
+    }
+
+    //NYSS 4150
+	/**
+     * where / qill clause for street_unit
+     *
+     * @return void
+     * @access public
+     */
+    function street_number( &$values ) 
+    {
+        list( $name, $op, $value, $grouping, $wildcard ) = $values;
+        
+        if ( ! $op ) {
+            $op = '=';
+        }
+        
+        $n = trim( $value ); 
+        
+        if ( strtolower( $n ) == 'odd' ) {
+            $this->_where[$grouping][] = " ( civicrm_address.street_number % 2 = 1 )";
+            $this->_qill[$grouping][]  = ts( 'Street Number is odd' );
+        } else if ( strtolower( $n ) == 'even' ) {
+            $this->_where[$grouping][] = " ( civicrm_address.street_number % 2 = 0 )";
+            $this->_qill[$grouping][]  = ts( 'Street Number is even' );
+        } else {
+            $value = strtolower(CRM_Core_DAO::escapeString($n));
+            $value = "'$value'";
+
+            $this->_where[$grouping][] = " ( LOWER(civicrm_address.street_number) $op $value )";
+            $this->_qill[$grouping][]  = ts( 'Street Number' ) . " $op '$n'";
         }
 
         $this->_tables['civicrm_address'] = $this->_whereTables['civicrm_address'] = 1; 
@@ -3532,11 +3602,17 @@ WHERE  id IN ( $groupIDs )
                         if ( $sortOrder ) {
                             $order .= " $sortOrder";
                         }
+						
+						//NYSS 4534 always add contact_a.id to the ORDER clause
+                        // so the order is deterministic
+                        if ( strpos( 'contact_a.id', $order ) === false ) {
+                            $order .= ", contact_a.id";
+                        }
                     }
                 } else if ($sortByChar) { 
                     $orderBy = " ORDER BY LEFT(contact_a.sort_name, 1) asc";
                 } else {
-                    $orderBy = " ORDER BY contact_a.sort_name asc";
+                    $orderBy = " ORDER BY contact_a.sort_name asc, contact_a.id"; //NYSS
                 }
             }
 
@@ -3790,7 +3866,8 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
                                                         'do_not_email'                   => 1, 
                                                         'do_not_mail'                    => 1,
                                                         'do_not_sms'                     => 1,
-                                                        'do_not_trade'                   => 1, 
+                                                        'do_not_trade'                   => 1,
+                                                        'is_opt_out'                     => 1, //NYSS 4573
                                                         'location'                       => 
                                                         array( '1' => array ( 'location_type'      => 1,
                                                                               'street_address'     => 1,

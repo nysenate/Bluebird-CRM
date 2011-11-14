@@ -147,51 +147,15 @@ class CRM_Contact_BAO_GroupContact extends CRM_Contact_DAO_GroupContact {
         require_once 'CRM/Utils/Hook.php';
         
         CRM_Utils_Hook::pre( 'create', 'GroupContact', $groupId, $contactIds ); 
-        
-        $date = date('YmdHis');
-        $numContactsAdded    = 0;
-        $numContactsNotAdded = 0;
-       
-        foreach ( $contactIds as $contactId ) {
-            
-            $groupContact = new CRM_Contact_DAO_GroupContact( );
-            $groupContact->group_id   = $groupId;
-            $groupContact->contact_id = $contactId;
-            // check if the selected contact id already a member
-            // if not a member add to groupContact else keep the count of contacts that are not added
-            if (  ! $groupContact->find( true )) {
-                // add the contact to group
-                $historyParams = array(
-                    'contact_id' => $contactId, 
-                    'group_id' => $groupId, 
-                    'method' => $method,
-                    'status' => $status,
-                    'date' => $date,
-                    'tracking' => $tracking,
-                );
-                CRM_Contact_BAO_SubscriptionHistory::create($historyParams);
-                $groupContact->status    = $status;
-                $groupContact->save( );
-                $numContactsAdded++;
-            } else {
-                if ($groupContact->status == $status) {
-                    $numContactsNotAdded++;
-                } else {
-                    $historyParams = array(
-                        'contact_id' => $contactId, 
-                        'group_id' => $groupId, 
-                        'method' => $method,
-                        'status' => $status,
-                        'date' => $date,
-                        'tracking' => $tracking,
-                    );
-                    CRM_Contact_BAO_SubscriptionHistory::create($historyParams);
-                    $groupContact->status    = $status;
-                    $groupContact->save( );
-                    $numContactsAdded++;
-                }
-            }
-        }
+		
+		//NYSS
+		list( $numContactsAdded,
+              $numContactsNotAdded ) = 
+            self::bulkAddContactsToGroup( $contactIds,
+                                          $groupId,
+                                          $method,
+                                          $status,
+                                          $tracking );
 
         // also reset the acl cache
         $config = CRM_Core_Config::singleton( );
@@ -721,6 +685,84 @@ AND civicrm_group_contact.group_id = %2";
         }
         return false;
     }
+
+//NYSS 4530
+    /**
+ 	     * Given an array of contact ids, add all the contacts to the group 
+ 	     *
+ 	     * @param array  $contactIds (reference ) the array of contact ids to be added
+ 	     * @param int    $groupId    the id of the group
+ 	     *
+ 	     * @return array             (total, added, notAdded) count of contacts added to group
+ 	     * @access public
+ 	     * @static
+ 	     */
+ 	    static function bulkAddContactsToGroup( $contactIDs,
+ 	                                            $groupID,
+ 	                                            $method = 'Admin',
+ 	                                            $status = 'Added',
+ 	                                            $tracking = null)  {
+ 	
+ 	        $numContactsAdded    = 0;
+ 	        $numContactsNotAdded = 0;
+ 	
+ 	        $contactGroupSQL = "
+ 	REPLACE INTO civicrm_group_contact ( group_id, contact_id, status )
+ 	VALUES
+ 	";
+ 	        $subscriptioHistorySQL = "
+ 	INSERT INTO civicrm_subscription_history( group_id, contact_id, date, method, status, tracking )
+ 	VALUES
+ 	";
+ 	        
+ 	        $date = date('YmdHis');
+ 	
+ 	        // to avoid long strings, lets do BULK_INSERT_HIGH_COUNT values at a time 
+ 	        while ( ! empty( $contactIDs ) ) {
+ 	            $input = array_splice( $contactIDs, 0, CRM_Core_DAO::BULK_INSERT_HIGH_COUNT );
+ 	            $contactStr   = implode( ',', $input );
+ 	
+ 	            // lets check their current status
+ 	            $sql = "
+ 	SELECT GROUP_CONCAT(contact_id) as contactStr
+ 	FROM   civicrm_group_contact
+ 	WHERE  group_id = %1
+ 	AND    status = %2
+ 	AND    contact_id IN ( $contactStr )
+ 	";
+ 	            $params = array( 1 => array( $groupID, 'Integer' ),
+ 	                             2 => array( $status , 'String' ) );
+ 	
+ 	            $presentIDs = array( );
+ 	            $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+ 	            if ( $dao->fetch( ) ) {
+ 	                $presentIDs = explode( ',', $dao->contactStr );
+ 	                $presentIDs = array_flip( $presentIDs );
+ 	            }
+ 	
+ 	            $gcValues = $shValues = array( );
+ 	            foreach ( $input as $cid ) {
+ 	                if ( isset( $presentIDs[$cid] ) ) {
+ 	                    $numContactsNotAdded++;
+ 	                    continue;
+ 	                }
+ 	
+ 	                $gcValues[] = "( $groupID, $cid, '$status' )";
+ 	                $shValues[] = "( $groupID, $cid, '$date', '$method', '$status', '$tracking' )";
+ 	                $numContactsAdded++;
+ 	            }
+ 	
+ 	            if ( ! empty( $gcValues ) ) {
+ 	                $cgSQL = $contactGroupSQL . implode( ",\n", $gcValues );
+ 	                CRM_Core_DAO::executeQuery( $cgSQL );
+ 	                
+ 	                $shSQL = $subscriptioHistorySQL . implode( ",\n", $shValues );
+ 	                CRM_Core_DAO::executeQuery( $shSQL );
+ 	            }
+ 	        }
+ 	
+ 	        return array( $numContactsAdded, $numContactsNotAdded );
+ 	    }
 
 }
 
