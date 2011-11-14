@@ -231,7 +231,7 @@ class CRM_Contact_Form_Search_Criteria {
                            );
 
         $parseStreetAddress = CRM_Utils_Array::value( 'street_address_parsing', $addressOptions, 0 );
-        $form->assign( 'parseStreetAddress', 1 );
+        $form->assign( 'parseStreetAddress', $parseStreetAddress );
 		foreach ( $elements as $name => $v ) {
             list( $title, $attributes, $select, $multiSelect ) = $v;
             
