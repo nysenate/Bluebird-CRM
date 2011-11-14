@@ -56,7 +56,7 @@
  	             </span>
  	             <span id="addressElements" class=hiddenElement>
  	               {$form.street_number.html}&nbsp;{$form.street_name.html}&nbsp;{$form.street_unit.html}<br />
- 	               <a href="#" title="{ts}Use Street Address{/ts}" onClick="processAddressFields( 'streetAddress', 1 );return false;">{ts}Use Street Address{/ts}</a>
+ 	               <a href="#" title="{ts}Use Street Address{/ts}" onClick="processAddressFields( 'streetAddress', 1 );return false;">{ts}Use Street Address{/ts}</a>&nbsp;&nbsp;You may enter "odd" or "even" in the street number field.
                    {/if}
  	             </span>
              </td>
