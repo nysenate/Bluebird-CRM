@@ -69,11 +69,17 @@
                 <td>{$contactGenders.4}</td>
             </tr>
         </table>
-        
+
         <h3>Email Counts</h3>
         <table>
             <tr>{foreach from=$emailCounts key=type item=tcount}<th>{$type}</th>{/foreach}</tr>
             <tr>{foreach from=$emailCounts key=type item=tcount}<td>{$tcount}</td>{/foreach}</tr>
+        </table>
+
+        <h3>Miscellaneous Counts</h3>
+        <table>
+            <tr>{foreach from=$miscCounts key=type item=tcount}<th>{$type}</th>{/foreach}</tr>
+            <tr>{foreach from=$miscCounts key=type item=tcount}<td>{$tcount}</td>{/foreach}</tr>
         </table>
     </div>
     
@@ -137,6 +143,20 @@
             	<tr><th>{$ed}</th><td>{$edcount}</td></tr>
             {/foreach}
         	</table>
+       </div>
+    </div>
+    <div class="crm-accordion-wrapper crm-ajax-accordion crm-TownADED-accordion crm-accordion-closed">
+       <div class="crm-accordion-header" id="TownADED">
+            <div class="icon crm-accordion-pointer"></div>
+            Town/Assembly/Election Districts
+       </div>
+       <div class="crm-accordion-body ElectionDistricts">
+            <table>
+            <tr><td>Town</td><td>AD</td><td>ED</td><td>Count</td></tr>
+            {foreach from=$contactTownADED item=tae}
+                <tr><th>{$tae.town}</th><th>{$tae.ad}</th><th>{$tae.ed}</th><td>{$tae.count}</td></tr>
+            {/foreach}
+            </table>
        </div>
     </div>
     </td>
