@@ -74,7 +74,7 @@
 </tr>
 <tr>
 	<td>
-    	{$form.activity_test.label} &nbsp; {$form.activity_test.html} 
+    	{*{$form.activity_test.label} &nbsp; {$form.activity_test.html}*}{*NYSS 4595*}
     </td>
     <td>
     	{$form.activity_subject.label}<br />

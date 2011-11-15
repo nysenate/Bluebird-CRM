@@ -320,9 +320,9 @@ class CRM_Report_Form_Instance {
                     $section = 1;
                     $chart = "&charts=". $params['charts'];
                 }
-
-                $dashletParams['url'           ] = "civicrm/report/instance/{$dao->id}&reset=1&section={$section}&snippet=4{$chart}&context=dashlet";
-                $dashletParams['fullscreen_url'] = "civicrm/report/instance/{$dao->id}&reset=1&section={$section}&snippet=4{$chart}&context=dashletFullscreen";
+                //NYSS 4254
+                $dashletParams['url'           ] = "civicrm/report/instance/{$dao->id}&reset=1&section={$section}&snippet=5{$chart}&context=dashlet";
+                $dashletParams['fullscreen_url'] = "civicrm/report/instance/{$dao->id}&reset=1&section={$section}&snippet=5{$chart}&context=dashletFullscreen";
                 $dashletParams['instanceURL'   ] = "civicrm/report/instance/{$dao->id}";
                 require_once 'CRM/Core/BAO/Dashboard.php';
                 CRM_Core_BAO_Dashboard::addDashlet(  $dashletParams );

@@ -52,8 +52,9 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
      */
     function run( ) {
         
-		//get contact counts by type
-		$allContacts = 0;
+		//contact counts by type
+		$allContacts  = 0;
+		$contactTypes = array();
 		$sql_contacts = "SELECT contact_type, COUNT( id ) AS ct_count
 						 FROM civicrm_contact
 						 WHERE is_deleted != 1
@@ -64,24 +65,21 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 			$allContacts = $allContacts + $dao->ct_count;
         }
 		$contactTypes['All Contacts'] = $allContacts;
-		
-		//get trashed contacts
+
+		//trashed contacts
 		$sql_trashed = "SELECT COUNT( id ) AS trashed_count
 						 FROM civicrm_contact
 						 WHERE is_deleted = 1;";
 		$trashed = CRM_Core_DAO::singleValueQuery( $sql_trashed );
 		$contactTypes['Trashed Contacts'] = $trashed;
 		
-		//get contacts with emails
-		$sql_emails = "SELECT COUNT( c.id ) AS email_count
-					   FROM civicrm_contact c
-					     JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
-					   WHERE is_deleted != 1;";
-		$contactEmails = CRM_Core_DAO::singleValueQuery( $sql_emails );
-		$contactTypes['Contacts with Emails'] = $contactEmails;
+		//deceased contacts
+		$sql_trashed = "SELECT COUNT( id ) AS deceased_count
+						FROM civicrm_contact
+						WHERE is_deleted != 1 AND is_deceased = 1;";
+		$contactTypes['Deceased Contacts'] = CRM_Core_DAO::singleValueQuery( $sql_trashed );
 		
 		$this->assign('contactTypes', $contactTypes);
-		//CRM_Core_Error::debug($contactTypes);
 		
 		//get gender counts
 		$sql_genders = "SELECT gender_id, COUNT( id ) AS gender_count
@@ -93,7 +91,124 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
             $contactGenders[$dao->gender_id] = $dao->gender_count;
         }
 		$this->assign('contactGenders', $contactGenders);
+
+        //// email counts ////
+		$emailCounts = array();
 		
+		//get contacts with emails
+		$sql_emails = "SELECT COUNT( c.id ) AS email_count
+					   FROM civicrm_contact c
+					     JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
+					   WHERE is_deleted != 1;";
+		$emailsPri = CRM_Core_DAO::singleValueQuery( $sql_emails );
+		$emailCounts['Contacts with Emails'] = $emailsPri;
+		
+		//contacts with bulk, non-primary emails
+		$sql_emailsBulk = "SELECT COUNT( c.id ) AS emailBulk_count
+					       FROM civicrm_contact c
+					         JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary != 1 AND ce.is_bulkmail = 1 )
+					       WHERE is_deleted != 1;";
+		$emailsBulk = CRM_Core_DAO::singleValueQuery( $sql_emailsBulk );
+		$emailCounts['Non-Primary Bulk Emails'] = $emailsBulk;
+		
+		$emailCounts['Primary, Non-Bulk Emails'] = $emailsPri - $emailsBulk;
+
+		//pri or bulk on_hold
+		$sql_emailsOH = "SELECT COUNT( c.id ) AS emailOH_count
+					     FROM civicrm_contact c
+					       JOIN civicrm_email ce ON ( c.id = ce.contact_id 
+						     AND ( ( ce.is_primary = 1 AND ce.is_bulkmail = 0 ) 
+							    OR ( ce.is_primary = 0 AND ce.is_bulkmail = 1 ) ) 
+							 AND ce.on_hold = 1 )
+					     WHERE is_deleted != 1;";
+		$emailCounts['Primary/Bulk On Hold'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOH );
+		
+		//do not email
+		$sql_emailsDNE = "SELECT COUNT( c.id ) AS emailDNE_count
+					      FROM civicrm_contact c
+						    JOIN civicrm_email ce ON c.id = ce.contact_id
+					      WHERE is_deleted != 1 AND do_not_email = 1;";
+		$emailCounts['Do Not Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailsDNE );
+		
+		//opt out
+		$sql_emailsOO = "SELECT COUNT( c.id ) AS emailOO_count
+					      FROM civicrm_contact c
+						    JOIN civicrm_email ce ON c.id = ce.contact_id
+					      WHERE is_deleted != 1 AND is_opt_out = 1;";
+		$emailCounts['Opt Out/No Bulk Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOO );
+		
+		//contact deceased, with email
+		$sql_emailDec = "SELECT COUNT( c.id ) AS emailDec_count
+					     FROM civicrm_contact c
+					       JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
+					     WHERE is_deleted != 1 AND is_deceased = 1;";
+		$emailCounts['Contacts Deceased, with Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailDec );
+		
+		//potential maximum audience
+		$sql_emailsMax = "SELECT COUNT( c.id ) AS emailMax_count
+					      FROM civicrm_contact c
+					        JOIN ( SELECT contact_id
+							       FROM civicrm_email
+							       WHERE ( ( is_primary = 1 AND is_bulkmail = 0 ) 
+						 	            OR ( is_primary = 0 AND is_bulkmail = 1 ) ) 
+						 	         AND on_hold = 0 
+							       GROUP BY contact_id
+							       ORDER BY is_bulkmail DESC ) ce ON
+							       c.id = ce.contact_id
+					      WHERE is_deleted  != 1
+						    AND do_not_email = 0
+							AND is_opt_out   = 0
+							AND is_deceased  = 0;";
+		$emailCounts['Potential Maximum Audience'] = CRM_Core_DAO::singleValueQuery( $sql_emailsMax );
+
+        $this->assign('emailCounts', $emailCounts);
+
+
+		//// misc contact stats ////
+		$miscCounts = array();
+
+		//phone contacts
+		$sql_phone   = "SELECT COUNT( c.id ) AS phone_count
+						FROM civicrm_contact c
+						  JOIN civicrm_phone cp ON ( c.id = cp.contact_id AND cp.is_primary = 1 AND cp.phone_type_id = 1 )
+						WHERE is_deleted != 1;";
+		$miscCounts['Contacts with Phone'] = CRM_Core_DAO::singleValueQuery( $sql_phone );
+
+		//do not mail
+		$sql_DNM     = "SELECT COUNT( c.id ) AS emailDNM_count
+					    FROM civicrm_contact c
+					    WHERE is_deleted != 1 AND do_not_mail = 1;";
+		$miscCounts['Do Not Mail'] = CRM_Core_DAO::singleValueQuery( $sql_DNM );
+
+        //mailing seed group
+		$mailingSeedGroup = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name = 'Mailing_Seeds';" );
+		$sql_MailingSeeds = "SELECT COUNT( c.id ) AS mailingSeeds_count
+					         FROM civicrm_contact c
+							   JOIN civicrm_group_contact gc ON ( c.id = gc.contact_id AND group_id = $mailingSeedGroup )
+					         WHERE is_deleted != 1;";
+		$miscCounts['Mailing Seeds'] = CRM_Core_DAO::singleValueQuery( $sql_MailingSeeds );
+
+		//log last 30 days
+		$sql_log30   = "SELECT COUNT(DISTINCT c.id ) AS log30_count
+						FROM civicrm_contact c
+						  JOIN civicrm_log cl ON ( c.id = cl.entity_id
+						                       AND cl.entity_table = 'civicrm_contact' )
+						WHERE is_deleted != 1
+						  AND cl.modified_date > (DATE_SUB(NOW(), interval 30 day)) ;";
+		$miscCounts['Modified Last 30 Days'] = CRM_Core_DAO::singleValueQuery( $sql_log30 );
+
+		//log YTD
+		$sql_logYTD  = "SELECT COUNT(DISTINCT c.id ) AS logYTD_count
+						FROM civicrm_contact c
+						  JOIN civicrm_log cl ON ( c.id = cl.entity_id
+						                       AND cl.entity_table = 'civicrm_contact' )
+						WHERE is_deleted != 1
+						  AND cl.modified_date > CONCAT( YEAR(NOW()),'-01-01' );";
+		$miscCounts['Modified this Year'] = CRM_Core_DAO::singleValueQuery( $sql_logYTD );
+
+		$this->assign('miscCounts', $miscCounts);
+
+
 		//get contact counts by Senate District
 		$sql_sd = "SELECT COUNT( civicrm_contact.id ) as sd_count, ny_senate_district_47
   				   FROM ( civicrm_address
@@ -149,6 +264,32 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		$this->assign('contactED', $contactED);
 		//CRM_Core_Error::debug($contactAD);
 		
+		//contact counts by Town/Assembly District/Election District
+		$sql_townaded = "SELECT COUNT( civicrm_contact.id ) as townaded_count, town_52, ny_assembly_district_48, election_district_49
+                   FROM ( civicrm_address
+                    INNER JOIN civicrm_value_district_information_7
+                     ON ( civicrm_address.id = civicrm_value_district_information_7.entity_id ) )
+                    INNER JOIN civicrm_contact
+                     ON ( civicrm_contact.id = civicrm_address.contact_id )
+                   WHERE ( civicrm_contact.is_deleted != 1 )
+				    AND ( civicrm_address.is_primary = 1 )
+					AND ( civicrm_value_district_information_7.town_52 IS NOT NULL )
+					AND ( civicrm_value_district_information_7.town_52 != '' )
+					AND ( civicrm_value_district_information_7.ny_assembly_district_48 IS NOT NULL )
+					AND ( civicrm_value_district_information_7.ny_assembly_district_48 != '' )
+					AND ( civicrm_value_district_information_7.election_district_49 IS NOT NULL )
+					AND ( civicrm_value_district_information_7.election_district_49 != '' )
+				   GROUP BY town_52, ny_assembly_district_48, election_district_49;";
+		$dao = CRM_Core_DAO::executeQuery( $sql_townaded );
+		while ( $dao->fetch( ) ) {
+            $contactTownADED[] = array( 'town'  => $dao->town_52,
+			                            'ad'    => $dao->ny_assembly_district_48,
+									    'ed'    => $dao->election_district_49,
+									    'count' => $dao->townaded_count );
+        }
+		$this->assign('contactTownADED', $contactTownADED);
+		//CRM_Core_Error::debug($contactTownADED);
+
 		//get contact counts by Congressional District
 		$sql_cd = "SELECT COUNT( civicrm_contact.id ) as cd_count, congressional_district_46
   				   FROM ( civicrm_address
@@ -166,7 +307,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
             $contactCD[$dao->congressional_district_46] = $dao->cd_count;
         }
 		$this->assign('contactCD', $contactCD);
-		
+
 		//get contact counts by County
 		$sql_county = "SELECT COUNT( civicrm_contact.id ) as county_count, county_50
   				   FROM ( civicrm_address
@@ -184,7 +325,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
             $contactCounty[$dao->county_50] = $dao->county_count;
         }
 		$this->assign('contactCounty', $contactCounty);
-		
+
 		//get contact counts by Towns
 		$sql_town = "SELECT COUNT( civicrm_contact.id ) as town_count, town_52
   				   FROM ( civicrm_address
@@ -350,6 +491,11 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
             $positions[$dao->name] = $dao->pos_count;
         }
 		$this->assign('positions', $positions);
+		
+		/////// 4589 additional stats ///////
+
+		
+		
 
         return parent::run( );
     }

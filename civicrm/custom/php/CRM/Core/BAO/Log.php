@@ -161,9 +161,17 @@ UPDATE civicrm_log
      * @static
      */
      static function getContactLogCount( $contactID ) {
-         $query = "SELECT count(*) FROM civicrm_log 
+         //NYSS 4574 include activity logs in count
+		 $query = "SELECT count(*) FROM civicrm_log 
                    WHERE civicrm_log.entity_table = 'civicrm_contact' AND civicrm_log.entity_id = {$contactID}";
-         return CRM_Core_DAO::singleValueQuery( $query );
+         $contact_log_count  = CRM_Core_DAO::singleValueQuery( $query );		 
+		 
+		 require_once 'CRM/Activity/BAO/Activity.php';
+		 $activity_log_count = CRM_Activity_BAO_Activity::getActivitiesCount( array('contact_id' => $contactID) );
+		 
+		 $total_log_count    = 0;
+		 $total_log_count    = $contact_log_count + $activity_log_count;
+		 return $total_log_count;
      }  
 
      /**

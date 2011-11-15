@@ -55,6 +55,24 @@ $execSql -i $instance -c "$nav"
 rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
 $execSql -i $instance -c "$rpt"
 
+## 4254 full screen navigation
+fsn="UPDATE civicrm_dashboard SET url = REPLACE( url, 'snippet=4', 'snippet=5' ), fullscreen_url = REPLACE( fullscreen_url, 'snippet=4', 'snippet=5' );"
+$execSql -i $instance -c "$fsn"
+
+## 3976 create civicrm symlink and set image url
+civicrm_filesdir="$data_rootdir/$instance.$base_domain/civicrm"
+sitedir="$webdir/sites/$instance.$base_domain"
+ln -s "$civicrm_filesdir" "$sitedir/files"
+
+url="http://$instance.$base_domain/sites/$instance.$base_domain/files/civicrm/images/"
+imgurl="UPDATE civicrm_option_value SET value = '$url' WHERE name = 'imageUploadURL';"
+$execSql -i $instance -c "$imgurl"
+
+## 4352 max attachments
+ma="UPDATE civicrm_domain SET config_backend = REPLACE( config_backend,'\"maxAttachments\";s:1:\"3\"','\"maxAttachments\";s:1:\"5\"' ) WHERE id = 1;"
+$execSql -i $instance -c "$ma"
+
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
