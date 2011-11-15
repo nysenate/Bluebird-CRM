@@ -68,6 +68,10 @@ url="http://$instance.$base_domain/sites/$instance.$base_domain/files/civicrm/im
 imgurl="UPDATE civicrm_option_value SET value = '$url' WHERE name = 'imageUploadURL';"
 $execSql -i $instance -c "$imgurl"
 
+## 4352 max attachments
+ma="UPDATE civicrm_domain SET config_backend = REPLACE( config_backend,'\"maxAttachments\";s:1:\"3\"','\"maxAttachments\";s:1:\"5\"' ) WHERE id = 1;"
+$execSql -i $instance -c "$ma"
+
 
 ### Cleanup ###
 
