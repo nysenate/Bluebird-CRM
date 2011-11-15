@@ -57,16 +57,6 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         )
     );
 
-    if(isset($o->params['civicrm_contact']['contact_type'])=='Individual') {
-        foreach($ruleMap as $rulename=>$rule) {
-            echo "<h2>$rulename</h2>";
-            foreach($rule as $funcname=>$func) {
-                if( $func )
-                    echo "<b>$funcname</b><br/><pre>".$func($o)."</pre>";
-            }
-        }
-        exit();
-    }
     $ruleName = $o->name;
     $ruleType = empty($o->params) ? 'internal' : 'record';
 
