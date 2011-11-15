@@ -38,12 +38,14 @@ base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BA
 filepath="sites/$instance.$base_domain/files"
 
 drupal_filesdir="$data_rootdir/$instance.$base_domain/drupal"
+civicrm_filesdir="$data_rootdir/$instance.$base_domain/civicrm"
 sitedir="$webdir/sites/$instance.$base_domain"
 
 # create directories and symlink
 mkdir -p "$drupal_filesdir"
 mkdir -p "$sitedir"
 ln -s "$drupal_filesdir" "$sitedir/files"
+ln -s "$civicrm_filesdir" "$sitedir/files"
 
 # set Drupal variable
 $drush $instance vset file_directory_path $filepath -y
