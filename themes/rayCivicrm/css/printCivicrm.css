@@ -31,6 +31,9 @@ table.form-layout td, table.form-layout th {
 #Print {
 	background: none;
 }
+#crm-container .reports-header .sticky-header {
+    background-color : #DCDCDC;
+}
 
 /* CSS for Print and PDF of Reports */
 #crm-container .report-layout {
