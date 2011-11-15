@@ -39,7 +39,7 @@
                     <table class="form-layout-compressed">
                         <tr>
                             {*LCD - only display if low total record count *}
-                            {if $statistics.counts.rowsFound.value < 1000}
+                            {if $statistics.counts.rowsFound.value < 500}
                             	<td>{$form.$print.html}&nbsp;&nbsp;</td>
                             	<td>{$form.$pdf.html}&nbsp;&nbsp;</td>
                             	<td>{$form.$csv.html}&nbsp;&nbsp;</td>
