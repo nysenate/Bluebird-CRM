@@ -56,7 +56,7 @@
 
 <div class="crm-block crm-content-block">
 	<div id="ContactTypes">
-    	<h3>Contact Type Counts</h3>
+    	<h3>Contact Counts</h3>
         <table>
         	<tr>{foreach from=$contactTypes key=type item=tcount}<th>{$type}</th>{/foreach}
             	<th>Male</th>
@@ -68,6 +68,12 @@
                 <td>{$contactGenders.1}</td>
                 <td>{$contactGenders.4}</td>
             </tr>
+        </table>
+        
+        <h3>Email Counts</h3>
+        <table>
+            <tr>{foreach from=$emailCounts key=type item=tcount}<th>{$type}</th>{/foreach}</tr>
+            <tr>{foreach from=$emailCounts key=type item=tcount}<td>{$tcount}</td>{/foreach}</tr>
         </table>
     </div>
     
