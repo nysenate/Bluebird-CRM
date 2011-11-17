@@ -505,8 +505,10 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
             
         if ( $sortBy &&
              $this->_parent->_sortByCharacter !== null ) { //NYSS 4142
-            $clauses[] = 'name LIKE %3';
-            $params[3] = array( $this->_parent->_sortByCharacter . '%', 'String' );
+            $clauses[] = 
+                "name LIKE '" . 
+                strtolower(CRM_Core_DAO::escapeWildCardString($this->_parent->_sortByCharacter)) .
+                "%'";
         }
 
         // dont do a the below assignement when doing a 
