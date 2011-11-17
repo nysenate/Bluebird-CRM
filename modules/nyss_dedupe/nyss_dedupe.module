@@ -254,7 +254,7 @@ function nyss_dedupe_indiv5_record($o) {
                 WHERE contact.contact_type = 'Individual'
                   AND fn.fn_group_id IN ( SELECT fn_group_id
                                             FROM fn_group_name
-                                            WHERE name = BB_NORMALIZE(%1));
+                                            WHERE name = BB_NORMALIZE(%1))
                   AND contact.last_name = BB_NORMALIZE(%2)
                   AND email.email = %3
                   ", array(
@@ -272,7 +272,7 @@ function nyss_dedupe_indiv5_record($o) {
                 WHERE contact.contact_type = 'Individual'
                   AND fn.fn_group_id IN ( SELECT fn_group_id
                                             FROM fn_group_name
-                                            WHERE name = BB_NORMALIZE(%1));
+                                            WHERE name = BB_NORMALIZE(%1))
                   AND contact.last_name = BB_NORMALIZE(%2)
                   AND address.street_address = BB_NORMALIZE_ADDR(%3)
                   ", array(
