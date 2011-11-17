@@ -101,7 +101,6 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 					     JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary = 1 )
 					   WHERE is_deleted != 1;";
 		$emailsPri = CRM_Core_DAO::singleValueQuery( $sql_emails );
-		$emailCounts['Contacts with Emails'] = $emailsPri;
 		
 		//contacts with bulk, non-primary emails
 		$sql_emailsBulk = "SELECT COUNT( c.id ) AS emailBulk_count
@@ -109,9 +108,12 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 					         JOIN civicrm_email ce ON ( c.id = ce.contact_id AND ce.is_primary != 1 AND ce.is_bulkmail = 1 )
 					       WHERE is_deleted != 1;";
 		$emailsBulk = CRM_Core_DAO::singleValueQuery( $sql_emailsBulk );
-		$emailCounts['Non-Primary Bulk Emails'] = $emailsBulk;
 		
-		$emailCounts['Primary, Non-Bulk Emails'] = $emailsPri - $emailsBulk;
+		$emailCounts['Primary-Only Emails'] = $emailsPri - $emailsBulk;
+		
+		$emailCounts['Alternate Bulk Emails'] = $emailsBulk;
+		
+		$emailCounts['Total Contacts with Emails'] = $emailsPri;
 
 		//pri or bulk on_hold
 		$sql_emailsOH = "SELECT COUNT( c.id ) AS emailOH_count
@@ -159,7 +161,13 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 						    AND do_not_email = 0
 							AND is_opt_out   = 0
 							AND is_deceased  = 0;";
-		$emailCounts['Potential Maximum Audience'] = CRM_Core_DAO::singleValueQuery( $sql_emailsMax );
+		$emailCounts['Effective Maximum Mailing'] = CRM_Core_DAO::singleValueQuery( $sql_emailsMax );
+		
+		//duplicate emails
+		$sql_dupeEmails = "SELECT count(id) AS dupeEmail
+                           FROM civicrm_email em1
+                             JOIN civicrm_email em2 ON ( em1.email = em2.email AND em1.contact_id != em2.contact_ID );";
+        $emailCounts['Duplicate Emails'] = CRM_Core_DAO::singleValueQuery( $sql_dupeEmails );
 
         $this->assign('emailCounts', $emailCounts);
 

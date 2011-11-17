@@ -427,8 +427,10 @@ class CRM_Group_Page_Group extends CRM_Core_Page_Basic
         
         if ( $sortBy &&
              $this->_sortByCharacter !== null ) { //NYSS 4142
-            $clauses[] = 'groups.title LIKE %6';
-            $params[6] = array( $this->_sortByCharacter . '%', 'String' );
+            $clauses[] = 
+                "groups.title LIKE '" . 
+                strtolower(CRM_Core_DAO::escapeWildCardString($this->_sortByCharacter)) .
+                "%'";
         }
 
         // dont do a the below assignement when doing a 
