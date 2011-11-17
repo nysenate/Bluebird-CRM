@@ -16,6 +16,12 @@ CKEDITOR.editorConfig = function( config )
     config.filebrowserUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=files';
     config.filebrowserImageUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=images';
     config.filebrowserFlashUploadUrl = '/sites/all/modules/kcfinder/upload.php?type=flash';
+	
+	//NYSS
+	config.pasteFromWordPromptCleanup = false;
+	config.pasteFromWordRemoveStyles = true;
+	config.pasteFromWordRemoveFontStyles = false;
+	config.pasteFromWordNumberedHeadingToList = true;
  
     // disable auto spell check
     config.scayt_autoStartup = false;
