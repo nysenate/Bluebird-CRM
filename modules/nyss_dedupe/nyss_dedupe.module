@@ -96,7 +96,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
  */
 
 function nyss_dedupe_indiv1_internal($o) {
-    return "SELECT contact1.contact_id id1, contact2.contact_id id2, 5 weight
+    return "SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
             FROM shadow_contact AS contact1
               JOIN fn_group_contact AS fn1 USING (contact_id)
               JOIN shadow_contact AS contact2 ON (
@@ -120,7 +120,7 @@ function nyss_dedupe_indiv1_internal($o) {
 }
 
 function nyss_dedupe_indiv2_internal($o) {
-    return "SELECT contact1.contact_id id1, contact2.contact_id id2, 5 weight
+    return "SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
             FROM shadow_contact AS contact1
               JOIN fn_group_contact AS fn1 USING (contact_id)
               JOIN shadow_contact AS contact2 ON(
@@ -143,7 +143,7 @@ function nyss_dedupe_indiv2_internal($o) {
 }
 
 function nyss_dedupe_indiv3_internal($o) {
-    return "SELECT contact1.contact_id id1, contact2.contact_id id2, 5 weight
+    return "SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
             FROM shadow_contact AS contact1
               JOIN fn_group_contact AS fn1 USING (contact_id)
               JOIN shadow_contact AS contact2 ON (
@@ -167,7 +167,7 @@ function nyss_dedupe_indiv3_internal($o) {
 }
 
 function nyss_dedupe_indiv4_internal($o) {
-    return "SELECT contact1.contact_id id1, contact2.contact_id id2, 5 weight
+    return "SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
             FROM shadow_contact AS contact1
               JOIN fn_group_contact AS fn1 USING (contact_id)
               JOIN shadow_contact AS contact2 ON (
@@ -227,7 +227,7 @@ function nyss_dedupe_indiv1_record($o) {
         $where .= " AND address.street_address IS NULL";
 
 
-    return "SELECT contact.contact_id id1, 10 weight
+    return "SELECT DISTINCT contact.contact_id id1, 10 weight
             FROM shadow_contact as contact
               INNER JOIN shadow_address as address on address.contact_id=contact.contact_id
             $where
@@ -248,7 +248,7 @@ function nyss_dedupe_indiv5_record($o) {
     // If we have an email, match on fname + lname + email
     if ($email = CRM_Utils_Array::value('email',$civicrm_email,'')) {
         $tableQueries['civicrm_contact.email.5'] = CRM_Core_DAO::composeQuery(
-               "SELECT contact.contact_id id1, 5 weight
+               "SELECT DISTINCT contact.contact_id id1, 5 weight
                 FROM shadow_contact as contact
                   JOIN civicrm_email as email on email.contact_id = contact.id
                 WHERE contact.contact_type = 'Individual'
@@ -266,7 +266,7 @@ function nyss_dedupe_indiv5_record($o) {
     // If we have an address, match on fname + lname + street_address
     } elseif ($street_address = CRM_Utils_Array::value('street_address',$civicrm_address,'')) {
         $tableQueries['civicrm_contact.email.5'] = CRM_Core_DAO::composeQuery(
-               "SELECT contact.contact_id id1, 5 weight
+               "SELECT DISTINCT contact.contact_id id1, 5 weight
                 FROM shadow_contact as contact
                   JOIN shadow_address as address on address.contact_id=contact.id
                 WHERE contact.contact_type = 'Individual'
@@ -294,7 +294,7 @@ function nyss_dedupe_indiv5_record($o) {
 
 function nyss_dedupe_org1_internal($o) {
     //name + street + city + email
-    return "SELECT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+    return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
             FROM shadow_contact AS contact1
               JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
@@ -320,7 +320,7 @@ function nyss_dedupe_org1_internal($o) {
 
 function nyss_dedupe_org2_internal($o) {
     //name + street + city + zip
-    return "SELECT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+    return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
             FROM shadow_contact AS contact1
               JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
@@ -341,7 +341,7 @@ function nyss_dedupe_org2_internal($o) {
 
 function nyss_dedupe_org3_internal($o) {
     //name + street + city
-    return "SELECT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+    return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
             FROM shadow_contact contact1
               JOIN shadow_contact contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
@@ -366,7 +366,7 @@ function nyss_dedupe_org3_internal($o) {
 
 function nyss_dedupe_house1_internal($o) {
     //name + street + city + email
-	return "SELECT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+	return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
             FROM shadow_contact AS contact1
               JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
@@ -393,7 +393,7 @@ function nyss_dedupe_house1_internal($o) {
 
 function nyss_dedupe_house2_internal($o) {
     //name + street + city + zip
-	return "SELECT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+	return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
             FROM shadow_contact AS contact1
               JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
@@ -414,7 +414,7 @@ function nyss_dedupe_house2_internal($o) {
 
 function nyss_dedupe_house3_internal($o) {
     //name + street + city
-    return "SELECT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
+    return "SELECT DISTINCT contact1.contact_id AS id1, contact2.contact_id AS id2, 5 AS weight
             FROM shadow_contact AS contact1
               JOIN shadow_contact AS contact2 ON (
                     contact1.contact_type = contact2.contact_type AND
@@ -481,7 +481,7 @@ function nyss_dedupe_fuzzy_address_record($o, $table, &$tableQueries) {
         $where .= " AND address.postal_code IS NULL\n";
 
     $tableQueries['civicrm.street_address.5'] = "
-        SELECT contact.contact_id id1, 10 weight
+        SELECT DISTINCT contact.contact_id id1, 10 weight
         FROM shadow_contact as contact
             INNER JOIN shadow_address address on address.contact_id=contact.contact_id
         $where
@@ -491,26 +491,8 @@ function nyss_dedupe_fuzzy_address_record($o, $table, &$tableQueries) {
 }
 
 function nyss_dedupe_individual_omis_internal($o) {
-    /*
     return "
-        SELECT contact1.contact_id id1,  contact2.contact_id id2, 5 weight
-        FROM shadow_contact AS contact1
-          JOIN shadow_contact AS contact2 ON (
-            contact1.first_name = contact2.first_name AND
-            contact1.last_name = contact2.last_name AND
-            contact1.contact_type = contact2.contact_type)
-          JOIN shadow_address AS address1 ON address1.contact_id = contact1.contact_id
-          JOIN shadow_address AS address2 ON (
-            address2.contact_id =  contact2.contact_id AND
-            address2.street_address = address1.street_address)
-        WHERE contact1.contact_type = 'Individual'
-          AND (contact1.suffix_id IS NULL OR contact2.suffix_id IS NULL OR contact1.suffix_id = contact2.suffix_id)
-          AND (contact1.middle_name IS NULL OR contact2.middle_name IS NULL OR contact1.middle_name = contact2.middle_name)
-          AND (contact1.birth_date IS NULL OR contact2.birth_date IS NULL OR contact1.birth_date = contact2.birth_date)
-          ";
-    */
-    return "
-        SELECT contact1.contact_id id1, contact2.contact_id id2, 5 weight
+        SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
         FROM shadow_contact AS contact1
           JOIN fn_group_contact AS fn1 ON fn1.contact_id=contact1.contact_id
           JOIN shadow_contact AS contact2 ON (
@@ -540,7 +522,7 @@ function nyss_dedupe_individual_omis_record($o) {
     $street_address = CRM_Core_DAO::escapeString($civicrm_address['street_address']);
 
     $query = "
-        SELECT contact1.contact_id id1, 5 weight
+        SELECT DISTINCT contact1.contact_id id1, 5 weight
         FROM shadow_contact AS contact1
           JOIN shadow_address AS address1 USING(contact_id)
           JOIN fn_group_contact as fn USING (contact_id)
