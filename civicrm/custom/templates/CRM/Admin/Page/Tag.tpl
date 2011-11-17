@@ -28,9 +28,10 @@
 <style>
 .BBtree.hidden {display:none;}
 .crm-tagTabHeader {height:15px;}
-.crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/rayCivicrm/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;}\
+.crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/rayCivicrm/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;}
 .crm-tagTabHeader li:hover {color:#666;}
 #crm-container #crm-tagListWrap {clear:both;}
+.BBtree.edit.manage {float:right; border-left:1px solid #ccc;}
 </style>
 {/literal}
 {literal}
@@ -816,9 +817,7 @@ function findIDLv(tagLabel) {
 	</div>
 	
 	<div id="crm-tagListWrap">
-	    <div class="BBtree edit manage">
-
-	    </div>
+	    
 	    <div class="crm-tagListInfo">
 		<h1 class="header title">Tag Info</h1>
 		<div class="tagInfoBody">
@@ -829,6 +828,9 @@ function findIDLv(tagLabel) {
 			<!--<div class="tagCount">Records with this Tag: <span></span></div>-->
 		</div>
             </div>
+            <div class="BBtree edit manage">
+	    
+	    </div>
             <div class="crm-tagListSwapArea" tid="0" style="display:none;"></div>
         </div>
         
