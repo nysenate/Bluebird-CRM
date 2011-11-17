@@ -8,8 +8,6 @@ require_once 'CRM/Core/BAO/Address.php';
 // QQQ: should we find a new, unified, place to put the sage key?
 class CRM_Utils_SAGE
 {
-    public static $base = "http://sage.nysenate.gov/api/";
-
 
     public static function checkAddress( &$values )
     {
@@ -48,9 +46,9 @@ class CRM_Utils_SAGE
             'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
             'state' => CRM_Utils_Array::value('state_province', $values, ""),
             'country' => CRM_Utils_Array::value('country', $values, ""),
-            'key' => CRM_Core_BAO_Preferences::value('address_standardization_userid'),
+            'key' => SAGE_API_KEY,
             ),'', '&');
-        $request = new HTTP_Request(self::$base . $url . $params);
+        $request = new HTTP_Request(SAGE_API_BASE . $url . $params);
         $request->sendRequest();
         $xml = simplexml_load_string($request->getResponseBody());
 
@@ -83,9 +81,9 @@ class CRM_Utils_SAGE
                 'state' => $stateProvince,
                 'city' => CRM_Utils_Array::value('city', $values, ""),
                 'zip5' => CRM_Utils_Array::value('postal_code', $values, ""),
-                'key' => CRM_Core_Config::singleton()->geoAPIKey,
+                'key' => SAGE_API_KEY,
             ), '', '&');
-        $request = new HTTP_Request(self::$base . $url . $params);
+        $request = new HTTP_Request(SAGE_API_BASE . $url . $params);
         $request->sendRequest();
         $xml = simplexml_load_string($request->getResponseBody());
 
@@ -122,9 +120,9 @@ class CRM_Utils_SAGE
                 'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
                 'state' => CRM_Utils_Array::value('state_province',$values,""),
                 'country' => CRM_Utils_Array::value('country', $values, ""),
-                'key' => CRM_Core_Config::singleton()->geoAPIKey,
+                'key' => SAGE_API_KEY,
             ), '', '&');
-        $request = new HTTP_Request(self::$base . $url . $params);
+        $request = new HTTP_Request(SAGE_API_BASE . $url . $params);
         $request->sendRequest();
         $xml = simplexml_load_string($request->getResponseBody());
 
@@ -150,10 +148,10 @@ class CRM_Utils_SAGE
      	
 		$params = http_build_query(
 			array(
-				'key' => CRM_Core_Config::singleton()->geoAPIKey,
+				'key' => SAGE_API_KEY,
 			), '', '&');
-		
-		$request = new HTTP_Request(self::$base . $url . $params);
+
+		$request = new HTTP_Request(SAGE_API_BASE . $url . $params);
 		$request->sendRequest();
 		$xml = simplexml_load_string($request->getResponseBody());
 		
@@ -186,9 +184,9 @@ class CRM_Utils_SAGE
                 'zip5' => CRM_Utils_Array::value('postal_code',$values,""),
                 'state' => CRM_Utils_Array::value('state_province',$values,""),
                 'country' => CRM_Utils_Array::value('country', $values, ""),
-                'key' => CRM_Core_Config::singleton()->geoAPIKey,
+                'key' => SAGE_API_KEY,
             ), '', '&');
-        $request = new HTTP_Request(self::$base . $url . $params);
+        $request = new HTTP_Request(SAGE_API_BASE . $url . $params);
         $request->sendRequest();
         $xml = simplexml_load_string($request->getResponseBody());
 

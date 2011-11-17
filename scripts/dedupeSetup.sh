@@ -16,11 +16,11 @@ readConfig=$script_dir/readConfig.sh
 dedupe_dir=$script_dir/../modules/nyss_dedupe
 
 usage () {
-    echo "Usage: $prog [--help|-h] <instance_name>"
+  echo "Usage: $prog [--help|-h] <instance_name>"
 }
 
 if [ $# -eq 0 ]; then
-    usage; exit 1;
+  usage; exit 1;
 fi
 
 while [ $# -gt 0 ]; do
@@ -31,31 +31,33 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ ! $readConfig --instance $instance --quiet ]; then
-    echo "$prog: '$instance' instance not found in config file" >&2
-    exit 1
+if ! $readConfig --instance $instance --quiet; then
+  echo "$prog: '$instance' instance not found in config file" >&2
+  exit 1
 fi
 
-if [ ! "`$execSql -i $instance --quiet -c "SELECT id FROM civicrm_dedupe_rule_group WHERE name='Individual Omis'"`" ]; then
-    echo "Creating entries for the Omis ruleset"
-    $execSql -i $instance -c "
-        INSERT INTO civicrm_dedupe_rule_group
-          (contact_type, threshold, level, is_default, name)
-        VALUES
-          ('Individual', 15, 'Strict', 0, 'Individual Omis');
+omis_rule_id=`$execSql -i $instance --quiet -c "SELECT id FROM civicrm_dedupe_rule_group WHERE name='Individual Omis'"`
 
-        -- This user variable lets us be more flexible instead
-        -- of chosing a specific id and hoping for the best.
-        SET @last_dedupe_rule_id:=LAST_INSERT_ID();
+if [ ! "$omis_rule_id" ]; then
+  echo "Creating entries for the OMIS ruleset"
+  $execSql -i $instance -c "
+      INSERT INTO civicrm_dedupe_rule_group
+        (contact_type, threshold, level, is_default, name)
+      VALUES
+        ('Individual', 15, 'Strict', 0, 'Individual Omis');
 
-        INSERT INTO civicrm_dedupe_rule
-          (dedupe_rule_group_id, rule_table, rule_field, rule_length, rule_weight)
-        VALUES
-          (@last_dedupe_rule_id, 'civicrm_contact', 'first_name', NULL, 5),
-          (@last_dedupe_rule_id, 'civicrm_contact', 'last_name', NULL, 5),
-          (@last_dedupe_rule_id, 'civicrm_address', 'street_address', NULL, 5);"
+      -- This user variable lets us be more flexible instead
+      -- of chosing a specific id and hoping for the best.
+      SET @last_dedupe_rule_id:=LAST_INSERT_ID();
+
+      INSERT INTO civicrm_dedupe_rule
+        (dedupe_rule_group_id, rule_table, rule_field, rule_length, rule_weight)
+      VALUES
+        (@last_dedupe_rule_id, 'civicrm_contact', 'first_name', NULL, 5),
+        (@last_dedupe_rule_id, 'civicrm_contact', 'last_name', NULL, 5),
+        (@last_dedupe_rule_id, 'civicrm_address', 'street_address', NULL, 5);"
 else
-    echo "Existing Omis rule detected, no action taken."
+  echo "Existing OMIS rule detected, no action taken."
 fi
 
 

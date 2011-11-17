@@ -78,6 +78,7 @@ function swapTrees(tab){
 		cj('.crm-tagListSwapArea').attr('tID', tabID);
 		cj('.BBtree.edit.manage').html('');
 		cj('.BBtree.edit.manage').append(toCopy);
+		setTimeout(function(){hoverTreeSlider('.BBtree.edit')},2000);
 	}
 }
 function resetBBTree(inpLoc, order, treeData) {
@@ -242,17 +243,17 @@ function hoverTreeSlider(treeLoc){
 		} else {
 
 			var tagLabel = cj(this).attr('id');
-			
-			if(cj('dl#'+tagLabel).is(':visible'))
-			{
-				cj(treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
-				cj(treeLoc + ' dl#'+tagLabel).slideUp();
-			}
 			if(cj('dl#'+tagLabel).is(':hidden') )
 			{
 				cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
 				cj(treeLoc + ' dl#'+tagLabel).slideDown();
 			}
+			if(cj('dl#'+tagLabel).attr('style') == 'display: block;')
+			{
+				cj(treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
+				cj(treeLoc + ' dl#'+tagLabel).slideUp();
+			}
+			
 		}
 	});
 	cj(treeLoc + ' dt .fCB li').click(function(e) {
