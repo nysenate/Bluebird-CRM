@@ -56,6 +56,8 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
         //Sendgrid headers: disable unsubscribe for non-CiviMail email
         $hdr->setCategory("Bluebird Activity");
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
+        $hdr->addFilterSetting('clicktrack', 'enable', 0);
+        $hdr->addFilterSetting('opentrack', 'enable', 0);
 
     }
 
