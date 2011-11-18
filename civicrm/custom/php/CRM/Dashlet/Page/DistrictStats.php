@@ -164,7 +164,7 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 		$emailCounts['Effective Maximum Mailing'] = CRM_Core_DAO::singleValueQuery( $sql_emailsMax );
 		
 		//duplicate emails
-		$sql_dupeEmails = "SELECT count(id) AS dupeEmail
+		$sql_dupeEmails = "SELECT count(em1.id) AS dupeEmail
                            FROM civicrm_email em1
                              JOIN civicrm_email em2 ON ( em1.email = em2.email AND em1.contact_id != em2.contact_ID );";
         $emailCounts['Duplicate Emails'] = CRM_Core_DAO::singleValueQuery( $sql_dupeEmails );
