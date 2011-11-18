@@ -47,7 +47,7 @@ function callTagAjax () {
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
 		data: {
-			entity_type: 'civicrm_contact',
+			entity_type: 'civicrm_contact'
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -244,17 +244,21 @@ function hoverTreeSlider(treeLoc){
 		} else {
 
 			var tagLabel = cj(this).attr('id');
-			if(cj('dl#'+tagLabel).is(':hidden') )
+			var isOpen = cj('dl#'+tagLabel).hasClass('open');
+			switch(isOpen)
 			{
-				cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
-				cj(treeLoc + ' dl#'+tagLabel).slideDown();
-			}
-			if(cj('dl#'+tagLabel).attr('style') == 'display: block;')
-			{
+				case true:
 				cj(treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
-				cj(treeLoc + ' dl#'+tagLabel).slideUp();
+				cj(treeLoc + ' dl#'+tagLabel).slideUp('400', function() {
+					cj('dl#'+tagLabel).removeClass('open');
+				});
+				break;
+				case false:
+				cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
+				cj(treeLoc + ' dl#'+tagLabel).slideDown('400', function() {
+					cj('dl#'+tagLabel).addClass('open');
+				});
 			}
-			
 		}
 	});
 	cj(treeLoc + ' dt .fCB li').click(function(e) {
