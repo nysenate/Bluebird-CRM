@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2011-10-25
-# Revised: 2011-10-26
+# Revised: 2011-11-18
 #
 
 prog=`basename $0`
@@ -50,7 +50,7 @@ echo "==> Processing CRM instance [$instance]" >&2
 
 selecnt="select count(*) from civicrm_email"
 condemail="email<>''"
-condinvalid="$condemail and email not rlike '^[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,4}\$'"
+condinvalid="$condemail and email not rlike '^[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\\\.)+[A-Za-z]{2,4}\$'"
 condinvalidactive="$condinvalid and on_hold=0"
 condinvalidinactive="$condinvalid and on_hold=1"
 
