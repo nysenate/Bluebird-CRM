@@ -32,7 +32,8 @@ CREATE TABLE shadow_address (
     city varchar(255),
     INDEX (street_address),
     INDEX (postal_code),
-    INDEX (city)
+    INDEX (city),
+    INDEX (contact_id)
 ) ENGINE=InnoDB;
 
 
