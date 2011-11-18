@@ -165,12 +165,30 @@ UPDATE civicrm_log
 		 $query = "SELECT count(*) FROM civicrm_log 
                    WHERE civicrm_log.entity_table = 'civicrm_contact' AND civicrm_log.entity_id = {$contactID}";
          $contact_log_count  = CRM_Core_DAO::singleValueQuery( $query );		 
+
+		 require_once 'api/v2/ActivityContact.php';
+		 $params = array('contact_id' => $contactID);
+		 $activities = civicrm_activity_contact_get($params);
+
+		 $activityIDs = array();
+		 $activitySubject = array();
+		 $bulkEmailID = CRM_Core_OptionGroup::getValue( 'activity_type', 'Bulk Email', 'name' );
+
+		 foreach ( $activities['result'] as $activityID => $activityDetail ) {
+			if ( $activityDetail['activity_type_id'] != $bulkEmailID ) {
+			    $activityIDs[] = $activityID;
+			    $activitySubject[$activityID] = $activityDetail['subject'];
+			}
+		 }
+		 $activityIDlist = implode(',', $activityIDs);
 		 
-		 require_once 'CRM/Activity/BAO/Activity.php';
-		 $activity_log_count = CRM_Activity_BAO_Activity::getActivitiesCount( array('contact_id' => $contactID) );
-		 
-		 $total_log_count    = 0;
-		 $total_log_count    = $contact_log_count + $activity_log_count;
+		 $query = "SELECT count(*) as aCount
+				   FROM civicrm_log
+				   WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);";
+		 $activity_log_count = CRM_Core_DAO::singleValueQuery( $query );
+
+		 $total_log_count = 0;
+		 $total_log_count = $contact_log_count + $activity_log_count;
 		 return $total_log_count;
      }  
 
