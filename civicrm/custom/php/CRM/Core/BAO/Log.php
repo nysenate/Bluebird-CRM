@@ -181,11 +181,14 @@ UPDATE civicrm_log
 			}
 		 }
 		 $activityIDlist = implode(',', $activityIDs);
+		 $activity_log_count = 0;
 		 
-		 $query = "SELECT count(*) as aCount
-				   FROM civicrm_log
-				   WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);";
-		 $activity_log_count = CRM_Core_DAO::singleValueQuery( $query );
+		 if ( !empty($activityIDlist) ) {
+		     $query = "SELECT count(*) as aCount
+				       FROM civicrm_log
+				       WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);";
+		     $activity_log_count = CRM_Core_DAO::singleValueQuery( $query );
+		 }
 
 		 $total_log_count = 0;
 		 $total_log_count = $contact_log_count + $activity_log_count;
