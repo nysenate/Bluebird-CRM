@@ -415,7 +415,8 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 
 	//4567 make admin breadcrumb unclickable if lacking permission
 	if ( $pagename == 'CRM_Admin_Page_Tag' ||
-	     $pagename == 'CRM_Admin_Page_Mapping' ) {
+	     $pagename == 'CRM_Admin_Page_Mapping' ||
+		 $pagename == 'CRM_Report_Page_TemplateList' ) {
 
 		if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
 		    return;
