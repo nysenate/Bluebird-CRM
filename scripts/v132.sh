@@ -72,6 +72,9 @@ $execSql -i $instance -c "$imgurl"
 ma="UPDATE civicrm_domain SET config_backend = REPLACE( config_backend,'\"maxAttachments\";s:1:\"3\"','\"maxAttachments\";s:1:\"5\"' ) WHERE id = 1;"
 $execSql -i $instance -c "$ma"
 
+## 4645 set all reports to permission access CiviReport
+racl="UPDATE civicrm_navigation SET permission = 'access CiviReport' WHERE url LIKE 'civicrm/report/instance/%';"
+$execSql -i $instance -c "$racl"
 
 ### Cleanup ###
 

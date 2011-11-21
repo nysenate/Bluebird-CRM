@@ -363,7 +363,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		
 		//3439 lock permission field
 		$permission =& $form->getElement('permission');
-		$permission->_values = array(0 => 0);
+		$permission->_values = array(0 => 'access CiviReport');
 		$permission->freeze();
 	}
 	
