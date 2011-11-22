@@ -78,9 +78,9 @@ if [ "$rebuildRuleGroups" ]; then
             (dedupe_rule_group_id, rule_table, rule_field, rule_length, rule_weight)
           VALUES
             (@last_dedupe_rule_id, 'civicrm_contact', 'first_name', NULL, 5),
-            (@last_dedupe_rule_id, 'civicrm_contact', 'middle_name', NULL 2),
+            (@last_dedupe_rule_id, 'civicrm_contact', 'middle_name', NULL, 2),
             (@last_dedupe_rule_id, 'civicrm_contact', 'last_name', NULL, 5),
-            (@last_dedupe_rule_id, 'civicrm_contact', 'suffix_id', NULL 2),
+            (@last_dedupe_rule_id, 'civicrm_contact', 'suffix_id', NULL, 2),
             (@last_dedupe_rule_id, 'civicrm_address', 'street_address', NULL, 5);"
     else
       echo "Existing Default rule detected, no action taken."
