@@ -15,7 +15,7 @@ execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 
 usage () {
-  echo "Usage: $prog [--help|-h] [-i|--instance] <instance_name> [-b|--backup] <filename"
+  echo "Usage: $prog [--help|-h] [-b|--backup filename] instance"
 }
 
 # Process the cli arguments
@@ -27,21 +27,22 @@ backup=
 instance=
 while [ $# -gt 0 ]; do
   case "$1" in
-    -h|--help) shift; usage; exit 1;;
-    -i|--instance) shift; instance="$1"; shift;;
-    -b|--backup) shift; backup="$1"; shift;;
-    *) echo "Invalid option '$1'."; usage; exit 1;;
+    -h|--help) usage; exit 0 ;;
+    -b|--backup) shift; backup="$1" ;;
+    -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
+    *) instance="$1" ;;
   esac
+  shift
 done
 
 # Ensure a valid instance name.
 if ! $readConfig --instance $instance --quiet; then
-  echo "$prog: '$instance' instance not found in config file" >&2
+  echo "$prog: $instance: Instance not found in config file" >&2
   exit 1
 fi
 
-if [ $backup ]; then
-    echo `$execSql -i $instance -c "SELECT config_backend FROM civicrm_domain WHERE id=1"` > $backup
+if [ "$backup" ]; then
+    $execSql -i $instance -c "SELECT config_backend FROM civicrm_domain WHERE id=1" > $backup
     echo "Configuration backed up to $backup"
 fi
 
