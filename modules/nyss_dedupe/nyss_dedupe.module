@@ -27,9 +27,9 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
             'internal' => 'nyss_dedupe_indiv5_internal',
             'record' => 'nyss_dedupe_indiv5_record'
         ),
-        'Individual Omis' => array(
-            'internal' => 'nyss_dedupe_individual_omis_internal',
-            'record' => 'nyss_dedupe_individual_omis_record',
+        'Individual Default (fname+mname+lname+suffix+street+birth)' => array(
+            'internal' => 'nyss_dedupe_individual_default_internal',
+            'record' => 'nyss_dedupe_individual_default_record',
         ),
         'Organization 1 (name + street + city + email)' => array(
             'internal' => 'nyss_dedupe_org1_internal',
@@ -525,7 +525,7 @@ function nyss_dedupe_fuzzy_address_record($o, $table, &$tableQueries) {
     // echo "<pre>{$tableQueries['civicrm.street_address.5']}</pre>"; exit();
 }
 
-function nyss_dedupe_individual_omis_internal($o) {
+function nyss_dedupe_individual_default_internal($o) {
     return "
         SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
         FROM shadow_contact AS contact1
@@ -547,7 +547,7 @@ function nyss_dedupe_individual_omis_internal($o) {
           ";
 }
 
-function nyss_dedupe_individual_omis_record($o) {
+function nyss_dedupe_individual_default_record($o) {
     $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
     $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
 
