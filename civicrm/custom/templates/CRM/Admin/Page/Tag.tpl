@@ -43,7 +43,7 @@ cj(document).ready(function() {
 function checkForTagTypes (treeData) {
 	resetBBTree('main', 'init', treeData);
 }
-function callTagAjax () {
+function callTagAjax (local) {
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
 		data: {
@@ -59,10 +59,16 @@ function callTagAjax () {
 			cj.each(data.message, function(i,tID){
 				if(tID.children.length > 0){
 					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
-					switch(tID.id)
+					if(local == 'modal')
 					{
-						case '291': resetBBTree('main', 'init', tID);
-						default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+						return tID;
+					}
+					else {
+						switch(tID.id)
+						{
+							case '291': resetBBTree('main', 'init', tID);
+							default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+						}
 					}
 				}
 			});
@@ -168,7 +174,9 @@ function callTagListMain(treeLoc, treeData) {
 	displayObj.output += '</dl>';
 	writeDisplayObject(displayObj, treeLoc);
 }
-function callTagListModal(treeLoc) {
+function callTagListModal(tID, treeLoc) {
+	console.log(tID);
+	alert(treeLoc);
 	callTagAjaxInitLoader(treeLoc);
 	var displayObj = new Object();
 	if(tID.id == '291')
@@ -404,7 +412,7 @@ function makeModalAdd(tagLabel){
 						}
 						cj('#dialog').dialog('close');
 						cj('#dialog').dialog('destroy');
-						resetBBTree('main');
+						callTagAjax();
 					}
 				});
 			},
@@ -455,7 +463,7 @@ function makeModalRemove(tagLabel){
 									}
 									cj('#dialog').dialog('close');
 									cj('#dialog').dialog('destroy');
-									resetBBTree('main');
+									callTagAjax();
 								}
 							});
 
@@ -537,7 +545,7 @@ function makeModalUpdate(tagLabel){
 						}
 						cj('#dialog').dialog('close');
 						cj('#dialog').dialog('destroy');
-						resetBBTree('main');
+						callTagAjax();
 					}
 				});
 			},
@@ -621,7 +629,7 @@ function makeModalMerge(tagLabel){
 							cj('#tagLabel_' + tagInfo.tid).html(''); 
 							cj('#tagStatusBar').html(msg);
 						}
-						resetBBTree('main');
+						callTagAjax();
                       			}
                 		});
                 		cj(this).dialog("close"); 
@@ -663,7 +671,9 @@ function makeModalTree(tagLabel){
 			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + '</span></div>';
 			treeDialogInfo += '<div class="BBtree modal"></div>';
 			cj('#dialog').html(treeDialogInfo);
-			resetBBTree('modal', 'init');}
+			var tagTree = new Object();
+			tagTree = callTagAjax('modal', '.ui-dialog-content .BBtree.modal');
+			}
 		},
 		buttons: {
 			"Cancel": function() { 
@@ -697,7 +707,7 @@ function modalSelectOnClick() {
 							}
 							cj('#dialog').dialog('close');
 							cj('#dialog').dialog('destroy');
-							resetBBTree('main');
+							callTagAjax();
 						}
 					});
 
