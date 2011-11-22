@@ -43,7 +43,7 @@ done
 if [ $clear_all -eq 1 -a $tpl_only -eq 1 ]; then
   echo "$prog: Cannot specify --all and --tpl-only at the same time." >&2
   exit 1
-elif [ $clear_all -eq 1 -q $wd_only -eq 1 ]; then
+elif [ $clear_all -eq 1 -a $wd_only -eq 1 ]; then
   echo "$prog: Cannot specify --all and --wd-only at the same time." >&2
   exit 1
 elif [ $tpl_only -eq 1 -a $wd_only -eq 1 ]; then
