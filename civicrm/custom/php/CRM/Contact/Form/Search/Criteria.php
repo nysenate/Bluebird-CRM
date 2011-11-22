@@ -138,6 +138,10 @@ class CRM_Contact_Form_Search_Criteria {
         if ( ! CRM_Core_Permission::access( 'CiviEvent' ) ) {
             unset ( $componentModes['3'] );
         }
+		//4666
+		if ( ! CRM_Core_Permission::access( 'CiviMember' ) ) {
+            unset ( $componentModes['5'] );
+        }
 
         if ( ! CRM_Core_Permission::check( 'view all activities' ) ) {
             unset ( $componentModes['4'] );

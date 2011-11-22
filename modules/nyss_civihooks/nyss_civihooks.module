@@ -363,7 +363,7 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		
 		//3439 lock permission field
 		$permission =& $form->getElement('permission');
-		$permission->_values = array(0 => 0);
+		$permission->_values = array(0 => 'access CiviReport');
 		$permission->freeze();
 	}
 	
@@ -399,6 +399,15 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 
 	}
 	
+    //4627 allow blank email overrides
+    if ( $op                       == 'edit' &&
+         $objectName               == 'Profile' &&
+         $objectRef['uf_group_id'] == 8 ) {
+
+        $objectRef['updateBlankLocInfo'] = true;
+        return;
+    }
+
 }
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
@@ -415,7 +424,8 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 
 	//4567 make admin breadcrumb unclickable if lacking permission
 	if ( $pagename == 'CRM_Admin_Page_Tag' ||
-	     $pagename == 'CRM_Admin_Page_Mapping' ) {
+	     $pagename == 'CRM_Admin_Page_Mapping' ||
+		 $pagename == 'CRM_Report_Page_TemplateList' ) {
 
 		if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
 		    return;

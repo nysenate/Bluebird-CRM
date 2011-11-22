@@ -28,9 +28,10 @@
 <style>
 .BBtree.hidden {display:none;}
 .crm-tagTabHeader {height:15px;}
-.crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/rayCivicrm/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;}\
+.crm-tagTabHeader li {float:left;margin-right:15px;background: transparent url(/sites/default/themes/rayCivicrm/nyss_skin/images/button.png) no-repeat scroll right -30px!important; list-style: none; width:135px; color:#fff; text-align:center;}
 .crm-tagTabHeader li:hover {color:#666;}
 #crm-container #crm-tagListWrap {clear:both;}
+.BBtree.edit.manage {float:right; border-left:1px solid #ccc;}
 </style>
 {/literal}
 {literal}
@@ -46,7 +47,7 @@ function callTagAjax () {
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
 		data: {
-			entity_type: 'civicrm_contact',
+			entity_type: 'civicrm_contact'
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -243,17 +244,21 @@ function hoverTreeSlider(treeLoc){
 		} else {
 
 			var tagLabel = cj(this).attr('id');
-			if(cj('dl#'+tagLabel).is(':hidden') )
+			var isOpen = cj('dl#'+tagLabel).hasClass('open');
+			switch(isOpen)
 			{
-				cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
-				cj(treeLoc + ' dl#'+tagLabel).slideDown();
-			}
-			if(cj('dl#'+tagLabel).attr('style') == 'display: block;')
-			{
+				case true:
 				cj(treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
-				cj(treeLoc + ' dl#'+tagLabel).slideUp();
+				cj(treeLoc + ' dl#'+tagLabel).slideUp('400', function() {
+					cj('dl#'+tagLabel).removeClass('open');
+				});
+				break;
+				case false:
+				cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
+				cj(treeLoc + ' dl#'+tagLabel).slideDown('400', function() {
+					cj('dl#'+tagLabel).addClass('open');
+				});
 			}
-			
 		}
 	});
 	cj(treeLoc + ' dt .fCB li').click(function(e) {
@@ -713,11 +718,11 @@ function addControlBox(tagLabel, IDChecked) {
 	var tagMouse = 'dt#'+tagLabel;
 	floatControlBox = '<span class="fCB" style="padding:1px 0;float:right;">';
 	floatControlBox += '<ul>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" title="Remove Tag" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" title="Move Tag" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" title="Update Tag" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
+	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" title="Merge Tag" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
 	/*floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
 	if(IDChecked == ' checked'){
 		floatControlBox += '<input type="checkbox" class="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
@@ -728,7 +733,7 @@ function addControlBox(tagLabel, IDChecked) {
 	if(tagMouse != 'dt#tagLabel_291')
 	{
 		return(floatControlBox);
-	} else { return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; }
+	} else { return '<span class="fCB" style="padding:1px 0;float:right;"><ul><li style="height:16px; width:16px; margin:auto 1px; float:left;" title="Add New Tag" onclick="makeModalAdd(\''+ tagLabel +'\')"></li></ul></span>'; }
 }
 function checkRemoveAdd(tagLabel) {
 	var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
@@ -816,9 +821,7 @@ function findIDLv(tagLabel) {
 	</div>
 	
 	<div id="crm-tagListWrap">
-	    <div class="BBtree edit manage">
-
-	    </div>
+	    
 	    <div class="crm-tagListInfo">
 		<h1 class="header title">Tag Info</h1>
 		<div class="tagInfoBody">
@@ -829,6 +832,9 @@ function findIDLv(tagLabel) {
 			<!--<div class="tagCount">Records with this Tag: <span></span></div>-->
 		</div>
             </div>
+            <div class="BBtree edit manage">
+	    
+	    </div>
             <div class="crm-tagListSwapArea" tid="0" style="display:none;"></div>
         </div>
         

@@ -115,7 +115,9 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 		
 		$this->assign( 'logCount', count( $logEntries ) );
         $this->assign_by_ref( 'log', $logEntries );
-		$this->assign( 'displayName', $displayName ); //NYSS 2551
+		
+		$currentContact = CRM_Contact_BAO_Contact::getDisplayAndImage( $this->_contactId ); //4458
+		$this->assign( 'displayName', $currentContact[0] ); //NYSS 2551
 				
     }
 

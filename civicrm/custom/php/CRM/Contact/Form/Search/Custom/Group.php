@@ -710,6 +710,9 @@ class CRM_Contact_Form_Search_Custom_Group
         } else {
             $where = $this->_where;
         }
+		
+		//NYSS 4345 - exclude trashed contacts
+		$where .= " AND contact_a.is_deleted = 0 ";
            
         return $where;
     }

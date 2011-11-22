@@ -72,6 +72,18 @@ $execSql -i $instance -c "$imgurl"
 ma="UPDATE civicrm_domain SET config_backend = REPLACE( config_backend,'\"maxAttachments\";s:1:\"3\"','\"maxAttachments\";s:1:\"5\"' ) WHERE id = 1;"
 $execSql -i $instance -c "$ma"
 
+## 4645 set all reports to permission access CiviReport
+racl="UPDATE civicrm_navigation SET permission = 'access CiviReport' WHERE url LIKE 'civicrm/report/instance/%';"
+$execSql -i $instance -c "$racl"
+
+## 4335 source fields in profile overlay
+source="SELECT @overlay_id := id FROM civicrm_uf_group WHERE title = 'Summary Overlay';
+INSERT INTO `civicrm_uf_field` (`uf_group_id`, `field_name`, `is_active`, `is_view`, `is_required`, `weight`, `help_post`, `help_pre`, `visibility`, `in_selector`, `is_searchable`, `location_type_id`, `phone_type_id`, `label`, `field_type`, `is_reserved`) VALUES
+(@overlay_id, 'custom_60', 1, 0, 0, 12, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Contact Source', 'Individual', NULL),
+(@overlay_id, 'contact_source', 1, 0, 0, 13, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Other Source', 'Contact', NULL);"
+$execSql -i $instance -c "$source"
+
+
 
 ### Cleanup ###
 
