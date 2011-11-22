@@ -293,7 +293,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             // NYSS
             // Make a record for the preferences with a unique name and user id!
             // TODO: How do you raise an error when the name turns out not unique?
-            $user_id = $_REQUEST['DRUPAL_UID'];
+            global $user;
             $importJobName = str_replace(' ','_',$this->_params['import_job_name']);
             $importTableName = $this->_params['import_table_name'] = "civicrm_import_job_$importJobName";
 
@@ -312,7 +312,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
                       '{$this->_params['uploadFile']['name']}',
                       '{$this->_params['dataSource']}',
                       '{$this->_params['fieldSeparator']}',
-                      $user_id
+                      $user->uid
                     )"
             );
             //hack to prevent multiple tables.
