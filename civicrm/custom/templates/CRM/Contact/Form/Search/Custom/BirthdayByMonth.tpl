@@ -26,8 +26,9 @@
 {* Default template custom searches. This template is used automatically if templateFile() function not defined in
    custom search .php file. If you want a different layout, clone and customize this file and point to new file using
    templateFile() function.*}
+{assign var="panel" value=$smarty.get.panel}{*NYSS*}
 <div class="crm-block crm-form-block crm-contact-custom-search-form-block">
-<div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows}crm-accordion-closed{else}crm-accordion-open{/if}">
+<div class="crm-accordion-wrapper crm-custom_search_form-accordion {if $rows && !$panel}crm-accordion-closed{else}crm-accordion-open{/if}">
     <div class="crm-accordion-header crm-master-accordion-header">
       <div class="icon crm-accordion-pointer"></div>
       {ts}Edit Search Criteria{/ts}
