@@ -244,7 +244,7 @@ function nyss_dedupe_indiv1_record($o) {
     }
 
     if( array_key_exists('first_name', $contact) && $value=CRM_Core_DAO::escapeString($contact['first_name']))
-        $where .= "AND fn.fn_group_id IN ( SELECT fn_group_id FROM fn_group_name WHERE name = BB_NORMALIZE('$value'));\n";
+        $where .= "AND fn.fn_group_id IN ( SELECT fn_group_id FROM fn_group_name WHERE name = BB_NORMALIZE('$value'))\n";
 
     if( array_key_exists('suffix_id', $contact) && $value=CRM_Core_DAO::escapeString($contact['suffix_id']))
         $where .= " AND contact.suffix_id = '$value'\n";
@@ -265,6 +265,7 @@ function nyss_dedupe_indiv1_record($o) {
     return "SELECT DISTINCT contact.contact_id id1, 10 weight
             FROM shadow_contact as contact
               INNER JOIN shadow_address as address on address.contact_id=contact.contact_id
+              JOIN fn_group_contact as fn ON contact.contact_id = fn.contact_id
             $where
             ";
 }
@@ -285,7 +286,8 @@ function nyss_dedupe_indiv5_record($o) {
         $tableQueries['civicrm_contact.email.5'] = CRM_Core_DAO::composeQuery(
                "SELECT DISTINCT contact.contact_id id1, 5 weight
                 FROM shadow_contact as contact
-                  JOIN civicrm_email as email on email.contact_id = contact.id
+                  JOIN civicrm_email as email on email.contact_id = contact.contact_id
+                  JOIN fn_group_contact as fn ON contact.contact_id = fn.contact_id
                 WHERE contact.contact_type = 'Individual'
                   AND fn.fn_group_id IN ( SELECT fn_group_id
                                             FROM fn_group_name
@@ -303,7 +305,8 @@ function nyss_dedupe_indiv5_record($o) {
         $tableQueries['civicrm_contact.email.5'] = CRM_Core_DAO::composeQuery(
                "SELECT DISTINCT contact.contact_id id1, 5 weight
                 FROM shadow_contact as contact
-                  JOIN shadow_address as address on address.contact_id=contact.id
+                  JOIN shadow_address as address on address.contact_id=contact.contact_id
+                  JOIN fn_group_contact as fn ON contact.contact_id = fn.contact_id
                 WHERE contact.contact_type = 'Individual'
                   AND fn.fn_group_id IN ( SELECT fn_group_id
                                             FROM fn_group_name
