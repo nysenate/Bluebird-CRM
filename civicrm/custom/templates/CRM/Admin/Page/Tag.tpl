@@ -61,7 +61,7 @@ function callTagAjax (local) {
 					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
 					if(local == 'modal')
 					{
-						return tID;
+						resetBBTree('modal', 'init', tID);
 					}
 					else {
 						switch(tID.id)
@@ -174,9 +174,7 @@ function callTagListMain(treeLoc, treeData) {
 	displayObj.output += '</dl>';
 	writeDisplayObject(displayObj, treeLoc);
 }
-function callTagListModal(tID, treeLoc) {
-	console.log(tID);
-	alert(treeLoc);
+function callTagListModal(treeLoc, tID) {
 	callTagAjaxInitLoader(treeLoc);
 	var displayObj = new Object();
 	if(tID.id == '291')
@@ -412,6 +410,7 @@ function makeModalAdd(tagLabel){
 						}
 						cj('#dialog').dialog('close');
 						cj('#dialog').dialog('destroy');
+						cj('.crm-tagTabHeader ul').html('');
 						callTagAjax();
 					}
 				});
@@ -463,6 +462,7 @@ function makeModalRemove(tagLabel){
 									}
 									cj('#dialog').dialog('close');
 									cj('#dialog').dialog('destroy');
+									cj('.crm-tagTabHeader ul').html('');
 									callTagAjax();
 								}
 							});
@@ -545,6 +545,7 @@ function makeModalUpdate(tagLabel){
 						}
 						cj('#dialog').dialog('close');
 						cj('#dialog').dialog('destroy');
+						cj('.crm-tagTabHeader ul').html('');
 						callTagAjax();
 					}
 				});
@@ -629,6 +630,7 @@ function makeModalMerge(tagLabel){
 							cj('#tagLabel_' + tagInfo.tid).html(''); 
 							cj('#tagStatusBar').html(msg);
 						}
+						cj('.crm-tagTabHeader ul').html('');
 						callTagAjax();
                       			}
                 		});
@@ -671,8 +673,8 @@ function makeModalTree(tagLabel){
 			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + '</span></div>';
 			treeDialogInfo += '<div class="BBtree modal"></div>';
 			cj('#dialog').html(treeDialogInfo);
-			var tagTree = new Object();
-			tagTree = callTagAjax('modal', '.ui-dialog-content .BBtree.modal');
+			cj('.crm-tagTabHeader ul').html('');
+			callTagAjax('modal', '.ui-dialog-content .BBtree.modal');
 			}
 		},
 		buttons: {
