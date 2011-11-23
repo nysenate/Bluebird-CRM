@@ -16,7 +16,7 @@ readConfig=$script_dir/readConfig.sh
 dedupe_dir=$script_dir/../modules/nyss_dedupe
 
 usage () {
-  echo "Usage: $prog [--help|-h] [--rebuild-all] [--rebuild-tables] [--rebuild-rule-groups] -i <instance_name>"
+  echo "Usage: $prog [--help|-h] [--rebuild-all] [--rebuild-tables] [--rebuild-rule-groups] instance"
 }
 
 if [ $# -eq 0 ]; then
@@ -28,11 +28,11 @@ rebuildRuleGroups=
 while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help) shift; usage; exit 1;;
-    -i) shift; instance="$1"; shift;;
     --rebuild-tables) shift; rebuildTables=1;;
     --rebuild-rule-groups) shift; rebuildRuleGroups=1;;
     --rebuild-all) shift; rebuildTables=1; rebuildRuleGroups=1;;
-    *) echo "Invalid option '$1'."; usage; exit 1;;
+    -*) echo "Invalid option '$1'."; usage; exit 1;;
+    *) instance="$1"; shift;;
   esac
 done
 
@@ -50,25 +50,32 @@ fi
 
 
 if [ "$rebuildRuleGroups" ]; then
-    #Check for an existing default rule, don't recreate!
-    default_rule_id=`$execSql -i $instance --quiet -c "
+
+    #Check for an existing default rules to remove, we'll recreate them
+    default_strict_rule_id=`$execSql -i $instance --quiet -c "
       SELECT id
       FROM civicrm_dedupe_rule_group
-      WHERE name='Individual Default (fname+mname+lname+suffix+street+birth)'"`
+      WHERE name='Individual Default Strict (fn+mn+ln+suffix+dob+addr+zip)'"`
 
-    if [ ! "$default_rule_id" ]; then
+    default_fuzzy_rule_id=`$execSql -i $instance --quiet -c "
+      SELECT id
+      FROM civicrm_dedupe_rule_group
+      WHERE name='Individual Default Fuzzy (fn+mn+ln+suffix+dob+(addr+zip)|email)'"`
+
+    if [ ! $default_strict_rule_id ]; then
+      echo "Creating new Default Strict Rule..."
       #Unset the existing default
       $execSql -i $instance -c "
           UPDATE civicrm_dedupe_rule_group
           SET is_default=0
           WHERE contact_type='Individual' AND is_default=1 AND level='Strict'"
 
-      #Insert the new default strict rule
+      #Insert the new default fuzzy rule
       $execSql -i $instance -c "
           INSERT INTO civicrm_dedupe_rule_group
             (contact_type, threshold, level, is_default, name)
           VALUES
-            ('Individual', 15, 'Strict', 1, 'Individual Default (fname+mname+lname+suffix+street+birth)');
+            ('Individual', 15, 'Strict', 1, 'Individual Default Strict (fn+mn+ln+suffix+dob+addr+zip)');
 
           -- This user variable lets us be more flexible instead
           -- of chosing a specific id and hoping for the best.
@@ -83,11 +90,42 @@ if [ "$rebuildRuleGroups" ]; then
             (@last_dedupe_rule_id, 'civicrm_contact', 'suffix_id', NULL, 2),
             (@last_dedupe_rule_id, 'civicrm_address', 'street_address', NULL, 5);"
     else
-      echo "Existing Default rule detected, no action taken."
+        echo "Default Strict rule found. Skipping..."
+    fi
+
+    if [ ! $default_fuzzy_rule_id ]; then
+      echo "Creating new Default Fuzzy Rule..."
+      #Unset the existing default
+      $execSql -i $instance -c "
+          UPDATE civicrm_dedupe_rule_group
+          SET is_default=0
+          WHERE contact_type='Individual' AND is_default=1 AND level='Fuzzy'"
+
+      #Insert the new default strict rule
+      $execSql -i $instance -c "
+          INSERT INTO civicrm_dedupe_rule_group
+            (contact_type, threshold, level, is_default, name)
+          VALUES
+            ('Individual', 15, 'Strict', 1, 'Individual Default Fuzzy (fn+mn+ln+suffix+dob+(addr+zip)|email)');
+
+          -- This user variable lets us be more flexible instead
+          -- of chosing a specific id and hoping for the best.
+          SET @last_dedupe_rule_id:=LAST_INSERT_ID();
+
+          INSERT INTO civicrm_dedupe_rule
+            (dedupe_rule_group_id, rule_table, rule_field, rule_length, rule_weight)
+          VALUES
+            (@last_dedupe_rule_id, 'civicrm_contact', 'first_name', NULL, 5),
+            (@last_dedupe_rule_id, 'civicrm_contact', 'middle_name', NULL, 2),
+            (@last_dedupe_rule_id, 'civicrm_contact', 'last_name', NULL, 5),
+            (@last_dedupe_rule_id, 'civicrm_contact', 'suffix_id', NULL, 2),
+            (@last_dedupe_rule_id, 'civicrm_address', 'street_address', NULL, 5);"
+    else
+        echo "Default Fuzzy rule found. Skipping..."
     fi
 
 
-    #Check for the Omis rule
+    #Check for the old Omis rule
     omis_rule_id=`$execSql -i $instance --quiet -c "
       SELECT id
       FROM civicrm_dedupe_rule_group
@@ -102,7 +140,26 @@ if [ "$rebuildRuleGroups" ]; then
 
       $execSql -i $instance --quiet -c "
           DELETE FROM civicrm_dedupe_rule_group
-          WHERE name='Individual Omis'"
+          WHERE id=$omis_rule_id"
+    fi
+
+
+    #Check for the old Default rule
+    old_default_rule_id=`$execSql -i $instance --quiet -c "
+      SELECT id
+      FROM civicrm_dedupe_rule_group
+      WHERE name='Individual Default (fname+mname+lname+suffix+street+birth)'"`
+
+    if [ "$old_default_rule_id" ]; then
+      #Remove the existing Default rule
+      echo "Old Default rule detected. Removing..."
+      $execSql -i $instance --quiet -c "
+          DELETE FROM civicrm_dedupe_rule
+          WHERE dedupe_rule_group_id=$old_default_rule_id"
+
+      $execSql -i $instance --quiet -c "
+          DELETE FROM civicrm_dedupe_rule_group
+          WHERE id=$old_default_rule_id"
     fi
 fi
 
