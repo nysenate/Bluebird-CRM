@@ -108,7 +108,7 @@ UPDATE civicrm_contact cc
   JOIN civicrm_value_constituent_information_1 cvci
     ON ( cc.id = cvci.entity_id AND
          cvci.record_type_61 = 0 )
-SET cc.is_deleted = 1;"
+SET cc.is_deleted = 1, cc.do_not_email = 1, cc.do_not_mail = 1;"
 $execSql -i $instance -c "$trash"
 
 
