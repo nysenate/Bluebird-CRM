@@ -84,7 +84,8 @@ INSERT INTO `civicrm_uf_field` (`uf_group_id`, `field_name`, `is_active`, `is_vi
 $execSql -i $instance -c "$source"
 
 ## 4522 remove empty addresses and phone
-empty="DELETE FROM civicrm_address 
+empty="
+DELETE FROM civicrm_address
 WHERE street_address IS NULL AND 
   supplemental_address_1 IS NULL AND
   city IS NULL AND
@@ -92,6 +93,23 @@ WHERE street_address IS NULL AND
 DELETE FROM civicrm_phone 
 WHERE phone IS NULL;"
 $execSql -i $instance -c "$empty"
+
+## 2977 soft delete
+soft="
+UPDATE civicrm_value_constituent_information_1 cvci
+  JOIN civicrm_note cn ON ( cvci.entity_id = cn.entity_id AND
+                            cn.entity_table = 'civicrm_contact' AND
+                            cn.subject = 'OMIS DATA' )
+SET cvci.record_type_61 = preg_capture('/RT:\s([\d])/', cn.note, 1);"
+$execSql -i $instance -c "$soft"
+
+trash="
+UPDATE civicrm_contact cc
+  JOIN civicrm_value_constituent_information_1 cvci
+    ON ( cc.id = cvci.entity_id AND
+         cvci.record_type_61 = 0 )
+SET cc.is_deleted = 1;"
+$execSql -i $instance -c "$trash"
 
 
 ### Cleanup ###
