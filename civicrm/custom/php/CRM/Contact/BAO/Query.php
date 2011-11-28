@@ -1072,7 +1072,10 @@ class CRM_Contact_BAO_Query
             if ( isset( $this->_distinctComponentClause ) ) {
                 $select = "SELECT count( {$this->_distinctComponentClause} )";
             } else {
-                $select = 'SELECT count(*)';
+                //NYSS fix count distinct
+                $select = ( $this->_useDistinct ) ?
+                    'SELECT count(DISTINCT contact_a.id)' :
+                    'SELECT count(*)';
             }
             $from = $this->_simpleFromClause;
             if ( $this->_useDistinct ) {
@@ -1157,6 +1160,7 @@ class CRM_Contact_BAO_Query
             $this->filterRelatedContacts( $from, $where, $having );
         }
 
+//CRM_Core_Error::debug_log_message("$select $from $where $having"); //NYSS debug
         return array( $select, $from, $where, $having );
     }
 
