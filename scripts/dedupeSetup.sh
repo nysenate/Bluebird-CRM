@@ -1,12 +1,12 @@
 #!/bin/sh
 #
-# dedupeSetup.sh - All in one dedupe setup script.
+# dedupeSetup.sh - All-in-one dedupe setup script.
 #
 # Project: BluebirdCRM
 # Author: Graylin Kim
 # Organization: New York State Senate
 # Date: 2011-11-03
-# Revised: 2011-11-21
+# Revised: 2011-11-28
 #
 
 prog=`basename $0`
@@ -16,41 +16,42 @@ readConfig=$script_dir/readConfig.sh
 dedupe_dir=$script_dir/../modules/nyss_dedupe
 
 usage () {
-  echo "Usage: $prog [--help|-h] [--rebuild-all] [--rebuild-tables] [--rebuild-rule-groups] instance"
+  echo "Usage: $prog [--help|-h] [--rebuild-all|-a] [--rebuild-tables|-t] [--rebuild-rule-groups|-r] instance"
 }
 
 if [ $# -eq 0 ]; then
-  usage; exit 1;
+  usage
+  exit 1
 fi
 
-rebuildTables=
-rebuildRuleGroups=
+rebuildTables=0
+rebuildRuleGroups=0
+
 while [ $# -gt 0 ]; do
   case "$1" in
-    -h|--help) shift; usage; exit 1;;
-    --rebuild-tables) shift; rebuildTables=1;;
-    --rebuild-rule-groups) shift; rebuildRuleGroups=1;;
-    --rebuild-all) shift; rebuildTables=1; rebuildRuleGroups=1;;
-    -*) echo "Invalid option '$1'."; usage; exit 1;;
-    *) instance="$1"; shift;;
+    -h|--help) usage; exit 0 ;;
+    -t|--rebuild-tables) rebuildTables=1 ;;
+    -r|--rebuild-rule-groups) rebuildRuleGroups=1 ;;
+    -a|--rebuild-all) rebuildTables=1; rebuildRuleGroups=1 ;;
+    -*) echo "$prog: $1: Invalid option"; usage; exit 1 ;;
+    *) instance="$1";;
   esac
+  shift
 done
 
-#How do you make bash test 2 things at once? GAHH!!!
-if [ ! "$rebuildTables" ]; then
-  if [ ! "$rebuildRuleGroups" ]; then
-    usage; echo "You must specify at least one setup action."; exit 1;
-  fi
+if [ $rebuildTables -eq 0 -a $rebuildRuleGroups -eq 0 ]; then
+  echo "$prog: You must specify at least one setup action."
+  usage
+  exit 1
 fi
 
 if ! $readConfig --instance $instance --quiet; then
-  echo "$prog: '$instance' instance not found in config file" >&2
+  echo "$prog: $instance: Instance not found in config file" >&2
   exit 1
 fi
 
 
-if [ "$rebuildRuleGroups" ]; then
-
+if [ $rebuildRuleGroups -eq 1 ]; then
     #Check for an existing default rules to remove, we'll recreate them
     default_strict_rule_id=`$execSql -i $instance --quiet -c "
       SELECT id
@@ -165,7 +166,7 @@ fi
 
 
 
-if [ "$rebuildTables" ]; then
+if [ $rebuildTables -eq 1 ]; then
     #Update suffixes tables
     echo "Rebuilding Suffix tables."
     $execSql -i $instance -f $dedupe_dir/output/suffixes.sql
@@ -193,3 +194,4 @@ if [ "$rebuildTables" ]; then
 fi
 
 echo "Actions Successfully completed."
+exit 0
