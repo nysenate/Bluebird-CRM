@@ -48,7 +48,7 @@ $drush $instance civicrm-upgrade-db
 nav="
 UPDATE civicrm_navigation
 SET is_active = 0
-WHERE label = 'New Price Set' OR label = 'Manage Price Sets';"
+WHERE label = 'New Price Set' OR label = 'Manage Price Sets' OR label = 'Survey Report (Detail)';"
 $execSql -i $instance -c "$nav"
 
 ## 3439 report permissions by role
