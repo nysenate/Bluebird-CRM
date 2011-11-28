@@ -255,8 +255,7 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail"; //NYSS
+                    ORDER BY $email.is_bulkmail";
         $mailingGroup->query($query);
 
 
@@ -285,8 +284,7 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail");//NYSS
+                    ORDER BY $email.is_bulkmail");
 
         
         $sql = "
@@ -373,8 +371,7 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail"; //NYSS
+                    ORDER BY $email.is_bulkmail";
         $mailingGroup->query($query);
                     
         /* Get the emails with full override */
@@ -403,8 +400,7 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    $groupBy
-                    ORDER BY $email.is_bulkmail"); //NYSS
+                    ORDER BY $email.is_bulkmail");
                         
         $results = array();
 
