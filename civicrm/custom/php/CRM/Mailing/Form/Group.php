@@ -53,7 +53,7 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
     public function preProcess()  
     {
         //NYSS 4216 we don't want to block with this
-		/*require_once 'CRM/Core/BAO/MailSettings.php';
+        /*require_once 'CRM/Core/BAO/MailSettings.php';
         if (CRM_Core_BAO_MailSettings::defaultDomain() == "FIXME.ORG") {
           CRM_Core_Error::fatal( ts( 'The <a href="%1">default mailbox</a> has not been configured. You will find <a href="%2">more info in our book</a>', array( 1 => CRM_Utils_System::url('civicrm/admin/mailSettings', 'reset=1'), 2=> "http://en.flossmanuals.net/civicrm/ch042_system-configuration/")));
         }*/
@@ -438,12 +438,10 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         }
         
         // also compute the recipients and store them in the mailing recipients table
-        CRM_Mailing_BAO_Mailing::getRecipients( $mailing->id, 
-		                                        $mailing->id,
-                                                null, 
-												null,
-                                                true, 
-												$dedupeEmail ); //NYSS
+        CRM_Mailing_BAO_Mailing::getRecipients( $mailing->id,
+                                                $mailing->id,
+                                                null, null, true,
+                                                $dedupeEmail ); //NYSS
 
         require_once 'CRM/Mailing/BAO/Recipients.php';
         $count = CRM_Mailing_BAO_Recipients::mailingSize( $mailing->id );
