@@ -106,7 +106,7 @@ if [ "$rebuildRuleGroups" ]; then
           INSERT INTO civicrm_dedupe_rule_group
             (contact_type, threshold, level, is_default, name)
           VALUES
-            ('Individual', 15, 'Strict', 1, 'Individual Default Fuzzy (fn+mn+ln+suffix+dob+(addr+zip)|email)');
+            ('Individual', 15, 'Fuzzy', 1, 'Individual Default Fuzzy (fn+mn+ln+suffix+dob+(addr+zip)|email)');
 
           -- This user variable lets us be more flexible instead
           -- of chosing a specific id and hoping for the best.
