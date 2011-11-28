@@ -293,7 +293,8 @@ class CRM_Contribute_BAO_Query
             $statusValues = CRM_Core_OptionGroup::values("contribution_status");
             
             $names = array( );
-            if ( is_array( $val ) ) {
+            if ( isset( $val ) &&
+                 is_array( $val ) ) {
                 foreach ( $val as $id => $dontCare ) {
                     $names[] = $statusValues[ $id ];
                 }

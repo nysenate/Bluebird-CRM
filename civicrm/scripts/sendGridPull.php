@@ -93,7 +93,7 @@ function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true ) {
         //echo "reason: $reason\n";
         
         //find the email and job details
-        $queue = findEmailJob( $email );
+        $queue = findEmailJob( mysql_real_escape_string($email) );
         
         //TODO we need to check to see if the email has already been processed
         //OR we need to delete the bounce from SendGrid after processing
@@ -167,7 +167,7 @@ function unsubscribeRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true
 function findEmailJob( $email ) {
 
     //find email id; we can ignore if already on_hold
-    $findEmails = "SELECT id FROM civicrm_email WHERE email = '$email' AND on_hold = 0 AND (is_primary = 1 OR is_bulkmail = 1)";
+    $findEmails = "SELECT id FROM civicrm_email WHERE email = '$email' AND (is_primary = 1 OR is_bulkmail = 1)";
     $e_result   = CRM_Core_DAO::executeQuery( $findEmails );
         
     //find most recent job using all matching emails

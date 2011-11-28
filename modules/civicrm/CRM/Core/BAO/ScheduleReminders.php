@@ -130,7 +130,7 @@ class CRM_Core_BAO_ScheduleReminders extends CRM_Core_DAO_ActionSchedule
 
             switch ($entityRecipient) {
             case 'activity_contacts':
-                $sel5[$entityRecipient] = $activityContacts + $options;
+                $sel5[$entityRecipient] = $activityContacts;
                 break;
                 
             case 'civicrm_participant_status_type':
@@ -356,6 +356,13 @@ LEFT JOIN civicrm_action_mapping cam ON (cam.id = cas.mapping_id)
             require_once 'CRM/Core/Smarty/resources/String.php';
             civicrm_smarty_register_string_resource( );
             $smarty =& CRM_Core_Smarty::singleton( );
+
+            // $tokenParams is flat (i.e. keys include dots); these are hard to access in Smarty
+            require_once 'CRM/Utils/Array.php';
+            foreach (CRM_Utils_Array::unflatten('.', $tokenParams) as $key => $value) {
+                $smarty->assign($key, $value);
+            }
+            
             foreach( array( 'text', 'html') as $elem) {
                 $$elem = $smarty->fetch("string:{$$elem}");
             }

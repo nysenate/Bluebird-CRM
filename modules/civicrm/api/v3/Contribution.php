@@ -181,7 +181,12 @@ function civicrm_api3_contribution_get($params) {
 
 }
 /*
- * Return valid fields for API
+ * Return valid fields for API. In general these are the fields accepted by the 'Create' operation
+ * The format of these fields is as per the $dao->fields function which is called by _civicrm_api_get_fields
+ * The getfields function is used by the API explorer and by field validation functions
+ * 
+ * @param array $params array of parameters
+ * @return array values accepted by api
  */
 function civicrm_api3_contribution_getfields( $params ) {
     $fields =  _civicrm_api_get_fields('contribution') ;
@@ -189,6 +194,11 @@ function civicrm_api3_contribution_getfields( $params ) {
                                            'title' => 'note',
                                            'type' => 2,
                                            'description' => 'Associated Note in the notes table');
+    $fields['soft_credit_to'] = array('name' => 'soft_credit_to',
+                                           'title' => 'Soft Credit contact ID',
+                                           'type' => 1,
+                                           'description' => 'ID of Contact to be Soft credited to',
+                                           'FKClassName' => 'CRM_Contact_DAO_Contact');
 
 
     return civicrm_api3_create_success($fields );

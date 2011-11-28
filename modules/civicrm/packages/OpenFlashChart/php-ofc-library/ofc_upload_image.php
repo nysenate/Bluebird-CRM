@@ -19,7 +19,8 @@ print_r( $GLOBALS["HTTP_RAW_POST_DATA"] );
 // default path for the image to be stored //
 if( ! $_GET['defaultPath'] ) {
 	$default_path = '../tmp-upload-images/';
-	$default_path = $_GET['defaultPath']; //NYSS 3976
+} else {
+	$default_path = $_GET['defaultPath'];
 }
 
 if (!file_exists($default_path)) mkdir($default_path, 0777, true);

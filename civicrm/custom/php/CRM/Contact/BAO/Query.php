@@ -346,6 +346,9 @@ class CRM_Contact_BAO_Query
      * List of location specific fields
      */
     static $_locationSpecificFields = array ( 'street_address',
+	                                          'street_number', //NYSS 4150
+											  'street_name',
+											  'street_unit',
                                               'supplemental_address_1',
                                               'supplemental_address_2',
                                               'city',
@@ -1069,31 +1072,20 @@ class CRM_Contact_BAO_Query
             if ( isset( $this->_distinctComponentClause ) ) {
                 $select = "SELECT count( {$this->_distinctComponentClause} )";
             } else {
-                $select = ( $this->_useDistinct ) ?	
-                    'SELECT count(DISTINCT contact_a.id)' :
-                    'SELECT count(*)';
+                $select = 'SELECT count(*)';
             }
             $from = $this->_simpleFromClause;
+            if ( $this->_useDistinct ) {
+                $this->_useGroupBy = true;
+            }
         } else if ( $sortByChar ) {  
             $select = 'SELECT DISTINCT UPPER(LEFT(contact_a.sort_name, 1)) as sort_name';
             $from = $this->_simpleFromClause;
         } else if ( $groupContacts ) { 
-            //NYSS 3629/J 8084
-			/*$select = ( $this->_useDistinct ) ?
-                'SELECT DISTINCT(contact_a.id) as id' :
-                'SELECT contact_a.id as id'; 
-//            $select = 'SELECT contact_a.id as id';
-//            if ( $this->_useDistinct ) {
-//                $this->_useGroupBy = true;
-//            }
-			*/
-			// CRM-5954 - changing SELECT DISTINCT( contact_a.id ) -> SELECT ... GROUP BY contact_a.id
-            // but need to measure performance
-            $select = 'SELECT contact_a.id as id';
+            $select = 'SELECT contact_a.id as id'; 
             if ( $this->_useDistinct ) {
                 $this->_useGroupBy = true;
             }
-			//NYSS end
             $from = $this->_simpleFromClause;
         } else {
             if ( CRM_Utils_Array::value( 'group', $this->_paramLookup ) ) {
@@ -1123,11 +1115,12 @@ class CRM_Contact_BAO_Query
             }
             if ( $this->_useDistinct && !isset( $this->_distinctComponentClause) ) {
                 if ( !( $this->_mode & CRM_Contact_BAO_Query::MODE_ACTIVITY ) ) {
-                    //NYSS 3629/J 8084
-					/*
-                     $this->_select['contact_id'] = 'DISTINCT(contact_a.id) as contact_id';
-                    */
                     // CRM-5954
+                    //$this->_select['contact_id'] = 'DISTINCT(contact_a.id) as contact_id';
+					//NYSS
+					$this->_select['contact_id'] = 'contact_a.id as contact_id';
+                    $this->_useDistinct = false;
+					
                     $this->_useGroupBy = true;
                     $this->_select['contact_id'] ='contact_a.id as contact_id';
 					//NYSS end
@@ -1320,7 +1313,11 @@ class CRM_Contact_BAO_Query
             $this->group( $values );
             return;
 
-            // case tag comes from find contacts
+        // case tag comes from find contacts
+		//NYSS 4279
+		case 'tag_search':
+            $this->tagSearch( $values );
+            return;
         case 'tag':
         case 'contact_tags':
             $this->tag( $values );
@@ -1347,6 +1344,11 @@ class CRM_Contact_BAO_Query
 
         case 'street_address':
             $this->street_address( $values );
+            return;
+
+        //NYSS 4150
+		case 'street_number':
+            $this->street_number( $values );
             return;
 
         case 'sortByCharacter':
@@ -2092,9 +2094,11 @@ class CRM_Contact_BAO_Query
                 $from .= " $side JOIN civicrm_im ON (contact_a.id = civicrm_im.contact_id AND civicrm_im.is_primary = 1) ";
                 continue;
 
+            //NYSS 4489
             case 'im_provider':
-                $from .= " $side JOIN civicrm_option_group option_group_imProvider ON option_group_imProvider.name = 'instant_messenger_service'";
-                $from .= " $side JOIN civicrm_im_provider im_provider ON (civicrm_im.provider_id = im_provider.id AND option_group_imProvider.id = im_provider.option_group_id)";
+                $from .= " $side JOIN civicrm_im ON (contact_a.id = civicrm_im.contact_id) ";
+				$from .= " $side JOIN civicrm_option_group option_group_imProvider ON option_group_imProvider.name = 'instant_messenger_service'";
+                $from .= " $side JOIN civicrm_option_value im_provider ON (civicrm_im.provider_id = im_provider.value AND option_group_imProvider.id = im_provider.option_group_id)";
                 continue;
                 
             case 'civicrm_openid':
@@ -2487,6 +2491,30 @@ WHERE  id IN ( $groupIDs )
         }
     }
 
+    //NYSS 4279
+    /**
+ 	 * all tag search specific
+     *
+     * @return void
+     * @access public
+     */
+    function tagSearch( &$values ) {
+        list( $name, $op, $value, $grouping, $wildcard ) = $values;
+		
+		$op    = "LIKE";
+        $value = "%{$value}%";
+
+        $etTable = "`civicrm_entity_tag-" . $value ."`";
+        $tTable = "`civicrm_tag-" . $value ."`";
+        $this->_tables[$etTable] = $this->_whereTables[$etTable] =
+            " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND 
+	    {$etTable}.entity_table = 'civicrm_contact' )
+              LEFT JOIN civicrm_tag {$tTable} ON ( {$etTable}.tag_id = {$tTable}.id  ) ";
+
+        $this->_where[$grouping][] = "{$tTable}.name {$op} '". $value . "'";
+        $this->_qill[$grouping][]  = ts('Tagged %1', array( 1 => $op ) ). ' ' . $value;
+    }
+
     /**
      * where / qill clause for tag
      *
@@ -2773,6 +2801,40 @@ WHERE  id IN ( $groupIDs )
         $this->_tables['civicrm_address'] = $this->_whereTables['civicrm_address'] = 1; 
     }
 
+    //NYSS 4150
+	/**
+     * where / qill clause for street_unit
+     *
+     * @return void
+     * @access public
+     */
+    function street_number( &$values ) 
+    {
+        list( $name, $op, $value, $grouping, $wildcard ) = $values;
+        
+        if ( ! $op ) {
+            $op = '=';
+        }
+        
+        $n = trim( $value ); 
+        
+        if ( strtolower( $n ) == 'odd' ) {
+            $this->_where[$grouping][] = " ( civicrm_address.street_number % 2 = 1 )";
+            $this->_qill[$grouping][]  = ts( 'Street Number is odd' );
+        } else if ( strtolower( $n ) == 'even' ) {
+            $this->_where[$grouping][] = " ( civicrm_address.street_number % 2 = 0 )";
+            $this->_qill[$grouping][]  = ts( 'Street Number is even' );
+        } else {
+            $value = strtolower(CRM_Core_DAO::escapeString($n));
+            $value = "'$value'";
+
+            $this->_where[$grouping][] = " ( LOWER(civicrm_address.street_number) $op $value )";
+            $this->_qill[$grouping][]  = ts( 'Street Number' ) . " $op '$n'";
+        }
+
+        $this->_tables['civicrm_address'] = $this->_whereTables['civicrm_address'] = 1; 
+    }
+
     /**
      * where / qill clause for sorting by character
      *
@@ -2784,7 +2846,7 @@ WHERE  id IN ( $groupIDs )
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
 
         $name = trim( $value );
-        $cond = " contact_a.sort_name LIKE '" . strtolower(CRM_Core_DAO::escapeString($name)) . "%'"; 
+        $cond = " contact_a.sort_name LIKE '" . strtolower(CRM_Core_DAO::escapeWildCardString($name)) . "%'"; //NYSS 4607
         $this->_where[$grouping][] = $cond;
         $this->_qill[$grouping][]  = ts( 'Showing only Contacts starting with: \'%1\'', array( 1 => $name ) );
     }
@@ -2949,20 +3011,41 @@ WHERE  id IN ( $groupIDs )
             $value = array( $value );
         }
 
-        $stateClause = 
-            'civicrm_state_province.id IN (' . 
-            implode( ',', $value ) .
-            ')';
+        // check if the values are ids OR names of the states
+        $inputFormat = 'id';
+        foreach ( $value as $v ) {
+            if ( ! is_numeric( $v ) ) {
+                $inputFormat = 'name';
+                break;
+            }
+        }
+        
+        $names = array( );
+        if ( $inputFormat == 'id' ) {
+            $stateClause = 
+                'civicrm_state_province.id IN (' . 
+                implode( ',', $value ) .
+                ')';
+
+            $stateProvince = CRM_Core_PseudoConstant::stateProvince();
+            foreach ( $value as $id ) {
+                $names[] = $stateProvince[$id];
+            }
+        } else {
+            $inputClause = array( );
+            foreach ( $value as $name ) {
+                $name = trim($name);
+                $inputClause[] = "'$name'";
+            }
+            $stateClause = 
+                'civicrm_state_province.name IN (' . 
+                implode( ',', $inputClause ) .
+                ')';
+            $names = $value;
+        }
 
         $this->_tables['civicrm_state_province'] = 1;
         $this->_whereTables['civicrm_state_province'] = 1;
-            
-        $stateProvince =& CRM_Core_PseudoConstant::stateProvince();
-        $names = array( );
-        foreach ( $value as $id ) {
-            $names[] = $stateProvince[$id];
-        }
-            
 
         $countryValues = $this->getWhereValues( 'country', $grouping );
         list( $countryClause, $countryQill ) = $this->country( $countryValues, true );
@@ -3519,11 +3602,17 @@ WHERE  id IN ( $groupIDs )
                         if ( $sortOrder ) {
                             $order .= " $sortOrder";
                         }
+						
+						//NYSS 4534 always add contact_a.id to the ORDER clause
+                        // so the order is deterministic
+                        if ( strpos( 'contact_a.id', $order ) === false ) {
+                            $order .= ", contact_a.id";
+                        }
                     }
                 } else if ($sortByChar) { 
                     $orderBy = " ORDER BY LEFT(contact_a.sort_name, 1) asc";
                 } else {
-                    $orderBy = " ORDER BY contact_a.sort_name asc";
+                    $orderBy = " ORDER BY contact_a.sort_name asc, contact_a.id"; //NYSS
                 }
             }
 
@@ -3777,7 +3866,8 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
                                                         'do_not_email'                   => 1, 
                                                         'do_not_mail'                    => 1,
                                                         'do_not_sms'                     => 1,
-                                                        'do_not_trade'                   => 1, 
+                                                        'do_not_trade'                   => 1,
+                                                        'is_opt_out'                     => 1, //NYSS 4573
                                                         'location'                       => 
                                                         array( '1' => array ( 'location_type'      => 1,
                                                                               'street_address'     => 1,

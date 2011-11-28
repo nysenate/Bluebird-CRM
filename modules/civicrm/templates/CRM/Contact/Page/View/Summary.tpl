@@ -24,76 +24,87 @@
  +--------------------------------------------------------------------+
 *}
 {* Contact Summary template for new tabbed interface. Replaces Basic.tpl *}
-{if !empty($imageURL)}
-    <div>
-        {include file="CRM/Contact/Page/ContactImage.tpl"}
-    </div>
-{/if}
 {if $action eq 2}
     {include file="CRM/Contact/Form/Contact.tpl"}
 {else}
 
 <div class="crm-actions-ribbon">
-                    <ul id="actions">
-                    	{* CRM-4418 *}
-                        {* user should have edit permission to delete contact *}
-                        {if (call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and 
-                        $is_deleted)}
+    <ul id="actions">
+        {assign var='urlParams' value="reset=1"}
+        {if $searchKey}
+            {assign var='urlParams' value=$urlParams|cat:"&key=$searchKey"}
+            {/if}
+        {if $context}
+            {assign var='urlParams' value=$urlParams|cat:"&context=$context"}
+        {/if}
 
-                        <li class="crm-delete-action crm-contact-restore">
-                        <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&cid=$contactId&restore=1"}" class="delete button" title="{ts}Restore{/ts}">
-                        <span><div class="icon restore-icon"></div>{ts}Restore from Trash{/ts}</span>
-                        </a>
-                        </li>
-                        
-                        {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')} 
-                        <li class="crm-delete-action crm-contact-permanently-delete">
-                        <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1"}" class="delete button" title="{ts}Delete Permanently{/ts}">
-                        <span><div class="icon delete-icon"></div>{ts}Delete Permanently{/ts}</span>
-                        </a>
-                        </li>
-                        {/if}
+    	{* Include the Actions and Edit buttons if user has 'edit' permission and contact is NOT in trash. *}
+        {if $permission EQ 'edit' and !$isDeleted}
+            <li class="crm-contact-activity">
+                {include file="CRM/Contact/Form/ActionsButton.tpl"}
+            </li>
+            <li>
+                {assign var='editParams' value=$urlParams|cat:"&action=update&cid=$contactId"}
+                <a href="{crmURL p='civicrm/contact/add' q=$editParams}" class="edit button" title="{ts}Edit{/ts}">
+                <span><div class="icon edit-icon"></div>{ts}Edit{/ts}</span>
+                </a>
+            </li>
+        {/if}
 
-                        {elseif call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
-                        <li class="crm-delete-action crm-contact-delete">
-                        <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId"}" class="delete button" title="{ts}Delete{/ts}">
-                        <span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span>
-                        </a>
-                        </li>
-                        {/if}
-                    
-                    	{* Include the Actions button with dropdown if session has 'edit' permission *}
-                        {if $permission EQ 'edit' and !$isDeleted}
-                        <li class="crm-contact-activity">
-                            {include file="CRM/Contact/Form/ActionsButton.tpl"}
-                        </li>
-                        <li>
-			{assign var='urlParams' value="reset=1&action=update&cid=$contactId"}
-		        {if $searchKey}
-		            {assign var='urlParams' value="reset=1&action=update&cid=$contactId&key=$searchKey"}
- 		        {/if}
-			{if $context}
-			    {assign var='urlParams' value=$urlParams|cat:"&context=$context"}
-			{/if}
-			
-                        <a href="{crmURL p='civicrm/contact/add' q=$urlParams}" class="edit button" title="{ts}Edit{/ts}">
-                        <span><div class="icon edit-icon"></div>{ts}Edit{/ts}</span>
-                        </a>
-                        </li>
-                        {/if}
-                        
-                        {if !empty($groupOrganizationUrl)}
-                        <li class="crm-contact-associated-groups">
-                        <a href="{$groupOrganizationUrl}" class="associated-groups button" title="{ts}Associated Multi-Org Group{/ts}">
-                        <span><div class="icon associated-groups-icon"></div>{ts}Associated Multi-Org Group{/ts}</span>
-                        </a>   
-                        </li>
-                        {/if}
-                    </ul> 
-                    <div class="clear"></div>
-                        
-                        
-                </div><!-- .crm-actions-ribbon -->
+        {* Check for permissions to provide Restore and Delete Permanently buttons for contacts that are in the trash. *}
+        {if (call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and 
+        $is_deleted)}
+            <li class="crm-contact-restore">
+                <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&cid=$contactId&restore=1"}" class="delete button" title="{ts}Restore{/ts}">
+                <span><div class="icon restore-icon"></div>{ts}Restore from Trash{/ts}</span>
+                </a>
+            </li>
+    
+            {if call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')} 
+                <li class="crm-contact-permanently-delete">
+                    <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId&skip_undelete=1"}" class="delete button" title="{ts}Delete Permanently{/ts}">
+                    <span><div class="icon delete-icon"></div>{ts}Delete Permanently{/ts}</span>
+                    </a>
+                </li>
+            {/if}
+
+        {elseif call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
+            <li class="crm-delete-action crm-contact-delete">
+                <a href="{crmURL p='civicrm/contact/view/delete' q="reset=1&delete=1&cid=$contactId"}" class="delete button" title="{ts}Delete{/ts}">
+                <span><div class="icon delete-icon"></div>{ts}Delete{/ts}</span>
+                </a>
+            </li>
+        {/if}
+
+        {* Previous and Next contact navigation when accessing contact summary from search results. *}
+        {if $nextContactID}
+           {assign var='viewParams' value=$urlParams|cat:"&cid=$nextContactID"}
+           <li class="crm-next-action">
+             <a href="{crmURL p='civicrm/contact/view' q=$viewParams}" class="view button" title="{$nextContactName}">
+             <span title="{$nextContactName}"><div class="icon next-icon"></div>{ts}Next{/ts}</span>
+             </a>
+           </li>
+        {/if}
+        {if $prevContactID}
+           {assign var='viewParams' value=$urlParams|cat:"&cid=$prevContactID"}
+           <li class="crm-previous-action">
+             <a href="{crmURL p='civicrm/contact/view' q=$viewParams}" class="view button" title="{$prevContactName}">
+             <span title="{$prevContactName}"><div class="icon previous-icon"></div>{ts}Previous{/ts}</span>
+             </a>
+           </li>
+        {/if}
+
+
+        {if !empty($groupOrganizationUrl)}
+        <li class="crm-contact-associated-groups">
+            <a href="{$groupOrganizationUrl}" class="associated-groups button" title="{ts}Associated Multi-Org Group{/ts}">
+            <span><div class="icon associated-groups-icon"></div>{ts}Associated Multi-Org Group{/ts}</span>
+            </a>   
+        </li>
+        {/if}
+    </ul> 
+    <div class="clear"></div>                        
+</div><!-- .crm-actions-ribbon -->
 
 <div class="crm-block crm-content-block crm-contact-page">
 
@@ -120,6 +131,12 @@
                 
                 {if !empty($hookContent) and isset($hookContentPlacement) and $hookContentPlacement eq 2}
                     {include file="CRM/Contact/Page/View/SummaryHook.tpl"}
+                {/if}
+
+                {if !empty($imageURL)}
+                    <div id="crm-contact-thumbnail">
+                        {include file="CRM/Contact/Page/ContactImage.tpl"}
+                    </div>
                 {/if}
                 
                 {if !empty($contact_type_label) OR !empty($current_employer_id) OR !empty($job_title) OR !empty($legal_name) OR $sic_code OR !empty($nick_name) OR !empty($contactTag) OR !empty($source)}

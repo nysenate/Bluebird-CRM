@@ -45,7 +45,7 @@ function civicrm_html_head()
         require_once 'CRM/Core/Config.php';
         $config = CRM_Core_Config::singleton();
 
-        $template =& CRM_Core_Smarty::singleton( );
+        $template = CRM_Core_Smarty::singleton( );
         $buffer = $template->fetch( 'CRM/common/jquery.files.tpl' );
         $lines  = preg_split( '/\s+/', $buffer );
         foreach ( $lines as $line ) {
@@ -53,27 +53,11 @@ function civicrm_html_head()
             if ( empty( $line ) ) {
                 continue;
             }
-            if ( strpos( $line, '.js' ) !== false ) {
-                drupal_add_js( drupal_get_path('module', 'civicrm' ) . '/../' . $line );
-            } else if ( strpos( $line, '.css' ) !== false ) {
+            if ( strpos( $line, '.css' ) !== false ) {
                 drupal_add_css( drupal_get_path('module', 'civicrm' ) . '/../' . $line );
             }
         }
         
-        // add localized calendar js
-        $localisation     = explode( '_', $config->lcMessages );
-        $localizationFile = drupal_get_path('module', 'civicrm' ) . '/../packages/jquery/jquery-ui-1.8.11/development-bundle/ui/i18n/jquery.ui.datepicker-'. $localisation[0] . '.js';
-        
-        if ( file_exists( $localizationFile ) ) {
-            drupal_add_js( $localizationFile );
-        }
-
-        // add Common.js
-        drupal_add_js( drupal_get_path('module', 'civicrm' ) . '/../js/Common.js' );
-
-        // add the final assignment
-        drupal_add_js( 'var cj = jQuery.noConflict(); $ = cj;',
-                       'inline' );
     }
     if ( isset( $config->customCSSURL ) && ! empty( $config->customCSSURL ) ) {
         $head  = "<style type=\"text/css\">@import url({$config->customCSSURL});</style>\n";
@@ -155,7 +139,7 @@ function civicrm_perm()
     $config = CRM_Core_Config::singleton();
 
     require_once 'CRM/Core/Permission.php';
-    $permissions =& CRM_Core_Permission::basicPermissions( );
+    $permissions = CRM_Core_Permission::basicPermissions( );
 	return array_keys( $permissions );
 }
 
@@ -358,7 +342,7 @@ function civicrm_invoke( )
         CRM_Core_BAO_UFMatch::synchronize( $user, false, 'Drupal',
                                            civicrm_get_ctype( 'Individual' ) );
     }
-      
+
     require_once 'CRM/Core/Invoke.php';
     return CRM_Core_Invoke::invoke( $args );
 }
@@ -506,7 +490,7 @@ function civicrm_categories( &$user )
     require_once 'CRM/Core/BAO/UFGroup.php';
     require_once 'CRM/Core/BAO/UFField.php';
 
-    $allUFGroups =& CRM_Core_BAO_UFGroup::getModuleUFGroup('User Account');
+    $allUFGroups = CRM_Core_BAO_UFGroup::getModuleUFGroup('User Account');
     $ufGroups = array( );
 
     $weight = 100;
@@ -531,7 +515,7 @@ function _civicrm_categories_access( $profile_id ) {
     }
 
     require_once 'CRM/Core/BAO/UFGroup.php';
-    $allUFGroups =& CRM_Core_BAO_UFGroup::getModuleUFGroup( 'User Account', 0, false );
+    $allUFGroups = CRM_Core_BAO_UFGroup::getModuleUFGroup( 'User Account', 0, false );
 
     require_once 'CRM/Utils/Array.php';
     if ( is_array( CRM_Utils_Array::value( $profile_id, $allUFGroups ) ) ) {
@@ -678,7 +662,7 @@ function civicrm_view_data( &$user )
 
         $ctype = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $userID, 'contact_type' );
 
-        $ufGroups =& CRM_Core_BAO_UFGroup::getModuleUFGroup('User Account', 0, false);
+        $ufGroups = CRM_Core_BAO_UFGroup::getModuleUFGroup('User Account', 0, false);
         $weight   = 100;
         foreach ( $ufGroups as $id => $title ) {
             
@@ -774,6 +758,9 @@ function civicrm_key_disable( ) {
 }
 
 function civicrm_enable( ) {
+    // set system weight higher than jQuery_update so Civi's preprocess can run
+    // last. This is the only way to make sure the jquery noconflict works.
+    db_query("UPDATE {system} SET weight = 100 WHERE name = 'civicrm'");
     menu_rebuild( );
 
     menu_link_maintain( 'civicrm', 'delete', 'civicrm', 'CiviCRM' );
@@ -904,6 +891,45 @@ function civicrm_preprocess_page(&$variables) {
   			$variables['styles'] = drupal_get_css( $variables['css'] ); 
   		} 
   	}
+
+    if ( ! civicrm_initialize( ) ) {
+      return;
+    }
+    if ( in_array( arg(0), array('civicrm', 'user') ) ) { 
+        // Move the CiviCRM jquery and jQuery UI libraries above Drupal's core jQuery
+        // and relatively gracefully handle noConflict.
+        $path = drupal_get_path('module', 'civicrm');
+        $scripts = array();
+        $val = array('cache' => TRUE, 'defer' => FALSE, 'preprocess' => TRUE);
+
+        $template = CRM_Core_Smarty::singleton( );
+        $buffer = $template->fetch( 'CRM/common/jquery.files.tpl' );
+        $lines  = preg_split( '/\s+/', $buffer );
+        foreach ( $lines as $line ) {
+          $line = trim( $line );
+          if ( empty( $line ) ) {
+            continue;
+          }
+          if ( strpos( $line, '.js' ) !== false ) {
+            $scripts[$path . '/../' . $line ] = $val;
+          }
+        }
+
+        // add localized calendar js
+        $config = CRM_Core_Config::singleton( );
+        $localisation     = explode( '_', $config->lcMessages );
+        $localizationFile = $path . '/../packages/jquery/jquery-ui-1.8.11/development-bundle/ui/i18n/jquery.ui.datepicker-'. $localisation[0] . '.js';
+
+        if ( file_exists( $localizationFile ) ) {
+          $scripts[$localizationFile] = $val;
+        }
+
+        // add Common.js
+        $scripts[$path . '/../js/Common.js'] = $val;
+        $scripts[$path . '/../js/noconflict.js'] = $val;
+
+        $variables['scripts'] = drupal_get_js('header', array('core' => $scripts)) . $variables['scripts'];
+    }
 }
 
 
@@ -965,3 +991,65 @@ function civicrm_drupal_wysiwyg_update_value($element, $caller) {
         $element->setValue(check_markup($value, $element->format));
     }
 }
+
+/**
+ * Implementation of hook_filter_tips().
+ *
+ * This is a D6 hook; for D7, see hook_filter_info
+ */
+function civicrm_filter_tips($delta, $format, $long = false) {
+    switch ($delta) {
+    case 0:
+        return
+            t('Evaluate <a target="_blank" href="@smarty">Smarty</a> and <a target="_blank" href="@civiapi">CiviCRM API</a> codes',
+              array(
+                    '@smarty' => 'http://www.smarty.net/docsv2/en/',
+                    '@civiapi' => 'http://wiki.civicrm.org/confluence/display/CRMDOC/CiviCRM+Public+APIs'
+                    ));
+    }
+}
+   
+/**
+ * Implementation of hook_filter().
+ *
+ * This is a D6 hook; for D7, see hook_filter_info
+ */
+function civicrm_filter($op, $delta = 0, $format = -1, $text = "") {
+    switch ($op) {
+    case 'list':
+        return array(0 => t('CiviCRM-Smarty filter'));
+
+    case 'no cache':
+        return TRUE;
+
+    case 'description':
+        return t('Evaluate Smarty and CiviCRM API codes with CiviCRM\'s embedded Smarty engine');
+
+    case 'settings':
+        return $form;
+
+    case 'process':
+        civicrm_initialize();
+        $config = CRM_Core_Config::singleton();
+        $smarty = CRM_Core_Smarty::singleton();
+        require_once 'CRM/Core/Smarty/resources/String.php';
+        civicrm_smarty_register_string_resource( );
+        $was_secure= $smarty->security;
+        $smarty->security = true;
+        $text = $smarty->fetch("string:${text}");
+        $smarty->security = $was_secure;
+        
+        // In the use-case of embedding Smarty codes inside a Drupal page, one is likely
+        // to load data using 'pull MVC' instead of 'push MVC', so the interesting
+        // data isn't loaded until after processing the main content. Therefore, we
+        // evaluate debug codes after the main content.
+        if ($config->debug) {
+            $text .= $smarty->fetch('CRM/common/debug.tpl');
+        }
+        return $text;
+    default:
+        return $text;
+    }
+    
+}
+

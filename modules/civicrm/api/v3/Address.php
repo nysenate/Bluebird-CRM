@@ -35,10 +35,8 @@
  * @version $Id: Address.php 2011-02-16 ErikHommel $
  */
 
-/**
- * Include utility functions
- */
-require_once 'api/v3/utils.php';
+
+require_once 'CRM/Core/BAO/Address.php';
 
 /**
  *  Add an Address for a contact
@@ -52,19 +50,8 @@ require_once 'api/v3/utils.php';
 function civicrm_api3_address_create( &$params ) 
 {
 
-    civicrm_api3_verify_one_mandatory ($params, null, 
-    array ('contact_id', 'id'));
-    civicrm_api3_verify_mandatory ($params, null, array('location_type_id'));
-    
-    require_once 'CRM/Core/BAO/Address.php';
+   civicrm_api3_verify_mandatory ($params, null, array('location_type_id', 'contact_id'));
 
-	/*
-	 * if is_primary is not set in params, set default = 0
-	 */
-	if ( !array_key_exists('is_primary', $params )) {
-		$params['is_primary'] = 0; 
-	}	
-	
 	/*
 	 * if street_parsing, street_address has to be parsed into
 	 * separate parts
@@ -100,12 +87,12 @@ function civicrm_api3_address_create( &$params )
 	 unset ($params['contact_id']);
 	 $paramsBAO['address'][0] = $params;
 	 $addressBAO = CRM_Core_BAO_Address::create($paramsBAO, true);
-	 if ( is_a( $addressBAO, 'CRM_Core_Error' )) {
+	 if (empty( $addressBAO)) {
 		 return civicrm_api3_create_error( "Address is not created or updated ");
 	 } else {
 		 $values = array( );
-		 CRM_Core_DAO::storeValues($addressBAO[0], $values);
-		 return civicrm_api3_create_success($values, $params,'address',$addressBAO);
+		 $values = _civicrm_api3_dao_to_array ($addressBAO[0], $params);
+		 return civicrm_api3_create_success($values, $params,'address',$addressBAO[0]);
 	 }
 
 }
@@ -153,29 +140,17 @@ function civicrm_api3_address_delete( &$params )
 
 function civicrm_api3_address_get(&$params) 
 {   
-    civicrm_api3_verify_one_mandatory($params, null, 
-		array('id', 'contact_id', 'location_type_id'));
-	
-    require_once 'CRM/Core/BAO/Address.php';
-    $addressBAO = new CRM_Core_BAO_Address();
-    $fields = array_keys($addressBAO->fields());
-
-    foreach ( $fields as $name) {
-        if (array_key_exists($name, $params)) {
-            $addressBAO->$name = $params[$name];
-        }
-    }
-    
-    if ( $addressBAO->find() ) {
-      $addresses = array();
-      while ( $addressBAO->fetch() ) {
-        CRM_Core_DAO::storeValues( $addressBAO, $address );
-        $addresses[$addressBAO->id] = $address;
-      }
-      return civicrm_api3_create_success($addresses,$params,'activity','get',$addressBAO);
-    } else {
-      return civicrm_api3_create_success(array(),$params,'activity','get',$addressBAO);
-    }
+    civicrm_api3_verify_one_mandatory($params); 
+	  return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 				
 }
 
+
+/*
+ * Set defaults used for 'create' action
+ * @return array $defaults array of default values
+*/
+
+function _civicrm_api3_address_create_defaults(){
+  return array('is_primary' => 1);
+}

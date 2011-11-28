@@ -122,7 +122,7 @@ class CRM_Case_BAO_Case extends CRM_Case_DAO_Case
         if ( CRM_Utils_Array::value( 'id', $params ) ) {
             CRM_Utils_Hook::pre( 'edit', 'Case', $params['id'], $params );
         } else {
-            CRM_Utils_Hook::pre( 'create', 'Case', $null, $params );
+            CRM_Utils_Hook::pre( 'create', 'Case', null, $params );
         }
         
         $case = self::add( $params );
@@ -454,6 +454,27 @@ INNER JOIN  civicrm_option_value ov ON ( ca.case_type_id=ov.value AND ov.option_
          
          return $contactArray;
      }
+     
+    /**
+     * Look up a case using an activity ID
+     *
+     * @param $activity_id
+     * @return int, case ID
+     */
+    static function getCaseIdByActivityId($activityId) {
+      $originalId = CRM_Core_DAO::singleValueQuery(
+          'SELECT original_id FROM civicrm_activity WHERE id = %1', 
+          array('1' => array($activityId, 'Integer'))
+      );
+      $caseId =  CRM_Core_DAO::singleValueQuery(
+          'SELECT case_id FROM civicrm_case_activity WHERE activity_id in (%1,%2)',
+          array(
+            '1' => array($activityId, 'Integer'),
+            '2' => array($originalId ? $originalId : $activityId, 'Integer')
+          )
+      );
+      return $caseId;
+    }
     
     /**
      * Retrieve contact names by caseId
@@ -1328,13 +1349,17 @@ GROUP BY cc.id';
             }
         }
         $session = CRM_Core_Session::singleton( );
+        // CRM-8926 If user is not logged in, use the activity creator as userID
+        if ( !( $userID = $session->get( 'userID' ) ) ) {
+            $userID = CRM_Core_DAO::getFieldValue('CRM_Activity_DAO_Activity', $activityId, 'source_contact_id');
+        }
         
         //also create activities simultaneously of this copy.
         require_once "CRM/Activity/BAO/Activity.php";
         $activityParams = array( );
         
         $activityParams['source_record_id']   = $activityId; 
-        $activityParams['source_contact_id']  = $session->get( 'userID' ); 
+        $activityParams['source_contact_id']  = $userID; 
         $activityParams['activity_type_id']   = CRM_Core_OptionGroup::getValue( 'activity_type', 'Email', 'name' );
         $activityParams['activity_date_time'] = date('YmdHis');
         $activityParams['status_id']          = CRM_Core_OptionGroup::getValue( 'activity_status', 'Completed', 'name' );
@@ -1350,7 +1375,7 @@ GROUP BY cc.id';
         } 
         
         $result = array();
-        list ($name, $address) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $session->get( 'userID' ) );
+        list ($name, $address) = CRM_Contact_BAO_Contact_Location::getEmailDetails( $userID );
         
         $receiptFrom = "$name <$address>";   
         
@@ -1905,6 +1930,7 @@ WHERE civicrm_case.id = %2";
     SELECT  c.id as contact_id, 
             c.sort_name,
             ca.id, 
+            ca.subject as case_subject,
             ov.label as case_type,
             ca.start_date as start_date
       FROM  civicrm_case ca INNER JOIN civicrm_case_contact cc ON ca.id=cc.case_id
@@ -1922,10 +1948,11 @@ INNER JOIN  civicrm_option_value ov ON (ca.case_type_id=ov.value AND ov.option_g
                  !array_key_exists( $dao->id, $filterCases ) ) {
                 continue;
             }
-            $unclosedCases[$dao->id] = array( 'sort_name'  => $dao->sort_name,
-                                              'case_type'  => $dao->case_type,
-                                              'contact_id' => $dao->contact_id,
-                                              'start_date' => $dao->start_date
+            $unclosedCases[$dao->id] = array( 'sort_name'    => $dao->sort_name,
+                                              'case_type'    => $dao->case_type,
+                                              'contact_id'   => $dao->contact_id,
+                                              'start_date'   => $dao->start_date,
+                                              'case_subject' => $dao->case_subject
                                               );
         }
         $dao->free( );

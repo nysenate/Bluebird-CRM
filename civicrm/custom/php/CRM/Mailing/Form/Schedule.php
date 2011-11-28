@@ -128,7 +128,7 @@ require_once 'CRM/Mailing/BAO/Mailing.php';
                                array(  'type'  => 'cancel',
                                        'name'  => ts('Continue Later') ),
                                );
-             if ( $this->_searchBasedMailing && $this->get( 'ssID' ) ) {
+             if ( $this->_searchBasedMailing /*&& $this->get( 'ssID' )*/ ) { //NYSS 4448
                  $buttons = array( array(  'type'  => 'back',
                                            'name'  => ts('<< Previous') ),
                                    array(  'type'  => 'next',
@@ -288,7 +288,9 @@ require_once 'CRM/Mailing/BAO/Mailing.php';
         //when user perform mailing from search context 
         //redirect it to search result CRM-3711.
         $ssID    = $this->get( 'ssID' );
-        if ( $ssID && $this->_searchBasedMailing && ! CRM_Mailing_Info::workflowEnabled( ) ) { //NYSS 4250
+        if ( $ssID && 
+             $this->_searchBasedMailing &&
+             ! CRM_Mailing_Info::workflowEnabled( ) ) {
             if ( $this->_action == CRM_Core_Action::BASIC ) {
                 $fragment = 'search';
             } else if ( $this->_action == CRM_Core_Action::PROFILE ) {

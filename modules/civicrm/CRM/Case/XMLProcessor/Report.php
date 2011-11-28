@@ -485,7 +485,7 @@ WHERE      a.id = %1
                         $value = $this->redact($value );
                     } else if ( CRM_Utils_Array::value( 'type', $typeValue ) == 'File' ) {
                         require_once 'CRM/Core/BAO/File.php';
-                        $tableName = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_EntityFile', $value, 'entity_table' );
+                        $tableName = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_EntityFile', $typeValue, 'entity_table' );
                         $value     = CRM_Core_BAO_File::attachmentInfo( $tableName, $activityDAO->id );
                     } else if ( CRM_Utils_Array::value( 'type', $typeValue ) == 'Link' ) {
                         $value = CRM_Utils_System::formatWikiURL( $value );

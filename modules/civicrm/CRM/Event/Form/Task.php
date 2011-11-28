@@ -109,6 +109,7 @@ class CRM_Event_Form_Task extends CRM_Core_Form
 
             $query       = new CRM_Contact_BAO_Query( $queryParams, null, null, false, false, 
                                                        CRM_Contact_BAO_Query::MODE_EVENT);
+            $query->_distinctComponentClause = " DISTINCT(civicrm_participant.id)";
             $result = $query->searchQuery(0, 0, $sortOrder);
             while ($result->fetch()) {
                 $ids[] = $result->participant_id;

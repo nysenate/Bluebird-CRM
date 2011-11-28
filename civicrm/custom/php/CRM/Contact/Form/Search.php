@@ -388,9 +388,14 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
             if ( $permission == CRM_Core_Permission::EDIT ) {
                 $tasks = $tasks + CRM_Contact_Task::optionalTaskTitle();
             }
+            //NYSS 4345
+			$search_custom_id = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_SavedSearch', 
+                                                             $this->_ssID, 
+                                                             'search_custom_id' ) ;
 
             $savedSearchValues = array( 'id' => $this->_ssID,
-                                        'name' => CRM_Contact_BAO_SavedSearch::getName( $this->_ssID, 'title' ) );
+                                        'name' => CRM_Contact_BAO_SavedSearch::getName( $this->_ssID, 'title' ),
+										'search_custom_id' => $search_custom_id ); //NYSS
             $this->assign_by_ref( 'savedSearch', $savedSearchValues );
             $this->assign( 'ssID', $this->_ssID );
         }
@@ -662,6 +667,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
         $this->assign( 'id',
                        CRM_Utils_Array::value( 'uf_group_id', $this->_formValues ) );
         $operator = CRM_Utils_Array::value( 'operator', $this->_formValues, 'AND' );
+        $this->set( 'queryOperator', $operator );
         if ( $operator == 'OR' ) {
             $this->assign( 'operator', ts( 'OR' ) );
         } else {
@@ -829,7 +835,9 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
             // we'll ignore for now
             $config = CRM_Core_Config::singleton( );
             if ( $config->includeAlphabeticalPager ) {
-                if ($this->_reset || !$this->_sortByCharacter) {
+				//NYSS 4142
+                if ( $this->_reset ||
+                     ( $this->_sortByCharacter === null || $this->_sortByCharacter == '' ) ) {
                     $aToZBar = CRM_Utils_PagerAToZ::getAToZBar( $selector, $this->_sortByCharacter );
                     $this->set( 'AToZBar', $aToZBar );
                 }

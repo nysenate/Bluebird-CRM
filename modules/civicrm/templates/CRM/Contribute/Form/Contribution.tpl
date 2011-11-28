@@ -28,7 +28,7 @@
 {if $cdType}
   {include file="CRM/Custom/Form/CustomData.tpl"}
 {elseif $priceSetId}
-  {include file="CRM/Price/Form/PriceSet.tpl" context="standalone"}
+  {include file="CRM/Price/Form/PriceSet.tpl" context="standalone" extends="Contribution"}
 {elseif $showAdditionalInfo and $formType }
   {include file="CRM/Contribute/Form/AdditionalInfo/$formType.tpl"}
 {else}
@@ -128,8 +128,16 @@
             <td class="label"></td><td {$valueStyle}>{$form.option_type.html}</td> 
 	    </tr>
     {/if}
+     {if $contributionMode && $processorSupportsFutureStartDate}
+            <tr id='start_date' class="crm-contribution-form-block-receive_date">
+                <td class="label">{ts}Start Date{/ts}</td>
+                <td{$valueStyle}>{if $hideCalender neq true}{include file="CRM/common/jcalendar.tpl" elementName=receive_date}{else}{$receive_date|crmDate}{/if}<br />
+                    <span class="description">{ts}You can set a start date for recurring contributions and the first payment will be on that date. For a single post-dated contribution you must select recurring and choose one installment{/ts}</span>
+                </td>
+            </tr>    
+     {/if}
 
-        <tr  class="crm-contribution-form-block-source"><td class="label">{$form.source.label}</td><td{$valueStyle}>{$form.source.html|crmReplace:class:huge} {help id="id-contrib_source"}</td></tr>
+        <tr class="crm-contribution-form-block-source"><td class="label">{$form.source.label}</td><td{$valueStyle}>{$form.source.html|crmReplace:class:huge} {help id="id-contrib_source"}</td></tr>
 
 	{* CRM-7362 --add campaign to contributions *}
 	{include file="CRM/Campaign/Form/addCampaignToComponent.tpl" 
@@ -528,5 +536,22 @@ function adjustPayment( ) {
     cj("#total_amount").css('background-color', '#ffffff');
 }
 
+{/literal}{if $processorSupportsFutureStartDate}{literal}
+  cj ( 'input:radio[name="is_recur"]' ).click( function( ) {
+      showStartDate( );
+  });
+  
+  showStartDate( );
+
+  function showStartDate( )
+  {
+     if ( cj( 'input:radio[name="is_recur"]:checked' ).val( ) == 0 ) {
+         cj( '#start_date' ).hide( );
+     } else {
+         cj( '#start_date' ).show( );
+     }
+  }
+
+{/literal}{/if}{literal}
 </script>
 {/literal}

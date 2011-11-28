@@ -156,8 +156,8 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
         require_once "CRM/Core/BAO/Mapping.php";
         require_once "CRM/Core/OptionGroup.php";
         $mappingArray = CRM_Core_BAO_Mapping::getMappings( CRM_Core_OptionGroup::getValue( 'mapping_type',
-                                                                                                           'Import Contact',
-                                                                                                           'name' ) );
+                                                                                           'Import Contact',
+                                                                                           'name' ) );
 
         $this->assign('savedMapping',$mappingArray);
         $this->addElement('select','savedMapping', ts('Mapping Option'), array('' => ts('- select -'))+$mappingArray);
@@ -269,15 +269,16 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             // NYSS - Reformat and add the import_job_name parameter
             // Request the following additional parameters from the import controller
             // Also persist these values in the session for future pages
-            foreach ( array(  'onDuplicate'     => 'onDuplicate',
+            $storeParams = array( 'onDuplicate'     => 'onDuplicate',
                                   'dedupe'          => 'dedupe',
                                   'contactType'     => 'contactType',
                                   'contactSubType'  => 'subType',
                                   'dateFormats'     => 'dateFormats',
                                   'savedMapping'    => 'savedMapping',
-                              'import_job_name' => 'import_job_name') as
-                              $storeName        => $storeValueName ) {
+                                  'import_job_name' => 'import_job_name'
+                                  );
 
+            foreach ( $storeParams as $storeName => $storeValueName ) {
                 $$storeName = $this->exportValue( $storeValueName );
                 $this->set( $storeName, $$storeName );
             }
@@ -292,7 +293,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             // NYSS
             // Make a record for the preferences with a unique name and user id!
             // TODO: How do you raise an error when the name turns out not unique?
-            $user_id = $_REQUEST['DRUPAL_UID'];
+            global $user;
             $importJobName = str_replace(' ','_',$this->_params['import_job_name']);
             $importTableName = $this->_params['import_table_name'] = "civicrm_import_job_$importJobName";
 
@@ -311,14 +312,20 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
                       '{$this->_params['uploadFile']['name']}',
                       '{$this->_params['dataSource']}',
                       '{$this->_params['fieldSeparator']}',
-                      $user_id
+                      $user->uid
                     )"
             );
+            //hack to prevent multiple tables.
+            $this->_params['import_table_name'] = $this->get( 'importTableName' );
+            if ( !$this->_params['import_table_name'] ) {
+                $this->_params['import_table_name'] = 'civicrm_import_job_' . md5(uniqid(rand(), true));
+            }
             
             require_once $this->_dataSourceClassFile;
             eval( "$this->_dataSource::postProcess( \$this->_params, \$db );" );
             
             // We should have the data in the DB now, parse it
+            $importTableName = $this->get( 'importTableName' );
             $fieldNames = $this->_prepareImportTable( $db, $importTableName );
             $mapper = array( );
 

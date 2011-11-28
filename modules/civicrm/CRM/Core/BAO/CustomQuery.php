@@ -426,7 +426,7 @@ SELECT label, value
                     } 
                     continue;
                 case 'ContactReference':
-                    $label = CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $value,  'sort_name');
+                    $label = $value ? CRM_Core_DAO::getFieldValue( 'CRM_Contact_DAO_Contact', $value,  'sort_name') : '';
                     $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( $fieldName, $op, $value, 'String' );
                     $this->_qill[$grouping][]  = $field['label'] . " $op $label";                    
                     continue;

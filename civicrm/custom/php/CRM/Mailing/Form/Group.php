@@ -439,9 +439,11 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         
         // also compute the recipients and store them in the mailing recipients table
         CRM_Mailing_BAO_Mailing::getRecipients( $mailing->id, 
-	                                        $mailing->id,
-                                                null, null,
-                                                true, $dedupeEmail ); //NYSS
+		                                        $mailing->id,
+                                                null, 
+												null,
+                                                true, 
+												$dedupeEmail ); //NYSS
 
         require_once 'CRM/Mailing/BAO/Recipients.php';
         $count = CRM_Mailing_BAO_Recipients::mailingSize( $mailing->id );

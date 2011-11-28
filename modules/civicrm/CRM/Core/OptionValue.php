@@ -288,7 +288,7 @@ class CRM_Core_OptionValue
             $nameTitle = array( );
             if ( $mode == 'contribute' ) {
                 $nameTitle = array('payment_instrument' => array('name' =>'payment_instrument',
-                                                                 'title'=> 'Payment Instrument',
+                                                                 'title'=> ts('Payment Instrument'),
                                                                  'headerPattern' => '/^payment|(p(ayment\s)?instrument)$/i'
                                                                  )
                                    );
@@ -297,16 +297,16 @@ class CRM_Core_OptionValue
                 //the field addressee is meant for all contact types, CRM-4575
                 if ( in_array($contactType, array('Individual', 'Household', 'Organization', 'All') ) ) {
                     $nameTitle = array( 'addressee'     => array('name' => 'addressee',
-                                                                 'title'=> 'Addressee',
+                                                                 'title'=> ts('Addressee'),
                                                                  'headerPattern' => '/^addressee$/i'
                                                                  ),
                                         );
                     $title = array( 'email_greeting'    => array('name' => 'email_greeting',
-                                                                 'title'=> 'Email Greeting',
+                                                                 'title'=> ts('Email Greeting'),
                                                                  'headerPattern' => '/^email_greeting$/i'
                                                                  ),  
                                     'postal_greeting'   => array('name' => 'postal_greeting',
-                                                                 'title'=> 'Postal Greeting',
+                                                                 'title'=> ts('Postal Greeting'),
                                                                  'headerPattern' => '/^postal_greeting$/i'
                                                                  ),
                                     );
@@ -315,15 +315,15 @@ class CRM_Core_OptionValue
 
                 if ( $contactType == 'Individual' || $contactType == 'All') {
                     $title = array( 'gender'            => array('name' => 'gender',
-                                                                 'title'=> 'Gender',
+                                                                 'title'=> ts('Gender'),
                                                                  'headerPattern' => '/^gender$/i'
                                                                  ),
                                     'individual_prefix' => array('name' => 'individual_prefix',
-                                                                 'title'=> 'Individual Prefix',
+                                                                 'title'=> ts('Individual Prefix'),
                                                                  'headerPattern' => '/^(prefix|title)/i'
                                                                  ),
                                     'individual_suffix' => array('name' => 'individual_suffix',
-                                                                 'title'=> 'Individual Suffix',
+                                                                 'title'=> ts('Individual Suffix'),
                                                                  'headerPattern' => '/^suffix$/i'
                                                                  ),
                                     );

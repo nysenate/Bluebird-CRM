@@ -232,12 +232,9 @@ class CRM_Member_Form_Task_Batch extends CRM_Member_Form_Task {
                 unset($value['membership_source']);
                             
                 //Get the membership status
-                $membership = new CRM_Member_BAO_Membership();
-                $membership->id = CRM_Utils_Array::value( 'membership', $ids );
-                $membership->find(true);
-                $membership->free();
-                $value['status_id'] = $membership->status_id;
-                
+                $value['status_id'] = ( CRM_Utils_Array::value( 'membership_status', $value ) ) ? $value['membership_status'] : CRM_Core_DAO::getFieldValue( 'CRM_Member_DAO_Membership', 'status_id', $key );
+                unset( $value['membership_status'] );
+                 
                 if ( empty( $customFields ) ) {
                     // membership type custom data
                     $customFields = CRM_Core_BAO_CustomField::getFields( 'Membership', false, false, $membership->membership_type_id );

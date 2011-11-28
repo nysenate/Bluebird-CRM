@@ -58,7 +58,9 @@ var options {ajaxURL:"{$config->userFrameworkResourceURL}";
       };
 
       $.fn.crmAPI = function(entity,action,params,options) {
-    	  params ['fnName'] = "civicrm/"+entity+"/"+action;
+//    	  params ['fnName'] = "civicrm/"+entity+"/"+action;
+    	  params ['entity'] = entity;
+    	  params ['action'] = action;
     	  params ['json'] = 1;
     	  var settings = $.extend({}, defaults, options);
     	  $(settings.msgbox).removeClass('msgok').removeClass('msgnok').html("");

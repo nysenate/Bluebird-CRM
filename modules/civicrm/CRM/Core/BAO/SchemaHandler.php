@@ -210,16 +210,21 @@ class CRM_Core_BAO_SchemaHandler
     
     static function changeFKConstraint( $tableName, $fkTableName ) 
     {
+        $fkName = "{$tableName}_entity_id";
+        if ( strlen( $fkName ) >= 48) {
+            $fkName = substr( $fkName, 0, 32 ) . "_" .
+                substr( md5( $fkName ), 0, 16 );
+        }
         $dropFKSql = "
 ALTER TABLE {$tableName}
-      DROP FOREIGN KEY `FK_{$tableName}_entity_id`;";
+      DROP FOREIGN KEY `FK_{$fkName}`;";
 
         $dao = CRM_Core_DAO::executeQuery( $dropFKSql );
         $dao->free();
 
 $addFKSql = "
 ALTER TABLE {$tableName}
-      ADD CONSTRAINT `FK_{$tableName}_entity_id` FOREIGN KEY (`entity_id`) REFERENCES {$fkTableName} (`id`) ON DELETE CASCADE;";
+      ADD CONSTRAINT `FK_{$fkName}` FOREIGN KEY (`entity_id`) REFERENCES {$fkTableName} (`id`) ON DELETE CASCADE;";
         // CRM-7007: do not i18n-rewrite this query
         $dao = CRM_Core_DAO::executeQuery($addFKSql, array(), true, null, false, false);
         $dao->free();

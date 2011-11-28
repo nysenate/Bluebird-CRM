@@ -16,7 +16,8 @@ CREATE TABLE shadow_contact (
     suffix_id varchar(255),
     birth_date date,
     contact_type varchar(255),
-    INDEX (first_name, middle_name, last_name),
+    INDEX (first_name, last_name, middle_name),
+    INDEX (last_name),
     INDEX (household_name),
     INDEX (organization_name),
     INDEX (birth_date)
@@ -31,8 +32,9 @@ CREATE TABLE shadow_address (
     city varchar(255),
     INDEX (street_address),
     INDEX (postal_code),
-    INDEX (city)
-);
+    INDEX (city),
+    INDEX (contact_id)
+) ENGINE=InnoDB;
 
 
 -- Change the delimiter to make stored triggers/functions easier to write!
@@ -41,6 +43,55 @@ DELIMITER |
 -- -----------------------------
 -- Stored Utility Functions
 -- -----------------------------
+
+DROP FUNCTION IF EXISTS BB_ADDR_REPLACE |
+CREATE FUNCTION BB_ADDR_REPLACE (address varchar(255))
+    RETURNS varchar(255) DETERMINISTIC
+
+    BEGIN
+        -- Start with the first alpha word occurance and loop
+        -- through the rest of them doing replacements.
+        DECLARE occurence INT DEFAULT 1;
+        DECLARE address_part VARCHAR(255);
+        DECLARE abbreviation VARCHAR(255);
+        DECLARE find_abbreviation CURSOR FOR
+            SELECT normalized
+            FROM address_abbreviations
+            WHERE raw_value = address_part;
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET abbreviation = NULL;
+
+        SET address = LCASE(address);
+
+        -- Loop through strings that might possibly be the street suffix
+        replace_loop: LOOP
+
+            -- This regex allows us to skip lookups for alphanumeric components
+            SET address_part = preg_capture('/([A-Za-z]+)/', address, 1, occurence);
+
+            -- Preg_capture will return null when it runs out of matches
+            IF address_part IS NULL THEN
+                LEAVE replace_loop;
+            END IF;
+
+            -- Find the abbreviation and do a replace.
+            OPEN find_abbreviation;
+            FETCH find_abbreviation INTO abbreviation;
+            IF abbreviation IS NOT NULL THEN
+                SET address = REPLACE(address, address_part, abbreviation);
+            END IF;
+            CLOSE find_abbreviation;
+
+            -- Increment the occurance for the next round
+            -- As long add the replacements don't have numbers this works.
+            SET occurence = occurence + 1;
+
+        END LOOP;
+
+        RETURN address;
+    END
+|
+
 DROP FUNCTION IF EXISTS BB_NORMALIZE |
 CREATE FUNCTION BB_NORMALIZE (value VARCHAR(255))
     RETURNS VARCHAR(255) DETERMINISTIC
@@ -76,9 +127,7 @@ CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255))
             RETURN NULL;
         END IF;
 
-        -- Strip all punctuation, abbreviate address parts for consistency and replace the spaces
-
-        -- Strip out all the ordinals from the street numbers
+        -- Lower the case and strip out all the ordinals from the street numbers
         SET address = preg_replace('/(?<=[0-9])(?:st|nd|rd|th)/','', TRIM(LCASE(value)));
 
         -- Standardize spacing from the street numbers from 7B, 7-B, 7 B => 7 B
@@ -95,31 +144,15 @@ CREATE FUNCTION BB_NORMALIZE_ADDR (value VARCHAR(255))
                     ':', ' '),
                     '#', ' ');
 
-        -- Pad with spaces for most accurate part matching
-        SET address = CONCAT(' ', address, ' ');
+        SET address = BB_ADDR_REPLACE(address);
 
-        -- Abbeviate all the possible address parts for consistency
-        SET address = REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( REPLACE( address ,
-                    ' street ', ' st ' ),
-                    ' road ', ' rd ' ),
-                    ' boulevard ', ' blvd ' ),
-                    ' meadows ', ' mdws '),
-                    ' avenue ', ' ave ' ),
-                    ' terrace ', ' ter ' ),
-                    ' court ', ' ct '),
-                    ' circle ', ' cir '),
-                    ' crescent ', ' cres '),
-                    ' parkway ', ' pkwy ' ),
-                    ' west ', ' w ' ),
-                    ' east ', ' e ' ),
-                    ' north ', ' n ' ),
-                    ' south ', ' s ' ),
-                    ' apartment ', ' ' ),
-                    ' apt ', ' ' ),
-                    ' place ', ' pl ' ),
-                    ' penthouse ', ' ph ' ),
-                    ' lane ', ' ln '),
-                    ' drive ', ' dr ');
+        -- Some other adhoc changes we need to make
+        SET address = REPLACE( address, 'apt', '');
+        SET address = REPLACE( address, 'floor', 'fl');
+        SET address = REPLACE( address, 'east', 'e');
+        SET address = REPLACE( address, 'north', 'n');
+        SET address = REPLACE( address, 'west', 'w');
+        SET address = REPLACE( address, 'south', 's');
 
         -- Normalize the spaces on the way out the door
         RETURN preg_replace('/ +/', ' ', TRIM(address));
@@ -239,5 +272,95 @@ CREATE TRIGGER shadow_address_delete_trigger AFTER DELETE ON civicrm_address
     END
 |
 
+-- --------------------------------
+-- Triggers for first name groups
+-- --------------------------------
+DROP TRIGGER IF EXISTS shadow_contact_insert_fn_trigger |
+CREATE TRIGGER shadow_contact_insert_fn_trigger AFTER INSERT ON shadow_contact
+    FOR EACH ROW BEGIN
+        DECLARE new_fn_group_id INT;
+        DECLARE new_insert INT DEFAULT 1;
+        DECLARE not_found VARCHAR(5) DEFAULT 'False';
+
+        DECLARE find_fn CURSOR FOR
+            SELECT fn_group_id
+            FROM fn_group_name
+            WHERE name = NEW.first_name;
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET not_found = 'True';
+
+        -- Records with a first name of NULL can be skipped here
+        IF NEW.first_name IS NOT NULL AND NEW.first_name != '' THEN
+
+            -- Loop over the matching first name groups
+            OPEN find_fn;
+            insert_loop: LOOP
+                FETCH find_fn INTO new_fn_group_id;
+
+                IF not_found = 'True' THEN
+                    LEAVE insert_loop;
+                END IF;
+
+                -- Insert a new contact record for the fn_group
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+                SET new_insert = 0;
+            END LOOP;
+            CLOSE find_fn;
+
+            -- If we never found matches, insert a new record set instead
+            IF new_insert = 1 THEN
+                INSERT INTO fn_group (given, new) VALUES (NEW.first_name, 1);
+                SET new_fn_group_id = LAST_INSERT_ID();
+                INSERT INTO fn_group_name (fn_group_id, name) VALUES (new_fn_group_id, NEW.first_name);
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+            END IF;
+
+        END IF;
+    END
+|
+
+DROP TRIGGER IF EXISTS shadow_contact_update_fn_trigger |
+CREATE TRIGGER shadow_contact_update_fn_trigger AFTER UPDATE ON shadow_contact
+    FOR EACH ROW BEGIN
+        DECLARE new_fn_group_id INT;
+        DECLARE new_insert INT DEFAULT 1;
+        DECLARE not_found VARCHAR(5) DEFAULT 'False';
+
+        DECLARE find_fn CURSOR FOR
+            SELECT fn_group_id
+            FROM fn_group_name
+            WHERE name = NEW.first_name;
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET not_found = 'True';
+
+        -- Records with a first name of NULL can be skipped here
+        IF NEW.first_name IS NOT NULL THEN
+
+            -- Loop over the matching first name groups
+            OPEN find_fn;
+            insert_loop: LOOP
+                FETCH find_fn INTO new_fn_group_id;
+
+                IF not_found = 'True' THEN
+                    LEAVE insert_loop;
+                END IF;
+
+                -- Insert a new contact record for the fn_group
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+                SET new_insert = 0;
+            END LOOP;
+            CLOSE find_fn;
+
+            -- If we never found matches, insert a new record set instead
+            IF new_insert = 1 THEN
+                INSERT INTO fn_group (given, new) VALUES (NEW.first_name, 1);
+                SET new_fn_group_id = LAST_INSERT_ID();
+                INSERT INTO fn_group_name (fn_group_id, name) VALUES (new_fn_group_id, NEW.first_name);
+                INSERT INTO fn_group_contact (fn_group_id, contact_id) VALUES (new_fn_group_id, NEW.contact_id);
+            END IF;
+
+        END IF;
+    END
+|
 
 DELIMITER ;

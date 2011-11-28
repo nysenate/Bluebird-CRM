@@ -43,7 +43,7 @@ and modify to fit your specific configuration.
 	  //  Do something with $result here.  Each result is an object, so for example you can access the nid using $result->nid
 	}
 	*/
-		$config =& CRM_Core_Config::singleton( );
+		$config = CRM_Core_Config::singleton( );
 		$surveyId = (int)$surveyId;// sql injection protection
 		// if Drupal node uses cck integer field petitionid
 		// there will be a 'content_field_petitionid' table in the Drupal database

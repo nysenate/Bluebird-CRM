@@ -56,6 +56,9 @@ define('CIVICRM_USE_MEMCACHE', get_config_value($bbconfig, 'cache.memcache', 0))
 define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbconfig, 'cache.memcache.timeout', 600));
 define('CIVICRM_MEMCACHE_PREFIX', $bbconfig['servername']);
 
+// SAGE API constants
+define('SAGE_API_KEY', $bbconfig['sage.api.key']);
+define('SAGE_API_BASE', $bbconfig['sage.api.base']);
 
 /**
  *
@@ -89,4 +92,3 @@ switch ($memLimitUnit) {
 if ($memLimit >= 0 and $memLimit < 67108864) {
     ini_set('memory_limit', '1000M');
 }
-

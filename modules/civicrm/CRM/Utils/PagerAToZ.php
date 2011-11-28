@@ -126,7 +126,10 @@ class CRM_Utils_PagerAToZ
         $path = CRM_Utils_System::currentPath() ;
 
         $qfKey = CRM_Utils_Array::value( 'qfKey', $query->_formValues );
-
+        if ( empty($qfKey) ) {
+            $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this, false, null, $_REQUEST );
+        }
+        
         $aToZBar = array( );
         foreach ( $AToZBar as $key => $link ) {
             if ( ! $link ) {

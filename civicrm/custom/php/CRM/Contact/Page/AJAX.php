@@ -1,4 +1,3 @@
-
 <?php
 
 /*
@@ -375,7 +374,7 @@ LIMIT    0, {$limit}
     static function getPermissionedEmployer( ) 
     {
         $cid       = CRM_Utils_Type::escape( $_GET['cid'], 'Integer' );
-        $name      = trim(CRM_Utils_Type::escape( $_GET['name'], 'String')); 
+        $name      = trim(CRM_Utils_Type::escape( $_GET['s'], 'String')); 
         $name      = str_replace( '*', '%', $name );
 
         require_once 'CRM/Contact/BAO/Relationship.php';
@@ -707,8 +706,12 @@ WHERE sort_name LIKE '%$name%'";
                     $queryString = " ( cc.sort_name LIKE '%$name%' OR ce.email LIKE '%$name%' ) ";
                 }
             } elseif ( $cid = CRM_Utils_Array::value( 'cid', $_GET ) ) {
-                $cid = CRM_Utils_Type::escape( $cid, 'Integer' );
-				$queryString = " cc.id IN ( $cid )";
+                //check cid for interger
+                $contIDS = explode( ',', $cid );
+                foreach ( $contIDS as $contID ) {
+                    CRM_Utils_Type::escape( $contID, 'Integer' );
+                }
+                $queryString = " cc.id IN ( $cid )";
 			}
 
             if ( $queryString ) {
@@ -888,7 +891,8 @@ LIMIT {$offset}, {$rowCount}
         $relType            = CRM_Utils_Type::escape( $_REQUEST['relType'], 'String' );
         $typeName           = isset( $_REQUEST['typeName'] ) ? CRM_Utils_Type::escape( $_REQUEST['typeName'], 'String' ):'';
         $relContact         = CRM_Utils_Type::escape( $_REQUEST['relContact'], 'String' );
-        $excludedContactIds = isset($_REQUEST['cid'])?  array( CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer') ) : array( );
+        //$excludedContactIds = isset($_REQUEST['cid'])?  array( CRM_Utils_Type::escape($_REQUEST['cid'], 'Integer') ) : array( );
+		$currentContactId   = CRM_Utils_Type::escape( $_REQUEST['cid'], 'Integer'); //NYSS
 
         if ( in_array( $typeName, array( 'Employee of', 'Employer of' ) ) ) {
             $addCount = 1; 
@@ -930,7 +934,10 @@ LIMIT {$offset}, {$rowCount}
                     $searchValues[] = array( 'contact_sub_type', '=', $subType, 0, 0 );
                 }
             }
-
+		
+        //NYSS exclude current contact
+        $searchValues[] = array( 'contact_id', '!=', $currentContactId, 0, 0 );
+				
         $contactBAO  = new CRM_Contact_BAO_Contact( );
         $query       = new CRM_Contact_BAO_Query( $searchValues );
         $searchCount = $query->searchQuery(0, 0, null, true );
@@ -948,10 +955,10 @@ LIMIT {$offset}, {$rowCount}
             
             while($result->fetch()) {
                 $contactID = $result->contact_id;
-                if ( in_array( $contactID, $excludedContactIds ) ) {
+                /*if ( in_array( $contactID, $excludedContactIds ) ) {
                     $duplicateRelationship++;
                     continue;
-                }
+                }*/ //NYSSS
 
                 $duplicateRelationship = 0;       
         
@@ -965,7 +972,7 @@ LIMIT {$offset}, {$rowCount}
                 $searchRows[$contactID]['id']    = $contactID;
                 $searchRows[$contactID]['name']  = $typeImage.' '.$result->sort_name;
                 $searchRows[$contactID]['address']  = $result->street_address; //NYSS - LCD include address in case resources listing
-				$searchRows[$contactID]['city']  = $result->city;
+                $searchRows[$contactID]['city']  = $result->city;
                 $searchRows[$contactID]['state'] = $result->state_province;
                 $searchRows[$contactID]['email'] = $result->email;
                 $searchRows[$contactID]['phone'] = $result->phone;
@@ -973,11 +980,13 @@ LIMIT {$offset}, {$rowCount}
         }
 
         foreach( $searchRows as $cid => $row ) {
-            if ( $sEcho == 1 && count($searchRows) == 1 ) { 
+            //NYSS
+			/*if ( $sEcho == 1 && count($searchRows) == 1 ) { 
                  $searchRows[$cid]['check'] = '<input type="checkbox" id="contact_check['.$cid.']" name="contact_check['.$cid.']" value='.$cid.' checked />';
             } else {
                  $searchRows[$cid]['check'] = '<input type="checkbox" id="contact_check['.$cid.']" name="contact_check['.$cid.']" value='.$cid.' />';
-            }
+            }*/
+			$searchRows[$cid]['check'] = '<input type="checkbox" id="contact_check['.$cid.']" name="contact_check['.$cid.']" value='.$cid.' />';
 
             if ( $typeName == 'Employee of' ) {
                  $searchRows[$cid]['employee_of'] = '<input type="radio" name="employee_of" value='.$cid.' >';

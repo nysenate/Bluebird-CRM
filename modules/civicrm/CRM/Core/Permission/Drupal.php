@@ -254,6 +254,95 @@ class CRM_Core_Permission_Drupal {
         */
     }
 
+    /**
+     * Get all the contact emails for users that have a specific permission
+     *
+     * @param string $permissionName name of the permission we are interested in
+     *
+     * @return string a comma separated list of email addresses
+     */
+    public static function permissionEmails( $permissionName ) {
+        static $_cache = array( );
+        
+        if ( isset( $_cache[$permissionName] ) ) {
+            return $_cache[$permissionName];
+        }
+        
+        $uids = array( );
+        $sql = "
+SELECT     {users}.uid, {permission}.perm
+FROM       {users}
+LEFT  JOIN {users_roles} ON {users}.uid = {users_roles}.uid
+INNER JOIN {permission}  ON ( {permission}.rid = {users_roles}.rid OR {permission}.rid = 2 )
+WHERE      {permission}.perm LIKE '%%{$permissionName}%%'
+AND        {users}.status = 1
+";
+
+        $query = db_query( $sql );
+        while ( $result = db_fetch_object( $query ) ) {
+            $uids[] = $result->uid;
+        }
+
+        $_cache[$permissionName] = self::getContactEmails( $uids );
+        return $_cache[$permissionName];
+    }
+
+    /**
+     * Get all the contact emails for users that have a specific role
+     *
+     * @param string $roleName name of the role we are interested in
+     *
+     * @return string a comma separated list of email addresses
+     */
+    public static function roleEmails( $roleName ) {
+        static $_cache = array( );
+        
+        if ( isset( $_cache[$roleName] ) ) {
+            return $_cache[$roleName];
+        }
+
+        $uids = array( );
+        $sql = "
+SELECT     {users}.uid, {permission}.perm
+FROM       {users}
+LEFT  JOIN {users_roles} ON {users}.uid = {users_roles}.uid
+INNER JOIN {role}        ON ( {role}.rid = {users_roles}.rid OR {role}.rid = 2 )
+WHERE      {role}. name LIKE '%%{$roleName}%%'
+AND        {users}.status = 1
+";
+
+        $query = db_query( $sql );
+        while ( $result = db_fetch_object( $query ) ) {
+            $uids[] = $result->uid;
+        }
+
+        $_cache[$roleName] = self::getContactEmails( $uids );
+        return $_cache[$roleName];
+    }
+    
+    static function getContactEmails( $uids ) {
+        if ( empty( $uids ) ) {
+            return '';
+        }
+        $uidString = implode( ',', $uids );
+        $sql = "
+SELECT     e.email
+FROM       civicrm_contact c
+INNER JOIN civicrm_email e     ON ( c.id = e.contact_id AND e.is_primary = 1 )
+INNER JOIN civicrm_uf_match uf ON ( c.id = uf.contact_id )
+WHERE      c.is_deceased = 0
+AND        c.is_deleted  = 0
+AND        uf.uf_id IN ( $uidString )
+";
+
+        $dao = CRM_Core_DAO::executeQuery( $sql );
+
+        $emails = array( );
+        while ( $dao->fetch( ) ) {
+            $emails[] = $dao->email;
+        }
+
+        return implode( ', ', $emails );
+    }
+
 }
-
-

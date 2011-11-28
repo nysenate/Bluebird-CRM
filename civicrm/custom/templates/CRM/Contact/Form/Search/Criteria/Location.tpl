@@ -47,8 +47,20 @@
     	<td>
         <table cellpadding="inner-table">
         	<tr>
-             <td>{$form.street_address.label}<br />
-            	 {$form.street_address.html|crmReplace:class:big}
+             <td>
+             {*NYSS*}
+            	 <span id="streetAddress">
+                   {$form.street_address.label}<br />
+ 	               {$form.street_address.html|crmReplace:class:big}<br />
+ 	               {if $parseStreetAddress}
+ 	                 &nbsp;&nbsp;<a href="#" title="{ts}Use Address Elements{/ts}" onClick="processAddressFields( 'addressElements' , 1 );return false;">{ts}Use Address Elements{/ts}</a>
+ 	             </span>
+ 	             <span id="addressElements" class=hiddenElement>
+                   Street Number / Name / Unit<br />
+ 	               {$form.street_number.html}&nbsp;{$form.street_name.html}&nbsp;{$form.street_unit.html}<br />
+ 	               <a href="#" title="{ts}Use Street Address{/ts}" onClick="processAddressFields( 'streetAddress', 1 );return false;">{ts}Use Street Address{/ts}</a>&nbsp;&nbsp;You may enter "odd" or "even" in the street number field.
+                   {/if}
+ 	             </span>
              </td>
              <td>{$form.city.label}<br />
             	 {$form.city.html}
@@ -96,4 +108,42 @@
     </table>
 </div>
 
+{*NYSS*}
+{if $parseStreetAddress eq 1}
+{literal}
+<script type="text/javascript">
+function processAddressFields( name, loadData ) {
+        if ( name == 'addressElements' ) {
+             if ( loadData ) {
+                  cj( '#street_address' ).val( '' );
+             }
+             
+             showBlockName = 'addressElements';
+             hideBlockName = 'streetAddress';
+        } else {
+             if ( loadData ) {
+                  cj( '#street_name'   ).val( '' );
+				  cj( '#street_unit'   ).val( '' );
+				  cj( '#street_number' ).val( '' );
+             }
 
+             showBlockName = 'streetAddress';
+             hideBlockName = 'addressElements';
+       }
+
+       show( showBlockName );
+       hide( hideBlockName );
+}
+
+cj(function( ) {
+  if (  cj('#street_name').val( ).length > 0 ||
+        cj('#street_unit').val( ).length > 0 ||
+        cj('#street_number').val( ).length > 0 ) {
+    processAddressFields( 'addressElements', 1 );
+  }
+}
+);
+
+</script>
+{/literal}
+{/if}

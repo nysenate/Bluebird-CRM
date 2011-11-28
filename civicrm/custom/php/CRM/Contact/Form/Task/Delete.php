@@ -149,9 +149,17 @@ class CRM_Contact_Form_Task_Delete extends CRM_Contact_Form_Task {
 
         if ( $this->_single ) {
             // also fix the user context stack in case the user hits cancel
+			//NYSS retain search context
+			$context = CRM_Utils_Request::retrieve( 'context', 'String', $this, false, 'basic' );
+			if ( $context == 'search' && CRM_Utils_Rule::qfKey( $this->_searchKey ) ) {
+                $urlParams .= "&context=$context&key=$this->_searchKey";
+			} else {
+			    $urlParams = '';
+			}
+			
             $session = CRM_Core_Session::singleton( );
             $session->replaceUserContext( CRM_Utils_System::url('civicrm/contact/view',
-                                                                'reset=1&cid=' . $this->_contactIds[0] ) );
+                                                                'reset=1&cid='.$this->_contactIds[0].$urlParams ) );
             $this->addDefaultButtons( $label, 'done', 'cancel' );
         } else {
             $this->addDefaultButtons( $label, 'done' );
@@ -177,10 +185,10 @@ class CRM_Contact_Form_Task_Delete extends CRM_Contact_Form_Task {
         } elseif ( $context == 'search' ) {
             $urlParams .= "&qfKey={$this->controller->_key}";
             $urlString = 'civicrm/contact/search';
-        } elseif ( $context == 'smog' ) { //NYSS 3820
+        } elseif ( $context == 'smog' ) {
             $urlParams .= "&qfKey={$this->controller->_key}&context=smog";
             $urlString = 'civicrm/group/search';
-		} else {
+        } else {
             $urlParams = "reset=1";
             $urlString = 'civicrm/dashboard';
         }

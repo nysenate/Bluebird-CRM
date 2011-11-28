@@ -118,29 +118,9 @@ function civicrm_api3_email_delete( $params )
 
 function civicrm_api3_email_get($params) 
 {   
+    civicrm_api3_verify_one_mandatory($params);
 
-    civicrm_api3_verify_one_mandatory($params, null, 
-		array('id', 'contact_id', 'location_type_id','email'));
-	
     require_once 'CRM/Core/BAO/Email.php';
-    $emailBAO = new CRM_Core_BAO_Email();
-    $fields = array_keys($emailBAO->fields());
-
-    foreach ( $fields as $name) {
-        if (array_key_exists($name, $params)) {
-            $emailBAO->$name = $params[$name];
-        }
-    }
-    
-    if ( $emailBAO->find() ) {
-      $emails = array();
-      while ( $emailBAO->fetch() ) {
-        CRM_Core_DAO::storeValues( $emailBAO, $email );
-        $emails[$emailBAO->id] = $email;
-      }
-      return civicrm_api3_create_success($emails,$params,'email','get',$emailBAO);
-    } else {
-      return civicrm_api3_create_success(array(),$params,'email','get',$emailBAO);
-    }
+    return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 
 }

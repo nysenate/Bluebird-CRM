@@ -162,6 +162,7 @@ class CRM_Price_Page_Option extends CRM_Core_Page
                                     'id', $returnURL, $filter );
 
         $this->assign('customOption', $customOption);
+        $this->assign('sid', $this->_sid);
     }
 
 

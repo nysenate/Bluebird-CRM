@@ -72,14 +72,14 @@ function civicrm_api3_verify_one_mandatory ($params, $daoName = null, $keyoption
  * Load the DAO of the entity
  */
 function _civicrm_api3_load_DAO($entity){
-      $dao = _civicrm_api3_get_DAO ($entity);
-       if (empty($dao)) {
-            return false;
-       }
-       $file = str_replace ('_','/',$dao).".php";
-       require_once ($file); 
-       $d = new $dao();
-       return $d;
+    $dao = _civicrm_api3_get_DAO ($entity);
+    if (empty($dao)) {
+        return false;
+    }
+    $file = str_replace ('_','/',$dao).".php";
+    require_once ($file); 
+    $d = new $dao();
+    return $d;
 }
 /*
  * Function to return the DAO of the function or Entity
@@ -91,19 +91,19 @@ function _civicrm_api3_load_DAO($entity){
 function _civicrm_api3_get_DAO ($name) {
     static $dao = null; 
     if (!$dao) {
-      require ('CRM/Core/DAO/.listAll.php');
+        require ('CRM/Core/DAO/.listAll.php');
     }
    
     if (strpos($name, 'civicrm_api3') !== false) {
         $last = strrpos ($name, '_') ;
         $name = substr ($name, 13, $last -13);// len ('civicrm_api3_') == 13
         if($name =='pledge_payment'){
-          //for some reason pledge_payment doesn't follow normal conventions of BAO being the same as table name
-          $name = 'Payment';
+            //for some reason pledge_payment doesn't follow normal conventions of BAO being the same as table name
+            $name = 'Payment';
         }
     }  
     if(strtolower($name) =='individual' || strtolower($name) =='household' ||strtolower($name) =='organization'){
-          $name = 'Contact';
+        $name = 'Contact';
     }
     return $dao[civicrm_api_get_camel_name($name,3)];
 }
@@ -134,7 +134,8 @@ function _civicrm_api3_get_BAO ($name) {
  */
 
 function civicrm_api3_verify_mandatory ($params, $daoName = null, $keys = array(), $verifyDAO = TRUE ) {
-    if ( ! is_array( $params ) ) {
+  // moving this to civicrm_api - remove the check for array pending testing
+   if ( ! is_array( $params ) ) {
         throw new Exception ('Input variable `params` is not an array');
     }
 
@@ -145,9 +146,9 @@ function civicrm_api3_verify_mandatory ($params, $daoName = null, $keys = array(
     }
     require_once 'CRM/Utils/Array.php';
     if(CRM_Utils_Array::value('id',$params)){
-      $keys = array('version');
+        $keys = array('version');
     }else{
-      $keys[] = 'version';//required from v3 onwards
+        $keys[] = 'version';//required from v3 onwards
     } 
     foreach ($keys as $key) {
         if(is_array($key)){
@@ -233,11 +234,11 @@ function civicrm_api3_create_success( $values = 1,$params=array(), $entity = nul
     $result['is_error'] = 0;
     //lets set the ['id'] field if it's not set & we know what the entity is
     if(is_array($values) && !empty($entity)){
-      foreach ($values as $key => $item){
-        if(empty($item['id']) &&  !empty($item[$entity . "_id"])){
-          $values[$key]['id'] = $item[$entity . "_id"];
-        }
-      } 
+        foreach ($values as $key => $item){
+            if(empty($item['id']) &&  !empty($item[$entity . "_id"])){
+                $values[$key]['id'] = $item[$entity . "_id"];
+            }
+        } 
     }
     //if ( array_key_exists ('debug',$params) && is_object ($dao)) {
     if ( is_array($params) && array_key_exists ('debug',$params)) {
@@ -279,7 +280,7 @@ function civicrm_api3_create_success( $values = 1,$params=array(), $entity = nul
 
     if ( is_array($values) && isset( $params['sequential'] ) && 
          $params['sequential'] ==1 ) {
-        $result['values'] =  array_merge($values);
+        $result['values'] =  array_values($values);
     } else {
         $result['values'] =  $values;
     }
@@ -293,17 +294,17 @@ function civicrm_api3_create_success( $values = 1,$params=array(), $entity = nul
  */
 function _civicrm_api3_separate_values( &$values )
 {
-  $sp = CRM_Core_DAO::VALUE_SEPARATOR;
-  foreach ($values as &$value) {
-    if (is_array($value)) {
-      _civicrm_api3_separate_values($value);
+    $sp = CRM_Core_DAO::VALUE_SEPARATOR;
+    foreach ($values as &$value) {
+        if (is_array($value)) {
+            _civicrm_api3_separate_values($value);
+        }
+        elseif (is_string($value)) {
+            if (strpos($value, $sp) !== FALSE) {
+                $value = explode($sp, trim($value, $sp));
+            }
+        }
     }
-    elseif (is_string($value)) {
-      if (strpos($value, $sp) !== FALSE) {
-        $value = explode($sp, trim($value, $sp));
-      }
-    }
-  }
 }
 
 /**
@@ -355,9 +356,9 @@ function _civicrm_api3_store_values( &$fields, $params, &$values )
 {
     $valueFound = false;
     
-     $keys = array_intersect_key($params,$fields);
-     foreach($keys as $name => $value) {
-       if( $name !== 'id' ) {
+    $keys = array_intersect_key($params,$fields);
+    foreach($keys as $name => $value) {
+        if( $name !== 'id' ) {
             $values[$name] = $value;
             $valueFound = true;
         }
@@ -375,35 +376,42 @@ function _civicrm_api3_dao_set_filter (&$dao,$params, $unique = TRUE ) {
     $fields = _civicrm_api3_build_fields_array($dao,$unique);
     $fields = array_intersect(array_keys($fields),array_keys($params));
     if( isset($params[$entity. "_id"])){
-      //if entity_id is set then treat it as ID (will be overridden by id if set)       
-      $dao->id = $params[$entity. "_id"];
+        //if entity_id is set then treat it as ID (will be overridden by id if set)       
+        $dao->id = $params[$entity. "_id"];
          
     }
     //apply options like sort
-     _civicrm_api3_apply_options_to_dao($params, $dao );   
+    _civicrm_api3_apply_options_to_dao($params, $dao );   
     
     //accept filters like filter.activity_date_time_high
     // std is now 'filters' => .. 
     if(strstr(implode(',', array_keys($params)), 'filter')){
-      if(is_array($params['filters'])){
-        foreach ($params['filters'] as $paramkey =>$paramvalue) {
-          _civicrm_api3_apply_filters_to_dao($paramkey,$paramvalue, $dao );
+        if(is_array($params['filters'])){
+            foreach ($params['filters'] as $paramkey =>$paramvalue) {
+                _civicrm_api3_apply_filters_to_dao($paramkey,$paramvalue, $dao );
+            }
+        }else{
+            foreach ($params as $paramkey => $paramvalue) {
+                if(strstr($paramkey, 'filter') ){
+                    _civicrm_api3_apply_filters_to_dao(substr($paramkey,7),$paramvalue, $dao );
+                }
+            }
         }
-      }else{
-        foreach ($params as $paramkey => $paramvalue) {
-          if(strstr($paramkey, 'filter') ){
-            _civicrm_api3_apply_filters_to_dao(substr($paramkey,7),$paramvalue, $dao );
-          }
-       }
-      }
     }  
+    
 
     if (!$fields) 
-         return;
+        return;
     foreach ($fields as $field) {
         $dao->$field = $params [$field];
     }
-
+    if(!empty($params['return']) && is_array($params['return'])){
+      $dao->selectAdd( ); 
+      foreach ($params['return'] as $returnValue ) {
+        $dao->selectAdd( $returnValue); 
+      }
+      $dao->selectAdd( 'id');
+    }
 }
 
 /*
@@ -413,22 +421,53 @@ function _civicrm_api3_dao_set_filter (&$dao,$params, $unique = TRUE ) {
  * @param object $dao DAO object
  */
 function   _civicrm_api3_apply_filters_to_dao($filterField,$filterValue, &$dao ){
-   if( strstr($filterField, 'high') ){
-          $fieldName = substr($filterField ,0,-5);
-          $dao->whereAdd( "($fieldName <= $filterValue )" );        
+    if( strstr($filterField, 'high') ){
+        $fieldName = substr($filterField ,0,-5);
+        $dao->whereAdd( "($fieldName <= $filterValue )" );        
     }
-   if(strstr($filterField, 'low')){
-          $fieldName = substr($filterField ,0,-4);
-          $dao->whereAdd( "($fieldName >= $filterValue )" );        
+    if(strstr($filterField, 'low')){
+        $fieldName = substr($filterField ,0,-4);
+        $dao->whereAdd( "($fieldName >= $filterValue )" );        
     }
 }
+/*
+ * @param array $params params array as passed into civicrm_api
+ * @return array $options options extracted from params
+ */
 
+function _civicrm_api3_get_options_from_params(&$params){
+  
+  $options = array();
+  $inputParams      = array( );
+  $returnProperties = array( );
+  $otherVars = array( 'sort', 'offset', 'rowCount' );
+
+  $sort     = null;
+  $offset   = 0;
+  $rowCount = 25;
+  foreach ( $params as $n => $v ) {
+      if ( substr( $n, 0, 7 ) == 'return.' ) {
+        $returnProperties[ substr( $n, 7 ) ] = $v;
+      } elseif ( in_array( $n, $otherVars ) ) {
+        $$n = $v;
+      } else {
+        $inputParams[$n] = $v;
+      }
+    }
+  $options['sort'] = $sort;
+  $options['limit'] = $rowCount;
+  $options['offset'] = $offset;
+  $options['return'] = $returnProperties;
+  $options['input_params'] = $inputParams;
+  return $options;
+  
+}
 /*
  * Apply options (e.g. sort, limit, order by) to DAO object (prior to find)
  * @param array $params params array as passed into civicrm_api
  * @param object $dao DAO object
  */
-function   _civicrm_api3_apply_options_to_dao(&$params, &$dao, $defaults = array() ){
+function   _civicrm_api3_apply_options_to_dao(&$params, &$dao, $defaults = array() ) {
     $sort = CRM_Utils_Array::value('option.sort', $params, 0);
     $sort = CRM_Utils_Array::value('option_sort', $params, $sort);  
     
@@ -439,17 +478,18 @@ function   _civicrm_api3_apply_options_to_dao(&$params, &$dao, $defaults = array
     $limit = CRM_Utils_Array::value('option.limit', $params,25);
     $limit = CRM_Utils_Array::value('option_limit', $params,$limit);
     
-    if(is_array($params['options'])){
-      $offset = CRM_Utils_Array::value('offset', $params['options'],$offset );
-      $limit = CRM_Utils_Array::value('limit', $params['options'],$limit );
-      $sort = CRM_Utils_Array::value('sort', $params['options'],$sort );
+    if ( isset( $params['options'] )&&
+         is_array( $params['options'] ) ){
+        $offset = CRM_Utils_Array::value('offset', $params['options'], $offset );
+        $limit  = CRM_Utils_Array::value('limit' , $params['options'], $limit  );
+        $sort   = CRM_Utils_Array::value('sort'  , $params['options'], $sort   );
     }
     
     $dao->limit( (int)$offset, (int)$limit);
     
 
     if(!empty($sort)){
-       $dao->orderBy( $sort);
+        $dao->orderBy( $sort);
     }
 
 }
@@ -459,15 +499,15 @@ function   _civicrm_api3_apply_options_to_dao(&$params, &$dao, $defaults = array
  * returns unique fields as keys by default but if set but can return by DB fields
  */
 function _civicrm_api3_build_fields_array(&$dao, $unique = TRUE){
-      $fields = $dao->fields();
-      if ($unique){
+    $fields = $dao->fields();
+    if ($unique){
         return $fields;
-      }
+    }
       
-      foreach($fields as $field){
+    foreach($fields as $field){
         $dbFields[$field['name']] = $field;
-      }
-      return $dbFields;
+    }
+    return $dbFields;
 }
 /**
  * Converts an DAO object to an array 
@@ -479,7 +519,7 @@ function _civicrm_api3_build_fields_array(&$dao, $unique = TRUE){
  */
 function _civicrm_api3_dao_to_array ($dao, $params = null,$uniqueFields = TRUE) {
     $result = array();
-    if ( !$dao->find() ) {
+    if (empty($dao) || !$dao->find() ) {
         return array();
     }
 
@@ -1162,13 +1202,13 @@ function civicrm_api3_api_check_permission($entity, $action, &$params, $throw = 
  * @param bool $returnAsSuccess return in api success format
  */
 function _civicrm_api3_basic_get($bao_name, &$params, $returnAsSuccess = TRUE){
-     $bao = new $bao_name();
-     _civicrm_api3_dao_set_filter ( $bao, $params, FALSE );
-     if($returnAsSuccess){
-       return civicrm_api3_create_success(_civicrm_api3_dao_to_array ($bao,$params, FALSE),$params,$bao);
-     }else{
-       return _civicrm_api3_dao_to_array ($bao,$params, FALSE);
-     }
+    $bao = new $bao_name();
+    _civicrm_api3_dao_set_filter ( $bao, $params, FALSE );
+    if($returnAsSuccess){
+        return civicrm_api3_create_success(_civicrm_api3_dao_to_array ($bao,$params, FALSE),$params,$bao);
+    }else{
+        return _civicrm_api3_dao_to_array ($bao,$params, FALSE);
+    }
 }
 
 /*
@@ -1177,13 +1217,21 @@ function _civicrm_api3_basic_get($bao_name, &$params, $returnAsSuccess = TRUE){
 function _civicrm_api3_basic_create($bao_name, &$params){
 
     $args = array(&$params);
-    $bao = call_user_func_array(array($bao_name, 'create'), $args);
+    if (method_exists($bao_name, 'create')) {
+      $fct='create';
+    } elseif (method_exists($bao_name, 'add')) {
+      $fct='add';
+    }
+    if (!isset ($fct)) {
+        return civicrm_api3_create_error( 'Entity not created, missing create or add method for '.$bao_name );
+    }
+    $bao = call_user_func_array(array($bao_name, $fct), $args);
     if ( is_null( $bao) ) {
-      return civicrm_api3_create_error( 'Entity not created' );
+        return civicrm_api3_create_error( 'Entity not created '.$bao_name.'::'.$fct );
     } else {
-      $values = array();
-      _civicrm_api3_object_to_array($bao, $values[ $bao->id]);
-      return civicrm_api3_create_success($values,$params,$bao );
+        $values = array();
+        _civicrm_api3_object_to_array($bao, $values[ $bao->id]);
+        return civicrm_api3_create_success($values,$params,$bao,'create' );
     }
 }
 
@@ -1210,25 +1258,32 @@ function _civicrm_api3_basic_delete($bao_name, &$params){
  * 
  */
 function _civicrm_api3_custom_data_get(&$returnArray,$entity,$entity_id ,$groupID = null,$subType = null, $subName = null){
-     require_once 'CRM/Core/BAO/CustomGroup.php'; 
-     require_once 'CRM/Core/BAO/CustomField.php'; 
-     $groupTree =& CRM_Core_BAO_CustomGroup::getTree($entity, 
-                                                      CRM_Core_DAO::$_nullObject, 
-                                                      $entity_id , 
-                                                      $groupID,
-                                                      $subType,
-                                                      $subName);
-     $groupTree = CRM_Core_BAO_CustomGroup::formatGroupTree( $groupTree, 1, CRM_Core_DAO::$_nullObject );
-     $customValues = array( );
-     CRM_Core_BAO_CustomGroup::setDefaults( $groupTree, $customValues );
-     if ( !empty( $customValues ) ) {
-       foreach ( $customValues as $key => $val ) {
-          // per standard - return custom_fieldID
-          $returnArray['custom_' . (CRM_Core_BAO_CustomField::getKeyID($key))] = $val;
-          //not standard - but some api did this so guess we should keep - cheap as chips
-          $returnArray[$key] = $val;
+    require_once 'CRM/Core/BAO/CustomGroup.php'; 
+    require_once 'CRM/Core/BAO/CustomField.php'; 
+    $groupTree =& CRM_Core_BAO_CustomGroup::getTree($entity, 
+                                                    CRM_Core_DAO::$_nullObject, 
+                                                    $entity_id , 
+                                                    $groupID,
+                                                    $subType,
+                                                    $subName);
+    $groupTree = CRM_Core_BAO_CustomGroup::formatGroupTree( $groupTree, 1, CRM_Core_DAO::$_nullObject );
+    $customValues = array( );
+    CRM_Core_BAO_CustomGroup::setDefaults( $groupTree, $customValues );
+    if ( !empty( $customValues ) ) {
+        foreach ( $customValues as $key => $val ) {
+            if(strstr($key, '_id')){
+              $idkey = substr($key,0,-3);
+              $returnArray['custom_' . (CRM_Core_BAO_CustomField::getKeyID($idkey ) . "_id")] = $val;
+              $returnArray[$key] = $val;
+            }else{
+            // per standard - return custom_fieldID
+            $returnArray['custom_' . (CRM_Core_BAO_CustomField::getKeyID($key))] = $val;
+
+            //not standard - but some api did this so guess we should keep - cheap as chips
+            $returnArray[$key] = $val;
+            }
         }
-      }
+    }
 }
 
 /*
@@ -1242,31 +1297,21 @@ function _civicrm_api3_custom_data_get(&$returnArray,$entity,$entity_id ,$groupI
  * all variables are the same as per civicrm_api
  */
 function _civicrm_api3_validate_fields($entity, $action, &$params) {
-  //entities without a functional getFields will spit the dummy :-)
-  $testedEntities = array('relationship' => 1, 
-  												'membership' => 1, 
-  											  'event' => 1, 
-  											  'contribution' => 1,
-                          'activity' => 1,
-                          'campaign' => 1,
-                          'pledge'   => 1,
-      );
-  if(!array_key_exists(strtolower($entity), $testedEntities)){
-    return;
-  }
-	if (strtolower ( $action ) == 'getfields') {
-		return;
+  //skip any entities without working getfields functions
+  $skippedEntities = array('entity', 'mailinggroup', 'customvalue', 'custom_value', 'mailing_group');
+  if (in_array(strtolower($entity), $skippedEntities) || strtolower ( $action ) == 'getfields'){
+			return;
 	}
 	$fields = civicrm_api ( $entity, 'getfields', array ('version' => 3 ) );
 	$fields = $fields['values'];
 	foreach ( $fields as $fieldname => $fieldInfo ) {
-    switch (CRM_Utils_Array::value ( 'type', $fieldInfo )){
-      case 4:
-      case 12: 
-       //field is of type date or datetime
-       _civicrm_api3_validate_date($params,$fieldname,$fieldInfo);
-       break;
-    }
+        switch (CRM_Utils_Array::value ( 'type', $fieldInfo )){
+        case 4:
+        case 12: 
+            //field is of type date or datetime
+            _civicrm_api3_validate_date($params,$fieldname,$fieldInfo);
+            break;
+        }
 
 	
 	}
@@ -1284,20 +1329,20 @@ function _civicrm_api3_validate_fields($entity, $action, &$params) {
  */
 function _civicrm_api3_validate_date(&$params,&$fieldname,&$fieldInfo){
   	//should we check first to prevent it from being copied if they have passed in sql friendly format?
-			if (CRM_Utils_Array::value ( $fieldInfo ['name'], $params )) {	
+    if (CRM_Utils_Array::value ( $fieldInfo ['name'], $params )) {	
         //accept 'whatever strtotime accepts
-			  if (strtotime($params [$fieldInfo ['name']]) ==0) {
-           throw new exception ($fieldInfo ['name']. " is not a valid date: " . $params [$fieldInfo ['name']]);
+        if (strtotime($params [$fieldInfo ['name']]) ==0) {
+            throw new exception ($fieldInfo ['name']. " is not a valid date: " . $params [$fieldInfo ['name']]);
         }
-					$params [$fieldInfo ['name']] = CRM_Utils_Date::processDate ( $params [$fieldInfo ['name']] );
-			} 
-			if ((CRM_Utils_Array::value ('name', $fieldInfo) != $fieldname ) && CRM_Utils_Array::value ( $fieldname , $params )) {
-			  //If the unique field name differs from the db name & is set handle it here
-			  if (strtotime($params [$fieldname]) ==0) {
-	         throw new exception ($fieldname. " is not a valid date: " . $params [$fieldname]);
+        $params [$fieldInfo ['name']] = CRM_Utils_Date::processDate ( $params [$fieldInfo ['name']] );
+    } 
+    if ((CRM_Utils_Array::value ('name', $fieldInfo) != $fieldname ) && CRM_Utils_Array::value ( $fieldname , $params )) {
+        //If the unique field name differs from the db name & is set handle it here
+        if (strtotime($params [$fieldname]) ==0) {
+            throw new exception ($fieldname. " is not a valid date: " . $params [$fieldname]);
         }
-				$params [$fieldname] = CRM_Utils_Date::processDate ( $params [$fieldname] );
-			}
+        $params [$fieldname] = CRM_Utils_Date::processDate ( $params [$fieldname] );
+    }
   
 }
 
@@ -1321,7 +1366,7 @@ function _civicrm_api3_generic_replace($entity, $params) {
     $tx = new CRM_Core_Transaction();
     try {
         if (!is_array($params['values'])) {
-          throw new Exception("Mandatory key(s) missing from params array: values");                     
+            throw new Exception("Mandatory key(s) missing from params array: values");                     
         }
         
         // Extract the keys -- somewhat scary, don't think too hard about it
@@ -1354,14 +1399,14 @@ function _civicrm_api3_generic_replace($entity, $params) {
         
         // Remove stale records
         $staleIDs = array_diff(
-            array_keys($preexisting['values']),
-            array_keys($creates)
-        );
+                               array_keys($preexisting['values']),
+                               array_keys($creates)
+                               );
         foreach ($staleIDs as $staleID) {
             $delete = civicrm_api($entity, 'delete', array(
-              'version' => $params['version'],
-              'id' => $staleID
-            ));
+                                                           'version' => $params['version'],
+                                                           'id' => $staleID
+                                                           ));
             if (civicrm_api3_error($delete)) {
                 $tx->rollback();
                 return $delete;
@@ -1385,8 +1430,8 @@ function _civicrm_api3_generic_replace($entity, $params) {
 function _civicrm_api_get_fields($entity){
     $dao = _civicrm_api3_get_DAO ($entity);
     if (empty($dao)) {
-          return civicrm_api3_create_error("API for $entity does not exist (join the API team and implement $function" );
-     }
+        return civicrm_api3_create_error("API for $entity does not exist (join the API team and implement $function" );
+    }
     $file = str_replace ('_','/',$dao).".php";
     require_once ($file); 
     $d = new $dao();
@@ -1399,13 +1444,13 @@ function _civicrm_api_get_fields($entity){
  * fields are prefixed with 'custom_' to represent api params
  */
 function _civicrm_api_get_custom_fields($entity){
-  require_once 'CRM/Core/BAO/CustomField.php';
-  $customfields = array();
-  $customfields = CRM_Core_BAO_CustomField::getFields($entity) ;
-  foreach ($customfields as $key => $value) {
-    $customfields['custom_' . $key] = $value;
-    unset($customfields[$key]);
-  }
-  return $customfields;
+    require_once 'CRM/Core/BAO/CustomField.php';
+    $customfields = array();
+    $customfields = CRM_Core_BAO_CustomField::getFields($entity) ;
+    foreach ($customfields as $key => $value) {
+        $customfields['custom_' . $key] = $value;
+        unset($customfields[$key]);
+    }
+    return $customfields;
 }
 

@@ -96,6 +96,9 @@ class CRM_Contact_Form_Search_Criteria {
 
         // add checkbox for cms users only
         $form->addYesNo( 'uf_user', ts( 'CMS User?' ) );
+		
+		//NYSS 4279 tag all search  
+        $form->add('text', 'tag_search', ts('All tag search') ); 
  
         // add search profiles
         require_once 'CRM/Core/BAO/UFGroup.php';
@@ -134,6 +137,10 @@ class CRM_Contact_Form_Search_Criteria {
 
         if ( ! CRM_Core_Permission::access( 'CiviEvent' ) ) {
             unset ( $componentModes['3'] );
+        }
+		//4666
+		if ( ! CRM_Core_Permission::access( 'CiviMember' ) ) {
+            unset ( $componentModes['5'] );
         }
 
         if ( ! CRM_Core_Permission::check( 'view all activities' ) ) {
@@ -179,7 +186,8 @@ class CRM_Contact_Form_Search_Criteria {
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_email', null, $t['do_not_email']);
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_mail' , null, $t['do_not_mail']);
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_sms' ,  null, $t['do_not_sms']);
-        //$privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_trade', null, $t['do_not_trade']); //NYSS - LCD #1453
+        //$privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_trade', null, $t['do_not_trade']); //NYSS 1453
+        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'is_opt_out',    null, $t['is_opt_out']); //NYSS 4573
         $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_toggle', null, $t['do_not_toggle']);
         
         $form->addGroup($privacy, 'privacy', ts('Privacy'), array( '&nbsp;', '&nbsp;', '&nbsp;', '<br/>' ) );
@@ -212,6 +220,7 @@ class CRM_Contact_Form_Search_Criteria {
         
         $attributes = CRM_Core_DAO::getAttribute('CRM_Core_DAO_Address');
         
+		//NYSS 4150
         $elements = array( 
                           'street_address'         => array( ts('Street Address')    ,  $attributes['street_address'], null, null ),
                           'city'                   => array( ts('City')              ,  $attributes['city'] , null, null ),
@@ -219,12 +228,23 @@ class CRM_Contact_Form_Search_Criteria {
                           'county'                 => array( ts('County')            ,  $attributes['county_id'], 'county', false ),
                           'state_province'         => array( ts('State / Province')  ,  $attributes['state_province_id'], 'stateProvince', true ),
                           'country'                => array( ts('Country')           ,  $attributes['country_id'], 'country', false ), 
-                          'address_name'           => array( ts('Address Name')      ,  $attributes['address_name'], null, null ), 
+                          'address_name'           => array( ts('Address Name')      ,  $attributes['address_name'], null, null ),
+						  'street_number'          => array( ts('Street Number')     , $attributes['street_number'], null, null ),
+                          'street_name'            => array( ts('Street Name')       , $attributes['street_name'], null, null ),
+                          'street_unit'            => array( ts('Apt/Unit/Suite')    , $attributes['street_unit'], null, null ),
                            );
-        foreach ( $elements as $name => $v ) {
+
+        $parseStreetAddress = CRM_Utils_Array::value( 'street_address_parsing', $addressOptions, 0 );
+        $form->assign( 'parseStreetAddress', $parseStreetAddress );
+		foreach ( $elements as $name => $v ) {
             list( $title, $attributes, $select, $multiSelect ) = $v;
             
-            if ( ! $addressOptions[$name] ) {
+             if ( in_array( $name,
+                            array('street_number', 'street_name', 'street_unit' ) ) ) {
+                if ( ! $parseStreetAddress ) {
+                    continue;
+                }
+            } else if ( ! $addressOptions[$name] ) {
                 continue;
             }
  

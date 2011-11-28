@@ -67,7 +67,7 @@
 
 {if $priceSet}
     <fieldset id="priceset" class="crm-group priceset-group"><legend>{$event.fee_label}</legend>
-        {include file="CRM/Price/Form/PriceSet.tpl"}
+        {include file="CRM/Price/Form/PriceSet.tpl" extends="Event"}
 	{include file="CRM/Price/Form/ParticipantCount.tpl"}
     </fieldset>
     {if $form.is_pay_later}

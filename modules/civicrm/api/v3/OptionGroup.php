@@ -5,10 +5,8 @@ require_once 'CRM/Core/BAO/OptionGroup.php';
 function civicrm_api3_option_group_get( $params ) {
 
     civicrm_api3_verify_mandatory($params);
-    $bao = new CRM_Core_BAO_OptionGroup( );
-    _civicrm_api3_dao_set_filter ( $bao, $params );
+    return _civicrm_api3_basic_get(_civicrm_api3_get_BAO(__FUNCTION__), $params);
 
-    return civicrm_api3_create_success(_civicrm_api3_dao_to_array ($bao,$params),$params,'option_group','get',$bao);
 
 }
 /**

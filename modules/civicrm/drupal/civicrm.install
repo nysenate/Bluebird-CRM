@@ -53,3 +53,10 @@ function civicrm_uninstall( ) {
     require_once 'CRM/Core/DAO.php';
     CRM_Core_DAO::dropAllTables( );
 }
+
+/**
+ * Update CiviCRM module weight
+ */
+function civicrm_update_6300(&$sandbox) {
+    db_query("UPDATE {system} SET weight = 100 WHERE name = 'civicrm'");
+}

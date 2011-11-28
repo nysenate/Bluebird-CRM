@@ -110,6 +110,7 @@ class CRM_Member_Form_Task extends CRM_Core_Form
             $queryParams =  $form->get( 'queryParams' );
             $query       = new CRM_Contact_BAO_Query( $queryParams, null, null, false, false, 
                                                        CRM_Contact_BAO_Query::MODE_MEMBER);
+            $query->_distinctComponentClause = " DISTINCT(civicrm_membership.id)";
             $result = $query->searchQuery(0, 0, null);
 
             while ($result->fetch()) {

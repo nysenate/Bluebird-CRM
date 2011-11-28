@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-15
-# Revised: 2010-09-30
+# Revised: 2011-11-22
 #
 
 prog=`basename $0`
@@ -16,11 +16,12 @@ readConfig=$script_dir/readConfig.sh
 drush=$script_dir/drush.sh
 clear_all=0
 tpl_only=0
+wd_only=0
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--all] [--tpl-only] instanceName" >&2
+  echo "Usage: $prog [--all] [--tpl-only] [--wd-only] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -32,6 +33,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --all) clear_all=1 ;;
     --tpl*) tpl_only=1 ;;
+    --wd*) wd_only=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -40,6 +42,12 @@ done
 
 if [ $clear_all -eq 1 -a $tpl_only -eq 1 ]; then
   echo "$prog: Cannot specify --all and --tpl-only at the same time." >&2
+  exit 1
+elif [ $clear_all -eq 1 -a $wd_only -eq 1 ]; then
+  echo "$prog: Cannot specify --all and --wd-only at the same time." >&2
+  exit 1
+elif [ $tpl_only -eq 1 -a $wd_only -eq 1 ]; then
+  echo "$prog: Cannot specify --tpl-only and --wd-only at the same time." >&2
   exit 1
 fi
 
@@ -52,6 +60,16 @@ data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 data_basename=`$readConfig --ig $instance data.basename` || data_basename="$instance"
 data_dirname="$data_basename.$base_domain"
+
+
+if [ $wd_only -eq 1 ]; then
+  sql="truncate watchdog"
+  ( set -x
+    $execSql -i $instance -c "$sql" --drupal
+  )
+  exit $?
+fi
+
 
 echo "Clearing CiviCRM filesystem caches"
 ( set -x

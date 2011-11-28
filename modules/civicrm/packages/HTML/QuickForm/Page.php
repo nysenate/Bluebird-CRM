@@ -134,6 +134,7 @@ class HTML_QuickForm_Page extends HTML_QuickForm
     {
         $this->_flagSubmitted = true;
         $this->_submitValues = $values;
+        $this->refreshFinalValues();
         foreach (array_keys($this->_elements) as $key) {
             $this->_elements[$key]->onQuickFormEvent('updateValue', null, $this);
         }

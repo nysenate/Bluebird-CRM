@@ -18,7 +18,7 @@
 // |          Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>      |
 // +----------------------------------------------------------------------+
 //
-// $Id: SMTP.php 311427 2011-05-26 04:25:19Z jon $
+// $Id: SMTP.php 314875 2011-08-13 17:03:30Z jon $
 
 require_once 'PEAR.php';
 require_once 'Net/Socket.php';
@@ -189,7 +189,7 @@ class Net_SMTP
 
         /* Include the Auth_SASL package.  If the package is available, we 
          * enable the authentication methods that depend upon it. */
-        if ((@include_once 'Auth/SASL.php') === true) {
+        if (@include_once 'Auth/SASL.php') {
             $this->setAuthMethod('CRAM-MD5', array($this, '_authCram_MD5'));
             $this->setAuthMethod('DIGEST-MD5', array($this, '_authDigest_MD5'));
         }
@@ -370,12 +370,10 @@ class Net_SMTP
             return true;
         }
 
-		//NYSS to match core version of file
-        //return PEAR::raiseError('Invalid response code received from server',
-        //                        $this->_code, PEAR_ERROR_RETURN);
-		$errorMessage = 'Invalid response code received from SMTP (outbound mail) server while attempting to send email.  This is often caused by a misconfiguration in the CiviCRM Outbound Email settings. Please verify the settings at Administer CiviCRM >> Global Settings >> Outbound Email (SMTP).';
-        return PEAR::raiseError( $errorMessage );
-		
+        // CRM-8744
+        $errorMessage = 'Invalid response code received from SMTP (outbound mail) server while attempting to send email.  This is often caused by a misconfiguration in the CiviCRM Outbound Email settings. Please verify the settings at Administer CiviCRM >> Global Settings >> Outbound Email (SMTP).';
+        return PEAR::raiseError($errorMessage,
+                                $this->_code, PEAR_ERROR_RETURN);
     }
 
     /**
@@ -602,9 +600,9 @@ class Net_SMTP
          * STARTTLS extension, and aren't already connected over a secure 
          * (SSL) socket connection. */
         if ($tls && version_compare(PHP_VERSION, '5.1.0', '>=') &&
-            extension_loaded('openssl') && 
-			//isset($this->_esmtp['STARTTLS']) &&
-			$this->_esmtp['STARTTLS'] == true && //NYSS
+            extension_loaded('openssl') && isset($this->_esmtp['STARTTLS']) &&
+            // CiviCRM: CRM-8744
+            ($this->_esmtp['STARTTLS'] == true) &&
             strncasecmp($this->host, 'ssl://', 6) !== 0) {
             /* Start the TLS connection attempt. */
             if (PEAR::isError($result = $this->_put('STARTTLS'))) {

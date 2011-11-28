@@ -1,8 +1,22 @@
 /* 
-   jQuery TextAreaResizer plugin
-*/
+ *   jQuery TextAreaResizer plugin
+ *
+ *   jQuery TextAreaResizer plugin
+ *   Created on 17th January 2008 by Ryan O'Dell 
+ *   Version 1.0.4
+ *               
+ *   Converted from Drupal -> textarea.js
+ *   Found source: http://plugins.jquery.com/misc/textarea.js
+ *   $Id: textarea.js,v 1.11.2.1 2007/04/18 02:41:19 drumm Exp $
+ *
+ *   1.0.1 Updates to missing global 'var', added extra global variables, fixed multiple instances, improved iFrame support
+ *   1.0.2 Updates according to textarea.focus
+ *   1.0.3 Further updates including removing the textarea.focus and moving private variables to top
+ *   1.0.4 Re-instated the blur/focus events, according to information supplied by dec
+ *   
+ */
 $(document).ready(function() {
-	cj('textarea.huge:not(.textarea-processed), textarea.form-textarea:not(.textarea-processed)').each(function() {
+	cj('#crm-container textarea.huge:not(.textarea-processed), #crm-container textarea.form-textarea:not(.textarea-processed)').each(function() {
         $this = cj(this);
         if ($this.parents('div.civicrm-drupal-wysiwyg').length == 0) 
 			$this.TextAreaResizer();

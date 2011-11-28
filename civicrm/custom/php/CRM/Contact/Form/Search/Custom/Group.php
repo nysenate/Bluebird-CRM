@@ -56,7 +56,7 @@ class CRM_Contact_Form_Search_Custom_Group
 								 ts('Street Address') => 'street_address',
 								 ts('City')           => 'city'
 								 );
-        
+
         $this->_includeGroups   = CRM_Utils_Array::value( 'includeGroups', $this->_formValues, array( ) );
         $this->_excludeGroups   = CRM_Utils_Array::value( 'excludeGroups', $this->_formValues, array( ) ); 
         $this->_includeTags     = CRM_Utils_Array::value( 'includeTags', $this->_formValues  , array( ) ); 
@@ -94,8 +94,8 @@ class CRM_Contact_Form_Search_Custom_Group
         // in other parts after the object is destroyed
     }
     
-    function buildForm( &$form ) {
-
+    function buildForm( &$form ) {		
+		
 		$this->setTitle('Include/Exclude Groups and Tags'); //NYSS
 
         $groups         =& CRM_Core_PseudoConstant::group( );
@@ -104,10 +104,10 @@ class CRM_Contact_Form_Search_Custom_Group
 		//$tags           =& CRM_Core_PseudoConstant::tag( );
 		require_once 'CRM/Core/BAO/Tag.php';
 		$issue_codes = CRM_Core_BAO_Tag::getTags( );
-		$keywords = CRM_Core_BAO_Tag::getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
-                                                      $buildSelect = true,
-                                                      $all = false,
-                                                      $parentId = 296 );
+		$keywords    = CRM_Core_BAO_Tag::getTagsUsedFor( $usedFor = array( 'civicrm_contact' ),
+                                                         $buildSelect = true,
+                                                         $all = false,
+                                                         $parentId = 296 );
 		
 		if ( $keywords ) {
 			//lets indent keywords
@@ -117,6 +117,24 @@ class CRM_Contact_Form_Search_Custom_Group
 			$tags = $issue_codes + array ('296' => 'Keywords') + $keywords;
 		} else {
 			$tags = $issue_codes;
+		}
+		//NYSS end
+
+		//NYSS 4345 unset empty values
+		$tagElements = array( 'includeTags', 'excludeTags' );
+		$tagsRemoved = false;
+		
+		foreach ( $tagElements as $tagElement ) {
+			foreach ( $form->_formValues[$tagElement] as $k=>$tid ) {
+			    if ( !array_key_exists($tid, $tags) ) {
+					unset($form->_formValues[$tagElement][$k]);
+					$tagsRemoved = true;
+				}
+			}
+		}
+		
+		if ( $tagsRemoved ) {
+			CRM_Core_Session::setStatus( ts("One or more tags previously used in this search has since been deleted.") );
 		}
 		//NYSS end
 		
@@ -692,6 +710,9 @@ class CRM_Contact_Form_Search_Custom_Group
         } else {
             $where = $this->_where;
         }
+		
+		//NYSS 4345 - exclude trashed contacts
+		$where .= " AND contact_a.is_deleted = 0 ";
            
         return $where;
     }

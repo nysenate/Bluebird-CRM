@@ -131,7 +131,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                        'order_bys' =>             
                                        array( 'source_contact_email'  =>
                                               array('name'  => 'email',
-                                                    'title' => ts( 'Source Contact Email'),
+                                                    'title' => ts( 'Added by Contact Email'), //NYSS
                                                     'alias' => 'civicrm_email_source' ) ),
                                        ),
                                 
@@ -161,7 +161,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                array( 'no_display' => true,
                                                       'required'   => true   
                                                       ),
-                                               'activity_type_id'  => 
+                                               //NYSS 3983
+											   'source_record_id'  => 
+                                               array( 'no_display' => true,
+                                                      'required'   => true   
+                                                      ),
+											   'activity_type_id'  => 
                                                array( 'title'      => ts( 'Type' ),
                                                       'default'    => true,
                                                       'type'       =>  CRM_Utils_Type::T_STRING 
@@ -184,7 +189,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                'status_id'         => 
                                                array( 'title'      => ts( 'Activity Status' ),
                                                       'default'    => true ,
-                                                      'type'       =>  CRM_Utils_Type::T_STRING ), ),
+                                                      'type'       =>  CRM_Utils_Type::T_STRING ), 
+											   ),
                                        'filters' =>   
                                        array( 'activity_date_time'  => 
                                               array( 'default'      => 'this.month',
@@ -202,7 +208,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                               ),
                                        'order_bys' =>             
                                        array( 'source_contact_id'  =>
-                                              array('title'    => ts( 'Source Contact' ), 'default_weight' => '0' ),
+                                              array('title'    => ts( 'Added by Contact' ), 'default_weight' => '0' ), //NYSS
                                               'activity_date_time' => 
                                               array( 'title'   => ts( 'Activity Date' ), 'default_weight' => '1' ),
                                               'activity_type_id'   =>
@@ -481,6 +487,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
         $seperator      = CRM_CORE_DAO::VALUE_SEPARATOR;
         $context        = CRM_Utils_Request::retrieve( 'context', 'String', $this, false, 'report' );
  
+        require_once 'CRM/Activity/Selector/Activity.php'; //NYSS 3983
         require_once 'CRM/Core/Permission.php';
         if ( CRM_Core_Permission::check( 'access CiviCRM' ) ) {
             $viewLinks  = true;
@@ -529,7 +536,6 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                             $url = CRM_Utils_System::url( "civicrm/contact/view", 
                                                           'reset=1&cid=' . $value );
                             $link[] = "<a title='".$onHover."' href='" . $url . "'>{$targetNames[$id]}</a>";
-                            
                         }
                         $rows[$rowNum]['civicrm_contact_contact_target'] = implode( '; ',$link );
                     }
@@ -551,7 +557,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                         }
 
                         // case activities get a special view link
-                        if ( $rows[$rowNum]['civicrm_case_activity_case_id'] ) {
+                        /*if ( $rows[$rowNum]['civicrm_case_activity_case_id'] ) {
                             $url = CRM_Utils_System::url( "civicrm/case/activity/view"  , 
                                                           'reset=1&cid=' . $cid .
                                                           '&aid=' . $rows[$rowNum]['civicrm_activity_id'] . '&caseID=' . $rows[$rowNum]['civicrm_case_activity_case_id'] . '&context=' . $context,
@@ -569,7 +575,22 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                             	                              $this->_absoluteUrl );
 								
 							}
-						}
+						}*/
+						
+						//NYSS 3983
+						$actionLinks = 
+						    CRM_Activity_Selector_Activity::actionLinks( $row['civicrm_activity_activity_type_id'],
+                                                                         CRM_Utils_Array::value('civicrm_activity_source_record_id', $rows[$rowNum]),
+                                                                         false,
+                                                                         $rows[$rowNum]['civicrm_activity_id'] );
+                        
+                        $linkValues = array( 'id'  => $rows[$rowNum]['civicrm_activity_id'],
+                                             'cid' => $cid,
+                                             'cxt' => $context
+                                              );
+                        $url = CRM_Utils_System::url( $actionLinks[CRM_Core_Action::VIEW]['url'],
+                                                      CRM_Core_Action::replace( $actionLinks[CRM_Core_Action::VIEW]['qs'], $linkValues ), true);
+						
                         $rows[$rowNum]['civicrm_activity_activity_type_id_link'] = $url;
                         $rows[$rowNum]['civicrm_activity_activity_type_id_hover'] = $onHoverAct;
                     }

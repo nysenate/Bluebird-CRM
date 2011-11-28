@@ -35,7 +35,7 @@
  * @version $Id: utils.php 31877 2011-01-19 04:23:54Z shot $
  *
  */
-
+require_once 'api/api.php';
 /**
  * @todo Write documentation
  *
@@ -105,23 +105,7 @@ function civicrm_duplicate($error)
     return false;
 }
 
-/**
- * Check if the given array is actually an error
- *
- * @param  array   $params           (reference ) input parameters
- *
- * @return boolean true if error, false otherwise
- * @static void
- * @access public
- */
-function civicrm_error( $params ) 
-{
-    if ( is_array( $params ) ) {
-        return ( array_key_exists( 'is_error', $params ) &&
-                 $params['is_error'] ) ? true : false;
-    }
-    return false;
-}
+
 
 /**
  *
@@ -134,13 +118,13 @@ function _civicrm_store_values( &$fields, &$params, &$values )
 {
     $valueFound = false;
     
+    $keys = array_intersect_key($params, $fields);
     foreach ($fields as $name => $field) {
         // ignore all ids for now
         if ( $name === 'id' || substr( $name, -1, 3 ) === '_id' ) {
             continue;
         }
-        
-        if ( array_key_exists( $name, $params ) ) {
+        if(CRM_Utils_Array::value($name , $params ) ) {
             $values[$name] = $params[$name];
             $valueFound = true;
         }
@@ -525,9 +509,7 @@ function _civicrm_required_formatted_contact(&$params)
  * @param <type> $params
  * @return <type>
  */
-//NYSS 3750
-function _civicrm_duplicate_formatted_contact( &$params,
-                                               $dedupeRuleGroupID = null )
+function _civicrm_duplicate_formatted_contact(&$params) 
 {
     $id = CRM_Utils_Array::value( 'id', $params );
     $externalId = CRM_Utils_Array::value( 'external_identifier', $params );
@@ -550,13 +532,7 @@ function _civicrm_duplicate_formatted_contact( &$params,
     } else {
         require_once 'CRM/Dedupe/Finder.php';
         $dedupeParams = CRM_Dedupe_Finder::formatParams($params, $params['contact_type']);
-        //NYSS 3750
-		//$ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict');
-		$ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams,
- 	                                            $params['contact_type'],
- 	                                            'Strict',
- 	                                            array( ),
- 	                                            $dedupeRuleGroupID );
+        $ids = CRM_Dedupe_Finder::dupesByParams($dedupeParams, $params['contact_type'], 'Strict');
             
         if ( !empty($ids) ) {
             $ids = implode( ',', $ids );

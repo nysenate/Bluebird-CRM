@@ -50,9 +50,26 @@ class CRM_Contribute_Form_Contribution_OnBehalfOf
         $session   = CRM_Core_Session::singleton( );
         $contactID = $session->get( 'userID' );
                         
-        $form->_profileId = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', 'on_behalf_organization',
-                                                         'id', 'name' );
+        require_once 'CRM/Core/BAO/UFJoin.php'; 
+        $ufJoinParams     = array( 'module'       => 'onBehalf',
+                                   'entity_table' => 'civicrm_contribution_page',   
+                                   'entity_id'    => $form->_id );   
+        $profileId        = CRM_Core_BAO_UFJoin::getUFGroupIds( $ufJoinParams );
+        $form->_profileId = $profileId[0];
+         
+        if ( !$form->_profileId ||
+             !CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_UFGroup', $form->_profileId, 'is_active' ) ) {
+            CRM_Core_Error::fatal( ts( 'This contribution page has been configured for contribution on behalf of an organization and the selected onbehalf profile is either disabled or not found.' ) );
+        }
+            
+        $requiredProfileFields = array( 'organization_name', 'email' );
+        $validProfile          = CRM_Core_BAO_UFGroup::checkValidProfile( $form->_profileId, $requiredProfileFields );
+        if ( !$validProfile ) {
+            CRM_Core_Error::fatal( ts( 'This contribution page has been configured for contribution on behalf of an organization and the required fields of the selected onbehalf profile are disabled.' ) );
+        }
+        
         $form->assign( 'profileId', $form->_profileId );
+        $form->assign( 'mode', $form->_mode );
                
         if ( $contactID ) {
             $form->_employers = CRM_Contact_BAO_Relationship::getPermissionedEmployer( $contactID );
@@ -126,11 +143,14 @@ class CRM_Contribute_Form_Contribution_OnBehalfOf
         foreach ( $profileFields as $name => $field ) {
             if ( in_array( $field['field_type'], $fieldTypes ) ) {
                 list( $prefixName, $index ) = CRM_Utils_System::explode( '-', $name, 2 );
-                if ( $prefixName == 'state_province' || $prefixName == 'country' || $prefixName == 'county' ) {
+                if ( in_array( $prefixName, array( 'state_province', 'country', 'county' ) ) ) {
                     if ( ! array_key_exists( $index, $stateCountryMap ) ) {
                         $stateCountryMap[$index] = array( );
                     }
                     $stateCountryMap[$index][$prefixName] = 'onbehalf_' . $name;
+                } else if ( in_array( $prefixName, array( 'organization_name', 'email' ) ) &&
+                            !CRM_Utils_Array::value( 'is_required', $field ) ) {
+                    $field['is_required'] = 1;
                 }
                 
                 CRM_Core_BAO_UFGroup::buildProfile( $form, $field, null, null, false, true );

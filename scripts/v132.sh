@@ -55,6 +55,45 @@ $execSql -i $instance -c "$nav"
 rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
 $execSql -i $instance -c "$rpt"
 
+## 4254 full screen navigation
+fsn="UPDATE civicrm_dashboard SET url = REPLACE( url, 'snippet=4', 'snippet=5' ), fullscreen_url = REPLACE( fullscreen_url, 'snippet=4', 'snippet=5' );"
+$execSql -i $instance -c "$fsn"
+
+## 3976 create civicrm symlink and set image url
+civicrm_filesdir="$data_rootdir/$instance.$base_domain/civicrm"
+sitedir="$webdir/sites/$instance.$base_domain"
+ln -s "$civicrm_filesdir" "$sitedir/files"
+
+url="http://$instance.$base_domain/sites/$instance.$base_domain/files/civicrm/images/"
+imgurl="UPDATE civicrm_option_value SET value = '$url' WHERE name = 'imageUploadURL';"
+$execSql -i $instance -c "$imgurl"
+
+## 4352 max attachments
+ma="UPDATE civicrm_domain SET config_backend = REPLACE( config_backend,'\"maxAttachments\";s:1:\"3\"','\"maxAttachments\";s:1:\"5\"' ) WHERE id = 1;"
+$execSql -i $instance -c "$ma"
+
+## 4645 set all reports to permission access CiviReport
+racl="UPDATE civicrm_navigation SET permission = 'access CiviReport' WHERE url LIKE 'civicrm/report/instance/%';"
+$execSql -i $instance -c "$racl"
+
+## 4335 source fields in profile overlay
+source="SELECT @overlay_id := id FROM civicrm_uf_group WHERE title = 'Summary Overlay';
+INSERT INTO `civicrm_uf_field` (`uf_group_id`, `field_name`, `is_active`, `is_view`, `is_required`, `weight`, `help_post`, `help_pre`, `visibility`, `in_selector`, `is_searchable`, `location_type_id`, `phone_type_id`, `label`, `field_type`, `is_reserved`) VALUES
+(@overlay_id, 'custom_60', 1, 0, 0, 12, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Contact Source', 'Individual', NULL),
+(@overlay_id, 'contact_source', 1, 0, 0, 13, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Other Source', 'Contact', NULL);"
+$execSql -i $instance -c "$source"
+
+## 4522 remove empty addresses and phone
+empty="
+DELETE FROM civicrm_address
+WHERE street_address IS NULL AND 
+  supplemental_address_1 IS NULL AND
+  city IS NULL AND
+  state_province_id IS NULL;
+DELETE FROM civicrm_phone 
+WHERE phone IS NULL;"
+$execSql -i $instance -c "$empty"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance

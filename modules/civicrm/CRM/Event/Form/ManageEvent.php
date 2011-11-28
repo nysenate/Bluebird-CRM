@@ -103,7 +103,9 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form
         
         if ( $this->_id ) {
             $this->assign( 'eventId', $this->_id );
-            $this->add( 'hidden', 'id', $this->_id );
+            if ( empty($this->_addProfileBottom) && empty($this->_addProfileBottomAdd) ) {
+                $this->add( 'hidden', 'id', $this->_id );
+            }
             $this->_single = true;
             
             $params = array( 'id' => $this->_id );
@@ -160,8 +162,8 @@ class CRM_Event_Form_ManageEvent extends CRM_Core_Form
         }
         
         require_once 'CRM/Event/PseudoConstant.php';
-        $statusTypes        = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 1');
-        $statusTypesPending = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 0');
+        $statusTypes        = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 1', 'label' );
+        $statusTypesPending = CRM_Event_PseudoConstant::participantStatus(null, 'is_counted = 0', 'label' );
         $findParticipants['statusCounted'] = implode( ', ', array_values( $statusTypes ) );
         $findParticipants['statusNotCounted'] = implode( ', ', array_values( $statusTypesPending ) );
         $this->assign('findParticipants', $findParticipants);

@@ -33,7 +33,6 @@ $session =& CRM_Core_Session::singleton();
 $session->set('userID', EXECUTING_USER_ID);
 
 //dedupe levels to work with
-$levels = explode(",", DEDUPE_LEVEL);
 
 $data = file_get_contents($optlist['file']);
 
@@ -41,68 +40,73 @@ if($data) {
 	$contacts = unserialize($data);
 	
 	foreach($contacts as $contact) {
-		
+		write_contact_to_instance($contact);
+	}
+}
+
+function write_contact_to_instance($contact) {
+	$levels = explode(",", DEDUPE_LEVEL);
+	
+	foreach($levels as $level) {
 		//run dedupe rules on contact
-		foreach($levels as $level) {
-			$dupes = is_dupe($contact->civicrm_contact_params, $level);
-			
-			if($dupes) {
-				break;
+		$dupes = is_dupe($contact->civicrm_contact_params, $level);
+		
+		if($dupes) {
+			break;
+		}
+	}
+	
+	if($dupes && count($dupes) == 1) {
+		//one match found, use this contact
+		
+		$cid = $dupes[0];
+	}
+	else {
+		//found no duplicates OR more than one, so create record
+		
+		require_once "CRM/Contact/DAO/Contact.php";
+		$contact_fileds =& CRM_Contact_DAO_Contact::import();
+		
+		$civi_contact = CRM_Contact_BAO_Contact::create($contact->civicrm_contact_params);
+		
+		$cid = $civi_contact->id;
+	}
+	
+	if($contact->activity) {
+		//assign activity and keywords to activity
+		
+		$activity = create_activity($cid, $contact->activity);
+		
+		if(array_key_exists('keywords', $contact->activity)) {
+			foreach($contact->activity['keywords'] as $keyword) {
+				assign_activity_keyword($keyword, $activity[0]['id']);
 			}
 		}
+	}
+	
+	if($contact->issues) {
+		//assign issue codes or keywords
 		
-		if($dupes && count($dupes) == 1) {
-			//one match found, use this contact
-			
-			$cid = $dupes[0];
+		foreach($contact->issues as $issue) {
+			assign_contact_tag_best_fit($issue, $cid);
 		}
-		else {
-			//found no duplicates OR more than one, so create record
-			
-			require_once "CRM/Contact/DAO/Contact.php";
-			$contact_fileds =& CRM_Contact_DAO_Contact::import();
-			
-			$civi_contact = CRM_Contact_BAO_Contact::create($contact->civicrm_contact_params);
-			
-			$cid = $civi_contact->id;
-		}
+	}
+	
+	if($contact->initiative) {
+		//assign initiative issue code
 		
-		if($contact->activity) {
-			//assign activity and keywords to activity
-			
-			$activity = create_activity($cid, $contact->activity);
-			
-			if(array_key_exists('keywords', $contact->activity)) {
-				foreach($contact->activity['keywords'] as $keyword) {
-					assign_activity_keyword($keyword, $activity[0]['id']);
-				}
-			}
-		}
+		$issue_codes = get_tag("Issue Codes");
+		$issue_code = $issue_codes[0];
 		
-		if($contact->issues) {
-			//assign issue codes or keywords
-			
-			foreach($contact->issues as $issue) {
-				assign_contact_tag_best_fit($issue, $cid);
-			}
-		}
+		$website_initiative = create_tag_if_not_exists(
+										"Website - Initiative",  
+										$issue_code['id']);
 		
-		if($contact->initiative) {
-			//assign initiative issue code
-			
-			$issue_codes = get_tag("Issue Codes");
-			$issue_code = $issue_codes[0];
-			
-			$website_initiative = create_tag_if_not_exists(
-											"Website - Initiative",  
-											$issue_code['id']);
-			
-			assign_entity_tag(
-				$contact->initiative['title'], 
-				$website_initiative['id'], 
-				$cid, 
-				'civicrm_contact');
-		}
+		assign_entity_tag(
+			$contact->initiative['title'], 
+			$website_initiative['id'], 
+			$cid, 
+			'civicrm_contact');
 	}
 }
 

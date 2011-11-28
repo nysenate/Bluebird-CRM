@@ -581,7 +581,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
      * @param array $errors     list of errors to be posted back to the form
      * @param int   $contactId  contact id if doing update.
      *
-     * @return $primaryID emal/openId
+     * @return $primaryID email/openId
      * @static
      * @access public
      */

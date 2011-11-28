@@ -73,6 +73,26 @@ class CRM_Utils_Mail
         require_once 'CRM/Utils/Hook.php';
         CRM_Utils_Hook::alterMailParams( $params );
 
+        $headers = array( );
+
+        //NYSS cycle through mailParams and set headers array
+        foreach ( $params as $paramKey => $paramValue ) {
+            //exclude values not intended for the header and those which will be set below
+            if ( !in_array( $paramKey, array('text',
+			                                 'html',
+			                                 'attachments',
+			                                 'toName',
+			                                 'toEmail',
+			                                 'groupName',
+			                                 'returnPath',
+			                                 'from',
+			                                 'subject',
+			                                 'cc',
+			                                 'bcc' ) ) ) {
+                $headers[$paramKey] = $paramValue;
+            }
+        }
+
         // check if any module has aborted mail sending
         if ( CRM_Utils_Array::value( 'abortMailSend', $params ) ||
              ! CRM_Utils_Array::value( 'toEmail', $params ) ) {
@@ -89,7 +109,6 @@ class CRM_Utils_Mail
             $htmlMessage = false;
         }
 
-        $headers = array( );  
         $headers['From']                      = $params['from'];
         $headers['To']                        = self::formatRFC822Email( $params['toName'], $params['toEmail'], false );
         $headers['Cc']                        = CRM_Utils_Array::value( 'cc', $params );

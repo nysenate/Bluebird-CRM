@@ -68,7 +68,7 @@
 
     {if $action ne 1 and $action ne 2}
       <div class="action-link">
-        <a href="{crmURL q="action=add&reset=1"}" id="newMailSettings" class="button"><span>&raquo; {ts}New Mail Settings{/ts}</span></a>
+        <a href="{crmURL q="action=add&reset=1"}" id="newMailSettings" class="button"><span><div class="icon add-icon"></div>{ts}Add Mail Account{/ts}</span></a>
       </div>
     {/if}
   </div>

@@ -131,6 +131,16 @@
                 </div>
             
             	{include file="CRM/common/Tag.tpl"}{*NYSS*}
+                
+                {*NYSS tag search*}
+                <div class="crm-section tag-section tag-free-search">
+                  <div class="label">
+                    <label>{$form.tag_search.label}</label>
+                  </div>
+                  <div class="content">
+                    {$form.tag_search.html|crmReplace:class:big}
+                  </div>
+                </div>
             </td>
 {else}
             <td>&nbsp;</td>

@@ -117,6 +117,7 @@
 var reset            = {/literal}"{$reset}"{literal};
 var onBehalfRequired = {/literal}"{$onBehalfRequired}"{literal};
 var mainDisplay      = {/literal}"{$mainDisplay}"{literal};
+var mode             = {/literal}"{$mode}"{literal};
 cj( "div#id-onbehalf-orgname-help").hide( );
 
 if ( mainDisplay ) {
@@ -137,6 +138,9 @@ function showOnBehalf( onBehalfRequired )
             cj( "#for_organization" ).html( '' );
             var urlPath = {/literal}"{crmURL p=$urlPath h=0 q='snippet=4&onbehalf=1'}"{literal};
             urlPath     = urlPath  + {/literal}"{$urlParams}"{literal};
+            if ( mode == 'test' ) {
+                urlPath = urlPath  + '&action=preview';
+            }
             if ( reset ) {
                 urlPath = urlPath + '&reset=' + reset;
             }
@@ -219,6 +223,13 @@ function setLocationDetails( contactID )
 		       if ( data[ele].value ) {
                            cj( "input[name='"+ ele +"']" ).attr( 'checked','checked' );
                        }
+                   } else if ( data[ele].type == 'Multi-Select' ) {
+                       for ( var selectedOption in data[ele].value ) {
+                            cj( "#" + ele + " option[value='" + selectedOption + "']" ).attr( 'selected', 'selected' );
+                       }
+                   } else if ( data[ele].type == 'Autocomplete-Select' ) {
+                       cj( "#" + ele ).val( data[ele].value );
+                       cj( "#" + ele + '_id' ).val( data[ele].id );
                    } else {
                        cj( "#" + ele ).val( data[ele].value );
                    }
@@ -260,22 +271,15 @@ function selectCreateOrg( orgOption, reset )
     }
 }
 
-{/literal}
-
-{if ( $relatedOrganizationFound or $onBehalfRequired ) and $reset}
-  {if $organizationName}
-
-    {literal}
+{/literal}{if ( $relatedOrganizationFound or $onBehalfRequired ) and $reset and $organizationName}{literal}
     setOrgName( );
 
-  {/literal}{else}{literal}
-
+{/literal}{else}{literal}
        cj( "#orgOptions" ).show( );
        var orgOption = cj( "input:radio[name=org_option]:checked" ).val( );
        selectCreateOrg( orgOption, false );
-  {/literal}{/if}
- 
-{/if}{literal}
+
+{/literal}{/if}{literal}
 </script>
 {/literal}
 </fieldset>

@@ -65,7 +65,19 @@ class CRM_Mailing_Form_Approve extends CRM_Core_Form
             $this->redirectToListing( );
         }
 
-        $this->_mailingID = CRM_Utils_Request::retrieve( 'mid', 'Integer', $this, true );
+		
+		// when user come from search context.
+        require_once 'CRM/Contact/Form/Search.php';
+        $this->_searchBasedMailing = CRM_Contact_Form_Search::isSearchContext( $this->get( 'context' ) );
+        
+		//retrieve mid from different wizard and url contexts
+		$this->_mailingID = $this->get( 'mailing_id' );
+        $this->_approveFormOnly = false;
+        if ( ! $this->_mailingID ) {
+            $this->_mailingID = CRM_Utils_Request::retrieve( 'mid', 'Integer', $this, true );
+            $this->_approveFormOnly = true;
+        }
+
         $session =& CRM_Core_Session::singleton( );
         $this->_contactID = $session->get( 'userID' );
         
@@ -191,6 +203,34 @@ class CRM_Mailing_Form_Approve extends CRM_Core_Form
 
         CRM_Mailing_BAO_Mailing::create( $params, $ids );
 
+
+		//when user perform mailing from search context 
+        //redirect it to search result CRM-3711
+        $ssID    = $this->get( 'ssID' );
+        if ( $ssID && $this->_searchBasedMailing ) {
+            if ( $this->_action == CRM_Core_Action::BASIC ) {
+                $fragment = 'search';
+            } else if ( $this->_action == CRM_Core_Action::PROFILE ) {
+                $fragment = 'search/builder';
+            } else if ( $this->_action == CRM_Core_Action::ADVANCED ) {
+                $fragment = 'search/advanced';
+            } else {
+                $fragment = 'search/custom';
+            }
+            $context = $this->get( 'context' );
+            if ( ! CRM_Contact_Form_Search::isSearchContext( $context ) ) {
+                $context = 'search';
+            }
+            $urlParams = "force=1&reset=1&ssID={$ssID}&context={$context}";
+            $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String', $this );
+            if ( CRM_Utils_Rule::qfKey( $qfKey ) ) {
+                $urlParams .= "&qfKey=$qfKey";
+            }
+            
+            $url = CRM_Utils_System::url( 'civicrm/contact/' . $fragment, $urlParams );
+            return $this->controller->setDestination($url);
+        }
+        
         $session = CRM_Core_Session::singleton( );
         $session->pushUserContext( CRM_Utils_System::url( 'civicrm/mailing/browse/scheduled', 
                                                           'reset=1&scheduled=true' ) );

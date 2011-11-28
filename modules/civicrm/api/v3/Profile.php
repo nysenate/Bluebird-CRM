@@ -306,3 +306,15 @@ function civicrm_api3_profile_apply( $params ) {
       return civicrm_api3_create_success( $data );
 
 }
+
+/*
+ * Return UFGroup fields
+ */
+function civicrm_api3_profile_getfields( $params ) {
+    $dao = _civicrm_api3_get_DAO('UFGroup');
+    $file = str_replace ('_','/',$dao).".php";
+    require_once ($file); 
+    $d = new $dao();
+    $fields = $d->fields();
+    return civicrm_api3_create_success($fields);
+}

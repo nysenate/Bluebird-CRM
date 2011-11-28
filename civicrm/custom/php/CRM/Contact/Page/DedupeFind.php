@@ -180,14 +180,14 @@ class CRM_Contact_Page_DedupeFind extends CRM_Core_Page_Basic
                         }
                         
                         if ( !array_key_exists( $srcID, $permission ) ) {
-                            //$permission[$srcID] = CRM_Contact_BAO_Contact_Permission::allow( $srcID, CRM_Core_Permission::EDIT );
+                            //NYSS $permission[$srcID] = CRM_Contact_BAO_Contact_Permission::allow( $srcID, CRM_Core_Permission::EDIT );
                         }
                         if ( !array_key_exists( $dstID, $permission ) ) {
-                            //$permission[$dstID] = CRM_Contact_BAO_Contact_Permission::allow( $dstID, CRM_Core_Permission::EDIT );
+                            //NYSS $permission[$dstID] = CRM_Contact_BAO_Contact_Permission::allow( $dstID, CRM_Core_Permission::EDIT );
                         }
                         
                         $canMerge = ( $permission[$dstID] && $permission[$srcID] );
-						$canMerge = true;
+						$canMerge = true; //NYSS
 
                         $mainContacts[] = $row = array( 'srcID'   => $srcID,
                                                         'srcName' => $displayNames[$srcID],

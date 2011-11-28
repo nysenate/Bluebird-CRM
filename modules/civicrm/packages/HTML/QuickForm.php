@@ -212,6 +212,15 @@ class HTML_QuickForm extends HTML_Common
     var $_submitValues = array();
 
     /**
+     * Array of merged form values
+     * @since   Just now
+     * @var array
+     * @access private
+     */
+    var $_finalValues = array();
+    var $_csValues = array();
+    var $_cdValues = array();
+    /**
      * Array of submitted form files
      * @since     1.0
      * @var  integer
@@ -273,6 +282,13 @@ class HTML_QuickForm extends HTML_Common
      */
     var $_flagSubmitted = false;
 
+    function refreshFinalValues() {
+        #Do this just a couple times and save a LOT of work!
+        $this->_csValues = array_merge($this->_submitValues,$this->_constantValues);
+        $this->_cdValues = array_merge($this->_defaultValues,$this->_constantValues);
+        $this->_finalValues = array_merge($this->_defaultValues,$this->_csValues);
+    }
+
     // }}}
     // {{{ constructor
 
@@ -333,6 +349,7 @@ class HTML_QuickForm extends HTML_Common
                     $this->_maxFileSize = $matches['1'];
             }
         }    
+        $this->refreshFinalValues();
     } // end constructor
 
     // }}}
@@ -469,6 +486,7 @@ class HTML_QuickForm extends HTML_Common
                 }
             }
             $this->_defaultValues = HTML_QuickForm::arrayMerge($this->_defaultValues, $defaultValues);
+            $this->refreshFinalValues();
             foreach (array_keys($this->_elements) as $key) {
                 $this->_elements[$key]->onQuickFormEvent('updateValue', null, $this);
             }
@@ -509,6 +527,7 @@ class HTML_QuickForm extends HTML_Common
                 }
             }
             $this->_constantValues = HTML_QuickForm::arrayMerge($this->_constantValues, $constantValues);
+            $this->refreshFinalValues();
             foreach (array_keys($this->_elements) as $key) {
                 $this->_elements[$key]->onQuickFormEvent('updateValue', null, $this);
             }
@@ -535,7 +554,7 @@ class HTML_QuickForm extends HTML_Common
             $this->addElement('hidden', 'MAX_FILE_SIZE', $this->_maxFileSize);
         } else {
             $el =& $this->getElement('MAX_FILE_SIZE');
-            $el->updateAttributes(array('value' => $this->_maxFileSize));
+            $el->_attributes['value']=$this->_maxFileSize;
         }
     } // end func setMaxFileSize
 
@@ -1278,6 +1297,7 @@ class HTML_QuickForm extends HTML_Common
                 }
             }
         }
+        $this->refreshFinalValues();
     } // end func applyFilter
 
     // }}}

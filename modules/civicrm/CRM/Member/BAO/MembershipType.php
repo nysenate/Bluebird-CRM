@@ -128,7 +128,7 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
      * @static
      */
     
-    static function del($membershipTypeId) 
+    static function del($membershipTypeId ,  $skipRedirect = false) 
     {
         //check dependencies
         $check  = false;
@@ -149,7 +149,7 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
         }
         if ($check) {
 
-            $session = CRM_Core_Session::singleton();
+
             $cnt = 1;
             $message = ts('This membership type cannot be deleted due to following reason(s):' ); 
             if ( in_array( 'Membership', $status) ) {
@@ -162,9 +162,17 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
                 $deleteURL = CRM_Utils_System::url('civicrm/admin/contribute', 'reset=1');
                 $message .= '<br/>' . ts('%2. This Membership Type is being link to <a href=\'%1\'>Online Contribution page</a>. Please change/delete it in order to delete this Membership Type.', array(1 => $deleteURL, 2 => $cnt));
             }
-            CRM_Core_Session::setStatus($message);
-
-            return CRM_Utils_System::redirect( CRM_Utils_System::url('civicrm/admin/member/membershipType', 'reset=1&action=browse'));
+            if ( ! $skipRedirect  ) {
+              $session = CRM_Core_Session::singleton();
+              CRM_Core_Session::setStatus($message);
+              return CRM_Utils_System::redirect( CRM_Utils_System::url('civicrm/admin/member/membershipType', 'reset=1&action=browse'));
+            }else{
+             $error = array( );
+             $error['is_error'] = 1;
+             //don't translate as api error message are not translated
+             $error['error_message'] = $message ;
+             return $error;
+            }
         }
         
         //delete from membership Type table
@@ -392,7 +400,7 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
                 $year  = $year + $membershipTypeDetails['duration_interval'];
                 //extend membership date by duration interval.
                 if ( $fixed_period_rollover ) {
-                    $year += $membershipTypeDetails['duration_interval'];
+                    $year += 1;
                 }
                 
                 break;
@@ -577,6 +585,28 @@ class CRM_Member_BAO_MembershipType extends CRM_Member_DAO_MembershipType
             CRM_Core_DAO::storeValues( $dao, $membershipTypes[$dao->id] ); 
         } 
         return $membershipTypes;
+    }
+
+    /**
+     * Function to retrieve all Membership Types with Member of Contact id
+     * 
+     * @param array membership types
+     *
+     * @return Array array of the details of membership types with Member of Contact id
+     * @static
+     */    
+    static function getMemberOfContactByMemTypes( $membershipTypes ) {
+        $memTypeOrgs = array( );
+        if ( empty($membershipTypes) ) {
+            return $memTypeOrgs;
+        }
+
+        $result = CRM_Core_DAO::executeQuery("SELECT id, member_of_contact_id FROM civicrm_membership_type WHERE id IN (". implode(',', $membershipTypes) .")");
+        while( $result->fetch( ) ) {
+            $memTypeOrgs[$result->id] = $result->member_of_contact_id;
+        }
+        
+        return $memTypeOrgs;
     }
 }
 

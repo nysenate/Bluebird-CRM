@@ -504,9 +504,11 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         }
             
         if ( $sortBy &&
-             $this->_parent->_sortByCharacter ) {
-            $clauses[] = 'name LIKE %3';
-            $params[3] = array( $this->_parent->_sortByCharacter . '%', 'String' );
+             $this->_parent->_sortByCharacter !== null ) { //NYSS 4142
+            $clauses[] = 
+                "name LIKE '" . 
+                strtolower(CRM_Core_DAO::escapeWildCardString($this->_parent->_sortByCharacter)) .
+                "%'";
         }
 
         // dont do a the below assignement when doing a 
@@ -550,7 +552,7 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
         
         $params      = array( );
         $whereClause = $this->whereClause( $params, false );
-//NYSS 4142        
+        
         $query = "
 SELECT DISTINCT UPPER(LEFT(name, 1)) as sort_name
 FROM civicrm_mailing
@@ -560,10 +562,12 @@ LEFT JOIN civicrm_contact scheduledContact ON ( civicrm_mailing.scheduled_id = s
 WHERE $whereClause
 ORDER BY LEFT(name, 1)
 ";
+
         $dao = CRM_Core_DAO::executeQuery( $query, $params );
         
         $aToZBar = CRM_Utils_PagerAToZ::getAToZBar( $dao, $this->_parent->_sortByCharacter, true );
         $this->_parent->assign( 'aToZ', $aToZBar );
+        
     }
     
 }//end of class

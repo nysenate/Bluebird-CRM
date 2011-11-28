@@ -519,14 +519,14 @@ class CRM_Report_Form extends CRM_Core_Form {
 
                 $this->_defaults['order_bys'] = array();
                 foreach ( $table['order_bys'] as $fieldName => $field ) {
-                    if ( $field['default'] ) {
+                    if ( CRM_Utils_Array::value( 'default', $field ) ) {
                         $order_by = array(
                                           'column'  => $fieldName,
-                            'order'   => ( $field['default_order'] ? $field['default_order'] : 'ASC' ),
-                            'section' => $field['default_is_section'] ? 1 : 0
-                        );
+                                          'order'   => CRM_Utils_Array::value( 'default_order', $field, 'ASC' ),
+                                          'section' => CRM_Utils_Array::value( 'default_is_section', $field, 0 ),
+                                          );
 
-                        if ( $field['default_weight'] ) {
+                        if ( CRM_Utils_Array::value( 'default_weight', $field ) ) {
                             $this->_defaults['order_bys'][ (int) $field['default_weight']] = $order_by;
                         } else {
                             array_unshift( $this->_defaults['order_bys'], $order_by);
@@ -1708,6 +1708,15 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
              $this->_force ) {
             $this->_params = $this->_formValues;
         }
+		
+		//NYSS 4254
+		// hack to fix params when submitted from dashboard, CRM-8532
+        // fields array is missing because form building etc is skipped
+        // in dashboard mode for report
+        if ( !CRM_Utils_Array::value( 'fields', $this->_params ) ) {
+            $this->_params = $this->_formValues;
+        }
+
         $this->_formValues = $this->_params ;
         if ( CRM_Core_Permission::check( 'administer Reports' ) &&
              isset( $this->_id ) && 
@@ -1992,7 +2001,9 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                         if ( $from || $to ) {
                             $statistics['filters'][] = 
                                 array( 'title' => $field['title'],
-                                       'value' => "Between {$from} and {$to}" );
+                                       'value' => ts( "Between %1 and %2",
+                                                      array( 1 => $from,
+                                                             2 => $to ) ) );
                         } elseif ( in_array( $rel = CRM_Utils_Array::value( "{$fieldName}_relative", $this->_params ), 
                                             array_keys( $this->getOperationPair( CRM_Report_FORM::OP_DATE ) ) ) ) {
                             $pair = $this->getOperationPair( CRM_Report_FORM::OP_DATE );
@@ -2183,7 +2194,7 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
             $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $sql );
             $params = array( 'total'        => $this->_rowsFound,
                              'rowCount'     => $rowCount,
-                             'status'       => ts( 'Records %%StatusMessage%%' ),
+                             'status'       => ts( 'Records' ) . ' %%StatusMessage%%',
                              'buttonBottom' => 'PagerBottomButton',
                              'buttonTop'    => 'PagerTopButton',
                              'pageID'       => $this->get( CRM_Utils_Pager::PAGE_ID ) );
@@ -2317,7 +2328,9 @@ ORDER BY cg.weight, cf.weight";
             case 'Boolean':
                 $curFilters[$fieldName]['operatorType'] = CRM_Report_Form::OP_SELECT;
                 $curFilters[$fieldName]['options']      = 
-                    array('' => ts('- select -'), 1 => ts('Yes'), 0 => ts('No'), );
+                    array('' => ts('- select -'),
+                          1  => ts('Yes'),
+                          0  => ts('No'), );
                 $curFilters[$fieldName]['type']         = CRM_Utils_Type::T_INT;
                 break;
 
@@ -2585,7 +2598,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
                 }
                 if ( array_key_exists('filters', $table) ) {
                     foreach ( $table['filters'] as $filterName => $filter ) {
-                        if ( $this->_params["{$filterName}_value"] ) {
+                        if ( CRM_Utils_Array::value( "{$filterName}_value", $this->_params ) ) {
 
                             $this->_selectedTables[] = $tableName;
                             break;
@@ -2785,7 +2798,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
     }
     function addAddressFromClause(){
        // include address field if address column is to be included
-        if ( $this->_addressField || $this->isTableSelected('civicrm_address') ) {  
+        if ( ( isset( $this->_addressField ) && 
+               $this->_addressField ) ||
+             $this->isTableSelected('civicrm_address') ) {
             $this->_from .= "
                  LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
                            ON ({$this->_aliases['civicrm_contact']}.id = 
