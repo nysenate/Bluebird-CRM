@@ -667,7 +667,7 @@ WHERE contact1.contact_type = 'Individual'
             $from  .= "LEFT JOIN civicrm_email as email1 on contact1.contact_id=email1.contact_id\n ";
             $where .= "AND ($addrClause OR $emailClause)\n  ";
         } else {
-            $where .= "$addrClause\n  ";
+            $where .= "AND $addrClause\n  ";
         }
 
     # If there is no street address, but we have an email, attempt to match on that
