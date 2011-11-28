@@ -47,14 +47,16 @@
     	<td>
         <table cellpadding="inner-table">
         	<tr>
-             <td>{$form.street_address.label}<br />
+             <td>
              {*NYSS*}
             	 <span id="streetAddress">
+                   {$form.street_address.label}<br />
  	               {$form.street_address.html|crmReplace:class:big}<br />
  	               {if $parseStreetAddress}
  	                 &nbsp;&nbsp;<a href="#" title="{ts}Use Address Elements{/ts}" onClick="processAddressFields( 'addressElements' , 1 );return false;">{ts}Use Address Elements{/ts}</a>
  	             </span>
  	             <span id="addressElements" class=hiddenElement>
+                   Street Number / Name / Unit<br />
  	               {$form.street_number.html}&nbsp;{$form.street_name.html}&nbsp;{$form.street_unit.html}<br />
  	               <a href="#" title="{ts}Use Street Address{/ts}" onClick="processAddressFields( 'streetAddress', 1 );return false;">{ts}Use Street Address{/ts}</a>&nbsp;&nbsp;You may enter "odd" or "even" in the street number field.
                    {/if}

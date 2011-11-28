@@ -83,7 +83,16 @@ INSERT INTO `civicrm_uf_field` (`uf_group_id`, `field_name`, `is_active`, `is_vi
 (@overlay_id, 'contact_source', 1, 0, 0, 13, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Other Source', 'Contact', NULL);"
 $execSql -i $instance -c "$source"
 
-
+## 4522 remove empty addresses and phone
+empty="
+DELETE FROM civicrm_address
+WHERE street_address IS NULL AND 
+  supplemental_address_1 IS NULL AND
+  city IS NULL AND
+  state_province_id IS NULL;
+DELETE FROM civicrm_phone 
+WHERE phone IS NULL;"
+$execSql -i $instance -c "$empty"
 
 ### Cleanup ###
 
