@@ -1679,10 +1679,13 @@ AND civicrm_contact.is_opt_out =0";
 
         // we need to do this for backward compatibility, since old mailings did not
         // use the mailing_recipients table
-        if ( $newTableSize > 0 ) {
-            $report['event_totals']['queue'] = $newTableSize;
-        } else {
-            $report['event_totals']['queue'] = self::getRecipientsCount( $mailing_id, $mailing_id );
+        //NYSS we should use the queue table if the value is set
+        if ( $report['event_totals']['queue'] == 0 ) {
+            if ( $newTableSize > 0 ) {
+                $report['event_totals']['queue'] = $newTableSize;
+            } else {
+                $report['event_totals']['queue'] = self::getRecipientsCount( $mailing_id, $mailing_id );
+            }
         }
 
         if (CRM_Utils_Array::value('queue',$report['event_totals'] )) {
