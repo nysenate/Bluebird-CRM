@@ -86,6 +86,7 @@ if [ $cnt -gt 0 ]; then
     fi
   elif [ $verbose -eq 1 ]; then
     echo "Contact records with mismatched OMIS RT and Bluebird record_type:" >&2
+    echo "ID\tOMIS RT\tBluebird RT"
     sql="select n.entity_id, $rt_capture, ci.record_type_61 from $tabs where $cond;"
     $execSql -q -i $instance -c "$sql" || exit 1
   fi
@@ -136,6 +137,7 @@ if [ $cnt2 -gt 0 ]; then
     fi
   elif [ $verbose -eq 1 ]; then
     echo "Soft-deleted contact records that need to be trashed:" >&2
+    echo "ID\tFIRST\tLAST"
     sql="select c.id, c.first_name, c.last_name from $tabs where $cond2;"
     $execSql -q -i $instance -c "$sql" || exit 1
   fi
