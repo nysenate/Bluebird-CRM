@@ -17,7 +17,7 @@ Bugs:	If one of the words in the middle name is Ben (or St., for that matter),
 		and probably will not be fixed. It's not my fault that there's some
 		odd overlap between various languages. Just don't name your kids
 		'Something Ben Something', and you should be alright.
-
+Source: http://alphahelical.com/code/misc/nameparse/
 */
 
 function	norm_str($string) {

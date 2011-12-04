@@ -33,67 +33,59 @@ function nyss_ioimport_form() {
 
    $form['#attributes'] = array('enctype' => "multipart/form-data");
 
-   $form['csv'] = array(
-     '#type' => 'file',
-     '#title' => t('Upload a file'),
-     '#size' => 40,
+   //Import and Main Processing
+   $form['processing'] = array (
+     '#type'          => 'fieldset',
+	 '#title'         => t('Import Source and Processing Options'),
    );
 
-   $form['servercsv'] = array(
-     '#type' => 'textfield',
-     '#title' => t('OR specify a filename on the server in the \'/data/importData\' dir'),
-     '#size' => 40,
+   $form['processing']['csv'] = array(
+     '#type'          => 'file',
+     '#title'         => t('Upload a file'),
+     '#size'          => 40,
    );
 
-   $form['sendemail'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Send summary email'),
-     '#default_value' => 0,
+   $form['processing']['servercsv'] = array(
+     '#type'          => 'textfield',
+     '#title'         => t('OR specify a filename on the server in the \'/data/importData\' dir'),
+     '#size'          => 40,
    );
 
-   $form['dryrun'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Dry Run (parses data but does not alter the instance)'),
-     '#default_value' => 1,
-   );
-
-   $form['runnum'] = array(
-     '#type' => 'select',
-     '#title' => t('How many records to process in dry run mode (should be set to ALL for data import)'),
-     '#options' => array(
-	     '10' => t('10'),
-	     '100' => t('100'),
-	     '500' => t('500'),
-	     '1000' => t('1000'),
-	     'All' => t('All'),
-	),
+   $form['processing']['runnum'] = array(
+     '#type'          => 'select',
+     '#title'         => t('How many records to process in dry run mode (should be set to ALL for data import)'),
+     '#options'       => array( '10'   => t('10'),
+                                '100'  => t('100'),
+                                '500'  => t('500'),
+                                '1000' => t('1000'),
+                                'All'  => t('All'),
+                               ),
      '#default_value' => '10',
    );
-   
-   $form['addtogroup'] = array(
-     '#type' => 'textfield',
-     '#title' => t('Add contacts to a group. If the group name does not exist, it will be created.'),
-     '#size' => 40,
+
+   $form['processing']['dryrun'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Dry Run (parses data but does not alter the instance)'),
+     '#default_value' => 1,
    );
    
-   $form['boeimport'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Process as a BOE import.'),
+   $form['processing']['sendemail'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Send summary email'),
      '#default_value' => 0,
    );
-   
-   $form['emailimport'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Process as an email import.'),
-     '#default_value' => 0,
-	 '#description' => t('Enabling will automatically engage dedupe on import using the email import rule. New contacts created during import (which do not match any existing contacts) will be added to an "Email Only" group and excluded from postal mailings.'),
+
+   //Dedupe Processing Options
+   $form['dedupeset'] = array (
+     '#type'          => 'fieldset',
+	 '#title'         => t('Dedupe Processing'),
    );
-   
-   $form['dedupe'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Dedupe on import.'),
+
+   $form['dedupeset']['dedupe'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Dedupe on import.'),
      '#default_value' => 0,
-	 '#description' => t('When enabled, imported records will be compared and matched with existing contact records using the default individual strict rule. Records should have first name, middle name, last name, suffix, street address, and postal code, in order to effectively match.'),
+	 '#description'   => t('When enabled, imported records will be compared and matched with existing contact records using the default individual strict rule. Records should have first name, middle name, last name, suffix, street address, and postal code, in order to effectively match.'),
    );
    
    civicrm_initialize( );
@@ -112,31 +104,74 @@ function nyss_ioimport_form() {
 	   $dedupeoptions[$rules->id] = $rules->name;
    }
    
-   $form['deduperule'] = array(
-     '#type' => 'select',
-	 '#options' => $dedupeoptions,
-     '#title' => t('Dedupe rule.'),
+   $form['dedupeset']['deduperule'] = array(
+     '#type'          => 'select',
+	 '#options'       => $dedupeoptions,
+     '#title'         => t('Dedupe Rule'),
      '#default_value' => 4,
-	 '#description' => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Level 1 rule.'),
+	 '#description'   => t('If dedupe is enabled (above), select which rule to use when determining a match. In most cases you will use the Level 1 rule.'),
    );
    
-   $form['parsename'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Parse full name'),
-     '#default_value' => 0,
-	 '#description' => t('Enable this option if your import file contains a full_name field that you want to parse into first/middle/last name. Note, if you enable this option, parsed field names will be ignored.'),
+   //Data Handling Options
+   $form['datahandling'] = array (
+     '#type'          => 'fieldset',
+	 '#title'         => t('Data Handling'),
    );
    
-   $form['fieldoverride'] = array(
-     '#type' => 'checkbox',
-     '#title' => t('Null/empty override'),
+   $form['datahandling']['boeimport'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Process as a BOE import.'),
      '#default_value' => 0,
-	 '#description' => t('Enabling this option will allow you to override existing fields with empty values. Standard behavior ignores empty values in your import file, thus retaining existing values in Bluebird. Use with caution.'),
+	 '#description'   => t(''),
+   );
+   
+   $form['datahandling']['emailimport'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Process as an email import.'),
+     '#default_value' => 0,
+	 '#description'   => t('Enabling will automatically engage dedupe on import using the email import rule. New contacts created during import (which do not match any existing contacts) will be added to an "Email Only" group and excluded from postal mailings.'),
+   );
+   
+   $form['datahandling']['addtogroup_handling'] = array(
+     '#type'          => 'radios',
+     '#title'         => t('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Add to Group Handling'),
+     '#options'       => array( 'all' => t('Add All'), 'new' => t('Add New'), 'none' => t('None') ),
+	 '#attributes'    => array( 'class' => 'addtogroup_handling-wrapper' ),
+	 '#default_value' => 'none',
+     '#description'   => t('If "Add All" is selected, all imported contacts will be added to the group. If "Add New" is selected, only new contacts created through the import will be added to the group.'),
+    );
+   
+   $form['datahandling']['addtogroup'] = array(
+     '#type'          => 'textfield',
+     '#title'         => t('Group Name (if the group name does not exist, it will be created)'),
+     '#size'          => 40,
+	 '#field_prefix'  => '<br />',
+   );
+   
+   $form['datahandling']['parsename'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Parse full name'),
+     '#default_value' => 0,
+	 '#description'   => t('Enable this option if your import file contains a full_name field that you want to parse into first/middle/last name. Note, if you enable this option, parsed field names will be ignored.'),
+   );
+   
+   $form['datahandling']['fieldoverride'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Null/empty override'),
+     '#default_value' => 0,
+	 '#description'   => t('Enabling this option will allow you to override existing fields with empty values. Standard behavior ignores empty values in your import file, thus retaining existing values in Bluebird. Use with caution.'),
+   );
+
+   $form['datahandling']['disablegreeting'] = array(
+     '#type'          => 'checkbox',
+     '#title'         => t('Disable Greeting Generation'),
+     '#default_value' => 0,
+	 '#description'   => t('By default, postal/email/addressee greetings are generated for imported contacts that do not already have a value set (updated contacts with an existing value are skipped). Selecting this option will skip the greeting generation process and improve import performance.'),
    );
 
    $form['import']['submit'] = array(
-     '#type' => 'submit',
-     '#value' => t('Submit'),
+     '#type'          => 'submit',
+     '#value'         => t('Submit'),
    );
 
    return $form;
@@ -149,10 +184,10 @@ function nyss_ioimport_form_validate($form, &$form_state) {
 }
 
 //process form validation steps
-function nyss_iovalidateuploadform($form, &$form_state) {
+function nyss_iovalidateuploadform( $form, &$form_state ) {
 
 	//require either a file be uploaded or referenced on the server
-	if (!empty($form_state['values']['servercsv'])) {
+	if ( !empty($form_state['values']['servercsv']) ) {
 
 		$form_state['values']['csv']['title'] = $form_state['values']['servercsv'];
     	$form_state['values']['csv']['file']->filepath = '/data/importData/'.$form_state['values']['servercsv'];
@@ -169,10 +204,11 @@ function nyss_iovalidateuploadform($form, &$form_state) {
 	    } else {
 	      	// Manually add the uploaded file to the $form_state
 	      	$form_state['values']['csv']['title'] = $file->filename;
-	      	$form_state['values']['csv']['file'] = $file;
+	      	$form_state['values']['csv']['file']  = $file;
 	    }
 		
    	}
+//nyss_out('debug', $form_state, true); exit();
 }
 
 //main function for processing import
@@ -315,6 +351,13 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$l['middle_name'] = $parsedValues['middle'];
 			$l['last_name']   = $parsedValues['last'];
 			$l['suffix_id']   = $parsedValues['suffix'];
+			
+			//if parser found fname and no lname, we swap and assume it was an lname found
+			if ( !empty($l['first_name']) && empty($l['last_name']) ) {
+				$l['last_name']  = $l['first_name'];
+				$l['first_name'] = '';
+			}
+			
 		}
 		
 		//fix prefixes
@@ -343,8 +386,16 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			$l['suffix_id'] = $aSuffix[$suffix_val];
 		}	
 		
-		//set the last import timestamp
-		$l['last_import_57'] = date( 'Y-m-d H:i:s' );
+		//set the last import timestamp if address fields are passed
+		$addressExists = false;
+		//$l['location_type_id'] = 6;
+		foreach ( $nyss_iofields['civicrm_address'] as $field => $dontcare ) {
+		    if ( array_key_exists($field, $l) ) {
+			    $l['last_import_57'] = date( 'Y-m-d H:i:s' );
+				$addressExists = true;
+				break;
+			}
+		}
 		
 		//if dedupe selected and no contact id, lookup contact in db
 		if ( $form_state['values']['dedupe'] && empty($l['id']) ) {
@@ -510,7 +561,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		//import address details
 		//set key correctly for ref
 		$l['contact_id']=$l['id'];
-		nyss_ioimportData('civicrm_address', $l, $dryrun, $logFile, $form_state);
+		if ( $addressExists ) {
+		    nyss_ioimportData('civicrm_address', $l, $dryrun, $logFile, $form_state);
+		}
 		
 		//import phone details
 		//set key correctly for ref
@@ -602,7 +655,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	//Begin post process
 	
 	//Add contacts to group if set
-	if ( !empty($form_state['values']['addtogroup']) ) {
+	if ( !empty($form_state['values']['addtogroup']) && $form_state['values']['addtogroup_handling'] != 'none' ) {
 	
 	    //create group/retrieve existing
 		$groupID = '';
@@ -628,18 +681,28 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         $group_params = array('group_id' => $groupID);
 
         //construct the list of contacts to add
-		$allContacts = $new_contacts + $updated_contacts;
-        foreach($allContacts as $index=>$contact_id) {
+		switch ($form_state['values']['addtogroup_handling']) {
+		    case 'all' :
+			    $groupContacts = $imported_contacts;
+			    break;
+		    case 'new' :
+			    $groupContacts = $new_contacts;
+			    break;
+			default:
+			    $groupContacts = '';
+			    break;
+		}
+        foreach($groupContacts as $index=>$contact_id) {
             if ($index == 0)
                 $group_params['contact_id'] = $contact_id;
             else
                 $group_params["contact_id.$index"] = $contact_id;
         }
-
+		
         if (!$dryrun) {
             $groupcontact = civicrm_group_contact_add( $group_params );
         } else {
-            nyss_out('status',"Adding "+count($new_contacts)+" to the {$groupname} group",true);
+            nyss_out('status',"Adding "+count($groupContacts)+" to the {$groupname} group",true);
         }
 
 	} //end add to group
@@ -694,7 +757,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         }
     } //end add to email only group
 
-	if ($form_state['values']['sendmail']==1) {
+	if ( $form_state['values']['sendmail']==1 ) {
 
    		//now send a confirmation email
    		$message = array(
@@ -721,10 +784,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		$dupePriCleanup = shell_exec( $dupePriScript );
 		nyss_out('status', $dupePriCleanup, true);
 		
-		//run greetings update on all null values
-		$greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'];
-		$greetingCreate = shell_exec( $greetingScript );
-		nyss_out('status', $greetingCreate, true);
+		//run greetings update on all null values unless disable greeting option is selected
+		if ( !$form_state['values']['disablegreeting'] ) {
+		    $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'];
+		    $greetingCreate = shell_exec( $greetingScript );
+		    nyss_out('status', $greetingCreate, true);
+		}
 	}
 
   	nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
@@ -878,7 +943,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			$lnc = trim(convertProperCase( $l['last_name'], true ));
 			$display_name = $prefixes[$l['prefix_id']].' '.$fnc.$mnc.' '.$lnc.$suffix;
 			$l['display_name'] = nyss_stripSpaces( $display_name );
-			if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
+			if ( !empty($l['display_name']) ) $l['a'] = $lnc.', '.$fnc.$mnc.$suffix;
 		}
 		
 		//only set these if the corresponding data columns exist in the import file
