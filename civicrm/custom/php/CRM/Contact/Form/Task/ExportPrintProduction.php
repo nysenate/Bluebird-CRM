@@ -69,6 +69,13 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 			$this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
         }
 		
+		$this->addElement('checkbox', 'include_households', ts('Include Household Records'), null );
+		
+		require_once 'CRM/Core/OptionGroup.php';
+        $rts = CRM_Core_OptionGroup::values('record_type_20100906230753');
+		$this->add( 'select', 'exclude_rt',  ts( 'Exclude Record Types' ), $rts, false, 
+                    array( 'id' => 'exclude_rt',  'multiple'=> 'multiple', 'title' => ts('- select -') ));
+
         $this->addDefaultButtons( 'Export Print Production' );
 		
     }
@@ -93,9 +100,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
      */
     public function postProcess() {
 	
-	//get form values (avanti job id)
+	//get form values
 	$params = $this->controller->exportValues( $this->_name );
-	$avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+	
+	$avanti_job_id      = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+	$include_households = $params['include_households'];
+	$exclude_rt         = implode( ',', $params['exclude_rt'] );
 	
 	//get instance name (strip first element from url)
 	$instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -109,21 +119,21 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	//generate random number for export and tables
 	$rnd = mt_rand(1,9999999999999999);
 
+    //retrieve Mailing Exclusions group id
+	$eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
+	if ( !$eogid ) $eogid = 0; //prevent errors if group is not found
+
 	//add any members of the seed group
 	$sql = "SELECT contact_id FROM civicrm_group_contact WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds') AND status = 'Added';";
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
-	
-	//retrieve Mailing Exclusions group id
-	$eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
-	if ( !$eogid ) $eogid = 0; //prevent errors if group is not found
 
     $this->_contactIds = array_unique($this->_contactIds);
 
 	$ids = implode("),(",$this->_contactIds);
 	$ids = "($ids)";
 
-	$sql = "CREATE TEMPORARY TABLE tmpExport$rnd(id int not null primary key);";
+	$sql = "CREATE TEMPORARY TABLE tmpExport$rnd(id int not null primary key) TYPE=myisam;";
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
@@ -133,21 +143,26 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$sql .= "congressional_district_46, ny_senate_district_47, ny_assembly_district_48, election_district_49, county_50, county_legislative_district_51, town_52, ward_53, school_district_54, new_york_city_council_55, neighborhood_56, ";
 	$sql .= "street_address, supplemental_address_1, supplemental_address_2, street_number, street_number_suffix, street_name, street_unit, city, postal_code, postal_code_suffix, state_province_id, county_id ";
 	
-	$sql .= " FROM civicrm_contact c ";
+	//begin with temp table so we work with a smaller data set
+	$sql .= " FROM tmpExport$rnd t ";
+	
+	$sql .= " JOIN civicrm_contact c ON t.id = c.id ";
 	
 	//join with address if primary or BOE mailing and non primary
-	$sql .= " LEFT JOIN civicrm_address a ON a.contact_id=c.id AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = c.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = c.id AND pm.is_primary = 1)) ";	
+	$sql .= " LEFT JOIN civicrm_address a ON a.contact_id=t.id AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = t.id AND pm.is_primary = 1)) ";	
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	
 	//household joins
-	$sql .= " LEFT JOIN civicrm_relationship cr ON cr.contact_id_a = c.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7) ";
+	$sql .= " LEFT JOIN civicrm_relationship cr ON cr.contact_id_a = t.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7) ";
     $sql .= " LEFT JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
 	
 	//join with group to exclude Mailing_Exclusions
-	$sql .= " LEFT JOIN civicrm_group_contact cgc ON cgc.contact_id = c.id AND status = 'Added' AND group_id = $eogid ";
+	$sql .= " LEFT JOIN civicrm_group_contact cgc ON cgc.contact_id = t.id AND status = 'Added' AND group_id = $eogid ";
 	
-	//join with temp table to limit to search results
-	$sql .= " INNER JOIN tmpExport$rnd t ON c.id=t.id ";
+	//exclude RTs
+	if ( $exclude_rt != null ) {
+	    $sql .= " LEFT JOIN civicrm_value_constituent_information_1 cvci ON t.id = cvci.entity_id ";
+	}
 	
 	//exclude deceased, trashed, do not mail
 	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ";
@@ -163,10 +178,17 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	//exclude mailing exclusion group
 	$sql .= " AND ( cgc.id IS NULL ) "; 
 	
+	//exclude RTs
+	if ( $exclude_rt != null ) {
+	    $sql .= " AND ( cvci.record_type_61 IS NULL OR cvci.record_type_61 NOT IN ( $exclude_rt ) ) ";
+	}
+	
 	//order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
 	$sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, "; 
 	$sql .= " CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
 	$sql .= " IFNULL(c.birth_date, '9999-01-01');";
+	
+	//CRM_Core_Error::debug($sql); exit();
 
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 

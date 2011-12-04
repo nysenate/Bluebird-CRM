@@ -1439,3 +1439,8 @@ ul.token-input-list-facebook { width:265px;}
 #nyss-ioimport-form div.addtogroup_handling-wrapper div {
 	display: inline-block;
 }
+
+/* print prod export */
+.crm-printproductionexport-form-block .crmasmContainer {
+	width: 200px;
+}
