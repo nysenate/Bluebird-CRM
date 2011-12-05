@@ -31,6 +31,9 @@
 	background-color:#fff;
 	
 }
+.BBtree.modal {
+	height:95%;
+}
 .BBtree.edit.tab {
 	width:336px;
 }
@@ -68,8 +71,10 @@
 .BBtree dt div.treeButton.open {
 	background-position:-64px -15px;
 }
-.BBtree dt div.treeButton.open.stub, .BBtree dt>div.stub {
-	background-position:-79px -143px; cursor:default;
+.BBtree dt div.treeButton.stub{
+	 background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:-2px; margin-right:-3px;
+}
+.BBtree dt>div.stub {
 }
 .BBtree dt div.tag {
 	width:150px;
