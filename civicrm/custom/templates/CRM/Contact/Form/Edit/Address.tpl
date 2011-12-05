@@ -132,7 +132,7 @@
             }
             
             var addressHTML = '';
-            cj( ).crmAPI( 'location', 'get', { 'contact_id': sharedContactId }, {
+            cj( ).crmAPI( 'location', 'get', { 'contact_id': sharedContactId, 'version' : 2 }, {
                   success: function( response ) {
                       if ( response.address ) {
                           var selected = 'checked';
