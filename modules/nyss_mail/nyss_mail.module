@@ -45,6 +45,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
         //Sendgrid headers
         $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
+		$hdr->setUniqueArgs( array ( 'mailing_id' => $mid,
+		                             'job_id'     => $jobID,
+									 'instance'   => $bbconfig['instance'] ) );
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
         $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>."); 
         $hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');

@@ -30,9 +30,39 @@
 </legend>
 <dl>
 <!--<dt></dt><dd>{$form.merge_same_household.html} {$form.merge_same_household.label}</dd>-->
-<dt></dt><dd>{include file="CRM/Contact/Form/Task.tpl"}</dd>
-{if $form.avanti_job_id}<dt>Avanti Job ID</dt><dd>{$form.avanti_job_id.html}</dd>{/if}
-<dt></dt><dd>{$form.buttons.html}</dd>
+<dt></dt>
+  <dd>{include file="CRM/Contact/Form/Task.tpl"}</dd>
+
+{if $form.avanti_job_id}
+  <dt>{$form.avanti_job_id.label}</dt>
+    <dd>{$form.avanti_job_id.html}</dd>
+{/if}
+
+{*<dt>{$form.include_households.label}</dt>
+  <dd>{$form.include_households.html}</dd>*}
+
+<dt>{$form.exclude_rt.label}<dt>
+  <dd>
+                {$form.exclude_rt.html}
+                 {literal}
+					<script type="text/javascript">
+
+								cj("select#exclude_rt").crmasmSelect({
+									addItemTarget: 'bottom',
+									animate: false,
+									highlight: true,
+									sortable: true,
+									respectParents: true
+								});
+
+						</script>
+					{/literal}
+                
+   </dd>
+
+
+</dt>
+  <dd>{$form.buttons.html}</dd>
 </dl>
 </fieldset>
 </div>
