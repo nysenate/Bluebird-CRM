@@ -1382,7 +1382,7 @@ ul.token-input-list-facebook { width:265px;}
 
 /*delete button*/
 #crm-container .crm-actions-ribbon li.crm-delete-action {
-    margin-left: 60px;
+    margin-left: 100px;
 }
 #crm-container .crm-actions-ribbon li.crm-delete-action a.button {
     background: url("/sites/all/modules/civicrm/i/crm-button-bg.gif") repeat-x scroll left top #70716B;
