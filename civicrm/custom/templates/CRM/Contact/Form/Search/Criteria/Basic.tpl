@@ -149,8 +149,32 @@
         
         <tr>
             <td colspan="2">
-                {$form.privacy.label}<br />
-                {$form.privacy.html} {help id="id-privacy"}
+                {*NYSS 4407*}
+                <table class="form-layout-compressed">
+                <tr>
+                    <td colspan="2">
+                        {$form.privacy_toggle.html} {help id="id-privacy"}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {$form.privacy_options.html}
+                    </td>
+                    <td>
+                        {$form.privacy_operator.html}
+                    </td>
+                </tr>
+                </table>
+                {literal}
+                  <script type="text/javascript">
+                    cj("select#privacy_options").crmasmSelect({
+                     addItemTarget: 'bottom',
+                     animate: false,
+                     highlight: true,
+                     sortable: true,
+                    });
+                  </script>
+                {/literal}
             </td>
             <td colspan="2">
                 {$form.preferred_communication_method.label}<br />
