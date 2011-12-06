@@ -258,7 +258,7 @@ function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
         $tokens['user'] = array( 'user.permission-schedule mailings',
                                  'user.permission-create_mailings',
                                  'user.permission-approve_mailings' );
-        $settings['toEmail'] = CRM_Utils_Token::replaceUserTokens( $settings['to'], $tokens );
+        $settings['toEmail'] = CRM_Utils_Token::replaceUserTokens( $settings['toEmail'], $tokens );
 
         // if email has got comma's in it, split it up
         // and stuff the rest into the cc parameter
