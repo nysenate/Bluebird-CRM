@@ -943,7 +943,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 			$lnc = trim(convertProperCase( $l['last_name'], true ));
 			$display_name = $prefixes[$l['prefix_id']].' '.$fnc.$mnc.' '.$lnc.$suffix;
 			$l['display_name'] = nyss_stripSpaces( $display_name );
-			if ( !empty($l['display_name']) ) $l['a'] = $lnc.', '.$fnc.$mnc.$suffix;
+			if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
 		}
 		
 		//only set these if the corresponding data columns exist in the import file
