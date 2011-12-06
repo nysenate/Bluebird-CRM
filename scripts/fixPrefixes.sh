@@ -13,6 +13,7 @@ prog=`basename $0`
 script_dir=`dirname $0`
 execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
+app_rootdir=`$readConfig --global app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 force_ok=0
 
 . $script_dir/defaults.sh
@@ -78,5 +79,9 @@ sql="update civicrm_contact set prefix_id=2 where prefix_id is null and gender_i
 ( set -x
   $execSql -i $instance -c "$sql"
 )
+
+php $app_rootdir/civicrm/scripts/updateAllGreetings.php -S $instance -f
+
+$script_dir/rebuildCachedValues.sh $instance --field-displayname --rebuild-all --ok
 
 exit 0
