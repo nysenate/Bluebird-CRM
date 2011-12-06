@@ -290,7 +290,7 @@ function nyss_dedupe_indiv5_record($o) {
         $params = array(1 => array($civicrm_contact['first_name'], 'String'),
                         2 => array($civicrm_contact['last_name'], 'String'),
                         3 => array($email, 'String'));
-        $tableQueries['civicrm_contact.email.5'] = CRM_Core_DAO::composeQuery(
+        return CRM_Core_DAO::composeQuery(
                "SELECT DISTINCT contact.contact_id id1, 5 weight
                 FROM shadow_contact as contact
                   JOIN civicrm_email as email on email.contact_id = contact.contact_id
@@ -309,7 +309,7 @@ function nyss_dedupe_indiv5_record($o) {
         $params = array(1 => array($civicrm_contact['first_name'], 'String'),
                         2 => array($civicrm_contact['last_name'], 'String'),
                         3 => array($street_address, 'String'));
-        $tableQueries['civicrm_contact.email.5'] = CRM_Core_DAO::composeQuery(
+        return CRM_Core_DAO::composeQuery(
                "SELECT DISTINCT contact.contact_id id1, 5 weight
                 FROM shadow_contact as contact
                   JOIN shadow_address as address on address.contact_id=contact.contact_id
