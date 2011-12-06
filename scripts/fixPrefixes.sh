@@ -74,14 +74,16 @@ fi
 
 echo "Setting prefixes for all fixable records without one..."
 
-sql="update civicrm_contact set prefix_id=2 where prefix_id is null and gender_id=1; update civicrm_contact set prefix_id=3 where prefix_id is null and gender_id=2;"
+sql="
+UPDATE civicrm_contact SET prefix_id=2, display_name=null, postal_greeting_display=null, email_greeting_display=null, addressee_display=null WHERE prefix_id IS NULL AND gender_id=1; 
+UPDATE civicrm_contact SET prefix_id=3, display_name=null, postal_greeting_display=null, email_greeting_display=null, addressee_display=null WHERE prefix_id IS NULL AND gender_id=2;"
 
 ( set -x
   $execSql -i $instance -c "$sql"
 )
 
-php $app_rootdir/civicrm/scripts/updateAllGreetings.php -S $instance -f
+php $app_rootdir/civicrm/scripts/updateAllGreetings.php -S $instance
 
-$script_dir/rebuildCachedValues.sh $instance --field-displayname --rebuild-all --ok
+$script_dir/rebuildCachedValues.sh $instance --field-displayname --ok
 
 exit 0
