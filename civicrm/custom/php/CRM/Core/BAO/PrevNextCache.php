@@ -170,6 +170,7 @@ WHERE cacheKey = %1
         return CRM_Core_DAO::singleValueQuery( $query, $params);
     }
 
+    //NYSS 4614
     static function cleanupCache( ) {
         // clean up all prev next caches older than $cacheTimeIntervalDays days
         $cacheTimeIntervalDays  = 2;
@@ -180,10 +181,10 @@ DELETE     pn, c
 FROM       civicrm_cache c
 INNER JOIN civicrm_prevnext_cache pn ON c.path = pn.cacheKey
 WHERE      c.group_name = %1
-AND        c.created_date < date_sub( NOW( ), INTERVAL $cacheTimeIntervalDays day )
+AND        c.created_date < date_sub( NOW( ), INTERVAL %2 day )
 ";
         $params = array( 1 => array( 'CiviCRM Search PrevNextCache', 'String' ),
                          2 => array( $cacheTimeIntervalDays, 'Integer' ) );
-        CRM_Core_DAO::executeQuery( $sql );
+        CRM_Core_DAO::executeQuery( $sql , $params );
     }
 }
