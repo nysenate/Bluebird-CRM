@@ -34,6 +34,9 @@
 .BBtree.modal {
 	height:95%;
 }
+.BBtree.hidden {
+	display:none;
+}
 .BBtree.edit.tab {
 	width:336px;
 }
@@ -71,14 +74,19 @@
 .BBtree dt div.treeButton.open {
 	background-position:-64px -15px;
 }
-.BBtree dt div.treeButton.stub{
+.BBtree.edit dt div.treeButton.stub {
+	background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:4px; margin-right:3px;
+}
+.BBtree.manage dt div.treeButton.stub {
 	 background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:-2px; margin-right:-3px;
 }
-.BBtree dt>div.stub {
+.BBtree.tab dt div.treeButton.stub, .BBtree.modal dt div.treeButton.stub  {
+	 background: url("/sites/default/themes/rayCivicrm/nyss_skin/images/fcb.png") no-repeat -81px 6px; cursor:default; margin-left:4px; margin-right:1px;
 }
+
 .BBtree dt div.tag {
 	width:150px;
-	padding-left:15px;
+	padding-left:20px;
 }
 .BBtree.manage dt div.tag {
 	width:170px;
@@ -108,15 +116,23 @@
 .BBtree dt:hover, .BBtree dt.subChecked:hover, .BBtree dt.checked:hover {
 	background-color:#DEDEDE;
 }
+.BBtree.tab dt, .BBtree.manage dt {
+	position:relative;
+}
+.BBtree.tab .fCB, .BBtree.manage .fCB{
+	position:absolute;
+	right:0px;
+	top:0px;
+}
 .BBtree .fCB {
 	margin-top:0px;
 }
-.BBtree.tab .fCB, .BBtree.manage .fCB {
+/*.BBtree.tab .fCB, .BBtree.manage .fCB {
 	margin-top:-18px;
 }
 .BBtree.tab .fCB {
 	margin-top:-24px\9;
-}
+}*/
 .ui-dialog-content.BBtree .fCB {
 	margin-top:-30px;
 }
@@ -131,7 +147,7 @@ margin:0;
 	top: .25em\9; margin-left:2px\9;
 }
 .BBtree.edit.tab .fCB .checkbox{
-	top: .5em\9; 
+	top: .5em\9;
 }
 .BBtree.modal input[type=radio]{
 	float:right; margin-top:-15px; margin-top:-18px\9;
