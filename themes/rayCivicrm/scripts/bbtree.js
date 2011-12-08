@@ -1,9 +1,14 @@
-function callTagListModal(treeLoc) {
-	callTagAjaxInitLoader(treeLoc);
+/*Init function for tree*/
+function checkForTagTypes (treeData) {
+	resetBBTree('main', 'init', treeData);
+}
+/*Acquires Ajax Block*/
+function callTagAjax (local, modalTreeTop) {
+	
 	cj.ajax({
 		url: '/civicrm/ajax/tag/tree',
 		data: {
-			entity_type: 'civicrm_contact',
+			entity_type: 'civicrm_contact'
 			},
 		dataType: 'json',
 		success: function(data, status, XMLHttpRequest) {
@@ -12,41 +17,118 @@ function callTagListModal(treeLoc) {
 			displayObj.tLvl = 0;
 			/*error handler goes here*/
 			if(data.code != 1) {alert('fails');}
+			cj('.crm-tagTabHeader ul').html('');
 			cj.each(data.message, function(i,tID){
-				if(tID.id == '291')
-				{
-					/*have to note when you step in and out of levels*/
-					displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+tID.id+'">';
-					displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagModalLabel_'+tID.id+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div></dt>';
-					if(tID.children.length > 0){
-						/*this is where the first iteration goes in*/
+				if(tID.children.length > 0){
+					cj('.crm-tagTabHeader ul').append('<li class="tab" tabID="'+i+'" onclick="swapTrees(this)">'+tID.name+'</li>');
+					if(local == 'modal')
+					{
+						if(modalTreeTop == tID.id)
+						{
+							resetBBTree('modal', 'init', tID, modalTreeTop);
+						}
+					}
+					else {
+						switch(tID.id)
+						{
+							case '291': resetBBTree('main', 'init', tID);
+							default: cj('<div class="BBtree edit hidden tabbed'+i+'"></div>').appendTo('#crm-tagListWrap');resetBBTree('backup', i, tID);break;
+						}
+					}
+				}
+			});
+		}
+			
+	});
+	var d = new Date(); 
+}
+function resetBBTree(inpLoc, order, treeData, modalTreeTop) {
+	var treeLoc;
+	switch(inpLoc)
+	{
+		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit';callTagListMain(treeLoc, treeData); break;
+		case 'backup': treeLoc = '#crm-tagListWrap .BBtree.hidden.tabbed'; treeLoc += order;callTagListMain(treeLoc, treeData); break;
+		case 'modal': treeLoc = '.ui-dialog-content .BBtree.modal'; callTagListModal(treeLoc, treeData, modalTreeTop);  break;
+		default: alert('No Tree Found'); break;
+	}
+	/*here's where the issues lie in multiple slider, ajaxComplete wants to run a multitude of times depending
+	on how many times you perform functions on the page, I tossed a do while in there in hopes that i'd do the*/
+	var setCompleteLoop = 1;
+	cj(treeLoc).ajaxComplete(function(e, xhr, settings) {
+		while(setCompleteLoop == 1)
+		{
+			
+			if(inpLoc != 'backup')
+			{
+				setTimeout(function(){
+					
+					if(navigator.appName == 'Microsoft Internet Explorer'){
+						if(order == 'init'){ setTimeout(function(){hoverTreeSlider(treeLoc)},1800); }
+						setTimeout(function(){postJSON(treeLoc)},2000);
+						setTimeout(function(){cj(treeLoc).removeClass('loadingGif');
+						cj(treeLoc).children().show(); },4000);
+					} else {
+						if(order == 'init'){ hoverTreeSlider(treeLoc)}
+						setTimeout(function(){postJSON(treeLoc)},200);
+						setTimeout(function(){cj(treeLoc).removeClass('loadingGif');
+						cj(treeLoc).children().show(); },2000);
+					}
+				},1000);
+				
+			}
+			if(inpLoc == 'modal') { 
+				modalSelectOnClick();
+			}
+			setCompleteLoop++;
+		}
+		cj(treeLoc).unbind('ajaxComplete');
+	});
+}
+/*Writes out the on page (not modal) Tree to an object*/
+function callTagListMain(treeLoc, treeData) {
+	callTagAjaxInitLoader(treeLoc);	
+	var tID = treeData;
+	var displayObj = new Object();
+	displayObj.tLvl = 0;
+	/*have to note when you step in and out of levels*/
+	displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'" style="display:none">';
+	displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagLabel_'+tID.id+'" description="'+tID.description+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div>';
+
+	var tIDLabel = 'tagLabel_'+tID.id;
+	displayObj.output += addControlBox(tIDLabel)+'</dt>';
+	if(tID.children.length > 0){
+		/*this is where the first iteration goes in*/
+		displayObj.tLvl = displayObj.tLvl+1;
+		displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
+		cj.each(tID.children, function(i, cID){
+			var cIDChecked = isItemChecked(cID.is_checked,cID.id);
+			displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+cIDChecked+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+cID.description+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div>';
+			var cIDLabel = 'tagLabel_'+cID.id;
+			displayObj.output += addControlBox(cIDLabel, cIDChecked, tID.id)+'</dt>';
+			if(cID.children.length > 0){
+				displayObj.tLvl = displayObj.tLvl+1;
+				displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+cID.id+'">';
+				cj.each(cID.children, function(i, iID){
+					var iIDChecked = isItemChecked(iID.is_checked,iID.id);
+					displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+iIDChecked+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+iID.description+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div>';
+					var iIDLabel = 'tagLabel_'+iID.id;
+					displayObj.output += addControlBox(iIDLabel, iIDChecked, tID.id)+'</dt>';
+					if(iID.children.length > 0){
 						displayObj.tLvl = displayObj.tLvl+1;
-						displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+tID.id+'">';
-						cj.each(tID.children, function(i, cID){
-							displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+isItemChecked(cID.is_checked,cID.id)+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagModalLabel_'+cID.id+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
-							if(cID.children.length > 0){
+						displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+iID.id+'">';
+						cj.each(iID.children, function(i, jID){
+							var jIDChecked = isItemChecked(jID.is_checked,jID.id);
+							displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+jIDChecked+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+jID.description+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div>';
+							var jIDLabel = 'tagLabel_'+jID.id;
+							displayObj.output += addControlBox(jIDLabel, jIDChecked, tID.id)+'</dt>';
+							if(jID.children.length > 0){
 								displayObj.tLvl = displayObj.tLvl+1;
-								displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+cID.id+'">';
-								cj.each(cID.children, function(i, iID){
-									displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+isItemChecked(iID.is_reserved,iID.id)+' '+isItemReserved(iID.is_checked,iID.id)+'" id="tagModalLabel_'+iID.id+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
-									if(iID.children.length > 0){
-										displayObj.tLvl = displayObj.tLvl+1;
-										displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+iID.id+'">';
-										cj.each(iID.children, function(i, jID){
-											displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+isItemChecked(jID.is_reserved,jID.id)+' '+isItemReserved(jID.is_checked,jID.id)+'" id="tagModalLabel_'+jID.id+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
-											if(jID.children.length > 0){
-												displayObj.tLvl = displayObj.tLvl+1;
-												displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
-												cj.each(jID.children, function(i, kID){
-													displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+isItemChecked(kID.is_reserved,kID.id)+' '+isItemReserved(kID.is_checked,kID.id)+'" id="tagModalLabel_'+kID.id+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag">'+kID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
-												});
-												displayObj.output += '</dl>';
-												displayObj.tLvl = displayObj.tLvl-1;
-											}
-										});
-										displayObj.output += '</dl>';
-										displayObj.tLvl = displayObj.tLvl-1;
-									}
+								displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
+								cj.each(jID.children, function(i, kID){
+									var kIDChecked = isItemChecked(kID.is_checked,kID.id);
+									displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+kIDChecked+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+kID.description+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag">'+kID.name+'</div>';
+									var kIDLabel = 'tagLabel_'+kID.id;
+									displayObj.output += addControlBox(kIDLabel, kIDChecked, tID.id)+'</dt>';
 								});
 								displayObj.output += '</dl>';
 								displayObj.tLvl = displayObj.tLvl-1;
@@ -55,73 +137,48 @@ function callTagListModal(treeLoc) {
 						displayObj.output += '</dl>';
 						displayObj.tLvl = displayObj.tLvl-1;
 					}
-					displayObj.output += '</dl>';
-				}
-			});
-			writeDisplayObject(displayObj, treeLoc);
-		}
-	});
+				});
+				displayObj.output += '</dl>';
+				displayObj.tLvl = displayObj.tLvl-1;
+			}
+		});
+		displayObj.output += '</dl>';
+		displayObj.tLvl = displayObj.tLvl-1;
+	}
+	displayObj.output += '</dl>';
+	writeDisplayObject(displayObj, treeLoc);
 }
-function callTagListMain(treeLoc) {
+/*Writes out the modal tree to an object*/
+function callTagListModal(treeLoc, tID, modalTreeTop) {
 	callTagAjaxInitLoader(treeLoc);
-	cj.ajax({
-		url: '/civicrm/ajax/tag/tree',
-		data: {
-			entity_type: 'civicrm_contact',
-			},
-		dataType: 'json',
-		success: function(data, status, XMLHttpRequest) {
-			/*set variables*/
-			var displayObj = [];
-			displayObj.tLvl = 0;
-			/*error handler goes here*/
-			if(data.code != 1) {alert('fails');}
-			cj.each(data.message, function(i,tID){
-				if(tID.id == '291')
-				{				
-				/*have to note when you step in and out of levels*/
-				displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
-				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagLabel_'+tID.id+'" description="'+tID.description+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div>';
-				
-				var tIDLabel = 'tagLabel_'+tID.id;
-				displayObj.output += addControlBox(tIDLabel)+'</dt>';
-				if(tID.children.length > 0){
-					/*this is where the first iteration goes in*/
+	var displayObj = new Object();
+	displayObj.tLvl = 0;
+	if(tID.id == modalTreeTop)
+	{
+		/*have to note when you step in and out of levels*/
+		displayObj.output = '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+tID.id+'" style="display:none">';
+		displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+tID.id+''+isItemChecked(tID.is_checked,tID.id)+' '+isItemReserved(tID.is_reserved,tID.id)+'" id="tagModalLabel_'+tID.id+'" tID="'+tID.id+'"><div class="treeButton"></div><div class="tag">'+tID.name+'</div></dt>';
+		if(tID.children.length > 0){
+			/*this is where the first iteration goes in*/
+			displayObj.tLvl = displayObj.tLvl+1;
+			displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+tID.id+'">';
+			cj.each(tID.children, function(i, cID){
+				displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+isItemChecked(cID.is_checked,cID.id)+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagModalLabel_'+cID.id+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
+				if(cID.children.length > 0){
 					displayObj.tLvl = displayObj.tLvl+1;
-					displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+tID.id+'">';
-					cj.each(tID.children, function(i, cID){
-						var cIDChecked = isItemChecked(cID.is_checked,cID.id);
-						displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+cID.id+''+cIDChecked+' '+isItemReserved(cID.is_reserved,cID.id)+'" id="tagLabel_'+cID.id+'" description="'+cID.description+'" tID="'+cID.id+'"><div class="treeButton"></div><div class="tag">'+cID.name+'</div>';
-						var cIDLabel = 'tagLabel_'+cID.id;
-						displayObj.output += addControlBox(cIDLabel, cIDChecked)+'</dt>';
-						if(cID.children.length > 0){
+					displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+cID.id+'">';
+					cj.each(cID.children, function(i, iID){
+						displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+isItemChecked(iID.is_reserved,iID.id)+' '+isItemReserved(iID.is_checked,iID.id)+'" id="tagModalLabel_'+iID.id+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
+						if(iID.children.length > 0){
 							displayObj.tLvl = displayObj.tLvl+1;
-							displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+cID.id+'">';
-							cj.each(cID.children, function(i, iID){
-								var iIDChecked = isItemChecked(iID.is_checked,iID.id);
-								displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+iID.id+''+iIDChecked+' '+isItemReserved(iID.is_reserved,iID.id)+'" id="tagLabel_'+iID.id+'" description="'+iID.description+'" tID="'+iID.id+'"><div class="treeButton"></div><div class="tag">'+iID.name+'</div>';
-								var iIDLabel = 'tagLabel_'+iID.id;
-								displayObj.output += addControlBox(iIDLabel, iIDChecked)+'</dt>';
-								if(iID.children.length > 0){
+							displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagModalLabel_'+iID.id+'">';
+							cj.each(iID.children, function(i, jID){
+								displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+isItemChecked(jID.is_reserved,jID.id)+' '+isItemReserved(jID.is_checked,jID.id)+'" id="tagModalLabel_'+jID.id+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
+								if(jID.children.length > 0){
 									displayObj.tLvl = displayObj.tLvl+1;
-									displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+iID.id+'">';
-									cj.each(iID.children, function(i, jID){
-										var jIDChecked = isItemChecked(jID.is_checked,jID.id);
-										displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+jID.id+''+jIDChecked+' '+isItemReserved(jID.is_reserved,jID.id)+'" id="tagLabel_'+jID.id+'" description="'+jID.description+'" tID="'+jID.id+'"><div class="treeButton"></div><div class="tag">'+jID.name+'</div>';
-										var jIDLabel = 'tagLabel_'+jID.id;
-										displayObj.output += addControlBox(jIDLabel, jIDChecked)+'</dt>';
-										if(jID.children.length > 0){
-											displayObj.tLvl = displayObj.tLvl+1;
-											displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
-											cj.each(jID.children, function(i, kID){
-												var kIDChecked = isItemChecked(kID.is_checked,kID.id);
-												displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+kIDChecked+' '+isItemReserved(kID.is_reserved,kID.id)+'" id="tagLabel_'+kID.id+'" description="'+kID.description+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag">'+kID.name+'</div>';
-												var kIDLabel = 'tagLabel_'+kID.id;
-												displayObj.output += addControlBox(kIDLabel, kIDChecked)+'</dt>';
-											});
-											displayObj.output += '</dl>';
-											displayObj.tLvl = displayObj.tLvl-1;
-										}
+									displayObj.output += '<dl class="lv-'+displayObj.tLvl+'" id="tagLabel_'+jID.id+'">';
+									cj.each(jID.children, function(i, kID){
+										displayObj.output += '<dt class="lv-'+displayObj.tLvl+' issueCode-'+kID.id+''+isItemChecked(kID.is_reserved,kID.id)+' '+isItemReserved(kID.is_checked,kID.id)+'" id="tagModalLabel_'+kID.id+'" tID="'+kID.id+'"><div class="treeButton"></div><div class="tag">'+kID.name+'</div><span><input type="radio" class="selectRadio" name="selectTag"/></span></dt>';
 									});
 									displayObj.output += '</dl>';
 									displayObj.tLvl = displayObj.tLvl-1;
@@ -134,45 +191,40 @@ function callTagListMain(treeLoc) {
 					displayObj.output += '</dl>';
 					displayObj.tLvl = displayObj.tLvl-1;
 				}
-				displayObj.output += '</dl>';
-				}
-
 			});
-			writeDisplayObject(displayObj, treeLoc);
+			displayObj.output += '</dl>';
+			displayObj.tLvl = displayObj.tLvl-1;
 		}
-
-	});
+		displayObj.output += '</dl>';
+		writeDisplayObject(displayObj, treeLoc);
+	}
 }
+/*Tab Swapping functionality between Issue Codes and Keywords*/
+function swapTrees(tab){
+	var tabID = cj(tab).attr('tabID');
+	var swapID = cj('.crm-tagListSwapArea').attr('tID');
+	if(swapID != tabID)
+	{
+		var toCopy = cj('.BBtree.tabbed'+tabID+'.hidden dl').html();
+		cj('.crm-tagListSwapArea').attr('tID', tabID);
+		cj('.BBtree.edit.manage').html('');
+		cj('.BBtree.edit.manage').append(toCopy);
+		setTimeout(function(){hoverTreeSlider('.BBtree.edit')},1000);
+	}
+}
+/*Clears out the location to be written, and then jquery appends it to the space*/
 function writeDisplayObject(displayObj, treeLoc) {
-	cj(treeLoc).html('');
 	cj(treeLoc).append(displayObj.output);
 }
-
+/*Loading Gif*/
 function callTagAjaxInitLoader(treeLoc) {
+	cj(treeLoc).html('');
 	cj(treeLoc).addClass('loadingGif');
 }
-function resetBBTree(inpLoc, order) {
-	var treeLoc;
-	switch(inpLoc)
-	{
-		case 'main': treeLoc = '#crm-tagListWrap .BBtree.edit';callTagListMain(treeLoc); break;
-		case 'modal': treeLoc = '.ui-dialog-content .BBtree.modal'; callTagListModal(treeLoc);  break;
-		default: alert('No Tree Found'); break;
-	}
-	cj(treeLoc).ajaxComplete(function(){
-		cj(treeLoc).removeClass('loadingGif');
-		if(navigator.appName == 'Microsoft Internet Explorer'){
-			if(order == 'init'){ setTimeout(function(){hoverTreeSlider(treeLoc)},2000); }
-			setTimeout(function(){postJSON(treeLoc)},2000);
-		} else {
-			if(order == 'init'){ setTimeout(function(){hoverTreeSlider(treeLoc)},200);}
-			setTimeout(function(){postJSON(treeLoc)},200);
-		}
-		if(inpLoc == 'modal') { 
-			modalSelectOnClick();
-		}
-	});
-}
+/*Slider & Interface functionality portion of things, when a tree initializes, as it loads, it runs through each
+tag and binds/unbindes their click functionality to slide up/down... and stops the propagation if you click on
+individual boxes inside the functionality or radio buttons. Last portion is for the Admin console that tells
+number of tags named*/
 function hoverTreeSlider(treeLoc){
 	cj(treeLoc + ' dt').unbind('click');
 	cj(treeLoc + ' dt').click(function() {
@@ -192,16 +244,20 @@ function hoverTreeSlider(treeLoc){
 		} else {
 
 			var tagLabel = cj(this).attr('id');
-			
-			if(cj('dl#'+tagLabel).is(':visible'))
+			var isOpen = cj('dl#'+tagLabel).hasClass('open');
+			switch(isOpen)
 			{
+				case true:
 				cj(treeLoc + ' dt#'+tagLabel+' div').removeClass('open');
-				cj(treeLoc + ' dl#'+tagLabel).slideUp();
-			}
-			if(cj('dl#'+tagLabel).is(':hidden') )
-			{
+				cj(treeLoc + ' dl#'+tagLabel).slideUp('400', function() {
+					cj('dl#'+tagLabel).removeClass('open');
+				});
+				break;
+				case false:
 				cj(treeLoc + ' dt#'+tagLabel+' div').addClass('open');
-				cj(treeLoc + ' dl#'+tagLabel).slideDown();
+				cj(treeLoc + ' dl#'+tagLabel).slideDown('400', function() {
+					cj('dl#'+tagLabel).addClass('open');
+				});
 			}
 		}
 	});
@@ -236,9 +292,8 @@ function hoverTreeSlider(treeLoc){
 		cj('.crm-tagListInfo .tagInfoBody .tagCount span').html('');
 	});
 }
-
+/*This poorly named function determines which tags are stubs, and which need arrows*/
 function postJSON(treeLoc){
-	/*this is where you write out the toggle loader and the lv-x question;*/
 	cj(treeLoc + ' dt').each(function() {
 		var idGrab = cj(this).attr('id');
 		if(idGrab != '')
@@ -255,6 +310,7 @@ function postJSON(treeLoc){
 	cj('dt.lv-0 .treeButton').addClass('open');
 	runParentFinder();
 }
+/*is the Tag checked?*/
 function isItemChecked(dataObj,tagLabel){
 	tagLabel = 'tagLabel_' + tagLabel;
 	if(dataObj == true){ 
@@ -262,12 +318,15 @@ function isItemChecked(dataObj,tagLabel){
 	}
 	else{ return '';}
 }
+/*is it reserved?*/
 function isItemReserved(dataObj,tagLabel){
 	if(dataObj == '1'){ 
 		return 'isReserved';
 	}
 	else{ return '';}
 }
+/*This acquires an array of all classes marked as checked by the jquery tag writing (callTag), grabs their ID and
+sends them to giveParents*/
 function runParentFinder(){
 	var checkedKids = cj('dt.checked');
 	for(var i = 0;i < checkedKids.length;i++)
@@ -276,6 +335,8 @@ function runParentFinder(){
 		giveParentsIndicator(idGrab,'add');
 	}
 }
+/*giveParents marks the tags parents in question as being marked up the tree to give inheritance and notation
+that there's tags underneath*/
 function giveParentsIndicator(tagLabel,toggleParent){
 	if(toggleParent == 'add')
 	{
@@ -295,7 +356,8 @@ function giveParentsIndicator(tagLabel,toggleParent){
 	
 	}
 }
-
+/*This is the add functionality that hooks into the tag ajax to add new tags, makes a dialog with jQUI
+and then creates a request on done.*/
 function makeModalAdd(tagLabel){
 	cj("#dialog").show();
 	cj("#dialog").dialog({
@@ -348,7 +410,7 @@ function makeModalAdd(tagLabel){
 						}
 						cj('#dialog').dialog('close');
 						cj('#dialog').dialog('destroy');
-						resetBBTree('main');
+						callTagAjax();
 					}
 				});
 			},
@@ -359,6 +421,9 @@ function makeModalAdd(tagLabel){
 		} 
 	});
 }
+/*This is the Remove functionality that hooks into the tag ajax to add new tags, only difference is is that
+it breaks out an error message to something more user friendly. it can be broken out into it's own function if
+there are a copious amount of errors in the future to worry about other than Child Tag issues*/
 function makeModalRemove(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
@@ -395,11 +460,15 @@ function makeModalRemove(tagLabel){
 								success: function(data, status, XMLHttpRequest) {
 									if(data.code != 1)
 									{
-										alert(data.message);
+										if(data.message == 'DB Error: constraint violation')
+										{
+											alert('Error: Child Tag Exists');
+										}
+										else { alert(data.message); }
 									}
 									cj('#dialog').dialog('close');
 									cj('#dialog').dialog('destroy');
-									resetBBTree('main');
+									callTagAjax();
 								}
 							});
 
@@ -426,6 +495,7 @@ function makeModalRemove(tagLabel){
 		} 
 	});
 }
+/*Updates the tag with new info*/
 function makeModalUpdate(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
@@ -481,7 +551,7 @@ function makeModalUpdate(tagLabel){
 						}
 						cj('#dialog').dialog('close');
 						cj('#dialog').dialog('destroy');
-						resetBBTree('main');
+						callTagAjax();
 					}
 				});
 			},
@@ -493,73 +563,10 @@ function makeModalUpdate(tagLabel){
 		} 
 	});
 }
-function makeModalMerge(tagLabel){
-	cj("#dialog").show( );
-	cj("#dialog").dialog({
-		draggable: false,
-		height: 300,
-		width: 300,
-		title: "Update Tag",
-		modal: true, 
-		bgiframe: true,
-		close:{ },
-		overlay: { 
-			opacity: 0.2, 
-			background: "black" 
-		},
-		open: function() {
-			tagInfo = new Object();
-			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
-			tagInfo.description = cj('.BBtree.edit dt#' + tagLabel).attr('description');
-			tagInfo.reserved = cj('.BBtree.edit dt#'+tagLabel).hasClass('isReserved');
-			var updateDialogInfo;
-			if(tagInfo.reserved == true){
-			tagInfo.reserved = 'checked';} else {
-			tagInfo.reserved = '';
-			updateDialogInfo += '<div class="modalHeader">Add new tag under ' + tagInfo.name + '</div>';
-			updateDialogInfo += '<div class="modalInputs">';
-			updateDialogInfo += '<div><span>Tag Name:</span ><input type="text" name="tagName" value="'+tagInfo.name+'" /></div>';
-			updateDialogInfo += '<div><span>Description:</span ><input type="text" name="tagDescription" value="'+tagInfo.description+'"/></div>';
-			updateDialogInfo += '<div><span>Reserved:</span><input type="checkbox" name="isReserved" '+tagInfo.reserved+'/></div>';}
-			cj('#dialog').html(updateDialogInfo);
-			cj('#dialog input:[name=tagName]').focus();
-		},
-		buttons: {
-			"Done": function () {
-				tagUpdate = new Object();
-				tagUpdate.tagName = cj('#dialog .modalInputs input:[name=tagName]').val();
-				tagUpdate.tagDescription = cj('#dialog .modalInputs input:[name=tagDescription]').val();
-				tagUpdate.currentId = tagLabel.replace('tagLabel_', '');
-				tagUpdate.isReserved = cj('#dialog .modalInputs input:checked[name=isReserved]').length;
-				cj.ajax({
-					url: '/civicrm/ajax/tag/update',
-					data: {
-						name: tagUpdate.tagName,
-						description: tagUpdate.tagDescription,
-						id: tagUpdate.currentId,
-						is_reserved: tagUpdate.isReserved	
-					},
-					dataType: 'json',
-					success: function(data, status, XMLHttpRequest) {
-						if(data.code != 1)
-						{
-							alert(data.message);
-						}
-						cj('#dialog').dialog('close');
-						cj('#dialog').dialog('destroy');
-						resetBBTree('main');
-					}
-				});
-			},
-			"Cancel": function() { 
+/*Merge hijacks the old process to use their autocomplete function*/
 
-				cj(this).dialog("close"); 
-				cj(this).dialog("destroy"); 
-			}
-		} 
-	});
-}
+/*makes a modal tree, this is the more involved one than the rest because it's calling a tree structure and
+having to replicate much of the same combinations, it moves to modalSelectOnclick to open a dialog box*/
 function makeModalTree(tagLabel){
 	cj("#dialog").show( );
 	cj("#dialog").dialog({
@@ -567,7 +574,7 @@ function makeModalTree(tagLabel){
 		draggable: false,
 		height: 500,
 		width: 400,
-		title: "Move Tag to...",
+		title: "Move Tag",
 		modal: true, 
 		bgiframe: true,
 		close:{ },
@@ -578,17 +585,20 @@ function makeModalTree(tagLabel){
 		open: function() {
 			tagInfo = new Object();
 			tagInfo.id = tagLabel;
-			tagInfo.name = cj('.BBtree.edit dt#' + tagLabel + ' .tag').html();
-			tagInfo.reserved = cj('.BBtree.edit dt#'+tagLabel).hasClass('isReserved');
+			tagInfo.name = cj('.BBtree.edit.manage dt#' + tagLabel + ' .tag').html();
+			tagInfo.reserved = cj('.BBtree.edit.manage dt#'+tagLabel).hasClass('isReserved');
 			var treeDialogInfo;
 			if(tagInfo.reserved == true){
 			treeDialogInfo = '<div class="modalHeader">This tag is reserved and cannot be moved</div>';
 			cj('#dialog').html(treeDialogInfo);
 			} else {
-			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + '</span></div>';
+			treeDialogInfo = '<div class="modalHeader">Move <span tID="'+tagInfo.id+'">' + tagInfo.name + ' under Tag...</span></div>';
 			treeDialogInfo += '<div class="BBtree modal"></div>';
 			cj('#dialog').html(treeDialogInfo);
-			resetBBTree('modal', 'init');}
+			var modalTreeTop = cj('.BBtree.edit.manage dt#' + tagLabel).parents('.lv-0').children('.lv-0').attr('tid');
+			
+			callTagAjax('modal', modalTreeTop);
+			}
 		},
 		buttons: {
 			"Cancel": function() { 
@@ -598,6 +608,7 @@ function makeModalTree(tagLabel){
 		} 
 	});
 }
+/*this is the second portion of the Modal box, where it takes the click function and makes a 'move' button*/
 function modalSelectOnClick() {
 	cj('.BBtree input.selectRadio').click(function(){
 		var destinationId = cj(this).parent().parent('dt').attr('tid');
@@ -622,7 +633,7 @@ function modalSelectOnClick() {
 							}
 							cj('#dialog').dialog('close');
 							cj('#dialog').dialog('destroy');
-							resetBBTree('main');
+							callTagAjax();
 						}
 					});
 
@@ -637,95 +648,4 @@ function modalSelectOnClick() {
 			}
 		]);
 	});
-}
-function addControlBox(tagLabel, IDChecked) {
-	var floatControlBox;
-	var tagMouse = 'dt#'+tagLabel;
-	floatControlBox = '<span class="fCB" style="padding:1px 0;float:right;">';
-	floatControlBox += '<ul>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; float:left;" onclick="makeModalAdd(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -17px 0px; float:left;" onclick="makeModalRemove(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -34px 0px; float:left;" onclick="makeModalTree(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -50px 0px; float:left;" onclick="makeModalUpdate(\''+ tagLabel +'\')"></li>';
-	/*floatControlBox += '<li style="height:16px; width:16px; margin:auto 1px; background-position: -66px 0px; float:left;" onclick="makeModalMerge(\''+ tagLabel +'\')"></li>';
-	floatControlBox += '<li style="height:16px; width:16px; margin:-1px 4px 0 -2px; background:none; float:left;">';
-	if(IDChecked == ' checked'){
-		floatControlBox += '<input type="checkbox" class="checkbox" checked onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
-	} else {
-		floatControlBox += '<input type="checkbox" class="checkbox" onclick="checkRemoveAdd(\''+tagLabel+'\')"></input></li></ul>';
-	}*/
-	floatControlBox += '</span>';
-	if(tagMouse != 'dt#tagLabel_291')
-	{
-		return(floatControlBox);
-	} else { return ''; }
-}
-function checkRemoveAdd(tagLabel) {
-	var n = cj('.BBtree.edit dt#'+ tagLabel).hasClass('checked');
-	tagLabelID = tagLabel.replace('tagLabel_', '');
-	if(n == false)
-	{
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/create',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				cj('.BBtree.edit dt#'+tagLabel).addClass('checked');
-				giveParentsIndicator(tagLabel,'add');
-			}
-		});
-		
-	} else {
-		cj.ajax({
-			url: '/civicrm/ajax/entity_tag/delete',
-			data: {
-				entity_type: 'civicrm_contact',
-				entity_id: cid,
-				tag_id: tagLabelID
-				},
-			dataType: 'json',
-			success: function(data, status, XMLHttpRequest) {
-				if(data.code != 1) {alert('fails');}
-				findIDLv(tagLabel);
-			}
-		});
-	}
-}
-function findIDLv(tagLabel) {
-	var idLv = cj('dt#'+tagLabel).attr('class').split(' ');
-	if(idLv.length > 0)
-	{
-		for(var i = 0; i < idLv.length; i++){
-			var checkForLv = idLv[i].search('lv\-.*');
-			if(checkForLv >= 0)
-			{
-				var tagLv = idLv[i].replace('lv\-','');
-				break;
-			}
-			else
-			{
-				alert('Error During Untagging');
-			}
-			
-		}
-	}
-	var tagLvLabel = tagLabel;
-	for(tagLv; tagLv >= 0; tagLv--){
-		var findSibMatch = 0;
-		findSibMatch += cj('dt#'+tagLvLabel).siblings('.subChecked').length;
-		findSibMatch += cj('dt#'+tagLvLabel).siblings('.checked').length;
-		if(findSibMatch == 0){
-			tagLvLabel = cj('dt#'+tagLvLabel).parent().attr('id');
-			cj('dt#'+tagLvLabel).removeClass('checked');
-			cj('dt#'+tagLvLabel).removeClass('subChecked');
-			break;
-		}
-		else{ break;}
-	}
-	cj('dt#'+tagLabel).removeClass('checked');
 }
