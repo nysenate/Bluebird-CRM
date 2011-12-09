@@ -45,7 +45,7 @@ set -x
 # kz: Kludge Alert: The images/template directory must be read-only so that
 # Senators cannot delete their own header and footer images.  I am chowning
 # the directory to "root" so that only root can modify images there.
-chown -R root "$datadir"/*/pubfiles/images/template
+chown -R root "$datdir"/*/pubfiles/images/template
 
 [ "$impowner" ] && chown -R "$impowner" "$impdir/"
 [ "$impperms" ] && chmod -R "$impperms" "$impdir/"
