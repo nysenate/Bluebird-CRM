@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-13
-# Revised: 2011-02-09
+# Revised: 2011-12-09
 #
 
 prog=`basename $0`
@@ -42,6 +42,10 @@ set -x
 
 [ "$datowner" ] && chown -R "$datowner" "$datdir/"
 [ "$datperms" ] && chmod -R "$datperms" "$datdir/"
+# kz: Kludge Alert: The images/template directory must be read-only so that
+# Senators cannot delete their own header and footer images.  I am chowning
+# the directory to "root" so that only root can modify images there.
+chown -R root "$datdir"/*/pubfiles/images/template
 
 [ "$impowner" ] && chown -R "$impowner" "$impdir/"
 [ "$impperms" ] && chmod -R "$impperms" "$impdir/"
