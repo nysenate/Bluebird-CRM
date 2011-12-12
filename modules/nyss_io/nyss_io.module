@@ -775,7 +775,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     nyss_out('status',"$num_updated updated, $num_created created.", true);
   	nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
 	
-	
+	//various postProcessing cleanup steps
 	if ( !$dryrun ) {
 		$bbconfig = get_bluebird_instance_config();
 		
@@ -790,6 +790,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		    $greetingCreate = shell_exec( $greetingScript );
 		    nyss_out('status', $greetingCreate, true);
 		}
+
+        //check for malformed emails and place on hold
+        $flagEmailScript  = $bbconfig['app.rootdir'].'/scripts/flagBadEmails.sh --ok '.$bbconfig['shortname'];
+        $flagEmailCleanup = shell_exec( $flagEmailScript );
+        nyss_out('status', $flagEmailCleanup, true);
 	}
 
   	nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
