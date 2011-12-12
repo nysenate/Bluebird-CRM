@@ -46,6 +46,14 @@
      <is_public>true</is_public>
      <weight>800</weight>
   </item>
+  <!--4760-->
+  <item>
+     <path>civicrm/mailing/report/event</path>
+     <title>Mailing Event</title>
+     <page_callback>CRM_Mailing_Page_Event</page_callback>
+     <access_arguments>access CiviMail;access CiviReport</access_arguments>
+     <weight>695</weight>
+  </item>
   
   <!--JIRA 7734-->
   <item>
