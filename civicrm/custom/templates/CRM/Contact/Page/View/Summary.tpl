@@ -57,6 +57,7 @@
         {/if}
 
         {* Check for permissions to provide Restore and Delete Permanently buttons for contacts that are in the trash. *}
+        {*NYSS 4715 - move the delete button to the action dropdown; delete permanently and restore will remain*}
         {if (call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and 
         $is_deleted)}
             <li class="crm-delete-action crm-contact-restore">
@@ -73,14 +74,6 @@
                     </a>
                 </li>
             {/if}
-
-        {elseif call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
-            {assign var='deleteParams' value=$urlParams|cat:"&reset=1&delete=1&cid=$contactId"}
-            <li class="crm-delete-action crm-contact-delete">
-                <a href="{crmURL p='civicrm/contact/view/delete' q=$deleteParams}" class="delete button" title="{ts}Delete{/ts}">
-                <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
-                </a>
-            </li>
         {/if}
 
         {* Previous and Next contact navigation when accessing contact summary from search results. *}
