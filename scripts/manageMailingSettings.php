@@ -105,9 +105,9 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
   $cb = $civiConfig['backend'];
   $cb['enableComponents'][]   = 'CiviMail';
   $cb['enableComponentIDs'][] = 4;
-  $cb['mailerBatchLimit']     = 2500;
-  $cb['mailerJobSize']        = 2500;
-  $cb['mailerJobsMax']        = 2;
+  $cb['mailerBatchLimit']     = 1000;
+  $cb['mailerJobSize']        = 1000;
+  $cb['mailerJobsMax']        = 10;
   
   $sql = "UPDATE civicrm_domain SET config_backend='".serialize($cb)."' WHERE id=1;";
   if ( !mysql_query($sql, $dbcon) ) {
