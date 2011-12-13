@@ -154,6 +154,7 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   $s_bbcfg['data_dirname'] = "$data_basename$base_domain";
   $s_bbcfg['servername'] = "$shortname$base_domain";
   $s_bbcfg['shortname'] = $shortname;
+  $s_bbcfg['install_class'] = substr(strrchr(BASE_DIR, '_'), 1);
   return $s_bbcfg;
 } // get_bluebird_instance_config()
 
