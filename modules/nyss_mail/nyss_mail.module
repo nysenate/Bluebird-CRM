@@ -37,17 +37,19 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
         $params['Reply-To'] = $replyto;
 
         if ( $params['job_id'] ) {
-            $jobID = $params['job_id'];
-            $mid   = CRM_Core_DAO::singleValueQuery("SELECT mailing_id FROM civicrm_mailing_job WHERE id = $jobID;");
+            $jid = $params['job_id'];
+            $mid = CRM_Core_DAO::singleValueQuery("SELECT mailing_id FROM civicrm_mailing_job WHERE id = $jid;");
             $mname = CRM_Core_DAO::singleValueQuery("SELECT name FROM civicrm_mailing WHERE id = $mid;");
             unset($params['job_id']);
         }
 
         //Sendgrid headers
         $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
-		$hdr->setUniqueArgs( array ( 'mailing_id' => $mid,
-		                             'job_id'     => $jobID,
-									 'instance'   => $bbconfig['instance'] ) );
+        $hdr->setUniqueArgs(array('mailing_id' => $mid,
+                                  'job_id' => $jid,
+                                  'instance' => $bbconfig['shortname'],
+                                  'install_class' => $bbconfig['install_class'],
+                                  'servername' => $bbconfig['servername']));
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
         $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>."); 
         $hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
