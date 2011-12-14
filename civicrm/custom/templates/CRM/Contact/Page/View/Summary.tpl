@@ -340,8 +340,19 @@
                                         <td><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
                                         {*NYSS - LCD #2555*}
                                         {if $privacy.do_not_email || $item.on_hold}{$item.email}
-                                        {else}<a href="mailto:{$item.email}">{$item.email}</a>{/if}
-                                        {if $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}</span></td>
+                                        {else}<a href="mailto:{$item.email}">{$item.email}</a>
+                                        {/if}
+
+                                        {*NYSS 4603 4601*}
+                                        {if $item.on_hold}&nbsp;({ts}On Hold: {/ts}
+                                            {if $emailMailing.$blockId.mailingID}
+                                                {assign var=mid value=$emailMailing.$blockId.mailingID}
+                                                <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>)
+                                            {else}{$item.hold_date|crmDate:"%m/%d/%Y"})
+                                            {/if}
+                                        {/if}
+                                        {if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}
+                                        </span></td>
 					                    <td class="description">{if $item.signature_text OR $item.signature_html}<a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>{/if}</td>
                                     </tr>
                                     <tr id="Email_Block_{$blockId}_signature" class="hiddenElement">
