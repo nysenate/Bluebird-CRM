@@ -76,6 +76,7 @@ function civicrm_script_init_cli($shopts, $longopts)
   // Must set the HTTP_HOST before calling civicrm.config.php.
   $_SERVER['PHP_SELF'] = "/index.php";
   $_SERVER['HTTP_HOST'] = $myopts['site'];
+  S_SERVER['SERVER_NAME'] = $myopts['site'];
   $_SERVER['SCRIPT_FILENAME'] = __FILE__;
   $_REQUEST['key'] = $myopts['key'];
   return $myopts;
