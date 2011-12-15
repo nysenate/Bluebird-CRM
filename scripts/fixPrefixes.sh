@@ -84,7 +84,7 @@ upd_cached="display_name=null,email_greeting_id=null,email_greeting_custom=null,
 sql="update civicrm_contact set $upd_female, $upd_cached where $cond_noprefix and $cond_female; update civicrm_contact set $upd_male, $upd_cached where $cond_noprefix and $cond_male;"
 
 $execSql -i $instance -c "$sql"
-$recache --field-displayname $instance
+$recache --field-displayname --ok $instance
 php $greetings -S $instance 
 
 
