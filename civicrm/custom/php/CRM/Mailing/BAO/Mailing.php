@@ -1103,6 +1103,7 @@ AND civicrm_contact.is_opt_out =0";
 
         //NYSS
         $mailParams['job_id']  = $job_id;
+        $mailParams['event_queue_id'] = $event_queue_id;
 
         require_once 'CRM/Utils/Hook.php';
         CRM_Utils_Hook::alterMailParams( $mailParams, 'civimail' );
