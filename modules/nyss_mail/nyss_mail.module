@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
 
@@ -17,7 +17,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
         $params[$bodyvalue] = preg_replace( '#[a-z0-9_-]+\.crm(dev|test)?\.nysenate\.gov/sites/([a-z0-9_-]+)\.(crm(dev|test)?)\.nysenate\.gov/pubfiles/#i', 'pubfiles.nysenate.gov/$3/$2/', $params[$bodyvalue] );
     }
 
-    $hdr = new SmtpApiHeader(); 
+    $hdr = new SmtpApiHeader();
 
     //universal settings
     $bbconfig = get_bluebird_instance_config();
@@ -55,9 +55,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
                                   'instance' => $bbconfig['shortname'],
                                   'install_class' => $bbconfig['install_class'],
                                   'servername' => $bbconfig['servername'],
-                                  'email_queue_id' => $email_queue_id));
+                                  'queue_id' => $email_queue_id));
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
-        $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>."); 
+        $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>.");
         $hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
 
     } else {
@@ -85,28 +85,28 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 function nyss_mail_civicrm_buildForm( $formName, &$form ) {
 
     if ( $formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing ) {
-    
+
         //get base mailing group, add to option list, set as default, then freeze field
         $params = array ( 'name' => BASE_SUBSCRIPTION_GROUP );
         $groupObjects = CRM_Contact_BAO_Group::getGroups( $params );
-        
+
         $groupID = $groupObjects[0]->id;
         $groupTitle = $groupObjects[0]->title;
         $baseGroup =& $form->getElement('baseGroup');
         $baseGroup->addOption( $groupTitle, $groupID );
-        
+
         $defaults['baseGroup'] = $groupID;
         $form->setDefaults( $defaults );
-        
+
         $baseGroup->freeze();
-    
+
     }
 
     if ( $formName == 'CRM_Mailing_Form_Group' ) {
         $defaults['dedupe_email'] = true;
         $form->setDefaults( $defaults );
     }
-    
+
     if ( $formName == 'CRM_Mailing_Form_Test' ) {
         //change button text
         $buttons =& $form->getElement('buttons');
@@ -116,7 +116,7 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
             }
         }
     }
-    
+
     if ( $formName == 'CRM_Mailing_Form_Schedule' ) {
         //change button text
         $buttons =& $form->getElement('buttons');
@@ -133,11 +133,11 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
          $formName == 'CRM_Mailing_Form_Schedule' ) {
         CRM_Utils_System::setTitle( 'New Mass Email' );
     }
-    
+
     if ( $formName == 'CRM_Mailing_Form_Search' ) {
         $parent = $form->controller->getParent();
         $title  = $parent->getVar('_title');
-        
+
         if ( $title == 'Draft and Unscheduled Mailings' ) {
             CRM_Utils_System::setTitle( 'Draft and Unscheduled Email' );
         } elseif ( $title == 'Scheduled and Sent Mailings' ) {
