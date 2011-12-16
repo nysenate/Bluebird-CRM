@@ -44,7 +44,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
         }
 
         if ( isset($params['email_queue_id']) ) {
-            $email_queue_id = $params['$email_queue_id'];
+            $email_queue_id = $params['email_queue_id'];
             unset($params['email_queue_id']);
         }
 
