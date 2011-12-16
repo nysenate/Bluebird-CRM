@@ -43,9 +43,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
             unset($params['job_id']);
         }
 
-        if ( isset($params['email_queue_id']) ) {
-            $email_queue_id = $params['email_queue_id'];
-            unset($params['email_queue_id']);
+        if ( isset($params['event_queue_id']) ) {
+            $event_queue_id = $params['event_queue_id'];
+            unset($params['event_queue_id']);
         }
 
         //Sendgrid headers
@@ -55,7 +55,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
                                   'instance' => $bbconfig['shortname'],
                                   'install_class' => $bbconfig['install_class'],
                                   'servername' => $bbconfig['servername'],
-                                  'queue_id' => $email_queue_id));
+                                  'queue_id' => $event_queue_id));
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
         $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>.");
         $hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
