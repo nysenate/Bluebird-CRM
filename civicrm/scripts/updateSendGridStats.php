@@ -53,8 +53,8 @@ foreach($event_map as $event_type => $event_processor) {
             JOIN $event_type ON event.id=$event_type.event_id
             WHERE processed=0
               AND servername='{$bbconfig['servername']}'
-              AND IFNULL(queue_id,'') != ''
-            ORDER BY dt_received
+              AND IFNULL(queue_id,0) != 0
+            ORDER BY timestamp
             ".( $limit ? " LIMIT $limit" : ''), $conn
         );
 
@@ -73,11 +73,12 @@ foreach($event_map as $event_type => $event_processor) {
                 $in_process = false;
 
             //When we've reached the batch limit or the end of the rows
-            if(count($events) >= $batch_size || $in_process == false) {
+            if(!empty($events) && (count($events) >= $batch_size || $in_process == false)) {
 
                 //Pass in both the optList and the bbconfig just in case one
                 //of the event processors needs to be configurable either on
                 //an instance or runtime basis.
+                echo "Processing ".count($events)." $event_type events.\n";
                 call_user_func($event_processor,$events,$optList,$bbconfig);
 
                 //Record the successful processing of the batch in the database
@@ -101,19 +102,20 @@ foreach($event_map as $event_type => $event_processor) {
 function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
     /* Requires the following table to be created....
 
+    DROP TABLE IF EXISTS civicrm_mailing_event_sendgrid_delivered;
     CREATE TABLE civicrm_mailing_event_sendgrid_delivered (
-        id int(10) unsigned PRIMARY KEY,
+        id int(10) unsigned PRIMARY KEY AUTO_INCREMENT,
         event_queue_id int(10) unsigned,
         time_stamp datetime,
-        FOREIGN KEY (event_queue_id) REFERENCES civicrm_mailing_event_queue(id),
-    )
+        FOREIGN KEY (event_queue_id) REFERENCES civicrm_mailing_event_queue(id)
+    );
     */
 
     require_once 'CRM/Core/DAO.php';
 
     $values = array();
     foreach($events as $pair)
-        $values[] = "({$pair['queue']['id']},NOW)";
+        $values[] = "({$pair['queue']['id']},NOW())";
 
     CRM_Core_DAO::executeQuery("
         INSERT INTO civicrm_mailing_event_sendgrid_delivered
@@ -125,7 +127,7 @@ function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
 function process_open_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Opened.php';
     foreach($events as $pair) {
-        list($event, $queue_event) = $pair;
+        list($event, $queue_event) = array_values($pair);
         CRM_Mailing_Event_BAO_Opened::open($queue_event['id']);
     }
 }
@@ -135,16 +137,16 @@ function process_click_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/TrackableURLOpen.php';
 
     foreach($events as $pair) {
-        list($event, $queue_event) = $pair;
+        list($event, $queue_event) = array_values($pair);
         // Create the new urls as we come across them since we don't use the
         // CiviCRM url-encoder
         $tracker = new CRM_Mailing_BAO_TrackableURL();
-        $tracker->url = $url;
-        $tracker->mailing_id = $mailing_id;
+        $tracker->url = $event['url'];
+        $tracker->mailing_id = $event['mailing_id'];
         if(!$tracker->find(true))
             $tracker->save();
 
-        CRM_Mailing_BAO_Event_TrackableURLOpen::track($tracker->id, $queue_event->id);
+        CRM_Mailing_Event_BAO_TrackableURLOpen::track($queue_event['id'], $tracker->id);
     }
 }
 
@@ -154,7 +156,7 @@ function process_bounce_events($events, $optList, $bbconfig) {
 
     //If there was a way to do this in batches it'd be awesome....
     foreach($events as $pair) {
-        list($event, $queue_event) = $pair;
+        list($event, $queue_event) = array_values($pair);
         $params = array(
             'job_id'         => $queue_event['job_id'],
             'event_queue_id' => $queue_event['id'],
@@ -172,11 +174,11 @@ function process_unsubscribe_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
 
     foreach($events as $pair) {
-        list($event, $queue_event) = $pair;
+        list($event, $queue_event) = array_values($pair);
         $unsubs = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_domain(
             $queue_event['job_id'],
             $queue_event['id'],
-            $queue['hash']
+            $queue_event['hash']
         );
 
         if(!$unsubs) {
@@ -190,8 +192,8 @@ function get_queue_event($event) {
 
     $result = CRM_Core_DAO::executeQuery("
         SELECT queue.*
-        FROM civicrm_mailing_event_queue
-        WHERE queue_id={$event['queue_id']}
+        FROM civicrm_mailing_event_queue as queue
+        WHERE queue.id={$event['queue_id']}
     ");
 
     return ($result && $result->fetch()) ? (array) $result : null;
@@ -214,7 +216,7 @@ function get_accumulator_connection($bbconfig) {
         exit(1);
     }
 
-    if( !mysql_select_db("statserver",$conn) ) {
+    if( !mysql_select_db($name,$conn) ) {
         error_log("Could not use '$name': ".mysql_error($conn));
         exit(1);
     }
@@ -229,7 +231,7 @@ function array_get($key, $source, $default='') {
 }
 
 function exec_query($sql, $conn) {
-    if(! ($result = mysql_query($sql,$conn)) ) {
+    if(($result = mysql_query($sql,$conn)) === FALSE) {
         error_log("Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
         exit(1);
     }
