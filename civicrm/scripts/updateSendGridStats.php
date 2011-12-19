@@ -18,12 +18,12 @@ list($optList, $config) = initialize_civicrm(array(
 $event_map = array(
     'bounce'        => 'process_bounce_events',
     'click'         => 'process_click_events',
-    'deffered'      => '',
-    'delivered'     => 'process_sendgrid_delivered_events',// | needs rewrite
-    'dropped'       => '',
+    'deferred'      => '', //Ignore these, don't need to record delays
+    'delivered'     => 'process_sendgrid_delivered_events',
+    'dropped'       => '', //TODO: this is a red flag of sorts
     'open'          => 'process_open_events',
-    'processed'     => '',
-    'spamreport'    => '',
+    'processed'     => '', //Ignore these, already have a record from our side
+    'spamreport'    => 'process_spamreport_events',
     'unsubscribe'   => 'process_unsubscribe_events'
 );
 
@@ -167,10 +167,14 @@ function process_bounce_events($events, $optList, $bbconfig) {
         $params += CRM_Mailing_BAO_BouncePattern::match($event['reason']);
 
         CRM_Mailing_Event_BAO_Bounce::create($params);
+
+        //Since we do our own bounce handling mechanism, disable sendgrid's by
+        //removing the emails from their internal bounce list.
+        remove_email_from_sendgrid_list($event['email'],'bounces',$bbconfig);
     }
 }
 
-function process_unsubscribe_events($events, $optList, $bbconfig) {
+function process_unsubscribe_events($events, $optList, $bbconfig, $list='unsubscribes') {
     require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
 
     foreach($events as $pair) {
@@ -183,8 +187,19 @@ function process_unsubscribe_events($events, $optList, $bbconfig) {
 
         if(!$unsubs) {
             //There was some sort of error! Oh no...
+        } else {
+            remove_email_from_sendgrid_list($event['email'],$list,$bbconfig);
         }
     }
+}
+
+
+function process_spamreport_events($events, $optList, $bbconfig) {
+    // Currently just a register as an unsubscribe event.
+    // TODO: we need to come up with a way to record the differences in
+    //       origin since spamreporting and unsubscribing are really quite
+    //       a bit different.
+    process_unsubscribe_events($events, $optList, $bbconfig, 'spamreports');
 }
 
 function get_queue_event($event) {
@@ -224,6 +239,20 @@ function get_accumulator_connection($bbconfig) {
     return $conn;
 }
 
+function remove_email_from_sendgrid_list($email, $list, $bbconfig) {
+    $smtpuser = $bbconfig['smtp.user'];
+    $smtppass = $bbconfig['smtp.pass'];
+    $smtpsubuser = $bbconfig['smtp.subuser'];
+
+    // Attempt to delete the specified email; Example Response
+    //
+    //  <result>
+    //      <message>success</message>
+    //  </result>
+    $url = "https://sendgrid.com/apiv2/customer.$list.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete&email=$email";
+    $response = simplexml_load_file($bounceDeleteUrl);
+    return ($response->message == 'success');
+}
 
 /* Maybe these should get thown into the script_utils file at some point. */
 function array_get($key, $source, $default='') {
