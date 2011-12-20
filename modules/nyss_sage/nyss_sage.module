@@ -39,25 +39,6 @@ function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
         }
 
         CRM_Utils_SAGE::lookup($params,$overwrite_districts);
-
-        //NYSS 4735
-        //Fix zero left padding for district codes
-        $paddingLookup = array(
-            'congressional_district' => array('key'=>'custom_46_','padding'=>2),
-            'senate_district'        => array('key'=>'custom_47_','padding'=>2),
-            'assembly_district'      => array('key'=>'custom_48_','padding'=>3),
-            'election_district'      => array('key'=>'custom_49_','padding'=>3),
-            'county_code'            => array('key'=>'custom_50_','padding'=>2),
-        );
-
-        foreach($params as $key => $value) {
-            foreach($paddingLookup as $field) {
-                if(strpos($key, $field['key'])!==FALSE && is_numeric($value)) {
-                    $params[$key] = str_pad($value,$field['padding'],'0',STR_PAD_LEFT);
-                }
-            }
-        }
-
     }
     return true;
 }
