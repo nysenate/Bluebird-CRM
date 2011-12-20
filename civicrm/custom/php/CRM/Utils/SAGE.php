@@ -69,7 +69,7 @@ class CRM_Utils_SAGE
         // QQQ: Why is this the only place we do the state lookup?
         $stateProvince = self::getStateProvince($values, $stateName);
         list($addr_field, $addr) = self::getAddress($values);
-        
+
         //Construct and send the API Request. Note the service=geocoder.
         //Without it SAGE will default to Yahoo as the geocoding provider.
         //geocoder is the Senate's own geocoding provider, which uses the
@@ -139,13 +139,13 @@ class CRM_Utils_SAGE
 
      public static function lookup_from_point( &$values, $overwrite_districts=true) {
      	$url = 'xml/bluebirdDistricts/latlon/';
-     	
+
      	$url = $url.
      		CRM_Utils_Array::value('geo_code_1',$values,"").
      		",".
      		CRM_Utils_Array::value('geo_code_2',$values,"")
      		."?";
-     	
+
 		$params = http_build_query(
 			array(
 				'key' => SAGE_API_KEY,
@@ -154,13 +154,13 @@ class CRM_Utils_SAGE
 		$request = new HTTP_Request(SAGE_API_BASE . $url . $params);
 		$request->sendRequest();
 		$xml = simplexml_load_string($request->getResponseBody());
-		
+
 		if(!self::validateResponse($xml)) {
 			$msg = "SAGE Warning: Lookup for [$params] has failed.\n";
 			$session->setStatus(ts($msg));
 			return false;
 		}
-		
+
 		self::storeDistricts($values, $xml, $overwrite_districts);
         return true;
      }
@@ -218,7 +218,7 @@ class CRM_Utils_SAGE
 
     private static function validateResponse($xml)
     {
-    	 
+
         //Fail silently if the XML response from SAGE was invalid
         //XML and could not be parsed into a simplexml object
         if (!$xml)
@@ -299,7 +299,7 @@ class CRM_Utils_SAGE
         	$values["geo_code_1"] = (string)$xml->lat;
         if($overwrite || !$values["geo_code_2"])
         	$values["geo_code_2"] = (string)$xml->lon;
-        
+
     }
 
 
