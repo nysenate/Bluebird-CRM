@@ -1444,3 +1444,9 @@ ul.token-input-list-facebook { width:265px;}
 .crm-printproductionexport-form-block .crmasmContainer {
 	width: 200px;
 }
+
+/*contact summary page*/
+#crm-container .contact_panel #customFields {
+	padding: 4px;
+	width: 99%;
+}
