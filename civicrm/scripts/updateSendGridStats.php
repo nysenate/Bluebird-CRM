@@ -1,12 +1,26 @@
 <?php
 
+//Global primarily for the log_ function
+global $optList;
+
 require_once 'script_utils.php';
 
-list($optList, $config) = initialize_civicrm(array(
-    'shortOpts' => 'pbu',
-    'longOpts' => array('profile', 'bounce', 'unsubscribe'),
-    'usage' => "[--profile|-p]  [--bounce|-b]  [--unsubscribe|-u]"
-));
+$prog = basename(__FILE__);
+
+$shortOpts   = 'f:m:l:acosdrbn';
+$longOpts    = array('file=','maxbatch=','limit=','all','click', 'open', 'spamreport', 'delivered', 'dropped', 'bounce', 'unsubscribe');
+
+$stdusage = civicrm_script_usage();
+$scriptUsage = "[--file|-f LOG_FILE] [--limit|-l LIMIT=0] [--maxbatch|-m MAX_BATCH=1] [--all|-a] [--click|-c] [--open|-o] [--spamreport|-s] [--delivered|-d] [--dropped|-r] [--bounce|-b] [--unsubscribe|-n]";
+
+if (! $optList = civicrm_script_init($shortOpts, $longOpts) ) {
+  error_log("Usage: $prog  $stdusage $scriptUsage");
+  exit(1);
+}
+
+//Creating the CRM_Core_Config class bootstraps the rest
+require_once 'CRM/Core/Config.php';
+$config = CRM_Core_Config::singleton();
 
 //Store the run parameters in a map for easy looping and clean DRY code.
 //  Key is the table name of the event in the accumulator
@@ -18,26 +32,35 @@ list($optList, $config) = initialize_civicrm(array(
 $event_map = array(
     'bounce'        => 'process_bounce_events',
     'click'         => 'process_click_events',
-    'deferred'      => '', //Ignore these, don't need to record delays
+    //'deferred'      => '', //Ignore these, don't need to record delays
     'delivered'     => 'process_sendgrid_delivered_events',
     'dropped'       => '', //TODO: this is a red flag of sorts
     'open'          => 'process_open_events',
-    'processed'     => '', //Ignore these, already have a record from our side
+    //'processed'     => '', //Ignore these, already have a record from our side
     'spamreport'    => 'process_spamreport_events',
     'unsubscribe'   => 'process_unsubscribe_events'
 );
 
-//We'll go with no limit for now, can make this configurable
+// Allow filtering of the events to be processed on the commandline
+if(!array_get('all',$optList,FALSE)) {
+    foreach($event_map as $key => $value) {
+        if(!$optList[$key])
+            unset($event_map[$key]);
+    }
+}
+
 // Limits can be useful for putting a cap on the amount of work done in any
 // one run of the cron job
-$limit = false;
+$limit = array_get('limit',$optList,FALSE);
 
-//Do things one at a time for now, can make this configurable
 // Batches can be useful for reducing the back and forth queries performed here.
 // Unless batch inserts are defined on the CiviCRM level though using batches is
 // risky because in theory a script could be interrupted with no record of what
 // was processed
-$batch_size = 1;
+$batch_size = array_get('maxbatch',$optList,1);
+
+$event_types = implode(',',array_keys($event_map));
+log_("[NOTICE] Running for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.");
 
 $bbconfig = get_bluebird_instance_config();
 $conn = get_accumulator_connection($bbconfig);
@@ -57,6 +80,9 @@ foreach($event_map as $event_type => $event_processor) {
             ORDER BY timestamp
             ".( $limit ? " LIMIT $limit" : ''), $conn
         );
+
+        if(mysql_num_rows($new_events) != 0)
+            log_("[NOTICE] Processing ".mysql_num_rows($new_events)." {$event_type}s.");
 
         $events = array();
         $in_process = true;
@@ -186,7 +212,7 @@ function process_unsubscribe_events($events, $optList, $bbconfig, $list='unsubsc
         );
 
         if(!$unsubs) {
-            //There was some sort of error! Oh no...
+            log_("[ERROR] Unsubscribe failed processing event_id {$event['id']}");
         } else {
             remove_email_from_sendgrid_list($event['email'],$list,$bbconfig);
         }
@@ -221,18 +247,18 @@ function get_accumulator_connection($bbconfig) {
     $host = array_get('accumulator.host',$bbconfig);
 
     if(!$user || !$pass || !$name || !$host) {
-        error_log("Accumulator configuration parameters missing. accumulator.user+pass+home+host required");
+        log_("[ERROR] Accumulator configuration parameters missing. accumulator.user+pass+home+host required");
         exit(1);
     }
 
     $conn = mysql_connect($host,$user,$pass);
     if($conn === FALSE) {
-        error_log("Could not connect to mysql://$user:$pass@$host: ".mysql_error());
+        log_("[ERROR] Could not connect to mysql://$user:$pass@$host: ".mysql_error());
         exit(1);
     }
 
     if( !mysql_select_db($name,$conn) ) {
-        error_log("Could not use '$name': ".mysql_error($conn));
+        log_("[ERROR] Could not use '$name': ".mysql_error($conn));
         exit(1);
     }
 
@@ -261,26 +287,27 @@ function array_get($key, $source, $default='') {
 
 function exec_query($sql, $conn) {
     if(($result = mysql_query($sql,$conn)) === FALSE) {
-        error_log("Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
+        log_("[ERROR] Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
         exit(1);
     }
     return $result;
 }
 
-function initialize_civicrm($params) {
-    $prog = basename(__FILE__);
-    $stdusage = civicrm_script_usage();
-    $scriptUsage = array_get('usage',$params, '');
-    $longOpts = array_get('longOpts',$params, '');
-    $shortOpts = array_get('shortOpts',$params, '');
+function log_($message) {
+    $optList = $GLOBALS['optList'];
 
-    if (! $optlist = civicrm_script_init($shortOpts, $longOpts) ) {
-      error_log("Usage: $prog  $stdusage $scriptUsage");
-      exit(1);
+    $date = date('Y-m-d H:i:s');
+
+    //Log to the filesystem
+    if( $filepath=array_get('file', $optList, false) ) {
+        if( $handle = fopen($filepath,'a') ) {
+            fwrite($handle, "$date $message\n");
+            fclose($handle);
+        } else {
+            error_log("[".basename(__FILE__)."] Could not open '$filepath' for writing.");
+            error_log("[".basename(__FILE__)."] $message");
+        }
     }
-
-    //Creating the CRM_Core_Config class bootstraps the rest
-    require_once 'CRM/Core/Config.php';
-    return array($optlist,CRM_Core_Config::singleton());
 }
+
 ?>
