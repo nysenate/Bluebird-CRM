@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-12-03
-# Revised: 2011-06-21
+# Revised: 2011-12-20
 #
 
 prog=`basename $0`
@@ -17,7 +17,7 @@ execSql=$script_dir/execSql.sh
 
 
 usage() {
-  echo "Usage: $prog [--quiet] [--all] [--live] [--locked] [--training] [--set instanceSet] [--instance instance_name] [cmd]" >&2
+  echo "Usage: $prog [--quiet] [--all] [--live] [--locked] [--civimail] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName] [--exclude-set instanceSet] [--bg] [--timing] [cmd]" >&2
   echo "Note: Any occurrence of '%%INSTANCE%%' or '{}' in the command will be replaced by the current instance name." >&2
 }
 
@@ -30,6 +30,8 @@ instances=
 excludes=
 exclude_set=
 quiet_mode=0
+bg_jobs=
+show_timing=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -43,6 +45,8 @@ while [ $# -gt 0 ]; do
     --exclude|-e) shift; excludes="$excludes $1" ;;
     --exclude-set) shift; exclude_set="$1" ;;
     --quiet|-q) quiet_mode=1 ;;
+    --bg) bg_jobs="&" ;;
+    --timing|-t) show_timing=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) cmd="$1" ;;
   esac
@@ -112,8 +116,10 @@ fi
 for instance in $instances; do
   if $readConfig --instance $instance --quiet; then
     realcmd=`echo "$cmd" | sed -e "s;%%INSTANCE%%;$instance;g" -e "s;{};$instance;g"`
-    [ $quiet_mode -eq 0 ] && echo "About to exec: $realcmd" >&2
-    eval $realcmd
+    [ $quiet_mode -eq 0 ] && echo "[`date +%Y-%m-%d\ %H:%M:%S`] About to exec: $realcmd" >&2
+    [ $show_timing -eq 1 ] && echo "==> START [`date +%H:%M:%S.%N`]"
+    eval $realcmd $bg_jobs
+    [ $show_timing -eq 1 ] && echo "<== FINISH [`date +%H:%M:%S.%N`]"
   else
     echo "$prog: $instance: Instance not found in config file; skipping" >&2
   fi
