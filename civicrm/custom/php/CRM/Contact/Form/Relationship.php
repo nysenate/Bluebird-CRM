@@ -466,10 +466,11 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             if ( is_numeric( $params['rel_contact_id'] ) ) {
                 if ( $quickSave ) {
                     $params['contact_check'] = array( $params['rel_contact_id'] => 1 );
-                } /*else {
-                    //$this->search( $params ); //NYSS
+                } else {
+                    //NYSS 4414
+					//$this->search( $params ); //NYSS 4414
                     //$quickSave = false;
-                }*/
+                }
             } else {
                 $this->set( 'callAjax', true );  
                 $this->set( 'relType', $params['relationship_type_id'] );
@@ -678,7 +679,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
      * @return None
      *
      */
-/*    function search( &$params ) 
+    function search( &$params ) 
     {
         //max records that will be listed
         $searchValues = array();
@@ -771,7 +772,7 @@ class CRM_Contact_Form_Relationship extends CRM_Core_Form
             $this->set( 'searchRows' , null );
             $this->set('duplicateRelationship', null);
         }
-    }*/
+    }
     
 
   /**
