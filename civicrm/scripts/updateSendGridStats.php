@@ -250,7 +250,7 @@ function remove_email_from_sendgrid_list($email, $list, $bbconfig) {
     //      <message>success</message>
     //  </result>
     $url = "https://sendgrid.com/apiv2/customer.$list.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete&email=$email";
-    $response = simplexml_load_file($bounceDeleteUrl);
+    $response = simplexml_load_file($url);
     return ($response->message == 'success');
 }
 
