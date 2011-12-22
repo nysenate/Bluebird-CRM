@@ -67,6 +67,7 @@ $conn = get_accumulator_connection($bbconfig);
 
 require_once 'CRM/Core/DAO.php';
 
+$total_events = 0;
 foreach($event_map as $event_type => $event_processor) {
     //Skip event types without active processors
     if($event_processor) {
@@ -80,9 +81,10 @@ foreach($event_map as $event_type => $event_processor) {
             ORDER BY timestamp
             ".( $limit ? " LIMIT $limit" : ''), $conn
         );
+        $total_events += mysql_num_rows($new_events);
 
         if(mysql_num_rows($new_events) != 0)
-            log_("[NOTICE] Processing ".mysql_num_rows($new_events)." {$event_type}s.");
+            log_("[NOTICE]   Processing ".mysql_num_rows($new_events)." {$event_type}s.");
 
         $events = array();
         $in_process = true;
@@ -124,6 +126,7 @@ foreach($event_map as $event_type => $event_processor) {
         }
     }
 }
+log_("[NOTICE] Processed $total_events events.");
 
 function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
     /* Requires the following table to be created....
