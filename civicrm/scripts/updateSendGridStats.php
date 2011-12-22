@@ -7,11 +7,11 @@ require_once 'script_utils.php';
 
 $prog = basename(__FILE__);
 
-$shortOpts   = 'f:m:l:acosdrbn';
-$longOpts    = array('file=','maxbatch=','limit=','all','click', 'open', 'spamreport', 'delivered', 'dropped', 'bounce', 'unsubscribe');
+$shortOpts   = 'm:l:acosdrbn';
+$longOpts    = array('maxbatch=','limit=','all','click', 'open', 'spamreport', 'delivered', 'dropped', 'bounce', 'unsubscribe');
 
 $stdusage = civicrm_script_usage();
-$scriptUsage = "[--file|-f LOG_FILE] [--limit|-l LIMIT=0] [--maxbatch|-m MAX_BATCH=1] [--all|-a] [--click|-c] [--open|-o] [--spamreport|-s] [--delivered|-d] [--dropped|-r] [--bounce|-b] [--unsubscribe|-n]";
+$scriptUsage = "[--limit|-l LIMIT=0] [--maxbatch|-m MAX_BATCH=1] [--all|-a] [--click|-c] [--open|-o] [--spamreport|-s] [--delivered|-d] [--dropped|-r] [--bounce|-b] [--unsubscribe|-n]";
 
 if (! $optList = civicrm_script_init($shortOpts, $longOpts) ) {
   error_log("Usage: $prog  $stdusage $scriptUsage");
@@ -294,20 +294,7 @@ function exec_query($sql, $conn) {
 }
 
 function log_($message) {
-    $optList = $GLOBALS['optList'];
-
-    $date = date('Y-m-d H:i:s');
-
-    //Log to the filesystem
-    if( $filepath=array_get('file', $optList, false) ) {
-        if( $handle = fopen($filepath,'a') ) {
-            fwrite($handle, "$date $message\n");
-            fclose($handle);
-        } else {
-            error_log("[".basename(__FILE__)."] Could not open '$filepath' for writing.");
-            error_log("[".basename(__FILE__)."] $message");
-        }
-    }
+    echo date('Y-m-d H:i:s')." $message\n";
 }
 
 ?>
