@@ -1094,7 +1094,12 @@ function parseData($importSet, $importDir, $startID, $sourceDesc)
     }
     else {
       $addressee_id = ADDRESSEE_CUSTOM;
-      $addressee_custom = $aRel['ctRow']['INSIDE2'].' '.$aRel['ctRow']['FIRST'].' '.$aRel['ctRow']['MI'].' '.$aRel['ctRow']['LAST'].' '.$aRel['ctRow']['SUFFIX'];
+	  
+      // if MI is one character, then append a period, otherwise leave as is
+      $aRmi = trim($aRel['ctRow']['MI']);
+      if (strlen($mi) == 1) { $aRmi .= '.'; }
+	  
+      $addressee_custom = $aRel['ctRow']['INSIDE2'].' '.$aRel['ctRow']['FIRST'].' '.$aRmi.' '.$aRel['ctRow']['LAST'].' '.$aRel['ctRow']['SUFFIX'];
       $addressee_display = $addressee_custom;
     }
 

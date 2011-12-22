@@ -69,7 +69,7 @@ class CRM_Utils_SAGE
         // QQQ: Why is this the only place we do the state lookup?
         $stateProvince = self::getStateProvince($values, $stateName);
         list($addr_field, $addr) = self::getAddress($values);
-        
+
         //Construct and send the API Request. Note the service=geocoder.
         //Without it SAGE will default to Yahoo as the geocoding provider.
         //geocoder is the Senate's own geocoding provider, which uses the
@@ -139,13 +139,13 @@ class CRM_Utils_SAGE
 
      public static function lookup_from_point( &$values, $overwrite_districts=true) {
      	$url = 'xml/bluebirdDistricts/latlon/';
-     	
+
      	$url = $url.
      		CRM_Utils_Array::value('geo_code_1',$values,"").
      		",".
      		CRM_Utils_Array::value('geo_code_2',$values,"")
      		."?";
-     	
+
 		$params = http_build_query(
 			array(
 				'key' => SAGE_API_KEY,
@@ -154,13 +154,13 @@ class CRM_Utils_SAGE
 		$request = new HTTP_Request(SAGE_API_BASE . $url . $params);
 		$request->sendRequest();
 		$xml = simplexml_load_string($request->getResponseBody());
-		
+
 		if(!self::validateResponse($xml)) {
 			$msg = "SAGE Warning: Lookup for [$params] has failed.\n";
 			$session->setStatus(ts($msg));
 			return false;
 		}
-		
+
 		self::storeDistricts($values, $xml, $overwrite_districts);
         return true;
      }
@@ -218,7 +218,7 @@ class CRM_Utils_SAGE
 
     private static function validateResponse($xml)
     {
-    	 
+
         //Fail silently if the XML response from SAGE was invalid
         //XML and could not be parsed into a simplexml object
         if (!$xml)
@@ -299,7 +299,7 @@ class CRM_Utils_SAGE
         	$values["geo_code_1"] = (string)$xml->lat;
         if($overwrite || !$values["geo_code_2"])
         	$values["geo_code_2"] = (string)$xml->lon;
-        
+
     }
 
 
@@ -328,6 +328,24 @@ class CRM_Utils_SAGE
             $values["custom_48_$id"] = (string)$xml->assembly->district;
         if($overwrite || !$values["custom_49_$id"])
             $values["custom_49_$id"] = (string)$xml->election->district;
+
+        //NYSS 4735
+        //Fix zero left padding for district codes
+        $paddingLookup = array(
+            'congressional_district' => array('key'=>'custom_46_','padding'=>2),
+            'senate_district'        => array('key'=>'custom_47_','padding'=>2),
+            'assembly_district'      => array('key'=>'custom_48_','padding'=>3),
+            'election_district'      => array('key'=>'custom_49_','padding'=>3),
+            'county_code'            => array('key'=>'custom_50_','padding'=>2),
+        );
+
+        foreach($values as $key => $value) {
+            foreach($paddingLookup as $field) {
+                if(strpos($key, $field['key'])!==FALSE && is_numeric($value)) {
+                    $values[$key] = str_pad($value,$field['padding'],'0',STR_PAD_LEFT);
+                }
+            }
+        }
     }
 
 

@@ -181,16 +181,26 @@ class CRM_Contact_Form_Search_Criteria {
         // checkboxes for DO NOT phone, email, mail
         // we take labels from SelectValues
         $t = CRM_Core_SelectValues::privacy();
-        $t['do_not_toggle'] = ts( 'Include contacts who have these privacy option(s).' );
-        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_phone', null, $t['do_not_phone']);
-        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_email', null, $t['do_not_email']);
-        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_mail' , null, $t['do_not_mail']);
-        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_sms' ,  null, $t['do_not_sms']);
-        //$privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_trade', null, $t['do_not_trade']); //NYSS 1453
-        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'is_opt_out',    null, $t['is_opt_out']); //NYSS 4573
-        $privacy[] = HTML_QuickForm::createElement('advcheckbox', 'do_not_toggle', null, $t['do_not_toggle']);
-        
-        $form->addGroup($privacy, 'privacy', ts('Privacy'), array( '&nbsp;', '&nbsp;', '&nbsp;', '<br/>' ) );
+		//NYSS 4407
+        $form->add( 'select',
+                    'privacy_options',
+                    ts('Privacy'),
+                    $t,
+                    false,
+                    array( 'id' => 'privacy_options',
+                           'multiple'=> 'multiple',
+                           'title' => ts('- select -') ) );
+
+        $form->addElement( 'select', 
+                           'privacy_operator', 
+                           ts('Operator'), 
+                           array( 'OR'  => ts( 'OR'  ),
+                                  'AND' => ts( 'AND' ) ) );
+
+        $toggleChoice = array( );
+        $toggleChoice[] = $form->createElement('radio', null, '', ' ' . ts('Exclude'), '1' );
+        $toggleChoice[] = $form->createElement('radio', null, '', ' ' . ts('Include by Privacy Option(s)'), '2' );
+        $form->addGroup( $toggleChoice, 'privacy_toggle', 'Privacy Options' );
 
         // preferred communication method 
         require_once 'CRM/Core/PseudoConstant.php';
