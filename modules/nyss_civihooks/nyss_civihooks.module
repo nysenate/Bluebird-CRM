@@ -221,6 +221,14 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 				   } else { return false; }";
 			$website->_attributes['onfocus'] = $js;
 		}
+
+        //NYSS 4407
+        $privacy =& $form->getElement( 'privacy' );
+		foreach ( $privacy->_elements as $key=>$option ) {
+            if ( $option->_attributes['name'] == 'is_opt_out' ) {
+                unset($privacy->_elements[$key]);
+            }
+        }
 		
 	}
 	

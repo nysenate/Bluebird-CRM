@@ -117,6 +117,7 @@ class CRM_Utils_System {
         }
 
         unset( $qs['snippet'] );
+        unset( $qs['section'] ); //NYSS 4254
 
         if ( $skipUFVar ) {
             $config = CRM_Core_Config::singleton( );
