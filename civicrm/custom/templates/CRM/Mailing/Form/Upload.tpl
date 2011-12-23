@@ -90,7 +90,7 @@
   </fieldset>
 
   {*include file="CRM/Form/attachment.tpl"*} {*NYSS*}
-{*NYSS - remove header/footer options*} <div style="visibility: hidden; height: 0;">
+
   <fieldset><legend>{ts}Header / Footer{/ts}</legend>
     <table class="form-layout-compressed">
         <tr class="crm-mailing-upload-form-block-header_id">
@@ -107,7 +107,7 @@
         </tr>
     </table> 
   </fieldset>
-</div> {*NYSS end*}
+
   <div class="crm-submit-buttons">{include file="CRM/common/formButtons.tpl"}</div>
 </div><!-- / .crm-form-block -->
 
