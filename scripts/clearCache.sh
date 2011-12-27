@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-15
-# Revised: 2011-11-22
+# Revised: 2011-12-20
 #
 
 prog=`basename $0`
@@ -15,14 +15,31 @@ execSql=$script_dir/execSql.sh
 readConfig=$script_dir/readConfig.sh
 drush=$script_dir/drush.sh
 clear_all=0
+tmp_only=0
 tpl_only=0
 wd_only=0
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--all] [--tpl-only] [--wd-only] instanceName" >&2
+  echo "Usage: $prog [--all] [--tmp-only] [--tpl-only] [--wd-only] instanceName" >&2
 }
+
+
+drop_temp_tables() {
+  inst="$1"
+  tmptabs=`$execSql -i $inst -c "show tables like 'civicrm\_%\_temp\_%'"`
+  if [ "$tmptabs" ]; then
+    tmptabs=`echo $tmptabs | tr " " ,`
+    echo "Temporary tables to drop: $tmptabs"
+    ( set -x
+      $execSql -i $inst -c "drop table $tmptabs"
+    )
+  else
+    echo "There are no temporary tables to be dropped."
+  fi
+}
+
 
 if [ $# -lt 1 ]; then
   usage
@@ -32,6 +49,7 @@ fi
 while [ $# -gt 0 ]; do
   case "$1" in
     --all) clear_all=1 ;;
+    --tmp*) tmp_only=1 ;;
     --tpl*) tpl_only=1 ;;
     --wd*) wd_only=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
@@ -40,7 +58,10 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-if [ $clear_all -eq 1 -a $tpl_only -eq 1 ]; then
+if [ $clear_all -eq 1 -a $tmp_only -eq 1 ]; then
+  echo "$prog: Cannot specify --all and --tmp-only at the same time." >&2
+  exit 1
+elif [ $clear_all -eq 1 -a $tpl_only -eq 1 ]; then
   echo "$prog: Cannot specify --all and --tpl-only at the same time." >&2
   exit 1
 elif [ $clear_all -eq 1 -a $wd_only -eq 1 ]; then
@@ -62,7 +83,10 @@ data_basename=`$readConfig --ig $instance data.basename` || data_basename="$inst
 data_dirname="$data_basename.$base_domain"
 
 
-if [ $wd_only -eq 1 ]; then
+if [ $tmp_only -eq 1 ]; then
+  drop_temp_tables $instance
+  exit $?
+elif [ $wd_only -eq 1 ]; then
   sql="truncate watchdog"
   ( set -x
     $execSql -i $instance -c "$sql" --drupal

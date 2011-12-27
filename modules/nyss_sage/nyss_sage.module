@@ -37,6 +37,7 @@ function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
                 $overwrite_districts = true;
             }
         }
+
         CRM_Utils_SAGE::lookup($params,$overwrite_districts);
     }
     return true;
