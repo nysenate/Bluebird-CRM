@@ -148,6 +148,13 @@
 	{/foreach}
 {/foreach}
 
+{*Assign Attachment custom fields*}
+{foreach from=$viewCustomData.5 item=attachments}
+	{foreach from=$attachments.fields item=attachmentsField key=customId}
+        {assign var="customA_$customId" value=$attachmentsField}
+	{/foreach}
+{/foreach}
+
         <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if substr_count($custom_19.field_value, 'Yes')}friend-of-senator{/if}">
             {if (isset($hookContentPlacement) and ($hookContentPlacement neq 3)) or empty($hookContentPlacement)}
                 
@@ -457,13 +464,13 @@
                     
                 </div><!--contact_details-->
 
-                <div id="customFields" style="width:99%;">
+                <div id="customFields">
                     <div class="contact_panel">
                     {*include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'*}
                     
                     <!--Additional Constituent Info-->
-                    <div class="customFieldGroup ui-corner-all">
-                	  <div id="Additional_Constituent_Information_1">
+                	  <div class="contactCardLeft">
+                      <div id="Additional_Constituent_Information_1">
                   		<div class="crm-accordion-header">
                     	<div onclick="cj(&quot;table#Additional_Constituent_Information_1&quot;).toggle(); cj(this).toggleClass(&quot;expanded&quot;); return false;" class="show-block expanded collapsed ">
                         Additional Constituent Information
@@ -471,7 +478,7 @@
                   		</div>
                         <table id="Additional_Constituent_Information_1"><tr>
                         <td style="padding:0;background:none;">
-                        <div class="contactCardLeft">
+                        
                   		<table><tbody>
                         	<tr>
                             	<td class="label">{$custom_18.field_title}</td><!--active const-->
@@ -494,10 +501,6 @@
                             	<td class="label">BOE Date of Registration</td><!--boe date-->
                 				<td class="html-adjust crm-custom-data">{$custom_24.field_value}</td>
                             </tr>
-                    	</tbody></table>
-                        </div>
-                        <div class="contactCardRight">
-                        <table><tbody>
                         	<tr>
                                 <td class="label">Professional Accreditations</td><!--prof acc-->
                 				<td class="html-adjust crm-custom-data">{$custom_16.field_value}</td>
@@ -515,20 +518,11 @@
                 				<td class="html-adjust crm-custom-data">{$custom_61.field_value}</td>
                             </tr>
                         </tbody></table>
-                        </div>
+                        
                         </td></tr></table>
-                	  </div>
             		</div>
-                    <!--Additional Constituent END-->
-                    
                     </div>
-                    <div class="clear"></div>
-                    
-                    <div class="contact_panel">
-                      <div style="width:100%">
-                        <div class="contactCardLeft">
-                            {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='0'}
-                        </div><!--contactCardLeft-->
+                    <!--Additional Constituent END-->
 
                         <div class="contactCardRight">
                             <div class="crm-accordion-wrapper crm-communications_preferences-accordion crm-accordion-open">
@@ -579,10 +573,58 @@
                               
                              </div><!-- /.crm-accordion-body -->
                             </div><!-- /.crm-accordion-wrapper -->
-
+							
+                            <!--Attachments-->
+							<div class="crm-accordion-wrapper crm-attachments-accordion crm-accordion-open">
+                             <div class="crm-accordion-header">
+                              <div class="icon crm-accordion-pointer"></div>
+                               File Attachments
+                             </div><!-- /.crm-accordion-header -->
+                             <div class="crm-accordion-body">
+                              <table>
+                                <tr><td class="label">{ts}Attachment 1{/ts}</td>
+                                    {if $customA_36.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_36.field_value.imageURL}')" ><img src="{$customA_36.field_value.displayURL}" height = "{$customA_36.field_value.imageThumbHeight}" width="{$customA_36.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_36.field_value.fileURL}">{$customA_36.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 2{/ts}</td>
+                                    {if $customA_37.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_37.field_value.imageURL}')" ><img src="{$customA_37.field_value.displayURL}" height = "{$customA_37.field_value.imageThumbHeight}" width="{$customA_37.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_37.field_value.fileURL}">{$customA_37.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 3{/ts}</td>
+                                    {if $customA_38.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_38.field_value.imageURL}')" ><img src="{$customA_38.field_value.displayURL}" height = "{$customA_38.field_value.imageThumbHeight}" width="{$customA_38.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_38.field_value.fileURL}">{$customA_38.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 4{/ts}</td>
+                                    {if $customA_39.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_39.field_value.imageURL}')" ><img src="{$customA_39.field_value.displayURL}" height = "{$customA_39.field_value.imageThumbHeight}" width="{$customA_39.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_39.field_value.fileURL}">{$customA_39.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 5{/ts}</td>
+                                    {if $customA_40.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_40.field_value.imageURL}')" ><img src="{$customA_40.field_value.displayURL}" height = "{$customA_40.field_value.imageThumbHeight}" width="{$customA_40.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_40.field_value.fileURL}">{$customA_40.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                              </table>
+                             </div>
+                            </div> <!--end attachments-->
+                            
                         </div>
+                        
                       </div><!--end-->
-                    </div>
+
                     <div class="clear"></div>
                 </div>
                 {literal}
