@@ -474,6 +474,7 @@ function nyss_dedupe_house3_internal($o) {
 }
 
 function nyss_dedupe_individual_default_strict_internal($o) {
+    // TODO: Needs updating, see the fuzzy rule
     return "
         SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
         FROM shadow_contact AS contact1
@@ -497,6 +498,7 @@ function nyss_dedupe_individual_default_strict_internal($o) {
 }
 
 function nyss_dedupe_individual_default_strict_record($o) {
+    // TODO: Needs updating, see the fuzzy rule
     $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
     $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
 
