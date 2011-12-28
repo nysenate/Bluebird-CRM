@@ -526,6 +526,9 @@ function nyss_dedupe_individual_default_strict_record($o) {
     if($birth_date = nyss_dedupe_get_safe('birth_date' ,$civicrm_contact,''))
         $query .= " AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')\n";
 
+    if($gender_id = nyss_dedupe_get_safe('gender_id'  ,$civicrm_contact,''))
+        $where .= "AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')\n  ";
+
     if($suffix_id = nyss_dedupe_get_safe('suffix_id'  ,$civicrm_contact,''))
         $query .= " AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)\n";
 
