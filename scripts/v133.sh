@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# v132.sh
+# v133.sh
 #
 # Project: BluebirdCRM
 # Author: Brian Shaughnessy
 # Organization: New York State Senate
-# Date: 2011-10-18
+# Date: 2011-12-28
 #
 
 prog=`basename $0`
@@ -35,64 +35,17 @@ formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="Sen
 
 ###### Begin Upgrade Scripts ######
 
-## run civicrm db upgrade using drush
-$drush $instance civicrm-upgrade-db
-
-
 ### Drupal ###
 
 
 ### CiviCRM ###
 
-## remove v3.4.6 nav items
-nav="
-UPDATE civicrm_navigation
-SET is_active = 0
-WHERE label = 'New Price Set' OR label = 'Manage Price Sets' OR label = 'Survey Report (Detail)';"
-$execSql -i $instance -c "$nav"
-
-## 3439 report permissions by role
-rpt="ALTER TABLE civicrm_report_instance ADD grouprole VARCHAR( 1020 ) NULL AFTER permission;"
-$execSql -i $instance -c "$rpt"
-
-## 4254 full screen navigation
-fsn="UPDATE civicrm_dashboard SET url = REPLACE( url, 'snippet=4', 'snippet=5' ), fullscreen_url = REPLACE( fullscreen_url, 'snippet=4', 'snippet=5' );"
-$execSql -i $instance -c "$fsn"
-
-## 3976 create civicrm symlink and set image url
-civicrm_filesdir="$data_rootdir/$instance.$base_domain/civicrm"
-sitedir="$webdir/sites/$instance.$base_domain"
-ln -s "$civicrm_filesdir" "$sitedir/files"
-
-url="http://$instance.$base_domain/sites/$instance.$base_domain/files/civicrm/images/"
-imgurl="UPDATE civicrm_option_value SET value = '$url' WHERE name = 'imageUploadURL';"
-$execSql -i $instance -c "$imgurl"
-
-## 4352 max attachments
-ma="UPDATE civicrm_domain SET config_backend = REPLACE( config_backend,'\"maxAttachments\";s:1:\"3\"','\"maxAttachments\";s:1:\"5\"' ) WHERE id = 1;"
-$execSql -i $instance -c "$ma"
-
-## 4645 set all reports to permission access CiviReport
-racl="UPDATE civicrm_navigation SET permission = 'access CiviReport' WHERE url LIKE 'civicrm/report/instance/%';"
-$execSql -i $instance -c "$racl"
-
-## 4335 source fields in profile overlay
-source="SELECT @overlay_id := id FROM civicrm_uf_group WHERE title = 'Summary Overlay';
-INSERT INTO civicrm_uf_field (uf_group_id, field_name, is_active, is_view, is_required, weight, help_post, help_pre, visibility, in_selector, is_searchable, location_type_id, phone_type_id, label, field_type, is_reserved) VALUES
-(@overlay_id, 'custom_60', 1, 0, 0, 12, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Contact Source', 'Individual', NULL),
-(@overlay_id, 'contact_source', 1, 0, 0, 13, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Other Source', 'Contact', NULL);"
-$execSql -i $instance -c "$source"
-
-## 4522 remove empty addresses and phone
-empty="
-DELETE FROM civicrm_address
-WHERE street_address IS NULL AND 
-  supplemental_address_1 IS NULL AND
-  city IS NULL AND
-  state_province_id IS NULL;
-DELETE FROM civicrm_phone 
-WHERE phone IS NULL;"
-$execSql -i $instance -c "$empty"
+# 4795 change do not mail
+wordreplace="
+UPDATE civicrm_domain
+SET locale_custom_strings = 'a:1:{s:5:\"en_US\";a:2:{s:7:\"enabled\";a:2:{s:13:\"wildcardMatch\";a:15:{s:7:\"CiviCRM\";s:8:\"Bluebird\";s:9:\"Full-text\";s:13:\"Find Anything\";s:16:\"Addt'l Address 1\";s:15:\"Mailing Address\";s:16:\"Addt'l Address 2\";s:8:\"Building\";s:73:\"Supplemental address info, e.g. c/o, department name, building name, etc.\";s:70:\"Department name, building name, complex, or extension of company name.\";s:7:\"deatils\";s:7:\"details\";s:11:\"sucessfully\";s:12:\"successfully\";s:40:\"groups, contributions, memberships, etc.\";s:27:\"groups, relationships, etc.\";s:18:\"email OR an OpenID\";s:5:\"email\";s:6:\"Client\";s:11:\"Constituent\";s:6:\"client\";s:11:\"constituent\";s:9:\"Job title\";s:9:\"Job Title\";s:9:\"Nick Name\";s:8:\"Nickname\";s:8:\"CiviMail\";s:12:\"BluebirdMail\";s:18:\"CiviCase Dashboard\";s:14:\"Case Dashboard\";}s:10:\"exactMatch\";a:7:{s:11:\"Do not mail\";s:18:\"Do not postal mail\";s:8:\"Position\";s:9:\"Job Title\";s:2:\"Id\";s:2:\"ID\";s:6:\"Client\";s:11:\"Constituent\";s:6:\"client\";s:11:\"constituent\";s:10:\"CiviReport\";s:7:\"Reports\";s:8:\"CiviCase\";s:5:\"Cases\";}}s:8:\"disabled\";a:2:{s:13:\"wildcardMatch\";a:0:{}s:10:\"exactMatch\";a:0:{}}}}'
+WHERE id = 1";
+$execSql -i $instance -c "$wordreplace"
 
 ### Cleanup ###
 
