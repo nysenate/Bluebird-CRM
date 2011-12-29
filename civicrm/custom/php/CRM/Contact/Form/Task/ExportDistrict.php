@@ -68,8 +68,22 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         if ( CRM_Core_Permission::check( 'export print production files' ) ) {
 			$this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
         }
+		
+		require_once 'CRM/Core/PseudoConstant.php';
+        $locTypes = CRM_Core_PseudoConstant::locationType();
+		$locTypes = array( 0 => 'Primary' ) + $locTypes;
+		$this->add( 'select',
+		            'locType',
+					ts( 'Address Location Type' ),
+					$locTypes,
+					false, 
+                    array( 'id' => 'locType' )
+					);
         
 		$this->addDefaultButtons( 'Export District' );
+		
+		$defaults['locType'] = 0;
+		$this->setDefaults($defaults);
 		
     }
 
@@ -81,9 +95,10 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
      */
     public function postProcess() {
 
-	//get form values (avanti job id)
+	//get form values
 	$params = $this->controller->exportValues( $this->_name );
 	$avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+	$loc_type      = $params['locType'];
 	
 	//get instance name (strip first element from url)
 	$instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -93,6 +108,15 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	$aSuffix = getOptions("individual_suffix");
     $aPrefix = getOptions("individual_prefix");
 	$aStates = getStates();
+	
+	//determine address location type clause
+	$addressClause = '';
+	
+	if ( $loc_type == 0 ) {
+		$addressClause = 'a.is_primary = 1';
+	} else {
+	    $addressClause = "a.location_type_id = $loc_type";
+	}
 	
 	//generate random number for export and tables
 	$rnd = mt_rand(1,9999999999999999);
@@ -116,7 +140,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 
 	$sql .= " FROM civicrm_contact c ";
 	$sql .= " INNER JOIN tmpExport$rnd t on t.id=c.id ";
-	$sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND a.is_primary=1 ";
+	$sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND $addressClause ";
 	$sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
 	$sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
 	$sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
