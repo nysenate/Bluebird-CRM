@@ -29,7 +29,7 @@
 {ts}Print Production Export{/ts}
 </legend>
 <dl>
-<dt></dt><dd>{$form.merge_same_household.html} {$form.merge_same_household.label}</dd>
+
 <dt></dt>
   <dd>{include file="CRM/Contact/Form/Task.tpl"}</dd>
 
@@ -37,9 +37,6 @@
   <dt>{$form.avanti_job_id.label}</dt>
     <dd>{$form.avanti_job_id.html}</dd>
 {/if}
-
-{*<dt>{$form.include_households.label}</dt>
-  <dd>{$form.include_households.html}</dd>*}
 
 <dt>{$form.exclude_rt.label}<dt>
   <dd>
@@ -60,6 +57,8 @@
                 
    </dd>
 
+<dt>{$form.merge_households.label}</dt>
+  <dd>{$form.merge_households.html}</dd>
 
 </dt>
   <dd>{$form.buttons.html}</dd>
