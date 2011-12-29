@@ -146,7 +146,8 @@ class CRM_Mailing_BAO_Job extends CRM_Mailing_DAO_Job {
             }
 
             // Get the mailer
-            $mailer = $config->getMailer();
+            // make it a persistent connection, CRM-9349 //NYSS 4763
+            $mailer = $config->getMailer( true );
 
             // Compose and deliver each child job 
             $isComplete = $job->deliver($mailer, $testParams);
