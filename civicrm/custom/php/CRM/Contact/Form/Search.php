@@ -701,7 +701,8 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
                      $this->_returnProperties,
                      $this->_action,
                      false, true,
-                     $this->_context );' );
+                     $this->_context,
+                     $this->_contextMenu );' ); //NYSS 4585
         } else {
             eval( '$selector = new ' . $this->_selectorName . 
                   '( $this->_params,
@@ -709,6 +710,9 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
                      null, false, null,
                      "search", "advanced" );' );
         }
+		
+		$selector->setKey( $this->controller->_key ); //NYSS 4585
+		
         $controller = new CRM_Contact_Selector_Controller( $selector ,
                                                            $this->get( CRM_Utils_Pager::PAGE_ID ),
                                                            $this->get( CRM_Utils_Sort::SORT_ID  ),
@@ -716,6 +720,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
                                                            $this,
                                                            CRM_Core_Selector_Controller::TRANSFER );
         $controller->setEmbedded( true );
+		$controller->setDynamicAction( true ); //NYSS 4585
         
         if ( $this->_force ) {
 
@@ -735,6 +740,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
                                                                $sortID,
                                                                CRM_Core_Action::VIEW, $this, CRM_Core_Selector_Controller::TRANSFER );
             $controller->setEmbedded( true );
+			$controller->setDynamicAction( true ); //NYSS 4585
         }
         
         $controller->moveFromSessionToTemplate();
@@ -855,6 +861,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
                                                                $this,
                                                                $output );
             $controller->setEmbedded( true );
+			$controller->setDynamicAction( true ); //NYSS 4585
             $controller->run();
         }
     }
