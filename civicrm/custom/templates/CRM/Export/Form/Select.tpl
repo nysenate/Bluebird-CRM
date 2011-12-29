@@ -101,6 +101,14 @@
     <div class="content crm-content-additionalGroup">
         &nbsp;{$form.additional_group.html}
     </div>
+    
+    {*NYSS*}
+    <br/>
+    <div class="label crm-label-streetLong">{$form.street_long.label}</div>
+    <div class="content crm-content-streetLong">
+        &nbsp;{$form.street_long.html}
+        {ts}Use the long form of the street suffix.{/ts}
+    </div>
 	<div class="clear"></div> 
   </div>
   {/if}
