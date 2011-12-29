@@ -623,7 +623,6 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
      */
     function clearTempTables( ) {
         // CRM-5645
-        $dao = new CRM_Core_DAO( );
         $query = "
 SELECT TABLE_NAME as tableName
 FROM   INFORMATION_SCHEMA.TABLES
@@ -632,6 +631,9 @@ AND    ( TABLE_NAME LIKE 'civicrm_import_job_%'
 OR       TABLE_NAME LIKE 'civicrm_export_temp%'
 OR       TABLE_NAME LIKE 'civicrm_task_action_temp%' )
 ";
+
+        //NYSS we already have a dao object, so we should grab the db name using that
+        $dao = CRM_Core_DAO::executeQuery("SELECT DATABASE();");
 
         $params = array( 1 => array( $dao->database(), 'String' ) );
         $tableDAO = CRM_Core_DAO::executeQuery( $query, $params );
