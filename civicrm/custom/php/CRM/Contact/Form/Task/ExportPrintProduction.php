@@ -69,7 +69,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 			$this->addElement('text', 'avanti_job_id', ts('Avanti Job ID') );
         }
 		
-		$this->addElement('checkbox', 'include_households', ts('Include Household Records'), null );
+		//4677
+		$this->addElement('checkbox', 'merge_households', ts('Merge Household Records'), null );
 		
 		require_once 'CRM/Core/OptionGroup.php';
         $rts = CRM_Core_OptionGroup::values('record_type_20100906230753');
@@ -103,9 +104,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	//get form values
 	$params = $this->controller->exportValues( $this->_name );
 	
-	$avanti_job_id      = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
-	$include_households = $params['include_households'];
-	$exclude_rt         = implode( ',', $params['exclude_rt'] );
+	$avanti_job_id    = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+	$merge_households = $params['merge_households'];
+	$exclude_rt       = implode( ',', $params['exclude_rt'] );
 	
 	//get instance name (strip first element from url)
 	$instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -133,18 +134,29 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$ids = implode("),(",$this->_contactIds);
 	$ids = "($ids)";
 
-	$sql = "CREATE TEMPORARY TABLE tmpExport$rnd(id int not null primary key) TYPE=myisam;";
-	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	//create temp table to hold IDs
+	$sql = "CREATE TEMPORARY TABLE tmpExport{$rnd}_IDs (id int not null primary key) TYPE=myisam;";
+	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-	$sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
-    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	$sql = "INSERT INTO tmpExport{$rnd}_IDs VALUES $ids;";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-	$sql = "SELECT c.id, c.contact_type, c.first_name, c.last_name, c.middle_name, c.job_title, c.birth_date, c.organization_name, c.postal_greeting_display, c.addressee_display, c.gender_id, c.prefix_id, c.suffix_id, cr.relationship_type_id, ch.household_name as household_name, ch.nick_name as household_nickname, ch.postal_greeting_display as household_postal_greeting_display, ch.addressee_display as household_Addressee_display, ";
-	$sql .= "congressional_district_46, ny_senate_district_47, ny_assembly_district_48, election_district_49, county_50, county_legislative_district_51, town_52, ward_53, school_district_54, new_york_city_council_55, neighborhood_56, ";
-	$sql .= "street_address, supplemental_address_1, supplemental_address_2, street_number, street_number_suffix, street_name, street_unit, city, postal_code, postal_code_suffix, state_province_id, county_id ";
+	//now construct sql to retrieve fields and inject in a second tmp table
+	$cFlds = getColumns( 'columns' );
+	$sFlds = getColumns( 'select' );
+	
+	//CRM_Core_Error::debug('cFlds', $cFlds);exit();
+	
+	$sql   = "CREATE TABLE tmpExport$rnd ( $cFlds ) TYPE = myisam;";
+	$dao   = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	//CRM_Core_Error::debug('dao tmp table2', $dao);exit();
+	
+	$sql  = "INSERT INTO tmpExport$rnd ";
+	
+	$sql .= "SELECT $sFlds ";
 	
 	//begin with temp table so we work with a smaller data set
-	$sql .= " FROM tmpExport$rnd t ";
+	$sql .= " FROM tmpExport{$rnd}_IDs t ";
 	
 	$sql .= " JOIN civicrm_contact c ON t.id = c.id ";
 	
@@ -190,8 +202,56 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	
 	//CRM_Core_Error::debug($sql); exit();
 
-	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	//CRM_Core_Error::debug('dao insert fields', $dao); exit();
 
+	//merge Households
+	if ( $merge_households ) {
+		mergeHouseholds( "tmpExport$rnd" );
+	}
+	
+	//remove the household_id column so print prod processing is not altered
+	$sql = "ALTER TABLE tmpExport$rnd DROP COLUMN household_id;";
+	CRM_Core_DAO::executeQuery( $sql );
+
+	//check if printProduction subfolder exists; if not, create it
+	$config =& CRM_Core_Config::singleton();
+	$path   = $config->uploadDir.'printProduction/';
+
+	if ( !file_exists($path) ) {
+		mkdir( $path, 0775 );
+	}
+	
+	//set filename, environment, and full path
+    $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
+	
+	//strip /data/ and everything after environment value
+	$env   = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
+    $fname = $path.'/'.$filename;
+
+	$fhout = fopen($fname, 'w');
+
+	//passed by ref to build
+	$issueCodes = null;
+	getIssueCodesRecursive($issueCodes);
+
+        $sql    = "SELECT tmp.id, t.tag_id FROM civicrm_entity_tag t INNER JOIN tmpExport$rnd tmp on t.entity_id=tmp.id";
+        $issdao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $iss    = array();
+
+        while ($issdao->fetch()) {
+	 		$ic = $issueCodes[$issdao->tag_id];
+         	if (!empty($ic)) {
+           		$iss[$issdao->id][] = $ic;
+	 		}
+		}
+
+    $aHeader           = array();
+	$firstLine         = true;
+    $adjusted_count    = 0;
+	$nonPrimaryMailing = array();
+	
+	//skip DAO fields
 	$skipVars['_DB_DataObject_version'] = 1;
 	$skipVars['__table'] = 1;
 	$skipVars['N'] = 1;
@@ -204,44 +264,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$skipVars['_lastError'] = 1;
 	$skipVars['_database_dsn_md5'] = 1;
 	$skipVars['_database'] = 1;
-
-	$config =& CRM_Core_Config::singleton();
-
-	//check if printProduction subfolder exists; if not, create it
-	$path = $config->uploadDir.'printProduction/';
-
-	if ( !file_exists($path) ) {
-		mkdir( $path, 0775 );
-	}
 	
-	//set filename, environment, and full path
-    $filename = 'printExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
-	
-	//strip /data/ and everything after environment value
-	$env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
-    $fname = $path.'/'.$filename;
-
-	$fhout = fopen($fname, 'w');
-
-	//passed by ref to build
-	$issueCodes = null;
-	getIssueCodesRecursive($issueCodes);
-
-        $sql = "SELECT tmp.id, t.tag_id FROM civicrm_entity_tag t INNER JOIN tmpExport$rnd tmp on t.entity_id=tmp.id";
-        $issdao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-        $iss = array();
-
-        while ($issdao->fetch()) {
-	 		$ic = $issueCodes[$issdao->tag_id];
-         	if (!empty($ic)) {
-           		$iss[$issdao->id][] = $ic;
-	 		}
-		}
-
-    $aHeader=array();
-	$firstLine = true;
-    $adjusted_count = 0;
-	$nonPrimaryMailing = array();
+	//retrieve records from temp table
+	$sql = "SELECT * FROM tmpExport$rnd";
+	$dao = CRM_Core_DAO::executeQuery($sql, CRM_Core_DAO::$_nullArray);
 	
 	//fetch records
 	while ($dao->fetch()) {
@@ -346,11 +372,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	$urlcleanStats = urlencode( $urlStats );
 	//end stats
 	
-	//get rid of helper table
-    $sql = "DROP TABLE tmpExport$rnd;";
-    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	//get rid of temp tables
+    $sql = "DROP TABLE tmpExport{$rnd}, tmpExport{$rnd}_IDs;";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );	
 		
-	$url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
+	$url  = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
 	$urlclean = urlencode( $url );
 	$body = "Contact export: $urlclean \r\n\r\n
 			 Tag stats export: $urlcleanStats \r\n";
@@ -497,4 +523,171 @@ function statsKeywords( $tmpTbl ) {
 
 	return $key_stats;
 	
+}
+
+//merge temp table down into households
+function mergeHouseholds( $tbl ) {
+	
+	//our resulting export could have actual household records OR
+	//individuals who are part of households OR both
+	
+	//if a household record exists along with individuals, 
+	//we can simply remove the individual records from the export
+	$sql = "DELETE t1.*
+            FROM $tbl t1
+			JOIN $tbl t2
+			  ON t1.household_id = t2.id
+			WHERE t1.contact_type = 'Individual';";
+    CRM_Core_DAO::executeQuery($sql);
+	
+	//if we have multiple individuals from a single household
+	//we need to condense into a single record
+	$sql = "CREATE TEMPORARY TABLE {$tbl}_hdupe 
+	        SELECT id
+			FROM $tbl
+			WHERE household_id IS NOT NULL
+			GROUP BY household_id
+			HAVING count(id) > 1 ";
+	CRM_Core_DAO::executeQuery($sql);
+	
+	$sql = "DELETE t1.*
+	        FROM $tbl t1
+			JOIN {$tbl}_hdupe t2
+			  ON t1.id = t2.id";
+	CRM_Core_DAO::executeQuery($sql);
+	
+	//now we want to copy the household greeting/address to the primary fields
+	$sql = "UPDATE $tbl
+	        SET postal_greeting_display = household_postal_greeting_display,
+			    addressee_display = household_addressee_display,
+				contact_type = 'Household-Individual'
+			WHERE household_id IS NOT NULL AND
+			    contact_type = 'Individual';";
+	CRM_Core_DAO::executeQuery($sql);
+	
+	//drop temp table
+	$sql = "DROP TEMPORARY TABLE {$tbl}_hdupe;";
+    $dao = CRM_Core_DAO::executeQuery( $sql );
+	
+	return;
+
+} //end mergeHouseholds
+
+//defines the columns in our table and select statement
+function getColumns( $output = 'select' ) {
+
+	$fields = array( 
+	    'c.id'           					=> array( 'alias' => 'id',
+		                                              'def'   => 'int not null primary key' ),
+	    'c.contact_type' 					=> array( 'alias' => 'contact_type',
+		                                              'def'   => 'varchar(64)' ),
+	    'c.first_name'   					=> array( 'alias' => 'first_name',
+		                                              'def'   => 'varchar(64)' ),
+	    'c.last_name'    					=> array( 'alias' => 'last_name',
+		                                              'def'   => 'varchar(64)' ),
+	    'c.middle_name'  					=> array( 'alias' => 'middle_name',
+		                                              'def'   => 'varchar(64)' ),
+	    'c.job_title'    					=> array( 'alias' => 'job_title',
+		                                              'def'   => 'varchar(255)' ),
+	    'c.birth_date'    					=> array( 'alias' => 'birth_date',
+		                                              'def'   => 'varchar(32)' ),
+	    'c.organization_name'    			=> array( 'alias' => 'organization_name',
+		                                              'def'   => 'varchar(128)' ),
+	    'c.postal_greeting_display'   		=> array( 'alias' => 'postal_greeting_display',
+		                                              'def'   => 'varchar(255)' ),
+	    'c.addressee_display'    			=> array( 'alias' => 'addressee_display',
+		                                              'def'   => 'varchar(255)' ),
+	    'c.gender_id'    					=> array( 'alias' => 'gender_id',
+		                                              'def'   => 'varchar(64)' ),
+	    'c.prefix_id'    					=> array( 'alias' => 'prefix_id',
+		                                              'def'   => 'varchar(64)' ),
+	    'c.suffix_id'    					=> array( 'alias' => 'suffix_id',
+		                                              'def'   => 'varchar(64)' ),
+	    'ch.id'    							=> array( 'alias' => 'household_id',
+		                                              'def'   => 'varchar(64)' ),
+	    'cr.relationship_type_id'    		=> array( 'alias' => 'relationship_type_id',
+		                                              'def'   => 'varchar(64)' ),
+	    'ch.household_name'    				=> array( 'alias' => 'household_name',
+		                                              'def'   => 'varchar(128)' ),
+	    'ch.nick_name'    					=> array( 'alias' => 'household_nickname',
+		                                              'def'   => 'varchar(128)' ),
+	    'ch.postal_greeting_display'		=> array( 'alias' => 'household_postal_greeting_display',
+		                                              'def'   => 'varchar(255)' ),
+	    'ch.addressee_display'    			=> array( 'alias' => 'household_addressee_display',
+		                                              'def'   => 'varchar(255)' ),
+	    'congressional_district_46'    		=> array( 'alias' => 'congressional_district_46',
+		                                              'def'   => 'varchar(64)' ),
+	    'ny_senate_district_47'    			=> array( 'alias' => 'ny_senate_district_47',
+		                                              'def'   => 'varchar(64)' ),
+	    'ny_assembly_district_48'    		=> array( 'alias' => 'ny_assembly_district_48',
+		                                              'def'   => 'varchar(64)' ),
+	    'election_district_49'    			=> array( 'alias' => 'election_district_49',
+		                                              'def'   => 'varchar(64)' ),
+	    'county_50'    						=> array( 'alias' => 'county_50',
+		                                              'def'   => 'varchar(64)' ),
+	    'county_legislative_district_51'	=> array( 'alias' => 'county_legislative_district_51',
+		                                              'def'   => 'varchar(64)' ),
+	    'town_52'    						=> array( 'alias' => 'town_52',
+		                                              'def'   => 'varchar(64)' ),
+	    'ward_53'    						=> array( 'alias' => 'ward_53',
+		                                              'def'   => 'varchar(64)' ),
+	    'school_district_54'    			=> array( 'alias' => 'school_district_54',
+		                                              'def'   => 'varchar(64)' ),
+	    'new_york_city_council_55'    		=> array( 'alias' => 'new_york_city_council_55',
+		                                              'def'   => 'varchar(64)' ),
+	    'neighborhood_56'    				=> array( 'alias' => 'neighborhood_56',
+		                                              'def'   => 'varchar(64)' ),
+	    'street_address'    				=> array( 'alias' => 'street_address',
+		                                              'def'   => 'varchar(96)' ),
+	    'supplemental_address_1'    		=> array( 'alias' => 'supplemental_address_1',
+		                                              'def'   => 'varchar(96)' ),
+	    'supplemental_address_2'    		=> array( 'alias' => 'supplemental_address_2',
+		                                              'def'   => 'varchar(96)' ),
+	    'street_number'    					=> array( 'alias' => 'street_number',
+		                                              'def'   => 'varchar(16)' ),
+	    'street_number_suffix'    			=> array( 'alias' => 'street_number_suffix',
+		                                              'def'   => 'varchar(8)' ),
+	    'street_name'    					=> array( 'alias' => 'street_name',
+		                                              'def'   => 'varchar(64)' ),
+	    'street_unit'    					=> array( 'alias' => 'street_unit',
+		                                              'def'   => 'varchar(16)' ),
+	    'city'    							=> array( 'alias' => 'city',
+		                                              'def'   => 'varchar(64)' ),
+	    'postal_code'    					=> array( 'alias' => 'postal_code',
+		                                              'def'   => 'varchar(12)' ),
+	    'postal_code_suffix'    			=> array( 'alias' => 'postal_code_suffix',
+		                                              'def'   => 'varchar(12)' ),
+	    'state_province_id'    				=> array( 'alias' => 'state_province_id',
+		                                              'def'   => 'varchar(12)' ),
+	    );
+	
+	switch ( $output ) {
+		case 'select':
+			$selectVals = array();
+			$selectList = '';
+			
+			foreach ( $fields as $field => $details ) {
+				$selectVals[] = $field.' as '.$details['alias'];
+			}
+			$selectList = implode( ', ', $selectVals );
+			return $selectList;
+			
+			break;
+
+		case 'columns':
+			$colVals = array();
+			$colList = '';
+			
+			foreach ( $fields as $field => $details ) {
+				$colVals[] = $details['alias'].' '.$details['def'];
+			}
+			$colList = implode( ', ', $colVals );
+			return $colList;
+			
+			break;
+		
+		default:
+
+			return '';
+	}
 }
