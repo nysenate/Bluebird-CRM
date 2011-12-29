@@ -380,8 +380,13 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		CRM_Utils_System::setTitle( ts('Export All or Selected Fields') );
 	}
 	
-	//CRM_Core_Error::debug($formName);
-	//CRM_Core_Error::debug($form);
+    //4808 remove various CiviCRM references in page title, etc.
+    if ( drupal_get_title() == 'CiviCRM' ) {
+        CRM_Utils_System::setTitle( ts('Bluebird') );
+    }
+
+    //CRM_Core_Error::debug($formName);
+    //CRM_Core_Error::debug($form);
 	
 } //close buildForm
 
