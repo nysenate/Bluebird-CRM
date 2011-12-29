@@ -222,13 +222,15 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 			$website->_attributes['onfocus'] = $js;
 		}
 
-        //NYSS 4407
-        $privacy =& $form->getElement( 'privacy' );
-		foreach ( $privacy->_elements as $key=>$option ) {
-            if ( $option->_attributes['name'] == 'is_opt_out' ) {
-                unset($privacy->_elements[$key]);
-            }
-        }
+        //NYSS 4407 remove bulk email from privacy list as it is a separate element
+		if ( isset( $form->_elementIndex['privacy'] ) ) {
+        	$privacy =& $form->getElement( 'privacy' );
+			foreach ( $privacy->_elements as $key=>$option ) {
+        	    if ( $option->_attributes['name'] == 'is_opt_out' ) {
+        	        unset($privacy->_elements[$key]);
+        	    }
+        	}
+		}
 		
 	}
 	
