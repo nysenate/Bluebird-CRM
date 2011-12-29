@@ -539,77 +539,179 @@ function nyss_dedupe_individual_default_strict_record($o) {
 }
 
 function nyss_dedupe_individual_default_fuzzy_record($o) {
-    # Pull out all the parameter arrays
+    // Pull out all the parameter arrays
     $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params,array());
     $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params,array());
     $civicrm_email   = CRM_Utils_Array::value('civicrm_email',  $o->params,array());
 
-    # Get all of our possible match parameters
+    // Get all of our possible match parameters
     $email = nyss_dedupe_get_safe('email',$civicrm_email,'');
+
     $first_name  = nyss_dedupe_get_safe('first_name' ,$civicrm_contact,'');
     $last_name   = nyss_dedupe_get_safe('last_name'  ,$civicrm_contact,'');
     $birth_date  = nyss_dedupe_get_safe('birth_date' ,$civicrm_contact,'');
     $suffix_id   = nyss_dedupe_get_safe('suffix_id'  ,$civicrm_contact,'');
-    $prefix_id   = nyss_dedupe_get_safe('prefix_id'  ,$civicrm_contact,'');
     $middle_name = nyss_dedupe_get_safe('middle_name',$civicrm_contact,'');
-    $city = nyss_dedupe_get_safe('city', $civicrm_address, '');
-    $postal_code = nyss_dedupe_get_safe('postal_code',$civicrm_address,'');
-    $street_address = nyss_dedupe_get_safe('street_address',$civicrm_address,'');
+    $gender_id   = nyss_dedupe_get_safe('gender_id'  ,$civicrm_contact,'');
+    // prefix_id shouldn't be a distinguishing factor here unless in practice it helps determine gender or something
 
-    # If we don't have a first and last name, do nothing
+    $city           = nyss_dedupe_get_safe('city'                  ,$civicrm_address,'');
+    $postal_code    = nyss_dedupe_get_safe('postal_code'           ,$civicrm_address,'');
+    $street_address = nyss_dedupe_get_safe('street_address'        ,$civicrm_address,'');
+    $state_id       = nyss_dedupe_get_safe('state_province_id'     ,$civicrm_address,'');
+    $country_id     = nyss_dedupe_get_safe('country_id'            ,$civicrm_address,'');
+    $supp_address_1 = nyss_dedupe_get_safe('supplemental_address_1',$civicrm_address,'');
+    $supp_address_2 = nyss_dedupe_get_safe('supplemental_address_2',$civicrm_address,'');
+    // Bluebird doesn't use supplemental_address_3 at all
+
+    // If we don't have a first and last name, do nothing
     if( !$first_name && !$last_name )
         return "SELECT 0 as id1, 0 as weight FROM civicrm_contact as contact1 WHERE 1 ";
 
-    # Since first name and last name are required for matching we can build
-    # part of the end SQL statement statically.
-    $select = "SELECT DISTINCT contact1.contact_id as id1, 5 as weight\n";
-    $from   = "FROM shadow_contact as contact1\n JOIN fn_group_contact as fn ON fn.contact_id=contact1.contact_id\n ";
-    $where = "
-WHERE contact1.contact_type = 'Individual'
-  AND fn.fn_group_id IN ( SELECT fn_group_id
-                          FROM fn_group_name
-                          WHERE name = BB_NORMALIZE('$first_name'))
-  AND contact1.last_name = BB_NORMALIZE('$last_name')
-  ";
+    // Here we are going to construct a pretty intricate address matching clause
+    // based on the available inputs and the following rule:
+    //
+    //  $email || ( ($mailing X $street) && $postal && $city && $state && $country )
+    //
+    // When address parts are not available, we leave them out intelligently
+    // Mailing and street address can cross match against each other if the
+    // other is present to match against. This provides for flexibility with
+    // P.O. Boxes in the street field and street addresses in the mailing field.
 
-    # Pre-prepare the pieces of the where statement
-    $emailClause = "(email1.email IS NULL OR email1.email = '$email')";
-    $streetClause = "(address1.street_address IS NULL OR address1.street_address = BB_NORMALIZE_ADDR('$street_address'))";
-    $postalClause = "(address1.postal_code IS NULL OR address1.postal_code = $postal_code)";
-    $cityClause = "(address1.city IS NULL OR address1.city = '$city')";
+    // We can just build the strings, if the values are blank we won't use these parts anyway
+    $supp1Clause = "";
+    $supp2Clause = "(address1.supplemental_address_2 IS NULL OR address1.supplemental_address_2 = '$supp_address_2')";
 
-    # Check for a street address for its primary matching logic.
-    if( $street_address ) {
-        $from  .= "LEFT JOIN shadow_address as address1 ON contact1.contact_id=address1.contact_id\n ";
-
-        # If there is a postal code and a city code match either, else match whatever is available.
-        # This helps to account for typos in one or the other on data entry.
-        if( $postal_code && $city ) {
-            $addrClause = "($streetClause AND ($postalClause OR $cityClause))";
-        } elseif ($postal_code) {
-            $addrClause = "($streetClause AND $postalClause)";
-        } elseif ($city) {
-            $addrClause = "($streetClause AND $cityClause)";
-        } else {
-            $addrClause = $streetClause;
-        }
-
-        if( $email ) {
-            $from  .= "LEFT JOIN civicrm_email as email1 on contact1.contact_id=email1.contact_id\n ";
-            $where .= "AND ($addrClause OR $emailClause)\n  ";
-        } else {
-            $where .= "AND $addrClause\n  ";
-        }
-
-    # If there is no street address, but we have an email, attempt to match on that
-    } elseif( $email ) {
-        $from  .= "JOIN civicrm_email as email1 on contact1.contact_id=email1.contact_id\n";
-        $where .= "AND $emailClause\n  ";
+    // Here we do a cross check of street address against street_address if its available.
+    if($street_address) {
+        $supp1Clause = "(address1.supplemental_address_1 IS NULL OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$supp_address_1') OR address1.supplemental_address_1 = BB_NORMALIZE('$street_address') )";
+    } else {
+        $supp1Clause = "(address1.supplemental_address_1 IS NULL OR address1.supplemental_address_1 = BB_NORMALIZE_ADDR('$supp_address_1') )";
     }
 
-    # Add the rest of the conditions if they are present. Don't use the prefix.
+    // Construct the mailing clause
+    $mailingClause = "";
+    if($supp_address_1 && $supp_address_2) {
+        $mailingClause = "($supp1Clause AND $supp2Clause)";
+    } elseif($supp_address_1) {
+        $mailingClause = $supp1Clause;
+    } elseif($supp_address_2) {
+        $mailingClause = $supp2Clause;
+    }
+
+    // Here we do a cross check of street address against supp1 if its available.
+    // Again, we can just build it because we won't use it later if street_address is null
+    if($supp_address_1) {
+        $streetClause = "(address1.street_address IS NULL OR address1.street_address = BB_NORMALIZE_ADDR('$street_address') OR address1.street_address = BB_NORMALIZE_ADDR('$supp_address_1') )";
+    } else {
+        $streetClause = "(address1.street_address IS NULL OR address1.street_address = BB_NORMALIZE_ADDR('$street_address') )";
+    }
+
+    // Construct the address clause from the street and mailing addresses
+    $addressClause = "";
+    if($street_address && $mailingClause) {
+        $addressClause = "($streetClause OR $mailingClause)";
+    } elseif($street_address) {
+        $addressClause = $streetClause;
+    } elseif($mailingClause) {
+        $addressClause = $mailingClause;
+    }
+
+    // Construct the base of the location clause
+    $locationClause = "";
+    $cityClause     = "(address1.city IS NULL OR address1.city = '$city')";
+    $postalClause   = "(address1.postal_code IS NULL OR address1.postal_code = $postal_code)";
+    if($postal_code && $city) {
+        $locationClause = "($cityClause AND $postalClause)";
+    } elseif($postal_code) {
+        $locationClause = $postalClause;
+    } elseif($city) {
+        $locationClause = $cityClause;
+    }
+
+    // Mix in the state and country ids if available
+    $countryClause = "(address1.country_id IS NULL OR address1.country_id = $country_id)";
+    $stateClause   = "(address1.state_province_id IS NULL OR address1.state_province_id = $state_id)";
+    if($locationClause) {
+        if($country_id && $state_id) {
+            $locationClause = "($locationClause AND $countryClause AND $stateClause)";
+        } elseif($state_id) {
+            $locationClause = "($locationClause AND $stateClause)";
+        } elseif($country_id) {
+            $locationClause = "($locationClause AND $country_id)";
+        }
+    } else {
+        if($country_id && $state_id) {
+            $locationClause = "($countryClause AND $stateClause)";
+        } elseif($state_id) {
+            $locationClause = $stateClause;
+        } elseif($country_id) {
+            $locationClause = $country_id;
+        }
+    }
+
+    // Integrate location into the address Clause
+    if($locationClause && $addressClause) {
+        $addressClause = "($addressClause && $locationClause)";
+    } elseif($locationClause) {
+        $addressClause = $locationClause;
+    } elseif($addressClause) {
+        //Do nothing, no integration needed
+    } else {
+        //This is also technically possible, leave addressClause blank
+    }
+
+    // Integrate email into the address clause
+    $emailClause = "(email1.email IS NULL OR email1.email = '$email')";
+    if($email && $addressClause) {
+        $addressClause = "($addressClause OR $emailClause)";
+    } elseif($email) {
+        $addressClause = $emailClause;
+    } elseif($addressClause) {
+        //Do nothing, no integration needed
+    } else {
+        //This is also technically possible, leave addressClause blank
+        //We'll ignore it later on when we build the query if it is blank
+    }
+
+    // SELECT DISTINCT to avoid duplicates created by joins
+    $select = "SELECT DISTINCT contact1.contact_id as id1, 5 as weight\n";
+
+    // FROM clause based on the components available for matching
+    $from   = "FROM shadow_contact as contact1\n JOIN fn_group_contact as fn ON fn.contact_id=contact1.contact_id\n ";
+    if($city || $postal_code || $street_address || $supp_address_1 || $supp_address_2 || $country_id || $state_id)
+        $from  .= "LEFT JOIN shadow_address as address1 ON contact1.contact_id=address1.contact_id\n ";
+    if($email)
+        $from  .= "LEFT JOIN civicrm_email as email1 on contact1.contact_id=email1.contact_id\n";
+
+    // WHERE clause constructed statically and dynamically based on the components
+    // currently available for contact matching according to the following rule:
+    //
+    //   $first && $last && $address && $birth && $gender && $suffix && $middle
+    //
+    // and the following filter:
+    //
+    //   contact_type = 'Individual'
+    //
+    // where components that are not available are intelligently left out.
+    $where = "
+        WHERE contact1.contact_type = 'Individual'
+          AND fn.fn_group_id IN ( SELECT fn_group_id
+                                  FROM fn_group_name
+                                  WHERE name = BB_NORMALIZE('$first_name'))
+          AND contact1.last_name = BB_NORMALIZE('$last_name')
+          ";
+
+    // Add the rest of the conditions if they are present. Don't use the prefix
+    // because its not really a substantial differentiating factor between people
+    if($addressClause)
+        $where .= "AND $addressClause\n  ";
+
     if($birth_date)
         $where .= "AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')\n  ";
+
+    if($gender_id)
+        $where .= "AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')\n  ";
 
     if($suffix_id)
         $where .= "AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)\n  ";
