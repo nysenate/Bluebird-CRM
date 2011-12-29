@@ -209,6 +209,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	if ( $merge_households ) {
 		mergeHouseholds( "tmpExport$rnd" );
 	}
+	
+	//remove the household_id column so print prod processing is not altered
+	$sql = "ALTER TABLE tmpExport$rnd DROP COLUMN household_id;";
+	CRM_Core_DAO::executeQuery( $sql );
 
 	//check if printProduction subfolder exists; if not, create it
 	$config =& CRM_Core_Config::singleton();
