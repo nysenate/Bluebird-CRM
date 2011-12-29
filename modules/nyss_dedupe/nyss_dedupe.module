@@ -473,66 +473,8 @@ function nyss_dedupe_house3_internal($o) {
               ";
 }
 
-function nyss_dedupe_fuzzy_address_internal($o, $table, &$tableQueries) {
-    //now set custom query; make sure weight matches what is configured in system
-    $tableQueries['civicrm.street_address.5'] = "
-        SELECT contact1.contact_id id1, contact2.contact_id id2, 5 weight
-        FROM shadow_contact as contact1
-          JOIN shadow_contact as contact2 ON (
-                contact1.first_name = contact2.first_name AND
-                contact1.last_name = contact2.last_name AND
-                IFNULL(contact1.middle_name,'') = IFNULL(contact2.middle_name,'') AND
-                IFNULL(contact1.suffix_id,0) = IFNULL(contact2.suffix_id,0) )
-          INNER JOIN shadow_address address1 on contact1.contact_id=address1.contact_id
-          INNER JOIN shadow_address address2 on contact2.contact_id=address2.contact_id AND
-                address1.postal_code=address2.postal_code
-        WHERE contact1.contact_type = 'Individual'
-          AND contact2.contact_type = 'Individual'
-          AND contact1.contact_id <> contact2.contact_id
-          AND contact1.last_name IS NOT NULL
-          AND contact1.first_name IS NOT NULL
-          AND address1.postal_code IS NOT NULL
-          ";
-
-    if( !empty($o->contactIds) )
-          $tableQueries['civicrm.street_address.5'] .= " AND contact1.contact_id in (".implode(', ',$o->contactIds).")";
-
-    //echo "<pre>{$tableQueries['civicrm.street_address.5']}</pre>"; exit();
-}
-
-function nyss_dedupe_fuzzy_address_record($o, $table, &$tableQueries) {
-    $where = "WHERE contact.contact_type = 'Individual'\n";
-    $contact = $o->params['civicrm_contact'];
-    $address = $o->params['civicrm_address'];
-
-    foreach(array('last_name','first_name','middle_name') as $key) {
-        if( array_key_exists($key, $contact) && $value=CRM_Core_DAO::escapeString($contact[$key]))
-            $where .= " AND contact.$key = BB_NORMALIZE('$value')\n";
-        else
-            $where .= " AND contact.$key IS NULL\n";
-    }
-
-    if( array_key_exists('suffix_id', $contact) && $value=CRM_Core_DAO::escapeString($contact['suffix_id']))
-        $where .= " AND contact.suffix_id = '$value'\n";
-    else
-        $where .= " AND contact.suffix_id IS NULL\n";
-
-    if( array_key_exists('postal_code',$address) && $value=CRM_Core_DAO::escapeString($address['postal_code']))
-        $where .= " AND address.postal_code = '$value'\n";
-    else
-        $where .= " AND address.postal_code IS NULL\n";
-
-    $tableQueries['civicrm.street_address.5'] = "
-        SELECT DISTINCT contact.contact_id id1, 10 weight
-        FROM shadow_contact as contact
-            INNER JOIN shadow_address address on address.contact_id=contact.contact_id
-        $where
-        ";
-
-    // echo "<pre>{$tableQueries['civicrm.street_address.5']}</pre>"; exit();
-}
-
 function nyss_dedupe_individual_default_strict_internal($o) {
+    // TODO: Needs updating, see the fuzzy rule
     return "
         SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
         FROM shadow_contact AS contact1
@@ -556,6 +498,7 @@ function nyss_dedupe_individual_default_strict_internal($o) {
 }
 
 function nyss_dedupe_individual_default_strict_record($o) {
+    // TODO: Needs updating, see the fuzzy rule
     $civicrm_contact = CRM_Utils_Array::value('civicrm_contact',$o->params);
     $civicrm_address = CRM_Utils_Array::value('civicrm_address',$o->params);
 
@@ -583,6 +526,9 @@ function nyss_dedupe_individual_default_strict_record($o) {
     if($birth_date = nyss_dedupe_get_safe('birth_date' ,$civicrm_contact,''))
         $query .= " AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')\n";
 
+    if($gender_id = nyss_dedupe_get_safe('gender_id'  ,$civicrm_contact,''))
+        $where .= "AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')\n  ";
+
     if($suffix_id = nyss_dedupe_get_safe('suffix_id'  ,$civicrm_contact,''))
         $query .= " AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)\n";
 
@@ -590,21 +536,6 @@ function nyss_dedupe_individual_default_strict_record($o) {
         $query .= " AND (contact1.middle_name IS NULL or contact1.middle_name = '$middle_name')\n";
 
     return $query;
-}
-
-function nyss_dedupe_individual_default_fuzzy_internal($o) {
-    return "
-        SELECT DISTINCT contact1.contact_id id1, contact2.contact_id id2, 5 weight
-        FROM shadow_contact AS contact1
-          JOIN fn_group_contact AS fn1 ON fn1.contact_id=contact1.contact_id
-          JOIN shadow_contact AS contact2 ON (
-            contact1.last_name = contact2.last_name AND
-            contact1.contact_type = contact2.contact_type)
-          JOIN fn_group_contact AS fn2 ON (
-            fn2.contact_id=contact2.contact_id AND
-            fn1.fn_group_id=fn2.fn_group_id)
-
-    ";
 }
 
 function nyss_dedupe_individual_default_fuzzy_record($o) {

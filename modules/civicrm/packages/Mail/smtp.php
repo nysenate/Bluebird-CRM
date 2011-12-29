@@ -153,7 +153,7 @@ class Mail_smtp extends Mail {
      *
      * @var boolean
      */
-    var $persist = true; //NYSS
+    var $persist = false;
 
     /**
      * Use SMTP command pipelining (specified in RFC 2920) if the SMTP server

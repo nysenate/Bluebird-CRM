@@ -29,7 +29,7 @@
 {ts}Print Production Export{/ts}
 </legend>
 <dl>
-<!--<dt></dt><dd>{$form.merge_same_household.html} {$form.merge_same_household.label}</dd>-->
+<dt></dt><dd>{$form.merge_same_household.html} {$form.merge_same_household.label}</dd>
 <dt></dt>
   <dd>{include file="CRM/Contact/Form/Task.tpl"}</dd>
 

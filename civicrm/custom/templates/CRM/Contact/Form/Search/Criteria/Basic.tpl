@@ -150,7 +150,7 @@
         <tr>
             <td colspan="2">
                 {*NYSS 4407*}
-                <table class="form-layout-compressed">
+                <table class="form-layout-compressed search-privacy-options">
                 <tr>
                     <td colspan="2">
                         {$form.privacy_toggle.html} {help id="id-privacy"}

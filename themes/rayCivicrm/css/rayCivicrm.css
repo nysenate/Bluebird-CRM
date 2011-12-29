@@ -1198,6 +1198,10 @@ ul.token-input-list-facebook { width:265px;}
 	width: 300px;
 }
 
+#Advanced .search-privacy-options {
+	width: auto;
+}
+
 /*override tag tree expand/close icons*/
  
 .jstree-default ins {

@@ -15,9 +15,12 @@ CREATE TABLE shadow_contact (
     organization_name varchar(255),
     suffix_id varchar(255),
     birth_date date,
+    gender_id int(10) unsigned,
     contact_type varchar(255),
     INDEX (first_name, last_name, middle_name),
     INDEX (last_name),
+    INDEX (gender_id),
+    INDEX (contact_type),
     INDEX (household_name),
     INDEX (organization_name),
     INDEX (birth_date)
@@ -28,9 +31,17 @@ CREATE TABLE shadow_address (
     address_id int(10) unsigned PRIMARY KEY,
     contact_id int(10) unsigned,
     street_address varchar(255),
+    country_id int(10) unsigned,
+    state_province_id int(10) unsigned,
+    supplemental_address_1 varchar(255),
+    supplemental_address_2 varchar(255),
     postal_code varchar(255),
     city varchar(255),
     INDEX (street_address),
+    INDEX (supplemental_address_1),
+    INDEX (supplemental_address_2),
+    INDEX (country_id),
+    INDEX (state_province_id),
     INDEX (postal_code),
     INDEX (city),
     INDEX (contact_id)
@@ -178,14 +189,15 @@ CREATE TRIGGER shadow_contact_insert_trigger AFTER INSERT ON civicrm_contact
         SET norm_organization_name = BB_NORMALIZE(NEW.organization_name);
 
         INSERT INTO shadow_contact
-                    (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, contact_type, household_name, organization_name)
-             VALUES (NEW.id, norm_first_name, norm_middle_name, norm_last_name, NEW.suffix_id, NEW.birth_date, NEW.contact_type, norm_household_name, norm_organization_name)
+                    (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, gender_id, contact_type, household_name, organization_name)
+             VALUES (NEW.id, norm_first_name, norm_middle_name, norm_last_name, NEW.suffix_id, NEW.birth_date, NEW.gender_id, NEW.contact_type, norm_household_name, norm_organization_name)
              ON DUPLICATE KEY UPDATE
                     first_name=norm_first_name,
                     middle_name=norm_middle_name,
                     last_name=norm_last_name,
                     suffix_id=NEW.suffix_id,
                     birth_date=NEW.birth_date,
+                    gender_id=NEW.gender_id,
                     contact_type=NEW.contact_type,
                     household_name=norm_household_name,
                     organization_name=norm_organization_name;
@@ -208,14 +220,15 @@ CREATE TRIGGER shadow_contact_update_trigger AFTER UPDATE ON civicrm_contact
         SET norm_organization_name = BB_NORMALIZE(NEW.organization_name);
 
         INSERT INTO shadow_contact
-                    (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, contact_type, household_name, organization_name)
-             VALUES (NEW.id, norm_first_name, norm_middle_name, norm_last_name, NEW.suffix_id, NEW.birth_date, NEW.contact_type, norm_household_name, norm_organization_name)
+                    (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, gender_id, contact_type, household_name, organization_name)
+             VALUES (NEW.id, norm_first_name, norm_middle_name, norm_last_name, NEW.suffix_id, NEW.birth_date, NEW.gender_id, NEW.contact_type, norm_household_name, norm_organization_name)
              ON DUPLICATE KEY UPDATE
                     first_name=norm_first_name,
                     middle_name=norm_middle_name,
                     last_name=norm_last_name,
                     suffix_id=NEW.suffix_id,
                     birth_date=NEW.birth_date,
+                    gender_id=NEW.gender_id,
                     contact_type=NEW.contact_type,
                     household_name=norm_household_name,
                     organization_name=norm_organization_name;
@@ -237,30 +250,58 @@ CREATE TRIGGER shadow_contact_delete_trigger AFTER DELETE ON civicrm_contact
 DROP TRIGGER IF EXISTS shadow_address_insert_trigger |
 CREATE TRIGGER shadow_address_insert_trigger AFTER INSERT ON civicrm_address
     FOR EACH ROW BEGIN
+        DECLARE norm_supplemental_address_1 VARCHAR(255);
+        DECLARE norm_supplemental_address_2 VARCHAR(255);
         DECLARE norm_street_address VARCHAR(255);
         DECLARE norm_postal_code VARCHAR(255);
         DECLARE norm_city VARCHAR(255);
 
+        SET norm_supplemental_address_1 = BB_NORMALIZE_ADDR(NEW.supplemental_address_1);
+        SET norm_supplemental_address_2 = BB_NORMALIZE_ADDR(NEW.supplemental_address_2);
         SET norm_street_address = BB_NORMALIZE_ADDR(NEW.street_address);
         SET norm_postal_code = IFNULL(NEW.postal_code,'');
         SET norm_city = IFNULL(NEW.city,'');
 
-        INSERT INTO shadow_address (address_id, contact_id, street_address, postal_code, city) VALUES (NEW.id, NEW.contact_id, norm_street_address, norm_postal_code, norm_city) ON DUPLICATE KEY UPDATE street_address=norm_street_address, postal_code=norm_postal_code, city=norm_city;
+        INSERT INTO shadow_address
+                    (address_id, contact_id, street_address, postal_code, city, country_id, state_province_id, supplemental_address_1, supplemental_address_2)
+             VALUES (NEW.id, NEW.contact_id, norm_street_address, norm_postal_code, norm_city, NEW.country_id, NEW.state_province_id, norm_supplemental_address_1, norm_supplemental_address_2)
+             ON DUPLICATE KEY UPDATE
+                    street_address=norm_street_address,
+                    postal_code=norm_postal_code,
+                    city=norm_city,
+                    country_id=NEW.country_id,
+                    state_province_id=NEW.state_province_id,
+                    supplemental_address_1=norm_supplemental_address_1,
+                    supplemental_address_2=norm_supplemental_address_2;
     END
 |
 
 DROP TRIGGER IF EXISTS shadow_address_update_trigger |
 CREATE TRIGGER shadow_address_update_trigger AFTER UPDATE ON civicrm_address
     FOR EACH ROW BEGIN
+        DECLARE norm_supplemental_address_1 VARCHAR(255);
+        DECLARE norm_supplemental_address_2 VARCHAR(255);
         DECLARE norm_street_address VARCHAR(255);
         DECLARE norm_postal_code VARCHAR(255);
         DECLARE norm_city VARCHAR(255);
 
+        SET norm_supplemental_address_1 = BB_NORMALIZE_ADDR(NEW.supplemental_address_1);
+        SET norm_supplemental_address_2 = BB_NORMALIZE_ADDR(NEW.supplemental_address_2);
         SET norm_street_address = BB_NORMALIZE_ADDR(NEW.street_address);
         SET norm_postal_code = IFNULL(NEW.postal_code,'');
         SET norm_city = IFNULL(NEW.city,'');
 
-        INSERT INTO shadow_address (address_id, contact_id, street_address, postal_code, city) VALUES (NEW.id, NEW.contact_id, norm_street_address, norm_postal_code, norm_city) ON DUPLICATE KEY UPDATE street_address=norm_street_address, postal_code=norm_postal_code, city=norm_city;
+        INSERT INTO shadow_address
+                    (address_id, contact_id, street_address, postal_code, city, country_id, state_province_id, supplemental_address_1, supplemental_address_2)
+             VALUES (NEW.id, NEW.contact_id, norm_street_address, norm_postal_code, norm_city, NEW.country_id, NEW.state_province_id, norm_supplemental_address_1, norm_supplemental_address_2)
+             ON DUPLICATE KEY UPDATE
+                    street_address=norm_street_address,
+                    postal_code=norm_postal_code,
+                    city=norm_city,
+                    country_id=NEW.country_id,
+                    state_province_id=NEW.state_province_id,
+                    supplemental_address_1=norm_supplemental_address_1,
+                    supplemental_address_2=norm_supplemental_address_2;
     END
 |
 
