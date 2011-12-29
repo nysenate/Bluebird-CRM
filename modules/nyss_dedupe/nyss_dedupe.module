@@ -494,6 +494,7 @@ function nyss_dedupe_individual_default_strict_internal($o) {
           AND (contact1.suffix_id IS NULL OR contact2.suffix_id IS NULL OR contact1.suffix_id = contact2.suffix_id)
           AND (contact1.middle_name IS NULL OR contact2.middle_name IS NULL OR contact1.middle_name = contact2.middle_name)
           AND (contact1.birth_date IS NULL OR contact2.birth_date IS NULL OR contact1.birth_date = contact2.birth_date)
+          AND (contact1.gender_id IS NULL OR contact2.gender_id IS NULL OR contact1.gender_id = contact2.gender_id)
           ";
 }
 
