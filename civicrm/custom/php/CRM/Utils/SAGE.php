@@ -5,6 +5,8 @@ require_once 'CRM/Core/Error.php';
 require_once 'HTTP/Request.php';
 require_once 'CRM/Core/BAO/Address.php';
 
+define( 'MAX_STATUS_LEN', 200 ); //threshold length for status message
+
 // QQQ: should we find a new, unified, place to put the sage key?
 class CRM_Utils_SAGE
 {
@@ -200,8 +202,12 @@ class CRM_Utils_SAGE
         //sending us a "simple" address from the geocoding source instead
         //of the "extended" USPS address
         if($xml->address->simple) {
-            $msg = "SAGE Warning: USPS could not validate address: [$addr]";
-            $session->setStatus(ts($msg));
+            //for bulk actions, the status message is concatenated and could get quite long
+            //so we will limit the length
+            if ( strlen($session->getStatus) < MAX_STATUS_LEN ) {
+                $msg = "SAGE Warning: USPS could not validate address: [$addr] </ br>";
+                $session->setStatus(ts($msg));
+            }
         } else {
             //Don't change imported addresses, assume they are correct as given
             $url_components = explode( '/', CRM_Utils_System::currentPath() );
