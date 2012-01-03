@@ -45,6 +45,12 @@
 <p>Selecting this option will ensure only one email is sent to each address. Note that when using this option and including contact tokens in your email content, the email with it's respective tokens will only be created for one of the matching contacts.</p>
 {/htxt}
 
+{*NYSS*}
+{htxt id="all-emails"}
+<p>By default, Bluebird will send to the contact's primary email address and any additional email addresses explicitly marked for bulk mail.</p>
+<p>Selecting this option will send your email to all addresses present for a given contact, regardless of whether it is a primary email or marked for bulk mail sending.</p>
+{/htxt}
+
 {htxt id="include-groups"}
 <p>{ts}Determine the contacts in your database who should receive this mailing by first selecting one or more <strong>Included Groups</strong>. (Groups must be assigned the <strong>Mailing List</strong> type to be available on this screen - you can update this for an existing group from <strong>Manage Groups &raquo; Settings</strong>.){/ts}</p>
 
