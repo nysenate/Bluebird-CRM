@@ -42,7 +42,7 @@ define('CIVICRM_DOMAIN_ORG_ID', null);
 define('CIVICRM_EVENT_PRICE_SET_DOMAIN_ID', 0 );
 
 define('CIVICRM_ACTIVITY_ASSIGNEE_MAIL' , 1 );
-define('CIVICRM_CONTACT_AJAX_CHECK_SIMILAR' , 1 );
+define('CIVICRM_CONTACT_AJAX_CHECK_SIMILAR' , 0 );
 define('CIVICRM_PROFILE_DOUBLE_OPTIN', 1 );
 define('CIVICRM_TRACK_CIVIMAIL_REPLIES', false);
 // define( 'CIVICRM_MAIL_LOG', '%%templateCompileDir%%/mail.log' );

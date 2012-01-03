@@ -47,6 +47,16 @@ SET locale_custom_strings = 'a:1:{s:5:\"en_US\";a:2:{s:7:\"enabled\";a:2:{s:13:\
 WHERE id = 1";
 $execSql -i $instance -c "$wordreplace"
 
+# 4419
+dupegroup="
+UPDATE civicrm_dedupe_rule_group
+SET is_default = 0
+WHERE id = 1;
+UPDATE civicrm_dedupe_rule_group
+SET is_default = 1
+WHERE id = 13;";
+$execSql -i $instance -c "$dupegroup"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
