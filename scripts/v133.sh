@@ -37,6 +37,10 @@ formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="Sen
 
 ### Drupal ###
 
+# enable the massmerge module
+echo "enable massmerge module for: $instance"
+$drush $instance en nyss_massmerge -y
+
 
 ### CiviCRM ###
 

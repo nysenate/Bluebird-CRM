@@ -102,23 +102,16 @@ function _isCustom( $value ) {
 }
 
 function _logMerge( $mainId, $otherId ) {
-
-	require_once 'CRM/Core/BAO/Log.php';
 	
-	$session = & CRM_Core_Session::singleton();
-    $cid = $session->get('userID');
+	$session =& CRM_Core_Session::singleton();
+    $cid     = $session->get('userID');
+	$date    = date('YmdHis');
 	
-	$logParams = array( 'entity_table'  => 'civicrm_contact',
-            	        'entity_id'     => $mainId,
-            	        'modified_id'   => $cid,
-            	        'modified_date' => date('YmdHis'),
-            	        );
-    
-	$logMainMsg  = array( 'data' => "Contact $otherId was merged into this contact." );
-	$logOtherMsg = array( 'data' => "Contact was merged into contact $mainId." );
-	
-	CRM_Core_BAO_Log::add( $logParams + $logMainMsg );
-	CRM_Core_BAO_Log::add( $logParams + $logOtherMsg );
+	//handle with straight sql as it's faster than using the BAO
+	$sql = "INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date ) VALUES
+	        ( 'civicrm_contact', $mainId, 'Contact $otherId was merged into this contact.', $cid, $date ),
+			( 'civicrm_contact', $otherId, 'Contact was merged into contact $mainId.', $cid, $date )";
+	CRM_Core_DAO::executeQuery($sql);
 	
 	return;
 	
