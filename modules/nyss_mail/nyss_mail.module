@@ -105,7 +105,7 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
     if ( $formName == 'CRM_Mailing_Form_Group' ) {
         $defaults['dedupe_email'] = true;
         $form->setDefaults( $defaults );
-		
+
 		//4628
 		$form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
     }
@@ -159,16 +159,17 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
 function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
 	if ( $formName == 'CRM_Mailing_Form_Group' ) {
-		//add the form value to the object
-		$form->_allEmails = $form->_submitValues['all_emails'];
-		$mailingID        = $form->_mailingIDTemp;
-		
-		if ( $form->_allEmails ) {
-			_addAllEmails( $mailingID );
-		}
-		//CRM_Core_Error::debug('postProcess Group form', $form); exit();
-	}
-	//CRM_Core_Error::debug($form); exit();
+
+        //4628
+        $mailingID = $form->_mailingID;
+
+        if ( $form->_submitValues['all_emails'] ) {
+            _addAllEmails( $mailingID );
+        }
+        //CRM_Core_Error::debug('postProcess Group form', $form); exit();
+    }
+
+//CRM_Core_Error::debug($form); exit();
 } //postProcess
 
 function nyss_mail_civicrm_mailingGroups( &$form, &$groups, &$mailings ) {

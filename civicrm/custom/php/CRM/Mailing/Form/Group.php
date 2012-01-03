@@ -436,8 +436,10 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         if ( isset($params['dedupe_email']) ) {
             $dedupeEmail = $params['dedupe_email'];
         }
-		$this->_mailingIDTemp = $mailing->id; //NYSS 4628 crappy hack so that we have access to the mailing id in the postProcess hook
-        
+
+		//NYSS 4628 mailing id should be added to the form object
+		$this->_mailingID = $mailing->id;
+
         // also compute the recipients and store them in the mailing recipients table
         CRM_Mailing_BAO_Mailing::getRecipients( $mailing->id,
                                                 $mailing->id,
