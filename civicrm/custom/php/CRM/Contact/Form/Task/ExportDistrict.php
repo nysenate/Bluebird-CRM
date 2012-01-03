@@ -109,7 +109,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 	$dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
 	$sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
-	$sql .= "street_number, street_name, street_unit, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
+	$sql .= "street_number, street_number_suffix, street_name, street_unit, street_address, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
 	$sql .= "c.birth_date, c.gender_id, phone, ";
 	$sql .= "town_52, ward_53, election_district_49, congressional_district_46, ny_senate_district_47, ny_assembly_district_48, school_district_54, county_50, ";
 	$sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
