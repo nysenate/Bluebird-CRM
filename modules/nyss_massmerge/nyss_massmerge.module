@@ -1,258 +1,127 @@
 <?php 
 
-//define('NYSSDEDUPEDEBUG',FALSE);
-define('NYSSDEDUPEDEBUG',TRUE);
+function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL ) {
 
-include ('nyss_massmerge_definitions.inc');
-
-//civicrm_initialize();
-require_once('CRM/Dedupe/Finder.php');
-require_once('CRM/Core/Permission.php');
-
-//define menu path
-function nyss_massmerge_menu () {
-
-  $items = array();
-
-  $items['massmerge'] = array (
-    'title' => t('Mass Merge Data'),
-    'page callback' => 'nyss_massmerge_run',
-    'access arguments' => array('export print production files'),
-    'type' => MENU_SUGGESTED_ITEM,
-  );
-
-  return $items;
-}
-
-function nyss_massmerge_run() {
-
-	if (!isset($_REQUEST['ruleid']))  {
-
-		nyss_massmerge_out('error', 'Please select the rule below:',true);
-
-		$rule = new CRM_Core_DAO();
-		$rule->query("SELECT name, level, contact_type as type, id FROM civicrm_dedupe_rule_group ORDER BY type, name;");
-        
-		while ($rule->fetch()) {
-			
-			print_r("<a href=\"?ruleid={$rule->id}\">{$rule->type}: {$rule->name} - {$rule->level}</a><br>");
-		}
-
-		return;
-	}
-
-        $dupes = nyss_massmerge_getDupes($_REQUEST['ruleid']);
-
-        if (!isset($_REQUEST['execute']) || !$_REQUEST['execute']) {
-
-                nyss_massmerge_out('warning', "THIS IS A TEST RUN - NO DATA WILL BE ALTERED. <a href=\"?ruleid={$_REQUEST['ruleid']}&execute=true\">click here</a> to execute the merge<br><br><br><hr>",true);
-
-	        nyss_massmerge_processDupes($dupes,false);
-        } else {
-
-	        nyss_massmerge_processDupes($dupes,true);
-	}
-
-        nyss_massmerge_out('debug', '<hr>done<hr>',true);
-}
-
-function nyss_massmerge_getDupes($id) {
-
-	nyss_massmerge_out('debug', "retrieving dupes for rule group id: $id",true);
-
-	$rgid = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_dedupe_rule_group where id=$id;");
-
-	$dupes = CRM_Dedupe_Finder::dupes($rgid);
-print_r($dupes);
-	return $dupes;
-}
-
-function nyss_massmerge_processDupes($dupes, $execute) {
+	switch( $type ) {
 	
-	foreach ($dupes as $dupe) {
+		case 'batch':
+			_resolveConflicts( $data, $mainId, $otherId );
+			break;
 		
-		//!!!! HARDCODED
-		if ($dupe[2]<16) return;
+		case 'sqls':
+			//log the merge against both records
+			_logMerge( $mainId, $otherId );
+			break;
 
-		nyss_massmerge_out('error', "<hr>"); 
-
-		//get timestamps USING ID as proxy since no timestamp
-		$aTime = CRM_Core_DAO::singleValueQuery("SELECT id as timestamp FROM civicrm_contact where id=".$dupe[0]);
-		$bTime = CRM_Core_DAO::singleValueQuery( "SELECT id as timestamp FROM civicrm_contact where id=".$dupe[1]);
-
-		if ($aTime>$bTime) {
-			
-			$primary_id=$dupe[0];
-			$merge_id=$dupe[1];
-
-	                nyss_massmerge_out('debug', "primary is A: {$dupe[0]}  (timestamp: {$aTime}), secondary is B: {$dupe[1]}  (timestamp: {$bTime})",true);
-		} else {
-
-			$primary_id=$dupe[0];
-			$merge_id=$dupe[1];
-
-                        nyss_massmerge_out('debug', "primary is B: {$dupe[1]}  (timestamp: {$bTime}), secondary is A: {$dupe[0]} (timestamp: {$aTime})",true);
-		}
-
-		nyss_massmerge_mergeOneToMany("civicrm_address", "location_type_id", $primary_id, $merge_id, $execute);
-		nyss_massmerge_mergeOneToMany("civicrm_phone",  "location_type_id", $primary_id, $merge_id, $execute);
-		nyss_massmerge_mergeOneToMany("civicrm_email",  "location_type_id", $primary_id, $merge_id, $execute);
-		nyss_massmerge_mergeOneToMany("civicrm_openid",  "location_type_id", $primary_id, $merge_id, $execute);
-                nyss_massmerge_mergeOneToMany("civicrm_website",  "website_type_id", $primary_id, $merge_id, $execute);
-                nyss_massmerge_mergeOneToMany("civicrm_im",  "location_type_id", $primary_id, $merge_id, $execute);
-
-		//merge all other dupe tables
-		nyss_massmerge_mergeDupes($primary_id, $merge_id,$execute);
-
-		nyss_massmerge_mergeContactTable($primary_id, $merge_id,$execute);
-	}
-
-	//now kill the contact
-	if ($execute) CRM_Core_DAO::executeQuery( "DELETE FROM civicrm_contact WHERE id = {$merge_id}");
-        nyss_massmerge_out('debug', "deleted contact: $merge_id",true);
-}
-
-function nyss_massmerge_mergeContactTable($primary_id, $merge_id, $execute) {
-
-
-	$sqlPrimary = "select * from civicrm_contact where id=$primary_id";
-        $sqlMerge = "select * from civicrm_contact where id=$merge_id";
-
-        $pRecord = new CRM_Core_DAO();
-        $pRecord->query($sqlPrimary);
-      	$pRecord->fetch();
-
-	$mRecord = new CRM_Core_DAO();
-        $mRecord->query($sqlMerge);
-        $mRecord->fetch();
-
-	//!!!!merge fields here and save
-}
-
-function nyss_massmerge_mergeDupes($primary_id, $merge_id, $execute) {
+		default:
 	
-	global $nyss_massmerge_defs;
-
-	foreach ($nyss_massmerge_defs as $action => $dupeDef) {
-
-		switch ($action) {
-			
-			case "map":
-
-				foreach ($dupeDef as $table => $fields) {
-					
-                                  foreach ($fields as $field) {
-
-					//fix for entity_id tables
-					$where = "";
-					if ($field=="entity_id") $where = " AND entity_table='civicrm_contact'";
-
-					$sql = "update $table set $field=$primary_id where $field=$merge_id$where;";
-					if ($execute) CRM_Core_DAO::executeQuery($sql);
-
-				        nyss_massmerge_out('debug', "mapping in $table: secondary $merge_id to primary $primary_id. SQL ".$sql,true);
-				  }
-				}
-				break;
-			
-			case "delete":
-
-				foreach ($dupeDef as $table => $fields) {
-
-				  foreach ($fields as $field) {
-                                        
-                                        //fix for entity_id tables
-                                        $where = "";
-                                        if ($field=="entity_id") $where = " AND entity_table='civicrm_contact'";
-
-					$sql = "delete from $table where $field=$merge_id$where;";
-					if ($execute) CRM_Core_DAO::executeQuery($sql);
-
-                                        nyss_massmerge_out('debug', "deleting in $table: secondary $merge_id. SQL ".$sql,true);
-				  }
-				}
-				break;
-		}
 	}
-}
-
-function nyss_massmerge_mergeOneToMany($table, $identifier, $primary_id, $merge_id, $execute) {
 	
+	return;
+}
 
-        nyss_massmerge_out('debug', "checking $table: $identifier. Primary: $primary_id, Secondary: $merge_id",true);
+//helper to resolve some conflicts when in batch mode
+function _resolveConflicts( &$data, $mainId, $otherId ) {
 
-	//get all records for both
-	$sqlPrimary = "select id, $identifier, contact_id from $table where contact_id=$primary_id";
-	$sqlMerge = "select id, $identifier, contact_id from $table where contact_id=$merge_id";
-
-        $aPRecords = array();
-	$pRecords = new CRM_Core_DAO();
-	$pRecords->query($sqlPrimary);
-        while ( $pRecords->fetch()) {
-                $new = count($aPRecords);
-                $aPRecords[$new]['id']=$pRecords->id;
-                $aPRecords[$new][$identifier]=$pRecords->$identifier;
-                $aPRecords[$new]['contact_id']=$pRecords->contact_id;
-        }
-
-	$aMRecords = array();
-	$mRecords = new CRM_Core_DAO();
-	$mRecords->query($sqlMerge);
-        while ( $mRecords->fetch()) {
-		$new = count($aMRecords);
-		$aMRecords[$new]['id']=$mRecords->id;
-                $aMRecords[$new][$identifier]=$mRecords->$identifier;
-                $aMRecords[$new]['contact_id']=$mRecords->contact_id;
+	$conflicts =& $data['fields_in_conflict'];
+	$rows      =& $data['old_migration_info']['rows'];
+	
+	//if org names sans space/punctation are equal, merge
+	if ( array_key_exists( 'move_organization_name', $conflicts ) ) {
+		if ( _cleanVal($rows['move_organization_name']['main']) == 
+		     _cleanVal($rows['move_organization_name']['other']) ) {
+			//unset from the conflicts array
+			//we don't know which value to retain, so we default to main
+			unset($conflicts['move_organization_name']);
+		}
 	}
+	
+	//if external ids in conflict, just keep main value
+	if ( array_key_exists( 'move_external_identifier', $conflicts ) ) {
+		unset($conflicts['move_external_identifier']);
+	}
+	
+	//if do not mail or do not email, uncheck value for retention and proceed with merge
+	if ( array_key_exists( 'move_do_not_mail', $conflicts ) ) {
+		$rows['move_do_not_mail']['main'] = $rows['move_do_not_mail']['other'] = 0;
+		unset($conflicts['move_do_not_mail']);
+	}
+	if ( array_key_exists( 'move_do_not_email', $conflicts ) ) {
+		$rows['move_do_not_email']['main'] = $rows['move_do_not_email']['other'] = 0;
+		unset($conflicts['move_do_not_email']);
+	}
+	
+	//if greeting in conflict and one is custom, retain formula option
+	if ( array_key_exists( 'move_addressee', $conflicts ) ) {
+		_fixGreeting( 'move_addressee', $rows, $conflicts );
+	}
+	if ( array_key_exists( 'move_email_greeting', $conflicts ) ) {
+		_fixGreeting( 'move_email_greeting', $rows, $conflicts );
+	}
+	if ( array_key_exists( 'move_postal_greeting', $conflicts ) ) {
+		_fixGreeting( 'move_postal_greeting', $rows, $conflicts );
+	}	
 
-	//run through secondaries and see whether they can be matched
-	//if yes, merge
-	//if no, create new record and unset it's primary flag
-	foreach ($aMRecords as $mRecord) {
+} //_resolveConflicts
 
-	        nyss_massmerge_out('debug', "checking $table id: ".$mRecord->id." for $identifier ".$mRecord-$identifier,true);
-		
-		//compare to primary, if found, delete the merging one, otherwise add to primary
-		$bFound=false;
-		foreach ($aPRecords as $pRecord) {
-			if ($mRecord[$identifier]==$pRecord[$identifier]) {
-				
-				$sql = "delete from {$table} where id={$mRecord['id']}";
-				if ($execute) CRM_Core_DAO::executeQuery($sql);
+//helper to strip spaces and punctuation so we normalize comparison
+function _cleanVal( $string ) {
 
-                                nyss_massmerge_out('debug', "found $table id {$pRecord['id']} for primary record with same type: $identifier {$pRecord[$identifier]}. Using primary record. SQL: ".$sql,true);
+	$string = preg_replace( '/[\W]+/', '', $string );
+	$string = strtolower( $string );
 
-				$bFound=true;
-				break;
-			}
-		}
+	return $string;
+} //_cleanVal
 
-		//didn't find so merge in
-		if (!$bFound) {
+//helper to work out greeting field custom vs formula
+function _fixGreeting( $gType, &$rows, &$conflicts ) {
 
-			$sql = "update $table set contact_id={$primary_id} where id={$mRecord['id']}";
-			if ($execute) CRM_Core_DAO::executeQuery($sql);
+	$gMain  =& $rows[$gType]['main'];
+	$gOther =& $rows[$gType]['other'];
 
-                        nyss_massmerge_out('debug', "did not find same $identifier {$mRecord[$identifier]} in primary. Adding merge record to primary. SQL: ".$sql,true);
-		}
+	//we only perform fixup if one is customized and the other is not
+	if ( _isCustom($gMain) && !_isCustom($gOther) ) {
+		$gMain = $gOther;
+		unset($conflicts[$gType]);
+	} elseif ( !_isCustom($gMain) && _isCustom($gOther) ) {
+		$gOther = $gMain;
+		unset($conflicts[$gType]);
 	}
 }
 
-function nyss_massmerge_out($type,$v,$toscreen=false) {
+//determine if we have a custom greeting value
+function _isCustom( $value ) {
 
-        if(!empty($v) && (($type=='debug' && NYSSDEDUPEDEBUG) || $type!='debug')) {
-
-                $v = print_r($v,true);
-
-                if ($type=='error') error_log($v);
-                if ($toscreen) {
-
-                        echo "<pre>$v (memory: ".(round(memory_get_usage()/1048576,4))." MB".")</pre>";
-                        flush();
-                        ob_flush();
-                }
-
-                unset($v);
-        }
+	//if the value is 'Customized' or we don't have braces, then custom
+	if ( $value == 'Customized' ||
+	     !preg_match("/[\{\}]/", $value) ) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
+function _logMerge( $mainId, $otherId ) {
+
+	require_once 'CRM/Core/BAO/Log.php';
+	
+	$session = & CRM_Core_Session::singleton();
+    $cid = $session->get('userID');
+	
+	$logParams = array( 'entity_table'  => 'civicrm_contact',
+            	        'entity_id'     => $mainId,
+            	        'modified_id'   => $cid,
+            	        'modified_date' => date('YmdHis'),
+            	        );
+    
+	$logMainMsg  = array( 'data' => "Contact $otherId was merged into this contact." );
+	$logOtherMsg = array( 'data' => "Contact was merged into contact $mainId." );
+	
+	CRM_Core_BAO_Log::add( $logParams + $logMainMsg );
+	CRM_Core_BAO_Log::add( $logParams + $logOtherMsg );
+	
+	return;
+	
+}
+
+?>
