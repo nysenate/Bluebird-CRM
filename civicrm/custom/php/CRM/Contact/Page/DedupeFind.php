@@ -84,12 +84,36 @@ class CRM_Contact_Page_DedupeFind extends CRM_Core_Page_Basic
             $context = 'search';
             $this->assign( 'backURL', $session->readUserContext( ) );
         }
+
+		//NYSS 4535		
+		if ( $action & CRM_Core_Action::RENEW ) {
+            // do a batch merge if requested 
+            $rgid = CRM_Utils_Request::retrieve( 'rgid', 'Positive', $this, false, 0 );
+            require_once 'CRM/Dedupe/Merger.php';
+            $result  = CRM_Dedupe_Merger::batchMerge( $rgid, $gid );
+            $message = '';
+            if ( count($result['merged']) >= 1 ) {
+                $message = ts("%1 pairs of duplicates were merged", array( 1 => count($result['merged']) ));
+            }
+            if ( count($result['skipped']) >= 1 ) {
+                $message  = $message ? "{$message} and " : '';
+                $message .= ts("%1 pairs of duplicates were skipped due to conflict", 
+                               array( 1 => count($result['skipped']) ));
+            }
+            $message .= ts(" during the batch merge process with safe mode.");
+            CRM_Core_Session::setStatus( $message );
+            
+            $urlQry = "reset=1&action=update&rgid={$rgid}";
+            if ( $gid ) $urlQry .= "&gid={$gid}";
+            CRM_Utils_System::redirect(CRM_Utils_System::url( 'civicrm/contact/dedupefind', $urlQry ));
+        }
         
         if ( $action & CRM_Core_Action::UPDATE || 
              $action & CRM_Core_Action::BROWSE ) {
             $cid  = CRM_Utils_Request::retrieve( 'cid',  'Positive', $this, false, 0 );
             $rgid = CRM_Utils_Request::retrieve( 'rgid', 'Positive', $this, false, 0 );
-            $this->action = CRM_Core_Action::UPDATE;
+
+			$this->action = CRM_Core_Action::UPDATE;
             
             //calculate the $contactType
             if ( $rgid ) {

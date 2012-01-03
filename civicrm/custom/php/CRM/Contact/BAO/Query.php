@@ -3662,9 +3662,48 @@ WHERE  id IN ( $groupIDs )
                         }
                     }
                 } else if ($sortByChar) { 
-                    $orderBy = " ORDER BY LEFT(contact_a.sort_name, 1) asc";
+                    $order = " ORDER BY LEFT(contact_a.sort_name, 1) asc"; //NYSS 4585
                 } else {
-                    $orderBy = " ORDER BY contact_a.sort_name asc, contact_a.id"; //NYSS
+                    $order = " ORDER BY contact_a.sort_name asc, contact_a.id"; //NYSS
+                }
+            }
+			
+			//NYSS 4585
+			$doOpt = true;
+            // hack for order clause
+            if ( $order ) {
+                $fieldStr = trim( str_replace( 'ORDER BY', '', $order ) );
+                $fieldOrder = explode( ' ', $fieldStr );
+                $field = $fieldOrder[0];
+                    
+                if ( $field ) {
+                    switch ( $field ) {
+                    case 'sort_name':
+                    case 'id':
+                    case 'contact_a.sort_name':
+                    case 'contact_a.id':
+                        break;
+
+                    case 'city':
+                    case 'postal_code':
+                        $this->_whereTables["civicrm_address"] = 1;
+                        $order = str_replace( $field, "civicrm_address.{$field}", $order );
+                        break;
+
+                    case 'country':
+                    case 'state_province':
+                        $this->_whereTables["civicrm_{$field}"] = 1;
+                        $order = str_replace( $field, "civicrm_{$field}.name", $order );
+                        break;
+
+                    case 'email':
+                        $this->_whereTables["civicrm_email"] = 1;
+                        $order = str_replace( $field, "civicrm_email.{$field}", $order );
+                        break;
+
+                    default:
+                        $doOpt = false;
+                    }
                 }
             }
 
@@ -3674,44 +3713,17 @@ WHERE  id IN ( $groupIDs )
                 // ok here is a first hack at an optimization, lets get all the contact ids
                 // that are restricted and we'll then do the final clause with it
                 // CRM-5954
-                $limitSelect = ( $this->_useDistinct ) ?
-                    'SELECT DISTINCT(contact_a.id) as id' :
-                    'SELECT contact_a.id as id';
 
-                $doOpt = true;
-                // hack for order clause
-                if ( $orderBy ) {
-                    $fieldOrder = explode( ' ', $orderBy );
-                    $field = $fieldOrder[0];
-                    $dir   = CRM_Utils_Array::value( 1, $fieldOrder );
-                    
-                    if ( $field ) {
-                        switch ( $field ) {
-                        case 'sort_name':
-                            break;
-
-                        case 'city':
-                        case 'postal_code':
-                            $this->_whereTables["civicrm_address"] = 1;
-                            $limitSelect .= ", civicrm_address.{$field} as {$field}";
-                            break;
-
-                        case 'country':
-                        case 'state_province':
-                            $this->_whereTables["civicrm_{$field}"] = 1;
-                            $limitSelect .= ", civicrm_{$field}.name as {$field}";
-                            break;
-
-                        case 'email':
-                            $this->_whereTables["civicrm_email"] = 1;
-                            $limitSelect .= ", civicrm_email.email as email";
-                            break;
-
-                        default:
-                            $doOpt = false;
-                        }
-                    }
+                //NYSS 4585
+				if ( isset( $this->_distinctComponentClause ) ) {
+                    $limitSelect = "SELECT {$this->_distinctComponentClause}";
+                } else {
+                    $limitSelect = ( $this->_useDistinct ) ?
+                        'SELECT DISTINCT(contact_a.id) as id' :
+                        'SELECT contact_a.id as id';
                 }
+
+//NYSS 4585
 
                 if ( $doOpt ) {
                     $this->_simpleFromClause = self::fromClause( $this->_whereTables, null, null,

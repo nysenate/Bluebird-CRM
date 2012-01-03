@@ -224,9 +224,7 @@ WHERE  c.group_id = {$groupDAO->id}
         
         /* Get the group contacts, but only those which are not in the
          * exclusion temp table */
-
-        /* Get the emails with no override */
-        
+        //NYSS 4717
         $query =    "REPLACE INTO       I_$job_id (email_id, contact_id)
 
                     SELECT DISTINCT     $email.id as email_id,
@@ -245,7 +243,6 @@ WHERE  c.group_id = {$groupDAO->id}
                                        ($mg.group_type = 'Include')
                         AND             $mg.search_id IS NULL
                         AND             $g2contact.status = 'Added'
-                        AND             $g2contact.email_id IS null
                         AND             $contact.do_not_email = 0
                         AND             $contact.is_opt_out = 0
                         AND             $contact.is_deceased = 0
@@ -345,7 +342,7 @@ AND    $mg.mailing_id = {$mailing_id}
                          $customSQL";
             $mailingGroup->query($query);
         }
-
+		//NYSS 4717
         /* Get the emails with only location override */
         $query =    "REPLACE INTO       I_$job_id (email_id, contact_id)
                     SELECT DISTINCT     $email.id as local_email_id,
@@ -363,7 +360,6 @@ AND    $mg.mailing_id = {$mailing_id}
                                         $mg.entity_table = '$group'
                         AND             $mg.group_type = 'Include'
                         AND             $g2contact.status = 'Added'
-                        AND             $g2contact.email_id is null
                         AND             $contact.do_not_email = 0
                         AND             $contact.is_opt_out = 0
                         AND             $contact.is_deceased = 0
@@ -373,9 +369,9 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
                     ORDER BY $email.is_bulkmail";
         $mailingGroup->query($query);
-                    
+        //NYSS 4717
         /* Get the emails with full override */
-        $mailingGroup->query(
+        /*$mailingGroup->query(
                     "REPLACE INTO       I_$job_id (email_id, contact_id)
                     SELECT DISTINCT     $email.id as email_id,
                                         $contact.id as contact_id
@@ -400,7 +396,7 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
-                    ORDER BY $email.is_bulkmail");
+                    ORDER BY $email.is_bulkmail");*/
                         
         $results = array();
 
@@ -444,6 +440,13 @@ INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
 ORDER BY   i.contact_id, i.email_id
 ";
             CRM_Core_DAO::executeQuery( $sql, $params );
+			
+			//NYSS 4717
+			// if we need to add all emails marked bulk, do it as a post filter
+            // on the mailing recipients table
+            if ( CRM_Core_BAO_Email::isMultipleBulkMail( ) ) {
+                self::addMultipleEmails( $mailing_id );
+            }
         }
 
         /* Delete the temp table */
@@ -2463,6 +2466,23 @@ WHERE  civicrm_mailing_job.id = %1
             $_cache[$jobID] = CRM_Core_DAO::singleValueQuery( $query, $params );
         }
         return $_cache[$jobID];
+    }
+	
+	//NYSS 4717
+	private function addMultipleEmails( $mailingID ) {
+        $sql = "
+INSERT INTO civicrm_mailing_recipients
+    (mailing_id, email_id, contact_id)
+SELECT %1, e.id, e.contact_id FROM civicrm_email e
+WHERE  e.on_hold = 0 
+AND    e.is_bulkmail = 1
+AND    e.contact_id IN
+    ( SELECT contact_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
+AND    e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
+";
+        $params = array( 1 => array( $mailingID, 'Integer' ) );
+        
+        $dao = CRM_Core_DAO::executeQuery( $sql, $params );
     }
 
 }

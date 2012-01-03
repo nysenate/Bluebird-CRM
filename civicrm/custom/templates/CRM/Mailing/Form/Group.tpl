@@ -49,6 +49,11 @@
         <td class="label">{$form.dedupe_email.label}</td>
         <td>{$form.dedupe_email.html} {help id="dedupe-email"}</td>
     </tr>
+    
+    <tr class="crm-mailing-group-form-block-allemails">
+        <td class="label">{$form.all_emails.label}</td>
+        <td>{$form.all_emails.html} {help id="all-emails"}</td>
+    </tr>
   </table>
 
 
