@@ -298,7 +298,7 @@ class CRM_Utils_SAGE
 
 
 
-    private static function storeGeocodes( &$values, $xml, $overwrite)
+    private static function storeGeocodes( &$values, $xml, $overwrite = false)
     {
         //Forced type cast required to convert the simplexml objects to strings
         if($overwrite || !$values["geo_code_1"])
