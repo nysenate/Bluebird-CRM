@@ -344,14 +344,16 @@
                                     {if $item.email}
                                     <tr>
                                         <td class="label">{$item.location_type}&nbsp;{ts}Email{/ts}</td>
-                                        <td><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
+                                        {*NYSS 4717*}
+                                        <td class="crm-contact_email"><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
                                         {*NYSS - LCD #2555*}
                                         {if $privacy.do_not_email || $item.on_hold}{$item.email}
                                         {else}<a href="mailto:{$item.email}">{$item.email}</a>
                                         {/if}
 
                                         {*NYSS 4603 4601*}
-                                        {if $item.on_hold}&nbsp;({ts}On Hold: {/ts}
+                                        {if $item.on_hold}&nbsp;({ts}On Hold{/ts}
+                                            {if $item.on_hold == 2} - Opt Out: {/if}
                                             {if $emailMailing.$blockId.mailingID}
                                                 {assign var=mid value=$emailMailing.$blockId.mailingID}
                                                 <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>)
