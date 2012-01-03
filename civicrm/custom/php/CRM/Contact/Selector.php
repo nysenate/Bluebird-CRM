@@ -740,6 +740,10 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
                                                              false,
                                                              $result->contact_id );
 
+				//NYSS 4585
+				$row['contact_type_orig'] = $result->contact_type;
+                $row['contact_sub_type'] = $result->contact_sub_type;
+				
                 $row['contact_id'  ] = $result->contact_id;
                 $row['sort_name'   ] = $result->sort_name;
                 if ( array_key_exists('id', $row) ) {
@@ -758,6 +762,76 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
         return $rows;
     }
 
+	//NYSS 4585
+	function addActions( &$rows ) {
+        $config = CRM_Core_Config::singleton( );
+
+        $permissions = array( CRM_Core_Permission::getPermission( ) );
+        if ( CRM_Core_Permission::check( 'delete contacts' ) ) {
+            $permissions[] = CRM_Core_Permission::DELETE;
+        }
+        $mask = CRM_Core_Action::mask( $permissions );
+        $mapMask = $mask & 4095; // mask value to hide map link if there are not lat/long
+
+        $mapMask = $mask & 4095; // mask value to hide map link if there are not lat/long
+
+        $links = self::links( $this->_context, $this->_contextMenu, $this->_key );
+
+        require_once 'CRM/Contact/BAO/Contact/Utils.php';
+
+        foreach ( $rows as $id => &$row ) {
+            if ( CRM_Utils_Array::value( 'deleted_contacts', $this->_formValues ) 
+                 && CRM_Core_Permission::check( 'access deleted contacts' ) ) {
+                $links = array(
+                               array(
+                                     'name'  => ts('View'),
+                                     'url'   => 'civicrm/contact/view',
+                                     'qs'    => 'reset=1&cid=%%id%%',
+                                     'title' => ts('View Contact Details'),
+                                     ),
+                               array(
+                                     'name'  => ts('Restore'),
+                                     'url'   => 'civicrm/contact/view/delete',
+                                     'qs'    => 'reset=1&cid=%%id%%&restore=1',
+                                     'title' => ts('Restore Contact'),
+                                     ) 
+                               );
+                if ( CRM_Core_Permission::check( 'delete contacts' ) ) {
+                    $links[] = array(
+                                     'name'  => ts('Delete Permanently'),
+                                     'url'   => 'civicrm/contact/view/delete',
+                                     'qs'    => 'reset=1&cid=%%id%%&skip_undelete=1',
+                                     'title' => ts('Permanently Delete Contact'),
+                                     );
+                }
+                $row['action'] = CRM_Core_Action::formLink($links, null, array('id' => $row['contact_id']));
+            } elseif ( ( is_numeric( CRM_Utils_Array::value( 'geo_code_1', $row ) ) ) ||
+                       ( $config->mapGeoCoding &&
+                         CRM_Utils_Array::value('city', $row ) && 
+                         CRM_Utils_Array::value('state_province', $row ) ) ) {
+                $row['action']   = CRM_Core_Action::formLink( $links, $mask   , array( 'id' => $row['contact_id'] ) );
+            } else {
+                $row['action']   = CRM_Core_Action::formLink( $links, $mapMask, array( 'id' => $row['contact_id'] ) );
+            }
+
+            // allow components to add more actions
+            CRM_Core_Component::searchAction( $row, $row['contact_id'] );
+
+            $row['contact_type' ] = 
+                CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_sub_type'] ? 
+                                                         $row['contact_sub_type'] : $row['contact_type_orig'],
+                                                         false,
+                                                         $row['contact_id'] );
+        }
+    }
+
+    function removeActions( &$rows ) {
+        foreach ( $rows as $rid => &$rValue ) {
+            unset( $rValue['contact_type'] );
+            unset( $rValue['action'] );
+        }
+    } 	
+	
     function fillupPrevNextCache( $sort ) {
         //NYSS
 		$cacheKey = "civicrm search {$this->_key}";

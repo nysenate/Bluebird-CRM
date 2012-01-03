@@ -69,12 +69,29 @@ class CRM_Contact_Form_Edit_Email
             //Block type
             $form->addElement('select', "email[$blockId][location_type_id]", '', CRM_Core_PseudoConstant::locationType());
 
-            //On-hold checkbox
-            $form->addElement('advcheckbox', "email[$blockId][on_hold]",null);
+			//NYSS 4717
+            require_once 'CRM/Core/BAO/Email.php';
+            $multipleBulk = CRM_Core_BAO_Email::isMultipleBulkMail( );
+			
+			//On-hold select
+            if ( $multipleBulk ) {
+                $holdOptions = array( 0 => ts('- select -'),
+                                      1 => ts( 'On Hold Bounce'  ),
+                                      2 => ts( 'On Hold Opt Out' ),
+                                      );
+                $form->addElement('select', "email[$blockId][on_hold]", '', $holdOptions );
+            } else {
+                $form->addElement('advcheckbox', "email[$blockId][on_hold]",null);
+            }
 
-            //Bulkmail checkbox
-            $js = array( 'id' => "Email_".$blockId."_IsBulkmail", 'onClick' => 'singleSelect( this.id );');
-            $form->addElement('radio', "email[$blockId][is_bulkmail]", '', '', '1', $js ); //NYSS 4147
+            //Bulkmail checkbox //NYSS 4717
+            if ( $multipleBulk ) {
+                $js = array( 'id' => "Email_".$blockId."_IsBulkmail" );
+                $form->addElement('advcheckbox', "email[$blockId][is_bulkmail]", null, '', $js);
+            } else {
+                $js = array( 'id' => "Email_".$blockId."_IsBulkmail", 'onClick' => 'singleSelect( this.id );');
+                $form->addElement('radio', "email[$blockId][is_bulkmail]", '', '', '1', $js );
+            }
 
             //is_Primary radio
             $js = array( 'id' => "Email_".$blockId."_IsPrimary", 'onClick' => 'singleSelect( this.id );');
