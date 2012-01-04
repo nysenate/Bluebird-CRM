@@ -5,7 +5,9 @@ function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId =
 	switch( $type ) {
 	
 		case 'batch':
-			_resolveConflicts( $data, $mainId, $otherId );
+			if ( !empty($data['fields_in_conflict']) ) {
+                _resolveConflicts( $data, $mainId, $otherId );
+        	}
 			break;
 		
 		case 'sqls':
