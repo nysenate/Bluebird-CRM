@@ -405,7 +405,11 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
      */
     function moveContactBelongings($mainId, $otherId, $tables = false, $tableOperations = array())
     {
-        $cidRefs       = self::cidRefs( );
+        //NYSS
+		require_once 'CRM/Contact/BAO/GroupContact.php';
+		require_once 'CRM/Case/BAO/Case.php';
+		
+		$cidRefs       = self::cidRefs( );
         $eidRefs       = self::eidRefs( );
         $cpTables      = self::cpTables( );
         $paymentTables = self::paymentTables( );

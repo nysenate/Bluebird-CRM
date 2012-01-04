@@ -58,7 +58,7 @@
    {else}
       {capture assign=backURL}{crmURL p="civicrm/contact/dedupefind" q="reset=1&rgid=`$rgid`&action=map" a=1}{/capture}
    {/if}
-   <a href="{$backURL}" onclick="return confirm('This will run batch merge process on the listed duplicates. The operation will run in safe mode; only records with no direct data conflicts will be merged. Click OK to proceed if you sure to run this operation.');" class="button"><span>&raquo; {ts}Batch Merge Duplicates{/ts}</span></a>
+   <a href="{$backURL}" onclick="return confirm('This will run batch merge process on the listed duplicates. The operation will run in safe mode; only records with no direct data conflicts will be merged. Click OK to proceed if you are sure you wish to run this operation.');" class="button"><span>&raquo; {ts}Batch Merge Duplicates{/ts}</span></a>
 
    {if $gid}
       {capture assign=backURL}{crmURL p="civicrm/contact/dedupefind" q="reset=1&rgid=`$rgid`&gid=`$gid`&action=renew" a=1}{/capture}

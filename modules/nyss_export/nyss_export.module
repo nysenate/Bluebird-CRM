@@ -132,17 +132,17 @@ WHERE c.do_not_trade = 1
 	$sql = "SELECT count(id) FROM $exportTempTable;";
 	if ( CRM_Core_DAO::singleValueQuery($sql) == 0 ) {
 		$status = "There were no records to export. Please run your search and export again.";
-		$session = CRM_Core_Session::singleton( ); 
+		$session = CRM_Core_Session::singleton( );
         $session->setStatus( $status );
-		
+
 		require_once 'CRM/Utils/System.php';
         require_once 'CRM/Utils/Rule.php';
-		
+
 		$currentPath = CRM_Utils_System::currentPath( );
 		$urlParams = null;
         $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String' );
-        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey"; 
-		           
+        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey";
+
         CRM_Utils_System::redirect( CRM_Utils_System::url( $currentPath, $urlParams ) );
 	}
 
