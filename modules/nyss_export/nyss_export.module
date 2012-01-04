@@ -97,6 +97,18 @@ WHERE gc.group_id = $gid;";
 		}
 	}
 	
+	//4766 exclude do not mail/do not trade
+	if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+        $query = "
+DELETE exp
+FROM $exportTempTable AS exp
+JOIN civicrm_contact c ON ( c.id = exp.civicrm_primary_id )
+WHERE c.do_not_trade = 1
+   OR c.do_not_mail = 1;";
+        $delDN = CRM_Core_DAO::executeQuery( $query );
+		//CRM_Core_Error::debug('delDN',$delDN);
+	}
+
 	//4426 change street suffix to long form
 	if ( $_POST['street_long'] == 1 ) {
 	
@@ -113,6 +125,25 @@ WHERE gc.group_id = $gid;";
 			CRM_Core_DAO::executeQuery($sql);
 		}
 		
+	}
+
+	//if no records in the table, return to search
+	//ideally we return to the existing search, but we don't seem to have the qfKey at this point
+	$sql = "SELECT count(id) FROM $exportTempTable;";
+	if ( CRM_Core_DAO::singleValueQuery($sql) == 0 ) {
+		$status = "There were no records to export. Please run your search and export again.";
+		$session = CRM_Core_Session::singleton( ); 
+        $session->setStatus( $status );
+		
+		require_once 'CRM/Utils/System.php';
+        require_once 'CRM/Utils/Rule.php';
+		
+		$currentPath = CRM_Utils_System::currentPath( );
+		$urlParams = null;
+        $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String' );
+        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey"; 
+		           
+        CRM_Utils_System::redirect( CRM_Utils_System::url( $currentPath, $urlParams ) );
 	}
 
     //3665 code copied from CRM_Export_BAO_Export::writeCSVFromTable, just to modify the order clause
@@ -175,10 +206,5 @@ LIMIT $offset, $limit
 	CRM_Core_Error::debug('sc', $sqlColumns);
 	CRM_Core_Error::debug('em', $exportMode);
 	exit();*/
-	
-	//continue with the export
-	/*require_once 'CRM/Export/BAO/Export.php';
-	CRM_Export_BAO_Export::writeCSVFromTable( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
-	CRM_Utils_System::civiExit( );*/
 
 }

@@ -54,13 +54,20 @@
 {else}
    {*NYSS 4535*}
    {if $gid}
+      {capture assign=backURL}{crmURL p="civicrm/contact/dedupefind" q="reset=1&rgid=`$rgid`&gid=`$gid`&action=map" a=1}{/capture}
+   {else}
+      {capture assign=backURL}{crmURL p="civicrm/contact/dedupefind" q="reset=1&rgid=`$rgid`&action=map" a=1}{/capture}
+   {/if}
+   <a href="{$backURL}" onclick="return confirm('This will run batch merge process on the listed duplicates. The operation will run in safe mode; only records with no direct data conflicts will be merged. Click OK to proceed if you sure to run this operation.');" class="button"><span>&raquo; {ts}Batch Merge Duplicates{/ts}</span></a>
+
+   {if $gid}
       {capture assign=backURL}{crmURL p="civicrm/contact/dedupefind" q="reset=1&rgid=`$rgid`&gid=`$gid`&action=renew" a=1}{/capture}
    {else}
       {capture assign=backURL}{crmURL p="civicrm/contact/dedupefind" q="reset=1&rgid=`$rgid`&action=renew" a=1}{/capture}
    {/if}
-   <a href="{$backURL}" onclick="return confirm('This will run batch merge process on the listed duplicates. If sure you would like to run this operation, click OK to proceed.');" class="button"><span>&raquo; {ts}Batch Merge Duplicates{/ts}</span></a>
-
-   {capture assign=backURL}{crmURL p="civicrm/contact/deduperules" q="reset=1" a=1}{/capture}{*NYSS mod*}
+   <a href="{$backURL}" onclick="return confirm('This will reset cache and recompute duplicate list. Click OK to proceed.');" class="button"><span>&raquo; {ts}Reset Cache{/ts}</span></a>
+   
+   {capture assign=backURL}{crmURL p="civicrm/contact/deduperules" q="reset=1" a=1}{/capture}
    <a href="{$backURL}" class="button"><span>&raquo; {ts}Done{/ts}</span></a>
 {/if}
 <div style="clear: both;"></div>

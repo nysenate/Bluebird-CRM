@@ -108,9 +108,6 @@ WHERE  cacheKey     = %3 AND
             $sql .= " AND ( entity_id1 = %2 OR
                             entity_id2 = %2 )";
             $params[2] = array( $id, 'Integer' );
-        } else { //NYSS 4535
-            // don't empty dupe caching. Since this is what batch-merging based on.
-            $sql .= " AND cacheKey NOT LIKE 'merge%'";
         }
         
         if ( isset( $cacheKey ) ) {
@@ -191,6 +188,74 @@ WHERE cacheKey = %1
         $params = array( 1 => array( $cacheKey, 'String' ) ); 
 
         return CRM_Core_DAO::singleValueQuery( $query, $params);
+    }
+	
+	//NYSS 4535
+	static function refillCache( $rgid = null, $gid = null, $cacheKeyString = null ) {
+        if ( !$cacheKeyString && $rgid ) {
+            $contactType = CRM_Core_DAO::getFieldValue( 'CRM_Dedupe_DAO_RuleGroup', $rgid, 'contact_type' );
+            $cacheKeyString  = "merge {$contactType}";
+            $cacheKeyString .= $rgid ? "_{$rgid}" : '_0';
+            $cacheKeyString .= $gid  ? "_{$gid}"  : '_0';
+        }
+
+        if ( !$cacheKeyString ) {
+            return false;
+        }
+
+        // 1. Clear cache if any
+        $sql = "DELETE FROM civicrm_prevnext_cache WHERE  cacheKey LIKE %1";
+        CRM_Core_DAO::executeQuery( $sql, array( 1 => array( "{$cacheKeyString}%", 'String' ) ) );
+
+        // FIXME: we need to start using temp tables / queries here instead of arrays. 
+        // And cleanup code in CRM/Contact/Page/DedupeFind.php
+
+        // 2. FILL cache
+        $foundDupes = array( );
+        require_once 'CRM/Dedupe/Finder.php';
+        if ( $rgid && $gid ) {
+            $foundDupes = CRM_Dedupe_Finder::dupesInGroup( $rgid, $gid );
+        } else if ( $rgid ) {
+            $foundDupes = CRM_Dedupe_Finder::dupes( $rgid );
+        }
+
+        if ( !empty($foundDupes) ) {
+            $cids = $displayNames = $values = array( );
+            foreach ( $foundDupes as $dupe ) {
+                $cids[$dupe[0]] = 1;
+                $cids[$dupe[1]] = 1;
+            }
+            $cidString = implode( ', ', array_keys( $cids ) );
+            $sql = "SELECT id, display_name FROM civicrm_contact WHERE id IN ($cidString) ORDER BY sort_name";
+            $dao = new CRM_Core_DAO();
+            $dao->query( $sql );
+            while ( $dao->fetch() ) {
+                $displayNames[$dao->id] = $dao->display_name;
+            }
+
+            $session = CRM_Core_Session::singleton();
+            $userId  = $session->get( 'userID' );
+            
+            foreach ( $foundDupes as $dupes ) {
+                $srcID = $dupes[0];
+                $dstID = $dupes[1];
+                if ( $dstID == $userId ) {
+                    $srcID = $dupes[1];
+                    $dstID = $dupes[0];
+                }
+                
+                $row = array( 'srcID'   => $srcID,
+                              'srcName' => $displayNames[$srcID],
+                              'dstID'   => $dstID,
+                              'dstName' => $displayNames[$dstID],
+                              'weight'  => $dupes[2],
+                              'canMerge'=> true );
+                
+                $data = CRM_Core_DAO::escapeString( serialize( $row ) );
+                $values[] = " ( 'civicrm_contact', $srcID, $dstID, '$cacheKeyString', '$data' ) ";
+            }
+            CRM_Core_BAO_PrevNextCache::setItem( $values );
+        }
     }
 
     //NYSS 4614

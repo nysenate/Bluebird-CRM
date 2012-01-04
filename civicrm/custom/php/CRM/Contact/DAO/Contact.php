@@ -471,16 +471,16 @@ class CRM_Contact_DAO_Contact extends CRM_Core_DAO
                     'dataPattern' => '/^\d{1,}$/',
                     'export' => true,
                 ) ,
-                /*'do_not_trade' => array(
+                'do_not_trade' => array(
                     'name' => 'do_not_trade',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
-                    'title' => ts('Do Not Trade') ,
+                    'title' => ts('Undeliverable: Do Not Mail'), //NYSS #4766
                     'import' => true,
                     'where' => 'civicrm_contact.do_not_trade',
                     'headerPattern' => '/d(o )?(not )?(trade)/i',
                     'dataPattern' => '/^\d{1,}$/',
                     'export' => true,
-                ) ,*/  //NYSS - LCD #1453
+                ) ,
                 'is_opt_out' => array(
                     'name' => 'is_opt_out',
                     'type' => CRM_Utils_Type::T_BOOLEAN,
