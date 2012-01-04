@@ -555,8 +555,15 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
                                                              pn.entity_id2 = de.contact_id2 )";
         $where = "de.id IS NULL LIMIT 1";
 
+		//NYSS 4535
         require_once 'CRM/Core/BAO/PrevNextCache.php';
-        $dupePairs   = CRM_Core_BAO_PrevNextCache::retrieve( $cacheKeyString, $join, $where );
+        $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve( $cacheKeyString, $join, $where );
+        if ( empty($dupePairs) ) {
+            // If we haven't found any dupes, probably cache is empty. 
+            // Try filling cache and give another try.
+            CRM_Core_BAO_PrevNextCache::refillCache( $rgid, $gid, $cacheKeyString );
+            $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve( $cacheKeyString, $join, $where );
+        }
         $cacheParams = array( 'cache_key_string' => $cacheKeyString,
                               'join'             => $join,
                               'where'            => $where );
@@ -581,6 +588,12 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
     function merge( $dupePairs = array(), $cacheParams = array(), $mode = 'safe', $autoFlip = true ) {
         $cacheKeyString = CRM_Utils_Array::value( 'cache_key_string', $cacheParams );
         $result = array( 'merged' => array(), 'skipped' => array() );
+		
+		//NYSS 4535
+		// we don't want dupe caching to get reset after every-merge, and therefore set the 
+        // doNotResetCache flag
+        $config = CRM_Core_Config::singleton( );
+        $config->doNotResetCache = 1;
 
         while ( !empty($dupePairs) ) {
             foreach ( $dupePairs as $dupes ) {
@@ -943,6 +956,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         }
 
         // add the related tables and unset the ones that don't sport any of the duplicate contact's info
+		require_once 'CRM/Core/BAO/UFMatch.php'; //NYSS
         $config   = CRM_Core_Config::singleton( );
         $mainUfId = CRM_Core_BAO_UFMatch::getUFId( $mainId );
         $mainUser = null;

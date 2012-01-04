@@ -39,6 +39,7 @@ require_once 'CRM/Dedupe/Finder.php';
 require_once 'CRM/Dedupe/DAO/Rule.php';
 require_once 'CRM/Dedupe/DAO/RuleGroup.php';
 require_once 'CRM/Contact/BAO/Contact/Permission.php';
+require_once 'CRM/Core/BAO/PrevNextCache.php'; //NYSS 4535
 
 class CRM_Contact_Page_DedupeFind extends CRM_Core_Page_Basic
 {
@@ -87,7 +88,22 @@ class CRM_Contact_Page_DedupeFind extends CRM_Core_Page_Basic
 
 		//NYSS 4535		
 		if ( $action & CRM_Core_Action::RENEW ) {
-            // do a batch merge if requested 
+            // empty cache
+            $rgid = CRM_Utils_Request::retrieve( 'rgid', 'Positive', $this, false, 0 );
+
+            if ( $rgid ) {
+                $contactType = CRM_Core_DAO::getFieldValue( 'CRM_Dedupe_DAO_RuleGroup', $rgid, 'contact_type' );
+                $cacheKeyString  = "merge $contactType";
+                $cacheKeyString .= $rgid ? "_{$rgid}" : '_0';
+                $cacheKeyString .= $gid ? "_{$gid}" : '_0';
+                CRM_Core_BAO_PrevNextCache::deleteItem( null, $cacheKeyString );
+            }
+            $urlQry = "reset=1&action=update&rgid={$rgid}";
+            if ( $gid ) $urlQry .= "&gid={$gid}";
+            CRM_Utils_System::redirect(CRM_Utils_System::url( 'civicrm/contact/dedupefind', $urlQry ));
+
+        } else if ( $action & CRM_Core_Action::MAP ) {
+            // do a batch merge if requested
             $rgid = CRM_Utils_Request::retrieve( 'rgid', 'Positive', $this, false, 0 );
             require_once 'CRM/Dedupe/Merger.php';
             $result  = CRM_Dedupe_Merger::batchMerge( $rgid, $gid );
@@ -132,8 +148,7 @@ class CRM_Contact_Page_DedupeFind extends CRM_Core_Page_Basic
             $cacheKeyString  = "merge $contactType";
             $cacheKeyString .= $rgid ? "_{$rgid}" : '_0';
             $cacheKeyString .= $gid ? "_{$gid}" : '_0';
-            
-            require_once 'CRM/Core/BAO/PrevNextCache.php';
+
             $join  = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
                                                                  pn.entity_id2 = de.contact_id2 )";
             $where = "de.id IS NULL";     

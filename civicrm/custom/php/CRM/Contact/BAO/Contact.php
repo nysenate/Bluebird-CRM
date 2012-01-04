@@ -65,7 +65,7 @@ class CRM_Contact_BAO_Contact extends CRM_Contact_DAO_Contact
      *
      * @var array
      */
-    static $_commPrefs = array( 'do_not_phone', 'do_not_email', 'do_not_mail', 'do_not_sms'/*, 'do_not_trade'*/ ); //NYSS - LCD #1453
+    static $_commPrefs = array( 'do_not_phone', 'do_not_email', 'do_not_mail', 'do_not_sms', 'do_not_trade' );
 
     /**
      * static field for all the contact information that we can potentially import
