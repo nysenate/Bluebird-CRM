@@ -176,8 +176,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 	    $sql .= " LEFT JOIN civicrm_value_constituent_information_1 cvci ON t.id = cvci.entity_id ";
 	}
 	
-	//exclude deceased, trashed, do not mail
-	$sql .= " WHERE c.is_deceased=0 AND c.is_deleted=0 AND c.do_not_mail=0 ";
+	//exclude deceased, trashed, do not mail, do not mail (undeliverable/trade)
+	$sql .= " WHERE c.is_deceased = 0 AND c.is_deleted = 0 AND c.do_not_mail = 0 AND c.do_not_trade = 0 ";
 	
 	//exclude empty last name, empty org name (if org type), and empty address
 	$sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR ( c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Individual' ) ";
