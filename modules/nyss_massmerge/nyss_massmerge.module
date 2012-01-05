@@ -1,33 +1,37 @@
 <?php 
 
+define( 'DEBUG', 1 );
+
 function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL ) {
 
 	switch( $type ) {
-	
+
 		case 'batch':
 			if ( !empty($data['fields_in_conflict']) ) {
                 _resolveConflicts( $data, $mainId, $otherId );
         	}
 			break;
-		
+
 		case 'sqls':
 			//log the merge against both records
 			_logMerge( $mainId, $otherId );
 			break;
 
 		default:
-	
+
 	}
-	
+
 	return;
 }
 
 //helper to resolve some conflicts when in batch mode
 function _resolveConflicts( &$data, $mainId, $otherId ) {
 
+	_mD( 'data', $data, 2 );
+
 	$conflicts =& $data['fields_in_conflict'];
 	$rows      =& $data['old_migration_info']['rows'];
-	
+
 	//if org names sans space/punctation are equal, merge
 	if ( array_key_exists( 'move_organization_name', $conflicts ) ) {
 		if ( _cleanVal($rows['move_organization_name']['main']) == 
@@ -37,12 +41,12 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 			unset($conflicts['move_organization_name']);
 		}
 	}
-	
+
 	//if external ids in conflict, just keep main value
 	if ( array_key_exists( 'move_external_identifier', $conflicts ) ) {
 		unset($conflicts['move_external_identifier']);
 	}
-	
+
 	//if do not mail or do not email, uncheck value for retention and proceed with merge
 	if ( array_key_exists( 'move_do_not_mail', $conflicts ) ) {
 		$rows['move_do_not_mail']['main'] = $rows['move_do_not_mail']['other'] = 0;
@@ -52,7 +56,7 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 		$rows['move_do_not_email']['main'] = $rows['move_do_not_email']['other'] = 0;
 		unset($conflicts['move_do_not_email']);
 	}
-	
+
 	//if greeting in conflict and one is custom, retain formula option
 	if ( array_key_exists( 'move_addressee', $conflicts ) ) {
 		_fixGreeting( 'move_addressee', $rows, $conflicts );
@@ -64,9 +68,22 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 		_fixGreeting( 'move_postal_greeting', $rows, $conflicts );
 	}
 
-	//return;
+	//if case insensitive fname/lname match or value sans space matches, 
+	//try to find mixed case and retain
+	if ( array_key_exists( 'move_last_name', $conflicts ) ) {
+		_fixName( 'move_last_name', $rows, $conflicts );
+	}
+	if ( array_key_exists( 'move_first_name', $conflicts ) ) {
+		_fixName( 'move_first_name', $rows, $conflicts );
+	}
 
-	//let's temporarily log any remaining conflicts for later review
+	//if one record type is BOE, retain above other values
+	if ( array_key_exists( 'move_custom_61', $conflicts ) ) {
+		_fixRT( $rows, $conflicts );
+	}
+
+
+	//let's log any remaining conflicts for later review
 	if ( !empty($conflicts) ) {
 		$conflictDetails = array();
 		foreach ( $conflicts as $fld => $dontcare ) {
@@ -76,8 +93,10 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 									         'otherId value'  => $rows[$fld]['other'],
 									         );
 		}
-		CRM_Core_Error::debug_var('merge conflict details', $conflictDetails);
+		_mD('merge conflict details', $conflictDetails);
 	}
+
+	return;
 
 } //_resolveConflicts
 
@@ -96,15 +115,100 @@ function _fixGreeting( $gType, &$rows, &$conflicts ) {
 	$gMain  =& $rows[$gType]['main'];
 	$gOther =& $rows[$gType]['other'];
 
-	//we only perform fixup if one is customized and the other is not
+	//first perform fixup if one is customized and the other is not
 	if ( _isCustom($gMain) && !_isCustom($gOther) ) {
 		$gMain = $gOther;
 		unset($conflicts[$gType]);
+		return;
 	} elseif ( !_isCustom($gMain) && _isCustom($gOther) ) {
 		$gOther = $gMain;
 		unset($conflicts[$gType]);
+		return;
 	}
+
+	//we know at this point that the values conflict and one is not a formula
+	//so we can assume the other value is a Dear Friend(s) selection
+	//we will retain the custom value as it's more likely to be a meaningful value
+	if ( $gMain == 'Customized' ) {
+
+		$gOther = $gMain;
+		$rows[$gType.'_custom']['other'] = $rows[$gType.'_custom']['main'];
+		unset($conflicts[$gType]);
+		return;
+
+	} elseif ( $gOther == 'Customized' ) {
+
+		$gMain = $gOther;
+		$rows[$gType.'_custom']['main'] = $rows[$gType.'_custom']['other'];
+		unset($conflicts[$gType]);
+		return;
+	}
+
+	return;
 }
+
+//helper to clean up and compare name fields
+//our algorithms will give preference to the main value
+function _fixName( $name, &$rows, &$conflicts ) {
+	
+	$nMain   =& $rows[$name]['main'];
+	$nOther  =& $rows[$name]['other'];
+	$mWeight = $oWeight = 0;
+	
+	//first find if we have a cleaned match, else return
+	if ( _cleanVal($nMain) != _cleanVal($nOther) ) {
+		return;
+	}
+	
+	//determine if mixed case
+	if ( $nMain != strtolower($nMain) &&
+	     $nMain != strtoupper($nMain) ) {
+
+		$mWeight++;
+		_mD('nMain is mixed case', $nMain, 2);
+	} 
+	if ( $nOther != strtolower($nOther) &&
+	     $nOther != strtoupper($nOther) ) {
+
+		$oWeight++;
+		_mD('nOther is mixed case', $nOther, 2);
+	}
+	
+	//determine if value has spaces
+	if ( !preg_match("/\s/", $nMain) ) {
+		$mWeight++;
+		_mD('nMain has no spaces', $nMain, 2);
+	}
+	if ( !preg_match("/\s/", $nOther) ) {
+		$oWeight++;
+		_mD('nOther has no spaces', $nOther, 2);
+	}
+	
+	//take value with greater weight and set other to match
+	if ( $mWeight >= $oWeight ) {
+		$nOther = $nMain;
+	} else {
+		$nMain = $nOther;
+	}
+	
+	//unset element from conflict
+	_mD("$name value retained:", $nMain, 2);
+	unset($conflicts[$name]);
+} //_fixName
+
+//if either of the RT values is Board of Election, set and merge
+function _fixRT( &$rows, &$conflicts ) {
+
+	$rtMain  =& $rows['move_custom_61']['main'];
+	$rtOther =& $rows['move_custom_61']['other'];
+	
+	if ( $rtMain == 'Board of Election' ||
+	     $rtOther == 'Board of Election' ) {
+	
+		$rtMain = $rtOther = 'Board of Election';
+		unset($conflicts['move_custom_61']);
+	}
+} //_fixRT
 
 //determine if we have a custom greeting value
 function _isCustom( $value ) {
@@ -134,4 +238,12 @@ function _logMerge( $mainId, $otherId ) {
 	
 }
 
-?>
+//allows us to condition all logging based on a constant
+function _mD( $msg, $var, $level = 1 ) {
+
+	if ( $level <= DEBUG ) {
+		CRM_Core_Error::debug_var( $msg, $var );
+	}
+	
+	return;
+} //_mD
