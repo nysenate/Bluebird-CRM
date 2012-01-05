@@ -4,7 +4,7 @@ function nyss_export_civicrm_buildForm( $formName, &$form ) {
 
 	if ( $formName == 'CRM_Export_Form_Select' ) {
 
-		$form->addElement('checkbox', 'street_long', ts('Street Long Form'), null);
+		$form->addElement('checkbox', 'street_long', ts('Street Address Long Form'), null);
 	}
 	
 	if ( $formName == 'CRM_Export_Form_Map' ) {
