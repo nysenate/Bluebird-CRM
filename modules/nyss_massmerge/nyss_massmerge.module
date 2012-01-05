@@ -62,7 +62,22 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 	}
 	if ( array_key_exists( 'move_postal_greeting', $conflicts ) ) {
 		_fixGreeting( 'move_postal_greeting', $rows, $conflicts );
-	}	
+	}
+
+	//return;
+
+	//let's temporarily log any remaining conflicts for later review
+	if ( !empty($conflicts) ) {
+		$conflictDetails = array();
+		foreach ( $conflicts as $fld => $dontcare ) {
+			$conflictDetails[$fld] = array ( 'mainId'         => $mainId,
+									         'mainId value'   => $rows[$fld]['main'],
+			                                 'otherId'        => $otherId,
+									         'otherId value'  => $rows[$fld]['other'],
+									         );
+		}
+		CRM_Core_Error::debug_var('merge conflict details', $conflictDetails);
+	}
 
 } //_resolveConflicts
 
