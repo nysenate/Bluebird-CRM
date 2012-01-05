@@ -79,6 +79,7 @@ function getProfile( $smtpuser, $smtppass ) {
 function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true ) {
 
     require_once 'CRM/Core/DAO.php';
+	require_once 'CRM/Mailing/Event/BAO/Bounce.php';
 
     $bounceUrl = "https://sendgrid.com/apiv2/customer.bounces.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=get&date=1";
     $bounceRetrieve = simplexml_load_file($bounceUrl);
@@ -100,16 +101,25 @@ function bounceRetrieve( $smtpuser, $smtppass, $smtpsubuser, $delete = true ) {
         
         //now lets process the bounce if we found the necessary values
         if ( $queue['jobID'] != 0 ) {
-            require_once 'CRM/Mailing/Event/BAO/Bounce.php';
-            $params = array ( 'job_id'         => $queue['jobID'],
-                              'event_queue_id' => $queue['queueID'],
-                              'hash'           => $queue['hash'],
-                              'bounce_type_id' => DEFAULT_BOUNCE_TYPE,
-                              'bounce_reason'  => $reason.'', //typecast as string
-                            );
-            //print_r($params);
-            CRM_Mailing_Event_BAO_Bounce::create($params);
-			
+            //first make sure an existing bounce record does not exist
+			$queueID = $queue['queueID'];
+			$sql     = "SELECT id
+			            FROM civicrm_mailing_event_bounce
+					    WHERE event_queue_id = $queueID";
+			$bounceID = CRM_Core_DAO::singleValueQuery($sql);
+
+			//only create if a bounce record does not exist
+			if ( !$bounceID ) {
+            	$params = array ( 'job_id'         => $queue['jobID'],
+            	                  'event_queue_id' => $queue['queueID'],
+            	                  'hash'           => $queue['hash'],
+            	                  'bounce_type_id' => DEFAULT_BOUNCE_TYPE,
+            	                  'bounce_reason'  => $reason.'', //typecast as string
+            	                );
+            	//print_r($params);
+            	CRM_Mailing_Event_BAO_Bounce::create($params);
+			}
+
 			if ( $delete ) {
 				$bounceDeleteUrl = "https://sendgrid.com/apiv2/customer.bounces.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete&email=$email";
 				$bounceDelete = simplexml_load_file($bounceDeleteUrl);
