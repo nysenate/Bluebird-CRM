@@ -34,7 +34,7 @@ $event_map = array(
     'click'         => 'process_click_events',
     //'deferred'      => '', //Ignore these, don't need to record delays
     'delivered'     => 'process_sendgrid_delivered_events',
-    'dropped'       => '', //TODO: this is a red flag of sorts
+    'dropped'       => 'process_dropped_events',
     'open'          => 'process_open_events',
     //'processed'     => '', //Ignore these, already have a record from our side
     'spamreport'    => 'process_spamreport_events',
@@ -59,11 +59,12 @@ $limit = array_get('limit',$optList,FALSE);
 // was processed
 $batch_size = array_get('maxbatch',$optList,1);
 
-$event_types = implode(',',array_keys($event_map));
-log_("[NOTICE] Running for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.");
-
 $bbconfig = get_bluebird_instance_config();
+global $conn;
 $conn = get_accumulator_connection($bbconfig);
+
+$event_types = implode(',',array_keys($event_map));
+log_("[NOTICE] Running on '{$bbconfig['servername']}' for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.");
 
 require_once 'CRM/Core/DAO.php';
 
@@ -106,14 +107,14 @@ foreach($event_map as $event_type => $event_processor) {
                 //Pass in both the optList and the bbconfig just in case one
                 //of the event processors needs to be configurable either on
                 //an instance or runtime basis.
-                echo "Processing ".count($events)." $event_type events.\n";
-                call_user_func($event_processor,$events,$optList,$bbconfig);
-
+                //
                 //Record the successful processing of the batch in the database
                 //This isn't a great way to do it (what if the event processor
                 //encounters an error after the first one?) but CiviCRM doesn't
                 //give you a chance to recover from errors so...we'll do this.
-                $processed_ids = implode(',',array_keys($events));
+                echo "  ".count($events)." $event_type events to process.\n";
+                $processed_ids = call_user_func($event_processor,$events,$optList,$bbconfig);
+
                 if($processed_ids) {
                     exec_query("UPDATE event
                                 SET processed=1, dt_processed=NOW()
@@ -127,6 +128,13 @@ foreach($event_map as $event_type => $event_processor) {
     }
 }
 log_("[NOTICE] Processed $total_events events.");
+
+log_("[NOTICE] Clearing Sendgrid lists.");
+foreach(array('bounces','invalidemails','spamreports','unsubscribes') as $list) {
+    if(!clear_sendgrid_list($list, $bbconfig))
+        log_("[NOTICE]   ERROR clearing the '$list' list.");
+}
+
 
 function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
     /* Requires the following table to be created....
@@ -151,21 +159,29 @@ function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
             (event_queue_id, time_stamp)
         VALUES ".implode(', ',$values)
     );
+
+    // Successful insert for all of them (or die!). SQL keeps consistency for us
+    return implode(', ',array_keys($events));
 }
 
 function process_open_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Opened.php';
-    foreach($events as $pair) {
+    $successful_ids = array();
+    foreach($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
-        CRM_Mailing_Event_BAO_Opened::open($queue_event['id']);
+        if( CRM_Mailing_Event_BAO_Opened::open($queue_event['id']) )
+           $successful_ids[] = $event_id;
+        else
+            log_("[ERROR] Failed to process open event id '$event_id'");
     }
+    return $successful_ids;
 }
 
 function process_click_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/BAO/TrackableURL.php';
     require_once 'CRM/Mailing/Event/BAO/TrackableURLOpen.php';
-
-    foreach($events as $pair) {
+    $successful_ids = array();
+    foreach($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         // Create the new urls as we come across them since we don't use the
         // CiviCRM url-encoder
@@ -176,15 +192,20 @@ function process_click_events($events, $optList, $bbconfig) {
             $tracker->save();
 
         CRM_Mailing_Event_BAO_TrackableURLOpen::track($queue_event['id'], $tracker->id);
+
+        //Couldn't figure out how to tell if this failed or not, assume success
+        $successful_ids[] = $event_id;
     }
+    return $successful_ids;
 }
 
 function process_bounce_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Bounce.php';
     require_once 'CRM/Mailing/BAO/BouncePattern.php';
 
+    $successful_ids = array();
     //If there was a way to do this in batches it'd be awesome....
-    foreach($events as $pair) {
+    foreach($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         $params = array(
             'job_id'         => $queue_event['job_id'],
@@ -195,18 +216,19 @@ function process_bounce_events($events, $optList, $bbconfig) {
         //Use the CiviCRM pattern matchers to clean up our bounce info
         $params += CRM_Mailing_BAO_BouncePattern::match($event['reason']);
 
-        CRM_Mailing_Event_BAO_Bounce::create($params);
-
-        //Since we do our own bounce handling mechanism, disable sendgrid's by
-        //removing the emails from their internal bounce list.
-        remove_email_from_sendgrid_list($event['email'],'bounces',$bbconfig);
+        if( CRM_Mailing_Event_BAO_Bounce::create($params) )
+            $successful_ids[] = $event_id;
+        else
+            log_("[ERROR] Failed to process bounce event id '$event_id'");
     }
+    return $successful_ids;
 }
 
-function process_unsubscribe_events($events, $optList, $bbconfig, $list='unsubscribes') {
+function process_unsubscribe_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
 
-    foreach($events as $pair) {
+    $successful_ids = array();
+    foreach($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         $unsubs = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_domain(
             $queue_event['job_id'],
@@ -214,12 +236,12 @@ function process_unsubscribe_events($events, $optList, $bbconfig, $list='unsubsc
             $queue_event['hash']
         );
 
-        if(!$unsubs) {
-            log_("[ERROR] Unsubscribe failed processing event_id {$event['id']}");
-        } else {
-            remove_email_from_sendgrid_list($event['email'],$list,$bbconfig);
-        }
+        if($unsubs)
+            $successful_ids[] = $event_id;
+        else
+            log_("[ERROR] Failed to process unsubscribe/spamreport event id $event_id");
     }
+    return $successful_ids;
 }
 
 
@@ -228,7 +250,55 @@ function process_spamreport_events($events, $optList, $bbconfig) {
     // TODO: we need to come up with a way to record the differences in
     //       origin since spamreporting and unsubscribing are really quite
     //       a bit different.
-    process_unsubscribe_events($events, $optList, $bbconfig, 'spamreports');
+    return process_unsubscribe_events($events, $optList, $bbconfig);
+}
+
+
+function process_dropped_events($events, $optList, $bbconfig) {
+    $spam_events = array();
+    $bounce_events = array();
+    $unsubscribed_events = array();
+    foreach($events as $pair) {
+        list($event, $queue_event) = array_values($pair);
+        switch($event['reason']) {
+            // TODO: I just made this up, I don't know what it would actually come through as
+            case 'Unsubscribed Address':
+                $unsubscribed_events[] = $event;
+                break;
+            case 'Spam Reporting Address':
+                $spam_events[] = $event;
+                break;
+            case 'Invalid':
+                $event['reason'] = 'Bad Destination';
+                $bounce_events[] = $event;
+                break;
+            case 'Bounced Address':
+
+                $result = exec_query("
+                        SELECT reason
+                        FROM bounce JOIN event ON event.id=bounce.email_id
+                        WHERE event_id < {$event['id']}
+                          AND email='{$event['email']}'
+                        ORDER BY event_id DESC
+                        LIMIT 1",$GLOBALS['conn']);
+
+                if( $row = mysql_fetch_assoc($result) )
+                    $event['reason'] = $row['reason'];
+                else //The database must have been reset, leave the reason blank
+                    $event['reason'] = '';
+
+                $bounce_events[] = $event;
+                break;
+            default:
+                log_("[ERROR] Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
+        }
+    }
+
+    $successful_ids  = process_unsubscribe_events($unsubscribed_events, $optList, $bbconfig);
+    $successful_ids += process_spamreport_events($spam_events, $optList, $bbconfig);
+    $successful_ids += process_bounce_events($bounce_events, $optList, $bbconfig);
+
+    return $successful_ids;
 }
 
 function get_queue_event($event) {
@@ -268,7 +338,7 @@ function get_accumulator_connection($bbconfig) {
     return $conn;
 }
 
-function remove_email_from_sendgrid_list($email, $list, $bbconfig) {
+function clear_sendgrid_list($list, $bbconfig) {
     $smtpuser = $bbconfig['smtp.user'];
     $smtppass = $bbconfig['smtp.pass'];
     $smtpsubuser = $bbconfig['smtp.subuser'];
@@ -278,7 +348,7 @@ function remove_email_from_sendgrid_list($email, $list, $bbconfig) {
     //  <result>
     //      <message>success</message>
     //  </result>
-    $url = "https://sendgrid.com/apiv2/customer.$list.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete&email=$email";
+    $url = "https://sendgrid.com/apiv2/customer.$list.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete";
     $response = simplexml_load_file($url);
     return ($response->message == 'success');
 }
