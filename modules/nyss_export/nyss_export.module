@@ -4,7 +4,7 @@ function nyss_export_civicrm_buildForm( $formName, &$form ) {
 
 	if ( $formName == 'CRM_Export_Form_Select' ) {
 
-		$form->addElement('checkbox', 'street_long', ts('Street Long Form'), null);
+		$form->addElement('checkbox', 'street_long', ts('Street Address Long Form'), null);
 	}
 	
 	if ( $formName == 'CRM_Export_Form_Map' ) {
@@ -112,19 +112,34 @@ WHERE c.do_not_trade = 1
 	//4426 change street suffix to long form
 	if ( $_POST['street_long'] == 1 ) {
 	
-		$patReplace = array( 'St'  => 'Street', 
+		/*$patReplace = array( 'St'  => 'Street', 
 		                     'Rd'  => 'Road', 
 							 'Ln'  => 'Lane', 
-							 'Ave' => 'Avenue'
-							  );
+							 'Ave' => 'Avenue',
+							 );*/
 		
-		foreach ( $patReplace as $pattern => $replace ) {
-			//TODO figure out why the regex pattern won't work with \b
-			$sql = "UPDATE $exportTempTable
-			        SET street_address = PREG_REPLACE(\"/( {$pattern}$)/\" , \" $replace\" , street_address );";
+		//construct pattern array from address_abbreviations
+		$patReplace = array();
+		
+		$sql = "SELECT DISTINCT normalized, long_form
+                FROM address_abbreviations;";
+		$dao = CRM_Core_DAO::executeQuery($sql);
+		
+		while( $dao->fetch() ) {
+			$abbr = $dao->normalized;
+			$long = ucfirst($dao->long_form);
+			$sql  = "UPDATE $exportTempTable
+			         SET street_address = PREG_REPLACE(\"/(\\\b{$abbr}\\\b)/i\", \"$long\" , street_address );";
 			CRM_Core_DAO::executeQuery($sql);
 		}
-		
+		//CRM_Core_Error::debug('patReplace', $patReplace);exit();
+
+		/*foreach ( $patReplace as $pattern => $replace ) {
+			$sql = "UPDATE $exportTempTable
+			        SET street_address = PREG_REPLACE(\"/(\\\b{$pattern}\\\b)/i\", \"$replace\" , street_address );";
+			CRM_Core_DAO::executeQuery($sql);
+		}*/
+
 	}
 
 	//if no records in the table, return to search
@@ -132,17 +147,17 @@ WHERE c.do_not_trade = 1
 	$sql = "SELECT count(id) FROM $exportTempTable;";
 	if ( CRM_Core_DAO::singleValueQuery($sql) == 0 ) {
 		$status = "There were no records to export. Please run your search and export again.";
-		$session = CRM_Core_Session::singleton( ); 
+		$session = CRM_Core_Session::singleton( );
         $session->setStatus( $status );
-		
+
 		require_once 'CRM/Utils/System.php';
         require_once 'CRM/Utils/Rule.php';
-		
+
 		$currentPath = CRM_Utils_System::currentPath( );
 		$urlParams = null;
         $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String' );
-        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey"; 
-		           
+        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey";
+
         CRM_Utils_System::redirect( CRM_Utils_System::url( $currentPath, $urlParams ) );
 	}
 
