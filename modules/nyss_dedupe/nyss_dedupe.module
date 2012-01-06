@@ -71,7 +71,7 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         $tableQueries['civicrm.custom.5'] = $query;
     }
 
-    CRM_Core_Error::debug($tableQueries);exit();
+    //CRM_Core_Error::debug($tableQueries);exit();
 }
 
 /*
@@ -293,19 +293,19 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
     if($birth_date)
         $where .= "
-          AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')\n";
+          AND (contact1.birth_date IS NULL or contact1.birth_date = '$birth_date')";
 
     if($gender_id)
         $where .= "
-          AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')\n  ";
+          AND (contact1.gender_id IS NULL or contact1.gender_id = '$gender_id')";
 
     if($suffix_id)
         $where .= "
-          AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)\n";
+          AND (contact1.suffix_id IS NULL or contact1.suffix_id = $suffix_id)";
 
     if($middle_name)
         $where .= "
-          AND (contact1.middle_name IS NULL or contact1.middle_name = '$middle_name')\n";
+          AND (contact1.middle_name IS NULL or contact1.middle_name = '$middle_name')";
 
 
     // Add on the bits that make us smart around addresses
@@ -315,19 +315,19 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
         if($postal_code)
             $where .= "
-          AND (address1.postal_code IS NULL or address1.postal_code = '$postal_code')\n";
+          AND (address1.postal_code IS NULL or address1.postal_code = '$postal_code')";
 
         if($city)
             $where .= "
-          AND (address1.city IS NULL or address1.city = '$city')\n";
+          AND (address1.city IS NULL or address1.city = '$city')";
 
         if($state_id)
             $where .= "
-          AND (address1.state_province_id IS NULL or address1.state_province_id = '$state_id')\n";
+          AND (address1.state_province_id IS NULL or address1.state_province_id = '$state_id')";
 
         if($country_id)
             $where .= "
-          AND (address1.country_id IS NULL or address1.country_id = '$country_id')\n";
+          AND (address1.country_id IS NULL or address1.country_id = '$country_id')";
     }
 
     // Add on the bits that make us smart around emails
@@ -357,7 +357,7 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
     $where .= "
           AND (
-          ".implode(" OR\n            ",$clauses)."
+              ".implode(" OR\n              ",$clauses)."
           )";
 
     return $select.$from.$where;
