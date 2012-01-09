@@ -445,7 +445,7 @@ ORDER BY   i.contact_id, i.email_id
 			// if we need to add all emails marked bulk, do it as a post filter
             // on the mailing recipients table
             if ( CRM_Core_BAO_Email::isMultipleBulkMail( ) ) {
-                self::addMultipleEmails( $mailing_id );
+                self::addMultipleEmails( $mailing_id, $dedupeEmail );
             }
         }
 
@@ -2469,7 +2469,7 @@ WHERE  civicrm_mailing_job.id = %1
     }
 	
 	//NYSS 4717
-	private function addMultipleEmails( $mailingID ) {
+	private function addMultipleEmails( $mailingID, $dedupeEmail = false ) {
         $sql = "
 INSERT INTO civicrm_mailing_recipients
     (mailing_id, email_id, contact_id)
@@ -2480,7 +2480,16 @@ AND    e.contact_id IN
     ( SELECT contact_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
 AND    e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
 ";
-        $params = array( 1 => array( $mailingID, 'Integer' ) );
+        //ensure we apply dedupe by email if option was selected
+		if ( $dedupeEmail ) {
+		    $sql .= " AND e.email NOT IN ( SELECT e.email 
+		                                   FROM   civicrm_mailing_recipients mr
+									         JOIN civicrm_email e
+									           ON mr.email_id = e.id
+									       WHERE  mr.mailing_id = %1 ) ";
+		}
+		
+		$params = array( 1 => array( $mailingID, 'Integer' ) );
         
         $dao = CRM_Core_DAO::executeQuery( $sql, $params );
     }

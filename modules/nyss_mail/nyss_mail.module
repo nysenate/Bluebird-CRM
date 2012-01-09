@@ -161,10 +161,11 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 	if ( $formName == 'CRM_Mailing_Form_Group' ) {
 
         //4628
-        $mailingID = $form->_mailingID;
+        $mailingID    = $form->_mailingID;
+		$dedupeEmails = $form->_submitValues['dedupe_email'];
 
         if ( $form->_submitValues['all_emails'] ) {
-            _addAllEmails( $mailingID );
+            _addAllEmails( $mailingID, $dedupeEmails );
         }
         //CRM_Core_Error::debug('postProcess Group form', $form); exit();
     }
@@ -209,17 +210,26 @@ function nyss_mail_civicrm_pageRun( &$page ) {
 } //end pageRun
 
 //NYSS 4628
-function _addAllEmails( $mailingID ) {
+function _addAllEmails( $mailingID, $dedupeEmails = false ) {
 
     $sql = "
 INSERT INTO civicrm_mailing_recipients
     (mailing_id, email_id, contact_id)
-SELECT %1, e.id, e.contact_id FROM civicrm_email e
+SELECT %1, e.id, e.contact_id 
+FROM civicrm_email e
 WHERE  e.on_hold = 0
-AND    e.contact_id IN
-    ( SELECT contact_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
-AND    e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
+  AND  e.contact_id IN
+       ( SELECT contact_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
+  AND  e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
 ";
+
+    if ( $dedupeEmails ) {
+		$sql .= " AND e.email NOT IN ( SELECT e.email 
+		                               FROM   civicrm_mailing_recipients mr
+									     JOIN civicrm_email e
+									       ON mr.email_id = e.id
+									   WHERE  mr.mailing_id = %1 ) ";
+	}
     $params = array( 1 => array( $mailingID, 'Integer' ) );
 
     $dao = CRM_Core_DAO::executeQuery( $sql, $params );
