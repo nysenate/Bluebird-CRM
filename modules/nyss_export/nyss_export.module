@@ -111,12 +111,6 @@ WHERE c.do_not_trade = 1
 
 	//4426 change street suffix to long form
 	if ( $_POST['street_long'] == 1 ) {
-	
-		/*$patReplace = array( 'St'  => 'Street', 
-		                     'Rd'  => 'Road', 
-							 'Ln'  => 'Lane', 
-							 'Ave' => 'Avenue',
-							 );*/
 		
 		//construct pattern array from address_abbreviations
 		$patReplace = array();
@@ -126,21 +120,43 @@ WHERE c.do_not_trade = 1
 		$dao = CRM_Core_DAO::executeQuery($sql);
 		
 		while( $dao->fetch() ) {
-			$abbr = $dao->normalized;
-			$long = ucfirst($dao->long_form);
-			$sql  = "UPDATE $exportTempTable
-			         SET street_address = PREG_REPLACE(\"/(\\\b{$abbr}\\\b)/i\", \"$long\" , street_address );";
-			CRM_Core_DAO::executeQuery($sql);
+			$patReplace[$dao->normalized] = $dao->long_form;
 		}
 		//CRM_Core_Error::debug('patReplace', $patReplace);exit();
 
-		/*foreach ( $patReplace as $pattern => $replace ) {
-			$sql = "UPDATE $exportTempTable
-			        SET street_address = PREG_REPLACE(\"/(\\\b{$pattern}\\\b)/i\", \"$replace\" , street_address );";
-			CRM_Core_DAO::executeQuery($sql);
-		}*/
+		//get street_address for all records from the temp table
+		$sql = "SELECT civicrm_primary_id, street_address
+		        FROM $exportTempTable
+				WHERE street_address IS NOT NULL
+				  AND street_address != '';";
+		$dao = CRM_Core_DAO::executeQuery($sql);
 
-	}
+		$streetSplit = array();
+		while( $dao->fetch() ) {
+			//split street_address into array of elements in reverse
+			$streetSplit = array_reverse(explode( ' ', $dao->street_address ));
+
+			//we have to handle the cycles separately so that we do a complete search for long form before looking for abbrev
+			foreach ( $streetSplit as $chunk ) {
+				$chunk = _cleanVal($chunk);
+				//if the long form is present continue with next record
+				if ( in_array($chunk, $patReplace) ) {
+					continue;
+				}
+			}
+
+			foreach ( $streetSplit as $chunk ) {
+				$chunk = _cleanVal($chunk);
+				//see if the short form is present and conduct the replacement
+				if ( array_key_exists($chunk, $patReplace) ) {
+					$longForm = ucfirst($patReplace[$chunk]);
+					$sql  = "UPDATE $exportTempTable
+			                 SET street_address = PREG_REPLACE(\"/(.*{$chunk}?.*)\\\b{$chunk}\\\b/i\", \"$1{$longForm}\" , street_address );";
+					CRM_Core_DAO::executeQuery($sql);
+				}
+			}
+		}
+	} //end street_long
 
 	//if no records in the table, return to search
 	//ideally we return to the existing search, but we don't seem to have the qfKey at this point
@@ -223,3 +239,12 @@ LIMIT $offset, $limit
 	exit();*/
 
 }
+
+//helper to strip spaces and punctuation so we normalize comparison
+function _cleanVal( $string ) {
+
+	$string = preg_replace( '/[\W]+/', '', $string );
+	$string = strtolower( $string );
+
+	return $string;
+} //_cleanVal
