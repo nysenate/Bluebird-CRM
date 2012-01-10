@@ -129,12 +129,6 @@ foreach($event_map as $event_type => $event_processor) {
 }
 log_("[NOTICE] Processed $total_events events.");
 
-log_("[NOTICE] Clearing Sendgrid lists.");
-foreach(array('bounces','invalidemails','spamreports','unsubscribes') as $list) {
-    if(!clear_sendgrid_list($list, $bbconfig))
-        log_("[NOTICE]   ERROR clearing the '$list' list.");
-}
-
 
 function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
     /* Requires the following table to be created....
@@ -163,6 +157,7 @@ function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
     // Successful insert for all of them (or die!). SQL keeps consistency for us
     return implode(', ',array_keys($events));
 }
+
 
 function process_open_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Opened.php';
@@ -199,6 +194,7 @@ function process_click_events($events, $optList, $bbconfig) {
     return $successful_ids;
 }
 
+
 function process_bounce_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Bounce.php';
     require_once 'CRM/Mailing/BAO/BouncePattern.php';
@@ -223,6 +219,7 @@ function process_bounce_events($events, $optList, $bbconfig) {
     }
     return $successful_ids;
 }
+
 
 function process_unsubscribe_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
@@ -301,6 +298,7 @@ function process_dropped_events($events, $optList, $bbconfig) {
     return $successful_ids;
 }
 
+
 function get_queue_event($event) {
     require_once 'CRM/Core/DAO.php';
 
@@ -312,6 +310,7 @@ function get_queue_event($event) {
 
     return ($result && $result->fetch()) ? (array) $result : null;
 }
+
 
 function get_accumulator_connection($bbconfig) {
     $user = array_get('accumulator.user',$bbconfig);
@@ -338,25 +337,11 @@ function get_accumulator_connection($bbconfig) {
     return $conn;
 }
 
-function clear_sendgrid_list($list, $bbconfig) {
-    $smtpuser = $bbconfig['smtp.user'];
-    $smtppass = $bbconfig['smtp.pass'];
-    $smtpsubuser = $bbconfig['smtp.subuser'];
-
-    // Attempt to delete the specified email; Example Response
-    //
-    //  <result>
-    //      <message>success</message>
-    //  </result>
-    $url = "https://sendgrid.com/apiv2/customer.$list.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete";
-    $response = simplexml_load_file($url);
-    return ($response->message == 'success');
-}
-
 /* Maybe these should get thown into the script_utils file at some point. */
 function array_get($key, $source, $default='') {
     return isset($source[$key]) ? $source[$key] : $default;
 }
+
 
 function exec_query($sql, $conn) {
     if(($result = mysql_query($sql,$conn)) === FALSE) {
@@ -365,6 +350,7 @@ function exec_query($sql, $conn) {
     }
     return $result;
 }
+
 
 function log_($message) {
     echo date('Y-m-d H:i:s')." $message\n";
