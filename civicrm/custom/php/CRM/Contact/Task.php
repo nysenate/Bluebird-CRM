@@ -305,7 +305,11 @@ class CRM_Contact_Task
                            100 => self::$_tasks[100]['title'], //NYSS
                            101 => self::$_tasks[101]['title'], //NYSS
                            );
-            if ( ! self::$_tasks[20]['title'] ) {
+            //NYSS 4809 - unset district export if not permissioned
+			if ( ! self::$_tasks[101]['title'] ) {
+                unset( $tasks[101] );
+            }
+			if ( ! self::$_tasks[20]['title'] ) {
                 unset( $tasks[20] );
             }
             if ( ! self::$_tasks[12]['title'] ) {

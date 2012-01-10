@@ -3662,12 +3662,17 @@ WHERE  id IN ( $groupIDs )
                         }
                     }
                 } else if ($sortByChar) { 
-                    $order = " ORDER BY LEFT(contact_a.sort_name, 1) asc"; //NYSS 4585
+                    $order = " ORDER BY UPPER(LEFT(contact_a.sort_name, 1)) asc"; //NYSS 4585
                 } else {
                     $order = " ORDER BY contact_a.sort_name asc, contact_a.id"; //NYSS
                 }
             }
-			
+
+            //NYSS 4846 - this should be removed in a future version; test saved searches
+            if ( !$this->_useOrderBy ) {
+                $order = '';
+            }
+
 			//NYSS 4585
 			$doOpt = true;
             // hack for order clause
@@ -3777,7 +3782,7 @@ WHERE  id IN ( $groupIDs )
         }
 
         $query = "$select $from $where $having $groupBy $order $limit";
-        // CRM_Core_Error::debug('query', $query);
+        // CRM_Core_Error::debug('query', $query);exit();
         // CRM_Core_Error::debug('query', $where);
         // CRM_Core_Error::debug('this', $this );
 
