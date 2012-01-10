@@ -140,7 +140,7 @@ WHERE c.do_not_trade = 1
 
             //we have to handle the cycles separately so that we do a complete search for long form before looking for abbrev
             foreach ( $streetSplit as $chunk ) {
-                $chunk = _cleanVal($chunk);
+                $chunk = _cleanStr($chunk);
                 //if the long form is present continue with next record
                 if ( in_array($chunk, $patReplace) ) {
                     continue;
@@ -148,7 +148,7 @@ WHERE c.do_not_trade = 1
             }
 
             foreach ( $streetSplit as $chunk ) {
-                $chunk = _cleanVal($chunk);
+                $chunk = _cleanStr($chunk);
                 //see if the short form is present and conduct the replacement
                 if ( array_key_exists($chunk, $patReplace) ) {
                     $id       = $dao->id;
@@ -257,10 +257,10 @@ LIMIT $offset, $limit
 }
 
 //helper to strip spaces and punctuation so we normalize comparison
-function _cleanVal( $string ) {
+function _cleanStr( $string ) {
 
     $string = preg_replace( '/[\W]+/', '', $string );
     $string = strtolower( $string );
 
     return $string;
-} //_cleanVal
+} //_cleanStr
