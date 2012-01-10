@@ -27,12 +27,23 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
 
 <?php
 	$rolesList = implode(', ',$user->roles);
-	$role = str_replace('authenticated user, ','', $rolesList).'&nbsp;';
+	$role      = str_replace('authenticated user, ','', $rolesList).'&nbsp;';
+
+	if ( strpos($_SERVER['HTTP_HOST'], 'crmtest') ) {
+		$env = 'env-crmtest';
+	} elseif ( strpos($_SERVER['HTTP_HOST'], 'crmdev') ) {
+		$env = 'env-crmdev';
+	} else {
+		$env = 0;
+	}
 ?>
 
 <body class="<?php print $body_classes;?><?php print 'role-'.$role;?>">
 <?php //print_r($_SESSION); ?>
 <?php if ($user->uid && arg(0) == 'civicrm') { ?>
+ <?php if ( $env ) { //4343 ?>
+           <div class="<?php echo $env; ?>"></div>
+ <?php } ?>
  <?php if ($footer): ?>
       <div id="footer-bg"></div>
       <?php if ($user->uid) { ?>

@@ -1454,3 +1454,18 @@ ul.token-input-list-facebook { width:265px;}
 	padding: 4px;
 	width: 99%;
 }
+
+/*4343 dev/test indicator*/
+.env-crmtest,
+.env-crmdev {
+	background:transparent url(../nyss_skin/images/env-marker-test.png) no-repeat;
+    top: 0;
+    left: 0;
+    position: fixed;
+	height: 120px;
+    width: 120px;
+	z-index: -1;
+}
+.env-crmdev {
+	background:transparent url(../nyss_skin/images/env-marker-dev.png) no-repeat;
+}
