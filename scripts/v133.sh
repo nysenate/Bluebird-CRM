@@ -61,6 +61,15 @@ SET is_default = 1
 WHERE id = 13;";
 $execSql -i $instance -c "$dupegroup"
 
+# 4696 Find Mailings menu item
+findmail="
+SELECT @findm := id FROM civicrm_navigation WHERE name = 'Find Mailings';
+SELECT @parent := id FROM civicrm_navigation WHERE name = 'Mass Email';
+REPLACE INTO civicrm_navigation (id, domain_id, label, name, url, permission, permission_operator, parent_id, is_active, has_separator, weight) VALUES
+(@findm, 1, 'Find Mailings', 'Find Mailings', 'civicrm/mailing/browse&reset=1', 'access CiviMail,approve mailings,create mailings,schedule mailings', 'OR', @parent, 1, 0, 4);";
+$execSql -i $instance -c "$findmail"
+
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
