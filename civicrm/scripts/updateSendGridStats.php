@@ -69,6 +69,7 @@ log_("[NOTICE] Running on '{$bbconfig['servername']}' for events ($event_types) 
 require_once 'CRM/Core/DAO.php';
 
 $total_events = 0;
+$total_events_processed = 0;
 foreach($event_map as $event_type => $event_processor) {
     //Skip event types without active processors
     if($event_processor) {
@@ -112,22 +113,26 @@ foreach($event_map as $event_type => $event_processor) {
                 //This isn't a great way to do it (what if the event processor
                 //encounters an error after the first one?) but CiviCRM doesn't
                 //give you a chance to recover from errors so...we'll do this.
-                echo "  ".count($events)." $event_type events to process.\n";
+                log_("  ".count($events)." $event_type events to process.\n");
                 $processed_ids = call_user_func($event_processor,$events,$optList,$bbconfig);
+
+                if($failures = array_diff(array_keys($events),$processed_ids))
+                    log_("  ".count($failures)." events failed processing.");
 
                 if($processed_ids) {
                     exec_query("UPDATE event
                                 SET processed=1, dt_processed=NOW()
-                                WHERE id IN ($processed_ids)", $conn);
+                                WHERE id IN (".implode(',',$processed_ids).")", $conn);
                 }
 
                 //Reset for the next batch
+                $total_events_processed += count($processed_ids);
                 $events = array();
             }
         }
     }
 }
-log_("[NOTICE] Processed $total_events events.");
+log_("[NOTICE] Processed $total_events_processed/$total_events events.");
 
 
 function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
