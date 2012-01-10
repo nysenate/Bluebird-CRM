@@ -16,7 +16,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--quiet|-q] [--create] [--drupal] [dbName]" >&2
+  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [dbName]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -35,6 +35,7 @@ dbpass=
 dbname=
 create_db=0
 be_quiet=0
+colname_arg="--skip-column_names"
 db_prefix_keyname=db.civicrm.prefix
 default_db_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 
@@ -49,6 +50,7 @@ while [ $# -gt 0 ]; do
     -u|--user) shift; dbuser="$1" ;;
     -p|--pass*) shift; dbpass="$1" ;;
     -q|--quiet) be_quiet=1 ;;
+    --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
     --drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
@@ -97,5 +99,5 @@ elif [ "$sqlfile" ]; then
   cat $sqlfile | mysql -h $dbhost -u $dbuser -p$dbpass $dbname
 else
   [ $be_quiet -eq 0 ] && set -x
-  mysql -h $dbhost -u $dbuser -p$dbpass -e "$sqlcmd" --batch --skip-column-names $dbname
+  mysql -h $dbhost -u $dbuser -p$dbpass -e "$sqlcmd" --batch $colname_arg $dbname
 fi
