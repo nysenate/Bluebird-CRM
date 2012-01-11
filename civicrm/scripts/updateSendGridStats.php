@@ -278,9 +278,10 @@ function process_dropped_events($events, $optList, $bbconfig) {
 
                 $result = exec_query("
                         SELECT reason
-                        FROM bounce JOIN event ON event.id=bounce.email_id
+                        FROM bounce JOIN event ON event.id=bounce.event_id
                         WHERE event_id < $event_id
                           AND email='{$event['email']}'
+                          AND servername='{$bbconfig['servername']}'
                         ORDER BY event_id DESC
                         LIMIT 1",$GLOBALS['conn']);
 
