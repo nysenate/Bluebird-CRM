@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# manageSendgrid.sh - Configure Sendgrid subusers via their Web API
+# manageSendgrid.sh - Perform operations on Sendgrid subusers via the API
 #
 # Project: BluebirdCRM
 # Author: Ken Zalewski
 # Organization: New York State Senate
-# Date: 201l-12-30
+# Date: 2011-12-30
 # Revised: 2012-01-09
 #
 
