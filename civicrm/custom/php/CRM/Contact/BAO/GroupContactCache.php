@@ -287,6 +287,7 @@ WHERE  id = %1
                                                     true, true, false );
                 $query->_useDistinct = false;
                 $query->_useGroupBy = false;
+				$query->_useOrderBy = false; //NYSS 4846
                 $searchSQL =& $query->searchQuery( 0, 0, null,
                                                    false, false,
                                                    false, true, true, null );

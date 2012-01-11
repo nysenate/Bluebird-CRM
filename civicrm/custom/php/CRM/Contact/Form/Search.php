@@ -742,7 +742,7 @@ class CRM_Contact_Form_Search extends CRM_Core_Form {
                                                                $sortID,
                                                                CRM_Core_Action::VIEW, $this, CRM_Core_Selector_Controller::TRANSFER );
             $controller->setEmbedded( true );
-			$controller->setDynamicAction( true ); //NYSS 4585
+			$controller->setDynamicAction( $setDynamic ); //NYSS 4585
         }
         
         $controller->moveFromSessionToTemplate();
