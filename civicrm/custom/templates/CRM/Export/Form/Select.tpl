@@ -107,7 +107,7 @@
     <div class="label crm-label-streetLong">{$form.street_long.label}</div>
     <div class="content crm-content-streetLong">
         &nbsp;{$form.street_long.html}
-        {ts}Use the long form of the street suffix.{/ts}
+        {ts}Use the long form of the street address suffix (eg. 'street' instead of 'st' or 'avenue' instead of 'ave').{/ts}
     </div>
 	<div class="clear"></div> 
   </div>

@@ -534,7 +534,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 			CRM_Core_DAO::freeResult( );
 		}
 		
-		nyss_out('debug', 'ready to begin importing record...', true);
+		//nyss_out('debug', 'ready to begin importing record...', true);
 		//nyss_out('debug', $l, true); exit();
 
 		/*------NOW IMPORT THE DATA-------------------------------------*/
