@@ -95,6 +95,7 @@ foreach($event_map as $event_type => $event_processor) {
                 //We should always have a queue_event, but if we don't...
                 if(! $queue = get_queue_event($row)) {
                     //Now what? We can't do anything useful here. Log it?
+                    log_("[WARN] Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
                     continue;
                 }
                 $events[$row['id']] = array('event'=>$row,'queue'=>$queue);
