@@ -319,19 +319,22 @@ function get_queue_event($event) {
 
 
 function get_accumulator_connection($bbconfig) {
+    $host = array_get('accumulator.host',$bbconfig);
+    $port = array_get('accumulator.port',$bbconfig);
+    $name = array_get('accumulator.name',$bbconfig);
     $user = array_get('accumulator.user',$bbconfig);
     $pass = array_get('accumulator.pass',$bbconfig);
-    $name = array_get('accumulator.name',$bbconfig);
-    $host = array_get('accumulator.host',$bbconfig);
 
-    if(!$user || !$pass || !$name || !$host) {
-        log_("[ERROR] Accumulator configuration parameters missing. accumulator.user+pass+home+host required");
+    if(!$host || !$name || !$user || !$pass) {
+        log_("[ERROR] Accumulator configuration parameters missing. accumulator.{host,name,user,pass} required");
         exit(1);
     }
 
-    $conn = mysql_connect($host,$user,$pass);
+    $full_host = ($port) ? $host.':'.$port : $host;
+
+    $conn = mysql_connect($full_host, $user, $pass);
     if($conn === FALSE) {
-        log_("[ERROR] Could not connect to mysql://$user:$pass@$host: ".mysql_error());
+        log_("[ERROR] Could not connect to mysql://$user:$pass@$full_host: ".mysql_error());
         exit(1);
     }
 
@@ -351,7 +354,7 @@ function array_get($key, $source, $default='') {
 
 function exec_query($sql, $conn) {
     if(($result = mysql_query($sql,$conn)) === FALSE) {
-        log_("[ERROR]    Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
+        log_("[ERROR] Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
         exit(1);
     }
     return $result;
