@@ -69,6 +69,7 @@ log_("[NOTICE] Running on '{$bbconfig['servername']}' for events ($event_types) 
 require_once 'CRM/Core/DAO.php';
 
 $total_events = 0;
+$total_events_processed = 0;
 foreach($event_map as $event_type => $event_processor) {
     //Skip event types without active processors
     if($event_processor) {
@@ -112,28 +113,26 @@ foreach($event_map as $event_type => $event_processor) {
                 //This isn't a great way to do it (what if the event processor
                 //encounters an error after the first one?) but CiviCRM doesn't
                 //give you a chance to recover from errors so...we'll do this.
-                echo "  ".count($events)." $event_type events to process.\n";
+                log_("  ".count($events)." $event_type events to process.\n");
                 $processed_ids = call_user_func($event_processor,$events,$optList,$bbconfig);
+
+                if($failures = array_diff(array_keys($events),$processed_ids))
+                    log_("  ".count($failures)." events failed processing.");
 
                 if($processed_ids) {
                     exec_query("UPDATE event
                                 SET processed=1, dt_processed=NOW()
-                                WHERE id IN ($processed_ids)", $conn);
+                                WHERE id IN (".implode(',',$processed_ids).")", $conn);
                 }
 
                 //Reset for the next batch
+                $total_events_processed += count($processed_ids);
                 $events = array();
             }
         }
     }
 }
-log_("[NOTICE] Processed $total_events events.");
-
-log_("[NOTICE] Clearing Sendgrid lists.");
-foreach(array('bounces','invalidemails','spamreports','unsubscribes') as $list) {
-    if(!clear_sendgrid_list($list, $bbconfig))
-        log_("[NOTICE]   ERROR clearing the '$list' list.");
-}
+log_("[NOTICE] Processed $total_events_processed/$total_events events.");
 
 
 function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
@@ -163,6 +162,7 @@ function process_sendgrid_delivered_events($events, $optList, $bbconfig) {
     // Successful insert for all of them (or die!). SQL keeps consistency for us
     return implode(', ',array_keys($events));
 }
+
 
 function process_open_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Opened.php';
@@ -199,6 +199,7 @@ function process_click_events($events, $optList, $bbconfig) {
     return $successful_ids;
 }
 
+
 function process_bounce_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Bounce.php';
     require_once 'CRM/Mailing/BAO/BouncePattern.php';
@@ -223,6 +224,7 @@ function process_bounce_events($events, $optList, $bbconfig) {
     }
     return $successful_ids;
 }
+
 
 function process_unsubscribe_events($events, $optList, $bbconfig) {
     require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
@@ -301,6 +303,7 @@ function process_dropped_events($events, $optList, $bbconfig) {
     return $successful_ids;
 }
 
+
 function get_queue_event($event) {
     require_once 'CRM/Core/DAO.php';
 
@@ -312,6 +315,7 @@ function get_queue_event($event) {
 
     return ($result && $result->fetch()) ? (array) $result : null;
 }
+
 
 function get_accumulator_connection($bbconfig) {
     $user = array_get('accumulator.user',$bbconfig);
@@ -338,25 +342,11 @@ function get_accumulator_connection($bbconfig) {
     return $conn;
 }
 
-function clear_sendgrid_list($list, $bbconfig) {
-    $smtpuser = $bbconfig['smtp.user'];
-    $smtppass = $bbconfig['smtp.pass'];
-    $smtpsubuser = $bbconfig['smtp.subuser'];
-
-    // Attempt to delete the specified email; Example Response
-    //
-    //  <result>
-    //      <message>success</message>
-    //  </result>
-    $url = "https://sendgrid.com/apiv2/customer.$list.xml?api_user=$smtpuser&api_key=$smtppass&user=$smtpsubuser&task=delete";
-    $response = simplexml_load_file($url);
-    return ($response->message == 'success');
-}
-
 /* Maybe these should get thown into the script_utils file at some point. */
 function array_get($key, $source, $default='') {
     return isset($source[$key]) ? $source[$key] : $default;
 }
+
 
 function exec_query($sql, $conn) {
     if(($result = mysql_query($sql,$conn)) === FALSE) {
@@ -365,6 +355,7 @@ function exec_query($sql, $conn) {
     }
     return $result;
 }
+
 
 function log_($message) {
     echo date('Y-m-d H:i:s')." $message\n";
