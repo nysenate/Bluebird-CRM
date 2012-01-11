@@ -95,6 +95,7 @@ foreach($event_map as $event_type => $event_processor) {
                 //We should always have a queue_event, but if we don't...
                 if(! $queue = get_queue_event($row)) {
                     //Now what? We can't do anything useful here. Log it?
+                    log_("[WARN] Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
                     continue;
                 }
                 $events[$row['id']] = array('event'=>$row,'queue'=>$queue);
@@ -278,9 +279,10 @@ function process_dropped_events($events, $optList, $bbconfig) {
 
                 $result = exec_query("
                         SELECT reason
-                        FROM bounce JOIN event ON event.id=bounce.email_id
+                        FROM bounce JOIN event ON event.id=bounce.event_id
                         WHERE event_id < $event_id
                           AND email='{$event['email']}'
+                          AND servername='{$bbconfig['servername']}'
                         ORDER BY event_id DESC
                         LIMIT 1",$GLOBALS['conn']);
 
