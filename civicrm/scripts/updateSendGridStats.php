@@ -260,26 +260,26 @@ function process_dropped_events($events, $optList, $bbconfig) {
     $spam_events = array();
     $bounce_events = array();
     $unsubscribed_events = array();
-    foreach($events as $pair) {
+    foreach($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         switch($event['reason']) {
             // TODO: I just made this up, I don't know what it would actually come through as
             case 'Unsubscribed Address':
-                $unsubscribed_events[] = $event;
+                $unsubscribed_events[$event_id] = array($event, $queue_event);
                 break;
             case 'Spam Reporting Address':
-                $spam_events[] = $event;
+                $spam_events[$event_id] = array($event, $queue_event);
                 break;
             case 'Invalid':
                 $event['reason'] = 'Bad Destination';
-                $bounce_events[] = $event;
+                $bounce_events[$event_id] = array($event, $queue_event);
                 break;
             case 'Bounced Address':
 
                 $result = exec_query("
                         SELECT reason
                         FROM bounce JOIN event ON event.id=bounce.email_id
-                        WHERE event_id < {$event['id']}
+                        WHERE event_id < $event_id
                           AND email='{$event['email']}'
                         ORDER BY event_id DESC
                         LIMIT 1",$GLOBALS['conn']);
@@ -289,7 +289,7 @@ function process_dropped_events($events, $optList, $bbconfig) {
                 else //The database must have been reset, leave the reason blank
                     $event['reason'] = '';
 
-                $bounce_events[] = $event;
+                $bounce_events[$event_id] = array($event, $queue_event);
                 break;
             default:
                 log_("[ERROR] Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
