@@ -86,7 +86,7 @@ foreach($event_map as $event_type => $event_processor) {
         $total_events += mysql_num_rows($new_events);
 
         if(mysql_num_rows($new_events) != 0)
-            log_("[NOTICE]   Processing ".mysql_num_rows($new_events)." {$event_type}s.");
+            log_("[NOTICE]   Processing ".mysql_num_rows($new_events)." {$event_type} events.");
 
         $events = array();
         $in_process = true;
@@ -95,7 +95,7 @@ foreach($event_map as $event_type => $event_processor) {
                 //We should always have a queue_event, but if we don't...
                 if(! $queue = get_queue_event($row)) {
                     //Now what? We can't do anything useful here. Log it?
-                    log_("[WARN] Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
+                    log_("[ERROR]      Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
                     continue;
                 }
                 $events[$row['id']] = array('event'=>$row,'queue'=>$queue);
@@ -114,11 +114,10 @@ foreach($event_map as $event_type => $event_processor) {
                 //This isn't a great way to do it (what if the event processor
                 //encounters an error after the first one?) but CiviCRM doesn't
                 //give you a chance to recover from errors so...we'll do this.
-                log_("  ".count($events)." $event_type events to process.\n");
                 $processed_ids = call_user_func($event_processor,$events,$optList,$bbconfig);
 
                 if($failures = array_diff(array_keys($events),$processed_ids))
-                    log_("  ".count($failures)." events failed processing.");
+                    log_("[ERROR]      ".count($failures)." events failed processing.");
 
                 if($processed_ids) {
                     exec_query("UPDATE event
@@ -173,7 +172,7 @@ function process_open_events($events, $optList, $bbconfig) {
         if( CRM_Mailing_Event_BAO_Opened::open($queue_event['id']) )
            $successful_ids[] = $event_id;
         else
-            log_("[ERROR] Failed to process open event id '$event_id'");
+            log_("[ERROR]      Failed to process open event id '$event_id'");
     }
     return $successful_ids;
 }
@@ -221,7 +220,7 @@ function process_bounce_events($events, $optList, $bbconfig) {
         if( CRM_Mailing_Event_BAO_Bounce::create($params) )
             $successful_ids[] = $event_id;
         else
-            log_("[ERROR] Failed to process bounce event id '$event_id'");
+            log_("[ERROR]      Failed to process bounce event id '$event_id'");
     }
     return $successful_ids;
 }
@@ -242,7 +241,7 @@ function process_unsubscribe_events($events, $optList, $bbconfig) {
         if($unsubs)
             $successful_ids[] = $event_id;
         else
-            log_("[ERROR] Failed to process unsubscribe/spamreport event id $event_id");
+            log_("[ERROR]      Failed to process unsubscribe/spamreport event id $event_id");
     }
     return $successful_ids;
 }
@@ -294,7 +293,7 @@ function process_dropped_events($events, $optList, $bbconfig) {
                 $bounce_events[$event_id] = array($event, $queue_event);
                 break;
             default:
-                log_("[ERROR] Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
+                log_("[ERROR]      Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
         }
     }
 
@@ -352,7 +351,7 @@ function array_get($key, $source, $default='') {
 
 function exec_query($sql, $conn) {
     if(($result = mysql_query($sql,$conn)) === FALSE) {
-        log_("[ERROR] Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
+        log_("[ERROR]    Accumulator query error: ".mysql_error($conn)."; while running: ".$sql);
         exit(1);
     }
     return $result;
