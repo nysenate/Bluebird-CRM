@@ -116,7 +116,6 @@ foreach ($event_map as $event_type => $event_processor) {
                 *  give you a chance to recover from errors so...we'll do this.
                 */
                 $processed_ids = call_user_func($event_processor, $events, $optList, $bbconfig);
-print_r($processed_ids);
 
                 if ($failures = array_diff(array_keys($events), $processed_ids))
                     log_("[ERROR]      ".count($failures)." events failed processing.");
