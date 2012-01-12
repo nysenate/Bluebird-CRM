@@ -86,7 +86,7 @@ foreach($event_map as $event_type => $event_processor) {
         $total_events += mysql_num_rows($new_events);
 
         if(mysql_num_rows($new_events) != 0)
-            log_("[NOTICE]   Processing ".mysql_num_rows($new_events)." {$event_type}s.");
+            log_("[NOTICE]   Processing ".mysql_num_rows($new_events)." {$event_type} events.");
 
         $events = array();
         $in_process = true;
@@ -95,6 +95,7 @@ foreach($event_map as $event_type => $event_processor) {
                 //We should always have a queue_event, but if we don't...
                 if(! $queue = get_queue_event($row)) {
                     //Now what? We can't do anything useful here. Log it?
+                    log_("[ERROR]      Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
                     continue;
                 }
                 $events[$row['id']] = array('event'=>$row,'queue'=>$queue);
@@ -113,11 +114,10 @@ foreach($event_map as $event_type => $event_processor) {
                 //This isn't a great way to do it (what if the event processor
                 //encounters an error after the first one?) but CiviCRM doesn't
                 //give you a chance to recover from errors so...we'll do this.
-                log_("  ".count($events)." $event_type events to process.\n");
                 $processed_ids = call_user_func($event_processor,$events,$optList,$bbconfig);
 
                 if($failures = array_diff(array_keys($events),$processed_ids))
-                    log_("  ".count($failures)." events failed processing.");
+                    log_("[ERROR]      ".count($failures)." events failed processing.");
 
                 if($processed_ids) {
                     exec_query("UPDATE event
@@ -172,7 +172,7 @@ function process_open_events($events, $optList, $bbconfig) {
         if( CRM_Mailing_Event_BAO_Opened::open($queue_event['id']) )
            $successful_ids[] = $event_id;
         else
-            log_("[ERROR] Failed to process open event id '$event_id'");
+            log_("[ERROR]      Failed to process open event id '$event_id'");
     }
     return $successful_ids;
 }
@@ -220,7 +220,7 @@ function process_bounce_events($events, $optList, $bbconfig) {
         if( CRM_Mailing_Event_BAO_Bounce::create($params) )
             $successful_ids[] = $event_id;
         else
-            log_("[ERROR] Failed to process bounce event id '$event_id'");
+            log_("[ERROR]      Failed to process bounce event id '$event_id'");
     }
     return $successful_ids;
 }
@@ -241,7 +241,7 @@ function process_unsubscribe_events($events, $optList, $bbconfig) {
         if($unsubs)
             $successful_ids[] = $event_id;
         else
-            log_("[ERROR] Failed to process unsubscribe/spamreport event id $event_id");
+            log_("[ERROR]      Failed to process unsubscribe/spamreport event id $event_id");
     }
     return $successful_ids;
 }
@@ -260,27 +260,28 @@ function process_dropped_events($events, $optList, $bbconfig) {
     $spam_events = array();
     $bounce_events = array();
     $unsubscribed_events = array();
-    foreach($events as $pair) {
+    foreach($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         switch($event['reason']) {
             // TODO: I just made this up, I don't know what it would actually come through as
             case 'Unsubscribed Address':
-                $unsubscribed_events[] = $event;
+                $unsubscribed_events[$event_id] = array($event, $queue_event);
                 break;
             case 'Spam Reporting Address':
-                $spam_events[] = $event;
+                $spam_events[$event_id] = array($event, $queue_event);
                 break;
             case 'Invalid':
                 $event['reason'] = 'Bad Destination';
-                $bounce_events[] = $event;
+                $bounce_events[$event_id] = array($event, $queue_event);
                 break;
             case 'Bounced Address':
 
                 $result = exec_query("
                         SELECT reason
-                        FROM bounce JOIN event ON event.id=bounce.email_id
-                        WHERE event_id < {$event['id']}
+                        FROM bounce JOIN event ON event.id=bounce.event_id
+                        WHERE event_id < $event_id
                           AND email='{$event['email']}'
+                          AND servername='{$bbconfig['servername']}'
                         ORDER BY event_id DESC
                         LIMIT 1",$GLOBALS['conn']);
 
@@ -289,10 +290,10 @@ function process_dropped_events($events, $optList, $bbconfig) {
                 else //The database must have been reset, leave the reason blank
                     $event['reason'] = '';
 
-                $bounce_events[] = $event;
+                $bounce_events[$event_id] = array($event, $queue_event);
                 break;
             default:
-                log_("[ERROR] Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
+                log_("[ERROR]      Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
         }
     }
 
@@ -318,19 +319,22 @@ function get_queue_event($event) {
 
 
 function get_accumulator_connection($bbconfig) {
+    $host = array_get('accumulator.host',$bbconfig);
+    $port = array_get('accumulator.port',$bbconfig);
+    $name = array_get('accumulator.name',$bbconfig);
     $user = array_get('accumulator.user',$bbconfig);
     $pass = array_get('accumulator.pass',$bbconfig);
-    $name = array_get('accumulator.name',$bbconfig);
-    $host = array_get('accumulator.host',$bbconfig);
 
-    if(!$user || !$pass || !$name || !$host) {
-        log_("[ERROR] Accumulator configuration parameters missing. accumulator.user+pass+home+host required");
+    if(!$host || !$name || !$user || !$pass) {
+        log_("[ERROR] Accumulator configuration parameters missing. accumulator.{host,name,user,pass} required");
         exit(1);
     }
 
-    $conn = mysql_connect($host,$user,$pass);
+    $full_host = ($port) ? $host.':'.$port : $host;
+
+    $conn = mysql_connect($full_host, $user, $pass);
     if($conn === FALSE) {
-        log_("[ERROR] Could not connect to mysql://$user:$pass@$host: ".mysql_error());
+        log_("[ERROR] Could not connect to mysql://$user:$pass@$full_host: ".mysql_error());
         exit(1);
     }
 
