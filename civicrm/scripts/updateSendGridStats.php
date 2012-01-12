@@ -19,14 +19,12 @@ if (! $optList = civicrm_script_init($shortOpts, $longOpts) ) {
 require_once 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
 
-/*  Store the run parameters in a map for easy looping and clean DRY code.
- *  Key is the table name of the event in the accumulator
- *  Value is the function accepting ($events, $optList, $bbconfig) where
- *    events is an array of at least one array of event parameters
- *
- * To disable an event from processing, just change the value. This should be
- * configurable in the future in one of a few different ways.
-*/
+// Store the run parameters in a map for easy looping and clean DRY code.
+// Key is the table name of the event in the accumulator
+// Value is the function accepting ($events, $optList, $bbconfig) where
+//   events is an array of at least one array of event parameters
+// To disable an event from processing, just change the value. This should be
+// configurable in the future in one of a few different ways.
 $event_map = array(
     'bounce'        => 'process_bounce_events',
     'click'         => 'process_click_events',
@@ -106,15 +104,14 @@ foreach ($event_map as $event_type => $event_processor) {
 
             //When we've reached the batch limit or the end of the rows
             if (!empty($events) && (count($events) >= $batch_size || $in_process == false)) {
-                /* Pass in both the optList and the bbconfig just in case one
-                *  of the event processors needs to be configurable either on
-                *  an instance or runtime basis.
-                * 
-                *  Record the successful processing of the batch in the database
-                *  This isn't a great way to do it (what if the event processor
-                *  encounters an error after the first one?) but CiviCRM doesn't
-                *  give you a chance to recover from errors so...we'll do this.
-                */
+                // Pass in both the optList and the bbconfig just in case one
+                // of the event processors needs to be configurable either on
+                // an instance or runtime basis.
+                // Record the successful processing of the batch in the database
+                // This isn't a great way to do it (what if the event processor
+                // encounters an error after the first one?) but CiviCRM doesn't
+                // give you a chance to recover from errors so...we'll do this.
+
                 $processed_ids = call_user_func($event_processor, $events, $optList, $bbconfig);
 
                 if ($failures = array_diff(array_keys($events), $processed_ids))
