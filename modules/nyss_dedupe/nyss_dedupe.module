@@ -7,11 +7,11 @@ function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
         return;
 
     $ruleMap = array(
-        'Individual Default Strict (fn+mn+ln+suffix+dob+addr+zip)' => array(
+        'Individual Strict (first + last + (street + zip | email))' => array(
             'internal' => 'nyss_dedupe_individual_default_strict_internal',
             'record' => 'nyss_dedupe_individual_default_strict_record',
         ),
-        'Individual Default Fuzzy (fn+mn+ln+suffix+dob+(addr+zip)|email)' => array(
+        'Individual Fuzzy (nick + last + (street | mail | email))' => array(
             'internal' => 'nyss_dedupe_individual_default_fuzzy_internal',
             'record' => 'nyss_dedupe_individual_default_fuzzy_record'
         ),
