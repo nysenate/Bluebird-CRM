@@ -70,6 +70,11 @@ REPLACE INTO civicrm_navigation (id, domain_id, label, name, url, permission, pe
 $execSql -i $instance -c "$findmail"
 
 
+### Rebuild dedupe shadow tables ###
+
+$script_dir/dedupeSetup.sh $instance --rebuild-all
+
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
