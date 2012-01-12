@@ -92,6 +92,9 @@ fi
 if [ "$oper" = "list" ]; then
   sql="select * from event where $cond"
 elif [ "$oper" = "delete" ]; then
+  if [ $force_ok -eq 0 ]; then
+    confirm_yes_no "Proceed with event deletion operation" || exit 0
+  fi
   sql="delete from event where $cond"
 else
   sql="select count(*) from event where $cond"
