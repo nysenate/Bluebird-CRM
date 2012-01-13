@@ -62,6 +62,10 @@ REPLACE INTO civicrm_navigation (id, domain_id, label, name, url, permission, pe
 (@findm, 1, 'Find Mailings', 'Find Mailings', 'civicrm/mailing/browse&reset=1', 'access CiviMail,approve mailings,create mailings,schedule mailings', 'OR', @parent, 1, 0, 4);";
 $execSql -i $instance -c "$findmail"
 
+# 4628 Send to all emails
+allemail="ALTER TABLE civicrm_mailing ADD all_emails TINYINT( 4 ) NULL ;"
+$execSql -i $instance -c "$allemail"
+
 
 ### Rebuild dedupe shadow tables ###
 
