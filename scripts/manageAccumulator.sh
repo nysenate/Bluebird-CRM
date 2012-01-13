@@ -79,7 +79,11 @@ accum_user=`$readConfig --ig $instance accumulator.user`
 accum_pass=`$readConfig --ig $instance accumulator.pass`
 base_domain=`$readConfig --ig $instance base.domain`
 [ ! "$servername" ] && servername="$instance.$base_domain"
-cond="$cond and servername='$servername'"
+if echo "$servername" | grep -q '%'; then
+  cond="$cond and servername like '$servername'"
+else
+  cond="$cond and servername='$servername'"
+fi
 port_arg=
 
 if [ ! "$accum_host" -o ! "$accum_name" -o ! "$accum_user" -o ! "$accum_pass" ]; then
