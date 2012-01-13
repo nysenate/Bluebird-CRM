@@ -44,6 +44,8 @@ function processQueue( &$config ) {
   //log the execution of script
   require_once 'CRM/Core/Error.php';
   CRM_Core_Error::debug_log_message( 'civimail.cronjob.php');
+  
+  CRM_Core_Error::debug_log_message( "Config Params: JobsMax: {$config->mailerJobsMax}, JobSize: {$config->mailerJobSize}, TemplateCompileDir: {$config->templateCompileDir}" ); //NYSS
     
   // check if we are enforcing number of parallel cron jobs
   // CRM-8460
@@ -67,6 +69,8 @@ function processQueue( &$config ) {
           CRM_Core_Error::debug_log_message( 'Returning early, since max number of cronjobs running' );
           return;
       }
+	  
+	  CRM_Core_Error::debug_log_message( "Got CRON Lock ID: $lockID" ); //NYSS
   }
 
   // load bootstrap to call hooks
