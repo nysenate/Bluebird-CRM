@@ -95,7 +95,7 @@ class CRM_Mailing_BAO_Query
                 break;
                 
             case 'civicrm_mailing_event_bounce':
-            case 'civicrm_mailing_event_delivered': //NYSS
+            case 'civicrm_mailing_event_sendgrid_delivered': //NYSS
             case 'civicrm_mailing_event_opened':
             case 'civicrm_mailing_event_reply':
             case 'civicrm_mailing_event_trackable_url_open':
@@ -154,7 +154,7 @@ class CRM_Mailing_BAO_Query
 				} elseif ( $value == 'N' ) {
 				    $values = array( $name, $op, 'Y', $grouping, $wildcard );
 					self::mailingEventQueryBuilder($query, $values,
-                        'civicrm_mailing_event_delivered', 'mailing_delivery_status', ts('Mailing Delivery Status'), CRM_Mailing_PseudoConstant::yesNoOptions('success'));
+                        'civicrm_mailing_event_sendgrid_delivered', 'mailing_delivery_status', ts('Mailing Delivery Status'), CRM_Mailing_PseudoConstant::yesNoOptions('success'));
 				}
                 return;
             case 'mailing_open_status':

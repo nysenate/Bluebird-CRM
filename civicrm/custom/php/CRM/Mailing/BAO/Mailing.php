@@ -249,12 +249,11 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND            ($email.is_bulkmail = 1 OR $email.is_primary = 1)
                         AND             $email.email IS NOT NULL
                         AND             $email.email != ''
-                        AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
                     ORDER BY $email.is_bulkmail";
         $mailingGroup->query($query);
-
+        //NYSS 4870 remove on_hold - handle later
 
         /* Query prior mailings */
         $mailingGroup->query(
@@ -278,11 +277,10 @@ WHERE  c.group_id = {$groupDAO->id}
                         AND             $contact.is_opt_out = 0
                         AND             $contact.is_deceased = 0
                         AND            ($email.is_bulkmail = 1 OR $email.is_primary = 1)
-                        AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
                     ORDER BY $email.is_bulkmail");
-
+        //NYSS 4870 remove on_hold - handle later
         
         $sql = "
 SELECT     $group.id, $group.cache_date, $group.saved_search_id, $group.children
@@ -316,11 +314,11 @@ WHERE      gc.group_id = {$groupDAO->id}
   AND      c.is_opt_out = 0
   AND      c.is_deceased = 0
   AND      (e.is_bulkmail = 1 OR e.is_primary = 1)
-  AND      e.on_hold = 0
   AND      X_$job_id.contact_id IS null
 ORDER BY   e.is_bulkmail
 ";
             $mailingGroup->query($smartGroupInclude);
+            //NYSS 4870 remove on_hold - handle later
         }
 
         /**
@@ -342,7 +340,7 @@ AND    $mg.mailing_id = {$mailing_id}
                          $customSQL";
             $mailingGroup->query($query);
         }
-		//NYSS 4717
+        //NYSS 4717
         /* Get the emails with only location override */
         $query =    "REPLACE INTO       I_$job_id (email_id, contact_id)
                     SELECT DISTINCT     $email.id as local_email_id,
@@ -364,39 +362,12 @@ AND    $mg.mailing_id = {$mailing_id}
                         AND             $contact.is_opt_out = 0
                         AND             $contact.is_deceased = 0
                         AND             ($email.is_bulkmail = 1 OR $email.is_primary = 1)
-                        AND             $email.on_hold = 0
                         AND             $mg.mailing_id = {$mailing_id}
                         AND             X_$job_id.contact_id IS null
                     ORDER BY $email.is_bulkmail";
         $mailingGroup->query($query);
-        //NYSS 4717
-        /* Get the emails with full override */
-        /*$mailingGroup->query(
-                    "REPLACE INTO       I_$job_id (email_id, contact_id)
-                    SELECT DISTINCT     $email.id as email_id,
-                                        $contact.id as contact_id
-                    FROM                $email
-                    INNER JOIN          $g2contact
-                            ON          $email.id = $g2contact.email_id
-                    INNER JOIN          $contact
-                            ON          $contact.id = $g2contact.contact_id
-                    INNER JOIN          $mg
-                            ON          $g2contact.group_id = $mg.entity_id
-                    LEFT JOIN           X_$job_id
-                            ON          $contact.id = X_$job_id.contact_id
-                    WHERE           
-                                        $mg.entity_table = '$group'
-                        AND             $mg.group_type = 'Include'
-                        AND             $g2contact.status = 'Added'
-                        AND             $g2contact.email_id IS NOT null
-                        AND             $contact.do_not_email = 0
-                        AND             $contact.is_opt_out = 0
-                        AND             $contact.is_deceased = 0
-                        AND             ($email.is_bulkmail = 1 OR $email.is_primary = 1)
-                        AND             $email.on_hold = 0
-                        AND             $mg.mailing_id = {$mailing_id}
-                        AND             X_$job_id.contact_id IS null
-                    ORDER BY $email.is_bulkmail");*/
+        //NYSS 4870 remove on_hold - handle later
+        //NYSS 4717 - remove emails with full override query (deprecated)
                         
         $results = array();
 
@@ -419,8 +390,8 @@ WHERE  mailing_id = %1
 ";
             $params = array( 1 => array( $mailing_id, 'Integer' ) );
             CRM_Core_DAO::executeQuery( $sql, $params );
-			
-			//NYSS CRM-3975
+
+            //NYSS CRM-3975
             $groupBy = $groupJoin = '';
             if ( $dedupeEmail ) {
                 $groupJoin = " INNER JOIN civicrm_email e ON e.id = i.email_id";
@@ -428,24 +399,31 @@ WHERE  mailing_id = %1
             }
 
             //NYSS 4219
-			$sql = "
+            $sql = "
 INSERT INTO civicrm_mailing_recipients ( mailing_id, contact_id, email_id )
 SELECT %1, i.contact_id, i.email_id
 FROM       civicrm_contact contact_a
 INNER JOIN I_$job_id i ON contact_a.id = i.contact_id
            $groupJoin
-		   {$aclFrom}
+           {$aclFrom}
            {$aclWhere}
-		   $groupBy
+           $groupBy
 ORDER BY   i.contact_id, i.email_id
 ";
             CRM_Core_DAO::executeQuery( $sql, $params );
-			
-			//NYSS 4717
-			// if we need to add all emails marked bulk, do it as a post filter
+
+            //NYSS 4717
+            // if we need to add all emails marked bulk, do it as a post filter
             // on the mailing recipients table
             if ( CRM_Core_BAO_Email::isMultipleBulkMail( ) ) {
                 self::addMultipleEmails( $mailing_id, $dedupeEmail );
+            }
+
+            //NYSS 4870
+            // if not all_emails, remove all on_hold emails
+            // else we will handle it in the hook
+            if ( !CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailing_id") ) {
+                self::removeOnHold( $mailing_id );
             }
         }
 
@@ -1430,7 +1408,7 @@ AND civicrm_contact.is_opt_out =0";
                 'group'     => CRM_Contact_BAO_Group::getTableName(),
                 'job'       => CRM_Mailing_BAO_Job::getTableName(),
                 'queue'     => CRM_Mailing_Event_BAO_Queue::getTableName(),
-                'delivered' => CRM_Mailing_Event_BAO_Delivered::getTableName(),
+                'delivered' => 'civicrm_mailing_event_sendgrid_delivered', //NYSS 4765
                 'opened'    => CRM_Mailing_Event_BAO_Opened::getTableName(),
                 'reply'     => CRM_Mailing_Event_BAO_Reply::getTableName(),
                 'unsubscribe'   =>
@@ -2491,6 +2469,22 @@ AND    e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE ma
 		
 		$params = array( 1 => array( $mailingID, 'Integer' ) );
         
+        $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+    }
+
+    //NYSS 4870
+    function removeOnHold( $mailing_id ) {
+
+        $sql = "
+DELETE FROM civicrm_mailing_recipients
+ USING civicrm_mailing_recipients
+  JOIN civicrm_email
+    ON ( civicrm_mailing_recipients.email_id = civicrm_email.id
+   AND   civicrm_email.on_hold > 0 )
+ WHERE civicrm_mailing_recipients.mailing_id = %1";
+
+        $params = array( 1 => array( $mailing_id, 'Integer' ) );
+
         $dao = CRM_Core_DAO::executeQuery( $sql, $params );
     }
 

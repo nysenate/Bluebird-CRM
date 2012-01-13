@@ -52,7 +52,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
         $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
         $hdr->setUniqueArgs(array('mailing_id' => $mid,
                                   'job_id' => $jid,
-                                  'instance' => $bbconfig['shortname'],
+                                  'instance'      => $bbconfig['shortname'],
                                   'install_class' => $bbconfig['install_class'],
                                   'servername' => $bbconfig['servername'],
                                   'queue_id' => $event_queue_id));
@@ -87,12 +87,12 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
     if ( $formName == 'CRM_Mailing_Form_Group' && $form->_searchBasedMailing ) {
 
         //get base mailing group, add to option list, set as default, then freeze field
-        $params = array ( 'name' => BASE_SUBSCRIPTION_GROUP );
+        $params       = array ( 'name' => BASE_SUBSCRIPTION_GROUP );
         $groupObjects = CRM_Contact_BAO_Group::getGroups( $params );
 
-        $groupID = $groupObjects[0]->id;
-        $groupTitle = $groupObjects[0]->title;
-        $baseGroup =& $form->getElement('baseGroup');
+        $groupID      = $groupObjects[0]->id;
+        $groupTitle   = $groupObjects[0]->title;
+        $baseGroup    =& $form->getElement('baseGroup');
         $baseGroup->addOption( $groupTitle, $groupID );
 
         $defaults['baseGroup'] = $groupID;
@@ -103,11 +103,19 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
     }
 
     if ( $formName == 'CRM_Mailing_Form_Group' ) {
-        $defaults['dedupe_email'] = true;
-        $form->setDefaults( $defaults );
 
-		//4628
-		$form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
+        //4628
+        $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
+
+        $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $form, false, null );
+        if ( $mailingID ) {
+            $defaults['all_emails']   = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailingID");
+            $defaults['dedupe_email'] = CRM_Core_DAO::singleValueQuery("SELECT dedupe_email FROM civicrm_mailing WHERE id = $mailingID");
+        } else {
+            $defaults['dedupe_email'] = true;
+        }
+
+        $form->setDefaults( $defaults );
     }
 
     if ( $formName == 'CRM_Mailing_Form_Test' ) {
@@ -158,14 +166,21 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
 
 function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
-	if ( $formName == 'CRM_Mailing_Form_Group' ) {
+    if ( $formName == 'CRM_Mailing_Form_Group' ) {
 
         //4628
         $mailingID    = $form->_mailingID;
-		$dedupeEmails = $form->_submitValues['dedupe_email'];
+        $dedupeEmails = $form->_submitValues['dedupe_email'];
 
         if ( $form->_submitValues['all_emails'] ) {
             _addAllEmails( $mailingID, $dedupeEmails );
+
+            //recalculate the total recipients
+            require_once 'CRM/Mailing/BAO/Mailing.php';
+
+            $count = CRM_Mailing_BAO_Recipients::mailingSize( $mailingID );
+            $form->set('count', $count);
+            $form->assign('count', $count);
         }
         //CRM_Core_Error::debug('postProcess Group form', $form); exit();
     }
@@ -191,26 +206,28 @@ function nyss_mail_civicrm_mailingGroups( &$form, &$groups, &$mailings ) {
 
 function nyss_mail_civicrm_pageRun( &$page ) {
 
-	//CRM_Core_Error::debug('page', $page);
-	
-	//expose url/open tracking to mailing report
-	//need to do manually since we are not using native tracking tools
-	if ( $page->getVar('_name') == 'CRM_Mailing_Page_Report' ) {
-		
-		$smarty =& CRM_Core_Smarty::singleton( );
+    //CRM_Core_Error::debug('page', $page);
+
+    //expose url/open tracking to mailing report
+    //need to do manually since we are not using native tracking tools
+    if ( $page->getVar('_name') == 'CRM_Mailing_Page_Report' ) {
+
+        $smarty =& CRM_Core_Smarty::singleton( );
         $rpt    =& $smarty->get_template_vars( 'report' );
-		//CRM_Core_Error::debug('rpt', $rpt);
-		
-		$rpt['mailing']['url_tracking']  = 1;
-		$rpt['mailing']['open_tracking'] = 1;
-        
+        //CRM_Core_Error::debug('rpt', $rpt);
+
+        $rpt['mailing']['url_tracking']  = 1;
+        $rpt['mailing']['open_tracking'] = 1;
+
         $smarty->assign_by_ref( 'report', $rpt );
-	}
+    }
 
 } //end pageRun
 
 //NYSS 4628
 function _addAllEmails( $mailingID, $dedupeEmails = false ) {
+
+    require_once 'CRM/Mailing/BAO/Mailing.php';
 
     $sql = "
 INSERT INTO civicrm_mailing_recipients
@@ -224,13 +241,18 @@ WHERE  e.on_hold = 0
 ";
 
     if ( $dedupeEmails ) {
-		$sql .= " AND e.email NOT IN ( SELECT e.email 
-		                               FROM   civicrm_mailing_recipients mr
-									     JOIN civicrm_email e
-									       ON mr.email_id = e.id
-									   WHERE  mr.mailing_id = %1 ) ";
-	}
+        $sql .= " AND e.email NOT IN ( SELECT e.email
+                                       FROM   civicrm_mailing_recipients mr
+                                         JOIN civicrm_email e
+                                           ON mr.email_id = e.id
+                                       WHERE  mr.mailing_id = %1 ) ";
+    }
     $params = array( 1 => array( $mailingID, 'Integer' ) );
+    //CRM_Core_Error::debug('params',$params); exit();
 
     $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+
+    //remove onHold as we didn't do it earlier
+    CRM_Mailing_BAO_Mailing::removeOnHold( (int) $mailingID );
+
 } //_addAllEmails

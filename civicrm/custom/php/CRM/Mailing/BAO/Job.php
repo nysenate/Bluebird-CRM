@@ -311,7 +311,8 @@ class CRM_Mailing_BAO_Job extends CRM_Mailing_DAO_Job {
                $lock->release( );
                continue;
            }
-            
+           
+		   CRM_Core_Error::debug_var( "Splitting Job: {$job->id} into $offset child jobs" ); //NYSS
            $job->split_job($offset);
                         
            // update the status of the parent job
@@ -558,6 +559,25 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
             if ($job_date) {
                 CRM_Core_Error::ignoreException();
             }
+
+			//NYSS 4764 -- run an email validation at this point and log as an invalid bounce if it fails
+			require_once 'packages/Mail/RFC822.php';
+
+			$validEmail = Mail_RFC822::parseAddressList($recipient);
+
+			if ( is_a($validEmail, 'PEAR_Error') ) {
+				CRM_Core_Error::debug_log_message("Email did not validate: $recipient");
+
+				require_once 'CRM/Mailing/Event/BAO/Bounce.php';
+                $params = array( 'event_queue_id' => $field['id'],
+                                 'job_id'         => $this->id,
+                                 'hash'           => $field['hash'],
+            	                 'bounce_type_id' => 6, //Invalid
+            	                 'bounce_reason'  => 'Malformed email', 
+								 );
+                CRM_Mailing_Event_BAO_Bounce::create($params);
+				continue;
+			}
 
             $result = $mailer->send($recipient, $headers, $body, $this->id);
 
