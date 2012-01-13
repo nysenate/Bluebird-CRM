@@ -51,9 +51,6 @@ SET locale_custom_strings = 'a:1:{s:5:\"en_US\";a:2:{s:7:\"enabled\";a:2:{s:13:\
 WHERE id = 1";
 $execSql -i $instance -c "$wordreplace"
 
-# Rebuild the dedupe module
-$script_dir/dedupeSetup.sh --rebuild-all $instance
-
 # 4696 Find Mailings menu item
 findmail="
 SELECT @findm := id FROM civicrm_navigation WHERE name = 'Find Mailings';
@@ -68,19 +65,25 @@ $execSql -i $instance -c "$allemail"
 
 # 4735 alter district assignment tables
 dist="
-ALTER TABLE civicrm_value_district_information_7 CHANGE congressional_district_46 congressional_district_46 int(10);
-ALTER TABLE civicrm_value_district_information_7 CHANGE ny_senate_district_47 ny_senate_district_47 int(10);
-ALTER TABLE civicrm_value_district_information_7 CHANGE ny_assembly_district_48 ny_assembly_district_48 int(10);
-ALTER TABLE civicrm_value_district_information_7 CHANGE election_district_49 election_district_49 int(10);
-ALTER TABLE civicrm_value_district_information_7 CHANGE county_50 county_50 int(10);
-ALTER TABLE civicrm_value_district_information_7 CHANGE ward_53 ward_53 int(10);
+ALTER TABLE civicrm_value_district_information_7 CHANGE congressional_district_46 congressional_district_46 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE ny_senate_district_47 ny_senate_district_47 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE ny_assembly_district_48 ny_assembly_district_48 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE election_district_49 election_district_49 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE county_50 county_50 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE county_legislative_district_51 county_legislative_district_51 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE ward_53 ward_53 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE school_district_54 school_district_54 smallint;
+ALTER TABLE civicrm_value_district_information_7 CHANGE new_york_city_council_55 new_york_city_council_55 smallint;
 UPDATE civicrm_value_district_information_7 SET congressional_district_46 = null WHERE congressional_district_46 = 0;
 UPDATE civicrm_value_district_information_7 SET ny_senate_district_47 = null WHERE ny_senate_district_47 = 0;
 UPDATE civicrm_value_district_information_7 SET ny_assembly_district_48 = null WHERE ny_assembly_district_48 = 0;
 UPDATE civicrm_value_district_information_7 SET election_district_49 = null WHERE election_district_49 = 0;
 UPDATE civicrm_value_district_information_7 SET county_50 = null WHERE county_50 = 0;
+UPDATE civicrm_value_district_information_7 SET county_legislative_district_51 = null WHERE county_legislative_district_51 = 0;
 UPDATE civicrm_value_district_information_7 SET ward_53 = null WHERE ward_53 = 0;
-UPDATE civicrm_custom_field SET data_type = 'Int', text_length = 10 WHERE id IN ( 46, 47, 48, 49, 50, 53 );
+UPDATE civicrm_value_district_information_7 SET school_district_54 = null WHERE school_district_54 = 0;
+UPDATE civicrm_value_district_information_7 SET new_york_city_council_55 = null WHERE new_york_city_council_55 = 0;
+UPDATE civicrm_custom_field SET data_type = 'Int', text_length = 0 WHERE id IN ( 46, 47, 48, 49, 50, 51, 53, 54, 55 );
 ";
 $execSql -i $instance -c "$dist"
 
