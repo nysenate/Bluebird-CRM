@@ -623,7 +623,7 @@ function getColumns( $output = 'select' ) {
                                                            'def'   => 'varchar(64)' ),
         'election_district_49'                   => array( 'alias' => 'election_district_49',
                                                            'def'   => 'varchar(64)' ),
-        'county_50'                              => array( 'alias' => 'county_50',
+        'LPAD(county_50,2,\'0\')'                => array( 'alias' => 'county_50',
                                                            'def'   => 'varchar(64)' ),
         'county_legislative_district_51'         => array( 'alias' => 'county_legislative_district_51',
                                                            'def'   => 'varchar(64)' ),

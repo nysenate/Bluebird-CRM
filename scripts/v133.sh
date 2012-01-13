@@ -73,12 +73,14 @@ ALTER TABLE civicrm_value_district_information_7 CHANGE ny_senate_district_47 ny
 ALTER TABLE civicrm_value_district_information_7 CHANGE ny_assembly_district_48 ny_assembly_district_48 int(10);
 ALTER TABLE civicrm_value_district_information_7 CHANGE election_district_49 election_district_49 int(10);
 ALTER TABLE civicrm_value_district_information_7 CHANGE county_50 county_50 int(10);
+ALTER TABLE civicrm_value_district_information_7 CHANGE ward_53 ward_53 int(10);
 UPDATE civicrm_value_district_information_7 SET congressional_district_46 = null WHERE congressional_district_46 = 0;
 UPDATE civicrm_value_district_information_7 SET ny_senate_district_47 = null WHERE ny_senate_district_47 = 0;
 UPDATE civicrm_value_district_information_7 SET ny_assembly_district_48 = null WHERE ny_assembly_district_48 = 0;
 UPDATE civicrm_value_district_information_7 SET election_district_49 = null WHERE election_district_49 = 0;
 UPDATE civicrm_value_district_information_7 SET county_50 = null WHERE county_50 = 0;
-UPDATE civicrm_custom_field SET data_type = 'Int', text_length = 10 WHERE id IN ( 46, 47, 48, 49, 50 );
+UPDATE civicrm_value_district_information_7 SET ward_53 = null WHERE ward_53 = 0;
+UPDATE civicrm_custom_field SET data_type = 'Int', text_length = 10 WHERE id IN ( 46, 47, 48, 49, 50, 53 );
 ";
 $execSql -i $instance -c "$dist"
 
