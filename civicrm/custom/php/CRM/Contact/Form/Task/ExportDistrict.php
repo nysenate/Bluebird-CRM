@@ -134,7 +134,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
     $sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
     $sql .= "street_number, street_number_suffix, street_name, street_unit, street_address, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
     $sql .= "c.birth_date, c.gender_id, phone, ";
-    $sql .= "town_52, LPAD(ward_53,2,'0') as ward_53, LPAD(election_district_49,2,'0') as election_district_49, LPAD(congressional_district_46,2,'0') as congressional_district_46, LPAD(ny_senate_district_47,2,'0') as ny_senate_district_47, LPAD(ny_assembly_district_48,3,'0') as ny_assembly_district_48, school_district_54, LPAD(county_50,2,'0') as county_50, ";
+    $sql .= "town_52, LPAD(ward_53,2,'0'), LPAD(election_district_49,3,'0'), LPAD(congressional_district_46,2,'0'), LPAD(ny_senate_district_47,2,'0'), LPAD(ny_assembly_district_48,3,'0'), LPAD(school_district_54,3,'0'), LPAD(county_50,2,'0'), ";
     $sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
 
     $sql .= " FROM civicrm_contact c ";
