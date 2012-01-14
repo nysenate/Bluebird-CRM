@@ -334,24 +334,6 @@ class CRM_Utils_SAGE
             $values["custom_48_$id"] = (string)$xml->assembly->district;
         if($overwrite || !$values["custom_49_$id"])
             $values["custom_49_$id"] = (string)$xml->election->district;
-
-        //NYSS 4735
-        //Fix zero left padding for district codes
-        $paddingLookup = array(
-            'congressional_district' => array('key'=>'custom_46_','padding'=>2),
-            'senate_district'        => array('key'=>'custom_47_','padding'=>2),
-            'assembly_district'      => array('key'=>'custom_48_','padding'=>3),
-            'election_district'      => array('key'=>'custom_49_','padding'=>3),
-            'county_code'            => array('key'=>'custom_50_','padding'=>2),
-        );
-
-        foreach($values as $key => $value) {
-            foreach($paddingLookup as $field) {
-                if(strpos($key, $field['key'])!==FALSE && is_numeric($value)) {
-                    $values[$key] = str_pad($value,$field['padding'],'0',STR_PAD_LEFT);
-                }
-            }
-        }
     }
 
 
