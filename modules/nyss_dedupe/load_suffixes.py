@@ -51,32 +51,41 @@ container = BeautifulSoup(html).find(id=1310379235729).find(id="tab-content-2")
 # Contruct a map of common form to short form for transformation
 #
 # NOTE: Some columns are for alphabet headings and use &nbsp; to fill the row
-pairs = dict()
+sets = list()
 for row in container.findAll('tr'):
     cells = row.findAll('td')
+
+    if cells[0].text == 'Primary Street Suffix': continue
     if cells[1].text != '&nbsp;':
 
         #Catch and correct a type on their page
         if cells[1].text == 'CT' and cells[2].text == 'CTS':
-            pairs['cts'] = 'cts'
+            sets.append(('courts','cts','cts'))
 
         #The rest of the values should be correct
         else:
-            pairs[cells[1].text.lower()] = cells[2].text.lower()
+            long_form = cells[0].text.lower()
+            raw_value = cells[1].text.lower()
+            normalized = cells[2].text.lower()
+            sets.append((long_form, raw_value, normalized))
 
 # Don't worry about connecting to the database, just construct the SQL
-values = [" ('{0}','{1}')".format(a, b) for a, b in pairs.iteritems()]
+values = ["('{0}','{1}','{2}')".format(a,b,c) for a,b,c in sets]
 
 with open(os.path.join(os.path.dirname(__file__),"output","suffixes.sql"),'w') as output:
     output.write("""
 -- Our address lookup table
 DROP table IF EXISTS address_abbreviations;
 CREATE TABLE address_abbreviations (
-    raw_value varchar(255) PRIMARY KEY,
-    normalized varchar(255)
+  raw_value varchar(255) PRIMARY KEY,
+  long_form varchar(255),
+  normalized varchar(255),
+  INDEX (long_form)
 );
 
 -- Our official USPS abreviation mappings
-INSERT INTO address_abbreviations
-    (raw_value, normalized)
-VALUES """+', '.join(values)+";");
+-- They have some duplicate listings, ignore those errors
+INSERT IGNORE INTO address_abbreviations
+  (long_form, raw_value, normalized)
+VALUES
+  """+',\n  '.join(values)+";");

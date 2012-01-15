@@ -692,6 +692,127 @@ AND civicrm_group_contact.group_id = %2";
         return false;
     }
 
+//NYSS required to support mass merge
+    /**
+     * Function merges the groups from otherContactID to mainContactID
+     * along with subscription history
+     *
+     * @param int $mainContactId    contact id of main contact record.
+     * @param int $dontCare         something the protocol sends, which we ignore for now
+     * @param int $otherContactId   contact id of record which is going to merge.
+     *
+     * @return void.
+     * @static
+     */  
+    static function mergeGroupContact( $mainContactId, $dontCare, $otherContactId ) {
+        $params = array( 1 => array( $mainContactId , 'Integer' ),
+                         2 => array( $otherContactId, 'Integer' ) );
+
+        // find all groups that are in otherContactID but not in mainContactID, copy them over
+        $sql = "
+SELECT    cOther.group_id
+FROM      civicrm_group_contact cOther
+LEFT JOIN civicrm_group_contact cMain ON cOther.group_id = cMain.group_id AND cMain.contact_id = %1
+WHERE     cOther.contact_id = %2
+AND       cMain.contact_id IS NULL
+";
+        $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+
+        $otherGroupIDs = array( );
+        while ( $dao->fetch( ) ) {
+            $otherGroupIDs[] = $dao->group_id;
+        }
+
+        if ( ! empty( $otherGroupIDs ) ) {
+            $otherGroupIDString = implode( ',', $otherGroupIDs );
+
+            $sql = "
+UPDATE    civicrm_group_contact
+SET       contact_id = %1
+WHERE     contact_id = %2
+AND       group_id IN ( $otherGroupIDString )
+";
+            CRM_Core_DAO::executeQuery( $sql, $params );
+
+            $sql = "
+UPDATE    civicrm_subscription_history
+SET       contact_id = %1
+WHERE     contact_id = %2
+AND       group_id IN ( $otherGroupIDString )
+";
+            CRM_Core_DAO::executeQuery( $sql, $params );
+        }
+
+        $sql = "
+SELECT     cOther.group_id as group_id,
+           cOther.status   as group_status
+FROM       civicrm_group_contact cMain
+INNER JOIN civicrm_group_contact cOther ON cMain.group_id = cOther.group_id
+WHERE      cMain.contact_id = %1
+AND        cOther.contact_id = %2
+";
+        $dao = CRM_Core_DAO::executeQuery( $sql, $params );
+
+        $groupIDs = array( );
+        while ( $dao->fetch( ) ) {
+            // only copy it over if it has added status and migrate the history
+            if ( $dao->group_status == 'Added' ) {
+                $groupIDs[] = $dao->group_id;
+            }
+        }
+
+        if ( ! empty( $groupIDs ) ) {
+            $groupIDString = implode( ',', $groupIDs );
+
+            $sql = "
+UPDATE    civicrm_group_contact
+SET       status = 'Added'
+WHERE     contact_id = %1
+AND       group_id IN ( $groupIDString )
+";
+            CRM_Core_DAO::executeQuery( $sql, $params );
+
+            $sql = "
+UPDATE    civicrm_subscription_history
+SET       contact_id = %1
+WHERE     contact_id = %2
+AND       group_id IN ( $groupIDString )
+";
+            CRM_Core_DAO::executeQuery( $sql, $params );
+        }
+        
+        // delete all the other group contacts
+        $sql = "
+DELETE 
+FROM   civicrm_group_contact 
+WHERE  contact_id = %2
+";
+        CRM_Core_DAO::executeQuery( $sql, $params );
+        
+        $sql = "
+DELETE 
+FROM   civicrm_subscription_history
+WHERE  contact_id = %2
+";
+        CRM_Core_DAO::executeQuery( $sql, $params );
+    }
+
+    /**
+     * Function merges the groups from otherContactID to mainContactID
+     * along with subscription history
+     *
+     * @param int $mainContactId    contact id of main contact record.
+     * @param int $dontCare         something the protocol sends, which we ignore for now
+     * @param int $otherContactId   contact id of record which is going to merge.
+     *
+     * @return void.
+     * @static
+     */  
+    static function ignoreMergeSubscriptionHistory( $mainContactId, $dontCare, $otherContactId ) {
+        // this is handled by merge group contacts
+        return;
+    }
+
 //NYSS 4530
     /**
  	     * Given an array of contact ids, add all the contacts to the group 

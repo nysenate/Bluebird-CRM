@@ -127,16 +127,41 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 		$this->_columns['civicrm_email']  = array( 
 			'dao'=> 'CRM_Core_DAO_Email',
 			'fields'=> array( 
-                             'email' => array(
-                                              'title' => ts( 'Email' ),
-                                              'no_repeat'  => true,
-                                              'required' => true,
-                                              ),
-                              ),
+                'email' => array(
+                    'title' => ts( 'Email' ),
+                    'no_repeat'  => true,
+                    'required' => true,
+                    ),
+            ),
             'order_bys'  =>
             array( 'email' =>
                    array( 'title' => ts( 'Email'), 'default_order' => 'ASC') ),
 			'grouping'  => 'contact-fields', 
+		);
+		
+		//NYSS 4893
+		$this->_columns['civicrm_event_opened']  = array( 
+			'dao'=> 'CRM_Mailing_Event_DAO_Opened',
+			'fields'=> array(
+				//NYSS 4893
+                'time_stamp' => array(
+                    'title' => ts('Open Date'),
+                    //'type' => CRM_Utils_Type::T_DATE,
+					'default' => true,
+                    ),
+            ),
+			'filters' => array(
+                'time_stamp' => array(
+                    'title' => ts('Open Date'),
+                    'operatorType' => CRM_Report_Form::OP_DATE,
+                    'type'=> CRM_Utils_Type::T_DATE,
+                    ),
+            ),
+            'order_bys'  =>
+            array( 'time_stamp'    =>
+				   array( 'title' => ts('Open Date') )
+				   ),
+			'grouping'  => 'mailing-fields', 
 		);
 		
         $this->_columns['civicrm_phone'] = array( 
@@ -209,14 +234,15 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
     function from( ) {
         $this->_from = "
         FROM civicrm_contact {$this->_aliases['civicrm_contact']} {$this->_aclFrom}";
-        
+
+		//NYSS alias the open table
         $this->_from .= "
 				INNER JOIN civicrm_mailing_event_queue
 					ON civicrm_mailing_event_queue.contact_id = {$this->_aliases['civicrm_contact']}.id
 				INNER JOIN civicrm_email {$this->_aliases['civicrm_email']}
 					ON civicrm_mailing_event_queue.email_id = {$this->_aliases['civicrm_email']}.id
-				INNER JOIN civicrm_mailing_event_opened
-					ON civicrm_mailing_event_opened.event_queue_id = civicrm_mailing_event_queue.id
+				INNER JOIN civicrm_mailing_event_opened {$this->_aliases['civicrm_event_opened']}
+					ON {$this->_aliases['civicrm_event_opened']}.event_queue_id = civicrm_mailing_event_queue.id
 				INNER JOIN civicrm_mailing_job
 					ON civicrm_mailing_event_queue.job_id = civicrm_mailing_job.id
 				INNER JOIN civicrm_mailing {$this->_aliases['civicrm_mailing']}
@@ -236,7 +262,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
         if ( CRM_Utils_Array::value('charts', $this->_params) ) {
             $this->_groupBy = " GROUP BY {$this->_aliases['civicrm_mailing']}.id";
         } else {
-            $this->_groupBy  = " GROUP BY civicrm_mailing_event_opened.id";
+            $this->_groupBy  = " GROUP BY {$this->_aliases['civicrm_event_opened']}.id"; //NYSS
         }
     }
     

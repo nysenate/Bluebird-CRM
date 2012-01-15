@@ -1427,6 +1427,16 @@ class CRM_Contact_BAO_Query
         case 'is_opt_out':
             $this->privacy( $values );
             return;
+
+        //NYS 4407
+        case 'privacy_options':
+            $this->privacyOptions( $values );
+            return;
+
+        case 'privacy_operator':
+        case 'privacy_toggle':
+            // these are handled by privacy options
+            return;
             
         case 'preferred_communication_method':
             $this->preferredCommunication( $values );
@@ -3165,6 +3175,44 @@ WHERE  id IN ( $groupIDs )
         $this->_qill[$grouping][]  = "$title $op $value";
     }
 
+    //NYSS 4407
+    function privacyOptions( $values ) {
+        list( $name, $op, $value, $grouping, $wildcard ) = $values;
+
+        if ( empty( $value ) ||
+             ! is_array( $value ) ) {
+            continue;
+        }
+
+        // get the operator and toggle values
+        $opValues =  $this->getWhereValues( 'privacy_operator', $grouping );
+        $operator = 'OR';
+        if ( $opValues &&
+             strtolower( $opValues[2] == 'AND' ) ) {
+            $operator = 'AND';
+        }
+
+        $toggleValues =  $this->getWhereValues( 'privacy_toggle', $grouping );
+        $compareOP = '!=';
+        if ( $toggleValues &&
+             $toggleValues[2] == 2 ) {
+            $compareOP = '=';
+        }
+
+        $clauses = array( );
+        $qill    = array( );
+        foreach ( $value as $dontCare => $pOption ) {
+            $clauses[] = " ( contact_a.{$pOption} $compareOP 1 ) ";
+            $field = CRM_Utils_Array::value( $pOption, $this->_fields );
+            $title = $field ? $field['title'] : $pOption;
+            $qill[] = " $title $compareOP 1 ";
+        }
+
+        $this->_where[$grouping][] = '( ' . implode( $operator, $clauses ) . ' )';
+        $this->_qill[$grouping][] = implode( $operator, $qill );
+    }
+
+
     function preferredCommunication( &$values ) 
     {
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
@@ -3614,9 +3662,53 @@ WHERE  id IN ( $groupIDs )
                         }
                     }
                 } else if ($sortByChar) { 
-                    $orderBy = " ORDER BY LEFT(contact_a.sort_name, 1) asc";
+                    $order = " ORDER BY UPPER(LEFT(contact_a.sort_name, 1)) asc"; //NYSS 4585
                 } else {
-                    $orderBy = " ORDER BY contact_a.sort_name asc, contact_a.id"; //NYSS
+                    $order = " ORDER BY contact_a.sort_name asc, contact_a.id"; //NYSS
+                }
+            }
+
+            //NYSS 4846 - this should be removed in a future version; test saved searches
+            if ( !$this->_useOrderBy ) {
+                $order = '';
+            }
+
+			//NYSS 4585
+			$doOpt = true;
+            // hack for order clause
+            if ( $order ) {
+                $fieldStr = trim( str_replace( 'ORDER BY', '', $order ) );
+                $fieldOrder = explode( ' ', $fieldStr );
+                $field = $fieldOrder[0];
+                    
+                if ( $field ) {
+                    switch ( $field ) {
+                    case 'sort_name':
+                    case 'id':
+                    case 'contact_a.sort_name':
+                    case 'contact_a.id':
+                        break;
+
+                    case 'city':
+                    case 'postal_code':
+                        $this->_whereTables["civicrm_address"] = 1;
+                        $order = str_replace( $field, "civicrm_address.{$field}", $order );
+                        break;
+
+                    case 'country':
+                    case 'state_province':
+                        $this->_whereTables["civicrm_{$field}"] = 1;
+                        $order = str_replace( $field, "civicrm_{$field}.name", $order );
+                        break;
+
+                    case 'email':
+                        $this->_whereTables["civicrm_email"] = 1;
+                        $order = str_replace( $field, "civicrm_email.{$field}", $order );
+                        break;
+
+                    default:
+                        $doOpt = false;
+                    }
                 }
             }
 
@@ -3626,44 +3718,17 @@ WHERE  id IN ( $groupIDs )
                 // ok here is a first hack at an optimization, lets get all the contact ids
                 // that are restricted and we'll then do the final clause with it
                 // CRM-5954
-                $limitSelect = ( $this->_useDistinct ) ?
-                    'SELECT DISTINCT(contact_a.id) as id' :
-                    'SELECT contact_a.id as id';
 
-                $doOpt = true;
-                // hack for order clause
-                if ( $orderBy ) {
-                    $fieldOrder = explode( ' ', $orderBy );
-                    $field = $fieldOrder[0];
-                    $dir   = CRM_Utils_Array::value( 1, $fieldOrder );
-                    
-                    if ( $field ) {
-                        switch ( $field ) {
-                        case 'sort_name':
-                            break;
-
-                        case 'city':
-                        case 'postal_code':
-                            $this->_whereTables["civicrm_address"] = 1;
-                            $limitSelect .= ", civicrm_address.{$field} as {$field}";
-                            break;
-
-                        case 'country':
-                        case 'state_province':
-                            $this->_whereTables["civicrm_{$field}"] = 1;
-                            $limitSelect .= ", civicrm_{$field}.name as {$field}";
-                            break;
-
-                        case 'email':
-                            $this->_whereTables["civicrm_email"] = 1;
-                            $limitSelect .= ", civicrm_email.email as email";
-                            break;
-
-                        default:
-                            $doOpt = false;
-                        }
-                    }
+                //NYSS 4585
+				if ( isset( $this->_distinctComponentClause ) ) {
+                    $limitSelect = "SELECT {$this->_distinctComponentClause}";
+                } else {
+                    $limitSelect = ( $this->_useDistinct ) ?
+                        'SELECT DISTINCT(contact_a.id) as id' :
+                        'SELECT contact_a.id as id';
                 }
+
+//NYSS 4585
 
                 if ( $doOpt ) {
                     $this->_simpleFromClause = self::fromClause( $this->_whereTables, null, null,
@@ -3717,7 +3782,7 @@ WHERE  id IN ( $groupIDs )
         }
 
         $query = "$select $from $where $having $groupBy $order $limit";
-        // CRM_Core_Error::debug('query', $query);
+        // CRM_Core_Error::debug('query', $query);exit();
         // CRM_Core_Error::debug('query', $where);
         // CRM_Core_Error::debug('this', $this );
 

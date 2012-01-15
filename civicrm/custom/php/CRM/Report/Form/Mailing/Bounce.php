@@ -134,10 +134,26 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
 				'bounce_reason' => array(
 					'title' => ts('Bounce Reason'),
 				),
+                //NYSS 4583
+                'time_stamp' => array(
+                    'title' => ts('Bounce Date'),
+                    //'type' => CRM_Utils_Type::T_DATE,
+					'default' => true,
+                ),
 			),
+            'filters' => array(
+                'time_stamp' => array(
+                    'title' => ts('Bounce Date'),
+                    'operatorType' => CRM_Report_Form::OP_DATE,
+                    'type'=> CRM_Utils_Type::T_DATE,
+                ),
+            ),
             'order_bys'  =>
             array( 'bounce_reason' =>
-                   array( 'title' => ts( 'Bounce Reason') ) ),
+                   array( 'title' => ts( 'Bounce Reason') ),
+				   'time_stamp'    =>
+				   array( 'title' => ts('Bounce Date') )
+				   ),
             'grouping' => 'mailing-fields' 
 		);
 		

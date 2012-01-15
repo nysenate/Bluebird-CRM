@@ -89,11 +89,10 @@ class CRM_Core_SelectValues
                 'do_not_email' => ts('Do not email'),
                 'do_not_mail'  => ts('Do not mail'),
                 'do_not_sms'   => ts('Do not sms'),
-                'do_not_trade' => ts('Do not trade'),
-                'is_opt_out'   => ts('No Bulk Emails') //NYSS 4573
+                'do_not_trade' => ts('Undeliverable: Do not mail'), //NYSS 4766
+                'is_opt_out'   => ts('Do not bulk email') //NYSS 4573 4407
             );
         }
-		unset($privacy['do_not_trade']); //NYSS 1453
         return $privacy;
     }
 

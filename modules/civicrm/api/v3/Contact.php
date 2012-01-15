@@ -606,3 +606,38 @@ function _civicrm_api3_greeting_format_params( $params )
         }
     }
 }
+
+//NYSS 4535
+/** 
+ * Merges given pair of duplicate contacts.
+ * 
+ * @param  array   $params   input parameters
+ *
+ * Allowed @params array keys are:
+ * {int     main_id     main contact id with whom merge has to happen}
+ * {int     other_id    duplicate contact which would be deleted after merge operation}
+ * {string  mode        helps decide how to behave when there are conflicts. 
+ *                      A 'safe' value skips the merge if there are no conflicts. Does a force merge otherwise.}
+ * {boolean auto_flip   wether to let api decide which contact to retain and which to delete.}
+ * 
+ * @return array  API Result Array
+ *
+ * @static void
+ * @access public
+ */ 
+function civicrm_api3_contact_merge( $params )
+{
+    $mode     = CRM_Utils_Array::value( 'mode', $params, 'safe' );
+    $autoFlip = CRM_Utils_Array::value( 'auto_flip', $params, true );
+
+    require_once 'CRM/Dedupe/Merger.php';
+    $dupePairs = array( array( 'srcID' => CRM_Utils_Array::value( 'main_id',  $params ), 
+                               'dstID' => CRM_Utils_Array::value( 'other_id', $params ) ) );
+    $result = CRM_Dedupe_Merger::merge( $dupePairs, array(), $mode, $autoFlip );
+
+    if ( $result['is_error'] == 0 ) {
+        return civicrm_api3_create_success( );
+    } else {
+        return civicrm_api3_create_error( $result['messages'] );
+    }
+}

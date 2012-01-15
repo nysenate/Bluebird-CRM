@@ -335,6 +335,10 @@ FROM   {$this->_componentTable}
         $exportOption = $this->controller->exportValue( $this->_name, 'exportOption' );
         $merge_same_address   = $this->controller->exportValue( $this->_name, 'merge_same_address' );
         $merge_same_household = $this->controller->exportValue( $this->_name, 'merge_same_household' );
+		
+		//NYSS 4426
+        $streetLong = $this->controller->exportValue( $this->_name, 'street_long' );
+		$this->set('streetLong', $streetLong);
 
         // instead of increasing the number of arguments to exportComponents function, we 
         // will send $exportParams as another argument, which is an array and suppose to contain 

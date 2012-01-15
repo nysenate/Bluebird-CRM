@@ -1,92 +1,206 @@
-<?php 
+<?php
+
+function nyss_export_civicrm_buildForm( $formName, &$form ) {
+
+    if ( $formName == 'CRM_Export_Form_Select' ) {
+
+        $form->addElement('checkbox', 'street_long', ts('Street Address Long Form'), null);
+    }
+    
+    if ( $formName == 'CRM_Export_Form_Map' ) {
+        
+        //NYSS 4426 set as hidden field so we have it in the $_POST array
+        $form->addElement('hidden', 'street_long', $form->_streetLong);
+    }
+    
+} //end buildForm
+
 function nyss_export_civicrm_export( $exportTempTable, $headerRows, $sqlColumns, $exportMode ) {
-	//CRM_Core_Error::debug($_POST); 
-	//CRM_Core_Error::debug($headerRows);
-	//CRM_Core_Error::debug($sqlColumns); exit();
-	
-	//field exclusions; only implement for primary export option
-	if ( $_POST['exportOption'] == 1 ) {
-		$headerRemove = array( 'Signature Text',
-		                       'Signature Html',
-							   'Contact Subtype',
-							   'Current Employer ID',
-							   'Geo Code 1',
-							   'Geo Code 2',
-							   'Address Name',
-							   'Master Address Belongs To',
-							   'County',
-							   'World Region',
-							   'Im Service Provider',
-							   'Group(s)',
-							   'Tag(s)',
-							   'Note(s)',
-							   'Contact Hash',
-							   'Image Url'
-							 );
-		foreach ( $headerRows as $key => $headerRow ) {
-			if ( in_array( $headerRow, $headerRemove ) ) {
-				unset( $headerRows[$key] );
-			}
-		}
-		
-		//4308 alter preferred mail header
-		$pmf = array_search( 'Preferred Mail Format', $headerRows);
-		$headerRows[$pmf] = 'Preferred Email Format';
-	
-		$sqlRemove = array( 'signature_text',
-		                    'signature_html',
-							'contact_sub_type',
-							'current_employer_id',
-							'geo_code_1',
-							'geo_code_2',
-							'address_name',
-							'master_id',
-							'county',
-							'world_region',
-							'provider_id',
-							'groups',
-							'tags',
-							'notes',
-							'hash',
-							'image_url'
-						  );
-		foreach ( $sqlRemove as $sqlField ) {
-			unset( $sqlColumns[$sqlField] );
-		}
-	} //end primary export exclusions
-	
-	//3665 mailing exclusions option
+    //CRM_Core_Error::debug('POST', $_POST); 
+    //CRM_Core_Error::debug($headerRows);
+    //CRM_Core_Error::debug('exportMode', $exportMode);
+    //CRM_Core_Error::debug('sqlColumns', $sqlColumns);
+    //exit();
+    
+    //field exclusions; only implement for primary export option
+    if ( $_POST['exportOption'] == 1 ) {
+        $headerRemove = array( 'Signature Text',
+                               'Signature Html',
+                               'Contact Subtype',
+                               'Current Employer ID',
+                               'Geo Code 1',
+                               'Geo Code 2',
+                               'Address Name',
+                               'Master Address Belongs To',
+                               'County',
+                               'World Region',
+                               'Im Service Provider',
+                               'Group(s)',
+                               'Tag(s)',
+                               'Note(s)',
+                               'Contact Hash',
+                               'Image Url'
+                             );
+        foreach ( $headerRows as $key => $headerRow ) {
+            if ( in_array( $headerRow, $headerRemove ) ) {
+                unset( $headerRows[$key] );
+            }
+        }
+        
+        //4308 alter preferred mail header
+        $pmf = array_search( 'Preferred Mail Format', $headerRows);
+        $headerRows[$pmf] = 'Preferred Email Format';
+    
+        $sqlRemove = array( 'signature_text',
+                            'signature_html',
+                            'contact_sub_type',
+                            'current_employer_id',
+                            'geo_code_1',
+                            'geo_code_2',
+                            'address_name',
+                            'master_id',
+                            'county',
+                            'world_region',
+                            'provider_id',
+                            'groups',
+                            'tags',
+                            'notes',
+                            'hash',
+                            'image_url'
+                          );
+        foreach ( $sqlRemove as $sqlField ) {
+            unset( $sqlColumns[$sqlField] );
+        }
+    } //end primary export exclusions
+    
+    //3665 mailing exclusions option
     if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 && 
-	     in_array( 'Last Name', $headerRows ) && 
-		 in_array( 'Contact Type', $headerRows ) ) {
+         in_array( 'Last Name', $headerRows ) && 
+         in_array( 'Contact Type', $headerRows ) ) {
         // exclude contacts where last_name is empty 
         $query = "
 DELETE FROM $exportTempTable
 WHERE contact_type = 'Individual' AND ( last_name = '' OR last_name IS NULL )";
         CRM_Core_DAO::executeQuery( $query );
     }
-	
-	//4403 exclude Mailing Exclusions group
-	if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
-		$gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
-		if ( $gid ) { //continue if group found
-			$query = "
+    
+    //4403 exclude Mailing Exclusions group
+    if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+        $gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
+        if ( $gid ) { //continue if group found
+            $query = "
 DELETE exp
 FROM $exportTempTable AS exp
 LEFT JOIN civicrm_group_contact gc ON ( gc.contact_id = exp.civicrm_primary_id AND gc.status = 'Added' )
 WHERE gc.group_id = $gid;";
             CRM_Core_DAO::executeQuery( $query );
-		}
-	}
+        }
+    }
+    
+    //4766 exclude do not mail/do not trade
+    if ( $_POST['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+        $query = "
+DELETE exp
+FROM $exportTempTable AS exp
+JOIN civicrm_contact c ON ( c.id = exp.civicrm_primary_id )
+WHERE c.do_not_trade = 1
+   OR c.do_not_mail = 1;";
+        $delDN = CRM_Core_DAO::executeQuery( $query );
+        //CRM_Core_Error::debug('delDN',$delDN);
+    }
+
+    //4426 change street suffix to long form
+    if ( $_POST['street_long'] == 1 ) {
+        
+        //construct pattern array from address_abbreviations
+        $patReplace = array();
+        
+        $sql = "SELECT DISTINCT normalized, long_form
+                FROM address_abbreviations;";
+        $dao = CRM_Core_DAO::executeQuery($sql);
+        
+        while( $dao->fetch() ) {
+            $patReplace[$dao->normalized] = $dao->long_form;
+        }
+        $dao->free();
+        //CRM_Core_Error::debug('patReplace', $patReplace);exit();
+
+        //get street_address for all records from the temp table
+        $sql = "SELECT id, civicrm_primary_id, street_address
+                FROM $exportTempTable
+                WHERE street_address IS NOT NULL
+                  AND street_address != '';";
+        $dao = CRM_Core_DAO::executeQuery($sql);
+
+        $streetSplit = array();
+
+        while( $dao->fetch() ) {
+            //split street_address into array of elements in reverse
+            $streetSplit = array_reverse(explode( ' ', $dao->street_address ));
+
+            //we have to handle the cycles separately so that we do a complete search for long form before looking for abbrev
+            foreach ( $streetSplit as $chunk ) {
+                $chunk = _cleanStr($chunk);
+                //if the long form is present continue with next record
+                if ( in_array($chunk, $patReplace) ) {
+                    continue;
+                }
+            }
+
+            foreach ( $streetSplit as $chunk ) {
+                $chunk = _cleanStr($chunk);
+                //see if the short form is present and conduct the replacement
+                if ( array_key_exists($chunk, $patReplace) ) {
+                    $id       = $dao->id;
+                    $longForm = ucfirst($patReplace[$chunk]);
+                    $chunk    = "(\b)$chunk(\b)";
+                    $newAddr  = addslashes(preg_replace("~(?i)$chunk(?!.*?$chunk)~", "$1{$longForm}$2", $dao->street_address));
+                    //CRM_Core_Error::debug('newAddr',$newAddr);exit();
+
+                    $sql = "UPDATE $exportTempTable
+                            SET street_address = '$newAddr'
+                            WHERE id = $id;";
+                    $upd = CRM_Core_DAO::executeQuery($sql);
+                    //CRM_Core_Error::debug('sqlupd',$sqlupd);exit();
+
+                    //after handling the update, advance to next record
+                    continue 2;
+                }
+            }
+        }
+        $dao->free();
+        
+    } //end street_long
+
+    //CRM_Core_Error::debug('exportTempTable',$exportTempTable);exit();
+
+    //if no records in the table, return to search
+    //ideally we return to the existing search, but we don't seem to have the qfKey at this point
+    $sql = "SELECT count(id) FROM $exportTempTable;";
+    if ( CRM_Core_DAO::singleValueQuery($sql) == 0 ) {
+        $status = "There were no records to export. Please run your search and export again.";
+        $session = CRM_Core_Session::singleton( );
+        $session->setStatus( $status );
+
+        require_once 'CRM/Utils/System.php';
+        require_once 'CRM/Utils/Rule.php';
+
+        $currentPath = CRM_Utils_System::currentPath( );
+        $urlParams = null;
+        $qfKey = CRM_Utils_Request::retrieve( 'qfKey', 'String' );
+        if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams = "&qfKey=$qfKey";
+
+        CRM_Utils_System::redirect( CRM_Utils_System::url( $currentPath, $urlParams ) );
+    }
 
     //3665 code copied from CRM_Export_BAO_Export::writeCSVFromTable, just to modify the order clause
     $writeHeader = true;
     $offset = 0;
     $limit  = 100;
     
-	//only apply special sort if using primary export, as we know the necessary fields will exist
-	if ( $_POST['exportOption'] == 1 ) { 
-    	$query = "
+    //only apply special sort if using primary export, as we know the necessary fields will exist
+    if ( $_POST['exportOption'] == 1 ) { 
+        $query = "
 SELECT *
 FROM   $exportTempTable
 ORDER BY CASE WHEN $exportTempTable.contact_type='Individual' THEN 1 
@@ -96,13 +210,13 @@ ORDER BY CASE WHEN $exportTempTable.contact_type='Individual' THEN 1
               WHEN $exportTempTable.gender='Other'  THEN 3 ELSE 999 END,
          IFNULL($exportTempTable.birth_date, '9999-01-01')
 ";
-	} else {
-		$query = "
+    } else {
+        $query = "
 SELECT *
 FROM   $exportTempTable
 ";
-	}
-	
+    }
+    
     require_once 'CRM/Core/Report/Excel.php';
     require_once 'CRM/Export/BAO/Export.php';
     while ( 1 ) {
@@ -132,17 +246,21 @@ LIMIT $offset, $limit
     }
     
     CRM_Utils_System::civiExit( );
-	
-	//debug
-	/*CRM_Core_Error::debug('tt', $exportTempTable);
-	CRM_Core_Error::debug('hr', $headerRows);
-	CRM_Core_Error::debug('sc', $sqlColumns);
-	CRM_Core_Error::debug('em', $exportMode);
-	exit();*/
-	
-	//continue with the export
-	/*require_once 'CRM/Export/BAO/Export.php';
-	CRM_Export_BAO_Export::writeCSVFromTable( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
-	CRM_Utils_System::civiExit( );*/
+    
+    //debug
+    /*CRM_Core_Error::debug('tt', $exportTempTable);
+    CRM_Core_Error::debug('hr', $headerRows);
+    CRM_Core_Error::debug('sc', $sqlColumns);
+    CRM_Core_Error::debug('em', $exportMode);
+    exit();*/
 
 }
+
+//helper to strip spaces and punctuation so we normalize comparison
+function _cleanStr( $string ) {
+
+    $string = preg_replace( '/[\W]+/', '', $string );
+    $string = strtolower( $string );
+
+    return $string;
+} //_cleanStr

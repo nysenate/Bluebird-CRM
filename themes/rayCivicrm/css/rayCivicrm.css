@@ -82,7 +82,7 @@ fieldset {padding:1.4em;margin:0 0 1.5em 0;}
 legend {font-weight:bold;font-size:1.2em;}
 input[type=text], input[type=password], input.text, input.title, textarea, select {background-color:#fff;border:1px solid #bbb;}
 input[type=text]:focus, input[type=password]:focus, input.text:focus, input.title:focus, textarea:focus, select:focus {border-color:#666;}
-input[type=text], input[type=password], input.text, input.title, textarea, select {margin:0.3em 0;} /*0.5 LCD*/
+input[type=text], input[type=password], input.text, input.title, textarea, select {margin:0.3em 0; padding: 2px;} /*0.5 LCD*/
 input[type=text], input[type=password], input.text, input.title, textarea {padding: 0.2em}
 input.text, input.title {width:300px;padding:5px;}
 input.title {font-size:1.5em;}
@@ -1198,6 +1198,10 @@ ul.token-input-list-facebook { width:265px;}
 	width: 300px;
 }
 
+#Advanced .search-privacy-options {
+	width: auto;
+}
+
 /*override tag tree expand/close icons*/
  
 .jstree-default ins {
@@ -1382,7 +1386,7 @@ ul.token-input-list-facebook { width:265px;}
 
 /*delete button*/
 #crm-container .crm-actions-ribbon li.crm-delete-action {
-    margin-left: 60px;
+    margin-left: 0px;
 }
 #crm-container .crm-actions-ribbon li.crm-delete-action a.button {
     background: url("/sites/all/modules/civicrm/i/crm-button-bg.gif") repeat-x scroll left top #70716B;
@@ -1400,4 +1404,68 @@ ul.token-input-list-facebook { width:265px;}
 #crm-container .crm-actions-ribbon li.crm-delete-action a.button:hover span {
     background: url("/sites/all/modules/civicrm/i/crm-button-bg.gif") no-repeat scroll right -25px transparent;
 	text-shadow: 0 1px 0 black;
+}
+
+/* nyss_io.module */
+#nyss-ioimport-form fieldset {
+	padding: 8px;
+	margin: 8px;
+	border: 1px solid #999999;
+	background-color: #F7F7F7;
+}
+#nyss-ioimport-form fieldset legend {
+    font-weight: normal;
+	font-size: 18px;
+	color: #666666;
+}
+#nyss-ioimport-form fieldset .description {
+    padding-left: 23px;
+}
+#nyss-ioimport-form #edit-deduperule-wrapper label,
+#nyss-ioimport-form #edit-deduperule-wrapper div.description {
+	padding-left: 23px;
+	float: left;
+	clear: left;
+	
+}
+#nyss-ioimport-form #edit-deduperule-wrapper select {
+    margin-left: 23px;
+	float: left;
+	clear: left;
+}
+#nyss-ioimport-form #edit-addtogroup-wrapper label,
+#nyss-ioimport-form #edit-addtogroup-wrapper input {
+    margin-left: 23px;
+}
+#nyss-ioimport-form div.addtogroup_handling-wrapper {
+    margin: 0 16px;
+}
+#nyss-ioimport-form div.addtogroup_handling-wrapper div {
+	display: inline-block;
+}
+
+/* print prod export */
+.crm-printproductionexport-form-block .crmasmContainer {
+	width: 200px;
+}
+
+/*contact summary page*/
+#crm-container .contact_panel #customFields {
+	padding: 4px;
+	width: 99%;
+}
+
+/*4343 dev/test indicator*/
+.env-crmtest,
+.env-crmdev {
+	background:transparent url(../nyss_skin/images/env-marker-test.png) no-repeat;
+    top: 0;
+    left: 0;
+    position: fixed;
+	height: 120px;
+    width: 120px;
+	z-index: -1;
+}
+.env-crmdev {
+	background:transparent url(../nyss_skin/images/env-marker-dev.png) no-repeat;
 }

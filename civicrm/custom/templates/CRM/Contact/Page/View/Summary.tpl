@@ -57,6 +57,7 @@
         {/if}
 
         {* Check for permissions to provide Restore and Delete Permanently buttons for contacts that are in the trash. *}
+        {*NYSS 4715 - move the delete button to the action dropdown; delete permanently and restore will remain*}
         {if (call_user_func(array('CRM_Core_Permission','check'), 'access deleted contacts') and 
         $is_deleted)}
             <li class="crm-delete-action crm-contact-restore">
@@ -73,14 +74,6 @@
                     </a>
                 </li>
             {/if}
-
-        {elseif call_user_func(array('CRM_Core_Permission','check'), 'delete contacts')}
-            {assign var='deleteParams' value=$urlParams|cat:"&reset=1&delete=1&cid=$contactId"}
-            <li class="crm-delete-action crm-contact-delete">
-                <a href="{crmURL p='civicrm/contact/view/delete' q=$deleteParams}" class="delete button" title="{ts}Delete{/ts}">
-                <span><div class="icon delete-icon"></div>{ts}Delete Contact{/ts}</span>
-                </a>
-            </li>
         {/if}
 
         {* Previous and Next contact navigation when accessing contact summary from search results. *}
@@ -152,6 +145,13 @@
 {foreach from=$viewCustomData.8 item=contactDetails}
 	{foreach from=$contactDetails.fields item=contactDetailsField key=customId}
         {assign var="customCD_$customId" value=$contactDetailsField}
+	{/foreach}
+{/foreach}
+
+{*Assign Attachment custom fields*}
+{foreach from=$viewCustomData.5 item=attachments}
+	{foreach from=$attachments.fields item=attachmentsField key=customId}
+        {assign var="customA_$customId" value=$attachmentsField}
 	{/foreach}
 {/foreach}
 
@@ -344,11 +344,24 @@
                                     {if $item.email}
                                     <tr>
                                         <td class="label">{$item.location_type}&nbsp;{ts}Email{/ts}</td>
-                                        <td><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
+                                        {*NYSS 4717*}
+                                        <td class="crm-contact_email"><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
                                         {*NYSS - LCD #2555*}
                                         {if $privacy.do_not_email || $item.on_hold}{$item.email}
-                                        {else}<a href="mailto:{$item.email}">{$item.email}</a>{/if}
-                                        {if $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}</span></td>
+                                        {else}<a href="mailto:{$item.email}">{$item.email}</a>
+                                        {/if}
+
+                                        {*NYSS 4603 4601*}
+                                        {if $item.on_hold}&nbsp;({ts}On Hold{/ts}
+                                            {if $item.on_hold == 2} - Opt Out: {/if}
+                                            {if $emailMailing.$blockId.mailingID}
+                                                {assign var=mid value=$emailMailing.$blockId.mailingID}
+                                                <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>)
+                                            {else}{$item.hold_date|crmDate:"%m/%d/%Y"})
+                                            {/if}
+                                        {/if}
+                                        {if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}
+                                        </span></td>
 					                    <td class="description">{if $item.signature_text OR $item.signature_html}<a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>{/if}</td>
                                     </tr>
                                     <tr id="Email_Block_{$blockId}_signature" class="hiddenElement">
@@ -453,13 +466,13 @@
                     
                 </div><!--contact_details-->
 
-                <div id="customFields" style="width:99%;">
+                <div id="customFields">
                     <div class="contact_panel">
                     {*include file="CRM/Contact/Page/View/CustomDataView.tpl" side='1'*}
                     
                     <!--Additional Constituent Info-->
-                    <div class="customFieldGroup ui-corner-all">
-                	  <div id="Additional_Constituent_Information_1">
+                	  <div class="contactCardLeft">
+                      <div id="Additional_Constituent_Information_1">
                   		<div class="crm-accordion-header">
                     	<div onclick="cj(&quot;table#Additional_Constituent_Information_1&quot;).toggle(); cj(this).toggleClass(&quot;expanded&quot;); return false;" class="show-block expanded collapsed ">
                         Additional Constituent Information
@@ -467,7 +480,7 @@
                   		</div>
                         <table id="Additional_Constituent_Information_1"><tr>
                         <td style="padding:0;background:none;">
-                        <div class="contactCardLeft">
+                        
                   		<table><tbody>
                         	<tr>
                             	<td class="label">{$custom_18.field_title}</td><!--active const-->
@@ -490,10 +503,6 @@
                             	<td class="label">BOE Date of Registration</td><!--boe date-->
                 				<td class="html-adjust crm-custom-data">{$custom_24.field_value}</td>
                             </tr>
-                    	</tbody></table>
-                        </div>
-                        <div class="contactCardRight">
-                        <table><tbody>
                         	<tr>
                                 <td class="label">Professional Accreditations</td><!--prof acc-->
                 				<td class="html-adjust crm-custom-data">{$custom_16.field_value}</td>
@@ -511,20 +520,11 @@
                 				<td class="html-adjust crm-custom-data">{$custom_61.field_value}</td>
                             </tr>
                         </tbody></table>
-                        </div>
+                        
                         </td></tr></table>
-                	  </div>
             		</div>
-                    <!--Additional Constituent END-->
-                    
                     </div>
-                    <div class="clear"></div>
-                    
-                    <div class="contact_panel">
-                      <div style="width:100%">
-                        <div class="contactCardLeft">
-                            {include file="CRM/Contact/Page/View/CustomDataView.tpl" side='0'}
-                        </div><!--contactCardLeft-->
+                    <!--Additional Constituent END-->
 
                         <div class="contactCardRight">
                             <div class="crm-accordion-wrapper crm-communications_preferences-accordion crm-accordion-open">
@@ -575,10 +575,58 @@
                               
                              </div><!-- /.crm-accordion-body -->
                             </div><!-- /.crm-accordion-wrapper -->
-
+							
+                            <!--Attachments-->
+							<div class="crm-accordion-wrapper crm-attachments-accordion crm-accordion-open">
+                             <div class="crm-accordion-header">
+                              <div class="icon crm-accordion-pointer"></div>
+                               File Attachments
+                             </div><!-- /.crm-accordion-header -->
+                             <div class="crm-accordion-body">
+                              <table>
+                                <tr><td class="label">{ts}Attachment 1{/ts}</td>
+                                    {if $customA_36.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_36.field_value.imageURL}')" ><img src="{$customA_36.field_value.displayURL}" height = "{$customA_36.field_value.imageThumbHeight}" width="{$customA_36.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_36.field_value.fileURL}">{$customA_36.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 2{/ts}</td>
+                                    {if $customA_37.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_37.field_value.imageURL}')" ><img src="{$customA_37.field_value.displayURL}" height = "{$customA_37.field_value.imageThumbHeight}" width="{$customA_37.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_37.field_value.fileURL}">{$customA_37.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 3{/ts}</td>
+                                    {if $customA_38.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_38.field_value.imageURL}')" ><img src="{$customA_38.field_value.displayURL}" height = "{$customA_38.field_value.imageThumbHeight}" width="{$customA_38.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_38.field_value.fileURL}">{$customA_38.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 4{/ts}</td>
+                                    {if $customA_39.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_39.field_value.imageURL}')" ><img src="{$customA_39.field_value.displayURL}" height = "{$customA_39.field_value.imageThumbHeight}" width="{$customA_39.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_39.field_value.fileURL}">{$customA_39.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                                <tr><td class="label">{ts}Attachment 5{/ts}</td>
+                                    {if $customA_40.field_value.displayURL}
+              						<td class="crm-custom_data crm-displayURL"><a href="javascript:imagePopUp('{$customA_40.field_value.imageURL}')" ><img src="{$customA_40.field_value.displayURL}" height = "{$customA_40.field_value.imageThumbHeight}" width="{$customA_40.field_value.imageThumbWidth}"></a></td>
+          							{else}
+              						<td class="html-adjust crm-custom_data crm-fileURL"><a href="{$customA_40.field_value.fileURL}">{$customA_40.field_value.fileName}</a></td>
+          							{/if}
+                                </tr>
+                              </table>
+                             </div>
+                            </div> <!--end attachments-->
+                            
                         </div>
+                        
                       </div><!--end-->
-                    </div>
+
                     <div class="clear"></div>
                 </div>
                 {literal}

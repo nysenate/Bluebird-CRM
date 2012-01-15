@@ -5,6 +5,8 @@ require_once 'CRM/Core/Error.php';
 require_once 'HTTP/Request.php';
 require_once 'CRM/Core/BAO/Address.php';
 
+define( 'MAX_STATUS_LEN', 200 ); //threshold length for status message
+
 // QQQ: should we find a new, unified, place to put the sage key?
 class CRM_Utils_SAGE
 {
@@ -69,7 +71,7 @@ class CRM_Utils_SAGE
         // QQQ: Why is this the only place we do the state lookup?
         $stateProvince = self::getStateProvince($values, $stateName);
         list($addr_field, $addr) = self::getAddress($values);
-        
+
         //Construct and send the API Request. Note the service=geocoder.
         //Without it SAGE will default to Yahoo as the geocoding provider.
         //geocoder is the Senate's own geocoding provider, which uses the
@@ -139,13 +141,13 @@ class CRM_Utils_SAGE
 
      public static function lookup_from_point( &$values, $overwrite_districts=true) {
      	$url = 'xml/bluebirdDistricts/latlon/';
-     	
+
      	$url = $url.
      		CRM_Utils_Array::value('geo_code_1',$values,"").
      		",".
      		CRM_Utils_Array::value('geo_code_2',$values,"")
      		."?";
-     	
+
 		$params = http_build_query(
 			array(
 				'key' => SAGE_API_KEY,
@@ -154,13 +156,13 @@ class CRM_Utils_SAGE
 		$request = new HTTP_Request(SAGE_API_BASE . $url . $params);
 		$request->sendRequest();
 		$xml = simplexml_load_string($request->getResponseBody());
-		
+
 		if(!self::validateResponse($xml)) {
 			$msg = "SAGE Warning: Lookup for [$params] has failed.\n";
 			$session->setStatus(ts($msg));
 			return false;
 		}
-		
+
 		self::storeDistricts($values, $xml, $overwrite_districts);
         return true;
      }
@@ -200,8 +202,12 @@ class CRM_Utils_SAGE
         //sending us a "simple" address from the geocoding source instead
         //of the "extended" USPS address
         if($xml->address->simple) {
-            $msg = "SAGE Warning: USPS could not validate address: [$addr]";
-            $session->setStatus(ts($msg));
+            //for bulk actions, the status message is concatenated and could get quite long
+            //so we will limit the length
+            if ( strlen($session->getStatus) < MAX_STATUS_LEN ) {
+                $msg = "SAGE Warning: USPS could not validate address: [$addr] </ br>";
+                $session->setStatus(ts($msg));
+            }
         } else {
             //Don't change imported addresses, assume they are correct as given
             $url_components = explode( '/', CRM_Utils_System::currentPath() );
@@ -218,7 +224,7 @@ class CRM_Utils_SAGE
 
     private static function validateResponse($xml)
     {
-    	 
+
         //Fail silently if the XML response from SAGE was invalid
         //XML and could not be parsed into a simplexml object
         if (!$xml)
@@ -292,14 +298,14 @@ class CRM_Utils_SAGE
 
 
 
-    private static function storeGeocodes( &$values, $xml, $overwrite)
+    private static function storeGeocodes( &$values, $xml, $overwrite = false)
     {
         //Forced type cast required to convert the simplexml objects to strings
         if($overwrite || !$values["geo_code_1"])
         	$values["geo_code_1"] = (string)$xml->lat;
         if($overwrite || !$values["geo_code_2"])
         	$values["geo_code_2"] = (string)$xml->lon;
-        
+
     }
 
 

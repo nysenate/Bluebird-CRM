@@ -352,9 +352,10 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         foreach ( array( 'name', 'group_id', 'search_id', 'search_args', 'campaign_id', 'dedupe_email' ) as $n ) {
             if ( CRM_Utils_Array::value( $n, $values ) ) {
                 $params[$n] = $values[$n];
-            }
+            } elseif ( $n == 'dedupe_email' ) {
+				$params[$n] = 0; //NYSS boolean - allow resetting
+			}
         }
-       
         
         $qf_Group_submit = $this->controller->exportValue($this->_name, '_qf_Group_submit');
         $this->set('name', $params['name']);
@@ -431,12 +432,23 @@ class CRM_Mailing_Form_Group extends CRM_Contact_Form_Task
         require_once 'CRM/Mailing/BAO/Mailing.php';
         $mailing = CRM_Mailing_BAO_Mailing::create($params, $ids);
         $this->set('mailing_id', $mailing->id);
+
         //NYSS
         $dedupeEmail = false;
         if ( isset($params['dedupe_email']) ) {
             $dedupeEmail = $params['dedupe_email'];
         }
-        
+
+        //NYSS 4870 store all_emails values
+        $allEmails = ( $values['all_emails'] ) ? 1 : 0;
+        $sqlParams = array( 1 => array( $mailing->id, 'Integer' ),
+                            2 => array( $allEmails,   'Boolean' ),
+                            );
+        $dao = CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET all_emails = %2 WHERE id = %1;", $sqlParams );
+
+        //NYSS 4628 mailing id should be added to the form object
+        $this->_mailingID = $mailing->id;
+
         // also compute the recipients and store them in the mailing recipients table
         CRM_Mailing_BAO_Mailing::getRecipients( $mailing->id,
                                                 $mailing->id,

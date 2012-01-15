@@ -236,7 +236,7 @@ require_once 'CRM/Mailing/BAO/Mailing.php';
         $params['mailing_id'] = $ids['mailing_id'] = $this->_mailingID;
 
         if ( empty( $params['mailing_id'] ) ) {
-            CRM_Core_Error::fatal( );
+            CRM_Core_Error::fatal( ts( 'Could not find a mailing id' ) ); //NYSS
         }
 
         foreach( array( 'now', 'start_date', 'start_date_time' ) as $parameter ) {
@@ -249,6 +249,11 @@ require_once 'CRM/Mailing/BAO/Mailing.php';
         if ( $mailing->find(true) ) {
             $job = new CRM_Mailing_BAO_Job();
             $job->mailing_id = $mailing->id;
+            //NYSS ensure we don't trigger a duplicate job
+			$job->is_test = 0;
+            if ( $job->find( true ) ) {
+                CRM_Core_Error::fatal( ts( 'A job for this mailing already exists' ) );
+            }
 
             if ( empty($mailing->is_template)) {
                 $job->status = 'Scheduled';
