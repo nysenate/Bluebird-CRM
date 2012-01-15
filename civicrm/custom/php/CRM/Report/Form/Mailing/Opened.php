@@ -146,7 +146,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 				//NYSS 4893
                 'time_stamp' => array(
                     'title' => ts('Open Date'),
-                    'type' => CRM_Utils_Type::T_DATE,
+                    //'type' => CRM_Utils_Type::T_DATE,
 					'default' => true,
                     ),
             ),
