@@ -564,8 +564,16 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
 			require_once 'packages/Mail/RFC822.php';
 
 			$validEmail = Mail_RFC822::parseAddressList($recipient);
+			//CRM_Core_Error::debug_var("Email validation parseAddressList", $validEmail);
+			
+			//need to manually check for the presence of spaces, as RFC822 doesn't flag as invalid
+			$emailBox   = $validEmail[0]->mailbox;
+			$emailHost  = $validEmail[0]->host;
 
-			if ( is_a($validEmail, 'PEAR_Error') ) {
+			if ( is_a($validEmail, 'PEAR_Error') ||
+			     strpos( $emailBox, ' ' ) !== false ||
+				 strpos( $emailHost, ' ' ) !== false ) {
+
 				CRM_Core_Error::debug_log_message("Email did not validate: $recipient");
 
 				require_once 'CRM/Mailing/Event/BAO/Bounce.php';
