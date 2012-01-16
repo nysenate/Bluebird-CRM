@@ -89,7 +89,8 @@ if [ "$multicmd" ]; then
       echo "$prog: Warning: The Batch Event Notifications setting is not accessible via the Sendgrid API.  It must be set manually via the Web interface."
       ;;
     disable_eventnotify)
-      $0 --setup-app eventnotify -p url="NULL" -p processed=0 -p dropped=0 -p deferred=0 -p delivered=0 -p bounce=0 -p click=0 -p open=0 -p unsubscribe=0 -p spamreport=0 $instance && \
+      # Only need to specify url=%00.  The others will be set to blank.
+      $0 --setup-app eventnotify -p url="%00" $instance && \
         $0 --deactivate-app eventnotify $instance
       rc=$?
       ;;
