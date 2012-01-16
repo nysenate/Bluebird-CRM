@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2012-01-11
-# Revised: 2012-01-11
+# Revised: 2012-01-15
 #
 # This script will target only those records in the Accumulator which match
 # the given instance/install_class.  For example, if this script is run on
@@ -58,6 +58,7 @@ while [ $# -gt 0 ]; do
     --queue*|-q) shift; cond="$cond and queue_id=$1" ;;
     --processed|-p) cond="$cond and processed<>0" ;;
     --server*) shift; servername="$1" ;;
+    -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
   shift
