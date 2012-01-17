@@ -567,8 +567,11 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
 			//CRM_Core_Error::debug_var("Email validation parseAddressList", $validEmail);
 			
 			//need to manually check for the presence of spaces, as RFC822 doesn't flag as invalid
-			$emailBox   = $validEmail[0]->mailbox;
-			$emailHost  = $validEmail[0]->host;
+			$emailBox = $emailHost = '';
+            if ( !is_a($validEmail, 'PEAR_Error') ) {
+			    $emailBox  = $validEmail[0]->mailbox;
+			    $emailHost = $validEmail[0]->host;
+			}
 
 			if ( is_a($validEmail, 'PEAR_Error') ||
 			     strpos( $emailBox, ' ' ) !== false ||
