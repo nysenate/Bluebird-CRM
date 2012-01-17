@@ -3720,7 +3720,9 @@ WHERE  id IN ( $groupIDs )
                 // CRM-5954
 
                 //NYSS 4585
-				if ( isset( $this->_distinctComponentClause ) ) {
+				//CRM_Core_Error::debug('this',$this);exit();
+				if ( isset( $this->_distinctComponentClause ) &&
+				     !strpos( $this->_distinctComponentClause, 'case' ) ) { //NYSS really gross hack for 4901
                     $limitSelect = "SELECT {$this->_distinctComponentClause}";
                 } else {
                     $limitSelect = ( $this->_useDistinct ) ?
