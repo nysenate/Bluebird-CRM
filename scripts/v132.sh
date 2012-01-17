@@ -94,6 +94,23 @@ DELETE FROM civicrm_phone
 WHERE phone IS NULL;"
 $execSql -i $instance -c "$empty"
 
+## 4911 create the civicrm_import_jobs table
+$execSql -i $instance -c "
+    CREATE TABLE civicrm_import_jobs (
+      id int(10) unsigned NOT NULL AUTO_INCREMENT,
+      name varchar(255) NOT NULL,
+      table_name varchar(255) NOT NULL,
+      source_file varchar(255) NOT NULL,
+      file_type varchar(255) NOT NULL,
+      field_separator varchar(10) NOT NULL,
+      contact_group_id int(10) unsigned NOT NULL,
+      created_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      created_by int(10) unsigned NOT NULL,
+      PRIMARY KEY (id),
+      KEY name (name)
+    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+"
+
 ### Cleanup ###
 
 $script_dir/clearCache.sh $instance
