@@ -1,15 +1,15 @@
 <?php
 // Project: BluebirdCRM
-// Authors: Brian Shaughnessy, Ken Zalewski
+// Authors: Ken Zalewski, Brian Shaughnessy
 // Organization: New York State Senate
 // Date: 2011-06-20
 // Revised: 2012-01-18
 //
 
-function getMailingBackend( $dbcon )
+
+function getConfigBackend($dbcon, $table, $field)
 {
-  $civiMailing = array();
-  $sql = "SELECT id, mailing_backend FROM civicrm_preferences WHERE id = 1;";
+  $sql = "SELECT id, $field FROM $table WHERE id = 1;";
   $result = mysql_query($sql, $dbcon);
   if (!$result) {
     echo mysql_error($dbcon)."\n";
@@ -18,47 +18,31 @@ function getMailingBackend( $dbcon )
 
   //get the only row
   $row = mysql_fetch_assoc($result);
-  if ($row['mailing_backend']) {
-    $civiMailing['backend'] = unserialize($row['mailing_backend']);
+  if ($row[$field]) {
+    return unserialize($row[$field]);
   }
   else {
-    $civiMailing['backend'] = null;
+    return null;
   }
-
-  return $civiMailing;
-} // getMailingBackend()
-
-
-
-function getConfigBackend( $dbcon )
-{
-  $civiConfig = array();
-  $sql = "SELECT id, config_backend FROM civicrm_domain WHERE id = 1;";
-  $result = mysql_query($sql, $dbcon);
-  if (!$result) {
-    echo mysql_error($dbcon)."\n";
-    return false;
-  }
-
-  //get the only row
-  $row = mysql_fetch_assoc($result);
-  if ($row['config_backend']) {
-    $civiConfig['backend'] = unserialize($row['config_backend']);
-  }
-  else {
-    $civiConfig['backend'] = null;
-  }
-
-  return $civiConfig;
 } // getConfigBackend()
 
 
 
-function listMailingBackend( $civiMailing )
+function getCiviConfig($dbcon)
 {
-  foreach ($civiMailing as $mailgrp => $maillist) {
-    echo "\n==> Config group: $mailgrp\n";
-    foreach ($maillist as $key => $val) {
+  $civiConfig = array();
+  $civiConfig['config_backend'] = getConfigBackend($dbcon, 'civicrm_domain', 'config_backend');
+  $civiConfig['mailing_backend'] = getConfigBackend($dbcon, 'civicrm_preferences', 'mailing_backend');
+  return $civiConfig;
+} // getCiviConfig()
+
+
+
+function listCiviConfig($civicfg)
+{
+  foreach ($civicfg as $cfggrp => $cfglist) {
+    echo "\n==> Config group: $cfggrp\n";
+    foreach ($cfglist as $key => $val) {
       if (is_string($val)) {
         echo "[$key] => [$val]\n";
       }
@@ -68,18 +52,17 @@ function listMailingBackend( $civiMailing )
       }
     }
   }
-} // listMailingBackend()
+} // listCiviConfig()
 
 
 
-function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir,
+function updateMailingBackend($dbcon, $civiConfig, $appdir,
                               $smtpHost, $smtpPort, $smtpAuth,
                               $smtpSubuser, $smtpSubpass)
 {
   $rc = 0;
-  //print_r($civiMailing);
 
-  $mb = $civiMailing['backend'];
+  $mb = $civiConfig['mailing_backend'];
   
   //TODO we need to retrieve this from the settings file or instantiate civi
   if ( !defined('CIVICRM_SITE_KEY') ) {
@@ -93,7 +76,6 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir,
   $mb['smtpAuth']     = $smtpAuth;
   $mb['smtpUsername'] = $smtpSubuser;
   $mb['smtpPassword'] = CRM_Utils_Crypt::encrypt($smtpSubpass);
-  //print_r($mb);
 
   $sql = "UPDATE civicrm_preferences SET mailing_backend='".serialize($mb)."' WHERE id=1;";
   if (!mysql_query($sql, $dbcon)) {
@@ -102,7 +84,7 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir,
   }
   
   //enable civimail component and set mailer/job size
-  $cb = $civiConfig['backend'];
+  $cb = $civiConfig['config_backend'];
   $cb['enableComponents'][]   = 'CiviMail';
   $cb['enableComponentIDs'][] = 4;
   $cb['mailerBatchLimit']     = 1000;
@@ -243,18 +225,17 @@ else {
   }
 
   $rc = 0;
-  $civiMailing = getMailingBackend($dbcon);
-  $civiConfig  = getConfigBackend($dbcon);
+  $civiConfig = getCiviConfig($dbcon);
 
-  if ($civiMailing === false) {
-    echo "$prog: Unable to get CiviCRM mailing configuration.\n";
+  if ($civiConfig === false) {
+    echo "$prog: Unable to get CiviCRM configuration.\n";
     $rc = 1;
   }
-  else if (is_array($civiMailing)) {
+  else if (is_array(civiConfig['mailing_backend'])) {
     switch ($cmd) {
     case 'update-config':
       echo "Updating the CiviCRM mailing configuration.\n";
-      $rc = updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass);
+      $rc = updateMailingBackend($dbcon, $civiConfig, $appdir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass);
       break;
     case 'update-template':
       echo "Resetting the header and footer to default values.\n";
@@ -269,7 +250,7 @@ else {
       break;
     case 'update-all':
       echo "1. Updating the CiviCRM mailing configuration.\n";
-      $rc = updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass);
+      $rc = updateMailingBackend($dbcon, $civiConfig, $appdir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass);
       echo "2. Resetting the header and footer to default values.\n";
       $rc += setHeaderFooter($dbcon, $crmhost, $instance, $fromName);
       echo "3. Setting FROM email address.\n";
@@ -277,7 +258,7 @@ else {
       echo "4. Enabling mailing reports.\n";
       $rc += updateEmailReports($dbcon);
     default:
-      listMailingBackend($civiMailing);
+      listCiviConfig($civiConfig);
     }
   } else {
     echo "$prog: CiviCRM mailing configuration is empty.\n";
