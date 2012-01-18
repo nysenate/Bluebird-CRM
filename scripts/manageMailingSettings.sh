@@ -16,7 +16,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--list] [--update-config] [--update-template] [--set-apps] [--update-all] [--update-from] [--update-reports] instanceName" >&2
+  echo "Usage: $prog [--list] [--update-config] [--update-template] [--update-all] [--update-from] [--update-reports] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -32,7 +32,6 @@ while [ $# -gt 0 ]; do
     --list) civi_op=list ;;
     --update-config) civi_op=update-config ;;
     --update-template) civi_op=update-template ;;
-    --set-apps) civi_op=set-apps ;;
     --update-from) civi_op=update-from ;;
     --update-reports) civi_op=update-reports ;;
     --update-all) civi_op=update-all ;;
@@ -60,19 +59,16 @@ dbname=$dbciviprefix$dbbasename
 smtp_host=`$readConfig --ig $instance smtp.host` || smtp_host="$DEFAULT_SMTP_HOST"
 smtp_port=`$readConfig --ig $instance smtp.port` || smtp_port="$DEFAULT_SMTP_PORT"
 smtp_auth=`$readConfig --ig $instance smtp.auth` || smtp_auth="$DEFAULT_SMTP_AUTH"
-smtp_user=`$readConfig --ig $instance smtp.user` || smtp_user="$DEFAULT_SMTP_USER"
-smtp_pass=`$readConfig --ig $instance smtp.pass` || smtp_pass="$DEFAULT_SMTP_PASS"
 smtp_subuser=`$readConfig --ig $instance smtp.subuser` || smtp_subuser="$DEFAULT_SMTP_USER"
 smtp_subpass=`$readConfig --ig $instance smtp.subpass` || smtp_subpass="$DEFAULT_SMTP_PASS"
 formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="$DEFAULT_SENATOR_FORMAL_NAME"
 email_from=`$readConfig --ig $instance senator.email.from` || email_from="$DEFAULT_SENATOR_EMAIL_FROM"
 email_replyto=`$readConfig --ig $instance senator.email.replyto` || email_replyto="$DEFAULT_SENATOR_EMAIL_REPLYTO"
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
-data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"
 
 # Passing a cygwin path to PHP won't work, so expand it to Win32 on Cygwin.
 [ "$OSTYPE" = "cygwin" ] && script_dir=`cygpath --mixed $script_dir`
 
-php "$script_dir/manageMailingSettings.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$smtp_host" "$smtp_port" "$smtp_auth" "$smtp_user" "$smtp_pass" "$smtp_subuser" "$smtp_subpass" $instance "$formal_name" "$email_from" "$email_replyto" "$instance.$base_domain" "$app_rootdir" "$data_rootdir"
+php "$script_dir/manageMailingSettings.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$smtp_host" "$smtp_port" "$smtp_auth" "$smtp_subuser" "$smtp_subpass" $instance "$formal_name" "$email_from" "$email_replyto" "$instance.$base_domain" "$app_rootdir"
 exit $?
