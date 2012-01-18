@@ -231,7 +231,7 @@ else {
     echo "$prog: Unable to get CiviCRM configuration.\n";
     $rc = 1;
   }
-  else if (is_array(civiConfig['mailing_backend'])) {
+  else if (is_array($civiConfig['mailing_backend'])) {
     switch ($cmd) {
     case 'update-config':
       echo "Updating the CiviCRM mailing configuration.\n";
