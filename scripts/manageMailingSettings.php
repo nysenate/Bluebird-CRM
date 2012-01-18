@@ -1,8 +1,9 @@
 <?php
 // Project: BluebirdCRM
-// Author: Brian Shaughnessy
+// Authors: Brian Shaughnessy, Ken Zalewski
 // Organization: New York State Senate
 // Date: 2011-06-20
+// Revised: 2012-01-18
 //
 
 function getMailingBackend( $dbcon )
@@ -71,12 +72,11 @@ function listMailingBackend( $civiMailing )
 
 
 
-function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
-                              $appdir, $datadir, $smtpHost, $smtpPort,
-                              $smtpAuth, $smtpSubuser, $smtpSubpass,
-                              $instance, $fromName, $emailFrom)
+function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir,
+                              $smtpHost, $smtpPort, $smtpAuth,
+                              $smtpSubuser, $smtpSubpass)
 {
-  $rc = true;
+  $rc = 0;
   //print_r($civiMailing);
 
   $mb = $civiMailing['backend'];
@@ -98,7 +98,7 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
   $sql = "UPDATE civicrm_preferences SET mailing_backend='".serialize($mb)."' WHERE id=1;";
   if (!mysql_query($sql, $dbcon)) {
     echo mysql_error($dbcon)."\n";
-    $rc = false;
+    $rc = 1;
   }
   
   //enable civimail component and set mailer/job size
@@ -112,29 +112,42 @@ function updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost,
   $sql = "UPDATE civicrm_domain SET config_backend='".serialize($cb)."' WHERE id=1;";
   if ( !mysql_query($sql, $dbcon) ) {
     echo mysql_error($dbcon)."\n";
-    $rc = false;
+    $rc = 1;
   }
   
   return $rc;
 } //updateMailingBackend()
 
+
 function updateEmailReports( $dbcon ) {
 
   //enable civimail report menu items
   $sql = "UPDATE civicrm_navigation SET is_active = 1 WHERE id IN (240, 241, 242, 243)";
-  $nav = mysql_query( $sql, $dbcon );
-
+  if (!mysql_query($sql, $dbcon)) {
+    echo mysql_error($dbcon)."\n";
+    return 1;
+  }
+  else {
+    return 0;
+  }
 } //updateMailingBackend()
+
 
 function updateFromEmail( $dbcon, $emailFrom, $fromName, $smtpSubuser ) {
 
   //update the FROM email address
-  if ( !$emailFrom ) $emailFrom = $smtpSubuser;
-  $from = "\"$fromName\" <$emailFrom>";
+  if (!$emailFrom) $emailFrom = $smtpSubuser;
+  $from = '"'.addslashes($fromName).'"'." <$emailFrom>";
   $sql = "UPDATE civicrm_option_value SET label = '{$from}', name = '{$from}' WHERE option_group_id = 30";
-  $from_set   = mysql_query( $sql , $dbcon );
-
+  if (!mysql_query($sql , $dbcon)) {
+    echo mysql_error($dbcon)."\n";
+    return 1;
+  }
+  else {
+    return 0;
+  }
 } //updateFromEmail()
+
 
 function cacheCleanup( $dbcon ) {
 
@@ -145,40 +158,13 @@ function cacheCleanup( $dbcon ) {
 
 } //cacheCleanup()
 
-/*
- * We use sendgrid subuser accounts for each district.
- * Enable subscription, click, and open tracking apps
- */
-function setSendgridApps ( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass )
-{
-  //enable apps
-  $apps = array ( 'opentrack', 'clicktrack' );
-  foreach ( $apps as $app ) {
-  	//uncomment to print existing settings to screen
-	//$appsList = "https://sendgrid.com/api/filter.getsettings.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=$app";
-	//print_r( simplexml_load_file($appsList) );
-	
-    $appsUrl = "https://sendgrid.com/api/filter.activate.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=$app";
-    $setApps = simplexml_load_file($appsUrl);
-    echo "Activate: $app\n";
-  }
-  
-  //disable domain keys app (to remove on behalf of in from name)
-  //also disable subscription tracking as we will handle on a per mailing basis
-  $apps = array ( 'subscriptiontrack', 'domainkeys' );
-  foreach ( $apps as $app ) {
-  	$dapps = "https://sendgrid.com/api/filter.deactivate.xml?api_user=$smtpSubuser&api_key=$smtpSubpass&name=$app";
-  	$dk = simplexml_load_file($dapps);
-  	echo "Deactivate: $app\n";
-  }
-
-} //setSendgridApps
-
-
 
 function setHeaderFooter( $dbcon, $crmhost, $instance, $fromName )
 {
-  $headerhtml = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8" /><meta property="og:title" content="*|MC:{mailing.name}|*" /><title>{mailing.name}</title><style type="text/css">#outlook a{padding:0;}body{width:100% !important;}body{-webkit-text-size-adjust:none;}body{margin:0;padding:0;}img{border:none;font-size:14px;font-weight:bold;height:auto;line-height:100%;outline:none;text-decoration:none;text-transform:capitalize;}#backgroundTable{height:100% !important;margin:0;padding:0;width:100% !important;}body, #backgroundTable{background-color:#FAFAFA;}#templateContainer{border: 1px solid #DDDDDD;}h1, .h1{color:#202020;display:block;font-family:Arial;font-size:34px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}h2, .h2{color:#202020;display:block;font-family:Arial;font-size:30px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}h3, .h3{color:#202020;display:block;font-family:Arial;font-size:26px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}h4, .h4{color:#202020;display:block;font-family:Arial;font-size:22px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}#templatePreheader{background-color:#FAFAFA;}.preheaderContent div{color:#505050;font-family:Arial;font-size:10px;line-height:100%;text-align:left;}.preheaderContent div a:link, .preheaderContent div a:visited{color:#336699;font-weight:normal;text-decoration:underline;}#templateHeader{background-color:#D8E2EA;border-bottom:0;}.headerContent{color:#202020;font-family:Arial;font-size:34px;font-weight:bold;line-height:100%;padding:0;text-align:center;vertical-align:middle;}.headerContent a:link, .headerContent a:visited{color:#336699;font-weight:normal;text-decoration:underline;}#headerImage{height:auto;max-width:600px !important;}#templateContainer, .bodyContent{background-color:#FDFDFD;}.bodyContent div{color:#505050;font-family:Arial;font-size:14px;line-height:150%;text-align:left;}.bodyContent div a:link, .bodyContent div a:visited{color:#336699;font-weight:normal;text-decoration:underline;}.bodyContent img{display:inline;height:auto;}#templateFooter{background-color:#FDFDFD;border-top:0;}.footerContent div{color:#707070;font-family:Arial;font-size:12px;line-height:125%;text-align:left;}.footerContent div a:link, .footerContent div a:visited{color:#336699;font-weight:normal;text-decoration:underline;}.footerContent img{display:inline;}#social{background-color:#FAFAFA;border:0;}#social div{text-align:center;}#utility{background-color:#FDFDFD;border:0;}#utility div{text-align:center;}#monkeyRewards img{max-width:190px;}</style></head><body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"><center><table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable"><tr><td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateContainer"><tr><td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateHeader"><tr><td class="headerContent"><a href="http://'.$instance.'.nysenate.gov" target=_blank><img src="http://'.$crmhost.'/sites/'.$crmhost.'/pubfiles/images/template/header.png" alt="'.addslashes($fromName).'" style="max-width:600px;" id="headerImage campaign-icon" mc:label="header_image" mc:edit="header_image" mc:allowdesigner mc:allowtext /></a></td></tr></table></td></tr><tr><td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateBody"><tr><td valign="top" class="bodyContent"><table border="0" cellpadding="20" cellspacing="0" width="100%"><tr><td valign="top"><div mc:edit="std_content00">';
+  $headerhtml =
+'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'.
+'<html><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8" /><meta property="og:title" content="*|MC:{mailing.name}|*" /><title>{mailing.name}</title><style type="text/css">#outlook a{padding:0;}body{width:100% !important;}body{-webkit-text-size-adjust:none;}body{margin:0;padding:0;}img{border:none;font-size:14px;font-weight:bold;height:auto;line-height:100%;outline:none;text-decoration:none;text-transform:capitalize;}#backgroundTable{height:100% !important;margin:0;padding:0;width:100% !important;}body, #backgroundTable{background-color:#FAFAFA;}#templateContainer{border: 1px solid #DDDDDD;}h1, .h1{color:#202020;display:block;font-family:Arial;font-size:34px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}h2, .h2{color:#202020;display:block;font-family:Arial;font-size:30px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}h3, .h3{color:#202020;display:block;font-family:Arial;font-size:26px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}h4, .h4{color:#202020;display:block;font-family:Arial;font-size:22px;font-weight:bold;line-height:100%;margin-top:0;margin-right:0;margin-bottom:10px;margin-left:0;text-align:left;}#templatePreheader{background-color:#FAFAFA;}.preheaderContent div{color:#505050;font-family:Arial;font-size:10px;line-height:100%;text-align:left;}.preheaderContent div a:link, .preheaderContent div a:visited{color:#336699;font-weight:normal;text-decoration:underline;}#templateHeader{background-color:#D8E2EA;border-bottom:0;}.headerContent{color:#202020;font-family:Arial;font-size:34px;font-weight:bold;line-height:100%;padding:0;text-align:center;vertical-align:middle;}.headerContent a:link, .headerContent a:visited{color:#336699;font-weight:normal;text-decoration:underline;}#headerImage{height:auto;max-width:600px !important;}#templateContainer, .bodyContent{background-color:#FDFDFD;}.bodyContent div{color:#505050;font-family:Arial;font-size:14px;line-height:150%;text-align:left;}.bodyContent div a:link, .bodyContent div a:visited{color:#336699;font-weight:normal;text-decoration:underline;}.bodyContent img{display:inline;height:auto;}#templateFooter{background-color:#FDFDFD;border-top:0;}.footerContent div{color:#707070;font-family:Arial;font-size:12px;line-height:125%;text-align:left;}.footerContent div a:link, .footerContent div a:visited{color:#336699;font-weight:normal;text-decoration:underline;}.footerContent img{display:inline;}#social{background-color:#FAFAFA;border:0;}#social div{text-align:center;}#utility{background-color:#FDFDFD;border:0;}#utility div{text-align:center;}#monkeyRewards img{max-width:190px;}</style></head>'.
+'<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"><center><table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="backgroundTable"><tr><td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateContainer"><tr><td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateHeader"><tr><td class="headerContent"><a href="http://'.$instance.'.nysenate.gov" target=_blank><img src="http://'.$crmhost.'/sites/'.$crmhost.'/pubfiles/images/template/header.png" alt="'.addslashes($fromName).'" style="max-width:600px;" id="headerImage campaign-icon" mc:label="header_image" mc:edit="header_image" mc:allowdesigner mc:allowtext /></a></td></tr></table></td></tr><tr><td align="center" valign="top"><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateBody"><tr><td valign="top" class="bodyContent"><table border="0" cellpadding="20" cellspacing="0" width="100%"><tr><td valign="top"><div mc:edit="std_content00">';
   $headertext = 'New York State Senate
 http://'.$instance.'.nysenate.gov
 
@@ -188,14 +174,14 @@ http://'.$instance.'.nysenate.gov
   $footerhtml = '</div></td></tr></table></td></tr></table></td></tr><tr><td align="center" valign="top"><table border="0" cellpadding="10" cellspacing="0" width="600" id="templateFooter"><tr><td valign="top" class="footerContent">
 	
 <table border="0" cellpadding="10" cellspacing="0" width="100%">
-<tr><td colspan="2"><div mc:edit="std_footer"><em>Copyright &copy;2011 New York State Senate, All rights reserved.</em></div></td></tr>
+<tr><td colspan="2"><div mc:edit="std_footer"><em>Copyright &copy;2011-2012 New York State Senate, All rights reserved.</em></div></td></tr>
 <tr><td valign="top" width="50%"><div mc:edit="std_footer"><strong>Albany Address:</strong><br />ADDRESS</div></td><td valign="top" width="50%"><div mc:edit="std_footer"><strong>District Address:</strong><br />ADDRESS</div></td></tr>
 </table>
 	
 	</td></tr></table><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateHeader"><tr><td class="headerContent"><a href="http://www.nysenate.gov" target=_blank><img src="http://'.$crmhost.'/sites/'.$crmhost.'/pubfiles/images/template/footer.png" style="max-width:600px;" alt="New York State Senate Seal" id="headerImage campaign-icon" mc:label="header_image" mc:edit="header_image" mc:allowdesigner mc:allowtext /></a></td></tr></table></td></tr></table><br /></td></tr></table></center></body></html>';
   $footertext = '
 
-Copyright 2011 New York State Senate, All rights reserved.
+Copyright 2011-2012 New York State Senate, All rights reserved.
 http://www.nysenate.gov
 
 ';
@@ -209,18 +195,20 @@ http://www.nysenate.gov
   
   if ( !mysql_query($sql1, $dbcon) || !mysql_query($sql2, $dbcon) ) {
     echo mysql_error($dbcon)."\n";
-    $rc = false;
+    return 1;
   }
-}
+  else {
+    return 0;
+  }
+} // setHeaderFooter()
 
 
 
 //run script
 $prog = basename($argv[0]);
-//print_r($argv);
 
-if ($argc != 17 && $argc != 20) {
-  echo "Usage: $prog cmd dbhost dbuser dbpass dbname smtphost smtpport smtpauth smtpsubuser smtpsubpass instance fromName [crmhost] [appdir] [datadir]\n";
+if ($argc != 15 && $argc != 17) {
+  echo "Usage: $prog cmd dbhost dbuser dbpass dbname smtphost smtpport smtpauth smtpsubuser smtpsubpass instance fromName [crmhost] [appdir]\n";
   echo "   cmd can be: list, update-config, update-template, set-apps, update-all, update-from, update-reports\n";
   exit(1);
 }
@@ -233,17 +221,14 @@ else {
   $smtpHost = $argv[6];
   $smtpPort = $argv[7];
   $smtpAuth = $argv[8];
-  $smtpUser = $argv[9];
-  $smtpPass = $argv[10];
-  $smtpSubuser = $argv[11];
-  $smtpSubpass = $argv[12];
-  $instance = $argv[13];
-  $fromName = $argv[14];
-  $emailFrom = $argv[15];
-  $emailReplyto = $argv[16];
-  $crmhost = ($argc == 20) ? $argv[17] : "";
-  $appdir = ($argc == 20) ? $argv[18] : "";
-  $datadir = ($argc == 20) ? $argv[19] : "";
+  $smtpSubuser = $argv[9];
+  $smtpSubpass = $argv[10];
+  $instance = $argv[11];
+  $fromName = $argv[12];
+  $emailFrom = $argv[13];
+  $emailReplyto = $argv[14];
+  $crmhost = ($argc == 17) ? $argv[15] : "";
+  $appdir = ($argc == 17) ? $argv[16] : "";
 
   $dbcon = mysql_connect($dbhost, $dbuser, $dbpass);
   if (!$dbcon) {
@@ -266,51 +251,40 @@ else {
     $rc = 1;
   }
   else if (is_array($civiMailing)) {
-    if ( $cmd == "update-config" ) {
+    switch ($cmd) {
+    case 'update-config':
       echo "Updating the CiviCRM mailing configuration.\n";
-      if (updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName, $emailFrom) === false) {
-        $rc = 1;
-      }
-	  
-    } elseif ( $cmd == "update-template" ) {
+      $rc = updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass);
+      break;
+    case 'update-template':
       echo "Resetting the header and footer to default values.\n";
-      setHeaderFooter( $dbcon, $crmhost, $instance, $fromName );
-	  
-    } elseif ( $cmd == "set-apps" ) {
-      echo "Activating and configuring Sendgrid apps.\n";
-      setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass );
-	  
-	} elseif ( $cmd == 'update-from' ) {
-	  echo "Setting FROM email address.\n";
-	  updateFromEmail( $dbcon, $emailFrom, $fromName, $smtpSubuser );
-	  
-	} elseif ( $cmd == 'update-reports' ) {
-	  echo "Enabling mailing reports.\n";
-	  updateEmailReports( $dbcon );
-	  
-    } elseif ( $cmd == "update-all" ) {
+      $rc = setHeaderFooter($dbcon, $crmhost, $instance, $fromName);
+    case 'update-from':
+      echo "Setting FROM email address.\n";
+      $rc = updateFromEmail($dbcon, $emailFrom, $fromName, $smtpSubuser);
+      break;
+    case 'update-reports':
+      echo "Enabling mailing reports.\n";
+      $rc = updateEmailReports($dbcon);
+      break;
+    case 'update-all':
       echo "1. Updating the CiviCRM mailing configuration.\n";
-      updateMailingBackend($dbcon, $civiMailing, $civiConfig, $crmhost, $appdir, $datadir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass, $instance, $fromName, $emailFrom);
+      $rc = updateMailingBackend($dbcon, $civiMailing, $civiConfig, $appdir, $smtpHost, $smtpPort, $smtpAuth, $smtpSubuser, $smtpSubpass);
       echo "2. Resetting the header and footer to default values.\n";
-	  echo "   From Name: ".$fromName."\n";
-      setHeaderFooter( $dbcon, $crmhost, $instance, $fromName );
-      echo "3. Activating and configuring Sendgrid apps.\n";
-      setSendgridApps( $smtpUser, $smtpPass, $smtpSubuser, $smtpSubpass );
-	  echo "4. Setting FROM email address.\n";
-	  updateFromEmail( $dbcon, $emailFrom, $fromName, $smtpSubuser );
-	  echo "5. Enabling mailing reports.\n";
-	  updateEmailReports( $dbcon );
-	  
-    } else {
+      $rc += setHeaderFooter($dbcon, $crmhost, $instance, $fromName);
+      echo "3. Setting FROM email address.\n";
+      $rc += updateFromEmail($dbcon, $emailFrom, $fromName, $smtpSubuser);
+      echo "4. Enabling mailing reports.\n";
+      $rc += updateEmailReports($dbcon);
+    default:
       listMailingBackend($civiMailing);
-	  
     }
   } else {
     echo "$prog: CiviCRM mailing configuration is empty.\n";
   }
   
   echo "Clearing various caches gracefully (no session logout).\n";
-  cacheCleanup( $dbcon );
+  cacheCleanup($dbcon);
 
   mysql_close($dbcon);
   exit($rc);
