@@ -412,12 +412,12 @@ SELECT label, value
                             } else {
                                 $val = CRM_Utils_Type::escape( $strtolower(trim($value)), 'String' );
                             }
-							
-							//NYSS build district id fields using IN to allow multiple values
-							if ( $id >= 46 && $id <= 51 ) {
-								$op  = 'IN';
-								$field['data_type'] = 'Districts'; //flag for processing
-							}
+                            
+                            //NYSS build district id fields using IN to allow multiple values
+                            if (($id >= 46 && $id <= 51) || ($id >= 53 && $id <= 55)) {
+                                $op  = 'IN';
+                                $field['data_type'] = 'Districts'; //flag for processing
+                            }
 
                             if ( $wildcard ) {
                                 $val = $strtolower( CRM_Core_DAO::escapeString( $val ) );
@@ -427,10 +427,10 @@ SELECT label, value
 
                             //FIX for custom data query fired against no value(NULL/NOT NULL)
                             $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( $sql, $op, $val, $field['data_type'] );
-							//NYSS reset data type
-							if ( $id >= 46 && $id <= 51 ) {
-								$field['data_type'] = 'String';
-							}
+                            //NYSS reset data type
+                            if (($id >= 46 && $id <= 51) || ($id >= 53 && $id <= 55)) {
+                                $field['data_type'] = 'String';
+                            }
                             $this->_qill[$grouping][]  = "$field[label] $op $qillValue";
                         }
                     } 
@@ -565,7 +565,7 @@ SELECT label, value
                             $this->_where[$grouping][] = " ( " . implode( $sqlOP, $sqlValue ) . " ) ";
                             $this->_qill[$grouping][]  = "$field[label] $op $qillValue ( $sqlOPlabel )";
                         }
-                    }					
+                    }                    
                     continue;
                 }
 
