@@ -598,9 +598,11 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
 
             if ( is_a( $result, 'PEAR_Error' ) ) {
                 //NYSS
-                if ( strpos( $result['message'], 'Failed to write to socket' ) !== false ) {
+                if ( strpos( $result->getMessage( ), 'Failed to write to socket' ) !== false ) {
                     // lets log this message and code
-                    CRM_Core_Error::debug_log_message( "SMTP Socket Error. Message: {$result['message']}, Code: {$result['code']}" );
+                    $message = $result->getMessage( );
+                    $code    = $result->getCode( );
+                    CRM_Core_Error::debug_log_message( "SMTP Socket Error. Message: $message, Code: $code" );
 
                     // these are socket write errors which most likely means smtp connection errors
                     // lets skip them
@@ -620,6 +622,13 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                     CRM_Utils_System::civiExit( );
                 }
 				
+                // lets rebuild the mailer object (its by reference, so will be fixed downstream
+                // since it seems to be messed up in case of errors (as we are reusing the smtp
+                // connection
+                // CRM=93XX
+                $config = CRM_Core_Config::singleton( );
+                $mailer = $config->getMailer( true );
+
 				/* Register the bounce event */
                 require_once 'CRM/Mailing/BAO/BouncePattern.php';
                 require_once 'CRM/Mailing/Event/BAO/Bounce.php';
