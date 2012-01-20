@@ -16,14 +16,13 @@ function nyss_civihooks_menu() {
 
 function nyss_civihooks_perm() {
 
-	return array( 'export print production files', 
-	              'delete contacts permanently',
-	              'administer district' );
-	
+    return array( 'export print production files',
+                  'delete contacts permanently',
+                  'administer district' );
 }
 
 function nyss_civihooks_getfile() {
-	
+
 	civicrm_initialize( );
 	require_once 'CRM/Core/Config.php';
 	$config =& CRM_Core_Config::singleton();
@@ -470,7 +469,14 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
         }
         return empty( $errors ) ? true : $errors;
 	}
-	
+
+    if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
+
+        $distFlds = array(46, 47, 48, 49, 50, 51, 53, 54, 55);
+        foreach ( $distFlds as $fld ) {
+            $form->setElementError("custom_$fld", NULL);
+        }
+    }
 
 }
 
