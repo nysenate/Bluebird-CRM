@@ -442,6 +442,7 @@ SELECT label, value
                     continue;
                 case 'Int':
                     //NYSS build district id fields using IN to allow multiple values
+                    $field['data_type'] = 'Integer';
                     if ( $id >= 46 && $id <= 51 ) {
                         $op  = 'IN';
                         $field['data_type'] = 'Districts'; //flag for processing
@@ -450,12 +451,12 @@ SELECT label, value
 					if ( $field['is_search_range'] && is_array( $value ) ) {
                         $this->searchRange( $field['id'], $field['label'], $field['data_type'], $fieldName, $value, $grouping );
                     } else {
-                        $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( $fieldName, $op, $value, 'Integer' );
+                        $this->_where[$grouping][] = CRM_Contact_BAO_Query::buildClause( $fieldName, $op, $value, $field['data_type'] ); //NYSS
                         $this->_qill[$grouping][]  = $field['label'] . " $op $value";
                     }
 					//NYSS reset data type
 					if ( $id >= 46 && $id <= 51 ) {
-						$field['data_type'] = 'Int';
+						$field['data_type'] = 'Integer';
 					}
                     continue;
 

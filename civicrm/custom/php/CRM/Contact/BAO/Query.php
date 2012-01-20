@@ -4208,8 +4208,6 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
                 if ( $dataType == 'Districts' ) {
                     $values = array_map('trim', explode( ',', $value ) );
                     $dataType = 'Integer'; //return to expected format
-                    //CRM_Core_Error::debug($value);
-                    //CRM_Core_Error::debug($values);
                 }
 
                 // supporting multiple values in IN clause
