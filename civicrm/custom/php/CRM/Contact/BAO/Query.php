@@ -4205,14 +4205,12 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
                 $value = CRM_Utils_Type::escape( $value, "String" );
                 $values = explode ( ',', CRM_Utils_Array::value( 0, explode(')',CRM_Utils_Array::value( 1, explode('(', $value ) ) ) ) );
                 //NYSS
-				if ( $dataType == 'Districts' ) {
-					$values = array_map('trim', explode( ',', $value ) );
-					$dataType = 'String'; //return to expected format
-					//CRM_Core_Error::debug($value);
-					//CRM_Core_Error::debug($values);
-				}
-				
-				// supporting multiple values in IN clause
+                if ( $dataType == 'Districts' ) {
+                    $values = array_map('trim', explode( ',', $value ) );
+                    $dataType = 'Integer'; //return to expected format
+                }
+
+                // supporting multiple values in IN clause
                 $val = array();
                 foreach ( $values as $v ) {
                     $v = trim( $v );

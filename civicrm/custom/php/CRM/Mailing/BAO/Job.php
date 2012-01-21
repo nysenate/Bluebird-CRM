@@ -598,9 +598,11 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
 
             if ( is_a( $result, 'PEAR_Error' ) ) {
                 //NYSS
-                if ( strpos( $result['message'], 'Failed to write to socket' ) !== false ) {
+                if ( strpos( $result->getMessage( ), 'Failed to write to socket' ) !== false ) {
                     // lets log this message and code
-                    CRM_Core_Error::debug_log_message( "SMTP Socket Error. Message: {$result['message']}, Code: {$result['code']}" );
+                    $message = $result->getMessage( );
+                    $code    = $result->getCode( );
+                    CRM_Core_Error::debug_log_message( "SMTP Socket Error. Message: $message, Code: $code" );
 
                     // these are socket write errors which most likely means smtp connection errors
                     // lets skip them
@@ -620,6 +622,13 @@ VALUES (%1, %2, %3, %4, %5, %6, %7)
                     CRM_Utils_System::civiExit( );
                 }
 				
+                // lets rebuild the mailer object (its by reference, so will be fixed downstream
+                // since it seems to be messed up in case of errors (as we are reusing the smtp
+                // connection
+                // CRM=93XX
+                $config = CRM_Core_Config::singleton( );
+                $mailer = $config->getMailer( true );
+
 				/* Register the bounce event */
                 require_once 'CRM/Mailing/BAO/BouncePattern.php';
                 require_once 'CRM/Mailing/Event/BAO/Bounce.php';
@@ -797,7 +806,7 @@ AND    status IN ( 'Scheduled', 'Running', 'Paused' )
             }
         
             $activity = array('source_contact_id'    => $mailing->scheduled_id,
-                              'target_contact_id'    => $targetParams,
+                              'target_contact_id'    => array_unique($targetParams), //NYSS
                               'activity_type_id'     => $activityTypeID,
                               'source_record_id'     => $this->mailing_id,
                               'activity_date_time'   => $job_date,
@@ -821,7 +830,15 @@ AND    civicrm_activity.source_record_id = %2";
                                                            $queryParams );    
         
             if ( $activityID ) {
-                $activity['id'] = $activityID;  
+                $activity['id'] = $activityID;
+
+                //NYSS make sure we don't attempt to duplicate the target activity
+                foreach ( $activity['target_contact_id'] as $key => $targetID ) {
+                    $sql = "SELECT id FROM civicrm_activity_target WHERE activity_id = $activityID AND target_contact_id = $targetID;";
+                    if ( CRM_Core_DAO::singleValueQuery($sql) ) {
+                        unset($activity['target_contact_id'][$key]);
+                    }
+                }
             }
 
             require_once 'CRM/Activity/BAO/Activity.php';
@@ -829,7 +846,7 @@ AND    civicrm_activity.source_record_id = %2";
                      'CRM_Core_Error')) {
                 $result = false;
             }
-			
+
 			$targetParams = array( ); //NYSS
         }
 
