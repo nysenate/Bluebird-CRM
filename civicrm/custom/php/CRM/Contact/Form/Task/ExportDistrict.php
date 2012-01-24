@@ -125,17 +125,23 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $ids = implode("),(",$this->_contactIds);
         $ids = "($ids)";
 
-        $sql = "CREATE TABLE tmpExport$rnd(id int not null primary key);";
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $sql = "CREATE TABLE tmpExport$rnd (id int not null primary key);";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-        $sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $sql = "INSERT INTO tmpExport$rnd VALUES $ids;";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        
+        //4874
+        $logTable = createLogTable( $rnd );
 
         $sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
         $sql .= "street_number, street_number_suffix, street_name, street_unit, street_address, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
         $sql .= "c.birth_date, c.gender_id, phone, ";
         $sql .= "town_52, LPAD(ward_53,2,'0') as ward_53, LPAD(election_district_49,3,'0') as election_district_49, LPAD(congressional_district_46,2,'0') as congressional_district_46, LPAD(ny_senate_district_47,2,'0') as ny_senate_district_47, LPAD(ny_assembly_district_48,3,'0') as ny_assembly_district_48, LPAD(school_district_54,3,'0') as school_district_54, LPAD(county_50,2,'0') as county_50, ";
-        $sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
+        $sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id, ";
+        
+        //4874
+        $sql .= "lt.mod_date AS last_modified_date ";
 
         $sql .= " FROM civicrm_contact c ";
         $sql .= " INNER JOIN tmpExport$rnd t on t.id=c.id ";
@@ -145,13 +151,14 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
     
         //4874 - include last log record timestamp
+        $sql .= " LEFT JOIN $logTable lt ON c.id = lt.cid ";
 
         $sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
         $sql .= " IFNULL(c.birth_date, '9999-01-01');";
         //order export by oldest male, then oldest female
         //ensure empty values fall last
 
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
         $skipVars['_DB_DataObject_version'] = 1;
         $skipVars['__table'] = 1;
@@ -226,7 +233,11 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 
         //get rid of helper table
         $sql = "DROP TABLE tmpExport$rnd;";
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        
+        //get rid of log table
+        $sql = "DROP TABLE $logTable;";
+        //$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
         $url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
         $urlclean = urlencode( $url );
@@ -300,3 +311,57 @@ function getStates() {
 
   return $options;
 } // getStates()
+
+//create table with only the most recent log entry for each contact
+function createLogTable( $rnd ) {
+
+    $tblIDs = "tmpExport$rnd";
+    $tblLog = "tmpLog$rnd";
+
+    $sql = "CREATE TABLE $tblLog ( id int not null auto_increment, primary key(id), cid int not null, mod_date date );";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //insert most recent contact log
+    //skip source as that will only be staff
+    $sql = "INSERT INTO $tblLog (cid, mod_date)
+            SELECT * FROM 
+               ( SELECT c.id as cid, cl.modified_date as mod_date
+                 FROM civicrm_log cl
+                 JOIN $tblIDs c
+                   ON cl.entity_id = c.id
+                 WHERE cl.entity_table = 'civicrm_contact'
+                 ORDER BY cl.modified_date DESC, cl.id DESC ) as recentLog
+            GROUP BY cid;";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    
+    //insert most recent activities
+    //only concerned with target contact
+    $sql = "INSERT INTO $tblLog (cid, mod_date)
+            SELECT * FROM
+               ( SELECT c.id as cid, cl.modified_date as mod_date
+                 FROM civicrm_log cl
+                 JOIN civicrm_activity_target cat
+                   ON cl.entity_id = cat.activity_id
+                 JOIN $tblIDs c
+                   ON cat.target_contact_id = c.id
+                 WHERE cl.entity_table = 'civicrm_activity'
+                 ORDER BY cl.modified_date DESC, cl.id DESC ) as recentLog
+            GROUP BY cid;"; 
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //collapse resulting data
+    $sql = "DELETE FROM $tblLog
+            WHERE id IN ( SELECT id FROM
+                            ( SELECT id, cid
+                              FROM $tblLog
+                              ORDER BY mod_date ASC ) as oldLog
+                          GROUP BY cid
+                          HAVING count(id) > 1 );";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //CRM_Core_Error::debug('tblIDs',$tblIDs);
+    //CRM_Core_Error::debug('tblLog',$tblLog);
+    //exit();
+
+    return $tblLog;
+} //createLogTable
