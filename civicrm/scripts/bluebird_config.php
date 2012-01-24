@@ -139,6 +139,7 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   $base_domain = isset($s_bbcfg['base.domain']) ? $s_bbcfg['base.domain'] : $default_base_domain;
   $civicrm_db_url = $db_url.$s_bbcfg['db.civicrm.prefix'].$db_basename;
   $drupal_db_url = $db_url.$s_bbcfg['db.drupal.prefix'].$db_basename;
+  $log_db_url = $db_url.$s_bbcfg['db.log.prefix'].$db_basename;
   $data_basename = isset($s_bbcfg['data.basename']) ? $s_bbcfg['data.basename'] : $shortname;
 
   // Prepend a period on the base_domain if it's not empty.
@@ -149,6 +150,7 @@ function get_bluebird_instance_config($instance = null, $filename = null)
   // Add some extra convenience parameters.
   $s_bbcfg['civicrm_db_url'] = $civicrm_db_url;
   $s_bbcfg['drupal_db_url'] = $drupal_db_url;
+  $s_bbcfg['log_db_url'] = $log_db_url;
   $s_bbcfg['base_dir'] = BASE_DIR;
   $s_bbcfg['base_domain'] = $base_domain;
   $s_bbcfg['data_dirname'] = "$data_basename$base_domain";
