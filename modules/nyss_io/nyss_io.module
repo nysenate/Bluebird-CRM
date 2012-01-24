@@ -286,8 +286,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 	//initialize arrays to be populated with contact id's during import
 	$imported_contacts = array();
-	$updated_contacts = array();
-	$new_contacts = array();
+	$updated_contacts  = array();
+	$new_contacts      = array();
+	$addressDel        = array();
 
     while ($l = $fo->getLine()) {
 
@@ -503,45 +504,58 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		foreach ( $l as $k => $v ) {
 			$v = CRM_Utils_String::stripSpaces($v);
 			$l[$k] = mysql_real_escape_string($v);
-		}
+        }
 
-		//find an address if we don't have an addressID already
-		if ( !empty($l['id']) && empty($l['address_id']) ) {
-			$sql = "SELECT id AS address_id, is_primary AS address_is_primary FROM civicrm_address WHERE contact_id LIKE '{$l['id']}' AND street_number LIKE '{$l['street_number']}' AND street_name LIKE '{$l['street_name']}' AND city LIKE '{$l['city']}' AND ( postal_code LIKE '{$l['postal_cod']}' OR postal_code LIKE '{$l['postal_code']}' )";
-			$dao = &CRM_Core_DAO::executeQuery( $sql );
-	        if ($dao->fetch()) { 
-				$l['address_id']         = $dao->address_id;
-				$l['address_is_primary'] = $dao->address_is_primary;
-				//reset primary flag here to prevent being overwritten by the import file 
-				//due to unexpected lookup/match with existing record
-			}
-			CRM_Core_DAO::freeResult( );
-		}
-		
-		//find district id if address id set
-		if ( !empty($l['address_id']) && empty($l['districtinfo_id']) ) {
-			$sql = "SELECT id AS districtinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}";
-			$dao = &CRM_Core_DAO::executeQuery( $sql );
-	        if ( $dao->fetch() ) $l['districtinfo_id'] = $dao->districtinfo_id;
-			CRM_Core_DAO::freeResult( );
-		}
-		
-		//find email id if email is set
-		if ( !empty($l['id']) && !empty($l['email']) && empty($l['email_id']) ) {
-			$sql = "SELECT id AS email_id FROM civicrm_email WHERE email = '{$l['email']}' AND contact_id = {$l['id']}";
-			$dao = &CRM_Core_DAO::executeQuery( $sql );
-	        if ( $dao->fetch() ) $l['email_id'] = $dao->email_id;
-			CRM_Core_DAO::freeResult( );
-		}
-		
-		//nyss_out('debug', 'ready to begin importing record...', true);
-		//nyss_out('debug', $l, true); exit();
+        //identify addresses to be deleted and store for later processing
+        //do before we perform an address_id lookup as we only want addresses
+        //for which an ID was explicitly passed
+        if ( !empty($l['address_id']) && strtolower($l['street_address']) == 'delete' ) {
+            $addressDel[] = $l['address_id'];
+        }
 
-		/*------NOW IMPORT THE DATA-------------------------------------*/
+        //find an address if we don't have an addressID already
+        if ( !empty($l['id']) && empty($l['address_id']) ) {
+            $sql = "SELECT id AS address_id, is_primary AS address_is_primary 
+                    FROM civicrm_address 
+                    WHERE contact_id LIKE '{$l['id']}' 
+                      AND street_number LIKE '{$l['street_number']}' 
+                      AND street_name LIKE '{$l['street_name']}' 
+                      AND city LIKE '{$l['city']}' 
+                      AND ( postal_code LIKE '{$l['postal_cod']}' OR postal_code LIKE '{$l['postal_code']}' )";
+            $dao = &CRM_Core_DAO::executeQuery( $sql );
+            if ($dao->fetch()) { 
+                $l['address_id']         = $dao->address_id;
+                $l['address_is_primary'] = $dao->address_is_primary;
+                //reset primary flag here to prevent being overwritten by the import file 
+                //due to unexpected lookup/match with existing record
+            }
+            CRM_Core_DAO::freeResult( );
+        }
 
-		//import contact details
-		$new_contact = (!array_key_exists('id',$l) || empty($l['id']));
-		nyss_ioimportData('civicrm_contact', $l, $dryrun, $logFile, $form_state);
+        //find district id if address id set
+        if ( !empty($l['address_id']) && empty($l['districtinfo_id']) ) {
+            $sql = "SELECT id AS districtinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}";
+            $dao = &CRM_Core_DAO::executeQuery( $sql );
+            if ( $dao->fetch() ) $l['districtinfo_id'] = $dao->districtinfo_id;
+            CRM_Core_DAO::freeResult( );
+        }
+
+        //find email id if email is set
+        if ( !empty($l['id']) && !empty($l['email']) && empty($l['email_id']) ) {
+            $sql = "SELECT id AS email_id FROM civicrm_email WHERE email = '{$l['email']}' AND contact_id = {$l['id']}";
+            $dao = &CRM_Core_DAO::executeQuery( $sql );
+            if ( $dao->fetch() ) $l['email_id'] = $dao->email_id;
+            CRM_Core_DAO::freeResult( );
+        }
+
+        //nyss_out('debug', 'ready to begin importing record...', true);
+        //nyss_out('debug', $l, true); exit();
+
+        /*------NOW IMPORT THE DATA-------------------------------------*/
+
+        //import contact details
+        $new_contact = (!array_key_exists('id',$l) || empty($l['id']));
+        nyss_ioimportData('civicrm_contact', $l, $dryrun, $logFile, $form_state);
 
         //sort the contacts into groups for later use
         if (!$dryrun) {
@@ -558,13 +572,13 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                 $updated_contacts[] = 0;
         }
 
-		//import address details
-		//set key correctly for ref
-		$l['contact_id']=$l['id'];
-		if ( $addressExists ) {
-		    nyss_ioimportData('civicrm_address', $l, $dryrun, $logFile, $form_state);
-		}
-		
+        //import address details
+        //set key correctly for ref
+        $l['contact_id']=$l['id'];
+        if ( $addressExists ) {
+            nyss_ioimportData('civicrm_address', $l, $dryrun, $logFile, $form_state);
+        }
+
 		//import phone details
 		//set key correctly for ref
 		$l['phone_contact_id']=$l['contact_id'];
@@ -757,70 +771,82 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         }
     } //end add to email only group
 
-	if ( $form_state['values']['sendmail']==1 ) {
+    //delete addresses flagged for deletion
+    $addressDelCount = count($addressDel);
+    if ( !empty($addressDel) && !$dryrun ) {
+        $addressDelList  = implode( ',', $addressDel );
+        $sqlAD = "DELETE FROM civicrm_address
+                  WHERE id IN ( $addressDelList );";
+        CRM_Core_DAO::executeQuery($sqlAD);
+    }
 
-   		//now send a confirmation email
-   		$message = array(
-      		'to' => $user->mail,
-      		'subject' => 'import Data Summary'.Date("Y-m-d H:i:s"). " filename: {$filename}",
-      		'body' => 'download the import report here: '.urlencode( "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename)),
-      		'headers' => array('From' => 'import@cms.nysenate.gov'),
-   		);
+    if ( $form_state['values']['sendmail']==1 ) {
 
-   		drupal_mail_send($message);
-  	}
-	
+        //now send a confirmation email
+        $message = array(
+          'to'      => $user->mail,
+          'subject' => 'import Data Summary'.Date("Y-m-d H:i:s"). " filename: {$filename}",
+          'body'    => 'download the import report here: '.urlencode( "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($filename)),
+          'headers' => array('From' => 'import@cms.nysenate.gov'),
+        );
+
+        drupal_mail_send($message);
+    }
+
     $num_updated = count($updated_contacts);
     $num_created = count($new_contacts);
     nyss_out('status',"$num_updated updated, $num_created created.", true);
-  	nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
-	
-	//various postProcessing cleanup steps
-	if ( !$dryrun ) {
-		$bbconfig = get_bluebird_instance_config();
-		
-		//run duplicate primary flag cleanup
-		$dupePriScript = $bbconfig['app.rootdir'].'/scripts/fixDupePrimary.sh '.$bbconfig['shortname'];
-		$dupePriCleanup = shell_exec( $dupePriScript );
-		nyss_out('status', $dupePriCleanup, true);
-		
-		//run greetings update on all null values unless disable greeting option is selected
-		if ( !$form_state['values']['disablegreeting'] ) {
-		    $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'];
-		    $greetingCreate = shell_exec( $greetingScript );
-		    nyss_out('status', $greetingCreate, true);
-		}
+
+    nyss_out('status',"$addressDelCount addresses deleted.", true);
+
+    nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
+
+    //various postProcessing cleanup steps
+    if ( !$dryrun ) {
+        $bbconfig = get_bluebird_instance_config();
+
+        //run duplicate primary flag cleanup
+        $dupePriScript = $bbconfig['app.rootdir'].'/scripts/fixDupePrimary.sh '.$bbconfig['shortname'];
+        $dupePriCleanup = shell_exec( $dupePriScript );
+        nyss_out('status', $dupePriCleanup, true);
+
+        //run greetings update on all null values unless disable greeting option is selected
+        if ( !$form_state['values']['disablegreeting'] ) {
+            $greetingScript = 'php '.$bbconfig['app.rootdir'].'/civicrm/scripts/updateAllGreetings.php -S '.$bbconfig['shortname'];
+            $greetingCreate = shell_exec( $greetingScript );
+            nyss_out('status', $greetingCreate, true);
+        }
 
         //check for malformed emails and place on hold
         $flagEmailScript  = $bbconfig['app.rootdir'].'/scripts/flagBadEmails.sh --ok '.$bbconfig['shortname'];
         $flagEmailCleanup = shell_exec( $flagEmailScript );
         nyss_out('status', $flagEmailCleanup, true);
-	}
+    }
 
-  	nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
+    nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
 
-  	exit();
+    exit();
 
 }
 
 function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
-	//nyss_out('debug', "tbl top: $tbl", true);
-	//nyss_out('debug', $l, true);
+    //nyss_out('debug', "tbl top: $tbl", true);
+    //nyss_out('debug', $l, true);
 
     global $nyss_iofields;
-	global $nyss_select;
-	global $nyss_ioline;
+    global $nyss_select;
+    global $nyss_ioline;
 
-	//build the select array once and store global for efficiency
-	if ( empty($nyss_select) ) {
+    //build the select array once and store global for efficiency
+    if ( empty($nyss_select) ) {
 
-		$nyss_select = array();
-		foreach ( $nyss_iofields as $table=>$tableDetails ) {
+        $nyss_select = array();
+        foreach ( $nyss_iofields as $table=>$tableDetails ) {
 
-		  $tmp = array();
-		  foreach ($tableDetails as $key=>$importField) {
-		
+          $tmp = array();
+          foreach ($tableDetails as $key=>$importField) {
+
 			$tmp[] = "`{$importField['fld']}` as '{$key}'";
 
 			if ($importField['PK']) {
