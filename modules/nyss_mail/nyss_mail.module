@@ -285,6 +285,8 @@ function _excludeOOD( $mailingID ) {
     $bbconfig = get_bluebird_instance_config();
     $district = $bbconfig['district'];
 
+    if ( empty($district) ) { return; }
+
     //create temp table to store contacts confirmed to be in district
     $tempTbl = "tmpExcludeOOD_$mailingID";
     $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) );";
