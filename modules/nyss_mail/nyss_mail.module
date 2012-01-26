@@ -31,6 +31,7 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
     //set some values based on context
     if ( $context == 'civimail' ) {
+
         $params['Return-Path'] = '';
         $params['List-Unsubscribe'] = '';
         $params['Reply-To'] = $replyto;
@@ -55,19 +56,23 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
                                   'install_class' => $bbconfig['install_class'],
                                   'servername' => $bbconfig['servername'],
                                   'queue_id' => $event_queue_id));
+        $hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
+        $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>.");
+        $hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
+
     } else {
+
         //$params['replyTo'] = $replyto;
-        // Sendgrid SMTP-API
-        // For non-Civimail messages, disable subscription/click/open tracking
+
+        //Sendgrid headers: disable unsubscribe for non-CiviMail email
         $hdr->setCategory("Bluebird Activity");
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
         $hdr->addFilterSetting('clicktrack', 'enable', 0);
         $hdr->addFilterSetting('opentrack', 'enable', 0);
+
     }
 
-    // Prevent Sendgrid from dropping any of our messages.
-    $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
-
+    $hdr->addFilterSetting('domainkeys', 'enable', 0);
     $params['X-SMTPAPI'] = $hdr->asJSON();
 
     //CRM_Core_Error::debug('session',$_SESSION);
@@ -99,13 +104,18 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
 
     if ( $formName == 'CRM_Mailing_Form_Group' ) {
 
+        $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $form, false, null );
+
         //4628
         $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
 
-        $mailingID = CRM_Utils_Request::retrieve('mid', 'Integer', $form, false, null );
+        //4876
+        $form->addElement('checkbox', 'exclude_ood', ts('Exclude out of district contacts?'));
+        
         if ( $mailingID ) {
             $defaults['all_emails']   = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailingID");
             $defaults['dedupe_email'] = CRM_Core_DAO::singleValueQuery("SELECT dedupe_email FROM civicrm_mailing WHERE id = $mailingID");
+            $defaults['exclude_ood']  = CRM_Core_DAO::singleValueQuery("SELECT exclude_ood FROM civicrm_mailing WHERE id = $mailingID");
         } else {
             $defaults['dedupe_email'] = true;
         }
@@ -163,14 +173,30 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
     if ( $formName == 'CRM_Mailing_Form_Group' ) {
 
-        //4628
         $mailingID    = $form->_mailingID;
-        $dedupeEmails = $form->_submitValues['dedupe_email'];
+        $submitValues = $form->_submitValues;
+        $dedupeEmails = $submitValues['dedupe_email'];
 
+        //add exclude_ood to mailing record
+        $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? 1 : 0;
+        $sqlParams  = array( 1 => array( $mailingID,  'Integer' ),
+                             2 => array( $excludeOOD, 'Boolean' ),
+                             );
+        CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams );
+
+        //4628, 4876
         if ( $form->_submitValues['all_emails'] ) {
             _addAllEmails( $mailingID, $dedupeEmails );
+        }
 
-            //recalculate the total recipients
+        if ( $form->_submitValues['exclude_ood'] ) {
+            _excludeOOD( $mailingID );
+        }
+
+        //recalculate the total recipients
+        if ( $form->_submitValues['all_emails'] ||
+             $form->_submitValues['exclude_ood'] ) {
+            
             require_once 'CRM/Mailing/BAO/Mailing.php';
 
             $count = CRM_Mailing_BAO_Recipients::mailingSize( $mailingID );
@@ -219,7 +245,7 @@ function nyss_mail_civicrm_pageRun( &$page ) {
 
 } //end pageRun
 
-//NYSS 4628
+//4628
 function _addAllEmails( $mailingID, $dedupeEmails = false ) {
 
     require_once 'CRM/Mailing/BAO/Mailing.php';
@@ -251,3 +277,40 @@ WHERE  e.on_hold = 0
     CRM_Mailing_BAO_Mailing::removeOnHold( (int) $mailingID );
 
 } //_addAllEmails
+
+//4876
+function _excludeOOD( $mailingID ) {
+
+    //determine what SD we are in
+    $bbconfig = get_bluebird_instance_config();
+    $district = $bbconfig['district'];
+
+    //create temp table to store contacts confirmed to be in district
+    $tempTbl = "tmpExcludeOOD_$mailingID";
+    $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) );";
+    CRM_Core_DAO::executeQuery($sql);
+
+    $sql = "INSERT INTO $tempTbl 
+            SELECT DISTINCT mr.contact_id
+            FROM civicrm_mailing_recipients mr
+            JOIN civicrm_address a
+              ON mr.contact_id = a.contact_id
+            JOIN civicrm_value_district_information_7 di
+              ON a.id = di.entity_id
+            WHERE mailing_id = $mailingID
+              AND ny_senate_district_47 = $district;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    //now remove contacts from the recipients table that are not found in the inclusion table
+    $sql = "DELETE FROM civicrm_mailing_recipients
+            USING civicrm_mailing_recipients
+            LEFT JOIN $tempTbl
+              ON civicrm_mailing_recipients.contact_id = $tempTbl.contact_id
+            WHERE civicrm_mailing_recipients.mailing_id = $mailingID
+              AND $tempTbl.contact_id IS NULL;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    //cleanup
+    CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
+
+} //_excludeOOD
