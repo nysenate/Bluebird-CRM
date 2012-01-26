@@ -37,6 +37,6 @@ formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="Sen
 
 ### CiviCRM ###
 
-# 4876 Exclude out of district option
+# 4879 Exclude out of district option
 excludeood="ALTER TABLE civicrm_mailing ADD exclude_ood TINYINT( 4 ) NULL ;"
 $execSql -i $instance -c "$excludeood"

@@ -109,8 +109,8 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
         //4628
         $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
 
-        //4876
-        $form->addElement('checkbox', 'exclude_ood', ts('Exclude out of district contacts?'));
+        //4879
+        $form->addElement('checkbox', 'exclude_ood', ts('Send only to emails matched with in-district postal addresses'));
         
         if ( $mailingID ) {
             $defaults['all_emails']   = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailingID");
@@ -184,14 +184,17 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
                              );
         CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams );
 
-        //4628, 4876
+        //4628, 4879
         if ( $form->_submitValues['all_emails'] ) {
-            _addAllEmails( $mailingID, $dedupeEmails );
+            _addAllEmails( $mailingID, $dedupeEmails, $excludeOOD );
         }
 
         if ( $form->_submitValues['exclude_ood'] ) {
-            _excludeOOD( $mailingID );
+            _excludeOOD( $mailingID, $dedupeEmails );
         }
+
+        //add email seed group as last step in the process
+        _addEmailSeeds( $mailingID );
 
         //recalculate the total recipients
         if ( $form->_submitValues['all_emails'] ||
@@ -208,22 +211,6 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
 //CRM_Core_Error::debug($form); exit();
 } //postProcess
-
-function nyss_mail_civicrm_mailingGroups( &$form, &$groups, &$mailings ) {
-
-    //get seed group ID
-    $gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';" );
-
-    if ( $form->_flagSubmitted && $gid ) {
-        //add group to form selection after submission
-        $form->_submitValues['includeGroups'][] = $gid;
-    } elseif ( array_key_exists($gid, $groups) ) {
-        //unset seed group on initial display so there's no confusion
-        unset($groups[$gid]);
-    }
-
-    //CRM_Core_Error::debug('mailingGroups form', $form); exit();
-}
 
 function nyss_mail_civicrm_pageRun( &$page ) {
 
@@ -246,7 +233,7 @@ function nyss_mail_civicrm_pageRun( &$page ) {
 } //end pageRun
 
 //4628
-function _addAllEmails( $mailingID, $dedupeEmails = false ) {
+function _addAllEmails( $mailingID, $dedupeEmails = false, $excludeOOD = false ) {
 
     require_once 'CRM/Mailing/BAO/Mailing.php';
 
@@ -278,8 +265,8 @@ WHERE  e.on_hold = 0
 
 } //_addAllEmails
 
-//4876
-function _excludeOOD( $mailingID ) {
+//4879
+function _excludeOOD( $mailingID, $dedupeEmails = false ) {
 
     //determine what SD we are in
     $bbconfig = get_bluebird_instance_config();
@@ -289,7 +276,7 @@ function _excludeOOD( $mailingID ) {
 
     //create temp table to store contacts confirmed to be in district
     $tempTbl = "tmpExcludeOOD_$mailingID";
-    $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) );";
+    $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) ) TYPE=myisam;";
     CRM_Core_DAO::executeQuery($sql);
 
     $sql = "INSERT INTO $tempTbl 
@@ -315,4 +302,61 @@ function _excludeOOD( $mailingID ) {
     //cleanup
     CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
 
+    //if not deduping emails, return now
+    if ( !$dedupeEmails ) {
+        return;
+    }
+
+    //if dedupeEmails, we need to handle that now, as it was skipped earlier in the process
+    $tempTbl = "tmpDedupeEmails_$mailingID";
+    $sql = "CREATE TEMPORARY TABLE $tempTbl( email_id INT NOT NULL, PRIMARY KEY(email_id) ) TYPE=myisam;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    $sql = "INSERT INTO $tempTbl 
+            SELECT mr.email_id
+            FROM civicrm_mailing_recipients mr
+              JOIN civicrm_email e
+                ON mr.email_id = e.id
+            WHERE mailing_id = $mailingID
+            GROUP BY e.email;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    //now remove contacts from the recipients table that are not found in the inclusion table
+    $sql = "DELETE FROM civicrm_mailing_recipients
+            USING civicrm_mailing_recipients
+            LEFT JOIN $tempTbl
+              ON civicrm_mailing_recipients.email_id = $tempTbl.email_id
+            WHERE civicrm_mailing_recipients.mailing_id = $mailingID
+              AND $tempTbl.email_id IS NULL;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    //cleanup
+    CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
+
 } //_excludeOOD
+
+function _addEmailSeeds( $mailingID ) {
+
+    $gid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Email_Seeds';" );
+
+    if ( !$gid ) {
+        return;
+    }
+
+    $sql = "INSERT INTO civicrm_mailing_recipients ( mailing_id, contact_id, email_id )
+            SELECT $mailingID, e.contact_id, e.id
+            FROM civicrm_group_contact gc
+            JOIN civicrm_email e
+              ON gc.contact_id = e.contact_id
+              AND gc.group_id = $gid
+              AND gc.status = 'Added'
+              AND e.on_hold = 0
+              AND ( e.is_primary = 1 OR e.is_bulkmail = 1 )
+            LEFT JOIN civicrm_mailing_recipients mr
+              ON gc.contact_id = mr.contact_id
+              AND mr.mailing_id = $mailingID
+            WHERE mr.id IS NULL;"; 
+    //CRM_Core_Error::debug($sql);exit();
+    CRM_Core_DAO::executeQuery($sql);
+
+} //_addEmailSeeds
