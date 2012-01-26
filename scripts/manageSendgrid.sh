@@ -121,6 +121,15 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+subusername=`$readConfig --ig $instance smtp.subuser`
+subuserpass=`$readConfig --ig $instance smtp.subpass`
+
+if [ ! "$subusername" -o ! "$subuserpass" ]; then
+  echo "$prog: Sendgrid subuser account info (username or password) not found" >&2
+  exit 1
+fi
+
+
 if [ "$multicmd" ]; then
   case "$multicmd" in
     bluebird_setup)
@@ -162,8 +171,7 @@ if [ "$multicmd" ]; then
   exit $rc
 fi
 
-subusername=`$readConfig --ig $instance smtp.subuser`
-subuserpass=`$readConfig --ig $instance smtp.subpass`
+
 params="api_user=$subusername&api_key=$subuserpass$params"
 apiUrl="$apiUrlBase/$cmd.$format"
 
