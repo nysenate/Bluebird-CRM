@@ -66,7 +66,7 @@ function updateSenators($optList, $env) {
         //Get the list id
         $list_title = $senatorData['field_bronto_mailing_list'][0]['value'];
         if(!$list_title) {
-            echo "\nSkipping senator $title; no mailing list found.\n\n";
+            echo "Skipping senator: $title; no mailing list found.\n";
             continue;
         }
         $list_id = get_list_id($list_title, $conn);
@@ -98,7 +98,7 @@ function updateCommitties($optList, $env) {
         //Get the list id
         $list_title = $committeeData['field_bronto_mailing_list'][0]['value'];
         if(!$list_title) {
-            echo "\nSkipping committee $title; no mailing list found.\n\n";
+            echo "Skipping committee: $title; no mailing list found.\n";
             continue;
         }
         $list_id = get_list_id($list_title, $conn);
