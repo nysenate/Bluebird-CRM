@@ -186,11 +186,11 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
         //4628, 4879
         if ( $form->_submitValues['all_emails'] ) {
-            _addAllEmails( $mailingID, $dedupeEmails );
+            _addAllEmails( $mailingID, $dedupeEmails, $excludeOOD );
         }
 
         if ( $form->_submitValues['exclude_ood'] ) {
-            _excludeOOD( $mailingID );
+            _excludeOOD( $mailingID, $dedupeEmails );
         }
 
         //recalculate the total recipients
@@ -246,7 +246,7 @@ function nyss_mail_civicrm_pageRun( &$page ) {
 } //end pageRun
 
 //4628
-function _addAllEmails( $mailingID, $dedupeEmails = false ) {
+function _addAllEmails( $mailingID, $dedupeEmails = false, $excludeOOD = false ) {
 
     require_once 'CRM/Mailing/BAO/Mailing.php';
 
@@ -279,7 +279,7 @@ WHERE  e.on_hold = 0
 } //_addAllEmails
 
 //4879
-function _excludeOOD( $mailingID ) {
+function _excludeOOD( $mailingID, $dedupeEmails = false ) {
 
     //determine what SD we are in
     $bbconfig = get_bluebird_instance_config();
@@ -289,7 +289,7 @@ function _excludeOOD( $mailingID ) {
 
     //create temp table to store contacts confirmed to be in district
     $tempTbl = "tmpExcludeOOD_$mailingID";
-    $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) );";
+    $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) ) TYPE=myisam;";
     CRM_Core_DAO::executeQuery($sql);
 
     $sql = "INSERT INTO $tempTbl 
@@ -310,6 +310,37 @@ function _excludeOOD( $mailingID ) {
               ON civicrm_mailing_recipients.contact_id = $tempTbl.contact_id
             WHERE civicrm_mailing_recipients.mailing_id = $mailingID
               AND $tempTbl.contact_id IS NULL;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    //cleanup
+    CRM_Core_DAO::executeQuery("DROP TABLE $tempTbl");
+	
+	//if not deduping emails, return now
+	if ( !$dedupeEmails ) {
+		return;
+	}
+	
+	//if dedupeEmails, we need to handle that now, as it was skipped earlier in the process
+	$tempTbl = "tmpDedupeEmails_$mailingID";
+    $sql = "CREATE TEMPORARY TABLE $tempTbl( email_id INT NOT NULL, PRIMARY KEY(email_id) ) TYPE=myisam;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    $sql = "INSERT INTO $tempTbl 
+            SELECT mr.email_id
+            FROM civicrm_mailing_recipients mr
+			  JOIN civicrm_email e
+			    ON mr.email_id = e.id
+            WHERE mailing_id = $mailingID
+			GROUP BY e.email;";
+    CRM_Core_DAO::executeQuery($sql);
+
+    //now remove contacts from the recipients table that are not found in the inclusion table
+    $sql = "DELETE FROM civicrm_mailing_recipients
+            USING civicrm_mailing_recipients
+            LEFT JOIN $tempTbl
+              ON civicrm_mailing_recipients.email_id = $tempTbl.email_id
+            WHERE civicrm_mailing_recipients.mailing_id = $mailingID
+              AND $tempTbl.email_id IS NULL;";
     CRM_Core_DAO::executeQuery($sql);
 
     //cleanup
