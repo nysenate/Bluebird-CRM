@@ -1,42 +1,52 @@
+#!/usr/bin/php
 <?php
 
-//Bootstrap the script and progress the command line arguments
-require_once realpath(dirname(__FILE__).'/../script_utils.php');
-add_packages_to_include_path();
 $prog = basename(__FILE__);
-$short_opts = 'U:P:H:N:hascgub:f:';
-$long_opts = array('user=','pass=','host=', 'name=', 'help','all','senators','committees','geocode','signups','batch=','first=');
-$usage = "--user|-U USER --pass|-P --host|-H --name|-N [--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_ID]";
-if(! $optList = process_cli_args($short_opts, $long_opts))
-    die("$prog $usage\n");
+$script_dir = dirname(__FILE__);
 
-if($optList['help'])
-    die("$prog $usage\n");
+require_once "utils.php";
+require_once 'nysenate_api/SignupForm.php';
+require_once 'nysenate_api/get_services/xmlrpc-api.inc';
+require_once realpath(dirname(__FILE__).'/../script_utils.php');
 
-if(!$optList['user'] || !$optList['pass'] || !$optList['host'] || !$optList['name']) {
-    echo "Username, Password, Host, and database name for the signups database are required.\n";
-    die("$prog $usage\n");
+add_packages_to_include_path();
+
+// Load the config file and bootstrap the environment
+if(! $config = parse_ini_file("$script_dir/reports.cfg", true)) {
+    die("$prog: config file reports.cfg not found.");
 }
 
-//Establish a database connection
-if(! $conn = mysql_connect($optList['host'],$optList['user'],$optList['pass']) ) {
-    die(mysql_error());
-} elseif(! mysql_select_db($optList['name'],$conn) ) {
-    die(mysql_error($conn));
-}
+$env = array(
+    'domain' => $config['xmlrpc']['domain'],
+    'apikey' => $config['xmlrpc']['apikey'],
+    'conn'   => get_connection($config['database'])
+);
 
 
-//Set up for nysenate.gov xmlrpc service connections
-require_once 'classes/get_services/xmlrpc-api.inc';
-require_once 'classes/WebformForm.php';
-require_once 'classes/SignupForm.php';
-require_once 'classes/ContactForm.php';
-$domain = 'civicrm.nysenate.gov';
-$apikey = '18de41a9ce36d42d82f6035287d3e200';
+// Process the command line options and dispatch accordingly
+$short_opts = 'hascgub:f:';
+$long_opts = array('help','all','senators','committees','geocode','signups','batch=','first=');
+$usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_ID]";
+if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] )
+    die("$prog $usage\n");
 
-if($optList['senators'] || $optList['all']) {
+if($optList['senators'] || $optList['all'])
+    updateSenators($optList, $env);
+
+if($optList['committees'] || $optList['all'])
+    updateCommitties($optList, $env);
+
+if($optList['signups'] || $optList['all'])
+    updateSignups($optList, $env);
+
+if($optList['geocode'] || $optList['all'])
+    geocodeAddresses($optList, $env);
+
+
+function updateSenators($optList, $env) {
     //TODO: If senators get removed from this list (new senators come in) we
     //currently have no way to reflect that fact. Will cause future problems.
+    list($domain, $apikey, $conn) = array_values($env);
 
     $view_service = new viewsGet($domain, $apikey);
     $senators = $view_service->get(array('view_name'=>'senators'));
@@ -56,7 +66,7 @@ if($optList['senators'] || $optList['all']) {
         //Get the list id
         $list_title = $senatorData['field_bronto_mailing_list'][0]['value'];
         if(!$list_title) {
-            echo "\nSkipping senator $title; no mailing list found.\n\n";
+            echo "Skipping senator: $title; no mailing list found.\n";
             continue;
         }
         $list_id = get_list_id($list_title, $conn);
@@ -69,9 +79,10 @@ if($optList['senators'] || $optList['all']) {
     }
 }
 
-if($optList['committees'] || $optList['all']) {
+function updateCommitties($optList, $env) {
     //TODO: If committees wind up not on this list (decommissioned) we don't update
     //to reflect that fact. Could cause a problem in the future.
+    list($domain, $apikey, $conn) = array_values($env);
 
     $view_service = new viewsGet($domain, $apikey);
     $committees = $view_service->get(array('view_name'=>'committees'));
@@ -87,7 +98,7 @@ if($optList['committees'] || $optList['all']) {
         //Get the list id
         $list_title = $committeeData['field_bronto_mailing_list'][0]['value'];
         if(!$list_title) {
-            echo "\nSkipping committee $title; no mailing list found.\n\n";
+            echo "Skipping committee: $title; no mailing list found.\n";
             continue;
         }
         $list_id = get_list_id($list_title, $conn);
@@ -102,7 +113,8 @@ if($optList['committees'] || $optList['all']) {
 }
 
 
-if($optList['signups'] || $optList['all']) {
+function updateSignups($optList, $env) {
+    list($domain, $apikey, $conn) = array_values($env);
     $limit = $optList['batch'] ? $optList['batch'] : 500; //default to 500
 
     //Starting point can be user supplied or queried from the database for
@@ -162,9 +174,9 @@ if($optList['signups'] || $optList['all']) {
     }
 }
 
-if($optList['geocode'] || $optList['all']) {
-
-    // Bootstrap CiviCRM so we can use the SAGE
+function geocodeAddresses($optList, $env) {
+    // Bootstrap CiviCRM so we can use the SAGE module
+    $conn = $env['conn'];
     $root = dirname(dirname(dirname(dirname(__FILE__))));
     $_SERVER["HTTP_HOST"] = $_SERVER['SERVER_NAME'] = 'sd99';
     require_once "$root/drupal/sites/default/civicrm.settings.php";
@@ -197,6 +209,7 @@ if($optList['geocode'] || $optList['all']) {
         if(! $inner_result = mysql_query($sql,$conn) )
             die(mysql_error($conn)."\n".$sql);
     }
+    echo "\n";
 }
 
 

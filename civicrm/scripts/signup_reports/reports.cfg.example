@@ -1,0 +1,49 @@
+[database]
+; Connection information for the signups database.
+; Bluebird connections are pulled in from the bluebird.cfg file
+;
+user=
+pass=
+host=
+port=
+name=signups
+
+
+[xmlrpc]
+; The domain and apikey for the NYSenate.gov xmlrpi API
+;
+domain=
+apikey=
+
+
+[districts]
+; List of the district, instance pairs with the target emails for delivery:
+;   district_instance = email1,email2,email3
+;
+43_mcdonald=example@nysenate.gov, example2@nysenate.gov
+
+[reports]
+; Reports are generated and saved to the specified directory under a
+; date-based subdirectory.
+;	directory = Relative or absolute path to the directory where reports
+;       will be stored.
+;	date_format = Date format for the subdirectories to organize reports.
+;	name_template = Template for the file name. Replaces <district> and
+;       <site> with corresponding values.
+;
+directory = reports
+date_format = Y.m.d
+name_template = district_<district>
+
+
+[email]
+; Connection information for the smtp server for sending out reports. Also
+; allows for specification of certain headers to customize the delivery.
+;
+host=
+port=
+auth=
+username=
+password=
+from=bluebird@nysenate.gov
+bcc=
