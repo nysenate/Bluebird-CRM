@@ -204,7 +204,7 @@ class CRM_Utils_SAGE
         if($xml->address->simple) {
             //for bulk actions, the status message is concatenated and could get quite long
             //so we will limit the length
-            if ( strlen($session->getStatus) < MAX_STATUS_LEN ) {
+            if ( strlen($session->getStatus()) < MAX_STATUS_LEN ) {
                 $msg = "SAGE Warning: USPS could not validate address: [$addr] </ br>";
                 $session->setStatus(ts($msg));
             }
