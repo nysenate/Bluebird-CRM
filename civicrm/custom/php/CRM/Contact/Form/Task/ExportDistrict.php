@@ -128,7 +128,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $ids = implode("),(",$this->_contactIds);
         $ids = "($ids)";
 
-        $sql = "CREATE TABLE tmpExport$rnd (id int not null primary key);";
+        $sql = "CREATE TABLE tmpExport$rnd (id int not null primary key) TYPE=myisam;";
         $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
         $sql = "INSERT INTO tmpExport$rnd VALUES $ids;";
@@ -330,7 +330,7 @@ function createLogTable( $rnd ) {
     $tblLog       = "tmpLog$rnd";
     $tblLogDedupe = "tmpLogDedupe$rnd";
 
-    $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date );";
+    $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date ) TYPE=myisam;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //insert contact log
@@ -356,7 +356,7 @@ function createLogTable( $rnd ) {
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //collapse resulting data in a separate table
-	$sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
+	$sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog TYPE=myisam;";
 	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	
 	$sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
