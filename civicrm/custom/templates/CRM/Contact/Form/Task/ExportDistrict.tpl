@@ -41,6 +41,9 @@
 <dt>{$form.locType.label}</dt>
   <dd>{$form.locType.html}</dd>
 
+<dt>{$form.includeLog.label}</dt>
+  <dd>{$form.includeLog.html}</dd>
+
 <dt></dt>
   <dd>{$form.buttons.html}</dd>
 </dl>
