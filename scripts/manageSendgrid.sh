@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2011-12-30
-# Revised: 2012-01-16
+# Revised: 2012-01-26
 #
 
 prog=`basename $0`
@@ -18,8 +18,44 @@ nyssEventCallbackUrl="http://sendgrid.nysenate.gov/callback.php"
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--get-blocks|-gbs] [--get-bounces|-gb] [--get-invalidemails|-gi] [--get-spamreports|-gs] [--get-unsubscribes|-gs] [--delete-bounces|-db] [--delete-invalidemails|-di] [--delete-spamreports|-ds] [--delete-unsubscribes|-du] [--list-apps|-la] [--activate-app|-aa appName] [--deactivate-app|-da appName] [--setup-app|-sa appName] [--enable-eventnotify|-ee] [--disable-eventnotify] [--get-app-settings|-gas appName] [--get-event-url|-geu] [--set-event-url|-seu url] [--delete-event-url|-deu] [--cmd|-c apiCommand] [--param|-p attr=val] [--json|-j] [--pretty-print|-pp] [--http-headers|-hh] [--verbose|-v] instanceName" >&2
+  echo "Usage: $prog [options] instanceName
+where [options] are:
+  --bluebird-setup|-bs
+  --get-blocks|-gbs
+  --get-bounces|-gb
+  --get-invalidemails|-gi
+  --get-spamreports|-gs
+  --get-unsubscribes|-gu
+  --delete-bounces
+  --delete-invalidemails
+  --delete-spamreports
+  --delete-unsubscribes
+  --list-apps|-l
+  --list-active|-la
+  --list-inactive|-li
+  --activate-app|-aa appName
+  --deactivate-app|-da appName
+  --setup-app|-sa appName
+  --enable-eventnotify|-ee
+  --disable-eventnotify
+  --enable-subscriptiontrack|-es
+  --disable-subscriptiontrack|-ds
+  --get-app-settings|-gas appName
+  --get-event-url|-geu
+  --set-event-url|-seu url
+  --delete-event-url|-deu
+  --cmd|-c apiCommand
+  --param|-p attr=val
+  --json|-j
+  --pretty-print|-pp
+  --http-headers|-hh
+  --verbose|-v" >&2
 }
+
+format_json() {
+  sed -e 's;\[;;' -e 's;\];;' -e 's;},;}\n;g'
+}
+
 
 if [ $# -lt 1 ]; then
   usage
@@ -31,39 +67,45 @@ instance=
 oper=
 cmd=
 params=
-pretty_print=0
+postproc=
 verbose=0
-curl_args="--fail --silent --show-error"
+curl_args="--insecure --fail --silent --show-error"
 use_http_post=0
 multicmd=
+passthru_args=
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --bluebird-setup|-bs) multicmd=bluebird_setup ;;
     --get-block*|-gbl) cmd="blocks.get"; params="$params&date=1" ;;
     --get-bounce*|-gb) cmd="bounces.get"; params="$params&date=1" ;;
     --get-invalid*|-gi) cmd="invalidemails.get"; params="$params&date=1" ;;
     --get-spam*|-gs) cmd="spamreports.get"; params="$params&date=1" ;;
     --get-unsub*|-gu) cmd="unsubscribes.get"; params="$params&date=1" ;;
-    --delete-bounce*|-db) cmd="bounces.delete" ;;
-    --delete-invalid*|-di) cmd="invalidemails.delete" ;;
-    --delete-spam*|-ds) cmd="spamreports.delete" ;;
-    --delete-unsub*|-du) cmd="unsubscribes.delete" ;;
-    --list-app*|-la) cmd="filter.getavailable" ;;
+    --delete-bounce*) cmd="bounces.delete" ;;
+    --delete-inv*) cmd="invalidemails.delete" ;;
+    --delete-spam*) cmd="spamreports.delete" ;;
+    --delete-unsub*) cmd="unsubscribes.delete" ;;
+    --list-app*|-l) cmd="filter.getavailable" ;;
+    --list-active|-la) cmd="filter.getavailable"; format=json; postproc=active ;;
+    --list-inactive|-li) cmd="filter.getavailable"; format=json; postproc=inactive ;;
     --activate*|-aa) shift; cmd="filter.activate"; params="$params&name=$1" ;;
     --deactivate*|-da) shift; cmd="filter.deactivate"; params="$params&name=$1" ;;
     --setup*|-sa) shift; cmd="filter.setup"; params="$params&name=$1"; use_http_post=1 ;;
-    --enable-eventnotify|-ee) multicmd=enable_eventnotify ;;
-    --disable-eventnotify|-de) multicmd=disable_eventnotify ;;
+    --enable-event*|-ee) multicmd=enable_eventnotify ;;
+    --disable-event*|-de) multicmd=disable_eventnotify ;;
+    --enable-sub*|-es) multicmd=enable_subscriptiontrack ;;
+    --disable-sub*|-ds) multicmd=disable_subscriptiontrack ;;
     --get-app-settings|-gas) shift; cmd="filter.getsettings"; params="$params&name=$1" ;;
     --get-event-url|-geu) cmd="eventposturl.get" ;;
     --set-event-url|-seu) shift; cmd="eventposturl.set"; params="$params&url=$1" ;;
     --delete-event-url|-deu) cmd="eventposturl.delete" ;;
     --cmd|-c) shift; cmd="$1" ;;
     --param|-p) shift; params="$params&$1" ;;
-    --json|-j) format=json ;;
-    --pretty*|-pp) pretty_print=1 ;;
-    --http*|-hh) curl_args="$curl_args --include" ;;
-    --verbose|-v) verbose=1 ;;
+    --json|-j) format=json; passthru_args="$passthru_args $1" ;;
+    --pretty*|-pp) postproc=pretty; passthru_args="$passthru_args $1" ;;
+    --http*|-hh) curl_args="$curl_args --include"; passthru_args="$passthru_args $1" ;;
+    --verbose|-v) verbose=1; passthru_args="$passthru_args $1" ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -79,28 +121,57 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
+subusername=`$readConfig --ig $instance smtp.subuser`
+subuserpass=`$readConfig --ig $instance smtp.subpass`
+
+if [ ! "$subusername" -o ! "$subuserpass" ]; then
+  echo "$prog: Sendgrid subuser account info (username or password) not found" >&2
+  exit 1
+fi
+
+
 if [ "$multicmd" ]; then
   case "$multicmd" in
+    bluebird_setup)
+      $0 $passthru_args --enable-eventnotify $instance
+      $0 $passthru_args --enable-subscriptiontrack $instance
+      $0 $passthru_args --activate-app clicktrack $instance
+      $0 $passthru_args --activate-app opentrack $instance
+      $0 $passthru_args --activate-app dkim $instance
+      # Kludge: Activate domainkeys before deactivating it, because the
+      # Sendgrid app deactivation is actually a toggle.  So if an app is
+      # already deactivated, then deactivating it will actually activate it.
+      # Yeah, real intuitive.
+      $0 $passthru_args --activate-app domainkeys $instance
+      $0 $passthru_args --deactivate-app domainkeys $instance
+      ;;
     enable_eventnotify)
       # Note: url= parameter is required. All others are optional.
-      $0 --activate-app eventnotify $instance && \
-        $0 --setup-app eventnotify -p url="$nyssEventCallbackUrl" -p processed=1 -p dropped=1 -p deferred=1 -p delivered=1 -p bounce=1 -p click=1 -p open=1 -p unsubscribe=1 -p spamreport=1 $instance
+      $0 $passthru_args --activate-app eventnotify $instance && \
+        $0 $passthru_args --setup-app eventnotify -p url="$nyssEventCallbackUrl" -p processed=1 -p dropped=1 -p deferred=1 -p delivered=1 -p bounce=1 -p click=1 -p open=1 -p unsubscribe=1 -p spamreport=1 $instance
       rc=$?
       echo "$prog: Warning: The Batch Event Notifications setting is not accessible via the Sendgrid API.  It must be set manually via the Web interface."
       ;;
     disable_eventnotify)
       # Only need to specify url=%00.  The others will be set to blank.
-      $0 --setup-app eventnotify -p url="%00" $instance && \
-        $0 --deactivate-app eventnotify $instance
+      $0 $passthru_args --setup-app eventnotify -p url="%00" $instance && \
+        $0 $passthru_args --deactivate-app eventnotify $instance
       rc=$?
+      ;;
+    enable_subscriptiontrack)
+      $0 $passthru_args --activate-app subscriptiontrack $instance && \
+        $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=If you would like to stop receiving emails from your Senator, click here: <% %>." -p 'text/html=<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, %26lt;%25 click here %25%26gt;.</p>' $instance
+      ;;
+    disable_subscriptiontrack)
+      $0 $passthru_args --setup-app subscriptiontrack -p "text/plain=" -p "text/html=" -p "url=%00" $instance && \
+        $0 $passthru_args --deactivate-app subscriptiontrack $instance
       ;;
     *) echo "$prog: $multicmd: Unknown multi-command" >&2; rc=1 ;;
   esac
   exit $rc
 fi
 
-subusername=`$readConfig --ig $instance smtp.subuser`
-subuserpass=`$readConfig --ig $instance smtp.subpass`
+
 params="api_user=$subusername&api_key=$subuserpass$params"
 apiUrl="$apiUrlBase/$cmd.$format"
 
@@ -114,13 +185,19 @@ else
   rc=$?
 fi
 
-if [ $pretty_print -eq 1 ]; then
-  case $format in
-    json) echo "$result" | sed 's;};}\n;g' ;;
-    *) echo "$result" | sed 's;\(<[^/]\);\n\1;g' ;;
-  esac
-else
-  echo "$result"
-fi
+case "$postproc" in
+  pretty)
+    case $format in
+      json) echo "$result" | format_json ;;
+      *) echo "$result" | sed 's;\(<[^/]\);\n\1;g' ;;
+    esac
+    ;;
+  active|inactive)
+    [ "$postproc" = "active" ] && astr="true" || astr="false"
+    echo "$result" | format_json | grep "activated.:$astr" | sed 's;.*"name":"\([^"]*\)".*;\1;' | sort | tr '\n' ' '
+    echo
+    ;;
+  *) echo "$result" ;;
+esac
 
 exit $rc

@@ -31,7 +31,6 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
     //set some values based on context
     if ( $context == 'civimail' ) {
-
         $params['Return-Path'] = '';
         $params['List-Unsubscribe'] = '';
         $params['Reply-To'] = $replyto;
@@ -56,23 +55,19 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
                                   'install_class' => $bbconfig['install_class'],
                                   'servername' => $bbconfig['servername'],
                                   'queue_id' => $event_queue_id));
-        $hdr->addFilterSetting('subscriptiontrack', 'enable', 1);
-        $hdr->addFilterSetting('subscriptiontrack', "text/plain", "If you would like to stop receiving emails from your Senator, click here: <% %>.");
-        $hdr->addFilterSetting('subscriptiontrack', "text/html", '<p style="text-align: center;font-size:10px;">If you would like to stop receiving emails from your Senator, <% click here %>.</p>');
-
     } else {
-
         //$params['replyTo'] = $replyto;
-
-        //Sendgrid headers: disable unsubscribe for non-CiviMail email
+        // Sendgrid SMTP-API
+        // For non-Civimail messages, disable subscription/click/open tracking
         $hdr->setCategory("Bluebird Activity");
         $hdr->addFilterSetting('subscriptiontrack', 'enable', 0);
         $hdr->addFilterSetting('clicktrack', 'enable', 0);
         $hdr->addFilterSetting('opentrack', 'enable', 0);
-
     }
 
-    $hdr->addFilterSetting('domainkeys', 'enable', 0);
+    // Prevent Sendgrid from dropping any of our messages.
+    $hdr->addFilterSetting('bypass_list_management', 'enable', 1);
+
     $params['X-SMTPAPI'] = $hdr->asJSON();
 
     //CRM_Core_Error::debug('session',$_SESSION);
