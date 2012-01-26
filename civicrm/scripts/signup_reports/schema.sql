@@ -63,6 +63,10 @@ CREATE TABLE signup (
     id int(10) unsigned AUTO_INCREMENT PRIMARY KEY,
     list_id int(10) unsigned,
     person_id int(10) unsigned,
+    reported boolean default 0,
+    dt_reported datetime,
+    INDEX(reported),
+    INDEX(dt_reported),
     UNIQUE KEY `unqiue_signup` (list_id, person_id),
     FOREIGN KEY (list_id) REFERENCES list (id),
     FOREIGN KEY (person_id) REFERENCES person (id)
