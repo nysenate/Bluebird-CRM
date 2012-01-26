@@ -109,7 +109,7 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
         //4628
         $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
 
-        //4876
+        //4879
         $form->addElement('checkbox', 'exclude_ood', ts('Exclude out of district contacts?'));
         
         if ( $mailingID ) {
@@ -184,7 +184,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
                              );
         CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams );
 
-        //4628, 4876
+        //4628, 4879
         if ( $form->_submitValues['all_emails'] ) {
             _addAllEmails( $mailingID, $dedupeEmails );
         }
@@ -278,7 +278,7 @@ WHERE  e.on_hold = 0
 
 } //_addAllEmails
 
-//4876
+//4879
 function _excludeOOD( $mailingID ) {
 
     //determine what SD we are in
