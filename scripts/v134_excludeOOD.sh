@@ -40,3 +40,9 @@ formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="Sen
 # 4879 Exclude out of district option
 excludeood="ALTER TABLE civicrm_mailing ADD exclude_ood TINYINT( 4 ) NULL ;"
 $execSql -i $instance -c "$excludeood"
+
+# add undeliverable:do not postal mail to batch update profile
+batch="INSERT INTO civicrm_uf_field (uf_group_id, field_name, is_active, is_view, is_required, weight, help_post, help_pre, visibility, in_selector, is_searchable, location_type_id, phone_type_id, label, field_type, is_reserved) VALUES
+(10, 'do_not_trade', 1, 0, 0, 8, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Undeliverable: Do Not Mail', 'Contact', NULL);"
+$execSql -i $instance -c "$batch"
+

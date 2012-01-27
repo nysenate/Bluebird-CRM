@@ -199,6 +199,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     if ( $exclude_rt != null ) {
         $sql .= " AND ( cvci.record_type_61 IS NULL OR cvci.record_type_61 NOT IN ( $exclude_rt ) ) ";
     }
+	
+	//group by contact ID in case any joins with multiple records cause dupe primary in our temp table
+	$sql .= " GROUP BY c.id ";
     
     //order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
     $sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, "; 
