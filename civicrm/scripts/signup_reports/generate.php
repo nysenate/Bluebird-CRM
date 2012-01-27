@@ -44,10 +44,14 @@ list($nysenate_records, $nysenate_emails, $list_totals) = process_records($resul
 // Compile an xls report
 $filename = get_report_name($optList['district'], $optList['site'], $config['reports']);
 
-if($config['reports']['directory'][0] == '/')
-    $directory = $config['reports']['directory'];
-else
-    $directory = "$script_dir/{$config['reports']['directory']}";
+if(!$optList['folder']) {
+    if($config['reports']['directory'][0] == '/')
+        $directory = $config['reports']['directory'];
+    else
+        $directory = "$script_dir/{$config['reports']['directory']}";
+} else {
+    $directory = $optList['folder'];
+}
 
 $directory = $directory."/".date($config['reports']['date_format']);
 if(!is_dir($directory))

@@ -1,0 +1,58 @@
+The SignupReports project has 3 primary components, a shared configuration,
+and a cron job script for use in production. In normal use it will create
+the specified reports:directory folder and create subfolders named according
+to the specified date format. These subfolders organize all of the reports
+being generated.
+
+Cron
+------------
+
+The cron script is typically the only interface you will need to use and
+has the following options:
+
+* --ingest:   Run the ingest script with signups and geocode options.
+* --update:   Also run the ingest script with senators and committee options.
+              Has no effect if not run with --ingest
+* --generate: Run the generate script over all configured districts
+* --email:    Run the email script over all configured districts
+* --folder:   Directly specify the report directory to operate on. Has no
+              effect if not run with either --generate or --email.
+* --all:      Run with --ingest, --generate, and --email options
+
+
+Ingest
+------------
+
+The ingest component is responsible for communication with NYSenate.gov and
+relies on the components made available in the nysenate_api subdirectory. It
+has 5 primary options:
+
+* --senators:   Update the list of senators from NYSenate.gov
+* --committees: Update the list of committees from NYSenate.gov
+* --signups:    Pull down new signups from NYSenate.gov
+* --geocode:    Geocode all new addresses using SAGE
+* --all:        Do all of the above
+
+
+Generate
+------------
+
+The generate component is responsible for constructing a single signup
+report specified by a district + instance name pair and depends on the
+Spreadsheet package in civicrm/packages. Generate has 3 main options:
+
+* --site:     [Required] The shorthand instance name for the senator
+* --district: [Required] The district number for the senator
+* --folder:   Override the report folder specified in the reports.cfg file
+
+
+Email
+------------
+The email component is responsible for sending a single report to a list of
+recipients specified in the reports.cfg:districts section. It is configured
+via the email section and can optionally bcc an administrator all signup
+reports. Email has 3 main options:
+
+* --site:     [Required] The shorthand instance name for the senator
+* --district: [Required] The district number for the senator
+* --folder:   Override the report folder specified in the reports.cfg file
