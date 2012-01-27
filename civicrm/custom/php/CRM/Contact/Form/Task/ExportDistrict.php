@@ -356,7 +356,7 @@ function createLogTable( $rnd ) {
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //collapse resulting data in a separate table
-	$sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog TYPE=myisam;";
+	$sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
 	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	
 	$sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
