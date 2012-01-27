@@ -92,20 +92,21 @@ function get_signups($district, $conn) {
     // custom named all of the fields and inserted a few new ones with deafult values
     // that we will override later.
     $sql = "SELECT 'FALSE' AS `In Bluebird`,
-                   list.title as `Source List`,
-                   person.district as `District`,
-                   '' AS `In District`,
-                   person.id AS ID,
                    person.first_name AS `First Name`,
                    person.last_name AS `Last Name`,
+                   person.email AS `Email Address`,
                    person.address1 AS `Street Address`,
                    person.address2 AS `Supplemental Address`,
                    person.city AS `City`,
                    person.state AS `State`,
                    person.zip AS `Postal Code`,
                    person.phone AS `Phone`,
-                   person.email AS `Email Address`,
                    GROUP_CONCAT(DISTINCT issue.issue ORDER BY issue.issue ASC SEPARATOR '|') as `Issues`
+                   list.title as `Source List`,
+                   person.district as `District`,
+                   '' AS `In District`,
+                   person.id AS ID,
+                   person.created AS `Signup Date`
             FROM person
               JOIN signup ON signup.person_id=person.id
               JOIN list ON list.id=signup.list_id
