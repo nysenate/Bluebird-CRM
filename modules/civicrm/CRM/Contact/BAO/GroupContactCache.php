@@ -115,15 +115,12 @@ AND     ( g.cache_date IS NULL OR
     static function store( &$groupID, &$values ) {
         $processed = false;
 
-        // NYSS 4769 - sort the values to avoid concurrent queries deadlocking with each other.
-        sort($values);
-
         // to avoid long strings, lets do BULK_INSERT_COUNT values at a time
         while ( ! empty( $values ) ) {
             $processed = true;
             $input = array_splice( $values, 0, CRM_Core_DAO::BULK_INSERT_COUNT );
             $str   = implode( ',', $input );
-            $sql = "INSERT IGNORE INTO civicrm_group_contact_cache (group_id,contact_id) VALUES $str;";
+            $sql = "REPLACE INTO civicrm_group_contact_cache (group_id,contact_id) VALUES $str;";
             CRM_Core_DAO::executeQuery( $sql );
         }
 
