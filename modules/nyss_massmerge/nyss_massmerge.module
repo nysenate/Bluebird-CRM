@@ -1,6 +1,6 @@
 <?php 
 
-define( 'DEBUG', 1 );
+define( 'DEBUG', 2 );
 
 function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId = NULL, $tables = NULL ) {
 
@@ -59,16 +59,19 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 
 	//if greeting in conflict and one is custom, retain formula option
 	if ( array_key_exists( 'move_addressee', $conflicts ) ) {
-		_fixGreeting( 'move_addressee', $rows, $conflicts );
+		_fixGreeting( 'move_addressee', $rows, $conflicts, $data );
 	}
 	if ( array_key_exists( 'move_email_greeting', $conflicts ) ) {
-		_fixGreeting( 'move_email_greeting', $rows, $conflicts );
+		_fixGreeting( 'move_email_greeting', $rows, $conflicts, $data );
 	}
 	if ( array_key_exists( 'move_postal_greeting', $conflicts ) ) {
-		_fixGreeting( 'move_postal_greeting', $rows, $conflicts );
+		_fixGreeting( 'move_postal_greeting', $rows, $conflicts, $data );
+	}
+	if ( array_key_exists( 'move_addressee_custom', $conflicts ) ) {
+		_fixGreeting( 'move_addressee_custom', $rows, $conflicts, $data );
 	}
 
-	//if case insensitive fname/lname match or value sans space matches, 
+	//if case insensitive fname/mname/lname match or value sans space matches, 
 	//try to find mixed case and retain
 	if ( array_key_exists( 'move_last_name', $conflicts ) ) {
 		_fixName( 'move_last_name', $rows, $conflicts );
@@ -76,12 +79,17 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 	if ( array_key_exists( 'move_first_name', $conflicts ) ) {
 		_fixName( 'move_first_name', $rows, $conflicts );
 	}
+	if ( array_key_exists( 'move_middle_name', $conflicts ) ) {
+		_fixName( 'move_middle_name', $rows, $conflicts );
+	}
 
 	//if one record type is BOE, retain above other values
 	if ( array_key_exists( 'move_custom_61', $conflicts ) ) {
 		_fixRT( $rows, $conflicts );
 	}
-
+	
+	_mD('post-processed rows', $rows, 2);
+    _mD('post-processed data', $data, 2);
 
 	//let's log any remaining conflicts for later review
 	if ( !empty($conflicts) ) {
@@ -110,7 +118,7 @@ function _cleanVal( $string ) {
 } //_cleanVal
 
 //helper to work out greeting field custom vs formula
-function _fixGreeting( $gType, &$rows, &$conflicts ) {
+function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
 
 	$gMain  =& $rows[$gType]['main'];
 	$gOther =& $rows[$gType]['other'];
@@ -144,6 +152,27 @@ function _fixGreeting( $gType, &$rows, &$conflicts ) {
 		return;
 	}
 
+	//another scenario is where values are customized and variance is
+	//due to other values used to construct the value.
+	//consider middle initial:
+	if ( isset($rows['move_middle_name']) &&
+	     strpos($gType, '_custom') &&
+	     $rows['move_middle_name']['main'] != $rows['move_middle_name']['other'] ) {
+
+		$fldc = str_replace('move_', '', $gType);
+		$fldd = str_replace('_custom', '', $fldc).'_display';
+
+		if ( strlen($rows[$gType]['main']) > strlen($rows[$gType]['other']) ) {
+			$rows[$gType]['other'] = $rows[$gType]['main'];
+		} else {
+			$rows[$gType]['main']  = $rows[$gType]['other'];
+		}
+
+		_mD("custom greeting conflicted. retained: ", $rows[$gType]['main'], 2);
+		unset($conflicts[$gType]);
+		return;
+	}
+
 	return;
 }
 
@@ -160,7 +189,7 @@ function _fixName( $name, &$rows, &$conflicts ) {
 		return;
 	}
 	
-	//determine if mixed case
+	//determine if mixed case +1
 	if ( $nMain != strtolower($nMain) &&
 	     $nMain != strtoupper($nMain) ) {
 
@@ -174,7 +203,7 @@ function _fixName( $name, &$rows, &$conflicts ) {
 		_mD('nOther is mixed case', $nOther, 2);
 	}
 	
-	//determine if value has spaces
+	//determine if value has spaces -1
 	if ( !preg_match("/\s/", $nMain) ) {
 		$mWeight++;
 		_mD('nMain has no spaces', $nMain, 2);
@@ -182,6 +211,16 @@ function _fixName( $name, &$rows, &$conflicts ) {
 	if ( !preg_match("/\s/", $nOther) ) {
 		$oWeight++;
 		_mD('nOther has no spaces', $nOther, 2);
+	}
+	
+	//determine if value has punctuation +1
+	if ( preg_match("/\p{P}/", $nMain) ) {
+		$mWeight++;
+		_mD('nMain has punctuation', $nMain, 2);
+	}
+	if ( preg_match("/\p{P}/", $nOther) ) {
+		$oWeight++;
+		_mD('nOther has punctuation', $nOther, 2);
 	}
 	
 	//take value with greater weight and set other to match
