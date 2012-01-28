@@ -110,7 +110,9 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
         $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
 
         //4879
-        $form->addElement('checkbox', 'exclude_ood', ts('Send only to emails matched with in-district postal addresses'));
+        $form->add( 'select', 'exclude_ood',  ts( 'Send only to emails matched with in-district postal addresses' ), 
+                    array( 0 => 'No District Filtering', 1 => 'In District Only', 2 => 'In District and Unknowns' ), 
+                    false );
         
         if ( $mailingID ) {
             $defaults['all_emails']   = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailingID");
@@ -178,10 +180,15 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
         $dedupeEmails = $submitValues['dedupe_email'];
 
         //add exclude_ood to mailing record
-        $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? 1 : 0;
+        $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? $submitValues['exclude_ood'] : 0;
         $sqlParams  = array( 1 => array( $mailingID,  'Integer' ),
-                             2 => array( $excludeOOD, 'Boolean' ),
+                             2 => array( $excludeOOD, 'Integer' ),
                              );
+        
+        //exclude_ood will be set from the config file initially, so we overwrite the form values
+        $bbconfig   = get_bluebird_instance_config();
+        //$excludeOOD = ( isset($bbconfig['exclude_ood']) ) ? $bbconfig['exclude_ood'] : 0; 
+
         CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams );
 
         //4628, 4879
@@ -189,8 +196,8 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
             _addAllEmails( $mailingID, $dedupeEmails, $excludeOOD );
         }
 
-        if ( $form->_submitValues['exclude_ood'] ) {
-            _excludeOOD( $mailingID, $dedupeEmails );
+        if ( $excludeOOD ) {
+            _excludeOOD( $mailingID, $dedupeEmails, $excludeOOD );
         }
 
         //add email seed group as last step in the process
@@ -198,7 +205,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
         //recalculate the total recipients
         if ( $form->_submitValues['all_emails'] ||
-             $form->_submitValues['exclude_ood'] ) {
+             $excludeOOD ) {
             
             require_once 'CRM/Mailing/BAO/Mailing.php';
 
@@ -248,7 +255,7 @@ WHERE  e.on_hold = 0
   AND  e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
 ";
 
-    if ( $dedupeEmails ) {
+    if ( $dedupeEmails && !$excludeOOD ) {
         $sql .= " AND e.email NOT IN ( SELECT e.email
                                        FROM   civicrm_mailing_recipients mr
                                          JOIN civicrm_email e
@@ -266,7 +273,7 @@ WHERE  e.on_hold = 0
 } //_addAllEmails
 
 //4879
-function _excludeOOD( $mailingID, $dedupeEmails = false ) {
+function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
 
     //determine what SD we are in
     $bbconfig = get_bluebird_instance_config();
@@ -276,7 +283,7 @@ function _excludeOOD( $mailingID, $dedupeEmails = false ) {
 
     //create temp table to store contacts confirmed to be in district
     $tempTbl = "tmpExcludeOOD_$mailingID";
-    $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) ) TYPE=myisam;";
+    $sql = "CREATE TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) ) TYPE=myisam;";
     CRM_Core_DAO::executeQuery($sql);
 
     $sql = "INSERT INTO $tempTbl 
@@ -289,6 +296,34 @@ function _excludeOOD( $mailingID, $dedupeEmails = false ) {
             WHERE mailing_id = $mailingID
               AND ny_senate_district_47 = $district;";
     CRM_Core_DAO::executeQuery($sql);
+
+    //also include unknowns if option enabled
+    if ( $excludeOOD == 2 ) {
+
+        //include where no district is known
+        $sql = "INSERT INTO $tempTbl
+                SELECT contact_id FROM (
+                  SELECT * FROM (
+                    SELECT mr.contact_id, di.*
+                    FROM civicrm_mailing_recipients mr
+                    JOIN civicrm_address a ON mr.contact_id = a.contact_id
+                    JOIN civicrm_value_district_information_7 di ON a.id = di.entity_id
+                    WHERE mailing_id = $mailingID
+                    ORDER BY ny_senate_district_47 DESC ) addrSingle
+                  GROUP BY contact_id ) addrNull
+                WHERE ny_senate_district_47 IS NULL;";
+        CRM_Core_DAO::executeQuery($sql);
+
+        //include where no address is present
+        $sql = "INSERT INTO $tempTbl
+                SELECT DISTINCT mr.contact_id
+                FROM civicrm_mailing_recipients mr
+                  LEFT JOIN civicrm_address a
+                    ON mr.contact_id = a.contact_id
+                WHERE mailing_id = $mailingID
+                AND a.id IS NULL;";
+        CRM_Core_DAO::executeQuery($sql);
+    }
 
     //now remove contacts from the recipients table that are not found in the inclusion table
     $sql = "DELETE FROM civicrm_mailing_recipients
