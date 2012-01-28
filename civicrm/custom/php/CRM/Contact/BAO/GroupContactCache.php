@@ -290,7 +290,10 @@ WHERE  id = %1
 				$query->_useOrderBy = false; //NYSS 4846
                 $searchSQL =& $query->searchQuery( 0, 0, null,
                                                    false, false,
-                                                   false, true, true, null );
+                                                   false, true,
+                                                   true,
+                                                   null, null, null,
+                                                   true ); //NYSS
             }
             $groupID = CRM_Utils_Type::escape($groupID, 'Integer');
             $sql = $searchSQL . 
