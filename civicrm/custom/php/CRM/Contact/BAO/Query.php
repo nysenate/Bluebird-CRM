@@ -817,8 +817,6 @@ class CRM_Contact_BAO_Query
                     $locationTypeJoin[$tName] = " ( $aName.location_type_id = $ltName.id ) ";
                     $processed[$aName] = 1;
                     $addAddress = true;
-					//LCD 4369 - we need to set the join clause so that the alias value is retained
-					$this->_whereTables[$tName] = $addressJoin;
                 }
 
                 $cond = $elementType = '';
@@ -1123,9 +1121,7 @@ class CRM_Contact_BAO_Query
 					//NYSS
 					$this->_select['contact_id'] = 'contact_a.id as contact_id';
                     $this->_useDistinct = false;
-					
                     $this->_useGroupBy = true;
-                    $this->_select['contact_id'] ='contact_a.id as contact_id';
 					//NYSS end
                 }
             } 
@@ -3550,7 +3546,7 @@ WHERE  id IN ( $groupIDs )
                           $sortByChar = false, $groupContacts = false,
                           $returnQuery = false,
                           $additionalWhereClause = null, $sortOrder = null,
-                          $additionalFromClause = null ) 
+                          $additionalFromClause = null, $skipOrderAndLimit = false ) //NYSS
     {
         require_once 'CRM/Core/Permission.php';
 
@@ -3668,11 +3664,6 @@ WHERE  id IN ( $groupIDs )
                 }
             }
 
-            //NYSS 4846 - this should be removed in a future version; test saved searches
-            if ( !$this->_useOrderBy ) {
-                $order = '';
-            }
-
 			//NYSS 4585
 			$doOpt = true;
             // hack for order clause
@@ -3783,7 +3774,13 @@ WHERE  id IN ( $groupIDs )
             $this->filterRelatedContacts( $from, $where, $having );
         }
 
-        $query = "$select $from $where $having $groupBy $order $limit";
+        //NYSS 4918 (and related)
+        if ( $skipOrderAndLimit ) {
+            $query = "$select $from $where $having $groupBy";
+        } else {
+            $query = "$select $from $where $having $groupBy $order $limit";
+        }
+
         // CRM_Core_Error::debug('query', $query);exit();
         // CRM_Core_Error::debug('query', $where);
         // CRM_Core_Error::debug('this', $this );
