@@ -283,7 +283,7 @@ function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
 
     //create temp table to store contacts confirmed to be in district
     $tempTbl = "tmpExcludeOOD_$mailingID";
-    $sql = "CREATE TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) ) TYPE=myisam;";
+    $sql = "CREATE TEMPORARY TABLE $tempTbl( contact_id INT NOT NULL, PRIMARY KEY(contact_id) ) TYPE=myisam;";
     CRM_Core_DAO::executeQuery($sql);
 
     $sql = "INSERT INTO $tempTbl 
@@ -300,28 +300,15 @@ function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
     //also include unknowns if option enabled
     if ( $excludeOOD == 2 ) {
 
-        //include where no district is known
+        //include where no district is known or no address is present
         $sql = "INSERT INTO $tempTbl
-                SELECT contact_id FROM (
-                  SELECT * FROM (
-                    SELECT mr.contact_id, di.*
-                    FROM civicrm_mailing_recipients mr
-                    JOIN civicrm_address a ON mr.contact_id = a.contact_id
-                    JOIN civicrm_value_district_information_7 di ON a.id = di.entity_id
-                    WHERE mailing_id = $mailingID
-                    ORDER BY ny_senate_district_47 DESC ) addrSingle
-                  GROUP BY contact_id ) addrNull
-                WHERE ny_senate_district_47 IS NULL;";
-        CRM_Core_DAO::executeQuery($sql);
-
-        //include where no address is present
-        $sql = "INSERT INTO $tempTbl
-                SELECT DISTINCT mr.contact_id
+                SELECT mr.contact_id
                 FROM civicrm_mailing_recipients mr
-                  LEFT JOIN civicrm_address a
-                    ON mr.contact_id = a.contact_id
-                WHERE mailing_id = $mailingID
-                AND a.id IS NULL;";
+                  LEFT JOIN civicrm_address a ON mr.contact_id = a.contact_id
+                  LEFT JOIN civicrm_value_district_information_7 di ON a.id = di.entity_id
+                WHERE mr.mailing_id = $mailingID
+                GROUP BY mr.contact_id
+                HAVING COUNT(di.ny_senate_district_47) = 0";
         CRM_Core_DAO::executeQuery($sql);
     }
 
