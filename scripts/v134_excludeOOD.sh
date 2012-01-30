@@ -46,3 +46,6 @@ batch="INSERT INTO civicrm_uf_field (uf_group_id, field_name, is_active, is_view
 (10, 'do_not_trade', 1, 0, 0, 8, '', '', 'User and User Admin Only', 0, 0, NULL, NULL, 'Undeliverable: Do Not Mail', 'Contact', NULL);"
 $execSql -i $instance -c "$batch"
 
+# alter search results profile
+search="UPDATE civicrm_domain SET config_backend = REPLACE(config_backend, '\"defaultSearchProfileID\";s:2:\"11\"', '\"defaultSearchProfileID\";s:0:\"\"') WHERE id = 1;"
+$execSql -i $instance -c "$search"
