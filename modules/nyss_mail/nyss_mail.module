@@ -181,13 +181,14 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
 
         //add exclude_ood to mailing record
         $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? $submitValues['exclude_ood'] : 0;
+
+        //exclude_ood will be set from the config file initially, so we overwrite the form values
+        $bbconfig   = get_bluebird_instance_config();
+        $excludeOOD = ( isset($bbconfig['exclude_ood']) ) ? $bbconfig['exclude_ood'] : 0;
+
         $sqlParams  = array( 1 => array( $mailingID,  'Integer' ),
                              2 => array( $excludeOOD, 'Integer' ),
                              );
-        
-        //exclude_ood will be set from the config file initially, so we overwrite the form values
-        $bbconfig   = get_bluebird_instance_config();
-        //$excludeOOD = ( isset($bbconfig['exclude_ood']) ) ? $bbconfig['exclude_ood'] : 0; 
 
         CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams );
 
