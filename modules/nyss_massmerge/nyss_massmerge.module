@@ -43,10 +43,10 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
             unset($conflicts['move_organization_name']);
         }
     }
-	
+
 	//if job_title sans space/punctation are equal, merge
     if ( array_key_exists( 'move_job_title', $conflicts ) ) {
-        if ( _cleanVal($rows['move_job_title']['main']) == 
+        if ( _cleanVal($rows['move_job_title']['main']) ==
              _cleanVal($rows['move_job_title']['other']) ) {
             //unset from the conflicts array
             //we don't know which value to retain, so we default to main
