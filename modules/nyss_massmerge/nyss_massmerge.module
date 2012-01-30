@@ -10,10 +10,12 @@ function nyss_massmerge_civicrm_merge( $type, &$data, $mainId = NULL, $otherId =
             if ( !empty($data['fields_in_conflict']) ) {
                 _resolveConflicts( $data, $mainId, $otherId );
             }
+            _mD('post-processed batch data', $data, 2);
+
             break;
 
         case 'sqls':
-            //log the merge against both records
+            //log the merge against the retained record
             _logMerge( $mainId, $otherId );
             break;
 
@@ -41,6 +43,16 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
             unset($conflicts['move_organization_name']);
         }
     }
+	
+	//if job_title sans space/punctation are equal, merge
+    if ( array_key_exists( 'move_job_title', $conflicts ) ) {
+        if ( _cleanVal($rows['move_job_title']['main']) == 
+             _cleanVal($rows['move_job_title']['other']) ) {
+            //unset from the conflicts array
+            //we don't know which value to retain, so we default to main
+            unset($conflicts['move_job_title']);
+        }
+    }
 
     //if external ids in conflict, just keep main value
     if ( array_key_exists( 'move_external_identifier', $conflicts ) ) {
@@ -49,12 +61,10 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
 
     //if do not mail or do not email, uncheck value for retention and proceed with merge
     if ( array_key_exists( 'move_do_not_mail', $conflicts ) ) {
-        $rows['move_do_not_mail']['main'] = $rows['move_do_not_mail']['other'] = 0;
-        unset($conflicts['move_do_not_mail']);
+        $conflicts['move_do_not_mail'] = 0;
     }
     if ( array_key_exists( 'move_do_not_email', $conflicts ) ) {
-        $rows['move_do_not_email']['main'] = $rows['move_do_not_email']['other'] = 0;
-        unset($conflicts['move_do_not_email']);
+        $conflicts['move_do_not_email'] = 0;
     }
 
     //if greeting in conflict and one is custom, retain formula option
@@ -88,18 +98,19 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
         _fixRT( $rows, $conflicts );
     }
 
-    _mD('post-processed rows', $rows, 2);
-    _mD('post-processed data', $data, 2);
-
     //let's log any remaining conflicts for later review
-    if ( !empty($conflicts) ) {
+    if ( in_array( null, $conflicts, true) ) {
         $conflictDetails = array();
-        foreach ( $conflicts as $fld => $dontcare ) {
-            $conflictDetails[$fld] = array ( 'mainId'         => $mainId,
-                                             'mainId value'   => $rows[$fld]['main'],
-                                             'otherId'        => $otherId,
-                                             'otherId value'  => $rows[$fld]['other'],
-                                             );
+        foreach ( $conflicts as $fld => $value ) {
+            if ( $value === null ) {
+                $conflictDetails[$fld] = array ( 'mainId'         => $mainId,
+                                                 'mainId value'   => $rows[$fld]['main'],
+                                                 'otherId'        => $otherId,
+                                                 'otherId value'  => $rows[$fld]['other'],
+                                                 );
+            } else {
+			    $conflictDetails[$fld] = "Mergeable to: $value";
+            }
         }
         _mD('merge conflict details', $conflictDetails);
     }
@@ -123,14 +134,19 @@ function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
     $gMain  =& $rows[$gType]['main'];
     $gOther =& $rows[$gType]['other'];
 
-    //first perform fixup if one is customized and the other is not
-    if ( _isCustom($gMain) && !_isCustom($gOther) ) {
-        $gMain = $gOther;
+    //check if casing/punctuation is only difference
+	if ( _cleanVal($gMain) == _cleanVal($gOther) ) {
+        //unset from the conflicts array
         unset($conflicts[$gType]);
+		return;
+    }
+
+    //perform fixup if one is customized and the other is not
+    if ( _isCustom($gMain) && !_isCustom($gOther) ) {
+        $conflicts[$gType] = $gOther;
         return;
     } elseif ( !_isCustom($gMain) && _isCustom($gOther) ) {
-        $gOther = $gMain;
-        unset($conflicts[$gType]);
+        $conflicts[$gType] = $gMain;
         return;
     }
 
@@ -139,16 +155,14 @@ function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
     //we will retain the custom value as it's more likely to be a meaningful value
     if ( $gMain == 'Customized' ) {
 
-        $gOther = $gMain;
-        $rows[$gType.'_custom']['other'] = $rows[$gType.'_custom']['main'];
-        unset($conflicts[$gType]);
+        $conflicts[$gType] = $gMain;
+        $conflicts[$gType.'_custom'] = $rows[$gType.'_custom']['main'];
         return;
 
     } elseif ( $gOther == 'Customized' ) {
 
-        $gMain = $gOther;
-        $rows[$gType.'_custom']['main'] = $rows[$gType.'_custom']['other'];
-        unset($conflicts[$gType]);
+        $conflicts[$gType] = $gOther;
+        $conflicts[$gType.'_custom'] = $rows[$gType.'_custom']['other'];
         return;
     }
 
@@ -160,13 +174,12 @@ function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
          $rows['move_middle_name']['main'] != $rows['move_middle_name']['other'] ) {
 
         if ( strlen($rows[$gType]['main']) > strlen($rows[$gType]['other']) ) {
-            $rows[$gType]['other'] = $rows[$gType]['main'];
+            $conflicts[$gType] = $rows[$gType]['main'];
         } else {
-            $rows[$gType]['main']  = $rows[$gType]['other'];
+            $conflicts[$gType] = $rows[$gType]['other'];
         }
 
         _mD("custom greeting conflicted. retained: ", $rows[$gType]['main'], 2);
-        unset($conflicts[$gType]);
         return;
     }
 
@@ -177,8 +190,8 @@ function _fixGreeting( $gType, &$rows, &$conflicts, &$data ) {
 //our algorithms will give preference to the main value
 function _fixName( $name, &$rows, &$conflicts ) {
 
-    $nMain   =& $rows[$name]['main'];
-    $nOther  =& $rows[$name]['other'];
+    $nMain   = $rows[$name]['main'];
+    $nOther  = $rows[$name]['other'];
     $mWeight = $oWeight = 0;
 
     //first find if we have a cleaned match, else return
@@ -227,22 +240,24 @@ function _fixName( $name, &$rows, &$conflicts ) {
         $nMain = $nOther;
     }
 
-    //unset element from conflict
+    //update element in conflict array
     _mD("$name value retained:", $nMain, 2);
-    unset($conflicts[$name]);
+    $conflicts[$name] = $nMain;
+
+    return;
 } //_fixName
 
 //if either of the RT values is Board of Election, set and merge
 function _fixRT( &$rows, &$conflicts ) {
 
-    $rtMain  =& $rows['move_custom_61']['main'];
-    $rtOther =& $rows['move_custom_61']['other'];
+    $rtMain  = $rows['move_custom_61']['main'];
+    $rtOther = $rows['move_custom_61']['other'];
 
     if ( $rtMain == 'Board of Election' ||
          $rtOther == 'Board of Election' ) {
 
         $rtMain = $rtOther = 'Board of Election';
-        unset($conflicts['move_custom_61']);
+        $conflicts['move_custom_61'] = $rtMain;
     }
 } //_fixRT
 
@@ -266,11 +281,10 @@ function _logMerge( $mainId, $otherId ) {
 
     //handle with straight sql as it's faster than using the BAO
     $sql = "INSERT INTO civicrm_log ( entity_table, entity_id, data, modified_id, modified_date ) VALUES
-            ( 'civicrm_contact', $mainId, 'Contact $otherId was merged into this contact.', $cid, $date ),
-            ( 'civicrm_contact', $otherId, 'Contact was merged into contact $mainId.', $cid, $date )";
+            ( 'civicrm_contact', $mainId, 'Contact $otherId was merged into this contact ($mainId).', $cid, $date )";
     CRM_Core_DAO::executeQuery($sql);
 
-	return;
+    return;
 }
 
 //allows us to condition all logging based on a constant

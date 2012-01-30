@@ -752,7 +752,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
         if ( !empty($conflicts) ) {
             foreach ( $conflicts as $key => $val ) {
-                if ( $val == null and $mode == 'safe' ) {
+                if ( $val === null and $mode == 'safe' ) {
                     // un-resolved conflicts still present. Lets skip this merge.
                     return true;
                 } else {
