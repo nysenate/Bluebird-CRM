@@ -168,17 +168,22 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     
     //household joins
     $sql .= " LEFT JOIN civicrm_relationship cr 
-                ON cr.contact_id_a = t.id 
-                AND ( cr.end_date IS NULL || cr.end_date > Now() ) 
-                AND ( cr.relationship_type_id=6 OR cr.relationship_type_id=7 ) ";
+                ON cr.contact_id_a = t.id
+                AND ( cr.end_date IS NULL || cr.end_date > Now() )
+                AND ( cr.relationship_type_id = 6 OR cr.relationship_type_id = 7 )
+                AND cr.is_active = 1 ";
     $sql .= " LEFT JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
     
     //join with group to exclude Mailing_Exclusions
-    $sql .= " LEFT JOIN civicrm_group_contact cgc ON cgc.contact_id = t.id AND status = 'Added' AND group_id = $eogid ";
+    $sql .= " LEFT JOIN civicrm_group_contact cgc
+                ON cgc.contact_id = t.id
+                AND status = 'Added'
+                AND group_id = $eogid ";
     
     //exclude RTs
     if ( $exclude_rt != null ) {
-        $sql .= " LEFT JOIN civicrm_value_constituent_information_1 cvci ON t.id = cvci.entity_id ";
+        $sql .= " LEFT JOIN civicrm_value_constituent_information_1 cvci
+                    ON t.id = cvci.entity_id ";
     }
     
     //exclude deceased, trashed, do not mail, do not mail (undeliverable/trade)
