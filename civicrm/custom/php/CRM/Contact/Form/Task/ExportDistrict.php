@@ -80,6 +80,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
                     array( 'id' => 'locType' )
                     );
 
+        $this->addElement('checkbox', 'includeLog', ts('Include most recent log activity date'));
+
         $this->addDefaultButtons( 'Export District' );
 
         $defaults['locType'] = 0;
@@ -94,136 +96,159 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
      */
     public function postProcess() {
 
-    //get form values
-    $params = $this->controller->exportValues( $this->_name );
-    $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
-    $loc_type      = $params['locType'];
+        //get form values
+        $params = $this->controller->exportValues( $this->_name );
+        $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
+        $loc_type      = $params['locType'];
+		$include_log   = $params['includeLog'];
 
-    //get instance name (strip first element from url)
-    $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
+        //get instance name (strip first element from url)
+        $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
 
-    //get option lists
-    $aGender = getOptions("gender");
-    $aSuffix = getOptions("individual_suffix");
-    $aPrefix = getOptions("individual_prefix");
-    $aStates = getStates();
+        //get option lists
+        $aGender = getOptions("gender");
+        $aSuffix = getOptions("individual_suffix");
+        $aPrefix = getOptions("individual_prefix");
+        $aStates = getStates();
 
-    //determine address location type clause
-    $addressClause = '';
+        //determine address location type clause
+        $addressClause = '';
 
-    if ( $loc_type == 0 ) {
-        $addressClause = 'a.is_primary = 1';
-    } else {
-        $addressClause = "a.location_type_id = $loc_type";
-    }
+        if ( $loc_type == 0 ) {
+            $addressClause = 'a.is_primary = 1';
+        } else {
+            $addressClause = "a.location_type_id = $loc_type";
+        }
 
-    //generate random number for export and tables
-    $rnd = mt_rand(1,9999999999999999);
+        //generate random number for export and tables
+        $rnd = mt_rand(1,9999999999999999);
 
-    $this->_contactIds = array_unique($this->_contactIds);
+        $this->_contactIds = array_unique($this->_contactIds);
 
-    $ids = implode("),(",$this->_contactIds);
-    $ids = "($ids)";
+        $ids = implode("),(",$this->_contactIds);
+        $ids = "($ids)";
 
-    $sql = "CREATE TABLE tmpExport$rnd(id int not null primary key);";
-    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $sql = "CREATE TABLE tmpExport$rnd (id int not null primary key) TYPE=myisam;";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-    $sql = "INSERT INTO tmpExport$rnd VALUES$ids;";
-    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $sql = "INSERT INTO tmpExport$rnd VALUES $ids;";
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        
+        //4874
+		if ( $include_log ) {
+            $logTable = createLogTable( $rnd );
+		}
 
-    $sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
-    $sql .= "street_number, street_number_suffix, street_name, street_unit, street_address, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
-    $sql .= "c.birth_date, c.gender_id, phone, ";
-    $sql .= "town_52, LPAD(ward_53,2,'0') as ward_53, LPAD(election_district_49,3,'0') as election_district_49, LPAD(congressional_district_46,2,'0') as congressional_district_46, LPAD(ny_senate_district_47,2,'0') as ny_senate_district_47, LPAD(ny_assembly_district_48,3,'0') as ny_assembly_district_48, LPAD(school_district_54,3,'0') as school_district_54, LPAD(county_50,2,'0') as county_50, ";
-    $sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
+        $sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
+        $sql .= "street_number, street_number_suffix, street_name, street_unit, street_address, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
+        $sql .= "c.birth_date, c.gender_id, phone, ";
+        $sql .= "town_52, LPAD(ward_53,2,'0') as ward_53, LPAD(election_district_49,3,'0') as election_district_49, LPAD(congressional_district_46,2,'0') as congressional_district_46, LPAD(ny_senate_district_47,2,'0') as ny_senate_district_47, LPAD(ny_assembly_district_48,3,'0') as ny_assembly_district_48, LPAD(school_district_54,3,'0') as school_district_54, LPAD(county_50,2,'0') as county_50, ";
+        $sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
+        
+        //4874
+		if ( $include_log ) {
+            $sql .= ", lt.mod_date AS last_modified_date ";
+		}
 
-    $sql .= " FROM civicrm_contact c ";
-    $sql .= " INNER JOIN tmpExport$rnd t on t.id=c.id ";
-    $sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND $addressClause ";
-    $sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
-    $sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
-    $sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
+        $sql .= " FROM civicrm_contact c ";
+        $sql .= " INNER JOIN tmpExport$rnd t on t.id=c.id ";
+        $sql .= " LEFT JOIN civicrm_address a on a.contact_id=c.id AND $addressClause ";
+        $sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
+        $sql .= " LEFT JOIN civicrm_phone p on p.contact_id=c.id AND p.is_primary=1 ";
+        $sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
+    
+        //4874 - include last log record timestamp
+		if ( $include_log ) {
+            $sql .= " LEFT JOIN $logTable lt ON c.id = lt.cid ";
+		}
 
-    $sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
-    $sql .= " IFNULL(c.birth_date, '9999-01-01');";
-    //order export by oldest male, then oldest female
-    //ensure empty values fall last
+        $sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
+        $sql .= " IFNULL(c.birth_date, '9999-01-01');";
+        //order export by oldest male, then oldest female
+        //ensure empty values fall last
 
-    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-    $skipVars['_DB_DataObject_version'] = 1;
-    $skipVars['__table'] = 1;
-    $skipVars['N'] = 1;
-    $skipVars['_database_dsn'] = 1;
-    $skipVars['_query'] = 1;
-    $skipVars['_DB_resultid'] = 1;
-    $skipVars['_resultFields'] = 1;
-    $skipVars['_link_loaded'] = 1;
-    $skipVars['_join'] = 1;
-    $skipVars['_lastError'] = 1;
-    $skipVars['_database_dsn_md5'] = 1;
-    $skipVars['_database'] = 1;
+        $skipVars['_DB_DataObject_version'] = 1;
+        $skipVars['__table'] = 1;
+        $skipVars['N'] = 1;
+        $skipVars['_database_dsn'] = 1;
+        $skipVars['_query'] = 1;
+        $skipVars['_DB_resultid'] = 1;
+        $skipVars['_resultFields'] = 1;
+        $skipVars['_link_loaded'] = 1;
+        $skipVars['_join'] = 1;
+        $skipVars['_lastError'] = 1;
+        $skipVars['_database_dsn_md5'] = 1;
+        $skipVars['_database'] = 1;
 
-    $config =& CRM_Core_Config::singleton();
+        $config =& CRM_Core_Config::singleton();
 
-    //check if printProduction subfolder exists; if not, create it
-    $path = $config->uploadDir.'printProduction/';
+        //check if printProduction subfolder exists; if not, create it
+        $path = $config->uploadDir.'printProduction/';
 
-    if ( !file_exists($path) ) {
-        mkdir( $path, 0775 );
-    }
+        if ( !file_exists($path) ) {
+            mkdir( $path, 0775 );
+        }
 
-    //set filename, environment, and full path
-    $filename = 'districtExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
+        //set filename, environment, and full path
+        $filename = 'districtExport_'.$instance.'_'.$avanti_job_id.$rnd.'.tsv'; 
 
-    //strip /data/ and everything after environment value
-    $env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
-    $fname = $path.'/'.$filename;
+        //strip /data/ and everything after environment value
+        $env = substr( $config->uploadDir, 6, strpos( $config->uploadDir, '/', 6 )-6 );
+        $fname = $path.'/'.$filename;
 
-    $fhout = fopen($fname, 'w');
+        $fhout = fopen($fname, 'w');
 
 
-    $aHeader=array();
-    $firstLine = true;
-        while ($dao->fetch()) {
+        $aHeader=array();
+        $firstLine = true;
+            while ($dao->fetch()) {
 
-        //write out the header rowv2($fhout, $aOut,"\t",'',false,false);
-        if ($firstLine) {
+            //write out the header rowv2($fhout, $aOut,"\t",'',false,false);
+            if ($firstLine) {
+                foreach($dao as $name=>$val) {
+                    if (!isset($skipVars[$name])) {
+                        $aHeader[] = $name;
+                    }
+                }
+
+                fputcsv2($fhout, $aHeader,"\t",'',false,false);
+                $firstLine=false;
+            }
+
+            $aOut = array();
             foreach($dao as $name=>$val) {
                 if (!isset($skipVars[$name])) {
-                    $aHeader[] = $name;
+
+                    if ($name=="gender_id") $val = $aGender[$val];
+                    if ($name=="suffix_id") $val = $aSuffix[$val];
+                    if ($name=="prefix_id") $val = $aPrefix[$val];
+                    if ($name=="state_province_id") $val = $aStates[$val];
+
+                    if ($name=="birth_date") {
+                        if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
+                    }
+
+                    $val = str_replace("'","",$val);
+                    $val = str_replace("\"","",$val);
+                    $aOut[] =  $val;
                 }
             }
 
-            fputcsv2($fhout, $aHeader,"\t",'',false,false);
-            $firstLine=false;
+            fputcsv2($fhout, $aOut,"\t",'',false,false);
         }
+        //exit;
 
-        $aOut = array();
-        foreach($dao as $name=>$val) {
-            if (!isset($skipVars[$name])) {
-
-                if ($name=="gender_id") $val = $aGender[$val];
-                if ($name=="suffix_id") $val = $aSuffix[$val];
-                if ($name=="prefix_id") $val = $aPrefix[$val];
-                if ($name=="state_province_id") $val = $aStates[$val];
-
-                if ($name=="birth_date") {
-                    if (strtotime($val)) $val = date("Y-m-d",strtotime($val));
-                }
-
-                $val = str_replace("'","",$val);
-                $val = str_replace("\"","",$val);
-                $aOut[] =  $val;
-            }
-        }
-
-        fputcsv2($fhout, $aOut,"\t",'',false,false);
-    }
-//exit;
         //get rid of helper table
         $sql = "DROP TABLE tmpExport$rnd;";
-        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        
+        //get rid of log table
+		if ( $include_log ) {
+            $sql = "DROP TABLE $logTable;";
+            $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+		}
 
         $url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
         $urlclean = urlencode( $url );
@@ -241,8 +266,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         }
 
         CRM_Core_Session::setStatus( $status );
-    } //end of function
-}
+    } //end postProcess
+} //end class
 
 function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {
 
@@ -263,8 +288,8 @@ function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysq
     fwrite($fh, join($delimiter, $output) . "\n");
 }
 
-function getOptions($strGroup)
-{
+function getOptions($strGroup) {
+
   $session =& CRM_Core_Session::singleton();
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray);
@@ -283,8 +308,8 @@ function getOptions($strGroup)
   return $options;
 } // getOptions()
 
-function getStates()
-{
+function getStates() {
+
   $session =& CRM_Core_Session::singleton();
 
   $dao = &CRM_Core_DAO::executeQuery("SELECT id, abbreviation from civicrm_state_province", CRM_Core_DAO::$_nullArray);
@@ -296,4 +321,61 @@ function getStates()
   }
 
   return $options;
-} // getOptions()
+} // getStates()
+
+//create table with only the most recent log entry for each contact
+function createLogTable( $rnd ) {
+
+    $tblIDs       = "tmpExport$rnd";
+    $tblLog       = "tmpLog$rnd";
+    $tblLogDedupe = "tmpLogDedupe$rnd";
+
+    $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date ) TYPE=myisam;";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //insert contact log
+    //skip source as that will only be staff
+    $sql = "INSERT INTO $tblLog (cid, mod_date)
+            SELECT c.id as cid, cl.modified_date as mod_date
+            FROM civicrm_log cl
+            JOIN $tblIDs c
+              ON cl.entity_id = c.id
+            WHERE cl.entity_table = 'civicrm_contact';";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+    
+    //insert activities
+    //only concerned with target contact
+    $sql = "INSERT INTO $tblLog (cid, mod_date)
+            SELECT c.id as cid, cl.modified_date as mod_date
+            FROM civicrm_log cl
+            JOIN civicrm_activity_target cat
+              ON cl.entity_id = cat.activity_id
+            JOIN $tblIDs c
+              ON cat.target_contact_id = c.id
+            WHERE cl.entity_table = 'civicrm_activity';"; 
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //collapse resulting data in a separate table
+	$sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
+	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	
+	$sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
+	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	
+	$sql = "INSERT INTO $tblLogDedupe
+	        SELECT *
+			FROM $tblLog
+			ORDER BY cid, mod_date ASC
+			ON DUPLICATE KEY UPDATE mod_date = VALUES(mod_date)
+			;";
+	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+	
+	//now drop first temp table
+	CRM_Core_DAO::executeQuery("DROP TABLE $tblLog;");
+
+    //CRM_Core_Error::debug('tblIDs',$tblIDs);
+    //CRM_Core_Error::debug('tblLog',$tblLog);
+    //exit();
+
+    return $tblLogDedupe;
+} //createLogTable

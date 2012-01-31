@@ -554,7 +554,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
      * @static void
      * @access public
      */ 
-    function batchMerge( $rgid, $gid = null, $mode = 'safe', $autoFlip = true )
+    function batchMerge( $rgid, $gid = null, $mode = 'safe', $autoFlip = true, $redirectForPerformance = false ) //NYSS
     {
         $contactType = CRM_Core_DAO::getFieldValue( 'CRM_Dedupe_DAO_RuleGroup', $rgid, 'contact_type' );
         $cacheKeyString  = "merge {$contactType}";
@@ -562,12 +562,13 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         $cacheKeyString .= $gid  ? "_{$gid}"  : '_0';
         $join  = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
                                                              pn.entity_id2 = de.contact_id2 )";
-        $where = "de.id IS NULL LIMIT 1";
+        $limit = $redirectForPerformance ? 75 : 1; //NYSS
+        $where = "de.id IS NULL LIMIT {$limit}";
 
 		//NYSS 4535
         require_once 'CRM/Core/BAO/PrevNextCache.php';
         $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve( $cacheKeyString, $join, $where );
-        if ( empty($dupePairs) ) {
+        if ( empty($dupePairs) && !$redirectForPerformance ) { //NYSS
             // If we haven't found any dupes, probably cache is empty. 
             // Try filling cache and give another try.
             CRM_Core_BAO_PrevNextCache::refillCache( $rgid, $gid, $cacheKeyString );
@@ -576,7 +577,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         $cacheParams = array( 'cache_key_string' => $cacheKeyString,
                               'join'             => $join,
                               'where'            => $where );
-        return CRM_Dedupe_Merger::merge( $dupePairs, $cacheParams, $mode, $autoFlip );
+        return CRM_Dedupe_Merger::merge( $dupePairs, $cacheParams, $mode, $autoFlip, $redirectForPerformance ); //NYSS
     }
 
     /** 
@@ -594,9 +595,10 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
      * @static void
      * @access public
      */ 
-    function merge( $dupePairs = array(), $cacheParams = array(), $mode = 'safe', $autoFlip = true ) {
+    function merge( $dupePairs = array(), $cacheParams = array(), $mode = 'safe', 
+                    $autoFlip = true, $redirectForPerformance = false ) { //NYSS
         $cacheKeyString = CRM_Utils_Array::value( 'cache_key_string', $cacheParams );
-        $result = array( 'merged' => array(), 'skipped' => array() );
+        $resultStats = array( 'merged' => array(), 'skipped' => array() ); //NYSS
 		
 		//NYSS 4535
 		// we don't want dupe caching to get reset after every-merge, and therefore set the 
@@ -633,9 +635,9 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
                 // go ahead with merge if there is no conflict
                 if ( !CRM_Dedupe_Merger::skipMerge( $mainId, $otherId, $migrationInfo, $mode ) ) {
                     CRM_Dedupe_Merger::moveAllBelongings( $mainId, $otherId, $migrationInfo );
-                    $result['merged'][]  = array( 'main_d' => $mainId, 'other_id' => $otherId );
+                    $resultStats['merged'][]  = array( 'main_d' => $mainId, 'other_id' => $otherId ); //NYSS
                 } else {
-                    $result['skipped'][] = array( 'main_d' => $mainId, 'other_id' => $otherId );
+                    $resultStats['skipped'][] = array( 'main_d' => $mainId, 'other_id' => $otherId ); //NYSS
                 }
 
                 // delete entry from PrevNextCache table so we don't consider the pair next time
@@ -647,7 +649,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
                 unset($rowsElementsAndInfo, $migrationInfo); //NYSS
             }
 
-            if ( $cacheKeyString ) {
+            if ( $cacheKeyString && !$redirectForPerformance ) { //NYSS
                 // retrieve next pair of dupes
                 $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve( $cacheKeyString, 
                                                                    $cacheParams['join'], 
@@ -657,7 +659,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
                 unset( $dupePairs );
             }
         }
-        return $result;
+        return $resultStats; //NYSS
     }
 
     /** 
@@ -750,7 +752,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
 
         if ( !empty($conflicts) ) {
             foreach ( $conflicts as $key => $val ) {
-                if ( $val == null and $mode == 'safe' ) {
+                if ( $val === null and $mode == 'safe' ) {
                     // un-resolved conflicts still present. Lets skip this merge.
                     return true;
                 } else {

@@ -37,6 +37,7 @@
           </th>
       {/if}
       {foreach from=$columnHeaders item=header}
+        {if $header.name neq 'Country'}
         <th scope="col">
         {if $header.sort}
           {assign var='key' value=$header.sort}
@@ -45,6 +46,7 @@
           {$header.name}
         {/if}
         </th>
+        {/if}
       {/foreach}
     </tr>
   </thead>
@@ -99,7 +101,7 @@
               <td>{$row.city}</td>
               <td>{$row.state_province}</td>
               <td>{$row.postal_code}</td>
-              <td>{$row.country}</td>
+              {*<td>{$row.country}</td>*}
               <td>
                 {if $row.email}
                     <span

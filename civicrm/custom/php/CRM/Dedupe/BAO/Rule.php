@@ -214,12 +214,7 @@ class CRM_Dedupe_BAO_Rule extends CRM_Dedupe_DAO_Rule
         }
         
 		//NYSS 4910
-        if ( $exception->find( true ) ) {
-            //CRM_Core_Error::fatal( ts( 'Oops, these contacts seems to be marked as non duplicates.' ) );
-			return false;
-        } else {
-			return true;
-		}
+        return $exception->find( true ) ? false : true;
     }
     
 }

@@ -161,19 +161,29 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $sql .= " JOIN civicrm_contact c ON t.id = c.id ";
     
     //join with address if primary or BOE mailing and non primary
-    $sql .= " LEFT JOIN civicrm_address a ON a.contact_id=t.id AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = t.id AND pm.is_primary = 1)) ";    
+    $sql .= " LEFT JOIN civicrm_address a 
+                ON a.contact_id=t.id 
+                AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = t.id AND pm.is_primary = 1)) ";    
     $sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
     
     //household joins
-    $sql .= " LEFT JOIN civicrm_relationship cr ON cr.contact_id_a = t.id AND (cr.end_date IS NULL || cr.end_date > Now()) AND (cr.relationship_type_id=6 OR cr.relationship_type_id=7) ";
+    $sql .= " LEFT JOIN civicrm_relationship cr 
+                ON cr.contact_id_a = t.id
+                AND ( cr.end_date IS NULL || cr.end_date > Now() )
+                AND ( cr.relationship_type_id = 6 OR cr.relationship_type_id = 7 )
+                AND cr.is_active = 1 ";
     $sql .= " LEFT JOIN civicrm_contact ch ON ch.id = cr.contact_id_b ";
     
     //join with group to exclude Mailing_Exclusions
-    $sql .= " LEFT JOIN civicrm_group_contact cgc ON cgc.contact_id = t.id AND status = 'Added' AND group_id = $eogid ";
+    $sql .= " LEFT JOIN civicrm_group_contact cgc
+                ON cgc.contact_id = t.id
+                AND status = 'Added'
+                AND group_id = $eogid ";
     
     //exclude RTs
     if ( $exclude_rt != null ) {
-        $sql .= " LEFT JOIN civicrm_value_constituent_information_1 cvci ON t.id = cvci.entity_id ";
+        $sql .= " LEFT JOIN civicrm_value_constituent_information_1 cvci
+                    ON t.id = cvci.entity_id ";
     }
     
     //exclude deceased, trashed, do not mail, do not mail (undeliverable/trade)
@@ -194,6 +204,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     if ( $exclude_rt != null ) {
         $sql .= " AND ( cvci.record_type_61 IS NULL OR cvci.record_type_61 NOT IN ( $exclude_rt ) ) ";
     }
+	
+	//group by contact ID in case any joins with multiple records cause dupe primary in our temp table
+	$sql .= " GROUP BY c.id ";
     
     //order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
     $sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, "; 

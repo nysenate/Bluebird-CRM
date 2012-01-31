@@ -391,9 +391,13 @@ WHERE  mailing_id = %1
             $params = array( 1 => array( $mailing_id, 'Integer' ) );
             CRM_Core_DAO::executeQuery( $sql, $params );
 
+			$exclude_ood = CRM_Core_DAO::singleValueQuery("SELECT exclude_ood FROM civicrm_mailing WHERE id = $mailing_id");
+			$all_emails  = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailing_id");
+
             //NYSS CRM-3975
+			//4879 -- if not exclude_ood, process dupes here
             $groupBy = $groupJoin = '';
-            if ( $dedupeEmail ) {
+            if ( $dedupeEmail && !$exclude_ood ) {
                 $groupJoin = " INNER JOIN civicrm_email e ON e.id = i.email_id";
                 $groupBy = " GROUP BY e.email ";
             }
@@ -422,7 +426,7 @@ ORDER BY   i.contact_id, i.email_id
             //NYSS 4870
             // if not all_emails, remove all on_hold emails
             // else we will handle it in the hook
-            if ( !CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailing_id") ) {
+            if ( !$all_emails ) {
                 self::removeOnHold( $mailing_id );
             }
         }
@@ -2459,7 +2463,8 @@ AND    e.contact_id IN
 AND    e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
 ";
         //ensure we apply dedupe by email if option was selected
-		if ( $dedupeEmail ) {
+		$exclude_ood = CRM_Core_DAO::singleValueQuery("SELECT exclude_ood FROM civicrm_mailing WHERE id = $mailingID");
+		if ( $dedupeEmail && !$exclude_ood ) {
 		    $sql .= " AND e.email NOT IN ( SELECT e.email 
 		                                   FROM   civicrm_mailing_recipients mr
 									         JOIN civicrm_email e
