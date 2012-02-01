@@ -1,6 +1,10 @@
 <?php
 
 define('BASE_SUBSCRIPTION_GROUP', 'Bluebird_Mail_Subscription');
+define('FILTER_ALL', 0);
+define('FILTER_IN_SD_ONLY', 1);
+define('FILTER_IN_SD_OR_NO_SD', 2);
+
 
 function nyss_mail_civicrm_alterMailParams( &$params, $context )
 {
@@ -105,10 +109,12 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
         $form->addElement('checkbox', 'all_emails', ts('Send to all contact emails?'));
 
         //4879
-        $form->add( 'select', 'exclude_ood',  ts( 'Send only to emails matched with in-district postal addresses' ), 
-                    array( 0 => 'No District Filtering', 1 => 'In District Only', 2 => 'In District and Unknowns' ), 
-                    false );
-        
+        $form->add('select', 'exclude_ood',  ts( 'Send only to emails matched with in-district postal addresses'),
+                   array(FILTER_ALL => 'No District Filtering',
+                         FILTER_IN_SD_ONLY => 'In-District Only',
+                         FILTER_IN_SD_OR_NO_SD => 'In-District and Unknowns'), 
+                   false);
+
         if ( $mailingID ) {
             $defaults['all_emails']   = CRM_Core_DAO::singleValueQuery("SELECT all_emails FROM civicrm_mailing WHERE id = $mailingID");
             $defaults['dedupe_email'] = CRM_Core_DAO::singleValueQuery("SELECT dedupe_email FROM civicrm_mailing WHERE id = $mailingID");
@@ -175,15 +181,29 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
         $dedupeEmails = $submitValues['dedupe_email'];
 
         //add exclude_ood to mailing record
-        $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? $submitValues['exclude_ood'] : 0;
+        $excludeOOD = ( isset($submitValues['exclude_ood']) && $submitValues['exclude_ood'] ) ? $submitValues['exclude_ood'] : FILTER_ALL;
 
         //exclude_ood will be set from the config file initially, so we overwrite the form values
         $bbconfig   = get_bluebird_instance_config();
-        $excludeOOD = ( isset($bbconfig['exclude_ood']) ) ? $bbconfig['exclude_ood'] : 0;
+
+        $excludeOOD = FILTER_ALL;
+
+        if (isset($bbconfig['email.filter.district'])) {
+            $filter_district = $bbconfig['email.filter.district'];
+            switch ($filter_district) {
+                case "1": case "strict": case "in_sd":
+                    $excludeOOD = FILTER_IN_SD_ONLY;
+                    break;
+                case "2": case "fuzzy": case "in_sd_or_no_sd":
+                    $excludeOOD = FILTER_IN_SD_OR_NO_SD;
+                    break;
+                default:
+                    $excludeOOD = FILTER_ALL;
+            } 
+        }
 
         $sqlParams  = array( 1 => array( $mailingID,  'Integer' ),
-                             2 => array( $excludeOOD, 'Integer' ),
-                             );
+                             2 => array( $excludeOOD, 'Integer' ));
 
         CRM_Core_DAO::executeQuery( "UPDATE civicrm_mailing SET exclude_ood = %2 WHERE id = %1;", $sqlParams );
 
@@ -192,7 +212,7 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
             _addAllEmails( $mailingID, $dedupeEmails, $excludeOOD );
         }
 
-        if ( $excludeOOD ) {
+        if ( $excludeOOD != FILTER_ALL ) {
             _excludeOOD( $mailingID, $dedupeEmails, $excludeOOD );
         }
 
@@ -200,11 +220,8 @@ function nyss_mail_civicrm_postProcess( $formName, &$form ) {
         _addEmailSeeds( $mailingID );
 
         //recalculate the total recipients
-        if ( $form->_submitValues['all_emails'] ||
-             $excludeOOD ) {
-            
+        if ($form->_submitValues['all_emails'] || $excludeOOD != FILTER_ALL) {
             require_once 'CRM/Mailing/BAO/Mailing.php';
-
             $count = CRM_Mailing_BAO_Recipients::mailingSize( $mailingID );
             $form->set('count', $count);
             $form->assign('count', $count);
@@ -236,7 +253,7 @@ function nyss_mail_civicrm_pageRun( &$page ) {
 } //end pageRun
 
 //4628
-function _addAllEmails( $mailingID, $dedupeEmails = false, $excludeOOD = false ) {
+function _addAllEmails( $mailingID, $dedupeEmails = false, $excludeOOD = FILTER_ALL) {
 
     require_once 'CRM/Mailing/BAO/Mailing.php';
 
@@ -251,7 +268,7 @@ WHERE  e.on_hold = 0
   AND  e.id NOT IN ( SELECT email_id FROM civicrm_mailing_recipients mr WHERE mailing_id = %1 )
 ";
 
-    if ( $dedupeEmails && !$excludeOOD ) {
+    if ($dedupeEmails && $excludeOOD == FILTER_ALL) {
         $sql .= " AND e.email NOT IN ( SELECT e.email
                                        FROM   civicrm_mailing_recipients mr
                                          JOIN civicrm_email e
@@ -294,7 +311,7 @@ function _excludeOOD( $mailingID, $dedupeEmails = false, $excludeOOD ) {
     CRM_Core_DAO::executeQuery($sql);
 
     //also include unknowns if option enabled
-    if ( $excludeOOD == 2 ) {
+    if ( $excludeOOD == FILTER_IN_SD_OR_NO_SD ) {
 
         //include where no district is known or no address is present
         $sql = "INSERT INTO $tempTbl
