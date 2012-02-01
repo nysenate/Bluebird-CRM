@@ -55,10 +55,10 @@
         <td>{$form.all_emails.html} {help id="all-emails"}</td>
     </tr>
     
-    <tr class="crm-mailing-group-form-block-excludeood">
+    {*<tr class="crm-mailing-group-form-block-excludeood">
         <td class="label">{$form.exclude_ood.label}</td>
         <td>{$form.exclude_ood.html} {help id="exclude-ood"}</td>
-    </tr>
+    </tr>*}
   </table>
 
 
