@@ -1,6 +1,6 @@
 <?php 
 function nyss_tags_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
-	
+
 	//Log when a tag is added/removed from a contact
 	if ( $objectName == 'EntityTag' ) {
 	
@@ -69,4 +69,21 @@ INNER JOIN civicrm_tag tag ON et.tag_id = tag.id
 WHERE tag_id = %2";
         array_unshift( $sqls, $sql );
     }
-}
+} //merge
+
+function nyss_tags_civicrm_validate( $formName, &$fields, &$files, &$form ) {
+
+    if ( $formName == 'CRM_Admin_Form_Tag' ) {
+
+        $sql = "SELECT id
+                FROM civicrm_tag
+                WHERE name = '{$fields['name']}'
+                  AND parent_id = {$fields['parent_id']};";
+        if ( CRM_Core_DAO::singleValueQuery($sql) ) {
+            $form->setElementError('name', ts('Name already exists in the database with the same parent tag.'));
+        } else {
+            $form->setElementError('name', null);
+        }
+        //CRM_Core_Error::debug('fields',$fields);exit();
+    }
+} //validate
