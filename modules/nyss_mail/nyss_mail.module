@@ -35,6 +35,10 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
     //set some values based on context
     if ( $context == 'civimail' ) {
+        if (!isset($params['event_queue_id']) || empty($params['event_queue_id'])) {
+            CRM_Core_Error::debug_var('alterMailParams params: event_queue_id not found',$params);
+        }
+
         $params['Return-Path'] = '';
         $params['List-Unsubscribe'] = '';
         $params['Reply-To'] = $replyto;
@@ -53,12 +57,12 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
 
         //Sendgrid headers
         $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
-        $hdr->setUniqueArgs(array('mailing_id' => $mid,
-                                  'job_id' => $jid,
+        $hdr->setUniqueArgs(array('mailing_id'    => $mid,
+                                  'job_id'        => $jid,
                                   'instance'      => $bbconfig['shortname'],
                                   'install_class' => $bbconfig['install_class'],
-                                  'servername' => $bbconfig['servername'],
-                                  'queue_id' => $event_queue_id));
+                                  'servername'    => $bbconfig['servername'],
+                                  'queue_id'      => $event_queue_id));
     } else {
         //$params['replyTo'] = $replyto;
         // Sendgrid SMTP-API

@@ -391,7 +391,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 		$addressExists = false;
 		//$l['location_type_id'] = 6;
 		foreach ( $nyss_iofields['civicrm_address'] as $field => $dontcare ) {
-		    if ( array_key_exists($field, $l) ) {
+		    if ( array_key_exists($field, $l) || $form_state['values']['fieldoverride'] ) {
 			    $l['last_import_57'] = date( 'Y-m-d H:i:s' );
 				$addressExists = true;
 				break;
@@ -831,7 +831,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
-    //nyss_out('debug', "tbl top: $tbl", true);
+    nyss_out('debug', "tbl top: $tbl", true);
     //nyss_out('debug', $l, true);
 
     global $nyss_iofields;
@@ -885,19 +885,6 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		if ( !$dao->fetch() ) nyss_out('error','no civirecord found. not importing.',true);
 
         $up = array();
-		
-		//fields that can be overridden with null/empty values if option selected
-		//DEPRECATED: we allow override on all fields
-		$override = array( 0 => 'birth_date',
-		                   1 => 'town_52',
-		                   2 => 'ward_53',
-		                   3 => 'election_district_49',
-		                   4 => 'congressional_district_46',
-		                   5 => 'ny_senate_district_47',
-		                   6 => 'ny_assembly_district_48',
-		                   7 => 'school_district_54',
-		                   8 => 'county_50',
-						 );
 	
 		//compare the fields
 		foreach( $l as $key=>$data ) {
@@ -905,10 +892,9 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
             //apply handler if set
 			if(isset($nyss_iofields[$tbl][$key]['handler'])) $data = $nyss_iofields[$tbl][$key]['handler']($data, true);
 			
-//echo 'existing: '.$dao->$key.'<br />';
-//echo 'new: '.$data.'<br /><br />';
+echo 'existing: '.$dao->$key.'<br />';
+echo 'new: '.$data.'<br /><br />';
 			//if the import data doesn't match civi data, update it
-			//if ( isset($dao->$key) && $dao->$key<>$data ) { //this was preventing a fill action - if existing field was null
 			if ( isset($nyss_iofields[$tbl][$key]) && 
 			     ( $dao->$key<>$data || $form_state['values']['fieldoverride'] )
 			   ) {
@@ -1023,7 +1009,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		foreach($l as $key=>$data) {
 
 			//unset if no data
-			if ( empty($data) && $data !== 0 ) {
+			if ( empty($data) && $data !== 0 && array_key_exists($key, $nyss_iofields[$tbl]) ) {
 				unset($l[$key]);
 				continue;
 			}
