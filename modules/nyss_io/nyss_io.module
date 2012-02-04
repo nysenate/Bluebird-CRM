@@ -892,8 +892,8 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
             //apply handler if set
 			if(isset($nyss_iofields[$tbl][$key]['handler'])) $data = $nyss_iofields[$tbl][$key]['handler']($data, true);
 			
-echo 'existing: '.$dao->$key.'<br />';
-echo 'new: '.$data.'<br /><br />';
+//echo 'existing: '.$dao->$key.'<br />';
+//echo 'new: '.$data.'<br /><br />';
 			//if the import data doesn't match civi data, update it
 			if ( isset($nyss_iofields[$tbl][$key]) && 
 			     ( $dao->$key<>$data || $form_state['values']['fieldoverride'] )
