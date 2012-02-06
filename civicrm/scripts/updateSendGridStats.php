@@ -318,11 +318,11 @@ function get_queue_event($event) {
 
 
 function get_accumulator_connection($bbcfg) {
-    $host = array_get('accumulator.host', $bbcfg);
-    $port = array_get('accumulator.port', $bbcfg);
-    $name = array_get('accumulator.name', $bbcfg);
-    $user = array_get('accumulator.user', $bbcfg);
-    $pass = array_get('accumulator.pass', $bbcfg);
+    $host = array_get('accumulator.db.host', $bbcfg);
+    $port = array_get('accumulator.db.port', $bbcfg);
+    $name = array_get('accumulator.db.name', $bbcfg);
+    $user = array_get('accumulator.db.user', $bbcfg);
+    $pass = array_get('accumulator.db.pass', $bbcfg);
 
     if (!$host || !$name || !$user || !$pass) {
         log_("[ERROR] Accumulator configuration parameters missing. accumulator.{host,name,user,pass} required");
