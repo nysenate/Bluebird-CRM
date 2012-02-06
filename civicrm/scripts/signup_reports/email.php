@@ -26,16 +26,16 @@ $params = array(
         'host' => $config['smtp.host'],
         'port' => $config['smtp.port'],
         'auth' => True,
-        'user' => $config['smtp.subuser'],
-        'pass' => $config['smtp.subpass']
+        'username' => $config['smtp.subuser'],
+        'password' => $config['smtp.subpass']
     );
-
+var_dump($params);
 $mailer = Mail::Factory('smtp',$params);
 
 
 $emails = array();
 foreach(explode(',',$config['signups.email.to']) as $to) {
-    if(!strpos('@',$to)) {
+    if(!strpos($to,'@')) {
         $to .= "@nysenate.gov";
     }
     $emails[] = trim($to);
