@@ -1,34 +1,20 @@
 #!/usr/bin/php
 <?php
 
-$prog = basename(__FILE__);
-$script_dir = dirname(__FILE__);
-
-require_once "utils.php";
-require_once 'nysenate_api/SignupForm.php';
-require_once 'nysenate_api/get_services/xmlrpc-api.inc';
 require_once realpath(dirname(__FILE__).'/../script_utils.php');
-
+# Some packages required for command line parsing
 add_packages_to_include_path();
+$optList = get_options();
 
-// Load the config file and bootstrap the environment
-if(! $config = parse_ini_file("$script_dir/reports.cfg", true)) {
-    die("$prog: config file reports.cfg not found.");
-}
-
+require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
+$config = get_bluebird_config();
+// Bootstrap the environment
+require_once "utils.php";
 $env = array(
-    'domain' => $config['xmlrpc']['domain'],
-    'apikey' => $config['xmlrpc']['apikey'],
-    'conn'   => get_connection($config['database'])
+    'domain' => $config['globals']['signups.api.domain'],
+    'apikey' => $config['globals']['signups.api.key'],
+    'conn'   => get_connection($config['globals'])
 );
-
-
-// Process the command line options and dispatch accordingly
-$short_opts = 'hascgub:f:';
-$long_opts = array('help','all','senators','committees','geocode','signups','batch=','first=');
-$usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_ID]";
-if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] )
-    die("$prog $usage\n");
 
 if($optList['senators'] || $optList['all'])
     updateSenators($optList, $env);
@@ -43,17 +29,37 @@ if($optList['geocode'] || $optList['all'])
     geocodeAddresses($optList, $env);
 
 
+function get_options() {
+    $prog = basename(__FILE__);
+    $script_dir = dirname(__FILE__);
+
+    $short_opts = 'hascgub:f:';
+    $long_opts = array('help','all','senators','committees','geocode','signups','batch=','first=');
+    $usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_ID]";
+    if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] )
+        die("$prog $usage\n");
+
+    return $optList;
+}
+
+
 function updateSenators($optList, $env) {
+    require_once 'nysenate_api/get_services/xmlrpc-api.inc';
+
     //TODO: If senators get removed from this list (new senators come in) we
     //currently have no way to reflect that fact. Will cause future problems.
     list($domain, $apikey, $conn) = array_values($env);
 
     $view_service = new viewsGet($domain, $apikey);
     $senators = $view_service->get(array('view_name'=>'senators'));
+    $first = true;
     foreach($senators as $senator) {
         $node_service = new nodeGet($domain, $apikey);
         $senatorData = $node_service->get(array('nid'=>$senator['nid']));
-
+        if(!$first) {
+            var_dump($senatorData); exit();
+            }
+        $first=false;
         //Clean basic information
         $nid = (int)$senatorData['nid'];
         $title = mysql_real_escape_string($senatorData['title'], $conn);
@@ -80,6 +86,8 @@ function updateSenators($optList, $env) {
 }
 
 function updateCommitties($optList, $env) {
+    require_once 'nysenate_api/get_services/xmlrpc-api.inc';
+
     //TODO: If committees wind up not on this list (decommissioned) we don't update
     //to reflect that fact. Could cause a problem in the future.
     list($domain, $apikey, $conn) = array_values($env);
@@ -107,22 +115,27 @@ function updateCommitties($optList, $env) {
         //TODO: Use ON DUPLICATE KEY UPDATE instead, plays nicers with foreign key constraints
         echo "Updating committee: $title...\n";
         $sql = "INSERT INTO committee (nid, title, chair_nid, list_id) VALUES ($nid, '$title', $chair_nid, $list_id) ON DUPLICATE KEY UPDATE title='$title', chair_nid=$chair_nid, list_id=$list_id";
-        if(! $result = mysql_query($sql,$conn) )
+        if(! $result = mysql_query($sql,$conn) ) {
             die(mysql_error($conn)."\n".$sql);
+        }
     }
 }
 
 
 function updateSignups($optList, $env) {
+    require_once 'nysenate_api/SignupForm.php';
+
+    $issue_ids = array();
     list($domain, $apikey, $conn) = array_values($env);
     $limit = $optList['batch'] ? $optList['batch'] : 500; //default to 500
 
     //Starting point can be user supplied or queried from the database for
     //new contacts only
-    if($optList['first']!==NULL)
+    if($optList['first']!==NULL) {
         $start_id = (int)$optList['first'];
-    else
+    } else {
         $start_id = get_start_id($conn)+1;
+    }
 
     while(TRUE) {
         $old_start_id = $start_id;
@@ -130,16 +143,17 @@ function updateSignups($optList, $env) {
         echo "Fetching the next $limit records starting from ".($start_id?$start_id:0).".\n";
         $signup_service = new SignupForm($apikey, $domain);
         $signupData = $signup_service->getRawEntries(NULL,NULL,$start_id,NULL,$limit);
-        if(!$signupData["accounts"] || count($signupData["accounts"]) == 0)
+        if(!isset($signupData["accounts"]) || count($signupData["accounts"]) == 0) {
 		    break;
+        }
 
         echo "Processing batch....\n";
         foreach($signupData['accounts'] as $account) {
             //Output a quick warning letting us know something wierd is happening
             $num_lists = count($account['lists']);
-            if($num_lists > 1)
+            if($num_lists > 1) {
                 echo "account['name']={$account['name']} has {$num_lists} lists associated with it.";
-            elseif($num_lists == 0) {
+            } elseif($num_lists == 0) {
                 //There we no lists on this account...wtf? Die...
                 die("Account with no lists found...".print_r($account,TRUE));
             }
@@ -153,20 +167,42 @@ function updateSignups($optList, $env) {
                 $person_id = get_person_id($contact, $conn);
 
                 //Move up our starting point as necessary
-                if($person_id >= $start_id)
+                if($person_id >= $start_id) {
                     $start_id = $person_id+1;
+                }
 
                 foreach($contact['issues'] as $issue) {
                     $issue = mysql_real_escape_string($issue, $conn);
-                    $sql = "INSERT IGNORE INTO issue (person_id,issue) VALUES ($person_id, '$issue')";
-                    if(!$result = mysql_query($sql, $conn))
-                        die(mysql_error($conn)."\n".$sql);
+                    if(isset($issue_ids[$issue])===FALSE) {
+                        $sql = "SELECT id FROM issue WHERE name='$issue'";
+                        if(!$result = mysql_query($sql,$conn)) {
+                            die(mysql_error($conn)."\n".$sql);
+                        }
 
+                        if(mysql_num_rows($result)) {
+                            $row = mysql_fetch_assoc($result);
+                            $issue_ids[$issue] = $row['id'];
+                        } else {
+                            $sql = "INSERT INTO issue (name) VALUES ('$issue')";
+                            if(!$result = mysql_query($sql, $conn)) {
+                                die(mysql_error($conn)."\n".$sql);
+                            }
+
+                            $issue_ids[$issue] = mysql_insert_id();
+                        }
+                    }
+
+                    $issue_id = $issue_ids[$issue];
+                    $sql = "INSERT IGNORE INTO subscription (person_id,issue_id) VALUES ($person_id, $issue_id)";
+                    if(!$result = mysql_query($sql, $conn)) {
+                        die(mysql_error($conn)."\n".$sql);
+                    }
                 }
 
                 $sql = "INSERT IGNORE INTO signup (list_id,person_id) VALUES ($list_id, $person_id)";
-                if(!$result = mysql_query($sql,$conn))
+                if(!$result = mysql_query($sql,$conn)) {
                     die(mysql_error($conn)."\n".$sql);
+                }
 
             }
         }
@@ -191,8 +227,9 @@ function geocodeAddresses($optList, $env) {
                    zip as postal_code
             FROM person WHERE district IS NULL ORDER BY id ASC";
 
-    if(! $result = mysql_query($sql, $conn) )
+    if(! $result = mysql_query($sql, $conn) ) {
         die(mysql_error($conn)."\n".$sql);
+    }
 
     while($row = mysql_fetch_assoc($result)) {
     	//geocode, dist assign and format address
@@ -206,16 +243,18 @@ function geocodeAddresses($optList, $env) {
         }
 
         $sql = "UPDATE person SET district={$row['custom_47_-1']} WHERE id={$row['id']}";
-        if(! $inner_result = mysql_query($sql,$conn) )
+        if(! $inner_result = mysql_query($sql,$conn) ) {
             die(mysql_error($conn)."\n".$sql);
+        }
     }
     echo "\n";
 }
 
 
 function get_start_id($conn) {
-    if(!$result = mysql_query("SELECT max(id) as max_id FROM person",$conn))
+    if(!$result = mysql_query("SELECT max(id) as max_id FROM person",$conn)) {
         die(mysql_error($conn)."\n".$sql);
+    }
 
     $row = mysql_fetch_assoc($result);
     return $row['max_id'];

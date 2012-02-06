@@ -1,31 +1,16 @@
 #!/usr/bin/php
 <?php
 
-$prog = basename(__FILE__);
-$script_dir = dirname(__FILE__);
-
-require_once 'utils.php';
+// Process the command line arguments
 require_once realpath(dirname(__FILE__).'/../script_utils.php');
 add_packages_to_include_path();
-require_once 'Spreadsheet/Excel/Writer.php';
+$optList = get_options();
+
 
 // Load the config file
-if(! $config = parse_ini_file("$script_dir/reports.cfg", true)) {
-    die("$prog: config file reports.cfg not found.");
-}
+require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
+$config = get_bluebird_instance_config($optList['site']);
 
-// Bootstrap the script and progress the command line arguments
-$short_opts = 'hS:D:F:';
-$long_opts = array('help', 'site=', 'district=', 'folder=');
-$usage = "[--help|-h] --site|-s SITE --district|-d DISTRICT --folder|-f FOLDER";
-if(! $optList = process_cli_args($short_opts, $long_opts)) {
-    die("$prog $usage\n");
-
-// We don't have any way 100% sure way of correlating the two right now so require both
-} else if(!$optList['site'] || !$optList['district']) {
-    echo "Both site and district options are required.\n";
-    die("$prog $usage\n");
-}
 
 // Bootstrap CiviCRM so we can use the SAGE and DAO utilities
 $root = dirname(dirname(dirname(dirname(__FILE__))));
@@ -36,40 +21,57 @@ require_once "CRM/Core/DAO.php";
 CRM_Core_Config::singleton();
 
 // Retrieve and process the records
-$conn = get_connection($config['database']);
-$result = get_signups($optList['district'], $conn);
+require_once 'utils.php';
+$conn = get_connection($config);
+$result = get_signups($config['district'], $conn);
 $header = get_header($result);
-list($nysenate_records, $nysenate_emails, $list_totals) = process_records($result, $optList['district']);
+list($nysenate_records, $nysenate_emails, $list_totals) = process_records($result, $config['district']);
 
 // Compile an xls report
-$filename = get_report_name($optList['district'], $optList['site'], $config['reports']);
-
 if(!$optList['folder']) {
-    if($config['reports']['directory'][0] == '/')
-        $directory = $config['reports']['directory'];
-    else
-        $directory = "$script_dir/{$config['reports']['directory']}";
+    $directory = $config['signups.reports.rootdir'];
 } else {
     $directory = $optList['folder'];
 }
 
-$directory = $directory."/".date($config['reports']['date_format']);
-if(!is_dir($directory))
+$directory = $directory."/".date($config['signups.reports.date_format']);
+if(!is_dir($directory)) {
     mkdir($directory, 0777, true);
-$filepath = "$directory/$filename";
-create_report($filepath, $header, $nysenate_records, $list_totals);
+}
+
+$filename = get_report_name($config['district'], $optList['site'], $config['signups.reports.name_template']);
+create_report("$directory/$filename", $header, $nysenate_records, $list_totals);
 
 $sql = "UPDATE signup
           JOIN person ON signup.person_id=person.id
           JOIN list ON list.id=signup.list_id
-          JOIN senator ON senator.district={$optList['district']}
+          JOIN senator ON senator.district={$config['district']}
           LEFT JOIN committee ON senator.nid=committee.chair_nid
         SET reported=1, dt_reported=NOW()
         WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
           AND signup.reported=0";
-if(!mysql_query($sql, $conn))
+if(!mysql_query($sql, $conn)) {
     die(mysql_error($conn));
+}
 
+
+function get_options() {
+    $prog = basename(__FILE__);
+    $script_dir = dirname(__FILE__);
+
+    $short_opts = 'hS:F:';
+    $long_opts = array('help', 'site=', 'folder=');
+    $usage = "[--help|-h] --site|-S SITE --folder|-f FOLDER";
+    if(! $optList = process_cli_args($short_opts, $long_opts)) {
+        die("$prog $usage\n");
+
+    } else if(!$optList['site']) {
+        echo "Site name is required.\n";
+        die("$prog $usage\n");
+    }
+
+    return $optList;
+}
 
 
 function get_signups($district, $conn) {
@@ -101,7 +103,7 @@ function get_signups($district, $conn) {
                    person.state AS `State`,
                    person.zip AS `Postal Code`,
                    person.phone AS `Phone`,
-                   GROUP_CONCAT(DISTINCT issue.issue ORDER BY issue.issue ASC SEPARATOR '|') as `Issues`
+                   GROUP_CONCAT(DISTINCT issue.name ORDER BY issue.name ASC SEPARATOR '|') as `Issues`,
                    list.title as `Source List`,
                    person.district as `District`,
                    '' AS `In District`,
@@ -112,15 +114,17 @@ function get_signups($district, $conn) {
               JOIN list ON list.id=signup.list_id
               JOIN senator ON senator.district=$district
               LEFT JOIN committee ON senator.nid=committee.chair_nid
-              LEFT JOIN issue ON issue.person_id=person.id
+              LEFT JOIN subscription ON subscription.person_id=person.id
+              LEFT JOIN issue ON issue.id=subscription.issue_id
             WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
               AND signup.reported=0
             GROUP BY person.id
             ORDER BY person.id";
 
     //Connect to the signups SQL database as constructed by the signups ingest script
-    if(!$result = mysql_query($sql, $conn))
+    if(!$result = mysql_query($sql, $conn)) {
         die(mysql_error($conn)."\n".$sql."\n");
+    }
 
     return $result;
 }
@@ -142,25 +146,28 @@ function process_records($result, $district) {
             $row['District'] = '';
 
             // If we can't distassign it, it is either a bad address or out of state
-            if($row['State'] != 'New York')
-                $row['In District'] = 'OUT OF STATE';
-            else
+            if($row['State'] != 'New York') {
+                $row['In District'] = 'FALSE';
+            } else {
                 $row['In District'] = 'UNKNOWN';
+            }
 
         } else {
 
             // Out of district implicitly means that they are still in New York
-            if($row['District'] == $district)
+            if($row['District'] == $district) {
                 $row['In District'] = 'TRUE';
-            else
-                $row['In District'] = 'OUT OF DISTRICT';
+            } else {
+                $row['In District'] = 'FALSE';
+            }
 
         }
 
         //Clean up the Source List, use spaces and remove the 'Signup' values
         $parts = explode('-',$row['Source List']);
-        if($parts[count($parts)-1] == 'Signups')
+        if($parts[count($parts)-1] == 'Signups') {
             array_pop($parts);
+        }
         $row['Source List'] = implode(' ',$parts);
 
         // Store up some totals for summary stats, include a placeholder for stats
@@ -217,6 +224,7 @@ function process_records($result, $district) {
 
 
 function create_report($filepath, $header, $nysenate_records, $list_totals) {
+    require_once 'Spreadsheet/Excel/Writer.php';
     $workbook = new Spreadsheet_Excel_Writer($filepath);
 
     $summary_worksheet = & $workbook->addWorksheet('Summary');
@@ -241,8 +249,9 @@ function create_report($filepath, $header, $nysenate_records, $list_totals) {
     // TODO: This could use some formatting...
     $nysenate_worksheet = & $workbook->addWorksheet('NYSenate.gov Emails');
     write_row($nysenate_worksheet, 0, $header);
-    foreach($nysenate_records as $key => $record)
+    foreach($nysenate_records as $key => $record) {
         write_row($nysenate_worksheet,$key+1, $record);
+    }
 
     $workbook->close();
 }
@@ -250,8 +259,9 @@ function create_report($filepath, $header, $nysenate_records, $list_totals) {
 
 
 function write_row($worksheet, $row_num, $data) {
-    if(!$data)
+    if(!$data) {
         return false;
+    }
 
     foreach(array_values($data) as $col => $value)
         $worksheet->write($row_num, $col, $value);
@@ -262,8 +272,9 @@ function write_row($worksheet, $row_num, $data) {
 function get_header($result) {
     $header = array();
     $num_fields = mysql_num_fields($result);
-    for($i=0; $i < $num_fields; $i++)
+    for($i=0; $i < $num_fields; $i++) {
         $header[$i] = mysql_field_name($result, $i);
+    }
     return $header;
 }
 ?>

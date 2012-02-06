@@ -1,47 +1,55 @@
 #!/usr/bin/php
 <?php
 
-//Bootstrap the script and progress the command line arguments
-require_once 'utils.php';
-require_once realpath(dirname(__FILE__).'/../script_utils.php');
-add_packages_to_include_path();
 $prog = basename(__FILE__);
 $script_dir = dirname(__FILE__);
-$short_opts = 'hS:D:F:';
-$long_opts = array('help', 'site=', 'district=', 'folder=');
-$usage = "[--help|-h] --site|-s SITE --district|-d DISTRICT --folder|-f FOLDER";
 
-if(! $optList = process_cli_args($short_opts, $long_opts))
-    die("$prog $usage\n");
+//Bootstrap the script and progress the command line arguments
+require_once 'utils.php';
 
-if(! $config = parse_ini_file("$script_dir/reports.cfg", true)) {
-    die("$prog: config file reports.cfg not found.");
-}
 
-$filename = get_report_name($optList['district'], $optList['site'], $config['reports']);
+require_once realpath(dirname(__FILE__).'/../script_utils.php');
+add_packages_to_include_path();
+$optList = get_options();
+
+
+require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
+$config = get_bluebird_instance_config($optList['site']);
+
+
+$filename = get_report_name($config['district'], $optList['site'], $config['signups.reports.name_template']);
 $attachment = "{$optList['folder']}/$filename";
 
 require_once 'Mail.php';
 require_once 'Mail/mime.php';
-$mailer = Mail::Factory('mail');
+$params = array(
+        'host' => $config['smtp.host'],
+        'port' => $config['smtp.port'],
+        'auth' => True,
+        'user' => $config['smtp.subuser'],
+        'pass' => $config['smtp.subpass']
+    );
 
-$match = "{$optList['district']}_{$optList['site']}";
-$recipients = "";
-foreach($config['districts'] as $key => $value) {
-    if($key == $match)
-        $recipients = $value;
+$mailer = Mail::Factory('smtp',$params);
+
+
+$emails = array();
+foreach(explode(',',$config['signups.email.to']) as $to) {
+    if(!strpos('@',$to)) {
+        $to .= "@nysenate.gov";
+    }
+    $emails[] = trim($to);
 }
+$recipients = implode(',',$emails);
 
-if(!$recipients)
-    die("$match: No recipients listed in reports.cfg\n");
 
 $msg = new Mail_mime();
 $msg->setTXTBody("Your weekly signups report.");
 $msg->addAttachment($attachment,'application/vnd.ms-excel');
 
 $headers = $msg->headers(array(
-        'Bcc'     => $config['email']['bcc'],
-        'From'    => $config['email']['from'],
+        'Bcc'     => $config['signups.email.bcc'],
+        'From'    => $config['signups.email.from'],
         'To'      => $recipients,
         "Subject" =>"[SignupsReport] ".basename($optList['folder']),
     ));
@@ -57,5 +65,23 @@ if($result !== TRUE ) {
     echo "Report sent to $recipients\n";
 }
 
+
+function get_options() {
+    $short_opts = 'hS:F:';
+    $long_opts = array('help', 'site=', 'folder=');
+    $usage = "[--help|-h] --site|-S SITE --folder|-f FOLDER";
+    if(! $optList = process_cli_args($short_opts, $long_opts)) {
+        die("$prog $usage\n");
+
+    } else if(!$optList['site']) {
+        echo "Site name is required.\n";
+        die("$prog $usage\n");
+    } else if(!$optList['folder']) {
+        echo "Folder is required.\n";
+        die("$prog $usage\n");
+    }
+
+    return $optList;
+}
 
 ?>
