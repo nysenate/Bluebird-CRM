@@ -52,14 +52,10 @@ function updateSenators($optList, $env) {
 
     $view_service = new viewsGet($domain, $apikey);
     $senators = $view_service->get(array('view_name'=>'senators'));
-    $first = true;
     foreach($senators as $senator) {
         $node_service = new nodeGet($domain, $apikey);
         $senatorData = $node_service->get(array('nid'=>$senator['nid']));
-        if(!$first) {
-            var_dump($senatorData); exit();
-            }
-        $first=false;
+
         //Clean basic information
         $nid = (int)$senatorData['nid'];
         $title = mysql_real_escape_string($senatorData['title'], $conn);

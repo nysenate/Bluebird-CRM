@@ -29,12 +29,11 @@ list($nysenate_records, $nysenate_emails, $list_totals) = process_records($resul
 
 // Compile an xls report
 if(!$optList['folder']) {
-    $directory = $config['signups.reports.rootdir'];
+    $directory = $config['signups.reports.rootdir'].'/'.date($config['signups.reports.date_format']);
 } else {
     $directory = $optList['folder'];
 }
 
-$directory = $directory."/".date($config['signups.reports.date_format']);
 if(!is_dir($directory)) {
     mkdir($directory, 0777, true);
 }
