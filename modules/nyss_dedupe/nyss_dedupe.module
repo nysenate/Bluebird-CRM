@@ -356,7 +356,7 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
         $clauses[] = $supp2Clause;
 
     $where .= "
-          ".implode(" AND\n              ",$clauses)."
+          AND ".implode("\n          AND ",$clauses)."
           ";
 
     return $select.$from.$where;
