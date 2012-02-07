@@ -1,32 +1,35 @@
 #!/usr/bin/php
 <?php
 
-$report_dir = dirname(__FILE__);
-$script_dir = dirname(dirname(__FILE__));
-
-require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
-$config = get_bluebird_config();
-$instances = explode(' ',$config['instance_sets']['signups']);
-
+// Bootstrap the script and progress the command line arguments
 require_once realpath(dirname(__FILE__).'/../script_utils.php');
 add_packages_to_include_path();
 $optList = get_options();
 
 
+// Load the global configuration
+require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
+$config = get_bluebird_config();
+$instances = explode(' ',$config['instance_sets']['signups']);
+
+
+// Secure a databsae connection
 require_once 'utils.php';
 $conn = get_connection($config['globals']);
 
-
+// Preload pathing shortcuts
+$report_dir = dirname(__FILE__);
+$script_dir = dirname(dirname(__FILE__));
 $ingest_script = "$report_dir/ingest.php";
 $generate_script = "$report_dir/generate.php";
 $email_script = "$report_dir/email.php";
+$date = date($config['globals']['signups.reports.date_format']);
 
 
-if(!$optList['folder'])
-    $report_dir = "{$config['globals']['signups.reports.rootdir']}/".date($config['globals']['signups.reports.date_format']);
-else
-    $report_dir = $optList['folder'];
-
+$dryrun = '';
+if($optList['dryrun']) {
+    $dryrun = '--dryrun';
+}
 
 if($optList['ingest'] || $optList['all']) {
     // Update the signups database, this involves geocoding and may take a while
@@ -54,7 +57,7 @@ if($optList['generate'] || $optList['all']) {
 
     foreach($instances as $instance) {
         log_("  Creating $instance report.");
-        log_(`php $generate_script --site $instance --folder $report_dir`, true);
+        log_(`php $generate_script --site $instance --date $date $dryrun`, true);
     }
 }
 
@@ -63,18 +66,18 @@ if($optList['email'] || $optList['all']) {
     log_("Emailing Reports...");
     foreach($instances as $instance) {
         log_("  Emailing report to $instance.");
-        log_(`php $email_script --site $instance --folder $report_dir`, true);
+        log_(`php $email_script --site $instance --date $date $dryrun`, true);
     }
 }
 
 
 function get_options() {
     $prog = basename(__FILE__);
-    $short_opts = 'hiugeaf:';
-    $long_opts = array('help','ingest','update','generate','email','all', 'folder=');
+    $short_opts = 'hiugead:r';
+    $long_opts = array('help', 'ingest', 'update', 'generate', 'email', 'all', 'date=', 'dryrun');
 
     if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] ) {
-        die("$prog [--help|-h] [--ingest [--update]] [--generate] [--email ] [--all] [--folder FOLDER]");
+        die("$prog [--help|-h] [--ingest [--update]] [--generate] [--email ] [--all] [--date FORMATTED_DATE] [--dryrun]");
     }
 
     return $optList;

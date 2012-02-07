@@ -20,6 +20,7 @@ require_once "CRM/Core/Config.php";
 require_once "CRM/Core/DAO.php";
 CRM_Core_Config::singleton();
 
+
 // Retrieve and process the records
 require_once 'utils.php';
 $conn = get_connection($config);
@@ -27,30 +28,25 @@ $result = get_signups($config['district'], $conn);
 $header = get_header($result);
 list($nysenate_records, $nysenate_emails, $list_totals) = process_records($result, $config['district']);
 
-// Compile an xls report
-if(!$optList['folder']) {
-    $directory = $config['signups.reports.rootdir'].'/'.date($config['signups.reports.date_format']);
-} else {
-    $directory = $optList['folder'];
-}
 
-if(!is_dir($directory)) {
-    mkdir($directory, 0777, true);
-}
+// Create the report
+$filename = get_report_path($config, $optList);
+create_report($filename, $header, $nysenate_records, $list_totals);
 
-$filename = get_report_name($config['district'], $optList['site'], $config['signups.reports.name_template']);
-create_report("$directory/$filename", $header, $nysenate_records, $list_totals);
 
-$sql = "UPDATE signup
-          JOIN person ON signup.person_id=person.id
-          JOIN list ON list.id=signup.list_id
-          JOIN senator ON senator.district={$config['district']}
-          LEFT JOIN committee ON senator.nid=committee.chair_nid
-        SET reported=1, dt_reported=NOW()
-        WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
-          AND signup.reported=0";
-if(!mysql_query($sql, $conn)) {
-    die(mysql_error($conn));
+// Mark the records as successfully processed
+if(!$optList['dryrun']) {
+    $sql = "UPDATE signup
+              JOIN person ON signup.person_id=person.id
+              JOIN list ON list.id=signup.list_id
+              JOIN senator ON senator.district={$config['district']}
+              LEFT JOIN committee ON senator.nid=committee.chair_nid
+            SET reported=1, dt_reported=NOW()
+            WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
+              AND signup.reported=0";
+    if(!mysql_query($sql, $conn)) {
+        die(mysql_error($conn));
+    }
 }
 
 
@@ -58,9 +54,9 @@ function get_options() {
     $prog = basename(__FILE__);
     $script_dir = dirname(__FILE__);
 
-    $short_opts = 'hS:F:';
-    $long_opts = array('help', 'site=', 'folder=');
-    $usage = "[--help|-h] --site|-S SITE --folder|-f FOLDER";
+    $short_opts = 'hS:D:r';
+    $long_opts = array('help', 'site=', 'date=', 'dryrun');
+    $usage = "[--help|-h] --site|-S SITE --date|-d DATE --dryrun|-r";
     if(! $optList = process_cli_args($short_opts, $long_opts)) {
         die("$prog $usage\n");
 
