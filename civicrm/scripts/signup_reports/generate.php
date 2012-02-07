@@ -30,12 +30,13 @@ list($nysenate_records, $nysenate_emails, $list_totals) = process_records($resul
 
 
 // Create the report
-$filename = get_report_path($config, $optList);
+$tdate = (isset($optList['date'])) ? $optList['date'] : null;
+$filename = get_report_path($config, $tdate);
 create_report($filename, $header, $nysenate_records, $list_totals);
 
 
 // Mark the records as successfully processed
-if(!$optList['dryrun']) {
+if (!$optList['dryrun']) {
     $sql = "UPDATE signup
               JOIN person ON signup.person_id=person.id
               JOIN list ON list.id=signup.list_id
@@ -44,7 +45,7 @@ if(!$optList['dryrun']) {
             SET reported=1, dt_reported=NOW()
             WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
               AND signup.reported=0";
-    if(!mysql_query($sql, $conn)) {
+    if (!mysql_query($sql, $conn)) {
         die(mysql_error($conn));
     }
 }
@@ -54,15 +55,14 @@ function get_options() {
     $prog = basename(__FILE__);
     $script_dir = dirname(__FILE__);
 
-    $short_opts = 'hS:D:r';
+    $short_opts = 'hS:d:n';
     $long_opts = array('help', 'site=', 'date=', 'dryrun');
-    $usage = "[--help|-h] --site|-S SITE --date|-d DATE --dryrun|-r";
-    if(! $optList = process_cli_args($short_opts, $long_opts)) {
+    $usage = "[--help|-h] --site|-S SITE [--date|-d FORMATTED_DATE] [--dryrun|-n]";
+    if (! $optList = process_cli_args($short_opts, $long_opts)) {
         die("$prog $usage\n");
 
     } else if(!$optList['site']) {
-        echo "Site name is required.\n";
-        die("$prog $usage\n");
+        die("Site name is required.\n$prog $usage\n");
     }
 
     return $optList;

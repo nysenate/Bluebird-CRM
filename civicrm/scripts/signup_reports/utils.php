@@ -5,7 +5,7 @@ function get_connection($config)
     $dbuser = $config['signups.db.user'];
     $dbpass = $config['signups.db.pass'];
     $dbhost = $config['signups.db.host'];
-    $dbport = (isset($config['signups.db.port']) ? ':'.$config['signups.db.port'] : '';
+    $dbport = (isset($config['signups.db.port'])) ? ':'.$config['signups.db.port'] : '';
     $dbname = $config['signups.db.name'];
 
     $conn_str = "$dbuser@$dbhost$dbport";
@@ -22,31 +22,47 @@ function get_connection($config)
 } // get_connection()
 
 
-function get_report_path($config, $options)
+function get_report_path($bbcfg, $target_date)
 {
-    $directory = $config['data.rootdir'].'/'.$config['servername'].'/'.$config['signups.reports.dirname'];
+    $datadir = $bbcfg['data.rootdir'];
+    $sitedir = $bbcfg['servername'];
+    $instance = $bbcfg['shortname'];
+    $dirname = $bbcfg['signups.reports.dirname'];
 
-    $date = $options['date'];
-    if(!$date) {
-        $date = date($config['signups.reports.date_format']);
+    $dirpath = "$datadir/$sitedir/$dirname"
+
+    if ($target_date == null) {
+        if (isset($bbcfg['signups.reports.date_format'])) {
+            $datefmt = $bbcfg['signups.reports.date_format'];
+        }
+        else {
+            $datefmt = "Y.m.d";
+        }
+        $target_date = date($datefmt);
     }
 
-    if(!is_dir($directory)) {
-        if(!mkdir($directory, 0777, true)) {
-            die("Could not create $directory\n");
+    if (!is_dir($dirpath)) {
+        if (!mkdir($dirpath, 0777, true)) {
+            die("Could not create $dirpath\n");
         }
     }
 
     $template_options = array(
         '<date>' => $date,
-        '<instance>' => $options['site']
+        '<instance>' => $instance
     );
 
-    return str_replace(
-        array_keys($template_options),
-        array_values($template_options),
-        "$directory/{$config['signups.reports.name_template']}"
-    );
+    if (isset($bbcfg['signups.reports.name_template'])) {
+        $name_template = $bbcfg['signups.reports.name_template'];
+    }
+    else {
+        $name_template = 'signups_<instance>_<date>.xls';
+    }
+
+    $filename = str_replace(array_keys($template_options),
+                            array_values($template_options),
+                            $name_template);
+    return "$dirpath/$filename";
 }
 
 ?>
