@@ -13,8 +13,13 @@ $config = get_bluebird_instance_config($optList['site']);
 
 // Format our inputs
 require_once 'utils.php';
-$attachment = get_report_path($config, $optList);
-$recipients = fix_emails($config['signups.email.to']);
+$attachment = get_report_path($config, $optList['date']);
+
+if (!file_exists($attachment)) {
+  die("Report file [$attachment] not found\n");
+}
+
+$recipients = fix_emails($config);
 
 
 // Create our email
@@ -69,32 +74,35 @@ if(!$optList['dryrun']) {
 }
 
 
-function fix_emails($list) {
+function fix_emails($bbcfg)
+{
+    if (!isset($bbcfg['signups.email.to'])) {
+        return null;
+    }
+    $list = $bbcfg['signups.email.to'];
+    $smtp_domain = (isset($bbcfg['smtp.domain'])) ? $bbcfg['smtp.domain'] : 'nysenate.gov';
     $emails = array();
-    foreach(explode(',',$list) as $to) {
-        if(!strpos($to,'@')) {
-            $to .= "@nysenate.gov";
+    foreach (explode(',', $list) as $to) {
+        if (!strpos($to, '@')) {
+            $to .= '@'.$smtp_domain;
         }
         $emails[] = trim($to);
     }
-    return implode(',',$emails);
-}
+    return implode(',', $emails);
+} // fix_emails()
 
 
 function get_options() {
     $prog = basename(__FILE__);
-    $short_opts = 'hS:D:r';
+    $short_opts = 'hS:d:n';
     $long_opts = array('help', 'site=', 'date=', 'dryrun');
-    $usage = "[--help|-h] --site|-S SITE --date|-d FORMATTED_DATE [--dryrun]";
+    $usage = "[--help|-h] --site|-S SITE --date|-d FORMATTED_DATE [--dryrun|-n]";
     if(! $optList = process_cli_args($short_opts, $long_opts)) {
         die("$prog $usage\n");
-
     } else if(!$optList['site']) {
-        echo "Site name is required.\n";
-        die("$prog $usage\n");
+        die("Site name is required.\n$prog $usage\n");
     } else if(!$optList['date']) {
-        echo "Date is required.\n";
-        die("$prog $usage\n");
+        die("Date is required.\n$prog $usage\n");
     }
 
     return $optList;

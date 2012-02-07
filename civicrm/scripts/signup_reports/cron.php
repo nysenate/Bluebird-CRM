@@ -73,11 +73,11 @@ if($optList['email'] || $optList['all']) {
 
 function get_options() {
     $prog = basename(__FILE__);
-    $short_opts = 'hiugead:r';
+    $short_opts = 'hiugead:n';
     $long_opts = array('help', 'ingest', 'update', 'generate', 'email', 'all', 'date=', 'dryrun');
 
     if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] ) {
-        die("$prog [--help|-h] [--ingest [--update]] [--generate] [--email ] [--all] [--date FORMATTED_DATE] [--dryrun]");
+        die("$prog [--help|-h] [--ingest [--update]] [--generate] [--email ] [--all] [--date FORMATTED_DATE] [--dryrun|-n]");
     }
 
     return $optList;
