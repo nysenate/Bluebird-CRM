@@ -1,32 +1,32 @@
 #!/usr/bin/php
 <?php
 
-//Bootstrap the script and progress the command line arguments
-require_once 'utils.php';
+$report_dir = dirname(__FILE__);
+$script_dir = dirname(dirname(__FILE__));
+
+require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
+$config = get_bluebird_config();
+$instances = explode(' ',$config['instance_sets']['signups']);
+
 require_once realpath(dirname(__FILE__).'/../script_utils.php');
 add_packages_to_include_path();
-$prog = basename(__FILE__);
-$script_dir = dirname(__FILE__);
-$short_opts = 'hiugeaf:';
-$long_opts = array('help','ingest','update','generate','email','all', 'folder=');
+$optList = get_options();
 
-if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] ) {
-    die("$prog [--help|-h] [--ingest [--update]] [--generate] [--email ] [--all] [--folder FOLDER]");
-}
 
-if(! $config = parse_ini_file("$script_dir/reports.cfg", true)) {
-    die("$prog: config file reports.cfg not found.");
-}
+require_once 'utils.php';
+$conn = get_connection($config['globals']);
 
-$conn = get_connection($config['database']);
-$ingest_script = "$script_dir/ingest.php";
-$generate_script = "$script_dir/generate.php";
-$email_script = "$script_dir /email.php";
+
+$ingest_script = "$report_dir/ingest.php";
+$generate_script = "$report_dir/generate.php";
+$email_script = "$report_dir/email.php";
+
 
 if(!$optList['folder'])
-    $report_dir = realpath("$script_dir/{$config['reports']['directory']}/".date($config['reports']['date_format']));
+    $report_dir = "{$config['globals']['signups.reports.rootdir']}/".date($config['globals']['signups.reports.date_format']);
 else
     $report_dir = $optList['folder'];
+
 
 if($optList['ingest'] || $optList['all']) {
     // Update the signups database, this involves geocoding and may take a while
@@ -52,21 +52,34 @@ if($optList['generate'] || $optList['all']) {
         mkdir($report_dir,0777,true);
     }
 
-    foreach($config['districts'] as $key => $value) {
-        list($district, $instance) = explode('_',$key);
-        log_("  Created {$district}_{$instance}.xls");
-        log_(`php $generate_script --site $instance --district $district --folder $report_dir`, true);
+    foreach($instances as $instance) {
+        log_("  Creating $instance report.");
+        log_(`php $generate_script --site $instance --folder $report_dir`, true);
     }
 }
 
+
 if($optList['email'] || $optList['all']) {
     log_("Emailing Reports...");
-    foreach($config['districts'] as $key => $value) {
-        list($district, $instance) = explode('_',$key);
-        log_("  Emailing {$district}_{$instance}.xls to $value");
-        log_(`php $email_script --site $instance --district $district --folder $report_dir`, true);
+    foreach($instances as $instance) {
+        log_("  Emailing report to $instance.");
+        log_(`php $email_script --site $instance --folder $report_dir`, true);
     }
 }
+
+
+function get_options() {
+    $prog = basename(__FILE__);
+    $short_opts = 'hiugeaf:';
+    $long_opts = array('help','ingest','update','generate','email','all', 'folder=');
+
+    if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] ) {
+        die("$prog [--help|-h] [--ingest [--update]] [--generate] [--email ] [--all] [--folder FOLDER]");
+    }
+
+    return $optList;
+}
+
 
 function log_($message,$subprocess=false) {
     if(!$message = rtrim($message)) return;

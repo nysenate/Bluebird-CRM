@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2012-01-11
-# Revised: 2012-01-15
+# Revised: 2012-02-06
 #
 # This script will target only those records in the Accumulator which match
 # the given instance/install_class.  For example, if this script is run on
@@ -73,11 +73,11 @@ elif ! $readConfig --instance $instance --quiet; then
   exit 1
 fi
 
-accum_host=`$readConfig --ig $instance accumulator.host`
-accum_port=`$readConfig --ig $instance accumulator.port`
-accum_name=`$readConfig --ig $instance accumulator.name`
-accum_user=`$readConfig --ig $instance accumulator.user`
-accum_pass=`$readConfig --ig $instance accumulator.pass`
+accum_host=`$readConfig --ig $instance accumulator.db.host`
+accum_port=`$readConfig --ig $instance accumulator.db.port`
+accum_name=`$readConfig --ig $instance accumulator.db.name`
+accum_user=`$readConfig --ig $instance accumulator.db.user`
+accum_pass=`$readConfig --ig $instance accumulator.db.pass`
 base_domain=`$readConfig --ig $instance base.domain`
 [ ! "$servername" ] && servername="$instance.$base_domain"
 if echo "$servername" | grep -q '%'; then
@@ -88,7 +88,7 @@ fi
 port_arg=
 
 if [ ! "$accum_host" -o ! "$accum_name" -o ! "$accum_user" -o ! "$accum_pass" ]; then
-  echo "$prog: Config parameters accumulator.{host,name,user,pass} must be set." >&2
+  echo "$prog: Config parameters accumulator.db.{host,name,user,pass} must be set." >&2
   exit 2
 fi
 
