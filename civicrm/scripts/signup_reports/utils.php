@@ -12,13 +12,30 @@ function get_connection($config) {
     return $conn;
 }
 
-function get_report_name($district, $site, $template) {
-    $file_name = str_replace(
-        array('<district>', '<site>'),
-        array($district,    $site),
-        $template
+function get_report_path($config, $options) {
+    $directory = $config['data.rootdir'].'/'.$config['servername'].'/'.$config['signups.reports.dirname'];
+
+    $date = $options['date'];
+    if(!$date) {
+        $date = date($config['signups.reports.date_format']);
+    }
+
+    if(!is_dir($directory)) {
+        if(!mkdir($directory, 0777, true)) {
+            die("Could not create $directory\n");
+        }
+    }
+
+    $template_options = array(
+        '<date>' => $date,
+        '<instance>' => $options['site']
     );
-    return "$file_name.xls";
+
+    return str_replace(
+        array_keys($template_options),
+        array_values($template_options),
+        "$directory/{$config['signups.reports.name_template']}"
+    );
 }
 
 ?>
