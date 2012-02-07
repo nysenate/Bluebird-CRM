@@ -23,15 +23,29 @@ $recipients = fix_emails($config);
 
 
 // Create our email
+
+// Start with some Sendgrid-specific customization, using the X-SMTPAPI header.
+require_once 'nyss_mail/SmtpApiHeader.php';
+
+$smtpApiHdr = new SmtpApiHeader();
+$smtpApiHdr->setCategory("Web Signups Report");
+$smtpApiHdr->setUniqueArgs(array('instance' => $bbconfig['shortname'],
+                                 'install_class' => $bbconfig['install_class'],
+                                 'servername' => $bbconfig['servername']));
+$smtpApiHdr->addFilterSetting('subscriptiontrack', 'enable', 0);
+$smtpApiHdr->addFilterSetting('clicktrack', 'enable', 0);
+$smtpApiHdr->addFilterSetting('opentrack', 'enable', 0);
+$smtpApiHdr->addFilterSetting('bypass_list_management', 'enable', 1);
+
 require_once 'Mail/mime.php';
 $msg = new Mail_mime();
-$msg->setTXTBody("Your weekly signups report.");
-$msg->addAttachment($attachment,'application/vnd.ms-excel');
+$msg->setTXTBody("Attached to this e-mail message, please find your weekly signups report.");
+$msg->addAttachment($attachment, 'application/vnd.ms-excel');
 
 
 // Create our mailer
 require_once 'Mail.php';
-$mailer =  Mail::Factory('smtp',array(
+$mailer = Mail::Factory('smtp', array(
     'host' => $config['smtp.host'],
     'port' => $config['smtp.port'],
     'auth' => True,
@@ -41,14 +55,15 @@ $mailer =  Mail::Factory('smtp',array(
 
 // Assemble headers
 $headers = $msg->headers(array(
-    'Bcc'     => $config['signups.email.bcc'],
-    'From'    => $config['signups.email.from'],
-    'To'      => $recipients,
-    "Subject" =>"[SignupsReport] ".basename($attachment),
+    'Bcc' => $config['signups.email.bcc'],
+    'From' => $config['signups.email.from'],
+    'To' => $recipients,
+    "Subject" => '[SignupsReport] '.basename($attachment),
+    "X-SMTPAPI" => $smtpApiHdr->asJSON()
 ));
 
 // Run it!
-if(!$optList['dryrun']) {
+if (!$optList['dryrun']) {
     // Send the mail
     $result = $mailer->send($recipients, $headers, $msg->get());
 
