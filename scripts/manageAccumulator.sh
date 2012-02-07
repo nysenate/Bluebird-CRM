@@ -88,7 +88,7 @@ fi
 port_arg=
 
 if [ ! "$accum_host" -o ! "$accum_name" -o ! "$accum_user" -o ! "$accum_pass" ]; then
-  echo "$prog: Config parameters accumulator.{host,name,user,pass} must be set." >&2
+  echo "$prog: Config parameters accumulator.db.{host,name,user,pass} must be set." >&2
   exit 2
 fi
 
