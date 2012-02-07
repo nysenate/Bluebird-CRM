@@ -29,7 +29,7 @@ function get_report_path($bbcfg, $target_date)
     $instance = $bbcfg['shortname'];
     $dirname = $bbcfg['signups.reports.dirname'];
 
-    $dirpath = "$datadir/$sitedir/$dirname"
+    $dirpath = "$datadir/$sitedir/$dirname";
 
     if ($target_date == null) {
         if (isset($bbcfg['signups.reports.date_format'])) {
@@ -48,7 +48,7 @@ function get_report_path($bbcfg, $target_date)
     }
 
     $template_options = array(
-        '<date>' => $date,
+        '<date>' => $target_date,
         '<instance>' => $instance
     );
 
