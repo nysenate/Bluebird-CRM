@@ -73,10 +73,16 @@ CREATE TABLE signup (
 ) ENGINE=InnoDB;
 
 CREATE TABLE issue (
+    id smallint(5) unsigned AUTO_INCREMENT PRIMARY KEY,
+    name varchar(255),
+    UNIQUE KEY (name)
+) ENGINE=InnoDB;
+
+CREATE TABLE subscription (
     id int(10) unsigned AUTO_INCREMENT PRIMARY KEY,
     person_id int(10) unsigned,
-    issue varchar(255),
-    INDEX(issue),
-    UNIQUE KEY (person_id, issue),
+    issue_id smallint(5) unsigned,
+    UNIQUE KEY (person_id, issue_id),
+    FOREIGN KEY (issue_id) REFERENCES issue (id),
     FOREIGN KEY (person_id) REFERENCES person (id)
 ) ENGINE=InnoDB;
