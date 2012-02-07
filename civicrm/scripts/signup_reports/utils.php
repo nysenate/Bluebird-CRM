@@ -5,7 +5,7 @@ function get_connection($config)
     $dbuser = $config['signups.db.user'];
     $dbpass = $config['signups.db.pass'];
     $dbhost = $config['signups.db.host'];
-    $dbport = (isset($config['signups.db.port']) ? ':'.$config['signups.db.port'] : '';
+    $dbport = (isset($config['signups.db.port'])) ? ':'.$config['signups.db.port'] : '';
     $dbname = $config['signups.db.name'];
 
     $conn_str = "$dbuser@$dbhost$dbport";
