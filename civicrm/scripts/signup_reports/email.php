@@ -41,7 +41,7 @@ $smtpApiHdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
 require_once 'Mail/mime.php';
 $msg = new Mail_mime();
-$msg->setTXTBody("Attached to this e-mail message, please find your weekly signups report.");
+$msg->setTXTBody("Attached to this e-mail message, please find your nysenate.gov weekly signups report.");
 $msg->addAttachment($attachment, 'application/vnd.ms-excel');
 
 
