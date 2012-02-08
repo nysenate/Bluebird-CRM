@@ -24,7 +24,7 @@ CRM_Core_Config::singleton();
 // Retrieve and process the records
 require_once 'utils.php';
 $conn = get_connection($config);
-$result = get_signups($config['district'], $conn);
+$result = get_signups($config['district'], ($optList['date'] == 'bronto'), $conn);
 $header = get_header($result);
 list($nysenate_records, $nysenate_emails, $list_totals) = process_records($result, $config['district']);
 
@@ -44,7 +44,8 @@ if (!$optList['dryrun']) {
               LEFT JOIN committee ON senator.nid=committee.chair_nid
             SET reported=1, dt_reported=NOW()
             WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
-              AND signup.reported=0";
+              AND signup.reported=0
+              ".(($optList['date'] == 'bronto') ? "AND person.bronto = 1" : "");
     if (!mysql_query($sql, $conn)) {
         die(mysql_error($conn));
     }
@@ -57,6 +58,7 @@ function get_options() {
 
     $short_opts = 'hS:d:n';
     $long_opts = array('help', 'site=', 'date=', 'dryrun');
+
     $usage = "[--help|-h] --site|-S SITE [--date|-d FORMATTED_DATE] [--dryrun|-n]";
     if (! $optList = process_cli_args($short_opts, $long_opts)) {
         die("$prog $usage\n");
@@ -69,7 +71,7 @@ function get_options() {
 }
 
 
-function get_signups($district, $conn) {
+function get_signups($district, $bronto, $conn) {
     // This massive query of doom collects people from 3 different places:
     //  * the senator's personal list:
     //
@@ -102,7 +104,7 @@ function get_signups($district, $conn) {
                    list.title as `Source List`,
                    person.district as `District`,
                    '' AS `In District`,
-                   person.id AS ID,
+                   person.nid AS ID,
                    person.created AS `Signup Date`
             FROM person
               JOIN signup ON signup.person_id=person.id
@@ -113,8 +115,11 @@ function get_signups($district, $conn) {
               LEFT JOIN issue ON issue.id=subscription.issue_id
             WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
               AND signup.reported=0
+              ".(($bronto) ? "AND person.bronto = 1
+            " : "
+            ")."
             GROUP BY person.id
-            ORDER BY person.id";
+            ORDER BY `Signup Date` asc";
 
     //Connect to the signups SQL database as constructed by the signups ingest script
     if(!$result = mysql_query($sql, $conn)) {
@@ -141,7 +146,7 @@ function process_records($result, $district) {
             $row['District'] = '';
 
             // If we can't distassign it, it is either a bad address or out of state
-            if($row['State'] != 'New York') {
+            if($row['State'] != 'New York' && $row['State'] != 'NY') {
                 $row['In District'] = 'FALSE';
             } else {
                 $row['In District'] = 'UNKNOWN';
