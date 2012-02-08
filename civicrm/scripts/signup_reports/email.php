@@ -9,7 +9,9 @@ $optList = get_options();
 // Load the instance configuration
 require_once realpath(dirname(__FILE__).'/../bluebird_config.php');
 $config = get_bluebird_instance_config($optList['site']);
-
+if ($config == null) {
+  die("Unable to continue without a valid configuration.\n");
+}
 
 // Format our inputs
 require_once 'utils.php';
@@ -25,13 +27,13 @@ $recipients = fix_emails($config);
 // Create our email
 
 // Start with some Sendgrid-specific customization, using the X-SMTPAPI header.
-require_once 'nyss_mail/SmtpApiHeader.php';
+require_once realpath(dirname(__FILE__).'/../../../modules/nyss_mail/SmtpApiHeader.php');
 
 $smtpApiHdr = new SmtpApiHeader();
 $smtpApiHdr->setCategory("Web Signups Report");
-$smtpApiHdr->setUniqueArgs(array('instance' => $bbconfig['shortname'],
-                                 'install_class' => $bbconfig['install_class'],
-                                 'servername' => $bbconfig['servername']));
+$smtpApiHdr->setUniqueArgs(array('instance' => $config['shortname'],
+                                 'install_class' => $config['install_class'],
+                                 'servername' => $config['servername']));
 $smtpApiHdr->addFilterSetting('subscriptiontrack', 'enable', 0);
 $smtpApiHdr->addFilterSetting('clicktrack', 'enable', 0);
 $smtpApiHdr->addFilterSetting('opentrack', 'enable', 0);
