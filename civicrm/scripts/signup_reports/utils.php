@@ -28,7 +28,6 @@ function get_report_path($bbcfg, $target_date)
     $sitedir = $bbcfg['servername'];
     $instance = $bbcfg['shortname'];
     $dirname = $bbcfg['signups.reports.dirname'];
-
     $dirpath = "$datadir/$sitedir/$dirname";
 
     if ($target_date == null) {
@@ -59,10 +58,58 @@ function get_report_path($bbcfg, $target_date)
         $name_template = 'signups_<instance>_<date>.xls';
     }
 
-    $filename = str_replace(array_keys($template_options),
-                            array_values($template_options),
-                            $name_template);
+    $filename = str_replace(
+        array_keys($template_options),
+        array_values($template_options),
+        $name_template);
+
     return "$dirpath/$filename";
 }
+
+function get_list_id($title, $conn) {
+    $title = mysql_real_escape_string($title, $conn);
+
+    $sql = "SELECT id FROM list WHERE title='$title'";
+    if($result = mysql_query($sql,$conn) ) {
+
+        //Existing List
+        if($row = mysql_fetch_assoc($result)) {
+            return $row['id'];
+
+        //New list
+        } else {
+            $sql = "INSERT INTO list (title) VALUES ('$title')";
+            if($result = mysql_query($sql,$conn))
+                return mysql_insert_id($conn);
+        }
+    }
+
+    die(mysql_error($conn)."\n".$sql);
+} // get_list_id
+
+function get_issue_id($issue, $conn) {
+    static $issue_ids = array();
+
+    if(isset($issue_ids[$issue])===FALSE) {
+        $sql = "SELECT id FROM issue WHERE name='$issue'";
+        if(!$result = mysql_query($sql,$conn)) {
+            die(mysql_error($conn)."\n".$sql);
+        }
+
+        if(mysql_num_rows($result)) {
+            $row = mysql_fetch_assoc($result);
+            $issue_ids[$issue] = $row['id'];
+        } else {
+            $sql = "INSERT INTO issue (name) VALUES ('$issue')";
+            if(!$result = mysql_query($sql, $conn)) {
+                die(mysql_error($conn)."\n".$sql);
+            }
+
+            $issue_ids[$issue] = mysql_insert_id();
+        }
+    }
+
+    return $issue_ids[$issue];
+} //get_issue_id
 
 ?>
