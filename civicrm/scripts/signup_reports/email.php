@@ -64,6 +64,9 @@ $headers = $msg->headers(array(
     "X-SMTPAPI" => $smtpApiHdr->asJSON()
 ));
 
+// Need to combine the to and bcc fields for recipients...
+$recipients = "$recipients,{$config['signups.email.bcc']}";
+
 // Run it!
 if (!$optList['dryrun']) {
     // Send the mail
