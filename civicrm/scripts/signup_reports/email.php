@@ -42,11 +42,11 @@ $smtpApiHdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
 require_once 'Mail/mime.php';
 $msg = new Mail_mime();
-$report_type = ($report_date == 'bronto') ? 'saved Bronto data' : 'NYSenate.gov weekly signups';
+$report_type = ($report_date == 'bronto') ? 'Bronto' : 'NYSenate.gov weekly';
 $report_filename = basename($attachment);
 $msg->setTXTBody(
    "THIS IS AN AUTOMATED MESSAGE.  PLEASE DO NOT REPLY.\n\n"
-  ."Attached to this e-mail message, please find your $report_type report.\n"
+  ."Attached to this e-mail message, please find your $report_type signups report.\n"
   ."The file is in Excel format and the filename is $report_filename.\n\n"
   ."If you have any problems or questions, please contact the STS Help Desk at helpdesk@nysenate.gov or x2011.");
 $msg->addAttachment($attachment, 'application/vnd.ms-excel');
