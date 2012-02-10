@@ -48,7 +48,7 @@ $msg->setTXTBody(
    "THIS IS AN AUTOMATED MESSAGE.  PLEASE DO NOT REPLY.\n\n"
   ."Attached to this e-mail message, please find your $report_type report.\n"
   ."The file is in Excel format and the filename is $report_filename.\n\n"
-  ."If you have any problems or questions, please contact the STS Help Desk at helpdesk@nysenate.gov or x4357.");
+  ."If you have any problems or questions, please contact the STS Help Desk at helpdesk@nysenate.gov or x2011.");
 $msg->addAttachment($attachment, 'application/vnd.ms-excel');
 
 
