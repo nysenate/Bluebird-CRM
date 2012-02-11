@@ -24,7 +24,8 @@ CRM_Core_Config::singleton();
 // Retrieve and process the records
 require_once 'utils.php';
 $conn = get_connection($config);
-$result = get_signups($config['district'], ($optList['date'] == 'bronto'), $conn);
+$get_bronto = ($optList['date'] == 'bronto') ? true : false;
+$result = get_signups($config['district'], $get_bronto, $conn);
 $header = get_header($result);
 list($nysenate_records, $nysenate_emails, $list_totals) = process_records($result, $config['district']);
 
@@ -33,7 +34,7 @@ list($nysenate_records, $nysenate_emails, $list_totals) = process_records($resul
 $tdate = (isset($optList['date'])) ? $optList['date'] : null;
 $filename = get_report_path($config, $tdate);
 create_report($filename, $header, $nysenate_records, $list_totals);
-
+echo "Created signups report as [$filename].\n";
 
 // Mark the records as successfully processed
 if (!$optList['dryrun']) {
@@ -45,9 +46,12 @@ if (!$optList['dryrun']) {
             SET reported=1, dt_reported=NOW()
             WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
               AND signup.reported=0
-              ".(($optList['date'] == 'bronto') ? "AND person.bronto = 1" : "");
+              AND person.bronto=".(($get_bronto)?'1':'0');
     if (!mysql_query($sql, $conn)) {
         die(mysql_error($conn));
+    }
+    else {
+        echo "Marked records as 'reported'.\n";
     }
 }
 
@@ -55,14 +59,12 @@ if (!$optList['dryrun']) {
 function get_options() {
     $prog = basename(__FILE__);
     $script_dir = dirname(__FILE__);
-
     $short_opts = 'hS:d:n';
     $long_opts = array('help', 'site=', 'date=', 'dryrun');
-
     $usage = "[--help|-h] --site|-S SITE [--date|-d FORMATTED_DATE] [--dryrun|-n]";
+
     if (! $optList = process_cli_args($short_opts, $long_opts)) {
         die("$prog $usage\n");
-
     } else if(!$optList['site']) {
         die("Site name is required.\n$prog $usage\n");
     }
@@ -115,9 +117,7 @@ function get_signups($district, $bronto, $conn) {
               LEFT JOIN issue ON issue.id=subscription.issue_id
             WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
               AND signup.reported=0
-              ".(($bronto) ? "AND person.bronto = 1
-            " : "
-            ")."
+              AND person.bronto=".(($bronto)?'1':'0')."
             GROUP BY person.id
             ORDER BY `Signup Date` asc";
 
