@@ -20,7 +20,7 @@ if($optList['senators'] || $optList['all'])
     updateSenators($optList, $env);
 
 if($optList['committees'] || $optList['all'])
-    updateCommitties($optList, $env);
+    updateCommittees($optList, $env);
 
 if($optList['signups'] || $optList['all'])
     updateSignups($optList, $env);
@@ -81,7 +81,7 @@ function updateSenators($optList, $env) {
     }
 }
 
-function updateCommitties($optList, $env) {
+function updateCommittees($optList, $env) {
     require_once 'nysenate_api/get_services/xmlrpc-api.inc';
 
     //TODO: If committees wind up not on this list (decommissioned) we don't update
@@ -136,14 +136,22 @@ function updateSignups($optList, $env) {
     while(TRUE) {
         $old_start_id = $start_id;
 
-        echo "Fetching the next $limit records starting from ".($start_id?$start_id:0).".\n";
+        echo "Fetching the new records starting from ".($start_id?$start_id:0).".\n";
         $signup_service = new SignupForm($apikey, $domain);
         $signupData = $signup_service->getRawEntries(NULL,NULL,$start_id,NULL,$limit);
-        if(!isset($signupData["accounts"]) || count($signupData["accounts"]) == 0) {
-		    break;
+
+        if( isset($signupData["faultCode"]) ) {
+            var_dump($signupData);
+            exit();
         }
 
-        echo "Processing batch....\n";
+        $count = count($signupData["accounts"]);
+        if($count == 0) {
+            echo "No Records Found.\n";
+            break;
+        }
+
+        echo "Processing batch of $count records....\n";
         foreach($signupData['accounts'] as $account) {
             //Output a quick warning letting us know something wierd is happening
             $num_lists = count($account['lists']);
@@ -209,14 +217,14 @@ function geocodeAddresses($optList, $env) {
     }
 
     while($row = mysql_fetch_assoc($result)) {
-    	//geocode, dist assign and format address
-    	echo "Geocoding: {$row['street_address']} {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
-    	CRM_Utils_SAGE::lookup($row);
+        //geocode, dist assign and format address
+        echo "Geocoding: {$row['street_address']} {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
+        CRM_Utils_SAGE::lookup($row);
 
         //Supply zero as a default so we can find the bad ones later
-    	if(!isset($row['custom_47_-1']) || !$row['custom_47_-1']) {
-    	    echo "[NOTICE] Address --^ could not be geocoded.";
-    	    $row['custom_47_-1'] = 0;
+        if(!isset($row['custom_47_-1']) || !$row['custom_47_-1']) {
+            echo "[NOTICE] Address --^ could not be geocoded.";
+            $row['custom_47_-1'] = 0;
         }
 
         $sql = "UPDATE person SET district={$row['custom_47_-1']} WHERE id={$row['id']}";
