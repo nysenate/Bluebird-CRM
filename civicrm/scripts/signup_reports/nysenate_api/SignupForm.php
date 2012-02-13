@@ -129,7 +129,7 @@
 
 			//geocode, dist assign and format address
 			require_once 'CRM/Utils/SAGE.php';
-			CRM_Utils_SAGE::lookup(&$address);
+			CRM_Utils_SAGE::lookup($address);
 
 			$address['location_type_id'] 	= '1';
 			$address['is_primary'] 		= true;
