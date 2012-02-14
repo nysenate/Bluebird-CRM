@@ -62,7 +62,7 @@ smtp_auth=`$readConfig --ig $instance smtp.auth` || smtp_auth="$DEFAULT_SMTP_AUT
 smtp_subuser=`$readConfig --ig $instance smtp.subuser` || smtp_subuser="$DEFAULT_SMTP_USER"
 smtp_subpass=`$readConfig --ig $instance smtp.subpass` || smtp_subpass="$DEFAULT_SMTP_PASS"
 formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="$DEFAULT_SENATOR_FORMAL_NAME"
-email_from=`$readConfig --ig $instance senator.email.from` || email_from="$DEFAULT_SENATOR_EMAIL_FROM"
+email_from=`$readConfig --ig $instance senator.email` || email_from="$DEFAULT_SENATOR_EMAIL_FROM"
 email_replyto=`$readConfig --ig $instance senator.email.replyto` || email_replyto="$DEFAULT_SENATOR_EMAIL_REPLYTO"
 app_rootdir=`$readConfig --ig $instance app.rootdir` || app_rootdir="$DEFAULT_APP_ROOTDIR"
 base_domain=`$readConfig --ig $instance base.domain` || base_domain="$DEFAULT_BASE_DOMAIN"

@@ -103,10 +103,16 @@ if (!$optList['dryrun']) {
 
 function fix_emails($bbcfg)
 {
-    if (!isset($bbcfg['signups.email.to'])) {
+    if (isset($bbcfg['signups.email.to'])) {
+        $recip_emails = $bbcfg['signups.email.to'];
+    }
+    else if (isset($bbcfg['senator.email'])) {
+        $recip_emails = $bbcfg['senator.email'];
+    }
+    else {
         return null;
     }
-    $list = $bbcfg['signups.email.to'];
+
     $smtp_domain = (isset($bbcfg['smtp.domain'])) ? $bbcfg['smtp.domain'] : 'nysenate.gov';
     $emails = array();
     foreach (explode(',', $list) as $to) {
