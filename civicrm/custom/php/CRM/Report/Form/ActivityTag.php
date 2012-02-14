@@ -60,7 +60,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
                                                      'default'  => true ),
                                               ),
                                        'order_bys' =>             
-                                       array( 'tag_name'  =>
+                                       array( 'name'  =>
                                               array( 'title' => ts( 'Tag Name') ) ),
                                        'grouping' => 'activity-fields',
                                        ),
