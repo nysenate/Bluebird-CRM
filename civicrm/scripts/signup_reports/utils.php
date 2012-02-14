@@ -9,7 +9,7 @@ function get_connection($config)
     $dbname = $config['signups.db.name'];
 
     $conn_str = "$dbuser@$dbhost$dbport";
-    $conn = mysql_connect("$dbhost$dbport", $dbuser, $dbpass);
+    $conn = mysql_connect("$dbhost$dbport", $dbuser, $dbpass, true);
     if (!$conn) {
         die("Could not establish connection to $conn_str\n".mysql_error());
     }

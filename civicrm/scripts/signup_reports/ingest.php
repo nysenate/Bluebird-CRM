@@ -218,7 +218,7 @@ function geocodeAddresses($optList, $env) {
 
     while($row = mysql_fetch_assoc($result)) {
         //geocode, dist assign and format address
-        echo "Geocoding: {$row['street_address']} {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
+        echo "Geocoding: {$row['street_address']}, {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
         CRM_Utils_SAGE::lookup($row);
 
         //Supply zero as a default so we can find the bad ones later
