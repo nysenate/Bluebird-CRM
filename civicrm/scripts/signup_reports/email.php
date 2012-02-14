@@ -115,7 +115,7 @@ function fix_emails($bbcfg)
 
     $smtp_domain = (isset($bbcfg['smtp.domain'])) ? $bbcfg['smtp.domain'] : 'nysenate.gov';
     $emails = array();
-    foreach (explode(',', $list) as $to) {
+    foreach (explode(',', $recip_emails) as $to) {
         if (!strpos($to, '@')) {
             $to .= '@'.$smtp_domain;
         }
