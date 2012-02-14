@@ -20,7 +20,7 @@ if($optList['senators'] || $optList['all'])
     updateSenators($optList, $env);
 
 if($optList['committees'] || $optList['all'])
-    updateCommitties($optList, $env);
+    updateCommittees($optList, $env);
 
 if($optList['signups'] || $optList['all'])
     updateSignups($optList, $env);
@@ -81,7 +81,7 @@ function updateSenators($optList, $env) {
     }
 }
 
-function updateCommitties($optList, $env) {
+function updateCommittees($optList, $env) {
     require_once 'nysenate_api/get_services/xmlrpc-api.inc';
 
     //TODO: If committees wind up not on this list (decommissioned) we don't update
@@ -136,14 +136,22 @@ function updateSignups($optList, $env) {
     while(TRUE) {
         $old_start_id = $start_id;
 
-        echo "Fetching the next $limit records starting from ".($start_id?$start_id:0).".\n";
+        echo "Fetching the new records starting from ".($start_id?$start_id:0).".\n";
         $signup_service = new SignupForm($apikey, $domain);
         $signupData = $signup_service->getRawEntries(NULL,NULL,$start_id,NULL,$limit);
-        if(!isset($signupData["accounts"]) || count($signupData["accounts"]) == 0) {
-		    break;
+
+        if( isset($signupData["faultCode"]) ) {
+            var_dump($signupData);
+            exit();
         }
 
-        echo "Processing batch....\n";
+        $count = count($signupData["accounts"]);
+        if($count == 0) {
+            echo "No Records Found.\n";
+            break;
+        }
+
+        echo "Processing batch of $count records....\n";
         foreach($signupData['accounts'] as $account) {
             //Output a quick warning letting us know something wierd is happening
             $num_lists = count($account['lists']);
@@ -160,35 +168,16 @@ function updateSignups($optList, $env) {
             //Associate the contact with the last list associated with this account
             //I currently believe each account only has 1 list associated with it...
             foreach($account['contacts'] as $contact) {
-                $person_id = get_person_id($contact, $conn);
+                list($person_id, $person_nid) = get_person_id($contact, $conn);
 
                 //Move up our starting point as necessary
-                if($person_id >= $start_id) {
-                    $start_id = $person_id+1;
+                if($person_nid >= $start_id) {
+                    $start_id = $person_nid+1;
                 }
 
                 foreach($contact['issues'] as $issue) {
                     $issue = mysql_real_escape_string($issue, $conn);
-                    if(isset($issue_ids[$issue])===FALSE) {
-                        $sql = "SELECT id FROM issue WHERE name='$issue'";
-                        if(!$result = mysql_query($sql,$conn)) {
-                            die(mysql_error($conn)."\n".$sql);
-                        }
-
-                        if(mysql_num_rows($result)) {
-                            $row = mysql_fetch_assoc($result);
-                            $issue_ids[$issue] = $row['id'];
-                        } else {
-                            $sql = "INSERT INTO issue (name) VALUES ('$issue')";
-                            if(!$result = mysql_query($sql, $conn)) {
-                                die(mysql_error($conn)."\n".$sql);
-                            }
-
-                            $issue_ids[$issue] = mysql_insert_id();
-                        }
-                    }
-
-                    $issue_id = $issue_ids[$issue];
+                    $issue_id = get_issue_id($issue, $conn);
                     $sql = "INSERT IGNORE INTO subscription (person_id,issue_id) VALUES ($person_id, $issue_id)";
                     if(!$result = mysql_query($sql, $conn)) {
                         die(mysql_error($conn)."\n".$sql);
@@ -228,14 +217,14 @@ function geocodeAddresses($optList, $env) {
     }
 
     while($row = mysql_fetch_assoc($result)) {
-    	//geocode, dist assign and format address
-    	echo "Geocoding: {$row['street_address']} {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
-    	CRM_Utils_SAGE::lookup($row);
+        //geocode, dist assign and format address
+        echo "Geocoding: {$row['street_address']}, {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
+        CRM_Utils_SAGE::lookup($row);
 
         //Supply zero as a default so we can find the bad ones later
-    	if(!isset($row['custom_47_-1']) || !$row['custom_47_-1']) {
-    	    echo "[NOTICE] Address --^ could not be geocoded.";
-    	    $row['custom_47_-1'] = 0;
+        if(!isset($row['custom_47_-1']) || !$row['custom_47_-1']) {
+            echo "[NOTICE] Address --^ could not be geocoded.";
+            $row['custom_47_-1'] = 0;
         }
 
         $sql = "UPDATE person SET district={$row['custom_47_-1']} WHERE id={$row['id']}";
@@ -248,7 +237,7 @@ function geocodeAddresses($optList, $env) {
 
 
 function get_start_id($conn) {
-    if(!$result = mysql_query("SELECT max(id) as max_id FROM person",$conn)) {
+    if(!$result = mysql_query("SELECT max(nid) as max_id FROM person",$conn)) {
         die(mysql_error($conn)."\n".$sql);
     }
 
@@ -257,7 +246,7 @@ function get_start_id($conn) {
 }
 
 function get_person_id($contact, $conn) {
-    $id = (int)$contact['id'];
+    $nid = (int)$contact['id'];
     $first_name = mysql_real_escape_string($contact['firstName'],$conn);
     $last_name = mysql_real_escape_string($contact['lastName'],$conn);
     $address1 = mysql_real_escape_string($contact['address1'],$conn);
@@ -271,51 +260,28 @@ function get_person_id($contact, $conn) {
     $created = date('Y-m-d H:i:s',(int)$contact['created']);
     $modified = date('Y-m-d H:i:s',(int)$contact['modified']);
 
-    $sql = "SELECT id FROM person WHERE id=$id";
+    $sql = "SELECT id FROM person WHERE nid=$nid";
     if($result = mysql_query($sql,$conn)) {
 
         //Existing Person
         if($row = mysql_fetch_assoc($result)) {
-            return $id;
+            return array($row['id'], $nid);
 
         //New Person
         } else {
             $sql = "
                 INSERT INTO person
-                    (id, first_name, last_name, address1, address2, city, state, zip, phone, email, status, created, modified)
+                    (nid, first_name, last_name, address1, address2, city, state, zip, phone, email, status, created, modified)
                 VALUES
-                    ($id,'$first_name','$last_name','$address1','$address2','$city','$state','$zip','$phone','$email','$status','$created','$modified')
+                    ($nid,'$first_name','$last_name','$address1','$address2','$city','$state','$zip','$phone','$email','$status','$created','$modified')
             ";
             if($result = mysql_query($sql, $conn)) {
-                return $id;
+                return array(mysql_insert_id($conn), $nid);
             }
         }
     }
 
     die(mysql_error($conn)."\n".$sql);
 }
-
-function get_list_id($title, $conn) {
-    $title = mysql_real_escape_string($title, $conn);
-
-    $sql = "SELECT id FROM list WHERE title='$title'";
-    if($result = mysql_query($sql,$conn) ) {
-
-        //Existing List
-        if($row = mysql_fetch_assoc($result)) {
-            return $row['id'];
-
-        //New list
-        } else {
-            $sql = "INSERT INTO list (title) VALUES ('$title')";
-            if($result = mysql_query($sql,$conn))
-                return mysql_insert_id($conn);
-        }
-    }
-
-    //Something went wrong with mysql, so die.
-    die(mysql_error($conn)."\n".$sql);
-}
-
 
 ?>

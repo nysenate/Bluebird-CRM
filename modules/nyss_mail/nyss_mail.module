@@ -27,8 +27,8 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
     $bbconfig = get_bluebird_instance_config();
     if ( !empty($bbconfig['senator.email.replyto']) ) {
         $replyto = $bbconfig['senator.email.replyto'];
-    } elseif ( !empty($bbconfig['senator.email.from']) ) {
-        $replyto = $bbconfig['senator.email.from'];
+    } elseif ( !empty($bbconfig['senator.email']) ) {
+        $replyto = $bbconfig['senator.email'];
     } else {
         $replyto = $bbconfig['smtp.subuser'];
     }

@@ -15,7 +15,8 @@ if ($config == null) {
 
 // Format our inputs
 require_once 'utils.php';
-$attachment = get_report_path($config, $optList['date']);
+$report_date = $optList['date'];
+$attachment = get_report_path($config, $report_date);
 
 if (!file_exists($attachment)) {
   die("Report file [$attachment] not found\n");
@@ -41,7 +42,13 @@ $smtpApiHdr->addFilterSetting('bypass_list_management', 'enable', 1);
 
 require_once 'Mail/mime.php';
 $msg = new Mail_mime();
-$msg->setTXTBody("Attached to this e-mail message, please find your nysenate.gov weekly signups report.");
+$report_type = ($report_date == 'bronto') ? 'Bronto' : 'NYSenate.gov weekly';
+$report_filename = basename($attachment);
+$msg->setTXTBody(
+   "THIS IS AN AUTOMATED MESSAGE.  PLEASE DO NOT REPLY.\n\n"
+  ."Attached to this e-mail message, please find your $report_type signups report.\n"
+  ."The file is in Excel format and the filename is $report_filename.\n\n"
+  ."If you have any problems or questions, please contact the STS Help Line at helpline@nysenate.gov or x2011.");
 $msg->addAttachment($attachment, 'application/vnd.ms-excel');
 
 
@@ -63,6 +70,9 @@ $headers = $msg->headers(array(
     "Subject" => '[SignupsReport] '.basename($attachment),
     "X-SMTPAPI" => $smtpApiHdr->asJSON()
 ));
+
+// Need to combine the to and bcc fields for recipients...
+$recipients = "$recipients,{$config['signups.email.bcc']}";
 
 // Run it!
 if (!$optList['dryrun']) {
@@ -93,13 +103,19 @@ if (!$optList['dryrun']) {
 
 function fix_emails($bbcfg)
 {
-    if (!isset($bbcfg['signups.email.to'])) {
+    if (isset($bbcfg['signups.email.to'])) {
+        $recip_emails = $bbcfg['signups.email.to'];
+    }
+    else if (isset($bbcfg['senator.email'])) {
+        $recip_emails = $bbcfg['senator.email'];
+    }
+    else {
         return null;
     }
-    $list = $bbcfg['signups.email.to'];
+
     $smtp_domain = (isset($bbcfg['smtp.domain'])) ? $bbcfg['smtp.domain'] : 'nysenate.gov';
     $emails = array();
-    foreach (explode(',', $list) as $to) {
+    foreach (explode(',', $recip_emails) as $to) {
         if (!strpos($to, '@')) {
             $to .= '@'.$smtp_domain;
         }
