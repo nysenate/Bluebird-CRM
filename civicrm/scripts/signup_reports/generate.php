@@ -190,7 +190,7 @@ function process_records($result, $district) {
         // Store the record for later, keep an additional store for emails so that
         // we can easily figure out which emails are already in bluebird later.
         $nysenate_records[]=$row;
-        $nysenate_emails[] = $row['Email Address'];
+        $nysenate_emails[] = strtolower(trim($row['Email Address']));
     }
 
     // Grab all bluebird records from the instance, keep an additional store for
@@ -201,7 +201,7 @@ function process_records($result, $district) {
     $dao = CRM_Core_DAO::executeQuery("SELECT email FROM civicrm_email");
     while($dao->fetch()) {
         $bluebird_records[] = (array)$dao;
-        $bluebird_emails[] = $dao->email;
+        $bluebird_emails[] = strtolower(trim($dao->email));
     }
 
     // Mark all the nysenate signups that bluebird already has contacts for
