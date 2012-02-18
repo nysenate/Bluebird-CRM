@@ -40,8 +40,12 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
     
     protected $_emailField = false;
     protected $_phoneField = false;
+
     
     function __construct( ) {
+
+    
+    
         $this->_columns = array(
                                  'civicrm_tag'      =>
                                 array( 'dao'     => 'CRM_Core_DAO_Tag',
@@ -82,7 +86,7 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
                                                      'required'   => false,
                                                      'statistics' =>
                                                      array(
-                                                           'count'  => ts( 'Activity Count' ), ), 
+                                                           'count'  => ts( 'Activity Count' ), ),
                                                      ),
                                               ),
                                        'filters' =>   
@@ -117,7 +121,13 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
                                        array( 'activity_date_time'  =>
                                               array( 'title' => ts( 'Activity Date' ) ),
                                               'activity_type_id'  =>
-                                              array( 'title' => ts( 'Activity Type' ) )
+                                              array( 'title' => ts( 'Activity Type' ) ),
+                                              'id'                =>
+                                              array('title' => ts('Activity Count'),
+                                                    'statistics' =>
+                                                     array( 
+                                                           'count'  => true ),
+                                                     )
                                               ),
                                        'grouping' => 'activity-fields',
                                        'alias'    => 'activity'
@@ -135,6 +145,14 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
                                                            'count'  => ts( 'Target Count' ), ),
                                                      ),
                                               ),
+                                        'order_bys'     =>
+                                        array('target_contact_id'                =>
+                                              array( 'title'      => 'Target Count',
+                                                     'statistics' =>
+                                                     array(
+                                                           'count'  => true ),
+                                                     ),
+                                               )
                                           ),
                                 
                                 'civicrm_contact'      =>
@@ -159,7 +177,8 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
 //                                               ),
                                        'order_bys' =>             
                                        array( 'sort_name'  =>
-                                              array( 'title' => ts( 'Contact Name') ) ),
+                                              array( 'title' => ts( 'Contact Name') ),
+                                              ),
                                        'grouping' => 'contact-fields',
                                        ),
 
@@ -421,6 +440,65 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
         } else {
             $this->_groupBy = "GROUP BY tag_civireport.id ";
         }
+    }
+
+
+    function orderBy( ) {
+        $this->_orderBy = "";
+        $orderBys = array();
+        $this->_sections = array();
+
+        if ( CRM_Utils_Array::value( 'order_bys', $this->_params ) &&
+            is_array($this->_params['order_bys']) &&
+            !empty($this->_params['order_bys']) ) {
+
+            // Proces order_bys in user-specified order
+            foreach( $this->_params['order_bys'] as $orderBy ) {
+                $orderByField = array();
+                foreach ( $this->_columns as $tableName => $table ) {
+                    if ( array_key_exists('order_bys', $table) ) {
+                        // For DAO columns defined in $this->_columns
+                        $fields = $table['order_bys'];
+                    } elseif ( array_key_exists( 'extends', $table ) ) {
+                        // For custom fields referenced in $this->_customGroupExtends
+                        $fields = $table['fields'];
+                    }
+                    if ( !empty($fields) && is_array( $fields ) ) {
+                        foreach ( $fields as $fieldName => $field ) {
+                            if ( $fieldName == $orderBy['column'] ) {
+                                if ( CRM_Utils_Array::value('statistics', $field) ) {
+                                    foreach ( $field['statistics'] as $stat => $label ) {
+                                        switch (strtolower($stat)) {
+                                        case 'count':
+                                            $orderByField = "COUNT(DISTINCT({$field['dbAlias']}))";
+                                            break;
+                                        }
+                                    }   
+                                } else {
+                                    $orderByField = $field['dbAlias'];
+                                    //$orderByField['tplField'] = "{$tableName}_{$fieldName}";
+                                    break 2;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if ( ! empty( $orderByField ) ) {
+                    $orderBys[] = "{$orderByField} {$orderBy['order']}";
+
+                    // Record any section headers for assignment to the template
+                    if ( $orderBy['section'] ) {
+                        $this->_sections[$orderByField['tplField']] = $orderByField;
+                    }
+                }
+            }
+        }
+
+        if ( ! empty( $orderBys ) ) {
+            $this->_orderBy = "ORDER BY " . implode( ', ', $orderBys );
+        }
+        $this->assign('sections', $this->_sections);
     }
     
     function formRule ( $fields, $files, $self ) {
