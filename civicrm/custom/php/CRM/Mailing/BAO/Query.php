@@ -134,6 +134,21 @@ class CRM_Mailing_BAO_Query
 
                 return;
 
+            //NYSS 4845
+            case 'mailing_subject':
+                $value = strtolower( addslashes( $value ) );
+                if ( $wildcard ) {
+                    $value = "%$value%";
+                    $op    = 'LIKE';
+                }
+                $query->_where[$grouping][] = "LOWER(civicrm_mailing.subject) $op '$value'";
+                $query->_qill[$grouping][]  = "Mailing Subject $op \"$value\"";
+                $query->_tables['civicrm_mailing_event_queue'] = $query->_whereTables['civicrm_mailing_event_queue'] = 1;
+                $query->_tables['civicrm_mailing_job'] = $query->_whereTables['civicrm_mailing_job'] = 1;
+                $query->_tables['civicrm_mailing'] = $query->_whereTables['civicrm_mailing'] = 1;
+
+                return;
+
             case 'mailing_date':
             case 'mailing_date_low':
             case 'mailing_date_high':
@@ -186,6 +201,8 @@ class CRM_Mailing_BAO_Query
     static function buildSearchForm( &$form ) {
         // mailing selectors
         $form->addElement( 'text', 'mailing_name', ts('Mailing Name'), CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'name') );
+		//NYSS 4845
+        $form->addElement( 'text', 'mailing_subject', ts('Mailing Subject'), CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'subject') );
         $form->addDate( 'mailing_date_low', ts('Mailing Date - From'), false, array( 'formatType' => 'searchDate') );
         $form->addDate( 'mailing_date_high', ts('To'), false, array( 'formatType' => 'searchDate') );
 
