@@ -97,7 +97,7 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 			'dao' => 'CRM_Mailing_DAO_Mailing',
 			'fields' => array(
                               'mailing_name' => array('name' => 'name',
-                                                      'title' => ts('Mailing'),
+                                                      'title' => ts('Mailing Name'),
                                                       'default' => true,
                                                       ),
                               'mailing_name_alias' => array( 'name' => 'name',
