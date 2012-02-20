@@ -2097,7 +2097,8 @@ class CRM_Contact_BAO_Query
                 continue;
 
             case 'civicrm_email':
-                $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id AND civicrm_email.is_primary = 1) ";
+                //NYSS 4575 search by all emails; add is_primary condition in where clause optionally
+                $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id) ";
                 continue;
 
             case 'civicrm_im':
@@ -3620,9 +3621,24 @@ WHERE  id IN ( $groupIDs )
             $where = "$where AND $permission";
         }
 
+        //NYSS 4575 - condition email on primary option; but only if email value present
+        $emailPresent = $emailPrimary = false;
+        foreach ($this->_params as $values) {
+            list($name, $op, $value, $_, $_) = $values;
+            if ( $name == 'email' && $value ) { $emailPresent = true; }
+            if ( $name == 'email_primary' && $value == 1 ) { $emailPrimary = true; }
+        }
+        if ( $emailPresent && $emailPrimary ) {
+            if ( !$additionalWhereClause ) {
+                $additionalWhereClause = " civicrm_email.is_primary = 1 ";
+            } else {
+                $additionalWhereClause .= " AND civicrm_email.is_primary = 1 ";
+            }
+        }
+
         // CRM_Core_Error::debug( 't', $this );
-        // CRM_Core_Error::debug( 'w', $where );
-        // CRM_Core_Error::debug( 'a', $additionalWhereClause );
+        // CRM_Core_Error::debug_var( 'w', $where );
+        // CRM_Core_Error::debug_var( 'a', $additionalWhereClause );
         if ( $additionalWhereClause ) {
             $where = $where . ' AND ' . $additionalWhereClause;
         }
