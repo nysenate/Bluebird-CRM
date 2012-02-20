@@ -330,32 +330,37 @@ function createLogTable( $rnd ) {
     $tblLog       = "tmpLog$rnd";
     $tblLogDedupe = "tmpLogDedupe$rnd";
 
-    $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date ) TYPE=myisam;";
+    $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) TYPE=myisam;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
+    //first retrieve latest contact and activity log records for unique
+    //entity_table and entity_id and store in temp table
+
     //insert contact log
-    //skip source as that will only be staff
     $sql = "INSERT INTO $tblLog (cid, mod_date)
-            SELECT c.id as cid, cl.modified_date as mod_date
-            FROM civicrm_log cl
-            JOIN $tblIDs c
-              ON cl.entity_id = c.id
-            WHERE cl.entity_table = 'civicrm_contact';";
+            SELECT entity_id as cid, MAX(modified_date) as mod_date
+            FROM civicrm_log
+            WHERE entity_table = 'civicrm_contact'
+            GROUP BY entity_id;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
     
     //insert activities
+    //skip source as that will only be staff
     //only concerned with target contact
     $sql = "INSERT INTO $tblLog (cid, mod_date)
-            SELECT c.id as cid, cl.modified_date as mod_date
-            FROM civicrm_log cl
+            SELECT DISTINCT c.id as cid, cal.modified_date as mod_date
+            FROM ( SELECT entity_id, MAX(modified_date) as modified_date
+                   FROM civicrm_log
+                   WHERE entity_table = 'civicrm_activity'
+                   GROUP BY entity_id ) as cal
             JOIN civicrm_activity_target cat
-              ON cl.entity_id = cat.activity_id
+              ON cal.entity_id = cat.activity_id
             JOIN $tblIDs c
-              ON cat.target_contact_id = c.id
-            WHERE cl.entity_table = 'civicrm_activity';"; 
+              ON cat.target_contact_id = c.id;"; 
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //collapse resulting data in a separate table
+    //this give us the latest mod date among both contact and activity logs
 	$sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
 	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	
@@ -363,10 +368,9 @@ function createLogTable( $rnd ) {
 	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	
 	$sql = "INSERT INTO $tblLogDedupe
-	        SELECT *
+	        SELECT cid, MAX(mod_date)
 			FROM $tblLog
-			ORDER BY cid, mod_date ASC
-			ON DUPLICATE KEY UPDATE mod_date = VALUES(mod_date)
+			GROUP BY cid
 			;";
 	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 	
