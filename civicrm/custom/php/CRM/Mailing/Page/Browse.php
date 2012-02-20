@@ -314,6 +314,18 @@ class CRM_Mailing_Page_Browse extends CRM_Core_Page
             }
         }
 
+        //NYSS 4845
+        $subject   = $this->get( 'mailing_subject' );
+        //echo " subject=$subject  ";exit();
+        if ( $subject ) {
+            $clauses[] = 'subject LIKE %1';
+            if ( strpos( $subject, '%' ) !== false ) {
+                $params[1] = array( $subject, 'String', false );
+            } else {
+                $params[1] = array( $subject, 'String', true );
+            }
+        }
+
         if ( $sortBy &&
 			 $this->_sortByCharacter !== null ) { //NYSS 4142
             $clauses[] = 

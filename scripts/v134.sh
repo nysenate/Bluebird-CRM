@@ -35,6 +35,16 @@ formal_name=`$readConfig --ig $instance senator.name.formal` || formal_name="Sen
 
 ###### Begin Upgrade Scripts ######
 
+### Drupal ###
+
+# 4933 Mailing Viewer role/perm
+role="INSERT INTO role (rid, name) VALUES (17, 'Mailing Viewer');"
+$execSql -i $instance -c "$role" --drupal
+
+perm="INSERT INTO permission (rid, perm) VALUES (17, 'view mass email');"
+$execSql -i $instance -c "$perm" --drupal
+
+
 ### CiviCRM ###
 
 # 4781 Register Activity Tag report

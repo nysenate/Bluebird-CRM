@@ -58,35 +58,48 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 			'fields' => array(
 				'name' => array(
 					'title' => ts('Mailing Name'),
-					'required' => true,
-				),
-				'created_date' => array(
-					'title' => ts('Date Created'),
-				),
-			),
-			'filters' => array(
-				'is_completed' => array(
-					'title' => ts('Mailing Status'),
-					'operatorType' => CRM_Report_Form::OP_SELECT,
-					'type'=> CRM_Utils_Type::T_INT,
-					'options' => array(
-						0 => 'Incomplete',
-						1 => 'Complete',
-					),
-					//'operator' => 'like',
-					'default' => 1,
-				),
-                
+                    'required' => true,
+                ),
+                //NYSS 4935
+                'mailing_subject' => array(
+                    'name'    => 'subject',
+                    'title'   => ts('Mailing Subject'),
+                    'default' => true
+                ),
+                'created_date' => array(
+                    'title' => ts('Date Created'),
+                ),
+            ),
+            'filters' => array(
+                'is_completed' => array(
+                    'title' => ts('Mailing Status'),
+                    'operatorType' => CRM_Report_Form::OP_SELECT,
+                    'type'=> CRM_Utils_Type::T_INT,
+                    'options' => array(
+                        0 => 'Incomplete',
+                        1 => 'Complete',
+                    ),
+                    //'operator' => 'like',
+                    'default' => 1,
+                ),
                 'mailing_name' => array(
-					'name' => 'name',
-					'title' => ts('Mailing'),
-					'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-					'type'=> CRM_Utils_Type::T_STRING,
-					'options' => self::mailing_select( ),
-					'operator' => 'like', ),	
-                               )
+                    'name' => 'name',
+                    'title' => ts('Mailing Name'),
+                    'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                    'type'=> CRM_Utils_Type::T_STRING,
+                    'options' => self::mailing_select( ),
+                    'operator' => 'like',
+                ),
+                //NYSS 4935
+                'mailing_subject' => array(
+                    'name' => 'subject',
+                    'title' => ts('Mailing Subject'),
+                    'type'=> CRM_Utils_Type::T_STRING,
+                    'operator' => 'like', 
+                ),
+            ),
                                                    );
-		
+
 		$this->_columns['civicrm_mailing_job'] = array(
 			'dao' => 'CRM_Mailing_DAO_Job',
 			'fields' => array(

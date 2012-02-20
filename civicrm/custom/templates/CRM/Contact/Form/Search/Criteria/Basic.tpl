@@ -30,7 +30,8 @@
             </td>
             <td>
                 <label>{ts}Complete OR Partial Email{/ts}</label><br />
-                {$form.email.html|crmReplace:class:big}
+                {$form.email.html|crmReplace:class:big}<br />
+                {$form.email_primary.html} {$form.email_primary.label}
             </td>
             <td>
                 {if $form.component_mode}  

@@ -98,24 +98,36 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 			'fields' => array(
                               'mailing_name' => array(
                                                       'name' => 'name',           
-                                                      'title' => ts('Mailing'),
+                                                      'title' => ts('Mailing Name'),
                                                       'default' => true
                                                       ),
                               'mailing_name_alias' => array(
                                                             'name' => 'name',
                                                             'required' => true,
                                                             'no_display' => true ),
-                              
+                              //NYSS 4935
+							  'mailing_subject' => array(
+                                                      'name' => 'subject',           
+                                                      'title' => ts('Mailing Subject'),
+                                                      'default' => true
+                                                      ),
                               ),
 			'filters' => array(
 				'mailing_name' => array(
 					'name' => 'name',
-					'title' => ts('Mailing'),
+					'title' => ts('Mailing Name'),
 					'operatorType' => CRM_Report_Form::OP_MULTISELECT,
 					'type'=> CRM_Utils_Type::T_STRING,
 					'options' => self::mailing_select( ),
 					'operator' => 'like',
-				),                              
+				),
+				//NYSS 4935
+				'mailing_subject' => array(
+					'name' => 'subject',
+					'title' => ts('Mailing Subject'),
+					'type'=> CRM_Utils_Type::T_STRING,
+					'operator' => 'like',
+				),
 			),
             'order_bys'  =>
             array( 'mailing_name' =>

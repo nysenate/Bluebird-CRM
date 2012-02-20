@@ -457,6 +457,14 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
             $headers = $this->getColHeads($action, $output);
         }
 
+        //NYSS 4979 hack to allow phone searching
+        foreach ( $headers as $k => $details ) {
+            if ( $details['name'] == 'Phone' ) {
+                $headers[$k]['sort']      = 'phone';
+                $headers[$k]['direction'] = 4;
+            }
+        }
+
         return $headers;
     }
 

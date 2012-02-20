@@ -116,7 +116,9 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
                 $target_contact_names = CRM_Activity_BAO_ActivityTarget::getTargetNames( $activity->id );
                 
                 $defaults['target_contact_value'] = implode('; ', $target_contact_names);
-            } else if ( CRM_Core_Permission::check('access CiviMail') || ( CRM_Mailing_Info::workflowEnabled( ) && CRM_Core_Permission::check( 'create mailings' ) ) ) {
+            } else if ( CRM_Core_Permission::check('access CiviMail') ||
+                        ( CRM_Mailing_Info::workflowEnabled( ) && CRM_Core_Permission::check( 'create mailings' ) ) ||
+                        CRM_Core_Permission::check('view mass email') ) { //NYSS 4933
                 $defaults['mailingId'] = CRM_Utils_System::url( 'civicrm/mailing/report', 
                                                                 "mid={$activity->source_record_id}&reset=1&atype={$activity->activity_type_id}&aid={$activity->id}&cid={$activity->source_contact_id}&context=activity" );
             } else {

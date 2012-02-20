@@ -105,7 +105,7 @@ function processContacts($parseStreetAddress, $batch,   $threshold, $optlist) {
 
 	$start_time = microtime(true);
 
-	require_once 'CRM/Utils/Sage.php';
+	require_once 'CRM/Utils/SAGE.php';
 
 	//set defaults for recording metrics
 	$totalAddresses = $totalDistAssigned = 0;

@@ -9,7 +9,7 @@ define('FILTER_IN_SD_OR_NO_SD', 2);
 function nyss_mail_civicrm_alterMailParams( &$params, $context )
 {
     require_once 'SmtpApiHeader.php';
-    //CRM_Core_Error::debug($params);
+    CRM_Core_Error::debug_var($params);
 
     /* Re-write any URLs in the message body of the form:
     **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
@@ -54,6 +54,11 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
             $event_queue_id = $params['event_queue_id'];
             unset($params['event_queue_id']);
         }
+		
+		if ( isset($params['is_test']) ) {
+            $test = $params['is_test'];
+            unset($params['is_test']);
+        }
 
         //Sendgrid headers
         $hdr->setCategory("BluebirdMail: $mname (ID: $mid)");
@@ -62,7 +67,9 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
                                   'instance'      => $bbconfig['shortname'],
                                   'install_class' => $bbconfig['install_class'],
                                   'servername'    => $bbconfig['servername'],
-                                  'queue_id'      => $event_queue_id));
+                                  'queue_id'      => $event_queue_id,
+                                  'is_test'       => $test
+								  ));
     } else {
         //$params['replyTo'] = $replyto;
         // Sendgrid SMTP-API

@@ -18,7 +18,8 @@ function nyss_civihooks_perm() {
 
     return array( 'export print production files',
                   'delete contacts permanently',
-                  'administer district' );
+                  'administer district',
+                  'view mass email' );
 }
 
 function nyss_civihooks_getfile() {
@@ -235,7 +236,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 	//advanced search
 	if ( $formName == 'CRM_Contact_Form_Search_Advanced' ) {
-	
+
+		//4575 search by all emails
+		$form->addElement('checkbox', 'email_primary', ts('Search only primary emails'));
+
 		//don't set US as default country in advanced search or contacts with no address are excluded
 		$defaults['country'] = '';
 		
