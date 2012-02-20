@@ -98,7 +98,17 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
                     'operator' => 'like', 
                 ),
             ),
-                                                   );
+			//NYSS 4936
+            'order_bys'  =>
+            array( 'mailing_name' =>
+                   array( 'name' => 'name',
+                          'title' => ts( 'Mailing Name' ) ),
+				   'mailing_subject' =>
+                   array( 'name' => 'subject',
+                          'title' => ts( 'Mailing Subject' ) ),
+				   ),
+		    'grouping' => 'mailing-fields'
+        );
 
 		$this->_columns['civicrm_mailing_job'] = array(
 			'dao' => 'CRM_Mailing_DAO_Job',
@@ -134,6 +144,15 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 					'type' => CRM_Utils_Type::T_DATE,
 				),					
 			),
+            'order_bys'  =>
+            array( /*'status' =>
+                   array( 'title' => ts( 'Status') ),*/
+				   'start_date'    =>
+				   array( 'title' => ts('Start Date') ),
+				   'end_date'    =>
+				   array( 'title' => ts('End Date') )
+				   ),
+            'grouping' => 'mailing-fields'
 		);
 
 		$this->_columns['civicrm_mailing_event_queue'] = array(
@@ -390,9 +409,10 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         $this->_groupBy    = "GROUP BY {$this->_aliases['civicrm_mailing']}.id";
     }
 	
-    function orderBy( ) {
+	//NYSS 4936 remove so we control through the interface
+    /*function orderBy( ) {
        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_mailing_job']}.end_date DESC ";
-    }
+    }*/
     
     function postProcess( ) {
 
