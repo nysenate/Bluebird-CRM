@@ -62,8 +62,11 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     	$this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
         $this->case_types = CRM_Case_PseudoConstant::caseType();
         $rels = CRM_Core_PseudoConstant::relationshipType();
+        $caseRels = array( 8, 13, 14, 15 ); //NYSS 4942
      	foreach ( $rels as $relid => $v ) {
-     		$this->rel_types[$relid] = $v['label_b_a'];
+            if ( in_array($relid, $caseRels) ) {
+			    $this->rel_types[$relid] = $v['label_b_a'];
+            }
         }
 
         $this->caseActivityTypes = array( );
