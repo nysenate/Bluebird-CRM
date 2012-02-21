@@ -48,6 +48,7 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
     	foreach ($rels as $relid => $v) {
     		$this->rel_types[$relid] = $v['label_b_a'];
     	}
+		asort($this->rel_types);//NYSS 4940
     	
     	$this->deleted_labels = array('' => ts('- select -'), 0 => ts('No'), 1 => ts('Yes'));
     	
