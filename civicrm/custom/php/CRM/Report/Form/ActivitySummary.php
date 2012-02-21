@@ -42,6 +42,11 @@ class CRM_Report_Form_ActivitySummary extends CRM_Report_Form {
     protected $_phoneField = false;
     
     function __construct( ) {
+
+        //NYSS 4921
+        $activityTypes = CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true);
+        asort( $activityTypes );
+
         $this->_columns = array(  
                                 'civicrm_contact'      =>
                                 array( 'dao'     => 'CRM_Contact_DAO_Contact',
@@ -111,7 +116,7 @@ class CRM_Report_Form_ActivitySummary extends CRM_Report_Form {
                                               'activity_type_id'    => 
                                               array( 'title'        => ts( 'Activity Type' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                                     'options'      => CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true), ), 
+                                                     'options'      => $activityTypes, ), //NYSS
                                               'status_id'           => 
                                               array( 'title'        => ts( 'Activity Status' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,

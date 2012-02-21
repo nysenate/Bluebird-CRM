@@ -52,9 +52,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
             asort( $this->activeCampaigns );
             $this->engagementLevels = CRM_Campaign_PseudoConstant::engagementLevel();
         }
-        $this->activityTypes = CRM_Core_PseudoConstant::activityType( true, false, false, 'label', true );        
+        $this->activityTypes = CRM_Core_PseudoConstant::activityType( true, true, false, 'label', true ); //NYSS get all types
         asort( $this->activityTypes );
-        
 
 		//NYSS altered titles to be trimmed and consistent
         $this->_columns = array(  
@@ -169,7 +168,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
 											   'activity_type_id'  => 
                                                array( 'title'      => ts( 'Type' ),
                                                       'default'    => true,
-                                                      'type'       =>  CRM_Utils_Type::T_STRING 
+                                                      'type'       => CRM_Utils_Type::T_STRING
                                                       ),
                                                'activity_subject'  => 
                                                array( 'title'      => ts('Subject'),
@@ -200,7 +199,7 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                               'activity_type_id'    => 
                                               array( 'title'        => ts( 'Type' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                                     'options'      => CRM_Core_PseudoConstant::activityType( true, false, false, 'label', true ), ), 
+                                                     'options'      => $this->activityTypes, ), //NYSS 4921
                                               'status_id'           => 
                                               array( 'title'        => ts( 'Status' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,

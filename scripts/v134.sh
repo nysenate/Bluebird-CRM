@@ -52,5 +52,6 @@ acttag="INSERT INTO civicrm_option_value (option_group_id, label, value, name, g
 (40, 'Activity Tag Report', 'activity/tag', 'CRM_Report_Form_ActivityTag', NULL, 0, 0, 201, 'View activities grouped by activity tags.', 0, 0, 1, NULL, NULL, NULL);"
 $execSql -i $instance -c "$acttag"
 
-
-
+# 4939 country
+country="UPDATE civicrm_preferences SET address_options = '123456813' WHERE id = 1;"
+$execSql -i $instance -c "$country"

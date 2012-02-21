@@ -181,7 +181,7 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
 				'bounce_type_name' => array(
 					'name' => 'name',
 					'title' => ts('Bounce Type'),
-					'operatorType' => CRM_Report_Form::OP_SELECT,
+					'operatorType' => CRM_Report_Form::OP_MULTISELECT, //NYSS 4943
 					'type'=> CRM_Utils_Type::T_STRING,
 					'options' => self::bounce_type(),
 					'operator' => 'like',							
