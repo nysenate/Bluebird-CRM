@@ -57,7 +57,7 @@ CKEDITOR.on( 'dialogDefinition', function( ev )
         // Get a reference to the Link Info tab. Remove unnecessary widgets.
         var infoTab = dialogDefinition.getContents( 'info' );
         infoTab.remove( 'browse');
-        infoTab.remove( 'protocol');
+        //infoTab.remove( 'protocol'); //NYSS restored 5003
 		
 		var linkTypeItems = infoTab.get( 'linkType' ).items;
 		if ( linkTypeItems.length > 0 ) {
