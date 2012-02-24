@@ -4,7 +4,7 @@
   *
   *      @desc Base configuration file
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -20,6 +20,8 @@ $_CONFIG = array(
 
     'disabled' => true,
     'denyZipDownload' => false,
+    'denyUpdateCheck' => false,
+    'denyExtensionRename' => false,
 
     'theme' => "oxygen",
 
@@ -88,7 +90,6 @@ $_CONFIG = array(
     'cookiePrefix' => 'KCFINDER_',
 
     // THE FOLLOWING SETTINGS CANNOT BE OVERRIDED WITH SESSION CONFIGURATION
-
     '_check4htaccess' => true,
     //'_tinyMCEPath' => "/tiny_mce",
 

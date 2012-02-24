@@ -4,7 +4,7 @@
   *
   *      @desc Base JavaScript object properties
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -19,5 +19,6 @@ var browser = {
     clipboard: [],
     labels: [],
     shows: [],
-    orders: []
+    orders: [],
+    cms: ""
 };
