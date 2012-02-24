@@ -106,11 +106,11 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                                  array( 'title'   => ts( 'State/Province' ), ),
                                  ),
                           'filters'   =>             
-                          array( 'country_id' => 
+                          array( /*'country_id' => 
                                  array( 'title'   => ts( 'Country' ),
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                         'options' => CRM_Core_PseudoConstant::country( ),
-                                        ), 
+                                        ),*/ 
                                  'state_province_id' =>  
                                  array( 'title'   => ts( 'State / Province' ), 
                                         'operatorType' => CRM_Report_Form::OP_MULTISELECT,
@@ -122,7 +122,7 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                                  'postal_code' => array( 'title' => 'Postal Code'),
                                  ),
                            ),
-                  'civicrm_country' =>
+                  /*'civicrm_country' =>
                   array( 'dao'      => 'CRM_Core_DAO_Country',
                          'fields'   =>
                           array( 'name' =>
@@ -133,7 +133,7 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                                  array( 'title' => 'Country'),
                           ),
                           'grouping' => 'contact-fields',
-                          ),
+                          ),*/
                    'civicrm_phone' => 
                    array( 'dao'       => 'CRM_Core_DAO_Phone',
                           'fields'    =>
