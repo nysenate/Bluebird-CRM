@@ -136,7 +136,11 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
             'order_bys'  =>
             array( 'mailing_name' =>
                    array( 'name' => 'name',
-                          'title' => ts( 'Mailing' ) ) ),
+                          'title' => ts( 'Mailing Name' ) ),
+				   'mailing_subject' =>
+                   array( 'name' => 'subject',
+                          'title' => ts( 'Mailing Subject' ) ),
+				   ),
             'grouping' => 'mailing-fields' 
 		);
 		
@@ -428,7 +432,7 @@ class CRM_Report_Form_Mailing_Bounce extends CRM_Report_Form {
 	function bounce_type() {
 		require_once('CRM/Mailing/DAO/BounceType.php');
 		
-		$data = array('' => '--Please Select--');
+		$data = array(); //NYSS
 		
 		$bounce_type = new CRM_Mailing_DAO_BounceType();
 		$query = "SELECT name FROM civicrm_mailing_bounce_type";

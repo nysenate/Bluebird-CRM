@@ -132,7 +132,11 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
             'order_bys'  =>
             array( 'mailing_name' =>
                    array( 'name' => 'name',
-                          'title' => ts( 'Mailing') ) ),
+                          'title' => ts( 'Mailing Name') ),
+				   'mailing_subject' =>
+                   array( 'name' => 'subject',
+                          'title' => ts( 'Mailing Subject') ),
+				   ),
             'grouping'  => 'mailing-fields',
 		);
 							  
