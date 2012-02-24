@@ -34,6 +34,8 @@ $_CONFIG = array(
 
     'disabled' => !$authenticated,
     'denyZipDownload' => false,
+    'denyUpdateCheck' => false,
+    'denyExtensionRename' => false,
 
     'theme' => "oxygen",
 

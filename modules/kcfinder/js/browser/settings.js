@@ -4,7 +4,7 @@
   *
   *      @desc Settings panel functionality
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -68,14 +68,14 @@ browser.initSettings = function() {
     });
 
     $('#order input[name="desc"]').click(function() {
-        _.kuki.set('orderDesc', $(this).get(0).checked ? "on" : "off");
+        _.kuki.set('orderDesc', $(this).get(0).checked ? 'on' : 'off');
         browser.orderFiles();
     });
 
     if (!_.kuki.isSet('view'))
         _.kuki.set('view', 'thumbs');
 
-    if (_.kuki.get('view') == "list") {
+    if (_.kuki.get('view') == 'list') {
         $('#show input').each(function() { this.checked = true; });
         $('#show input').each(function() { this.disabled = true; });
     }

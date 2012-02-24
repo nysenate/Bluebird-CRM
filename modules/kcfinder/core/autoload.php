@@ -4,7 +4,7 @@
   *
   *      @desc This file is included first, before each other
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -17,12 +17,31 @@
   *     2. Custom session save handler with session_set_save_handler()
   *     3. Any custom integration code. If you use any global variables
   *        here, they can be accessed in config.php via $GLOBALS array.
+  *        It's recommended to use constants instead.
   */
 
 
 // PHP VERSION CHECK
 if (substr(PHP_VERSION, 0, strpos(PHP_VERSION, '.')) < 5)
     die("You are using PHP " . PHP_VERSION . " when KCFinder require at least version 5! Some systems has an option to change the active PHP version. Please refer to your hosting provider or upgrade your PHP distribution.");
+
+
+// GD EXTENSION CHECK
+if (!function_exists("imagecopyresampled"))
+    die("The GD PHP extension is not available! It's required to run KCFinder.");
+
+
+// SAFE MODE CHECK
+if (ini_get("safe_mode"))
+    die("The \"safe_mode\" PHP ini setting is turned on! You cannot run KCFinder in safe mode.");
+
+
+// CMS INTEGRATION
+if (isset($_GET['cms'])) {
+    switch ($_GET['cms']) {
+        case "drupal": require "integration/drupal.php";
+    }
+}
 
 
 // MAGIC AUTOLOAD CLASSES FUNCTION
@@ -78,8 +97,12 @@ if (!function_exists("json_encode")) {
                 ? "null"
                 : ($data ? "true" : "false");
 
-        // NUMBER
-        elseif (is_int($data) || is_float($data))
+        // FLOAT
+        elseif (is_float($data))
+            return rtrim(rtrim(number_format($data, 14, ".", ""), "0"), ".");
+
+        // INTEGER
+        elseif (is_int($data))
             return $data;
 
         // STRING
