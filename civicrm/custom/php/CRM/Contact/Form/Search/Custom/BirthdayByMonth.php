@@ -46,7 +46,8 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
     function __construct( &$formValues ) {
         parent::__construct( $formValues );
 
-        $this->_columns = array( ts('Name')  	      => 'sort_name' ,
+        $this->_columns = array( ts('&nbsp;')         => 'contact_type', //NYSS 4899
+                                 ts('Name')  	      => 'sort_name' ,
                                  ts('Birth Date')     => 'birth_date',
 								 ts('Age')		      => 'age',
 								 ts('Street Address') => 'street_address',
@@ -160,6 +161,7 @@ class CRM_Contact_Form_Search_Custom_BirthdayByMonth
         
 		$selectClause = "DISTINCT(contact_a.id) as contact_id,
 		                 contact_a.sort_name as sort_name,
+						 contact_a.contact_type as contact_type,
             		 	 contact_a.birth_date as birth_date,
 						 (YEAR(CURDATE())-YEAR(birth_date)) - (RIGHT(CURDATE(),5)<RIGHT(birth_date,5)) AS age,
 						 addr.street_address,
@@ -255,10 +257,15 @@ LEFT JOIN civicrm_address addr ON addr.contact_id = contact_a.id AND addr.is_pri
 					  'start_date' => '1900-01-01' );*/
     }
 
-    function alterRow( &$row ) {
-        return null;
-    }
-    
+    //NYSS 4899
+	function alterRow( &$row ) {
+		require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
+        $row['contact_type' ] = 
+            CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
+                                                     false,
+                                                     $row['contact_id'] );
+	}
+
     function setTitle( $title ) {
         if ( $title ) {
             CRM_Utils_System::setTitle( $title );

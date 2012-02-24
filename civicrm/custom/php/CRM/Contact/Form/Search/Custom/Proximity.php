@@ -86,12 +86,14 @@ class CRM_Contact_Form_Search_Custom_Proximity
         
         $this->_tag = CRM_Utils_Array::value( 'tag', $this->_formValues );
 
-        $this->_columns = array( ts('Name')           => 'sort_name'      ,
+        $this->_columns = array( ts('&nbsp;')         => 'contact_type', //NYSS 4899
+                                 ts('Name')           => 'sort_name'      ,
                                  ts('Street Address') => 'street_address' ,
                                  ts('City'          ) => 'city'           ,
                                  ts('Postal Code'   ) => 'postal_code'    ,
                                  ts('State'         ) => 'state_province' ,
-                                 ts('Country'       ) => 'country'        );
+                                 //ts('Country'       ) => 'country'        
+								 );
     }
 
     function buildForm( &$form ) {
@@ -168,10 +170,11 @@ class CRM_Contact_Form_Search_Custom_Proximity
     
     function all( $offset = 0, $rowcount = 0, $sort = null,
                   $includeContactIDs = false ) {
-
+//NYSS add contact type
         $selectClause = "
 contact_a.id           as contact_id    ,
 contact_a.sort_name    as sort_name     ,
+contact_a.contact_type as contact_type  ,
 address.street_address as street_address,
 address.city           as city          ,
 address.postal_code    as postal_code   ,
@@ -257,8 +260,14 @@ AND cgc.group_id = {$this->_group}
     	return null;     
     }
 
-    function alterRow( &$row ) {
-    }
+    //NYSS 4899
+	function alterRow( &$row ) {
+		require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
+        $row['contact_type' ] = 
+            CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
+                                                     false,
+                                                     $row['contact_id'] );
+	}
     
     function setTitle( $title ) {
         if ( $title ) {
