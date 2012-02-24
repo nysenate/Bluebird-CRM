@@ -201,11 +201,11 @@ class CRM_Report_Form_Contact_Relationship extends CRM_Report_Form {
                   'civicrm_address'  =>
                   array( 'dao'       => 'CRM_Core_DAO_Address',
                          'filters'   =>             
-                         array( 'country_id' => 
+                         array( /*'country_id' => 
                                 array( 'title'        => ts( 'Country' ), 
                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                        'options'      => CRM_Core_PseudoConstant::country(),
-                                       ), 
+                                       ),*/ 
                                 'state_province_id' =>  
                                 array( 'title'        => ts( 'State/Province' ), 
                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,

@@ -830,6 +830,8 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
                                                          $row['contact_sub_type'] : $row['contact_type_orig'],
                                                          false,
                                                          $row['contact_id'] );
+            //NYSS 5055/4899 - this is used for temporary purposes and should now be removed
+            unset($row['contact_type_orig']);
         }
     }
 
