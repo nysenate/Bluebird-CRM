@@ -1,3 +1,42 @@
+
+VERSION 2.51 - 2010-08-25
+-------------------------
+* Drag and drop uploading plugin - big fixes
+* Cookies problem when using single words or IPs as hostname resolved
+* Vietnamese localization
+
+
+VERSION 2.5 - 2010-08-23
+------------------------
+* Drupal module support
+* Drag and drop uploading plugin
+* Two more language labels
+* Localhost cookies bugfix
+* Renaming current folder bugfix
+* Small bugfixes
+
+
+VERSION 2.41 - 2010-07-24
+-------------------------
+* Directory types engine improvement
+* New 'denyExtensionRename' config setting added
+
+
+VERSION 2.4 - 2010-07-20
+------------------------
+* Online checking if new version is released in About box. To use this
+  feature you should to have Curl, HTTP or Socket extension, or
+  allow_url_fopen ini setting should be "on"
+* New 'denyUpdateCheck' config setting added
+* New 'dark' theme added (made by Dark Preacher)
+* Additional 'theme' GET parameter to choose a theme from URL
+* Thumbnails loading improvement
+* Some changes in Oxygen CSS theme
+* Replace alert() and confirm() JavaScript functions with good-looking boxes
+* Safari 3 right-click fix
+* Small bugfixes
+
+
 VERSION 2.32 - 2010-07-11
 -------------------------
 * 'filenameChangeChars' and 'dirnameChangeChars' config settings added

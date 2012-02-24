@@ -4,7 +4,7 @@
   *
   *      @desc Object initializations
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -25,11 +25,16 @@ browser.init = function() {
     $('#dialog').click(function() {
         return false;
     });
+    $('#alert').unbind();
+    $('#alert').click(function() {
+        return false;
+    });
     this.initOpeners();
     this.initSettings();
     this.initContent();
     this.initToolbar();
     this.initResizer();
+    this.initDropUpload();
 };
 
 browser.checkAgent = function() {

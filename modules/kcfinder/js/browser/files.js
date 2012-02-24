@@ -4,7 +4,7 @@
   *
   *      @desc File related functionality
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -52,15 +52,19 @@ browser.showFiles = function(callBack, selected) {
     this.fadeFiles();
     setTimeout(function() {
         var html = '';
-        var ts = new Date().getTime();
         $.each(browser.files, function(i, file) {
+            var stamp = [];
+            $.each(file, function(key, val) {
+                stamp[stamp.length] = key + "|" + val;
+            });
+            stamp = _.md5(stamp.join('|'));
             if (_.kuki.get('view') == 'list') {
                 if (!i) html += '<table summary="list">';
                 var icon = _.getFileExtension(file.name);
                 if (file.thumb)
-                    icon = ".image";
+                    icon = '.image';
                 else if (!icon.length || !file.smallIcon)
-                    icon = ".";
+                    icon = '.';
                 icon = 'themes/' + browser.theme + '/img/files/small/' + icon + '.png';
                 html += '<tr class="file">' +
                     '<td class="name" style="background-image:url(' + icon + ')">' + _.htmlData(file.name) + '</td>' +
@@ -70,13 +74,13 @@ browser.showFiles = function(callBack, selected) {
                 if (i == browser.files.length - 1) html += '</table>';
             } else {
                 if (file.thumb)
-                    var icon = browser.baseGetData('thumb') + '&file=' + encodeURIComponent(file.name) + '&dir=' + encodeURIComponent(browser.dir) + '&ts=' + ts;
+                    var icon = browser.baseGetData('thumb') + '&file=' + encodeURIComponent(file.name) + '&dir=' + encodeURIComponent(browser.dir) + '&stamp=' + stamp;
                 else if (file.smallThumb) {
                     var icon = browser.uploadURL + '/' + browser.dir + '/' + file.name;
                     icon = _.escapeDirs(icon).replace(/\'/g, "%27");
                 } else {
-                    var icon = file.bigIcon ? _.getFileExtension(file.name) : ".";
-                    if (!icon.length) icon = ".";
+                    var icon = file.bigIcon ? _.getFileExtension(file.name) : '.';
+                    if (!icon.length) icon = '.';
                     icon = 'themes/' + browser.theme + '/img/files/big/' + icon + '.png';
                 }
                 html += '<div class="file">' +
@@ -318,7 +322,7 @@ browser.menuFile = function(file, e) {
                 }
             });
             browser.initClipboard();
-            if (msg.length) alert(msg.substr(0, msg.length - 1));
+            if (msg.length) browser.alert(msg.substr(0, msg.length - 1));
             return false;
         });
 
@@ -335,32 +339,46 @@ browser.menuFile = function(file, e) {
                     dfiles[dfiles.length] = browser.dir + "/" + cdata.name;
             });
             if (failed == files.length) {
-                alert(browser.label("The selected files are not removable."))
+                browser.alert(browser.label("The selected files are not removable."));
                 return false;
             }
-            if (failed) {
-                if (!confirm(browser.label("{count} selected files are not removable. Do you want to delete the rest?", {count:failed})))
-                    return false;
-            } else if (!confirm(browser.label("Are you sure you want to delete all selected files?")))
-                return false;
 
-            browser.fadeFiles();
-            $.ajax({
-                type: 'POST',
-                dataType: 'json',
-                url: browser.baseGetData('rm_cbd'),
-                data: {files:dfiles},
-                async: false,
-                success: function(data) {
-                    browser.check4errors(data);
-                    browser.refresh();
-                },
-                error: function() {
-                    $('#files > div').css('opacity', '');
-                    $('#files > div').css('filter', '');
-                    alert(browser.label("Unknown error."));
-                }
-            });
+            var go = function(callBack) {
+                browser.fadeFiles();
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: browser.baseGetData('rm_cbd'),
+                    data: {files:dfiles},
+                    async: false,
+                    success: function(data) {
+                        if (callBack) callBack();
+                        browser.check4errors(data);
+                        browser.refresh();
+                    },
+                    error: function() {
+                        if (callBack) callBack();
+                        $('#files > div').css({
+                            opacity: '',
+                            filter: ''
+                        });
+                        browser.alert(browser.label("Unknown error."));
+                    }
+                });
+            };
+
+            if (failed)
+                browser.confirm(
+                    browser.label("{count} selected files are not removable. Do you want to delete the rest?", {count:failed}),
+                    go
+                )
+
+            else
+                browser.confirm(
+                    browser.label("Are you sure you want to delete all selected files?"),
+                    go
+                );
+
             return false;
         });
 
@@ -405,7 +423,7 @@ browser.menuFile = function(file, e) {
         });
 
         $('.menu a[href="kcact:pick_thumb"]').click(function() {
-            var path = browser.thumbsURL + "/" + browser.dir + '/' + data.name;
+            var path = browser.thumbsURL + '/' + browser.dir + '/' + data.name;
             browser.returnFile(path);
             browser.hideDialog();
             return false;
@@ -429,7 +447,7 @@ browser.menuFile = function(file, e) {
                     (browser.clipboard[i].dir == browser.dir)
                 ) {
                     browser.hideDialog();
-                    alert(browser.label("This file is already added to the Clipboard."));
+                    browser.alert(browser.label("This file is already added to the Clipboard."));
                     return false;
                 }
             var cdata = data;
@@ -460,25 +478,28 @@ browser.menuFile = function(file, e) {
         $('.menu a[href="kcact:rm"]').click(function() {
             if (!data.writable) return false;
             browser.hideDialog();
-            if (confirm(browser.label(
-                "Are you sure you want to delete this file?"
-            )))
-                $.ajax({
-                    type: 'POST',
-                    dataType: 'json',
-                    url: browser.baseGetData('delete'),
-                    data: {dir:browser.dir, file:data.name},
-                    async: false,
-                    success: function(data) {
-                        browser.clearClipboard();
-                        if (browser.check4errors(data))
-                            return;
-                        browser.refresh();
-                    },
-                    error: function() {
-                        alert(browser.label("Unknown error."));
-                    }
-                });
+            browser.confirm(browser.label("Are you sure you want to delete this file?"),
+                function(callBack) {
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'json',
+                        url: browser.baseGetData('delete'),
+                        data: {dir:browser.dir, file:data.name},
+                        async: false,
+                        success: function(data) {
+                            if (callBack) callBack();
+                            browser.clearClipboard();
+                            if (browser.check4errors(data))
+                                return;
+                            browser.refresh();
+                        },
+                        error: function() {
+                            if (callBack) callBack();
+                            browser.alert(browser.label("Unknown error."));
+                        }
+                    });
+                }
+            );
             return false;
         });
     }
@@ -495,8 +516,7 @@ browser.menuFile = function(file, e) {
             img.onerror = function() {
                 browser.lock = false;
                 $('#loading').css('display', 'none');
-                alert(browser.label("Unknown error."));
-                browser.hideDialog();
+                browser.alert(browser.label("Unknown error."));
                 $(document).unbind('keydown');
                 $(document).keydown(function(e) {
                     return !browser.selectAll(e);
@@ -511,68 +531,73 @@ browser.menuFile = function(file, e) {
                 });
                 $('#loading').css('display', 'none');
                 $('#dialog').html('<div class="slideshow"><img /></div>');
-                $('#dialog img').attr('src', url);
-                $('#dialog img').attr('title', data.name);
-                var o_w = $('#dialog').outerWidth();
-                var o_h = $('#dialog').outerHeight();
-                var f_w = $(window).width() - 30;
-                var f_h = $(window).height() - 30;
-                if ((o_w > f_w) || (o_h > f_h)) {
-                    if ((f_w / f_h) > (o_w / o_h))
-                        f_w = parseInt((o_w * f_h) / o_h);
-                    else if ((f_w / f_h) < (o_w / o_h))
-                        f_h = parseInt((o_h * f_w) / o_w);
-                    $('#dialog img').attr('width', f_w);
-                    $('#dialog img').attr('height', f_h);
-                }
-                $('#dialog').unbind('click');
-                $('#dialog').click(function(e) {
-                    browser.hideDialog();
-                    $(document).unbind('keydown');
-                    $(document).keydown(function(e) {
-                        return !browser.selectAll(e);
-                    });
-                    if (browser.ssImage) {
-                        browser.selectFile($(browser.ssImage), e);
+                $('#dialog img').attr({
+                    src: url,
+                    title: data.name
+                }).fadeIn('fast', function() {
+                    var o_w = $('#dialog').outerWidth();
+                    var o_h = $('#dialog').outerHeight();
+                    var f_w = $(window).width() - 30;
+                    var f_h = $(window).height() - 30;
+                    if ((o_w > f_w) || (o_h > f_h)) {
+                        if ((f_w / f_h) > (o_w / o_h))
+                            f_w = parseInt((o_w * f_h) / o_h);
+                        else if ((f_w / f_h) < (o_w / o_h))
+                            f_h = parseInt((o_h * f_w) / o_w);
+                        $('#dialog img').attr({
+                            width: f_w,
+                            height: f_h
+                        });
                     }
-                });
-                browser.showDialog();
-                var images = [];
-                $.each(browser.files, function(i, file) {
-                    if (file.thumb || file.smallThumb)
-                        images[images.length] = file;
-                });
-                if (images.length)
-                    $.each(images, function(i, image) {
-                        if (image.name == data.name) {
-                            $(document).unbind('keydown');
-                            $(document).keydown(function(e) {
-                                if (images.length > 1) {
-                                    if (!browser.lock && (e.keyCode == 37)) {
-                                        var nimg = i
-                                            ? images[i - 1]
-                                            : images[images.length - 1];
-                                        browser.lock = true;
-                                        showImage(nimg);
-                                    }
-                                    if (!browser.lock && (e.keyCode == 39)) {
-                                        var nimg = (i >= images.length - 1)
-                                            ? images[0]
-                                            : images[i + 1];
-                                        browser.lock = true;
-                                        showImage(nimg);
-                                    }
-                                }
-                                if (e.keyCode == 27) {
-                                    browser.hideDialog();
-                                    $(document).unbind('keydown');
-                                    $(document).keydown(function(e) {
-                                        return !browser.selectAll(e);
-                                    });
-                                }
-                            });
+                    $('#dialog').unbind('click');
+                    $('#dialog').click(function(e) {
+                        browser.hideDialog();
+                        $(document).unbind('keydown');
+                        $(document).keydown(function(e) {
+                            return !browser.selectAll(e);
+                        });
+                        if (browser.ssImage) {
+                            browser.selectFile($(browser.ssImage), e);
                         }
                     });
+                    browser.showDialog();
+                    var images = [];
+                    $.each(browser.files, function(i, file) {
+                        if (file.thumb || file.smallThumb)
+                            images[images.length] = file;
+                    });
+                    if (images.length)
+                        $.each(images, function(i, image) {
+                            if (image.name == data.name) {
+                                $(document).unbind('keydown');
+                                $(document).keydown(function(e) {
+                                    if (images.length > 1) {
+                                        if (!browser.lock && (e.keyCode == 37)) {
+                                            var nimg = i
+                                                ? images[i - 1]
+                                                : images[images.length - 1];
+                                            browser.lock = true;
+                                            showImage(nimg);
+                                        }
+                                        if (!browser.lock && (e.keyCode == 39)) {
+                                            var nimg = (i >= images.length - 1)
+                                                ? images[0]
+                                                : images[i + 1];
+                                            browser.lock = true;
+                                            showImage(nimg);
+                                        }
+                                    }
+                                    if (e.keyCode == 27) {
+                                        browser.hideDialog();
+                                        $(document).unbind('keydown');
+                                        $(document).keydown(function(e) {
+                                            return !browser.selectAll(e);
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                });
             };
             if (img.complete)
                 onImgLoad();
