@@ -88,7 +88,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  ),
                           ),
 
-                   'civicrm_country' =>
+                   /*'civicrm_country' =>
                    array( 'dao'      => 'CRM_Core_DAO_Country',
                           'fields'   =>
                           array( 'name' =>
@@ -99,7 +99,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                  array( 'title' => 'Country'),
                                  ),
                           'grouping' => 'contact-fields',
-                          ),
+                          ),*/
                    
                    'civicrm_email'   =>
                    array( 'dao'       => 'CRM_Core_DAO_Email',

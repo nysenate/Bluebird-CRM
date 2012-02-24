@@ -117,9 +117,9 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                  'postal_code'       => null,
                                  'state_province_id' => 
                                  array( 'title'   => ts( 'State/Province' ), ),
-                                 'country_id'        => 
+                                 /*'country_id'        => 
                                  array( 'title'   => ts( 'Country' ),  
-                                        'default' => false ), 
+                                        'default' => false ),*/ 
                                  ),
 /*
                           'filters'   =>             
