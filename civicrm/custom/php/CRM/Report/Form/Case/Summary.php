@@ -126,6 +126,12 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
                           array( 'sort_name' => array( 'title' => ts( 'Staff Member' ),
                                                       ),
                                ),
+						  //NYSS 4936
+						  'order_bys'  =>
+                          array( 'sort_name' =>
+                                 array( 'title' => ts( 'Staff Member'), ),
+						 		 ), 
+                          'grouping'  => 'case-fields'
                         ),
                          
                    'civicrm_relationship' =>

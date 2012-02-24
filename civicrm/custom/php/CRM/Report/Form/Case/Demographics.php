@@ -44,6 +44,7 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
     
     protected $_phoneField   = false;
     
+	protected $_customGroupExtends = array( 'Individual' ); //NYSS
     
     function __construct( ) {		        
         $this->_columns = 
@@ -98,10 +99,10 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                         ),
                                  ),
                           //NYSS 4936
-						  'order_bys'  =>
+						  /*'order_bys'  =>
                           array( 'email' =>
                                 array( 'title' => ts( 'Email'), ),
-                          ),
+                          ),*/
 						  'grouping'  => 'contact-fields', 
                           ),
                    
@@ -139,6 +140,8 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                  array( 'title' => ts( 'Street Address'), ),
 							     'city' =>
                                  array( 'title' => ts( 'City'), ),
+							     'postal_code' =>
+                                 array( 'title' => ts( 'Postal Code'), ),
 								 ),
 						  'grouping'  => 'contact-fields',
 						  ),
@@ -188,8 +191,8 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                ),
                           //NYSS 4936
 						  'order_bys'  =>
-                          array( 'id' =>
-                                 array( 'title' => ts( 'Case ID'), ),
+                          array( /*'id' =>
+                                 array( 'title' => ts( 'Case ID'), ),*/
 							     'start_date' =>
                                  array( 'title' => ts( 'Case Start'), ),
 							     'end_date' =>
@@ -211,11 +214,24 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                         ), 
                                  ), 
                           ),
-                   );
+                   //NYSS need to manually add order_bys for custom fields
+				   'civicrm_value_constituent_information_1' =>
+				   array( 'order_bys' =>
+				          array( 'interest_in_volunteering__17' =>
+						         array( 'title' => ts( 'Interest in Volunteering' ) ),
+								 'individual_category_42' =>
+						         array( 'title' => ts( 'Individual Category' ) ),
+								 'contact_source_60' =>
+						         array( 'title' => ts( 'Contact Source' ) ),
+								 'religion_63' =>
+						         array( 'title' => ts( 'Religion' ) ),
+								 ),
+						  ),
+				   );
 
         $this->_tagFilter = true;
 
-        $open_case_val = CRM_Core_OptionGroup::getValue('activity_type', 'Open Case', 'name' );
+        /*$open_case_val = CRM_Core_OptionGroup::getValue('activity_type', 'Open Case', 'name' );
 		$crmDAO =& CRM_Core_DAO::executeQuery( "SELECT cg.table_name, cg.extends AS ext, cf.label, cf.column_name FROM civicrm_custom_group cg INNER JOIN civicrm_custom_field cf ON cg.id = cf.custom_group_id
 where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_column_value='$open_case_val') AND cg.is_active=1 AND cf.is_active=1 ORDER BY cg.table_name");
         $curTable = '';
@@ -242,7 +258,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
                                                'fields' => $curFields,
                                                'ext' => $curExt,                   
                                               );
-		}
+		}*/
 		
         $this->_genders = CRM_Core_PseudoConstant::gender(); 
 
@@ -295,12 +311,12 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id 
         ";
             
-		foreach($this->_columns as $t => $c) {
+		/*foreach($this->_columns as $t => $c) {
 			if (substr($t, 0, 13) == 'civicrm_value' || substr($t, 0, 12) == 'custom_value') {
                 $this->_from .= " LEFT JOIN $t {$this->_aliases[$t]} ON {$this->_aliases[$t]}.entity_id = ";
                 $this->_from .= ($c['ext'] == 'Activity') ? "{$this->_aliases['civicrm_activity']}.id" : "{$this->_aliases['civicrm_contact']}.id";
 			}
-		}
+		}*/
         		
         if ( $this->_emailField ) {
             $this->_from .= "
@@ -428,8 +444,8 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
                 $entryFound = true;
             }
 
-			// handle custom fields
-			foreach($row as $k => $r) {
+			// handle custom fields //NYSS handle in new way
+			/*foreach($row as $k => $r) {
 				if (substr($k, 0, 13) == 'civicrm_value' || substr($k, 0, 12) == 'custom_value') {
 					if ( $r || $r=='0' ) {
 						if ($newval = $this->getCustomFieldLabel( $k, $r )) {
@@ -438,7 +454,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
 					}
 					$entryFound = true;
 				}
-			}
+			}*/
 
             // skip looking further in rows, if first row itself doesn't 
             // have the column we need
