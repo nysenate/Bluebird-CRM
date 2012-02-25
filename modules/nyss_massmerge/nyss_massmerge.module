@@ -59,12 +59,17 @@ function _resolveConflicts( &$data, $mainId, $otherId ) {
         unset($conflicts['move_external_identifier']);
     }
 
-    //if do not mail or do not email, uncheck value for retention and proceed with merge
+    //if do not mail/do not email, uncheck value for retention and proceed with merge
     if ( array_key_exists( 'move_do_not_mail', $conflicts ) ) {
         $conflicts['move_do_not_mail'] = 0;
     }
     if ( array_key_exists( 'move_do_not_email', $conflicts ) ) {
         $conflicts['move_do_not_email'] = 0;
+    }
+
+    //if opt-out, set to yes
+    if ( array_key_exists( 'move_is_opt_out', $conflicts ) ) {
+        $conflicts['move_is_opt_out'] = 1;
     }
 
     //if greeting in conflict and one is custom, retain formula option
