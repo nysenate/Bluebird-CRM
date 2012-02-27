@@ -43,9 +43,9 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
     protected $_emailField   = false;
     
     protected $_phoneField   = false;
-    
-	protected $_customGroupExtends = array( 'Individual' ); //NYSS
-    
+
+    //NYSS 4936 - mods throughout
+
     function __construct( ) {		        
         $this->_columns = 
             array( 'civicrm_contact' =>
@@ -98,11 +98,10 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                         'no_repeat'  => true 
                                         ),
                                  ),
-                          //NYSS 4936
-						  /*'order_bys'  =>
+						  'order_bys'  =>
                           array( 'email' =>
                                 array( 'title' => ts( 'Email'), ),
-                          ),*/
+                          ),
 						  'grouping'  => 'contact-fields', 
                           ),
                    
@@ -142,22 +141,28 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                  array( 'title' => ts( 'City'), ),
 							     'postal_code' =>
                                  array( 'title' => ts( 'Postal Code'), ),
+							     'state_province_id' =>
+                                 array( 'title' => ts( 'State/Province'), ),
 								 ),
 						  'grouping'  => 'contact-fields',
 						  ),
                    'civicrm_phone' => 
                    array( 'dao'       => 'CRM_Core_DAO_Phone',
                           'fields'    =>
-                          array( 'phone'  => null),
+                          array( 'phone'  => null ),
+						  'order_bys'  => //NYSS
+                          array( 'phone' =>
+                                array( 'title' => ts( 'Phone'), ),
+                          ),
                           'grouping'  => 'contact-fields',
                           ),
 
                   'civicrm_activity' => 
                    array( 'dao'       => 'CRM_Activity_DAO_Activity',
                           'fields'    =>
-                          array( 'id'  => array('title' => ts('Activity ID'),
+                          array( 'id'  => array(//'title' => ts('Activity ID'),
                                                 'no_display' => true,
-                                                'required' => true,
+                                                'required'   => true,
                                                ),
                                ),
                           ),
@@ -165,8 +170,9 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                   'civicrm_case' => 
                    array( 'dao'       => 'CRM_Case_DAO_Case',
                           'fields'    =>
-                          array( 'id'  => array('title' => ts('Case ID'),
-                                                'required' => true,
+                          array( 'id'  => array(//'title' => ts('Case ID'),
+                                                'required'   => true,
+												'no_display' => true, //NYSS
                                                ),
                                  'start_date'  => array('title' => ts('Case Start'),
                                                 'required' => true,
@@ -214,17 +220,35 @@ class CRM_Report_Form_Case_Demographics extends CRM_Report_Form {
                                         ), 
                                  ), 
                           ),
-                   //NYSS need to manually add order_bys for custom fields
+                   //NYSS need to manually custom fields
 				   'civicrm_value_constituent_information_1' =>
-				   array( 'order_bys' =>
-				          array( 'interest_in_volunteering__17' =>
-						         array( 'title' => ts( 'Interest in Volunteering' ) ),
+				   array( 'dao' => 'CRM_Contact_DAO_Contact', // dummy DAO
+				          'fields'    =>
+                          array( 'voter_registration_status_23' => 
+                                 array( 'title'   => ts( 'Voter Registration Status' ), ),
+                                 'individual_category_42' =>
+                                 array( 'title'   => ts( 'Individual Category' ), ),
+                                 'contact_source_60' =>
+                                 array( 'title'   => ts( 'Contact Source' ), ),
+                                 'religion_63' =>
+                                 array( 'title'   => ts( 'Religion' ), ),
+                                 'record_type_61' =>
+                                 array( 'title'   => ts( 'Record Type' ), ),
+								 ),
+                          'filters'   =>             
+                          array( 
+								 ),
+				          'order_bys' =>
+				          array( 'voter_registration_status_23' =>
+						         array( 'title' => ts( 'Voter Registration Status' ) ),
 								 'individual_category_42' =>
 						         array( 'title' => ts( 'Individual Category' ) ),
 								 'contact_source_60' =>
 						         array( 'title' => ts( 'Contact Source' ) ),
 								 'religion_63' =>
 						         array( 'title' => ts( 'Religion' ) ),
+								 'record_type_61' =>
+						         array( 'title' => ts( 'Record Type' ) ),
 								 ),
 						  ),
 				   );
@@ -286,6 +310,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
                         $select[] = "{$field['dbAlias']} as {$tableName}_{$fieldName}";
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['type']  = CRM_Utils_Array::value( 'type', $field );
                         $this->_columnHeaders["{$tableName}_{$fieldName}"]['title'] = $field['title'];
+                        $this->_columnHeaders["{$tableName}_{$fieldName}"]['no_display'] = CRM_Utils_Array::value( 'no_display', $field ); //NYSS
                     }
                 }
             }
@@ -309,6 +334,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             LEFT JOIN civicrm_case {$this->_aliases['civicrm_case']} ON {$this->_aliases['civicrm_case']}.id = ccc.case_id
             LEFT JOIN civicrm_case_activity cca ON cca.case_id = {$this->_aliases['civicrm_case']}.id
             LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity']} ON {$this->_aliases['civicrm_activity']}.id = cca.activity_id 
+            LEFT JOIN civicrm_value_constituent_information_1 value_constituent_information_1_civireport ON value_constituent_information_1_civireport.entity_id = {$this->_aliases['civicrm_contact']}.id 
         ";
             
 		/*foreach($this->_columns as $t => $c) {
@@ -445,7 +471,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
             }
 
 			// handle custom fields //NYSS handle in new way
-			/*foreach($row as $k => $r) {
+			foreach($row as $k => $r) {
 				if (substr($k, 0, 13) == 'civicrm_value' || substr($k, 0, 12) == 'custom_value') {
 					if ( $r || $r=='0' ) {
 						if ($newval = $this->getCustomFieldLabel( $k, $r )) {
@@ -454,7 +480,7 @@ where (cg.extends='Contact' OR cg.extends='Individual' OR cg.extends_entity_colu
 					}
 					$entryFound = true;
 				}
-			}*/
+			}
 
             // skip looking further in rows, if first row itself doesn't 
             // have the column we need
