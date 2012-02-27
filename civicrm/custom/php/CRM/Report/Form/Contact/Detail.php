@@ -298,6 +298,33 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
         $this->_csvSupported = false;
         parent::preProcess( );
     }
+
+	//NYSS 5058 - remove some of the custom field order bys
+	function buildForm( ) {
+
+		parent::buildForm( );
+		
+		$elements   = $this->_elementIndex;
+		$orderByEle = $elements['order_bys[1][column]'];
+		$orderBys   =& $this->_elements[$orderByEle];	
+			
+		$removeOrderBys = array( 'custom_64', //privacy options note
+		                         'custom_25', //DOS
+		                         'custom_26', //EIN
+		                         'custom_58', //Ethnicity
+		                         'custom_62', //Other Ethnicity
+		                         'custom_16', //Professional Accreditation
+		                         'custom_20', //Skills/Areas of Interest
+								 );
+		foreach ( $orderBys->_options as $k => $fld ) {
+			if ( in_array( $fld['attr']['value'], $removeOrderBys ) ) {
+				unset( $orderBys->_options[$k] );
+			}
+		}
+		
+		CRM_Core_Error::debug_var('orderBys',$orderBys);
+	}
+
     
     function select( ) {
         $select               = array( );
