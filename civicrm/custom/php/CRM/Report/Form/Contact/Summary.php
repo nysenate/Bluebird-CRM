@@ -73,7 +73,11 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                           'order_bys'  =>
                           array( 'sort_name' =>
                                  //NYSS 4236 alter defaults
-								 array( 'title' => ts( 'Last Name, First Name'), 'default' => '1', 'default_weight' => '0', 'default_is_section' => 0, 'default_order' => 'ASC'
+								 array( 'title' => ts( 'Last Name, First Name'), 
+								        'default' => '1', 
+										'default_weight' => '0', 
+										'default_is_section' => 0, 
+										'default_order' => 'ASC'
                                       )
                           ),
                           ),
@@ -86,11 +90,11 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                                         ),
                                  ),
                           'grouping'  => 'contact-fields', 
-                          'order_bys'  =>
+                          /*'order_bys'  =>
                           array( 'email' =>
                                  array( 'title' => ts( 'Email' ),
                                       )
-                          ),
+                          ),*/
                           ),
                    
                    'civicrm_address' =>
@@ -120,6 +124,7 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                           array( 'state_province_id' => array( 'title' => 'State/Province'),
                                  'city' => array( 'title' => 'City'),
                                  'postal_code' => array( 'title' => 'Postal Code'),
+                                 'street_address' => array( 'title' => 'Street Address'),
                                  ),
                            ),
                   /*'civicrm_country' =>
@@ -163,6 +168,31 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
     function preProcess( ) {
         parent::preProcess( );
     }
+	
+	//NYSS 5057 - remove some of the custom field order bys
+	function buildForm( ) {
+
+		parent::buildForm( );
+		
+		$elements   = $this->_elementIndex;
+		$orderByEle = $elements['order_bys[1][column]'];
+		$orderBys   =& $this->_elements[$orderByEle];	
+			
+		$removeOrderBys = array( 'custom_64', //privacy options note
+		                         'custom_25', //DOS
+		                         'custom_26', //EIN
+		                         'custom_58', //Ethnicity
+		                         'custom_62', //Other Ethnicity
+		                         'custom_16', //Professional Accreditation
+								 );
+		foreach ( $orderBys->_options as $k => $fld ) {
+			if ( in_array( $fld['attr']['value'], $removeOrderBys ) ) {
+				unset( $orderBys->_options[$k] );
+			}
+		}
+		
+		//CRM_Core_Error::debug_var('orderBys',$orderBys);
+	}
     
     function select( ) {
         $select = array( );

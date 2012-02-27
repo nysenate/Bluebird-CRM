@@ -131,14 +131,14 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 						    JOIN civicrm_email ce ON c.id = ce.contact_id
 					      WHERE is_deleted != 1 AND do_not_email = 1;";
 		$emailCounts['Do Not Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailsDNE );
-		
-		//opt out
-		$sql_emailsOO = "SELECT COUNT( c.id ) AS emailOO_count
-					      FROM civicrm_contact c
-						    JOIN civicrm_email ce ON c.id = ce.contact_id
-					      WHERE is_deleted != 1 AND is_opt_out = 1;";
-		$emailCounts['Opt Out/No Bulk Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOO );
-		
+
+        //opt out
+        $sql_emailsOO = "SELECT COUNT( c.id ) AS emailOO_count
+                          FROM civicrm_contact c
+                            JOIN civicrm_email ce ON c.id = ce.contact_id
+                          WHERE is_deleted != 1 AND is_opt_out = 1;";
+        $emailCounts['Contact Opt Out/No Bulk Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailsOO );
+
 		//contact deceased, with email
 		$sql_emailDec = "SELECT COUNT( c.id ) AS emailDec_count
 					     FROM civicrm_contact c
@@ -146,14 +146,18 @@ class CRM_Dashlet_Page_DistrictStats extends CRM_Core_Page
 					     WHERE is_deleted != 1 AND is_deceased = 1;";
 		$emailCounts['Contacts Deceased, with Email'] = CRM_Core_DAO::singleValueQuery( $sql_emailDec );
 
-		//duplicate emails
-		$sql_dupeEmails = "SELECT count(em3.id) AS dupeEmail
+        //duplicate emails
+        $sql_dupeEmails = "SELECT count(em3.id) AS dupeEmail
                            FROM ( SELECT em1.id
                                   FROM civicrm_email em1
                                     JOIN civicrm_email em2 ON ( em1.email = em2.email AND em1.contact_id != em2.contact_ID )
+                                    LEFT JOIN civicrm_contact c1 ON em1.contact_id = c1.id
+                                    LEFT JOIN civicrm_contact c2 ON em2.contact_id = c2.id
+                                  WHERE c1.is_deleted != 1
+                                    AND c2.is_deleted != 1
                                   GROUP BY em1.email ) em3;";
         $emailCounts['Duplicate Emails'] = CRM_Core_DAO::singleValueQuery( $sql_dupeEmails );
-		
+
 		//potential maximum audience
 		$sql_emailsMax = "SELECT COUNT( c.id ) AS emailMax_count
 					      FROM civicrm_contact c

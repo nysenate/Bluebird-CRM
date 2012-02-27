@@ -2703,10 +2703,12 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
        if ( $orderBy ) {
            $addressFields['civicrm_address']['order_bys'] =
                array( 'street_name'       => array( 'title'   => ts( 'Street Name' ) ),
-                      'street_number'     => array( 'title'   => 'Odd / Even Street Number' ),
+                      'street_number'     => array( 'title'   => 'Street Number' ), //NYSS
                       'street_address'    => null,
                       'city'              => null,
                       'postal_code'       => null,
+					  'street_unit'       => null, //NYSS 5059
+					  'state_province'    => null, //NYSS			  
                       );
        }
        
