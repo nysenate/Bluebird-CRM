@@ -221,27 +221,36 @@ function geocodeAddresses($optList, $env) {
                    zip as postal_code
             FROM person WHERE district IS NULL ORDER BY id ASC";
 
-    if(! $result = mysql_query($sql, $conn) ) {
+    if (!($result = mysql_query($sql, $conn))) {
         die(mysql_error($conn)."\n".$sql);
     }
 
-    while($row = mysql_fetch_assoc($result)) {
+    $geocodeCount = 0;
+
+    while ($row = mysql_fetch_assoc($result)) {
         //geocode, dist assign and format address
-        echo "Geocoding: {$row['street_address']}, {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
+        echo "[DEBUG] Geocoding: {$row['street_address']}, {$row['city']}, {$row['state_province']} {$row['postal_code']}\n";
         CRM_Utils_SAGE::lookup($row);
 
         //Supply zero as a default so we can find the bad ones later
-        if(!isset($row['custom_47_-1']) || !$row['custom_47_-1']) {
-            echo "[NOTICE] Address --^ could not be geocoded.";
-            $row['custom_47_-1'] = 0;
+        $district = 0;
+        if (isset($row['custom_47_-1']) && $row['custom_47_-1']) {
+            $district = $row['custom_47_-1'];
+            echo "[DEBUG] Address geocoded to Senate District $district\n";
+        }
+        else {
+            echo "[NOTICE] Address --^ could not be geocoded.\n";
         }
 
-        $sql = "UPDATE person SET district={$row['custom_47_-1']} WHERE id={$row['id']}";
-        if(! $inner_result = mysql_query($sql,$conn) ) {
-            die(mysql_error($conn)."\n".$sql);
+        $sql = "UPDATE person SET district=$district WHERE id={$row['id']}";
+        if (!mysql_query($sql, $conn)) {
+            echo "[ERROR] District update failed for id={$row['id']}, district=$district [".mysql_error($conn)."]\n";
+        }
+        else if ($district > 0) {
+            $geocodeCount++;
         }
     }
-    echo "\n";
+    echo "[NOTICE] Geocoded $geocodeCount record(s).\n\n";
 }
 
 
