@@ -1234,6 +1234,11 @@ class CRM_Contact_BAO_Query
             $likeNames = array( 'sort_name', 'email', 'note', 'display_name' );
         }
 
+        //NYSS 5063 use wildcards with email
+        if ( $id == 'email' ) {
+            $wildcard = 1;
+        }
+
         if ( ! $useEquals &&
              in_array( $id, $likeNames ) ) {
             $result = array( $id, 'LIKE', $values, 0, 1 );
@@ -2741,7 +2746,6 @@ WHERE  id IN ( $groupIDs )
     function email( &$values ) 
     {
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
-        
         $n = trim( $value ); 
 
         if ( $n ) {
@@ -2760,7 +2764,7 @@ WHERE  id IN ( $groupIDs )
                         $value = "'$value'";
                         // only add wild card if not there
                     } else {
-                        $value = "'$value%'";
+                        $value = "'%$value%'";//NYSS 5063 - add wildcard on left
                     }
                     $op    = 'LIKE';
                 } else {

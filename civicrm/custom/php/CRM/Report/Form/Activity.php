@@ -108,7 +108,16 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                      'type'      => CRM_Utils_Type::T_INT,
                                                      'operatorType' => CRM_Report_Form::OP_SELECT,
                                                      'options'   => array('0'=>ts('No'), '1'=>ts('Yes') ) ) ),
-                                       'grouping' => 'contact-fields',
+                                       //NYSS 5059
+									   'order_bys' =>             
+                                       array( 'contact_target'  =>
+                                              array( 'name'  => 'sort_name',
+                                                     'alias' => 'civicrm_contact_target',
+                                                     'title' => ts( 'Target (With)' ),
+                                                     )
+											  ),
+
+									   'grouping' => 'contact-fields',
                                        ),
                                 
                                 'civicrm_email'         =>
@@ -131,7 +140,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                        array( 'source_contact_email'  =>
                                               array('name'  => 'email',
                                                     'title' => ts( 'Added by Contact Email'), //NYSS
-                                                    'alias' => 'civicrm_email_source' ) ),
+                                                    'alias' => 'civicrm_email_source' ),
+											  'contact_assignee_email'  =>
+                                              array('name'  => 'email',
+                                                    'title' => ts( 'Assigned Contact Email'), //NYSS
+                                                    'alias' => 'civicrm_email_assignee' ),
+											  ),
                                        ),
                                 
                                 //NYSS add phone
@@ -151,7 +165,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                                      'title'     => ts( 'Target Phone' ),
                                                      'alias'     => 'civicrm_phone_target', ),
                                               ),
-                                       ),
+                                       'order_bys' =>             
+                                       array( 'contact_source_phone'  =>
+                                              array('name'  => 'phone',
+                                                    'title' => ts( 'Added by Phone'), //NYSS
+                                                    'alias' => 'civicrm_phone_source' ) ),
+									   ),
 								
 								'civicrm_activity'      =>
                                 array( 'dao'     => 'CRM_Activity_DAO_Activity',
@@ -212,6 +231,12 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                               array( 'title'   => ts( 'Activity Date' ), 'default_weight' => '1' ),
                                               'activity_type_id'   =>
                                               array( 'title'   => ts( 'Activity Type' ), 'default_weight' => '2' ),
+                                              'activity_subject'   =>
+                                              array( 'title'   => ts( 'Activity Subject' ) ), //NYSS 5059
+                                              'status_id'   =>
+                                              array( 'title'   => ts( 'Activity Status' ) ),
+
+
                                               ),
                                        'grouping' => 'activity-fields',
                                        'alias'    => 'activity'
@@ -230,12 +255,11 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
                                 'civicrm_activity_target'        =>
                                 array( 'dao'     => 'CRM_Activity_DAO_ActivityTarget',
                                        'fields'  =>
-                                       array(
-                                             'target_contact_id' => 
+                                       array('target_contact_id' => 
                                              array( 'no_display' => true,
                                                     'required'   => true ), ),
-                                       'alias'   => 'activity_target'
-                                       ),
+                                       'alias'   => 'activity_target',
+									   ),
                                 'civicrm_case_activity'        =>
                                 array( 'dao'     => 'CRM_Case_DAO_CaseActivity',
                                        'fields'  =>
@@ -359,8 +383,8 @@ class CRM_Report_Form_Activity extends CRM_Report_Form {
         }
         $this->addAddressFromClause();
 
-		//NYSS
-		if ( $this->_phoneField ) {
+		//NYSS / altered with 5059
+		if ( $this->isTableSelected('civicrm_phone') ) {
             $this->_from .= "
             LEFT JOIN civicrm_phone civicrm_phone_source 
                    ON {$this->_aliases['civicrm_activity']}.source_contact_id = civicrm_phone_source.contact_id AND
