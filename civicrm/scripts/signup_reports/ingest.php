@@ -16,17 +16,21 @@ $env = array(
     'conn'   => get_connection($config['globals'])
 );
 
-if($optList['senators'] || $optList['all'])
+if ($optList['senators'] || $optList['all']) {
     updateSenators($optList, $env);
+}
 
-if($optList['committees'] || $optList['all'])
+if ($optList['committees'] || $optList['all']) {
     updateCommittees($optList, $env);
+}
 
-if($optList['signups'] || $optList['all'])
+if ($optList['signups'] || $optList['all']) {
     updateSignups($optList, $env);
+}
 
-if($optList['geocode'] || $optList['all'])
+if ($optList['geocode'] || $optList['all']) {
     geocodeAddresses($optList, $env);
+}
 
 
 function get_options() {
@@ -36,8 +40,13 @@ function get_options() {
     $short_opts = 'hascgub:f:';
     $long_opts = array('help','all','senators','committees','geocode','signups','batch=','first=');
     $usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_ID]";
-    if(!($optList = process_cli_args($short_opts, $long_opts)) || $optList['help'] )
+
+    $optList = process_cli_args($short_opts, $long_opts);
+    if (!$optList || $optList['help'] ||
+         !($optList['all'] || $optList['signups'] || $optList['geocode']
+           || $optList['senators'] || $optList['committees'])) {
         die("$prog $usage\n");
+    }
 
     return $optList;
 }
