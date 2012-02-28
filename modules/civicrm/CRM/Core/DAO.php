@@ -1405,4 +1405,78 @@ SELECT contact_id
         }
     }
 
+	//NYSS 5067
+	static function triggerRebuild( $tableName = null ) {
+        $info = array( );
+
+        require_once 'CRM/Logging/Schema.php';
+        $logging = new CRM_Logging_Schema;
+        $logging->triggerInfo( $info, $tableName );
+
+        require_once 'CRM/Core/I18n/Schema.php';
+        CRM_Core_I18n_Schema::triggerInfo( $info, $tableName );
+
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::triggerInfo( $info, $tableName );
+
+        self::createTriggers( $info );
+
+    }
+
+    static function createTriggers( &$info ) {
+        if ( empty( $info ) ) {
+            return;
+        }
+
+        $triggers = array( );
+
+        // now enumerate the tables and the events and collect the same set in a different format
+        foreach ( $info as $value ) {
+            foreach ( $value['table'] as $tableName ) {
+                if ( ! isset( $triggers[$tableName] ) ) {
+                    $triggers[$tableName] = array( );
+                }
+                $whenName = strtolower( $value['when'] );
+                foreach ( $value['event'] as $eventName ) {
+                    $eventName = ucwords( strtolower( $eventName ) );
+                    if ( ! isset( $triggers[$tableName][$eventName] ) ) {
+                        $triggers[$tableName][$eventName] = array( );
+                    }
+                    
+                    if ( ! isset( $triggers[$tableName][$eventName][$whenName] ) ) {
+                        $triggers[$tableName][$eventName][$whenName] = array( );
+                    }
+
+                    // do the string replacement for tableName and eventName
+                    $sql = str_replace( array( '{tableName}', '{eventName}' ),
+                                        array( $tableName   , $eventName    ),
+                                        $value['sql'] );
+                    $sql = trim( $sql );
+                    if ( substr( $sql, -1 ) == ';' ) {
+                        $sql = substr( $sql, 0, -1 );
+                    }
+                   
+                    $triggers[$tableName][$eventName][$whenName][] = $sql;
+                }
+            }
+        }
+
+        // now spit out the sql
+        foreach ( $triggers as $tableName => $tables ) {
+            foreach ( $tables as $eventName => $events ) {
+                foreach ( $events as $whenName => $sql ) {
+                    $sqlString  = implode( ';', $sql );
+                    $sqlString .= ";";
+
+                    $triggerName = "{$tableName}_" . strtolower( $whenName ) . '_' . strtolower( $eventName );
+
+                    CRM_Core_DAO::executeQuery( "DROP TRIGGER IF EXISTS $triggerName" );
+
+                    $triggerSQL = "
+CREATE TRIGGER $triggerName " . strtoupper( $whenName ) . ' ' . strtoupper( $eventName ) . " ON $tableName FOR EACH ROW BEGIN $sqlString END";
+                    CRM_Core_DAO::executeQuery( $triggerSQL );
+                }
+            }
+        }
+    }//NYSS end
 }
