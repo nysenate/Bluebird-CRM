@@ -811,7 +811,12 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
             $contact =& $$moniker;
             $specialValues[$moniker] = array('preferred_communication_method' => 
                                              CRM_Utils_array::value('preferred_communication_method', $contact));
-            $names = array('preferred_communication_method' => 
+            //NYSS api 3 returns pref_comm_method as an array, which breaks the lookup; so we reconstruct
+            $sep = CRM_Core_DAO::VALUE_SEPARATOR;
+            $prefCommList = implode($sep, $specialValues[$moniker]['preferred_communication_method']);
+            $specialValues[$moniker]['preferred_communication_method'] = $sep.$prefCommList.$sep;
+
+            $names = array('preferred_communication_method' =>
                            array('newName'   => 'preferred_communication_method_display',
                                  'groupName' => 'preferred_communication_method'));
             CRM_Core_OptionGroup::lookupValues($specialValues[$moniker], $names);
@@ -980,7 +985,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         }
 
         // add the related tables and unset the ones that don't sport any of the duplicate contact's info
-		require_once 'CRM/Core/BAO/UFMatch.php'; //NYSS
+        require_once 'CRM/Core/BAO/UFMatch.php'; //NYSS
         $config   = CRM_Core_Config::singleton( );
         $mainUfId = CRM_Core_BAO_UFMatch::getUFId( $mainId );
         $mainUser = null;
