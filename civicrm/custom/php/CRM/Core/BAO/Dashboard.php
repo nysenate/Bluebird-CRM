@@ -67,6 +67,21 @@ class CRM_Core_BAO_Dashboard extends CRM_Core_DAO_Dashboard
             if ( !self::checkPermission( $dao->permission, $dao->permission_operator ) ) {
                 continue;
             }
+
+            //NYSS 3439 also check for group based permission if created from report
+            if ( strpos($dao->url, 'civicrm/report/instance/') !== false ) {
+
+                require_once 'CRM/Report/Utils/Report.php';
+
+                $end = strpos($dao->url, "&");
+                $instanceID = substr($dao->url, 24, $end-24);
+                //CRM_Core_Error::debug_var('instanceID',$instanceID);
+
+                if ( $instanceID &&
+                     !CRM_Report_Utils_Report::isInstanceGroupRoleAllowed($instanceID) ) {
+                    continue;
+                }
+            }
             
             $values = array( );
             CRM_Core_DAO::storeValues( $dao, $values );
