@@ -85,6 +85,7 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                           array( 'state_province_id' => array( 'title' => 'State/Province'),
                                  'city' => array( 'title' => 'City'),
                                  'postal_code' => array( 'title' => 'Postal Code'),
+                                 'street_address' => array( 'title' => 'Street Address'),
                                  ),
                           ),
 
@@ -110,11 +111,11 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
                                         ),
                                  ),
                           'grouping'  => 'contact-fields',
-                          'order_bys'  =>
+                          /*'order_bys'  =>
                           array( 'email' =>
                                  array( 'title' => ts( 'Email' ),
                                         )
-                                 ),
+                                 ),*/
                           ),
 //NYSS - RAY                   
                    'civicrm_contribution'   =>

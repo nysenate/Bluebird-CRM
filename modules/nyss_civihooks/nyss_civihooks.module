@@ -401,25 +401,29 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
         //CRM_Core_Error::debug_var('form',$form);
         if ( $form->_contactType == 'Individual' ) {
 
-            $values = $form->_finalValues;
+            require_once 'api/api.php';
+
+            $values    = $form->_finalValues;
+            $contactID = $form->_contactId;
+            $msg       = '';
+
+            //determine if the contact has a household relationship
+            $params = array( 'version'      => 3,
+                             'contact_id_a' => $contactID,
+                             'is_active'    => 1,
+                             );
+            $rels = civicrm_api( 'relationship', 'get', $params );
+
+            //if there are no household relationships, we don't need to continue
+            if ( !$rels['count'] ) {
+                return;
+            }
+            //CRM_Core_Error::debug_var('rels',$rels);
+
+            //check if all indivs related to the household are marked either do not email or do not mail
+            //if so, mark the household with those values and return a message
             if ( $values['do_not_email'] ||
                  $values['do_not_mail'] ) {
-
-                require_once 'api/api.php';
-
-                $contactID = $form->_contactId;
-
-                //determine if the contact has a household relationship
-                $params = array( 'version'      => 3,
-                                 'contact_id_a' => $contactID,
-                                 'is_active'    => 1,
-                                 );
-                $rels = civicrm_api( 'relationship', 'get', $params );
-
-                if ( !$rels['count'] ) {
-                    return;
-                }
-                //CRM_Core_Error::debug_var('rels',$rels);
 
                 foreach ( $rels['values'] as $rel ) {
                     if ( ( $rel['relationship_type_id'] == 6 ||
@@ -439,7 +443,7 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
                         $hRels = civicrm_api( 'relationship', 'get', $params );
 
                         if ( !$rels['count'] ) {
-                            return;
+                            continue;
                         }
 
                         $flagDNM = $flagDNE = true; //assume true and break when a contact is not flagged
@@ -468,14 +472,13 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
                         }
 
                         //now process the household
-                        $msg = '';
                         if ( $flagDNM ) {
                             $params = array( 'version'     => 3,
                                              'id'          => $houseID,
                                              'do_not_mail' => 1,
                                              );
                             $dnm = civicrm_api( 'Contact', 'Update', $params );
-                            $msg .= 'This individual has a related household record which has been marked Do Not Postal Mail. ';
+                            $msg .= '<li>This individual has a related household record which has been marked Do Not Postal Mail. </li>';
                         }
                         if ( $flagDNE ) {
                             $params = array( 'version'      => 3,
@@ -483,27 +486,43 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
                                              'do_not_email' => 1,
                                              );
                             $dne = civicrm_api( 'Contact', 'Update', $params );
-                            $msg .= 'This individual has a related household record which has been marked Do Not Email. ';
-                        }
-
-                        if ( $msg ) {
-                            CRM_Core_Session::setStatus( $msg );
+                            $msg .= '<li>This individual has a related household record which has been marked Do Not Email. </li>';
                         }
                     }
                 }
+            } //DNM/DNE
+
+            //4744 if marked deceased and a household relationship exists, return message
+            if ( $values['is_deceased'] ) {
+                foreach ( $rels['values'] as $rel ) {
+                    if ( ( $rel['relationship_type_id'] == 6 ||
+                           $rel['relationship_type_id'] == 7 ) &&
+                         ( !isset($rel['start_date']) ||
+                           strtotime($rel['start_date']) < strtotime(date('Y-m-d')) ) &&
+                         ( !isset($rel['end_date']) ||
+                           strtotime($rel['end_date']) > strtotime(date('Y-m-d')) ) ) {
+
+                        $msg .= "<li>You have marked this contact as deceased and it has a household relationship. Be sure to review the household record and update the postal greeting, email greeting, and addressee values as appropriate.</li>";
+                    }
+                }
+            } //is_deceased
+
+            //now register the status message. handle here so we can combine in a nice bullet list
+            if ( $msg ) {
+                CRM_Core_Session::setStatus( "<ul>$msg</ul>" );
             }
-        }
-    }
+        } //Individual
+    } //CRM_Contact_Form_Contact
 } //postProcess
 
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 
-	unset($tasks[19]); //remove pdf letter creation task, #2284
-	
+    unset($tasks[19]); //remove pdf letter creation task, #2284
+
 }
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
-	
+
 	//NYSS #2729 strip line break
 	if ( ( $op == 'edit' || $op == 'create' ) && 
 		 ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
