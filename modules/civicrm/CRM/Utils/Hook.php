@@ -44,7 +44,33 @@ class CRM_Utils_Hook {
     const SUMMARY_BELOW = 1;         // by default - place content below existing content
     const SUMMARY_ABOVE = 2;         // pace hook content above
     const SUMMARY_REPLACE = 3;       // create your own summarys
+ 
+    static $_nullObject = null;
+ 
+    /**
+     * We only need one instance of this object. So we use the singleton
+     * pattern and cache the instance in this variable
+     *
+     * @var object
+     * @static
+     */
+    static private $_singleton = null;
+
     
+    /**
+     * Constructor and getter for the singleton instance
+     * @return instance of $config->userHookClass
+     */
+    static function singleton( ) {
+        if (self::$_singleton == null) {
+            $config = CRM_Core_Config::singleton( );
+            $class = $config->userHookClass;
+            require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userHookClass ) . '.php' );
+            self::$_singleton = new $class();
+        }
+        return self::$_singleton;
+    }
+
     /** 
      * This hook is called before a db write on some core objects.
      * This hook does not allow the abort of the operation 
