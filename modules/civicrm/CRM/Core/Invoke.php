@@ -72,6 +72,14 @@ class CRM_Core_Invoke
                 // also reset navigation
                 require_once 'CRM/Core/BAO/Navigation.php';
                 CRM_Core_BAO_Navigation::resetNavigation( );
+
+				// also cleanup all caches //NYSS
+                $config->cleanupCaches( );
+
+                // also rebuild triggers if set //NYSS 5067
+                if ( CRM_Utils_Request::retrieve( 'triggerRebuild', 'Boolean', CRM_Core_DAO::$_nullObject, false, 0, 'GET' ) ) {
+                    CRM_Core_DAO::triggerRebuild( );
+                }
             
                 return CRM_Utils_System::redirect( );
             } else {
