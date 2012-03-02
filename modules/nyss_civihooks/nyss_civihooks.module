@@ -446,8 +446,8 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
 
             //check if all indivs related to the household are marked either do not email or do not mail
             //if so, mark the household with those values and return a message
-            if ( $values['do_not_email'] ||
-                 $values['do_not_mail'] ) {
+            if ( $values['privacy']['do_not_email'] ||
+                 $values['privacy']['do_not_mail'] ) {
 
                 foreach ( $rels['values'] as $rel ) {
                     if ( ( $rel['relationship_type_id'] == 6 ||
