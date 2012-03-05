@@ -67,7 +67,8 @@ class CRM_Mailing_Page_View extends CRM_Core_Page
         // if user is an admin, return true
         if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ||
              CRM_Core_Permission::check( 'access CiviMail' ) ||
-			 CRM_Core_Permission::check( 'create mailings' ) ) { //NYSS
+			 CRM_Core_Permission::check( 'create mailings' ) ||
+			 CRM_Core_Permission::check( 'view mass email' ) ) { //NYSS
             return true;
         }
 

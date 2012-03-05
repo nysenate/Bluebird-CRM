@@ -132,6 +132,9 @@ class CRM_Contact_Form_Search_Custom_Proximity
         $country = array( '' => ts('- select -') ) + CRM_Core_PseudoConstant::country( );
         $form->add( 'select', 'country_id', ts('Country'), $country, true );
 
+        // Allow user to choose which type of contact to limit search on
+        $form->add('select', 'contact_type', ts('Find...'), CRM_Core_SelectValues::contactType());
+
         $group =
             array('' => ts('- any group -')) +
             CRM_Core_PseudoConstant::group( );
@@ -164,6 +167,7 @@ class CRM_Contact_Form_Search_Custom_Proximity
                                           'postal_code',
                                           'country_id',
                                           'state_province_id',
+										  'contact_type',
                                           'group',
                                           'tag' ) );
     }
@@ -232,6 +236,10 @@ AND t.tag_id = {$this->_tag}
 AND cgc.group_id = {$this->_group}
  ";
  		}
+		
+		if (! empty($this->_formValues['contact_type']) ) {
+            $where .= " AND contact_a.contact_type LIKE '%{$this->_formValues['contact_type']}%'";
+        }
 		
 		//NYSS standard clauses
 		$where .= " AND is_deleted = 0 AND is_deceased = 0 ";

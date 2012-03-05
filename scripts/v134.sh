@@ -55,3 +55,12 @@ $execSql -i $instance -c "$acttag"
 # 4939 country
 country="UPDATE civicrm_preferences SET address_options = '123456813' WHERE id = 1;"
 $execSql -i $instance -c "$country"
+
+# Remove old triggers to make way for new CiviCRM triggers
+$execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_address_update_trigger;"
+$execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_address_delete_trigger;"
+$execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_address_insert_trigger;"
+$execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_delete_trigger;"
+$execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_update_trigger;"
+$execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_insert_trigger;"
+

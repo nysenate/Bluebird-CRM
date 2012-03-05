@@ -44,7 +44,8 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
     
     function __construct( ) {
 
-    
+        $activityTypes = CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true);
+        asort($activityTypes);
     
         $this->_columns = array(
                                  'civicrm_tag'      =>
@@ -95,7 +96,8 @@ class CRM_Report_Form_ActivityTag extends CRM_Report_Form {
                                               'activity_type_id'    => 
                                               array( 'title'        => ts( 'Activity Type' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-                                                     'options'      => CRM_Core_PseudoConstant::activityType(true, true, false, 'label', true), ), 
+                                                     'options'      => $activityTypes,
+                                                     ),
                                               'status_id'           => 
                                               array( 'title'        => ts( 'Activity Status' ),
                                                      'operatorType' => CRM_Report_Form::OP_MULTISELECT,

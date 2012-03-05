@@ -40,18 +40,19 @@ require_once 'CRM/Report/Utils/Report.php'; //NYSS
 class CRM_Report_Form_Instance {
 
     static function buildForm( &$form ) {
+
+        //NYSS check role based permission; do this first so it also affect dashlet mode
+        $instanceID = $form->getVar( '_id' );
+        if ( $instanceID && !CRM_Report_Utils_Report::isInstanceGroupRoleAllowed($instanceID) ) {
+            $url = CRM_Utils_System::url( 'civicrm/report/list', 'reset=1' );
+            CRM_Core_Error::statusBounce( ts( 'You do not have permission to access this report.' ), 
+                                          $url );
+        }
+
         // we should not build form elements in dashlet mode
         if ( $form->_section ) {
             return;
         }
-		
-		//NYSS check role based permission
-		$instanceID = $form->getVar( '_id' );
-		if ( $instanceID && !CRM_Report_Utils_Report::isInstanceGroupRoleAllowed($instanceID) ) {
-		    $url = CRM_Utils_System::url( 'civicrm/report/list', 'reset=1' );
-			CRM_Core_Error::statusBounce( ts( 'You do not have permission to access this report.' ), 
-			                              $url );
-		}
         
         $attributes = CRM_Core_DAO::getAttribute( 'CRM_Report_DAO_Instance' );
 

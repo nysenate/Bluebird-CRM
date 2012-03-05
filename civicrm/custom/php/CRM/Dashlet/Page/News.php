@@ -55,19 +55,25 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
             $doc->load($url);
             $rss_array = array();
             $items = array();
+            $i = 0;
             foreach($doc->getElementsByTagName($tag) AS $node) {
-				foreach($array AS $key => $value) {
+                //only show the 5 most recent posts
+                if ( $i > 4 ) {
+                    break;
+                }
+                foreach($array AS $key => $value) {
                     $items[$value] = $node->getElementsByTagName($value)->item(0)->nodeValue;
-					if ( $value == 'pubDate' ) {
-						$items[$value] = date("l, M j, Y g:ia", strtotime($items[$value]));
-					}
+                    if ( $value == 'pubDate' ) {
+                        $items[$value] = date("l, M j, Y g:ia", strtotime($items[$value]));
+                    }
                 }
                 array_push($rss_array, $items);
+                $i++;
             }
             return $rss_array;
         }
-		
-		$rss_tags = array( 'title',
+        
+        $rss_tags = array( 'title',
                            'pubDate',
                            'description',
                            'link',
@@ -82,8 +88,8 @@ class CRM_Dashlet_Page_News extends CRM_Core_Page
         
         $rssfeed = rss_to_array($rss_item_tag,$rss_tags,$rss_url);
         //CRM_Core_Error::debug($rssfeed);
-		
-		$this->assign('newsfeed', $rssfeed);
+        
+        $this->assign('newsfeed', $rssfeed);
 
         return parent::run( );
     }
