@@ -486,4 +486,73 @@ class CRM_Core_I18n_Schema
         }
         return "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT ". implode(', ', $cols) . " FROM {$table}";
     }
+
+    function triggerInfo( &$info, $tableName = null ) {
+        // get the current supported locales
+        $domain = new CRM_Core_DAO_Domain();
+        $domain->find(true);
+        if ( empty( $domain->locales ) ) {
+            return;
+        }
+
+        $locales = explode(CRM_Core_DAO::VALUE_SEPARATOR, $domain->locales);
+        $locale  = array_pop( $locales);
+
+        $columns =& CRM_Core_I18n_SchemaStructure::columns();
+
+        foreach ($columns as $table => $hash) {
+            if ( $tableName &&
+                 $tableName != $table ) {
+                continue;
+            }
+
+            $trigger = array( );
+
+            foreach ($hash as $column => $_) {
+                $trigger[] = "IF NEW.{$column}_{$locale} IS NOT NULL THEN";
+                foreach ($locales as $old) {
+                    $trigger[] = "IF NEW.{$column}_{$old} IS NULL THEN SET NEW.{$column}_{$old} = NEW.{$column}_{$locale}; END IF;";
+                }
+                foreach ($locales as $old) {
+                    $trigger[] = "ELSEIF NEW.{$column}_{$old} IS NOT NULL THEN";
+                    foreach (array_merge($locales, array($locale)) as $loc) {
+                        if ($loc == $old) continue;
+                        $trigger[] = "IF NEW.{$column}_{$loc} IS NULL THEN SET NEW.{$column}_{$loc} = NEW.{$column}_{$old}; END IF;";
+                    }
+                }
+            }
+
+            $sql = implode(' ', $trigger);
+            $info[] = array( 'table' => array( $table ),
+                             'when'  => 'BEFORE',
+                             'event' => array( 'UPDATE' ),
+                             'sql'   => array( $sql ) );
+        }
+
+        // take care of the ON INSERT triggers
+        foreach ($columns as $table => $hash) {
+            $trigger = array();
+            foreach ($hash as $column => $_) {
+                $trigger[] = "IF NEW.{$column}_{$locale} IS NOT NULL THEN";
+                foreach ($locales as $old) {
+                    $trigger[] = "SET NEW.{$column}_{$old} = NEW.{$column}_{$locale};";
+                }
+                foreach ($locales as $old) {
+                    $trigger[] = "ELSEIF NEW.{$column}_{$old} IS NOT NULL THEN";
+                    foreach (array_merge($locales, array($locale)) as $loc) {
+                        if ($loc == $old) continue;
+                        $trigger[] = "SET NEW.{$column}_{$loc} = NEW.{$column}_{$old};";
+                    }
+                }
+                $trigger[] = 'END IF;';
+            }
+
+            $sql = implode(' ', $trigger);
+            $info[] = array( 'table' => array( $table ),
+                             'when'  => 'BEFORE',
+                             'event' => array( 'INSERT' ),
+                             'sql'   => array( $sql ) );
+        }
+    }
+
 }

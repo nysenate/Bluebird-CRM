@@ -54,6 +54,7 @@ class CRM_Core_Invoke
             return;
         }
 
+        require_once 'CRM/Core/Config.php';
         require_once 'CRM/Core/I18n.php';
         require_once 'CRM/Utils/Wrapper.php';
         require_once 'CRM/Core/Action.php';
@@ -74,6 +75,7 @@ class CRM_Core_Invoke
                 CRM_Core_BAO_Navigation::resetNavigation( );
 
 				// also cleanup all caches //NYSS
+                $config = CRM_Core_Config::singleton();
                 $config->cleanupCaches( );
 
                 // also rebuild triggers if set //NYSS 5067
