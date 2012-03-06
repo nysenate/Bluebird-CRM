@@ -73,7 +73,7 @@ class CRM_Report_Form_Contact_Summary extends CRM_Report_Form {
                           'order_bys'  =>
                           array( 'sort_name' =>
                                  //NYSS 4236 alter defaults
-								 array( 'title' => ts( 'Last Name, First Name'), 
+								 array( 'title' => ts( 'Contact Name'), 
 								        'default' => '1', 
 										'default_weight' => '0', 
 										'default_is_section' => 0, 

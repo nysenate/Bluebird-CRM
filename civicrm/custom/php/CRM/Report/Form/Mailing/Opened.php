@@ -89,7 +89,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 			),
             'order_bys'  =>
             array( 'sort_name' =>
-                   array( 'title' => ts( 'Last Name, First Name'), 'default_order' => 'ASC') ),
+                   array( 'title' => ts( 'Contact Name'), 'default_order' => 'ASC') ),
 			'grouping'  => 'contact-fields',		
 		);
 		
