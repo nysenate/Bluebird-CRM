@@ -44,6 +44,9 @@ $execSql -i $instance -c "$role" --drupal
 perm="INSERT INTO permission (rid, perm) VALUES (17, 'view mass email');"
 $execSql -i $instance -c "$perm" --drupal
 
+# 4432 re-enable rules module
+$drush $instance en civicrm_rules -y
+
 
 ### CiviCRM ###
 
@@ -64,5 +67,11 @@ $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_delete_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_update_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_insert_trigger;"
 
-# 4432 re-enable rules module
-$drush $instance en civicrm_rules -y
+# 5091 disable survey report
+svy="UPDATE civicrm_option_value SET is_active = 1 WHERE name = 'CRM_Report_Form_Campaign_SurveyDetails'";
+$execSql -i $instance -c "$svy"
+
+
+### Cleanup ###
+
+$script_dir/clearCache.sh $instance
