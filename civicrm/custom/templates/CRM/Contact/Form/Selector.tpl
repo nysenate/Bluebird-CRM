@@ -139,7 +139,7 @@
 </ul>
 <script type="text/javascript">
  {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
+    var fname = "{$form.formName}";
     on_load_init_checkboxes(fname);
  {literal}
 cj(document).ready( function() {
@@ -155,6 +155,8 @@ cj(".selector tr").contextMenu({
         switch (action) {
           case 'activity':
           case 'email':
+            var qfKey = "{/literal}{$qfKey}{literal}"; //NYSS 5094
+            emailUrl = emailUrl+'&key='+qfKey;
             eval( 'locationUrl = '+action+'Url;');
             break;
           case 'add':
