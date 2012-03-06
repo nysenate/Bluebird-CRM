@@ -64,3 +64,5 @@ $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_delete_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_update_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_insert_trigger;"
 
+# 4432 re-enable rules module
+$drush $instance en civicrm_rules -y
