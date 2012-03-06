@@ -162,6 +162,16 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
          $formName == 'CRM_Mailing_Form_Test' ||
          $formName == 'CRM_Mailing_Form_Schedule' ) {
         CRM_Utils_System::setTitle( 'New Mass Email' );
+
+        //NYSS 4557
+        //CRM_Core_Error::debug_var('form',$form);
+        $session =& CRM_Core_Session::singleton();
+        if ( $form->_finalValues['name'] ) {
+            $form->assign('mailingName', $form->_finalValues['name']);
+            $session->set('mailingName', $form->_finalValues['name']);
+        } elseif ( $session->get('mailingName') ) {
+            $form->assign('mailingName', $session->get('mailingName'));
+        }
     }
 
     if ( $formName == 'CRM_Mailing_Form_Search' ) {
