@@ -105,7 +105,7 @@
               <td>
                 {if $row.email}
                     <span
-                        {if $row.on_hold} class="status-hold" title="{ts}This email is on hold (probably due to bouncing).{/ts}"
+                        {if $row.on_hold} class="status-hold" title="{ts}This email is on hold {if $row.on_hold eq 1}(bounce){elseif $row.on_hold eq 2}(unsubscribe){/if}.{/ts}" {*NYSS 5095*}
                         {elseif $row.do_not_email} class="do-not-email" title="{ts}Do Not Email{/ts}"
                         {else} title="{$row.email}"{/if}>
                         {$row.email|mb_truncate:17:"...":true}
