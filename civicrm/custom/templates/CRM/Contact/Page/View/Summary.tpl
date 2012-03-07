@@ -347,7 +347,7 @@
                                     <tr>
                                         <td class="label">{$item.location_type}&nbsp;{ts}Email{/ts}</td>
                                         {*NYSS 4717*}
-                                        <td class="crm-contact_email"><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
+                                        <td class="crm-contact_email"><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold {if $item.on_hold eq 1}(bounce){elseif $item.on_hold eq 2}(unsubscribe){/if}.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
                                         {*NYSS - LCD #2555*}
                                         {if $privacy.do_not_email || $item.on_hold}{$item.email}
                                         {else}<a href="mailto:{$item.email}">{$item.email}</a>
