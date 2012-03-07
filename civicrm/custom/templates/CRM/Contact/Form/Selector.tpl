@@ -97,7 +97,7 @@
             <td>{$row.contact_type}</td>	
             <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
             {if $action eq 512 or $action eq 256}
-              <td><span title="{$row.street_address}">{$row.street_address|mb_truncate:22:"...":true}</span></td>
+              <td><span title="{$row.street_address}"{if $row.do_not_mail} class="do-not-mail"{/if}>{$row.street_address|mb_truncate:22:"...":true}</span></td>
               <td>{$row.city}</td>
               <td>{$row.state_province}</td>
               <td>{$row.postal_code}</td>

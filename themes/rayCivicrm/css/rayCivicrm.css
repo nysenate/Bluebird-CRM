@@ -1469,3 +1469,12 @@ ul.token-input-list-facebook { width:265px;}
 .env-crmdev {
 	background:transparent url(../nyss_skin/images/env-marker-dev.png) no-repeat;
 }
+
+/*5092*/
+span.do-not-mail {
+    background-position: 3px;
+    background-repeat: no-repeat;
+    background-image: url("/sites/all/modules/civicrm/i/stop-icon.png");
+    padding-left: 24px;
+    color: #F65 !important;
+}
