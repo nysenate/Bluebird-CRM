@@ -2518,7 +2518,7 @@ WHERE  id IN ( $groupIDs )
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
 		
 		$op    = "LIKE";
-        $value = "%{$value}%";
+        $value = "{$value}";
 
         $etTable = "`civicrm_entity_tag-" . $value ."`";
         $tTable = "`civicrm_tag-" . $value ."`";
