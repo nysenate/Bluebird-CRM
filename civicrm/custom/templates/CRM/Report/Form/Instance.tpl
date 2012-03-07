@@ -75,7 +75,7 @@
     </tr>
     {if $config->userFramework neq 'Joomla'}
         <tr class="crm-report-instanceForm-form-block-permission">
-            <td class="report-label" width="20%">{$form.permission.label} {help id="id-report_perms" file="CRM/Report/Form/Settings.hlp"}</td>
+            <td class="report-label" width="20%">{$form.permission.label} {*help id="id-report_perms" file="CRM/Report/Form/Settings.hlp"*}{*NYSS 5098*}</td>
             <td>{$form.permission.html|crmReplace:class:huge}</td>
         </tr>
         {*NYSS 3439*}
