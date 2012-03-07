@@ -120,14 +120,14 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                          'fields'    =>
                          array( 
                                'client_sort_name' => array( 'name'     => 'sort_name',
-                                                            'title'    => ts('Client Name'),
+                                                            'title'    => ts('Contact Name'),
                                                             'required' => true ),
                                'id'           => array( 'no_display' => true,
                                                         'required'   => true ),
                                 ),
                          'filters'   =>  
                          array( 
-                               'sort_name' => array( 'title' => ts( 'Client Name' ) ),
+                               'sort_name' => array( 'title' => ts( 'Contact Name' ) ),
                                 ),
                          ),
                   
