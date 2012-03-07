@@ -243,6 +243,7 @@ function civicrm_rules_action_info() {
 
 
 function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
+
     if( $mailing->id ) {
         require_once 'CRM/Utils/Token.php';
         $tokens['mailing'] = array( 'mailing.editUrl',
@@ -276,6 +277,9 @@ function rules_action_civicrm_mailing_send_email( $mailing, $settings ) {
     		$defaultAddress = CRM_Core_OptionGroup::values( 'from_email_address', null, null, null, ' AND is_default = 1' );
     		$settings['from'] = $defaultAddress[1];
 		}
+
+		//NYSS 4432 - remove argument map as it breaks mailing
+		unset($settings['#argument map']);
 
         CRM_Utils_Mail::send( $settings );
         return array('mailing' => $mailing );

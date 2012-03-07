@@ -244,8 +244,8 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
             }
         }
         
-		
-		//NYSS fix redirection when informing scheduler
+
+        //NYSS fix redirection when informing scheduler
 		require_once 'CRM/Mailing/Info.php';
 	    /*if ( CRM_Mailing_Info::workflowEnabled( ) ) {
 	    	if ( ! CRM_Core_Permission::check( 'schedule mailings' ) &&
@@ -325,7 +325,15 @@ class CRM_Mailing_Form_Test extends CRM_Core_Form
        
         if ( CRM_Utils_Array::value( 'sendtest', $testParams ) ) {
             require_once 'CRM/Mailing/Info.php';
-            $status = ts('Your test message has been sent.');
+
+            //NYSS 4557
+            $testTarget = '';
+            if ( $testParams['test_group'] ) {
+                $testTarget = $testParams['test_group'];
+            } elseif ( $testParams['test_email'] ) {
+                $testTarget = $testParams['test_email'];
+            }
+            $status = ts("Your test message has been sent to <em>$testTarget</em>.<br />");//NYSS
             if ( CRM_Mailing_Info::workflowEnabled( ) ) {
                 if ( ( CRM_Core_Permission::check( 'schedule mailings' ) &&
                        CRM_Core_Permission::check( 'create mailings' ) ) ||

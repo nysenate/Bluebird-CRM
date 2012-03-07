@@ -1,0 +1,3 @@
+New York State Senate
+http://%INSTANCE%.nysenate.gov
+

@@ -38,13 +38,13 @@
                 <td>
                     <table class="form-layout-compressed">
                         <tr>
+                            <td>{$form.$csv.html}&nbsp;&nbsp;</td>
                             {*LCD - only display if low total record count *}
                             {if $statistics.counts.rowsFound.value < 500}
                             	<td>{$form.$print.html}&nbsp;&nbsp;</td>
                             	<td>{$form.$pdf.html}&nbsp;&nbsp;</td>
-                            	<td>{$form.$csv.html}&nbsp;&nbsp;</td>
                             {else}
-                            	<td><span><em>To print or export your report, please reduce the number of contacts by further restricting your selection criteria. You may also use the search tools to run your search and export to a .csv file, which may be opened and manipulated in Excel.</em></span></td>
+                            	<td><span><em>To print or generate a PDF for your report, please reduce the number of contacts by further restricting your selection criteria. You may use the search tools to run your search and export to a .csv file, which may be opened and manipulated in Excel.</em></span></td>
                             {/if}                 
                             {if $instanceUrl}
                                 <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>

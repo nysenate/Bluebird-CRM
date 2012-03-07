@@ -129,7 +129,10 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
      */
     function setFields() 
     {
-        $this->_fields = 
+        $activityTypes = CRM_Core_PseudoConstant::ActivityType( false ); //NYSS 4921
+        asort($activityTypes);
+
+        $this->_fields =
             array(
                   'subject'                  =>  array( 'type'        => 'text',
                                                         'label'       => ts('Subject'),
@@ -172,7 +175,7 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
                   'followup_activity_type_id' =>  array( 'type'       => 'select',
                                                          'label'      => ts('Followup Activity'),
                                                          'attributes' => array( '' => '- '.ts('select activity').' -' ) +
-                                                         asort(CRM_Core_PseudoConstant::ActivityType( false )), //NYSS 4921
+                                                         $activityTypes, //NYSS 4921
                                                          ),
                   'interval'                  =>  array( 'type'       => 'text',
                                                          'label'      => 'in',
@@ -657,7 +660,8 @@ class CRM_Activity_Form_Activity extends CRM_Contact_Form_Task
         //enable form element (ActivityLinks sets this true)
         $this->assign( 'suppressForm', false );
 
-        $activityTypes = asort($this->_fields['followup_activity_type_id']['attributes']); //NYSS 4921
+        $activityTypes = $this->_fields['followup_activity_type_id']['attributes']; //NYSS 4921
+        asort($activityTypes);
 
         $element =& $this->add('select', 'activity_type_id', ts('Activity Type'),
                                $activityTypes, //NYSS 4921

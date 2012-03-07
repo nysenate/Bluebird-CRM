@@ -431,6 +431,8 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
             $contactID = $form->_contactId;
             $msg       = '';
 
+            //CRM_Core_Error::debug_var('values',$values);
+
             //determine if the contact has a household relationship
             $params = array( 'version'      => 3,
                              'contact_id_a' => $contactID,
@@ -485,7 +487,7 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
                                                  'id' => $hRel['contact_id_a'],
                                                  );
                                 $iContact = civicrm_api( 'contact', 'getsingle', $params );
-                                CRM_Core_Error::debug_var('iContact',$iContact);
+                                //CRM_Core_Error::debug_var('iContact',$iContact);
                                 if ( !$iContact['do_not_mail'] ) {
                                     $flagDNM = false;
                                 }
@@ -517,7 +519,8 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
             } //DNM/DNE
 
             //4744 if marked deceased and a household relationship exists, return message
-            if ( $values['is_deceased'] ) {
+            $isDeceased = civicrm_api( 'Contact', 'Getvalue', array('version' => 3, 'id' => $contactID, 'return' => 'is_deceased') );
+            if ( $isDeceased ) {
                 foreach ( $rels['values'] as $rel ) {
                     if ( ( $rel['relationship_type_id'] == 6 ||
                            $rel['relationship_type_id'] == 7 ) &&
@@ -547,20 +550,19 @@ function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
 
-	//NYSS #2729 strip line break
-	if ( ( $op == 'edit' || $op == 'create' ) && 
-		 ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
+    //NYSS #2729 strip line break
+    if ( ( $op == 'edit' || $op == 'create' ) && 
+         ( $objectName == 'Individual' || $objectName == 'Organization' || $objectName == 'Household' ) ) {
 
-		if ( $objectRef['email'] ) {
-			foreach ( $objectRef['email'] as $key => $block ) {
-				if ( $block['signature_html'] == '<br />' ) {
-					$objectRef['email'][$key]['signature_html'] = NULL;
-				}
-			}
-		}
+        if ( $objectRef['email'] ) {
+            foreach ( $objectRef['email'] as $key => $block ) {
+                if ( $block['signature_html'] == '<br />' ) {
+                    $objectRef['email'][$key]['signature_html'] = NULL;
+                }
+            }
+        }
+    }
 
-	}
-	
     //4627 allow blank email overrides
     if ( $op                       == 'edit' &&
          $objectName               == 'Profile' &&
@@ -574,15 +576,14 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
 //CRM_Core_Error::debug($page);
-	
-	$pagename = $page->getVar( '_name' );
-	
-	//2960
-	if ( $pagename == 'CRM_Case_Page_DashBoard' ) {
-		
-		CRM_Utils_System::setTitle( ts('Case Dashboard') );
-		
-	}
+
+    $pagename = $page->getVar( '_name' );
+
+    //2960
+    if ( $pagename == 'CRM_Case_Page_DashBoard' ) {
+
+        CRM_Utils_System::setTitle( ts('Case Dashboard') );
+    }
 
 	//4567 make admin breadcrumb unclickable if lacking permission
 	if ( $pagename == 'CRM_Admin_Page_Tag' ||

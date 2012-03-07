@@ -9,7 +9,7 @@ define('FILTER_IN_SD_OR_NO_SD', 2);
 function nyss_mail_civicrm_alterMailParams( &$params, $context )
 {
     require_once 'SmtpApiHeader.php';
-    CRM_Core_Error::debug_var($params);
+    //CRM_Core_Error::debug_var($params);
 
     /* Re-write any URLs in the message body of the form:
     **   senator.crm*.nysenate.gov/sites/senator.crm*.nysenate.gov/pubfiles
@@ -162,6 +162,16 @@ function nyss_mail_civicrm_buildForm( $formName, &$form ) {
          $formName == 'CRM_Mailing_Form_Test' ||
          $formName == 'CRM_Mailing_Form_Schedule' ) {
         CRM_Utils_System::setTitle( 'New Mass Email' );
+
+        //NYSS 4557
+        //CRM_Core_Error::debug_var('form',$form);
+        $session =& CRM_Core_Session::singleton();
+        if ( $form->_finalValues['name'] ) {
+            $form->assign('mailingName', $form->_finalValues['name']);
+            $session->set('mailingName', $form->_finalValues['name']);
+        } elseif ( $session->get('mailingName') ) {
+            $form->assign('mailingName', $session->get('mailingName'));
+        }
     }
 
     if ( $formName == 'CRM_Mailing_Form_Search' ) {
