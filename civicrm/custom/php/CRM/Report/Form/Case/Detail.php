@@ -73,7 +73,7 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
         foreach(  CRM_Case_PseudoConstant::activityType() as $typeDetail ) {
            $this->caseActivityTypes[$typeDetail['id']] = $typeDetail['label'];
         }
-        
+        //NYSS 5102 added order bys throughout
         $this->_columns = 
             array( 
                   'civicrm_case' =>
@@ -113,7 +113,24 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                                        'options'      => $this->case_types),
                                 ),
-                         ),
+                         'order_bys'  =>
+                         array( 'subject' =>
+                                array( 'title' => ts('Subject'),
+								       ),
+								'start_date' =>
+                                array( 'title' => ts('Start Date'),
+								       ),
+								'end_date' =>
+                                array( 'title' => ts('End Date'),
+								       ),
+								'status_id' =>
+                                array( 'title' => ts('Case Status'),
+								       ),
+								'case_type_id' =>
+                                array( 'title' => ts('Case Type'),
+								       ),
+                                ),
+						 ),
 
                   'civicrm_contact' =>
                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
@@ -129,7 +146,12 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                          array( 
                                'sort_name' => array( 'title' => ts( 'Contact Name' ) ),
                                 ),
-                         ),
+                         'order_bys'  =>
+                         array( 'sort_name' =>
+                                array( 'title' => ts('Contact Name'),
+								       ),
+                                ),
+						 ),
                   
                   'civicrm_relationship' =>
                   array( 'dao'       => 'CRM_Contact_DAO_Relationship',
@@ -145,7 +167,13 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                        'options'       => $this->rel_types,
                                        ),
                                 ),
-                         ),
+                         'order_bys'  =>
+                         array( 'case_role' =>
+                                array( 'title' => ts('Case Role(s)'),
+								       'name'  => 'relationship_type_id',
+								       ),
+                                ),
+						 ),
                   
                   'civicrm_email'   =>
                   array( 'dao'       => 'CRM_Core_DAO_Email',
@@ -183,7 +211,15 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                                        'type'         => CRM_Utils_Type::T_INT,
                                        'operatorType' => CRM_Report_Form::OP_MULTISELECT,
                                        'options'      => CRM_Core_PseudoConstant::stateProvince( ),), ),
-                         ),
+                         'order_bys'  =>
+                         array( 'street_address' =>
+                                array( 'title' => ts('Street Adddress'),
+								       ),
+                                'state_province_id' =>
+                                array( 'title' => ts('State/Province'),
+								       ),
+								),
+						 ),
                   //NYSS 4944
                   /*'civicrm_worldregion' =>
                   array( 'dao'       => 'CRM_Core_DAO_Worldregion',
@@ -455,9 +491,10 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
         return $statistics;
     }
     
-    function orderBy( ) {
+    //NYSS 5102
+	/*function orderBy( ) {
         $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_case']}.start_date DESC ";
-    }
+    }*/
     
     function caseDetailSpecialColumnProcess( ) {
         if ( !$this->_includeCaseDetailExtra ) {
