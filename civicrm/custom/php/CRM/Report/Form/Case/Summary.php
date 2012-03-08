@@ -58,13 +58,13 @@ class CRM_Report_Form_Case_Summary extends CRM_Report_Form {
                           'fields'    =>
                           array( 'client_name'           => 
                                  array( 'name'      => 'sort_name',
-                                        'title'     => ts('Client'),
+                                        'title'     => ts('Contact Name'),
                                         'required'  => true, ),
                                 ),
 						  //NYSS 4936
 						 'order_bys'  =>
                          array( 'client_name' =>
-                                array( 'title' => ts( 'Client Name'),
+                                array( 'title' => ts( 'Contact Name'),
 								       'name'  => 'sort_name' ),
                                 ), 
                          'grouping'  => 'case-fields',

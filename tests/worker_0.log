@@ -1,0 +1,17 @@
+PHPUnit 3.6.10 by Sebastian Bergmann.
+
+E
+
+Time: 01:00:55, Memory: 3.50Mb
+
+There was 1 error:
+
+1) WebTest::testTitle
+Current URL: OR Server Exception: unexpected command json={command:"getExpression",target:"#fields[email]",value:""} in place before new command getLocation could be added
+Screenshot: http://localhost/screenshots/94597fecfe82b27809d7fe0338c3cd81.png
+
+timeout
+
+
+FAILURES!
+Tests: 1, Assertions: 38, Errors: 1.
