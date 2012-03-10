@@ -1234,6 +1234,11 @@ class CRM_Contact_BAO_Query
             $likeNames = array( 'sort_name', 'email', 'note', 'display_name' );
         }
 
+        //NYSS 5063 use wildcards with email
+        if ( $id == 'email' ) {
+            $wildcard = 1;
+        }
+
         if ( ! $useEquals &&
              in_array( $id, $likeNames ) ) {
             $result = array( $id, 'LIKE', $values, 0, 1 );
@@ -2097,7 +2102,8 @@ class CRM_Contact_BAO_Query
                 continue;
 
             case 'civicrm_email':
-                $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id AND civicrm_email.is_primary = 1) ";
+                //NYSS 4575 search by all emails; add is_primary condition in where clause optionally
+                $from .= " $side JOIN civicrm_email ON (contact_a.id = civicrm_email.contact_id) ";
                 continue;
 
             case 'civicrm_im':
@@ -2512,7 +2518,7 @@ WHERE  id IN ( $groupIDs )
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
 		
 		$op    = "LIKE";
-        $value = "%{$value}%";
+        $value = "{$value}";
 
         $etTable = "`civicrm_entity_tag-" . $value ."`";
         $tTable = "`civicrm_tag-" . $value ."`";
@@ -2740,7 +2746,6 @@ WHERE  id IN ( $groupIDs )
     function email( &$values ) 
     {
         list( $name, $op, $value, $grouping, $wildcard ) = $values;
-        
         $n = trim( $value ); 
 
         if ( $n ) {
@@ -2759,7 +2764,7 @@ WHERE  id IN ( $groupIDs )
                         $value = "'$value'";
                         // only add wild card if not there
                     } else {
-                        $value = "'$value%'";
+                        $value = "'%$value%'";//NYSS 5063 - add wildcard on left
                     }
                     $op    = 'LIKE';
                 } else {
@@ -3620,9 +3625,24 @@ WHERE  id IN ( $groupIDs )
             $where = "$where AND $permission";
         }
 
+        //NYSS 4575 - condition email on primary option; but only if email value present
+        $emailPresent = $emailPrimary = false;
+        foreach ($this->_params as $values) {
+            list($name, $op, $value, $_, $_) = $values;
+            if ( $name == 'email' && $value ) { $emailPresent = true; }
+            if ( $name == 'email_primary' && $value == 1 ) { $emailPrimary = true; }
+        }
+        if ( $emailPresent && $emailPrimary ) {
+            if ( !$additionalWhereClause ) {
+                $additionalWhereClause = " civicrm_email.is_primary = 1 ";
+            } else {
+                $additionalWhereClause .= " AND civicrm_email.is_primary = 1 ";
+            }
+        }
+
         // CRM_Core_Error::debug( 't', $this );
-        // CRM_Core_Error::debug( 'w', $where );
-        // CRM_Core_Error::debug( 'a', $additionalWhereClause );
+        // CRM_Core_Error::debug_var( 'w', $where );
+        // CRM_Core_Error::debug_var( 'a', $additionalWhereClause );
         if ( $additionalWhereClause ) {
             $where = $where . ' AND ' . $additionalWhereClause;
         }

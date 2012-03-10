@@ -1,5 +1,83 @@
 <?php
 
+function nyss_dedupe_civicrm_triggerInfo(&$triggers, $tableName=NULL) {
+    $triggers[] = array(
+        'table' => 'civicrm_contact',
+        'event' => array('update', 'insert'),
+        'when'  => 'after',
+        'variables' => "
+            DECLARE norm_first_name VARCHAR(255);
+            DECLARE norm_middle_name VARCHAR(255);
+            DECLARE norm_last_name VARCHAR(255);
+            DECLARE norm_household_name VARCHAR(255);
+            DECLARE norm_organization_name VARCHAR(255);",
+        'sql' => "
+            SET norm_first_name = BB_NORMALIZE(NEW.first_name);
+            SET norm_middle_name = BB_NORMALIZE(NEW.middle_name);
+            SET norm_last_name = BB_NORMALIZE(NEW.last_name);
+            SET norm_household_name = BB_NORMALIZE(NEW.household_name);
+            SET norm_organization_name = BB_NORMALIZE(NEW.organization_name);
+
+            INSERT INTO shadow_contact
+            (contact_id, first_name, middle_name, last_name, suffix_id, birth_date, gender_id, contact_type, household_name, organization_name)
+            VALUES (NEW.id, norm_first_name, norm_middle_name, norm_last_name, NEW.suffix_id, NEW.birth_date, NEW.gender_id, NEW.contact_type, norm_household_name, norm_organization_name)
+            ON DUPLICATE KEY UPDATE
+            first_name=norm_first_name,
+            middle_name=norm_middle_name,
+            last_name=norm_last_name,
+            suffix_id=NEW.suffix_id,
+            birth_date=NEW.birth_date,
+            gender_id=NEW.gender_id,
+            contact_type=NEW.contact_type,
+            household_name=norm_household_name,
+            organization_name=norm_organization_name;"
+    );
+
+    $triggers[] = array(
+        'table' => 'civicrm_address',
+        'event' => array('update','insert'),
+        'when'  => 'after',
+        'variables' => "
+            DECLARE norm_supplemental_address_1 VARCHAR(255);
+            DECLARE norm_supplemental_address_2 VARCHAR(255);
+            DECLARE norm_street_address VARCHAR(255);
+            DECLARE norm_postal_code VARCHAR(255);
+            DECLARE norm_city VARCHAR(255);",
+        'sql' => "
+            SET norm_supplemental_address_1 = BB_NORMALIZE_ADDR(NEW.supplemental_address_1);
+            SET norm_supplemental_address_2 = BB_NORMALIZE_ADDR(NEW.supplemental_address_2);
+            SET norm_street_address = BB_NORMALIZE_ADDR(NEW.street_address);
+            SET norm_postal_code = IFNULL(NEW.postal_code,'');
+            SET norm_city = IFNULL(NEW.city,'');
+
+            INSERT INTO shadow_address
+                        (address_id, contact_id, street_address, postal_code, city, country_id, state_province_id, supplemental_address_1, supplemental_address_2)
+                 VALUES (NEW.id, NEW.contact_id, norm_street_address, norm_postal_code, norm_city, NEW.country_id, NEW.state_province_id, norm_supplemental_address_1, norm_supplemental_address_2)
+                 ON DUPLICATE KEY UPDATE
+                        street_address=norm_street_address,
+                        postal_code=norm_postal_code,
+                        city=norm_city,
+                        country_id=NEW.country_id,
+                        state_province_id=NEW.state_province_id,
+                        supplemental_address_1=norm_supplemental_address_1,
+                        supplemental_address_2=norm_supplemental_address_2;"
+    );
+
+    $triggers[] = array(
+        'table' => 'civicrm_contact',
+        'event' => 'delete',
+        'when'  => 'after',
+        'sql'   => 'DELETE FROM shadow_contact WHERE contact_id=OLD.id;'
+    );
+
+    $triggers[] = array(
+        'table' => 'civicrm_address',
+        'event' => 'delete',
+        'when'  => 'after',
+        'sql'   => 'DELETE FROM shadow_address WHERE address_id=OLD.id;'
+    );
+}
+
 function nyss_dedupe_civicrm_dupeQuery ($o, $table, &$tableQueries){
 
     //don't run these during user account/contact creation

@@ -454,6 +454,17 @@ LEFT JOIN  civicrm_contact scheduledContact ON ( $mailing.scheduled_id = schedul
             }
         }
 
+        //NYSS 4845
+        $subject  = $this->_parent->get( 'mailing_subject' );
+        if ( $subject ) {
+            $clauses[] = 'subject LIKE %1';
+            if ( strpos( $subject, '%' ) !== false ) {
+                $params[1] = array( $subject, 'String', false );
+            } else {
+                $params[1] = array( $subject, 'String', true );
+            }
+        }
+
         require_once 'CRM/Utils/Date.php';
 
         $from = $this->_parent->get( 'mailing_from' );

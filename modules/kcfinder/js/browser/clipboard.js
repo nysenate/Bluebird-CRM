@@ -4,7 +4,7 @@
   *
   *      @desc Clipboard functionality
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -21,8 +21,10 @@ browser.initClipboard = function() {
     size = this.humanSize(size);
     $('#clipboard').html('<div title="' + this.label("Clipboard") + ' (' + this.clipboard.length + ' ' + this.label("files") + ', ' + size + ')" onclick="browser.openClipboard()"></div>');
     var resize = function() {
-        $('#clipboard').css('left', $(window).width() - $('#clipboard').outerWidth() + 'px');
-        $('#clipboard').css('top', $(window).height() - $('#clipboard').outerHeight() + 'px');
+        $('#clipboard').css({
+            left: $(window).width() - $('#clipboard').outerWidth() + 'px',
+            top: $(window).height() - $('#clipboard').outerHeight() + 'px'
+        });
     };
     resize();
     $('#clipboard').css('display', 'block');
@@ -44,9 +46,9 @@ browser.openClipboard = function() {
     $.each(this.clipboard, function(i, val) {
         icon = _.getFileExtension(val.name);
         if (val.thumb)
-            icon = ".image";
+            icon = '.image';
         else if (!val.smallIcon || !icon.length)
-            icon = ".";
+            icon = '.';
         var icon = 'themes/' + browser.theme + '/img/files/small/' + icon + '.png';
         html += '<a style="background-image:url(' + _.escapeDirs(icon) + ')" title="' + browser.label("Click to remove from the Clipboard") + '" onclick="browser.removeFromClipboard(' + i + ')">' + _.htmlData(_.basename(val.name)) + '</a>';
     });
@@ -88,8 +90,13 @@ browser.openClipboard = function() {
         });
         $('.menu a[href="kcact:rmcbd"]').click(function() {
             browser.hideDialog();
-            if (confirm(browser.label("Are you sure you want to delete all files in the Clipboard?")))
-                browser.deleteClipboard();
+            browser.confirm(
+                browser.label("Are you sure you want to delete all files in the Clipboard?"),
+                function(callBack) {
+                    if (callBack) callBack();
+                    browser.deleteClipboard();
+                }
+            );
             return false;
         });
         $('.menu a[href="kcact:clrcbd"]').click(function() {
@@ -103,8 +110,10 @@ browser.openClipboard = function() {
         var lheight = top + _.outerTopSpace('#dialog');
         $('.menu .list').css('max-height', lheight + 'px');
         var top = $(window).height() - $('#dialog').outerHeight() - $('#clipboard').outerHeight();
-        $('#dialog').css('left', (left - 4) + 'px');
-        $('#dialog').css('top', top + 'px');
+        $('#dialog').css({
+            left: (left - 4) + 'px',
+            top: top + 'px'
+        });
         $('#dialog').fadeIn();
     }, 1);
 };
@@ -136,35 +145,48 @@ browser.copyClipboard = function(dir) {
     var failed = 0;
     for (i = 0; i < this.clipboard.length; i++)
         if (this.clipboard[i].readable)
-            files[i] = this.clipboard[i].dir + "/" + this.clipboard[i].name;
+            files[i] = this.clipboard[i].dir + '/' + this.clipboard[i].name;
         else
             failed++;
     if (this.clipboard.length == failed) {
-        alert(this.label("The files in the Clipboard are not readable."))
+        browser.alert(this.label("The files in the Clipboard are not readable."));
         return;
     }
-    if (failed && !confirm(browser.label("{count} files in the Clipboard are not readable. Do you want to copy the rest?", {count:failed})))
-        return;
-    if (dir == browser.dir)
-        this.fadeFiles();
-    $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        url: browser.baseGetData('cp_cbd'),
-        data: {dir:dir, files:files},
-        async: false,
-        success: function(data) {
-            browser.check4errors(data);
-            browser.clearClipboard();
-            if (dir == browser.dir)
-                browser.refresh();
-        },
-        error: function() {
-            $('#files > div').css('opacity', '');
-            $('#files > div').css('filter', '');
-            alert(browser.label("Unknown error."));
-        }
-    });
+    var go = function(callBack) {
+        if (dir == browser.dir)
+            browser.fadeFiles();
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: browser.baseGetData('cp_cbd'),
+            data: {dir: dir, files: files},
+            async: false,
+            success: function(data) {
+                if (callBack) callBack();
+                browser.check4errors(data);
+                browser.clearClipboard();
+                if (dir == browser.dir)
+                    browser.refresh();
+            },
+            error: function() {
+                if (callBack) callBack();
+                $('#files > div').css({
+                    opacity: '',
+                    filter: ''
+                });
+                browser.alert(browser.label("Unknown error."));
+            }
+        });
+    };
+
+    if (failed)
+        browser.confirm(
+            browser.label("{count} files in the Clipboard are not readable. Do you want to copy the rest?", {count:failed}),
+            go
+        )
+    else
+        go();
+
 };
 
 browser.moveClipboard = function(dir) {
@@ -177,29 +199,42 @@ browser.moveClipboard = function(dir) {
         else
             failed++;
     if (this.clipboard.length == failed) {
-        alert(this.label("The files in the Clipboard are not movable."))
+        browser.alert(this.label("The files in the Clipboard are not movable."))
         return;
     }
-    if (failed && !confirm(browser.label("{count} files in the Clipboard are not movable. Do you want to move the rest?", {count: failed})))
-        return;
-    this.fadeFiles();
-    $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        url: browser.baseGetData('mv_cbd'),
-        data: {dir:dir, files:files},
-        async: false,
-        success: function(data) {
-            browser.check4errors(data);
-            browser.clearClipboard();
-            browser.refresh();
-        },
-        error: function() {
-            $('#files > div').css('opacity', '');
-            $('#files > div').css('filter', '');
-            alert(browser.label("Unknown error."));
-        }
-    });
+
+    var go = function(callBack) {
+        browser.fadeFiles();
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: browser.baseGetData('mv_cbd'),
+            data: {dir: dir, files: files},
+            async: false,
+            success: function(data) {
+                if (callBack) callBack();
+                browser.check4errors(data);
+                browser.clearClipboard();
+                browser.refresh();
+            },
+            error: function() {
+                if (callBack) callBack();
+                $('#files > div').css({
+                    opacity: '',
+                    filter: ''
+                });
+                browser.alert(browser.label("Unknown error."));
+            }
+        });
+    };
+
+    if (failed)
+        browser.confirm(
+            browser.label("{count} files in the Clipboard are not movable. Do you want to move the rest?", {count: failed}),
+            go
+        );
+    else
+        go();
 };
 
 browser.deleteClipboard = function() {
@@ -208,32 +243,44 @@ browser.deleteClipboard = function() {
     var failed = 0;
     for (i = 0; i < this.clipboard.length; i++)
         if (this.clipboard[i].readable && this.clipboard[i].writable)
-            files[i] = this.clipboard[i].dir + "/" + this.clipboard[i].name;
+            files[i] = this.clipboard[i].dir + '/' + this.clipboard[i].name;
         else
             failed++;
     if (this.clipboard.length == failed) {
-        alert(this.label("The files in the Clipboard are not removable."))
+        browser.alert(this.label("The files in the Clipboard are not removable."))
         return;
     }
-    if (failed && !confirm(browser.label("{count} files in the Clipboard are not removable. Do you want to delete the rest?", {count: failed})))
-        return;
-    this.fadeFiles();
-    $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        url: browser.baseGetData('rm_cbd'),
-        data: {files:files},
-        async: false,
-        success: function(data) {
-            browser.check4errors(data);
-            browser.clearClipboard();
-            browser.refresh();
-        },
-        error: function() {
-            $('#files > div').css({opacity:'', filter:''});
-            alert(browser.label("Unknown error."));
-        }
-    });
+    var go = function(callBack) {
+        browser.fadeFiles();
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: browser.baseGetData('rm_cbd'),
+            data: {files:files},
+            async: false,
+            success: function(data) {
+                if (callBack) callBack();
+                browser.check4errors(data);
+                browser.clearClipboard();
+                browser.refresh();
+            },
+            error: function() {
+                if (callBack) callBack();
+                $('#files > div').css({
+                    opacity: '',
+                    filter:''
+                });
+                browser.alert(browser.label("Unknown error."));
+            }
+        });
+    };
+    if (failed)
+        browser.confirm(
+            browser.label("{count} files in the Clipboard are not removable. Do you want to delete the rest?", {count: failed}),
+            go
+        );
+    else
+        go();
 };
 
 browser.downloadClipboard = function() {
@@ -241,7 +288,7 @@ browser.downloadClipboard = function() {
     var files = [];
     for (i = 0; i < this.clipboard.length; i++)
         if (this.clipboard[i].readable)
-            files[i] = this.clipboard[i].dir + "/" + this.clipboard[i].name;
+            files[i] = this.clipboard[i].dir + '/' + this.clipboard[i].name;
     if (files.length)
         this.post(this.baseGetData('downloadClipboard'), {files:files});
 };

@@ -4,7 +4,7 @@
   *
   *      @desc Folder related functionality
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -55,7 +55,7 @@ browser.initFolders = function() {
 
 browser.setTreeData = function(data, path) {
     if (!path)
-        path = "";
+        path = '';
     else if (path.length && (path.substr(path.length - 1, 1) != '/'))
         path += '/';
     path += data.name;
@@ -145,12 +145,12 @@ browser.expandDir = function(dir) {
                             dir.children('.brace').removeClass('opened');
                             dir.children('.brace').removeClass('closed');
                         }
-
                         browser.initFolders();
+                        browser.initDropUpload();
                     },
                     error: function() {
                         $('#loadingDirs').detach();
-                        alert(browser.label("Unknown error."));
+                        browser.alert(browser.label("Unknown error."));
                     }
                 });
             });
@@ -275,6 +275,7 @@ browser.menuDir = function(dir, e) {
                 errDot: "Folder name shouldn't begins with '.'"
             }, function() {
                 browser.refreshDir(dir);
+                browser.initDropUpload();
                 if (!data.hasDirs) {
                     dir.data('hasDirs', true);
                     dir.children('span.brace').addClass('closed');
@@ -296,15 +297,18 @@ browser.menuDir = function(dir, e) {
                 errDot: "Folder name shouldn't begins with '.'"
             }, function(dt) {
                 if (!dt.name) {
-                    alert(browser.label("Unknown error."));
+                    browser.alert(browser.label("Unknown error."));
                     return;
                 }
+                var currentDir = (data.path == browser.dir);
                 dir.children('span.folder').html(_.htmlData(dt.name));
                 dir.data('name', dt.name);
                 dir.data('path', _.dirname(data.path) + '/' + dt.name);
-                if (data.path == browser.dir)
+                if (currentDir)
                     browser.dir = dir.data('path');
-            }
+                browser.initDropUpload();
+            },
+            true
         );
         return false;
     });
@@ -312,37 +316,41 @@ browser.menuDir = function(dir, e) {
     $('.menu a[href="kcact:rmdir"]').click(function() {
         if (!data.removable) return false;
         browser.hideDialog();
-        if (confirm(browser.label(
-            "Are you sure you want to delete this folder and all its content?"
-        ))) {
-            $.ajax({
-                type: 'POST',
-                dataType: 'json',
-                url: browser.baseGetData('deleteDir'),
-                data: {dir:data.path},
-                async: false,
-                success: function(data) {
-                    if (browser.check4errors(data))
-                        return;
-                    dir.parent().hide(500, function() {
-                        var folders = dir.parent().parent();
-                        var pDir = folders.parent().children('a').first();
-                        dir.parent().detach();
-                        if (!folders.children('div.folder').get(0)) {
-                            pDir.children('span.brace').first().removeClass('opened');
-                            pDir.children('span.brace').first().removeClass('closed');
-                            pDir.parent().children('.folders').detach();
-                            pDir.data('hasDirs', false);
-                        }
-                        if (pDir.data('path') == browser.dir.substr(0, pDir.data('path').length))
-                            browser.changeDir(pDir);
-                    });
-                },
-                error: function() {
-                    alert(browser.label("Unknown error."));
-                }
-            });
-        }
+        browser.confirm(
+            "Are you sure you want to delete this folder and all its content?",
+            function(callBack) {
+                 $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: browser.baseGetData('deleteDir'),
+                    data: {dir: data.path},
+                    async: false,
+                    success: function(data) {
+                        if (callBack) callBack();
+                        if (browser.check4errors(data))
+                            return;
+                        dir.parent().hide(500, function() {
+                            var folders = dir.parent().parent();
+                            var pDir = folders.parent().children('a').first();
+                            dir.parent().detach();
+                            if (!folders.children('div.folder').get(0)) {
+                                pDir.children('span.brace').first().removeClass('opened');
+                                pDir.children('span.brace').first().removeClass('closed');
+                                pDir.parent().children('.folders').detach();
+                                pDir.data('hasDirs', false);
+                            }
+                            if (pDir.data('path') == browser.dir.substr(0, pDir.data('path').length))
+                                browser.changeDir(pDir);
+                            browser.initDropUpload();
+                        });
+                    },
+                    error: function() {
+                        if (callBack) callBack();
+                        browser.alert(browser.label("Unknown error."));
+                    }
+                });
+            }
+        );
         return false;
     });
 };

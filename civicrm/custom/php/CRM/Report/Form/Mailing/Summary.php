@@ -58,35 +58,58 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 			'fields' => array(
 				'name' => array(
 					'title' => ts('Mailing Name'),
-					'required' => true,
-				),
-				'created_date' => array(
-					'title' => ts('Date Created'),
-				),
-			),
-			'filters' => array(
-				'is_completed' => array(
-					'title' => ts('Mailing Status'),
-					'operatorType' => CRM_Report_Form::OP_SELECT,
-					'type'=> CRM_Utils_Type::T_INT,
-					'options' => array(
-						0 => 'Incomplete',
-						1 => 'Complete',
-					),
-					//'operator' => 'like',
-					'default' => 1,
-				),
-                
+                    'required' => true,
+                ),
+                //NYSS 4935
+                'mailing_subject' => array(
+                    'name'    => 'subject',
+                    'title'   => ts('Mailing Subject'),
+                    'default' => true
+                ),
+                'created_date' => array(
+                    'title' => ts('Date Created'),
+                ),
+            ),
+            'filters' => array(
+                'is_completed' => array(
+                    'title' => ts('Mailing Status'),
+                    'operatorType' => CRM_Report_Form::OP_SELECT,
+                    'type'=> CRM_Utils_Type::T_INT,
+                    'options' => array(
+                        0 => 'Incomplete',
+                        1 => 'Complete',
+                    ),
+                    //'operator' => 'like',
+                    'default' => 1,
+                ),
                 'mailing_name' => array(
-					'name' => 'name',
-					'title' => ts('Mailing'),
-					'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-					'type'=> CRM_Utils_Type::T_STRING,
-					'options' => self::mailing_select( ),
-					'operator' => 'like', ),	
-                               )
-                                                   );
-		
+                    'name' => 'name',
+                    'title' => ts('Mailing Name'),
+                    'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                    'type'=> CRM_Utils_Type::T_STRING,
+                    'options' => self::mailing_select( ),
+                    'operator' => 'like',
+                ),
+                //NYSS 4935
+                'mailing_subject' => array(
+                    'name' => 'subject',
+                    'title' => ts('Mailing Subject'),
+                    'type'=> CRM_Utils_Type::T_STRING,
+                    'operator' => 'like', 
+                ),
+            ),
+			//NYSS 4936
+            'order_bys'  =>
+            array( 'mailing_name' =>
+                   array( 'name' => 'name',
+                          'title' => ts( 'Mailing Name' ) ),
+				   'mailing_subject' =>
+                   array( 'name' => 'subject',
+                          'title' => ts( 'Mailing Subject' ) ),
+				   ),
+		    'grouping' => 'mailing-fields'
+        );
+
 		$this->_columns['civicrm_mailing_job'] = array(
 			'dao' => 'CRM_Mailing_DAO_Job',
 			'fields' => array(
@@ -121,6 +144,15 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
 					'type' => CRM_Utils_Type::T_DATE,
 				),					
 			),
+            'order_bys'  =>
+            array( /*'status' =>
+                   array( 'title' => ts( 'Status') ),*/
+				   'start_date'    =>
+				   array( 'title' => ts('Start Date') ),
+				   'end_date'    =>
+				   array( 'title' => ts('End Date') )
+				   ),
+            'grouping' => 'mailing-fields'
 		);
 
 		$this->_columns['civicrm_mailing_event_queue'] = array(
@@ -377,9 +409,10 @@ class CRM_Report_Form_Mailing_Summary extends CRM_Report_Form {
         $this->_groupBy    = "GROUP BY {$this->_aliases['civicrm_mailing']}.id";
     }
 	
-    function orderBy( ) {
+	//NYSS 4936 remove so we control through the interface
+    /*function orderBy( ) {
        $this->_orderBy = " ORDER BY {$this->_aliases['civicrm_mailing_job']}.end_date DESC ";
-    }
+    }*/
     
     function postProcess( ) {
 

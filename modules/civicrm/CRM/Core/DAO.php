@@ -1405,4 +1405,136 @@ SELECT contact_id
         }
     }
 
+	//NYSS 5067
+	static function triggerRebuild( $tableName = null ) {
+        $info = array( );
+
+        require_once 'CRM/Logging/Schema.php';
+        $logging = new CRM_Logging_Schema;
+        $logging->triggerInfo( $info, $tableName );
+
+        require_once 'CRM/Core/I18n/Schema.php';
+        CRM_Core_I18n_Schema::triggerInfo( $info, $tableName );
+
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::triggerInfo( $info, $tableName );
+
+        self::createTriggers( $info );
+
+    }
+
+    static function createTriggers( &$info ) {
+        // Validate info array, should probably raise errors?
+        if ( is_array( $info ) == false ) {
+            return;
+        }
+
+        $triggers = array( );
+
+        // now enumerate the tables and the events and collect the same set in a different format
+        foreach ( $info as $value ) {
+
+            // clean the incoming data, skip malformed entries
+            // TODO: malformed entries should raise errors or get logged.
+            if ( isset($value['table']) == false) {
+                continue;
+            } else if ( is_string($value['table']) == true ) {
+                $tables = array($value['table']);
+            } else {
+                $tables = $value['table'];
+            }
+
+            if ( isset($value['event']) == false ) {
+                continue;
+            } else if ( is_string($value['event']) == true ) {
+                $events = array( strtolower($value['event']) );
+            } else {
+                $events = array_map( 'strtolower', $value['event'] );
+            }
+
+            if ( isset($value['when']) == false ) {
+                continue;
+            } else {
+                $whenName = strtolower($value['when']);
+            }
+
+            if ( isset($value['sql']) == false ) {
+                continue;
+            } else {
+                $sql = trim(str_replace(
+                    array( '{tableName}', '{eventName}' ),
+                    array( $tableName   , $eventName    ),
+                    $value['sql']
+                ));
+
+                // Add a semicolon if missing, only really useful for 1 line chunks of SQL.
+                if ( substr( $sql, -1 ) != ';' ) {
+                    $sql .= ";";
+                }
+            }
+
+            if ( isset($value['variables']) == false ) {
+                $variables = '';
+            } else {
+                $variables = trim(str_replace(
+                    array( '{tableName}', '{eventName}' ),
+                    array( $tableName   , $eventName    ),
+                    $value['variables']
+                ));
+
+                // Add a semicolon if missing, only really useful for 1 line chunks of SQL.
+                if ( substr( $variables, -1 ) != ';' ) {
+                    $variables .= ";";
+                }
+            }
+
+            foreach ( $tables as $tableName ) {
+                if ( ! isset( $triggers[$tableName] ) ) {
+                    $triggers[$tableName] = array( );
+                }
+
+                foreach ( $events as $eventName) {
+                    if ( ! isset( $triggers[$tableName][$eventName] ) ) {
+                        $triggers[$tableName][$eventName] = array( );
+                    }
+
+                    if ( ! isset( $triggers[$tableName][$eventName][$whenName] ) ) {
+                        // We're leaving out cursors, conditions, and handlers for now
+                        // they are kind of dangerous in this context anyway
+                        // better off putting them in stored procedures
+                        $triggers[$tableName][$eventName][$whenName] = array(
+                                'variables' => array( ),
+                                'sql' => array( )
+                            );
+                    }
+
+                    if ( $variables ) {
+                        $triggers[$tableName][$eventName][$whenName]['variables'][] = $variables;
+                    }
+
+                    $triggers[$tableName][$eventName][$whenName]['sql'][] = $sql;
+                }
+            }
+        }
+
+        // now spit out the sql
+        foreach ( $triggers as $tableName => $tables ) {
+            foreach ( $tables as $eventName => $events ) {
+                foreach ( $events as $whenName => $parts ) {
+                    $varString = implode( "\n", $parts['variables'] );
+                    $sqlString = implode( "\n", $parts['sql'] );
+                    $triggerName = "{$tableName}_{$whenName}_{$eventName}";
+                    $triggerSQL = "
+                        CREATE TRIGGER $triggerName $whenName $eventName ON $tableName
+                            FOR EACH ROW BEGIN
+                                $varString
+                                $sqlString
+                            END";
+
+                    CRM_Core_DAO::executeQuery( "DROP TRIGGER IF EXISTS $triggerName" );
+                    CRM_Core_DAO::executeQuery( $triggerSQL );
+                }
+            }
+        }
+    }//NYSS end
 }

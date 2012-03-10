@@ -22,7 +22,13 @@ if (!file_exists($attachment)) {
   die("Report file [$attachment] not found\n");
 }
 
-$recipients = fix_emails($config);
+if($optList['email']) {
+    $recipients = $optList['email'];
+    $bcc = '';
+} else {
+    $recipients = fix_emails($config);
+    $bcc = $config['signups.email.bcc'];
+}
 
 
 // Create our email
@@ -64,7 +70,7 @@ $mailer = Mail::Factory('smtp', array(
 
 // Assemble headers
 $headers = $msg->headers(array(
-    'Bcc' => $config['signups.email.bcc'],
+    'Bcc' => $bcc,
     'From' => $config['signups.email.from'],
     'To' => $recipients,
     "Subject" => '[SignupsReport] '.basename($attachment),
@@ -127,9 +133,9 @@ function fix_emails($bbcfg)
 
 function get_options() {
     $prog = basename(__FILE__);
-    $short_opts = 'hS:d:n';
-    $long_opts = array('help', 'site=', 'date=', 'dryrun');
-    $usage = "[--help|-h] --site|-S SITE --date|-d FORMATTED_DATE [--dryrun|-n]";
+    $short_opts = 'hS:d:e:n';
+    $long_opts = array('help', 'site=', 'date=', 'email=', 'dryrun');
+    $usage = "[--help|-h] --site|-S SITE --date|-d FORMATTED_DATE [--email RECIPIENTS] [--dryrun|-n]";
     if(! $optList = process_cli_args($short_opts, $long_opts)) {
         die("$prog $usage\n");
     } else if(!$optList['site']) {

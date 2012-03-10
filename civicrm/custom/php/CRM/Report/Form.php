@@ -2618,7 +2618,7 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
      * @param bool $orderBy Add GroupBy? Not appropriate for detail report
      * @return array address fields for construct clause
      */
-    function addAddressFields($groupBy = true, $orderBy = false, $filters = true, $defaults = array('country_id' => true ) ) {     
+    function addAddressFields($groupBy = true, $orderBy = false, $filters = true, $defaults = array( ) ) {//NYSS
        $addressFields = array('civicrm_address' =>
                               array( 'dao'      => 'CRM_Core_DAO_Address',
                                      'fields'   =>
@@ -2653,9 +2653,9 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
                                             'state_province_id' => 
                                             array( 'title'      => ts( 'State/Province' ),
                                                    'default'    => CRM_Utils_Array::value('state_province_id', $defaults, false) ),
-                                            'country_id'        => 
+                                            /*'country_id'        => //NYSS 4939
                                             array( 'title'      => ts( 'Country' ),  
-                                                   'default'    => CRM_Utils_Array::value('country_id', $defaults, false) ), 
+                                                   'default'    => CRM_Utils_Array::value('country_id', $defaults, false) ),*/ 
                                             
                                             ),
                                      'grouping'  => 'location-fields',
@@ -2691,22 +2691,24 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
                                                     CRM_Report_Form::OP_MULTISELECT,
                                                     'options'       => 
                                                     CRM_Core_PseudoConstant::stateProvince()), 
-                     'country_id'        =>  array( 'name'         => 'country_id',
+                     /*'country_id'        =>  array( 'name'         => 'country_id',
                                                     'title'        => ts( 'Country' ), 
                                                     'type'         => CRM_Utils_Type::T_INT,
                                                     'operatorType' => 
                                                                                  CRM_Report_Form::OP_MULTISELECT,
                                                     'options'       => 
-                                                    CRM_Core_PseudoConstant::country( ) ) );              
+                                                    CRM_Core_PseudoConstant::country( ) )*/ );              
        }
        
        if ( $orderBy ) {
            $addressFields['civicrm_address']['order_bys'] =
                array( 'street_name'       => array( 'title'   => ts( 'Street Name' ) ),
-                      'street_number'     => array( 'title'   => 'Odd / Even Street Number' ),
+                      'street_number'     => array( 'title'   => 'Street Number' ), //NYSS
                       'street_address'    => null,
                       'city'              => null,
                       'postal_code'       => null,
+					  'street_unit'       => null, //NYSS 5059
+					  'state_province'    => null, //NYSS			  
                       );
        }
        
@@ -2717,8 +2719,8 @@ LEFT JOIN civicrm_contact {$field['alias']} ON {$field['alias']}.id = {$this->_a
                       'postal_code'       => null,
                       'state_province_id' => 
                       array( 'title'   => ts( 'State/Province' ), ),
-                      'country_id'        => 
-                      array( 'title'   => ts( 'Country' ), ),
+                      /*'country_id'        => 
+                      array( 'title'   => ts( 'Country' ), ),*/
                       /*'county_id'        => 
                       array( 'title'      => ts( 'County' ), ),*/
                       );

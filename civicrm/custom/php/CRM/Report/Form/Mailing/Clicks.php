@@ -89,7 +89,7 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 			),
             'order_bys'  =>
             array( 'sort_name' =>
-                   array( 'title' => ts( 'Last Name, First Name'), 'default_order' => 'ASC') ),
+                   array( 'title' => ts( 'Contact Name'), 'default_order' => 'ASC') ),
 			'grouping'  => 'contact-fields',		
 		);
 		
@@ -97,28 +97,44 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
 			'dao' => 'CRM_Mailing_DAO_Mailing',
 			'fields' => array(
                               'mailing_name' => array('name' => 'name',
-                                                      'title' => ts('Mailing'),
+                                                      'title' => ts('Mailing Name'),
                                                       'default' => true,
                                                       ),
                               'mailing_name_alias' => array( 'name' => 'name',
                                                              'required' => true,
                                                              'no_display' => true 
                                                              ),
+                              //NYSS 4935
+                              'mailing_subject' => array('name' => 'subject',
+                                                      'title' => ts('Mailing Subject'),
+                                                      'default' => true,
+                                                      ),
                               ),
-			'filters' => array(
-				'mailing_name' => array(
-					'name' => 'name',
-					'title' => ts('Mailing'),
-					'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-					'type'=> CRM_Utils_Type::T_STRING,
-					'options' => self::mailing_select( ),
-					'operator' => 'like',
-				),					
+            'filters' => array(
+                'mailing_name' => array(
+                    'name' => 'name',
+                    'title' => ts('Mailing Name'),
+                    'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+                    'type'=> CRM_Utils_Type::T_STRING,
+                    'options' => self::mailing_select( ),
+                    'operator' => 'like',
+                ),
+                //NYSS 4935
+                'mailing_subject' => array(
+                    'name' => 'subject',
+                    'title' => ts('Mailing Subject'),
+                    'type'=> CRM_Utils_Type::T_STRING,
+                    'operator' => 'like',
+                ),
 			),
             'order_bys'  =>
             array( 'mailing_name' =>
                    array( 'name' => 'name',
-                          'title' => ts( 'Mailing') ) ),
+                          'title' => ts( 'Mailing Name') ),
+				   'mailing_subject' =>
+                   array( 'name' => 'subject',
+                          'title' => ts( 'Mailing Subject') ),
+				   ),
             'grouping'  => 'mailing-fields',
 		);
 							  

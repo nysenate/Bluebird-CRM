@@ -86,12 +86,14 @@ class CRM_Contact_Form_Search_Custom_Proximity
         
         $this->_tag = CRM_Utils_Array::value( 'tag', $this->_formValues );
 
-        $this->_columns = array( ts('Name')           => 'sort_name'      ,
+        $this->_columns = array( ts('&nbsp;')         => 'contact_type', //NYSS 4899
+                                 ts('Name')           => 'sort_name'      ,
                                  ts('Street Address') => 'street_address' ,
                                  ts('City'          ) => 'city'           ,
                                  ts('Postal Code'   ) => 'postal_code'    ,
                                  ts('State'         ) => 'state_province' ,
-                                 ts('Country'       ) => 'country'        );
+                                 //ts('Country'       ) => 'country'        
+								 );
     }
 
     function buildForm( &$form ) {
@@ -130,6 +132,9 @@ class CRM_Contact_Form_Search_Custom_Proximity
         $country = array( '' => ts('- select -') ) + CRM_Core_PseudoConstant::country( );
         $form->add( 'select', 'country_id', ts('Country'), $country, true );
 
+        // Allow user to choose which type of contact to limit search on
+        $form->add('select', 'contact_type', ts('Find...'), CRM_Core_SelectValues::contactType());
+
         $group =
             array('' => ts('- any group -')) +
             CRM_Core_PseudoConstant::group( );
@@ -162,16 +167,18 @@ class CRM_Contact_Form_Search_Custom_Proximity
                                           'postal_code',
                                           'country_id',
                                           'state_province_id',
+										  'contact_type',
                                           'group',
                                           'tag' ) );
     }
     
     function all( $offset = 0, $rowcount = 0, $sort = null,
                   $includeContactIDs = false ) {
-
+//NYSS add contact type
         $selectClause = "
 contact_a.id           as contact_id    ,
 contact_a.sort_name    as sort_name     ,
+contact_a.contact_type as contact_type  ,
 address.street_address as street_address,
 address.city           as city          ,
 address.postal_code    as postal_code   ,
@@ -230,6 +237,10 @@ AND cgc.group_id = {$this->_group}
  ";
  		}
 		
+		if (! empty($this->_formValues['contact_type']) ) {
+            $where .= " AND contact_a.contact_type LIKE '%{$this->_formValues['contact_type']}%'";
+        }
+		
 		//NYSS standard clauses
 		$where .= " AND is_deleted = 0 AND is_deceased = 0 ";
         
@@ -257,8 +268,14 @@ AND cgc.group_id = {$this->_group}
     	return null;     
     }
 
-    function alterRow( &$row ) {
-    }
+    //NYSS 4899
+	function alterRow( &$row ) {
+		require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
+        $row['contact_type' ] = 
+            CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
+                                                     false,
+                                                     $row['contact_id'] );
+	}
     
     function setTitle( $title ) {
         if ( $title ) {

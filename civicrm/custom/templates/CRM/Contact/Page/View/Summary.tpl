@@ -264,11 +264,13 @@
                                             <br /><a href="{crmURL p='civicrm/contact/map' q="reset=1&cid=`$contactId`&lid=`$add.location_type_id`"}" title="{ts 1=`$add.location_type`}Map %1 Address{/ts}"><span class="geotag">{ts}Map{/ts}</span></a>
                                         {/if}</td>
                                     <td class="crm-contact-address_display">
+                                        <span{if $privacy.do_not_mail} class="do-not-mail" title="{ts}Privacy flag: Do Not Postal Mail{/ts}"{/if}>
                                         {if !empty($sharedAddresses.$locationIndex.shared_address_display.name)}
                                              <strong>{ts}Shared with:{/ts}</strong><br />
                                              {$sharedAddresses.$locationIndex.shared_address_display.name}<br />
-                                         {/if}
-                                         {$add.display|nl2br}
+                                        {/if}
+                                        {$add.display|nl2br}
+                                        </span>
                                     </td>
                                 </tr>
                             </table>
@@ -345,7 +347,7 @@
                                     <tr>
                                         <td class="label">{$item.location_type}&nbsp;{ts}Email{/ts}</td>
                                         {*NYSS 4717*}
-                                        <td class="crm-contact_email"><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
+                                        <td class="crm-contact_email"><span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold {if $item.on_hold eq 1}(bounce){elseif $item.on_hold eq 2}(unsubscribe){/if}.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
                                         {*NYSS - LCD #2555*}
                                         {if $privacy.do_not_email || $item.on_hold}{$item.email}
                                         {else}<a href="mailto:{$item.email}">{$item.email}</a>

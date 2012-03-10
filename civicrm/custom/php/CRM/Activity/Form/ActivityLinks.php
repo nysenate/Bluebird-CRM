@@ -68,7 +68,8 @@ class CRM_Activity_Form_ActivityLinks extends CRM_Core_Form
         $otherTypes = CRM_Core_PseudoConstant::activityType( false );
         
         $activityTypes += $otherTypes;
-		unset( $activityTypes[22] ); //NYSS - LCD remove Print PDF option from contact actions list #2435
+        asort($activityTypes); //NYSS 4921
+        //unset( $activityTypes[22] ); //NYSS - LCD remove Print PDF option from contact actions list #2435
 
         foreach( array_keys($activityTypes) as $typeId ) {
             if ( $typeId == $emailTypeId ) {

@@ -44,7 +44,33 @@ class CRM_Utils_Hook {
     const SUMMARY_BELOW = 1;         // by default - place content below existing content
     const SUMMARY_ABOVE = 2;         // pace hook content above
     const SUMMARY_REPLACE = 3;       // create your own summarys
+ 
+    static $_nullObject = null;
+ 
+    /**
+     * We only need one instance of this object. So we use the singleton
+     * pattern and cache the instance in this variable
+     *
+     * @var object
+     * @static
+     */
+    static private $_singleton = null;
+
     
+    /**
+     * Constructor and getter for the singleton instance
+     * @return instance of $config->userHookClass
+     */
+    static function singleton( ) {
+        if (self::$_singleton == null) {
+            $config = CRM_Core_Config::singleton( );
+            $class = $config->userHookClass;
+            require_once( str_replace( '_', DIRECTORY_SEPARATOR, $config->userHookClass ) . '.php' );
+            self::$_singleton = new $class();
+        }
+        return self::$_singleton;
+    }
+
     /** 
      * This hook is called before a db write on some core objects.
      * This hook does not allow the abort of the operation 
@@ -847,4 +873,24 @@ class CRM_Utils_Hook {
         return eval("return {$config->userHookClass}::invoke(4, \$objectName, \$headers, \$rows, \$selector, \$null, 'civicrm_searchColumns');");
     }
 
+	/** //NYSS 5067
+     * This hook collects the trigger definition from all components
+     *
+     * @param $triggerInfo reference to an array of trigger information
+     *   each element has 4 fields:
+     *     table - array of tableName
+     *     when  - BEFORE or AFTER
+     *     event - array of eventName - INSERT OR UPDATE OR DELETE
+     *     sql   - array of statements optionally terminated with a ;
+     *             a statement can use the tokes {tableName} and {eventName}
+     *             to do token replacement with the table / event. This allows
+     *             templatizing logging and other hooks
+     * @param string $tableName (optional) the name of the table that we are interested in only
+     */
+    static function triggerInfo( &$info, $tableName = null ) {
+        return self::singleton( )->invoke( 2, $info, $tableName,
+                                           self::$_nullObject, self::$_nullObject,
+                                           self::$_nullObject,
+                                           'civicrm_triggerInfo' );
+    }
 }

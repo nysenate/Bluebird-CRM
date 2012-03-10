@@ -24,5 +24,5 @@
  +--------------------------------------------------------------------+
 *}
 <div class="messages status float-right">
-    {ts}Total Recipients:{/ts} <strong>{$count|crmNumberFormat}</strong>
+    {ts}Total recipients for mailing <em>{$mailingName}</em>:{/ts} <strong>{$count|crmNumberFormat}</strong>
 </div>

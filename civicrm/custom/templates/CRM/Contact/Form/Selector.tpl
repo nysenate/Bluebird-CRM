@@ -97,7 +97,7 @@
             <td>{$row.contact_type}</td>	
             <td><a href="{crmURL p='civicrm/contact/view' q="reset=1&cid=`$row.contact_id`&key=`$qfKey`"}">{if $row.is_deleted}<del>{/if}{$row.sort_name}{if $row.is_deleted}</del>{/if}</a></td>
             {if $action eq 512 or $action eq 256}
-              <td><span title="{$row.street_address}">{$row.street_address|mb_truncate:22:"...":true}</span></td>
+              <td><span title="{$row.street_address}"{if $row.do_not_mail} class="do-not-mail"{/if}>{$row.street_address|mb_truncate:22:"...":true}</span></td>
               <td>{$row.city}</td>
               <td>{$row.state_province}</td>
               <td>{$row.postal_code}</td>
@@ -105,7 +105,7 @@
               <td>
                 {if $row.email}
                     <span
-                        {if $row.on_hold} class="status-hold" title="{ts}This email is on hold (probably due to bouncing).{/ts}"
+                        {if $row.on_hold} class="status-hold" title="{ts}This email is on hold {if $row.on_hold eq 1}(bounce){elseif $row.on_hold eq 2}(unsubscribe){/if}.{/ts}" {*NYSS 5095*}
                         {elseif $row.do_not_email} class="do-not-email" title="{ts}Do Not Email{/ts}"
                         {else} title="{$row.email}"{/if}>
                         {$row.email|mb_truncate:17:"...":true}
@@ -139,7 +139,7 @@
 </ul>
 <script type="text/javascript">
  {* this function is called to change the color of selected row(s) *}
-    var fname = "{$form.formName}";	
+    var fname = "{$form.formName}";
     on_load_init_checkboxes(fname);
  {literal}
 cj(document).ready( function() {
@@ -155,6 +155,8 @@ cj(".selector tr").contextMenu({
         switch (action) {
           case 'activity':
           case 'email':
+            var qfKey = "{/literal}{$qfKey}{literal}"; //NYSS 5094
+            emailUrl = emailUrl+'&key='+qfKey;
             eval( 'locationUrl = '+action+'Url;');
             break;
           case 'add':

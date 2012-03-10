@@ -1,0 +1,102 @@
+
+* 1. Find "Smith" /find_contacts
+	and /find anything
+
+	Check if there're any results
+
+
+* 2. Advanced search
+	find all people with /email @gmail.com
+	BUG  !!! partial email does not work!!!
+	works only if email STARTS with inputed symbols
+
+* 3. 	/Issue_code	Aging
+	************* /Keyword testkeyword			// cant access these elements!
+	************* /Positions S100-2011 (DIAZ)
+
+* 4.	/City Albany
+
+* 5. 	/Demographics
+	look for all the Females
+
+* 6. 	Search in Trash
+
+
+* 7. Custom Search / Proximity Search
+	50 miles
+	Zip-Code 12247
+
+* 8. Custom Search / Birthday Search
+	Birth month = January
+	Year 1990 or earlier
+
+* 9. Custom Search / Search builder
+	individual / display name / LIKE / j%
+
+
+* 10. Dashboard
+	Check if all the menu items are on their places
+
+
+* 11. Find contact and Edit contact
+	Add Suffix  - PhD
+	Save
+
+
+* 12. Find contact and Edit contact
+	Communication preferences
+	Privacy - mark all checkboxes
+	
+
+
+* 13. Find contact and Edit contact
+	Tags and Groups
+	Add tag Seniors
+
+* 14. Find contact
+	Actions
+	Meeting tomorrow @ 10 am
+	45 minutes
+	Details Really big meeting.
+
+	Keyword Aging
+
+
+
+* 15. Find contact
+	Actions
+	Add case
+	Medium in person
+	Details Big case
+	Place Albany Office
+	Activity Budget Position
+	Subject Budget case
+	Case type General Complaint
+	Save
+
+* 16. Find contact
+	Actions
+	Add relationship
+	Spouse of
+	Mike Gordo
+	Save relationship
+
+	And then Remove the relationship
+
+17. Reports
+	District Stats
+	Check if there is tables with information
+	Open everything
+
+18. Reports
+	Constituent Report (Summary)
+	Report criteria Display Columrs /Email
+	Make sure the data is there
+
+19. Reports
+	Activity Report
+	Display column Subject
+	Set filter TYPE = Meeting
+
+
+

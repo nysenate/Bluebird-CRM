@@ -4,7 +4,7 @@
   *
   *      @desc Browser actions class
   *   @package KCFinder
-  *   @version 2.32
+  *   @version 2.51
   *    @author Pavel Tzonkov <pavelc@users.sourceforge.net>
   * @copyright 2010, 2011 KCFinder Project
   *   @license http://www.opensource.org/licenses/gpl-2.0.php GPLv2
@@ -62,6 +62,12 @@ class browser extends uploader {
                 if (is_file($file) && ($time - filemtime($file) > 3600))
                     unlink($file);
         }
+
+        if (isset($this->get['theme']) &&
+            ($this->get['theme'] == basename($this->get['theme'])) &&
+            is_dir("themes/{$this->get['theme']}")
+        )
+            $this->config['theme'] = $this->get['theme'];
     }
 
     public function action() {
@@ -96,7 +102,7 @@ class browser extends uploader {
         if ($act == "browser") {
             header("X-UA-Compatible: chrome=1");
             header("Content-Type: text/html; charset={$this->charset}");
-        } else if (
+        } elseif (
             (substr($act, 0, 8) != "download") &&
             !in_array($act, array("thumb", "upload"))
         )
@@ -299,6 +305,14 @@ class browser extends uploader {
             !file_exists($file) || !is_readable($file) || !file::isWritable($file)
         )
             $this->errorMsg("Unknown error.");
+
+        if (isset($this->config['denyExtensionRename']) &&
+            $this->config['denyExtensionRename'] &&
+            (file::getExtension($this->post['file'], true) !==
+                file::getExtension($this->post['newName'], true)
+            )
+        )
+            $this->errorMsg("You cannot rename the extension of files!");
 
         $newName = $this->normalizeFilename(trim($this->post['newName']));
         if (!strlen($newName))
@@ -572,6 +586,80 @@ class browser extends uploader {
         readfile($file);
         unlink($file);
         die;
+    }
+
+    protected function act_check4Update() {
+        if ($this->config['denyUpdateCheck'])
+            return json_encode(array('version' => false));
+
+        // Caching HTTP request for 6 hours
+        if (isset($this->session['checkVersion']) &&
+            isset($this->session['checkVersionTime']) &&
+            ((time() - $this->session['checkVersionTime']) < 21600)
+        )
+            return json_encode(array('version' => $this->session['checkVersion']));
+
+        $protocol = "http";
+        $host = "kcfinder.sunhater.com";
+        $port = 80;
+        $path = "/checkVersion.php";
+
+        $url = "$protocol://$host:$port$path";
+        $pattern = '/^\d+\.\d+$/';
+        $responsePattern = '/^[A-Z]+\/\d+\.\d+\s+\d+\s+OK\s*([a-zA-Z0-9\-]+\:\s*[^\n]*\n)*\s*(.*)\s*$/';
+
+        // file_get_contents()
+        if (ini_get("allow_url_fopen") &&
+            (false !== ($ver = file_get_contents($url))) &&
+            preg_match($pattern, $ver)
+
+        // HTTP extension
+        ) {} elseif (
+            function_exists("http_get") &&
+            (false !== ($ver = @http_get($url))) &&
+            (
+                (
+                    preg_match($responsePattern, $ver, $match) &&
+                    false !== ($ver = $match[2])
+                ) || true
+            ) &&
+            preg_match($pattern, $ver)
+
+        // Curl extension
+        ) {} elseif (
+            function_exists("curl_init") &&
+            (false !== (   $curl = @curl_init($url)                                    )) &&
+            (              @ob_start()                 ||  (@curl_close($curl) && false)) &&
+            (              @curl_exec($curl)           ||  (@curl_close($curl) && false)) &&
+            ((false !== (  $ver = @ob_get_clean()   )) ||  (@curl_close($curl) && false)) &&
+            (              @curl_close($curl)          ||  true                         ) &&
+            preg_match($pattern, $ver)
+
+        // Socket extension
+        ) {} elseif (function_exists('socket_create')) {
+            $cmd =
+                "GET $path " . strtoupper($protocol) . "/1.1\r\n" .
+                "Host: $host\r\n" .
+                "Connection: Close\r\n\r\n";
+
+            if ((false !== (  $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)  )) &&
+                (false !==    @socket_connect($socket, $host, $port)                    ) &&
+                (false !==    @socket_write($socket, $cmd, strlen($cmd))                ) &&
+                (false !== (  $ver = @socket_read($socket, 2048)                       )) &&
+                preg_match($responsePattern, $ver, $match)
+            )
+                $ver = $match[2];
+
+            if (isset($socket) && is_resource($socket))
+                @socket_close($socket);
+        }
+
+        if (isset($ver) && preg_match($pattern, $ver)) {
+            $this->session['checkVersion'] = $ver;
+            $this->session['checkVersionTime'] = time();
+            return json_encode(array('version' => $ver));
+        } else
+            return json_encode(array('version' => false));
     }
 
     protected function moveUploadFile($file, $dir) {

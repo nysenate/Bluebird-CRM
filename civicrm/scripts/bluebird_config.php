@@ -5,11 +5,12 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-10
-# Revised: 2011-05-16
+# Revised: 2012-03-05
 #
 
 define('BASE_DIR', realpath(dirname(__FILE__).'/../../'));
 define('DEFAULT_CONFIG_FILENAME', 'bluebird.cfg');
+define('PROG', basename(__FILE__));
 
 
 /*
@@ -130,7 +131,7 @@ function get_bluebird_instance_config($instance = null, $filename = null)
     }
   }
   else {
-    error_log("CRM instance [$instance] could not be configured.");
+    error_log(PROG.": CRM instance [$instance] could not be configured.");
     return null;
   }
 

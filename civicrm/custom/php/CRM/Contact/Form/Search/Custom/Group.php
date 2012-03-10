@@ -49,7 +49,7 @@ class CRM_Contact_Form_Search_Custom_Group
 
     function __construct( &$formValues ) {
         $this->_formValues = $formValues;
-        $this->_columns = array( ts('Contact Type')   => 'contact_type',
+        $this->_columns = array( ts('&nbsp;')         => 'contact_type', //NYSS 4899
                                  ts('Name')           => 'sort_name',
                                  ts('Group Name')     => 'gname',
                                  ts('Tag Name')       => 'tname',
@@ -751,5 +751,14 @@ class CRM_Contact_Form_Search_Custom_Group
             CRM_Utils_System::setTitle(ts('Search'));
         }
     }
+	
+	//NYSS 4899
+	function alterRow( &$row ) {
+		require_once( 'CRM/Contact/BAO/Contact/Utils.php' );
+        $row['contact_type' ] = 
+            CRM_Contact_BAO_Contact_Utils::getImage( $row['contact_type'],
+                                                     false,
+                                                     $row['contact_id'] );
+	}
 
 }

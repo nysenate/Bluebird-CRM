@@ -163,7 +163,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //join with address if primary or BOE mailing and non primary
     $sql .= " LEFT JOIN civicrm_address a 
                 ON a.contact_id=t.id 
-                AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = t.id AND pm.is_primary = 1)) ";    
+                AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0 LIMIT 1),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0 LIMIT 1),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = t.id AND pm.is_primary = 1 LIMIT 1)) ";    
     $sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
     
     //household joins

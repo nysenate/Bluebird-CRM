@@ -1,4 +1,4 @@
-[===========================< KCFinder 2.32 >================================]
+[===========================< KCFinder 2.51 >================================]
 [                                                                            ]
 [                 Copyright 2010, 2011 KCFinder Project                      ]
 [                     http://kcfinder.sunhater.com                           ]
@@ -40,6 +40,8 @@ II. FEATURES
 
     11. Multiple files upload (ala Facebook)
 
+    12. Drag and drop uploading
+
 
 III. REQUIREMENTS
 
@@ -66,7 +68,7 @@ IV. INSTALLATION
 
 V. USED 3RD PARTY SOFTWARE
 
-    1. jQuery JavaScript library v1.6.1 - http://www.jquery.com
+    1. jQuery JavaScript library v1.4.2 - http://www.jquery.com
 
     2. jQuery Right-Click Plugin v1.01 - http://abeautifulsite.net/notebook/68
 
