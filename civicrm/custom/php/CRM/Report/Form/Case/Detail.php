@@ -60,7 +60,9 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     
     function __construct( ) {
     	$this->case_statuses = CRM_Case_PseudoConstant::caseStatus();
+        asort($this->case_statuses);
         $this->case_types = CRM_Case_PseudoConstant::caseType();
+        asort($this->case_types);
         $rels = CRM_Core_PseudoConstant::relationshipType();
         $caseRels = array( 8, 13, 14, 15 ); //NYSS 4942
      	foreach ( $rels as $relid => $v ) {
