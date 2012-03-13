@@ -1438,7 +1438,9 @@ SELECT contact_id
             // TODO: malformed entries should raise errors or get logged.
             if ( isset($value['table']) == false) {
                 continue;
-            } else if ( is_string($value['table']) == true ) {
+            }
+
+            if ( is_string($value['table']) == true ) {
                 $tables = array($value['table']);
             } else {
                 $tables = $value['table'];
@@ -1446,7 +1448,9 @@ SELECT contact_id
 
             if ( isset($value['event']) == false ) {
                 continue;
-            } else if ( is_string($value['event']) == true ) {
+            }
+
+            if ( is_string($value['event']) == true ) {
                 $events = array( strtolower($value['event']) );
             } else {
                 $events = array_map( 'strtolower', $value['event'] );
@@ -1454,33 +1458,33 @@ SELECT contact_id
 
             if ( isset($value['when']) == false ) {
                 continue;
-            } else {
-                $whenName = strtolower($value['when']);
             }
+
+            $whenName = strtolower($value['when']);
 
             if ( isset($value['sql']) == false ) {
                 continue;
-            } else {
-                $sql = trim(str_replace(
-                    array( '{tableName}', '{eventName}' ),
-                    array( $tableName   , $eventName    ),
-                    $value['sql']
-                ));
+            }
 
-                // Add a semicolon if missing, only really useful for 1 line chunks of SQL.
-                if ( substr( $sql, -1 ) != ';' ) {
-                    $sql .= ";";
-                }
+            $sql = trim(str_replace(
+                                    array( '{tableName}', '{eventName}' ),
+                                    array( $tableName   , $eventName    ),
+                                    $value['sql']
+                                    ));
+
+            // Add a semicolon if missing, only really useful for 1 line chunks of SQL.
+            if ( substr( $sql, -1 ) != ';' ) {
+                $sql .= ";";
             }
 
             if ( isset($value['variables']) == false ) {
                 $variables = '';
             } else {
                 $variables = trim(str_replace(
-                    array( '{tableName}', '{eventName}' ),
-                    array( $tableName   , $eventName    ),
-                    $value['variables']
-                ));
+                                              array( '{tableName}', '{eventName}' ),
+                                              array( $tableName   , $eventName    ),
+                                              $value['variables']
+                                              ));
 
                 // Add a semicolon if missing, only really useful for 1 line chunks of SQL.
                 if ( substr( $variables, -1 ) != ';' ) {
@@ -1503,9 +1507,9 @@ SELECT contact_id
                         // they are kind of dangerous in this context anyway
                         // better off putting them in stored procedures
                         $triggers[$tableName][$eventName][$whenName] = array(
-                                'variables' => array( ),
-                                'sql' => array( )
-                            );
+                                                                             'variables' => array( ),
+                                                                             'sql' => array( )
+                                                                             );
                     }
 
                     if ( $variables ) {
@@ -1525,11 +1529,7 @@ SELECT contact_id
                     $sqlString = implode( "\n", $parts['sql'] );
                     $triggerName = "{$tableName}_{$whenName}_{$eventName}";
                     $triggerSQL = "
-                        CREATE TRIGGER $triggerName $whenName $eventName ON $tableName
-                            FOR EACH ROW BEGIN
-                                $varString
-                                $sqlString
-                            END";
+                        CREATE TRIGGER $triggerName $whenName $eventName ON $tableName FOR EACH ROW BEGIN $varString $sqlString END";
 
                     CRM_Core_DAO::executeQuery( "DROP TRIGGER IF EXISTS $triggerName" );
                     CRM_Core_DAO::executeQuery( $triggerSQL );
