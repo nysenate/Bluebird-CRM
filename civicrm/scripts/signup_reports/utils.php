@@ -64,9 +64,10 @@ function get_report_path($bbcfg, $target_date)
         $name_template);
 
     return "$dirpath/$filename";
-}
+} // get_report_path()
 
-function get_list_id($title, $conn) {
+
+function get_or_create_list($title, $conn) {
     $title = mysql_real_escape_string($title, $conn);
 
     $sql = "SELECT id FROM list WHERE title='$title'";
@@ -85,9 +86,10 @@ function get_list_id($title, $conn) {
     }
 
     die(mysql_error($conn)."\n".$sql);
-} // get_list_id
+} // get_or_create_list()
 
-function get_issue_id($issue, $conn) {
+
+function get_or_create_issue($issue, $conn) {
     static $issue_ids = array();
 
     if(isset($issue_ids[$issue])===FALSE) {
@@ -110,6 +112,6 @@ function get_issue_id($issue, $conn) {
     }
 
     return $issue_ids[$issue];
-} //get_issue_id
+} //get_or_create_issue
 
 ?>
