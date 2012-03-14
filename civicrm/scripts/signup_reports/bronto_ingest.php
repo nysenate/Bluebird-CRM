@@ -88,7 +88,7 @@ function save_record($record, $list, $conn) {
 
     // Add the new signup
     $person_id = mysql_insert_id();
-    $list_id = get_list_id($list, $conn);
+    $list_id = get_or_create_list($list, $conn);
     $sql = "INSERT IGNORE INTO signup (list_id,person_id) VALUES ($list_id, $person_id)";
     if(!$result = mysql_query($sql,$conn)) {
         die(mysql_error($conn)."\n".$sql);
@@ -100,7 +100,7 @@ function save_record($record, $list, $conn) {
         if(!$issue) continue;
 
         $issue = mysql_real_escape_string(trim($issue));
-        $issue_id = get_issue_id($issue, $conn);
+        $issue_id = get_or_create_issue($issue, $conn);
 
         $sql = "INSERT IGNORE INTO subscription (person_id,issue_id) VALUES ($person_id, $issue_id)";
         if(!$result = mysql_query($sql, $conn)) {
