@@ -186,7 +186,7 @@ function updateSignups($optList, $env) {
                 echo "account['name']={$account['name']} has {$num_lists} lists associated with it.\n";
             } elseif ($num_lists == 0) {
                 //There were no lists on this account...  This is BAD.
-                echo "ERROR: Account with no lists found!!!  ".print_r($account, TRUE)."\n");
+                echo "ERROR: Account with no lists found!!!  ".print_r($account, TRUE)."\n";
             }
 
             $list_id = get_or_create_list($account['lists'][0]['name'], $conn);
