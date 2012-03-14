@@ -37,9 +37,9 @@ function get_options() {
     $prog = basename(__FILE__);
     $script_dir = dirname(__FILE__);
 
-    $short_opts = 'hascgub:f:';
-    $long_opts = array('help','all','senators','committees','geocode','signups','batch=','first=');
-    $usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_ID]";
+    $short_opts = 'hascgub:f:n';
+    $long_opts = array('help','all','senators','committees','geocode','signups','batch=','first=','dryrun');
+    $usage = "[--help|-h] [--all|-a] [--senators|-s] [--committees|-c] [--geocode|-g] [--signups|-u] [--batch|-b BATCH] [--first|-f FIRST_PERSON_ID] [--dryrun|-n]";
 
     $optList = process_cli_args($short_opts, $long_opts);
     if (!$optList || $optList['help'] ||
@@ -85,10 +85,17 @@ function updateSenators($optList, $env) {
         //Insert/Update the senator
         echo "Updating senator: $title...\n";
         $sql = "INSERT INTO senator (nid, title, district, list_id) VALUES ($nid, '$title', $district, $list_id) ON DUPLICATE KEY UPDATE title='$title', district=$district, list_id=$list_id";
-        if(! $result = mysql_query($sql,$conn) )
+        if ($optList['dryrun']) {
+          echo "[DRYRUN] No update will be performed.  SQL=[$sql]\n";
+        }
+        else {
+          if(!mysql_query($sql,$conn)) {
             die(mysql_error($conn)."\n".$sql);
+          }
+        }
     }
 }
+
 
 function updateCommittees($optList, $env) {
     require_once 'nysenate_api/get_services/xmlrpc-api.inc';
@@ -120,8 +127,13 @@ function updateCommittees($optList, $env) {
         //TODO: Use ON DUPLICATE KEY UPDATE instead, plays nicers with foreign key constraints
         echo "Updating committee: $title...\n";
         $sql = "INSERT INTO committee (nid, title, chair_nid, list_id) VALUES ($nid, '$title', $chair_nid, $list_id) ON DUPLICATE KEY UPDATE title='$title', chair_nid=$chair_nid, list_id=$list_id";
-        if(! $result = mysql_query($sql,$conn) ) {
+        if ($optList['dryrun']) {
+          echo "[DRYRUN] No update will be performed.  SQL=[$sql]\n";
+        }
+        else {
+          if(!mysql_query($sql,$conn)) {
             die(mysql_error($conn)."\n".$sql);
+          }
         }
     }
 }
@@ -142,59 +154,65 @@ function updateSignups($optList, $env) {
         $start_id = get_start_id($conn)+1;
     }
 
-    while(TRUE) {
+    while (TRUE) {
         $old_start_id = $start_id;
 
         echo "Fetching the new records starting from ".($start_id?$start_id:0).".\n";
         $signup_service = new SignupForm($apikey, $domain);
         $signupData = $signup_service->getRawEntries(NULL,NULL,$start_id,NULL,$limit);
 
-        if( isset($signupData["faultCode"]) ) {
+        if (isset($signupData["faultCode"])) {
             var_dump($signupData);
             exit();
         }
 
         $count = count($signupData["accounts"]);
-        if($count == 0) {
+        if ($count == 0) {
             echo "No Records Found.\n";
             break;
         }
 
         echo "Processing batch of $count records....\n";
-        foreach($signupData['accounts'] as $account) {
+        foreach ($signupData['accounts'] as $account) {
             //Output a quick warning letting us know something wierd is happening
             $num_lists = count($account['lists']);
-            if($num_lists > 1) {
+            if ($num_lists > 1) {
                 echo "account['name']={$account['name']} has {$num_lists} lists associated with it.";
             } elseif($num_lists == 0) {
-                //There we no lists on this account...wtf? Die...
+                //There were no lists on this account...wtf? Die...
                 die("Account with no lists found...".print_r($account,TRUE));
             }
 
-            $list_id=get_list_id($account['lists'][0]['name'],$conn);
+            $list_id = get_list_id($account['lists'][0]['name'], $conn);
 
             //Store all the contacts in the database, get_person_id makes new rows as needed.
             //Associate the contact with the last list associated with this account
             //I currently believe each account only has 1 list associated with it...
-            foreach($account['contacts'] as $contact) {
+            foreach ($account['contacts'] as $contact) {
                 list($person_id, $person_nid) = get_person_id($contact, $conn);
 
                 //Move up our starting point as necessary
-                if($person_nid >= $start_id) {
+                if ($person_nid >= $start_id) {
                     $start_id = $person_nid+1;
                 }
 
-                foreach($contact['issues'] as $issue) {
+                foreach ($contact['issues'] as $issue) {
                     $issue = mysql_real_escape_string($issue, $conn);
                     $issue_id = get_issue_id($issue, $conn);
                     $sql = "INSERT IGNORE INTO subscription (person_id,issue_id) VALUES ($person_id, $issue_id)";
-                    if(!$result = mysql_query($sql, $conn)) {
+                    if ($optList['dryrun']) {
+                      echo "[DRYRUN] No update will be performed. SQL=[$sql]\n";
+                    }
+                    else if (!mysql_query($sql, $conn)) {
                         die(mysql_error($conn)."\n".$sql);
                     }
                 }
 
                 $sql = "INSERT IGNORE INTO signup (list_id,person_id) VALUES ($list_id, $person_id)";
-                if(!$result = mysql_query($sql,$conn)) {
+                if ($optList['dryrun']) {
+                  echo "[DRYRUN] No update will be performed. SQL=[$sql]\n";
+                }
+                else if (!mysql_query($sql, $conn)) {
                     die(mysql_error($conn)."\n".$sql);
                 }
 
@@ -243,11 +261,17 @@ function geocodeAddresses($optList, $env) {
         }
 
         $sql = "UPDATE person SET district=$district WHERE id={$row['id']}";
-        if (!mysql_query($sql, $conn)) {
-            echo "[ERROR] District update failed for id={$row['id']}, district=$district [".mysql_error($conn)."]\n";
+
+        if ($optList['dryrun']) {
+          echo "[DRYRUN] No update will be performed.  SQL=[$sql]\n";
         }
-        else if ($district > 0) {
+        else {
+          if (!mysql_query($sql, $conn)) {
+            echo "[ERROR] District update failed for id={$row['id']}, district=$district [".mysql_error($conn)."]\n";
+          }
+          else if ($district > 0) {
             $geocodeCount++;
+          }
         }
     }
     echo "[NOTICE] Geocoded $geocodeCount record(s).\n\n";
