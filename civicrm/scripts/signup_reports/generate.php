@@ -37,7 +37,10 @@ create_report($filename, $header, $nysenate_records, $list_totals);
 echo "Created signups report as [$filename].\n";
 
 // Mark the records as successfully processed
-if (!$optList['dryrun']) {
+if ($optList['dryrun']) {
+  echo "[DRYRUN] Skipping database update to mark records as reported.\n";
+}
+else {
     $sql = "UPDATE signup
               JOIN person ON signup.person_id=person.id
               JOIN list ON list.id=signup.list_id
