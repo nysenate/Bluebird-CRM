@@ -22,18 +22,12 @@ usage() {
   echo "Usage: $prog [--help|-h] [--verbose|-v] [--ok] [--dry-run|-n]" >&2
 }
 
-logmsg() {
-  
 
 verbose=0
 force_ok=0
 passthru_args=
 tdate=`date +%Y%m%d`
 
-if [ $# -lt 1 ]; then
-  usage
-  exit 1
-fi
 
 while [ $# -gt 0 ]; do
   case "$1" in
