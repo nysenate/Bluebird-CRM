@@ -45,3 +45,8 @@ confirm_yes_no() {
     *) echo "Aborting."; return 1 ;;
   esac
 }
+
+
+logdt() {
+  echo "[`date +%Y-%m-%d\ %H:%M:%S`] $@"
+}
