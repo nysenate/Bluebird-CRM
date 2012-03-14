@@ -62,7 +62,5 @@ inc_wildcard=`$readConfig --ig $instance search.include_wildcard_in_name` || inc
 # Passing a cygwin path to PHP won't work, so expand it to Win32 on Cygwin.
 [ "$OSTYPE" = "cygwin" ] && script_dir=`cygpath --mixed $script_dir`
 
-#php "$script_dir/manageCiviConfig.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$instance.$base_domain" "$app_rootdir" "$data_rootdir" "$inc_email" "$inc_wildcard"
-
-php "$script_dir/manageCiviConfig.php" "$instance" "$civi_op"
+php "$script_dir/manageCiviConfig.php" $civi_op "$dbhost" "$dbuser" "$dbpass" "$dbname" "$instance.$base_domain" "$app_rootdir" "$data_rootdir" "$inc_email" "$inc_wildcard"
 exit $?
