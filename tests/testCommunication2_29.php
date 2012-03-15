@@ -24,6 +24,7 @@
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
 require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
@@ -42,11 +43,12 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $this->openAndWait(getMainURL());
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password
@@ -71,7 +73,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->setSleep($this->settings->sleepTime);
         $this->openAdvancedSearch();
 
-        $keyword = "Mike Gordo";
+        $keyword = getSearchName();                    // Config.php
         $this->type('sort_name',$keyword);
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');

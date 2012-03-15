@@ -19,12 +19,14 @@
     13. Save check and delete the case
 
     *** check EVERY STEP!
+
+    *** Individual MUST HAVE NO CASES!
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
 require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
-
+require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
@@ -42,11 +44,12 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $this->openAndWait(getMainURL());
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password
@@ -70,7 +73,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
     public function performTasks() {
         $this->setSleep($this->settings->sleepTime);
         $this->openAdvancedSearch();
-        $keyword = "Mike Gordo";
+
+        $keyword = getSearchName();  // Config.php
         $this->searchAndOpen($keyword);
 
         // find Actions and click on it
@@ -118,8 +122,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForPageToLoad('30000');
         $this->assertTitle($keyword);
 
-        $this->waitForElementPresent("link=open one now");
-        $this->assertTrue($this->isTextPresent("There are no case records for this contact"),"Can not delete the case ");
+        $this->waitForElementPresent("Cases");
+        $this->assertTrue($this->isTextPresent("There are no case records for this contact"),"There are open cases left. Possibly couldn't delete the case. ");
  
      }
 

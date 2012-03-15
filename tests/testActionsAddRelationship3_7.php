@@ -19,6 +19,7 @@
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
 require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
@@ -30,8 +31,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
     protected function setUp()
     {
 
-        $this->searchName = 'Ascher';
-        $this->spouseName = 'Mike Gordo';
+        $this->searchName = getSSName(0);
+        $this->spouseName = getSSName(1);
 
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
@@ -41,11 +42,12 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $this->openAndWait(getMainURL());
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password

@@ -24,13 +24,14 @@
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
 require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
     protected $captureScreenshotOnFailure = TRUE;
     protected $screenshotPath = '/home/mgordo/screenshots';
-    protected $screenshotUrl = 'http://localhost/screenshots';
+    protected $screenshotUrl  = 'http://localhost/screenshots';
  
     protected function setUp()
     {
@@ -39,11 +40,11 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->setBrowserUrl($this->settings->sandboxURL);
         //$this->setSleep($this->settings->sleepTime);
     }
- 
+
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $this->openAndWait(getMainURL());
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
@@ -71,7 +72,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->setSleep($this->settings->sleepTime);
         $this->openAdvancedSearch();
 
-        $keyword = "Mike Gordo";
+        $keyword = getSearchName();                // Config.php
         $this->type('sort_name',$keyword);
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');
@@ -113,7 +114,6 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//li[@id='tab_summary']/a[1]");
 
         $this->assertTrue($this->isTextPresent("Tags 0"),"Can not remove the tag ");
-
 
     }
 
