@@ -386,8 +386,8 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
           AND (contact1.middle_name IS NULL or contact1.middle_name = '$middle_name')";
 
 
-    // Add on the bits that make us smart around addresses
-    if($street_address || $supp_address_1 || $supp_address_2) {
+    // Add on the bits that make us smart around addresses if we have any address parts
+    if($street_address || $supp_address_1 || $supp_address_2 || $city || $state_id || $country_id || $postal_code) {
         $from .= "
             LEFT JOIN shadow_address as address1 ON contact1.contact_id=address1.contact_id";
 
