@@ -24,7 +24,6 @@
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
 require_once 'Config.php';
 
@@ -104,7 +103,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForPageToLoad('30000');
         $this->assertTitle($keyword);
         $this->waitForElementPresent("_qf_CaseView_cancel-bottom");
-        $this->assertTrue($this->isTextPresent("Case Summary"),"Can not create the case ");
+        $this->assertTrue($this->isTextPresent("Budget case"),"Can not create the case ");
 
         $this->click("_qf_CaseView_cancel-bottom"); // DONE button
         $this->waitForPageToLoad('30000');
@@ -123,7 +122,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->assertTitle($keyword);
 
         $this->waitForElementPresent("Cases");
-        $this->assertTrue($this->isTextPresent("There are no case records for this contact"),"There are open cases left. Possibly couldn't delete the case. ");
+        $this->assertTrue(!$this->isTextPresent("Budget case"),"Couldn't delete the case. ");
  
      }
 

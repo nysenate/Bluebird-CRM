@@ -19,10 +19,10 @@
     12. save contact
 
     *** check EVERY STEP!
+    *** NOTE: Individual SHOULD NOT have any tags!
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
 require_once 'Config.php';
 
@@ -77,7 +77,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');
         $this->assertTitle('Advanced Search');
-        $this->assertTrue($this->isTextPresent("The found record"),"Advanced Search: Contact is not found in the database ");
+        $this->assertTrue(!$this->isTextPresent("No matches"),"Advanced Search: Contact is not found in the database ");
 
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
@@ -97,7 +97,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent("xpath=//li[@id='tab_summary']/a[1]");
         $this->click("xpath=//li[@id='tab_summary']/a[1]");
 
-        $this->assertTrue($this->isTextPresent("Tags 1"),"Can not set the tag ");
+        $this->assertTrue(!$this->isTextPresent("Tags 0"),"Can not set the tag ");
 
         // now REMOVE the tag
 

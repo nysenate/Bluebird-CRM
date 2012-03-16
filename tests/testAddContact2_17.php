@@ -12,7 +12,6 @@
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
 require_once 'Config.php';
 
