@@ -6,7 +6,7 @@ class BluebirdSeleniumSettings {
 
 	var $publicSandbox  = false;
 
-	var $browser = '*firefox';
+	var $browser = '*chrome';
 
 	var $sandboxURL = 'http://sd99/';
 
