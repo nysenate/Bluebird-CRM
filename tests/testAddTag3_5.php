@@ -19,18 +19,19 @@
     12. save contact
 
     *** check EVERY STEP!
+    *** NOTE: Individual SHOULD NOT have any tags!
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
     protected $captureScreenshotOnFailure = TRUE;
     protected $screenshotPath = '/home/mgordo/screenshots';
-    protected $screenshotUrl = 'http://localhost/screenshots';
+    protected $screenshotUrl  = 'http://localhost/screenshots';
  
     protected function setUp()
     {
@@ -39,11 +40,11 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->setBrowserUrl($this->settings->sandboxURL);
         //$this->setSleep($this->settings->sleepTime);
     }
- 
+
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $this->openAndWait(getMainURL());
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
@@ -71,12 +72,12 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->setSleep($this->settings->sleepTime);
         $this->openAdvancedSearch();
 
-        $keyword = "Mike Gordo";
+        $keyword = getSearchName();                // Config.php
         $this->type('sort_name',$keyword);
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');
         $this->assertTitle('Advanced Search');
-        $this->assertTrue($this->isTextPresent("The found record"),"Advanced Search: Contact is not found in the database ");
+        $this->assertTrue(!$this->isTextPresent("No matches"),"Advanced Search: Contact is not found in the database ");
 
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
@@ -96,7 +97,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent("xpath=//li[@id='tab_summary']/a[1]");
         $this->click("xpath=//li[@id='tab_summary']/a[1]");
 
-        $this->assertTrue($this->isTextPresent("Tags 1"),"Can not set the tag ");
+        $this->assertTrue(!$this->isTextPresent("Tags 0"),"Can not set the tag ");
 
         // now REMOVE the tag
 
@@ -113,7 +114,6 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//li[@id='tab_summary']/a[1]");
 
         $this->assertTrue($this->isTextPresent("Tags 0"),"Can not remove the tag ");
-
 
     }
 
