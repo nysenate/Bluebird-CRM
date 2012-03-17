@@ -572,6 +572,15 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
         return;
     }
 
+    //ensure user id is set for logging purposes
+    $getUserID = CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id');
+    if ( !$getUserID ) {
+        $session = CRM_Core_Session::singleton();
+		if ($session->get('userID')) {
+            CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1', array(1 => array($session->get('userID'), 'Integer')));
+        }
+    }
+
 }
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {

@@ -123,11 +123,12 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
         foreach ($this->tables as $table) {
             $this->createLogTableFor($table);
         }
+
+        $this->addReports(); //NYSS
+
         //$this->createTriggers();
 		// invoke the meta trigger creation call //NYSS 5067
         CRM_Core_DAO::triggerRebuild( );
-
-        $this->addReports();
     }
 
     /**
@@ -310,7 +311,9 @@ COLS;
      */
     public function isEnabled()
     {
-        return $this->tablesExist() and $this->triggersExist();
+        //return $this->tablesExist() and $this->triggersExist();
+        $config = CRM_Core_Config::singleton();
+        return $config->logging;
     }
 
     /**
