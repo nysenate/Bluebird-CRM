@@ -298,6 +298,9 @@ class CRM_Utils_Sort {
 	static function cmpDate( $a, $b ) {
         return ( strtotime($a['date']) >= strtotime($b['date']) ) ? -1 : 1;
     }
+    static function cmpName( $a, $b ) {
+        return ( $a['name'] <= $b['name'] ) ? -1 : 1;
+    }
 
 }
 
