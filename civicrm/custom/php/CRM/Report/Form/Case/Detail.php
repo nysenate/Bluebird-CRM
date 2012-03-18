@@ -128,12 +128,11 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
 								'status_id' =>
                                 array( 'title' => ts('Case Status'),
 								       ),
-								'case_type_id' =>
+								'case_type_name' =>
                                 array( 'title' => ts('Case Type'),
 								       ),
                                 ),
 						 ),
-
                   'civicrm_contact' =>
                   array( 'dao'       => 'CRM_Contact_DAO_Contact',
                          'fields'    =>
@@ -339,6 +338,17 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
                 }
             }
         }
+
+        //NYSS 5102 sort by case type label
+        $this->_caseTypeNameOrderBy = 0;
+        if ( $orderBys = $this->_params['order_bys'] ) {
+            foreach ( $orderBys as $orderBy ) {
+                if ( $orderBy['column'] == 'case_type_name' ) {
+                    $select[] = "civireport_case_types.label as case_type_name";
+                    $this->_caseTypeNameOrderBy = 1;
+                }
+            }
+        }
                 
         $this->_select = 'SELECT ' . implode( ', ', $select ) . ' ';
     }
@@ -396,7 +406,17 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
         // Include clause for last completed activity of the case
         if ( $this->_activityLastCompleted ) {
             $this->_from .= " LEFT JOIN civicrm_activity {$this->_aliases['civicrm_activity_last_completed']} ON ( {$this->_aliases['civicrm_activity_last_completed']}.id = ( SELECT max(activity_id) FROM civicrm_case_activity cca, civicrm_activity ca WHERE ca.id = cca.activity_id AND cca.case_id = {$case}.id AND ca.status_id = 2 ) )";
-        }   
+        }
+
+        //NYSS 5102 include case type name
+        if ( $this->_caseTypeNameOrderBy ) {
+            $this->_from .= " LEFT JOIN ( SELECT cov.value, cov.label
+                                          FROM civicrm_option_value cov
+                                          JOIN civicrm_option_group cog
+                                            ON cov.option_group_id = cog.id
+                                            AND cog.name = 'case_type' ) civireport_case_types
+                              ON {$case}.case_type_id = civireport_case_types.value";
+        }
         
     }
     
@@ -465,6 +485,14 @@ class CRM_Report_Form_Case_Detail extends CRM_Report_Form {
     
     function groupBy( ) {
         $this->_groupBy = " GROUP BY {$this->_aliases['civicrm_case']}.id";
+    }
+
+    //NYSS 5102
+    function orderBy( ) {
+        parent::orderBy();
+        if ( $this->_caseTypeNameOrderBy ) {
+            $this->_orderBy = str_replace( 'case_civireport.case_type_name', 'civireport_case_types.label', $this->_orderBy );
+        }
     }
     
     function statistics( &$rows ) {
