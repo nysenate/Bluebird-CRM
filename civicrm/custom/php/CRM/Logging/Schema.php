@@ -311,9 +311,15 @@ COLS;
      */
     public function isEnabled()
     {
-        //return $this->tablesExist() and $this->triggersExist();
+        //NYSS alter how logging enabled is determined
+        $isEnabled = 0;
         $config = CRM_Core_Config::singleton();
-        return $config->logging;
+        if ( $this->tablesExist() &&
+             $this->triggersExist() &&
+             $config->logging ) {
+            $isEnabled = 1;
+        }
+        return $isEnabled;
     }
 
     /**
@@ -330,7 +336,7 @@ COLS;
     private function triggersExist()
     {
         // FIXME: probably should be a bit more thorough…
-        return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_contact'");
+        return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_domain'"); //NYSS
     }
 
 	//NYSS 5067
