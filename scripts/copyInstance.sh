@@ -112,4 +112,7 @@ echo "Loading Drupal database for instance $destinst with data from $temp_drup_f
 $execSql --create -i $destinst --drupal || die 4
 $execSql -f $temp_drup_file -i $destinst --drupal || die 5
 
+echo "Creating Log database for instance $destinst"
+$execSql --create -i $destinst --log || die 6
+
 die 0

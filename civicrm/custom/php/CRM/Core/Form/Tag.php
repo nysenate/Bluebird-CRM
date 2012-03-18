@@ -161,12 +161,16 @@ class CRM_Core_Form_Tag
                         }                  
                     }
                 }    
-                
+
                 if ( !empty( $entityTags ) ) {
                     //NYSS make slashes consistent
 					foreach ( $entityTags as &$entityTag ) {
 						$entityTag['name'] = addcslashes( stripslashes($entityTag['name']), '\"');
 					}
+                    //NYSS 4488 - sort values by name
+                    require_once 'CRM/Utils/Sort.php';
+                    uasort( $entityTags, array('CRM_Utils_Sort', 'cmpName') );
+
 					// assign as simple array for display in smarty
                     $tagset[$tagsetItem]['entityTagsArray'] =  $entityTags;
                     // assign as json for js widget

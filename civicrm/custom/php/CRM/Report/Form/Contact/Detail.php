@@ -325,8 +325,6 @@ class CRM_Report_Form_Contact_Detail extends CRM_Report_Form {
 				unset( $orderBys->_options[$k] );
 			}
 		}
-		
-		CRM_Core_Error::debug_var('orderBys',$orderBys);
 	}
 
     
