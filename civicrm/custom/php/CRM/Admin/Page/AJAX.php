@@ -255,11 +255,12 @@ class CRM_Admin_Page_AJAX
             /* NYSS leg positions should retrieve list from open leg and
             ** create value in tag table.
             */
-            $billNo = $name; 
+            $billNo = $name;
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL,"http://open.nysenate.gov/legislation/search/?term=otype:bill+AND+oid:(" . $billNo . "+OR+" . $billNo . "*)&searchType=&format=json&pageSize=10");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $content = curl_exec($ch);
+            $content = iconv('ISO-8859-1', 'UTF-8', $content); //NYSS 5128
             $json = array();
             $json = json_decode($content, true);
             curl_close($ch);
