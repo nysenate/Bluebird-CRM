@@ -1,6 +1,8 @@
-<?php
+<?php 
 
-/*
+/* 
+
+
     Feb 17, 2012
     This test script adds the Individual contact to the database
 

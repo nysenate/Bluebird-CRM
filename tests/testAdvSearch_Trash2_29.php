@@ -1,6 +1,6 @@
-<?php
+<?php /* 
 
-/*
+
     Feb 29, 2012
     This test script uses the Advanced Search
     Search in Trash

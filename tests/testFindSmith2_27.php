@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 27, 2012
     This test script is trying to find Smith using the Find Contact
     And then using the Find Anything

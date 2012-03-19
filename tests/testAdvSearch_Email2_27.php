@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 27, 2012
     This test script uses the Advanced Search
     /Email = partial email address

@@ -1,6 +1,6 @@
-<?php
+<?php /* 
 
-/*
+
     Feb 29, 2012
     This test script uses the Custom Search
     Find every person born in January 1990 or earlier

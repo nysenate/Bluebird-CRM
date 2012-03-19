@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 29, 2012
     This test script uses the Custom Search
     Find everybody within the 50 miles distance

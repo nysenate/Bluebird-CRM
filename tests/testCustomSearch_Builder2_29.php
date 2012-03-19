@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 29, 2012
     This test script uses the Custom Search / search builder
     Search for the individuals using this request individual / display name / LIKE / j%
