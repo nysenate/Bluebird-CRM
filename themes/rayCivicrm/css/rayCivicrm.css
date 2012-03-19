@@ -1478,3 +1478,21 @@ span.do-not-mail {
     padding-left: 24px;
     color: #F65 !important;
 }
+
+/*4963*/
+li.token-input-input-token-facebook {
+	margin: 3px;
+}
+form#Contact .groupTagsKeywords ul.token-input-list-facebook {
+	width: 600px;
+}
+form#Contact .groupTagsKeywords .crm-section .content {
+	float: left;
+	margin-left: 1%;
+}
+form#Contact .groupTagsKeywords .tag-section {
+	margin-top: 6px;
+}
+form#Contact .groupTagsKeywords .crm-section .label {
+	width: 10%;
+}
