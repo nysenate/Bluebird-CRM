@@ -127,7 +127,8 @@ create table `test` (tid int primary key AUTO_INCREMENT, host varchar(255) not n
 	username varchar(255) not null default 'senateroot', password varchar(255) not null default 'mysql',
 	searchname varchar(255) not null default 'Mike Gordo', searchemail varchar(255) not null default 'mgordo@live.com',
 	spousename1 varchar(100) not null default 'Ascher', spousename2 varchar(100) not null default 'Mike Gordo',
-	time bigint not null, browser varchar(20) not null default '*firefox', sleep int not null default 0);
+	time bigint not null, browser varchar(20) not null default '*firefox', sleep int not null default 0,
+	testname varchar(255));
 
 */
 

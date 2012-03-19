@@ -6,6 +6,37 @@
 
 <?php
 	$update = $_GET['update'];
+
+	class configClass {
+		public $displayName;
+		public $fileName;
+		public $settings;
+	}
+
+	$config = array();
+	$nConfig = 0;
+
+	// read configuration file
+	function readSettings($filename) {
+		global $config;
+		global $nConfig;
+		$handle = @fopen($filename, "r");
+		if ($handle) {
+		    while (($buffer = fgets($handle, 4096)) != false ) {
+		    	if (strlen(trim($buffer))>0 && $buffer[0]!='#') {
+		    		$sArray = explode('/', $buffer);
+			    	$cfg = new configClass();
+			    	$cfg->displayName = $sArray[0];
+			    	$cfg->fileName = trim($sArray[1]);
+			    	$cfg->settings = trim($sArray[2]);
+			    	$config[$nConfig++] = $cfg;
+			    }		    
+		    }
+		}
+		fclose($handle);
+	}
+
+	readSettings("config.cfg");
 ?>
 
 
@@ -15,17 +46,14 @@
 <h3>Scripts available</h3>
 
 <?php
-if ($handle = opendir('.')) {
-    while (false !== ($entry = readdir($handle))) {
-        if (substr($entry,0,4)=='test') {
-        	echo "<p>";
-        	echo "<input type='radio' name='testName' value='$entry' />";
-        	echo substr($entry, 4);
-        	echo "</p>\n";
-    	}
-    }
-    closedir($handle);
+
+for ($i=0; $i < $nConfig; $i++) {
+   	echo "<p>";
+   	echo "<input type='radio' name='testName' value='".$config[$i]->fileName."' onclick=\"javascript:radioclick($i);\" />";
+   	echo $config[$i]->displayName;
+   	echo "</p>\n";
 }
+
 ?>
 
 </div><!-- script tree -->
@@ -49,7 +77,7 @@ echo "<table>";
 while ($row = mysql_fetch_array($result)) {
 	echo "<tr><td><a href=\"?update=1&link=".$row['tid']."\">".$row['host'];
 	echo "</a></td>";
-	echo "<td>".$row['searchname']."</td>";
+	echo "<td>".$row['testname']."</td>";
 
 	$time = $row['time'];
 	$time = date("M,d g:i a",$time);	
@@ -103,21 +131,21 @@ $row = mysql_fetch_array($result);
 
 </div><!-- new settings -->
 
-<div class="new-settings">
+<div class="new-settings" id="new-settings" style="display:none;">
 <h3>Specific Settings</h3>
 
 
-<label>Search name:</label>
-<input type="text" name="searchname" class="text" value="<?php echo $row['searchname']; ?>" onkeydown="return kd(event)"><br />
+<label id="SearchName_label">Search name:</label>
+<input id="SearchName_input" type="text" name="searchname" class="text" value="<?php echo $row['searchname']; ?>" onkeydown="return kd(event)"><br />
 
-<label>Search email:</label>
-<input type="text" name="searchemail" class="text" value="<?php echo $row['searchemail']; ?>" onkeydown="return kd(event)"><br />
+<label id="SearchEmail_label">Search email:</label>
+<input id="SearchEmail_input" type="text" name="searchemail" class="text" value="<?php echo $row['searchemail']; ?>" onkeydown="return kd(event)"><br />
 
-<label>Spouse name 1:</label>
-<input type="text" name="spousename1" class="text" value="<?php echo $row['spousename1']; ?>" onkeydown="return kd(event)"><br />
+<label id="SpouseName1_label">Spouse name 1:</label>
+<input id="SpouseName1_input" type="text" name="spousename1" class="text" value="<?php echo $row['spousename1']; ?>" onkeydown="return kd(event)"><br />
 
-<label>Spouse name 2:</label>
-<input type="text" name="spousename2" class="text" value="<?php echo $row['spousename2']; ?>" onkeydown="return kd(event)"><br />
+<label id="SpouseName2_label">Spouse name 2:</label>
+<input id="SpouseName2_input" type="text" name="spousename2" class="text" value="<?php echo $row['spousename2']; ?>" onkeydown="return kd(event)"><br />
 
 
 <input type="hidden" name="save" id="save" value="yes" /> <!-- IGNORE THIS LINE! -->
@@ -130,7 +158,7 @@ $row = mysql_fetch_array($result);
 
 </form>
 
-<div style="clear:both;"></div>
+<div style="clear:both;" id="clear"></div>
 
 <?php 
 	mysql_close($link);
@@ -140,11 +168,37 @@ $row = mysql_fetch_array($result);
 
 <script type="text/javascript">
 function kd(e) {
-	
     var intKey = (window.Event) ? e.which : e.keyCode;
     document.getElementById("save").value = "yes";
     return true;
 }
+
+<?php
+	echo "var myFiles = new Array();\n";
+	for($i = 0; $i < $nConfig; $i++) {
+		echo "myFiles[$i] = \"".$config[$i]->settings."\";\n";
+	}
+?>
+
+function radioclick(fn) {
+	if (myFiles[fn]!="") 
+		document.getElementById("new-settings").style.display = "inline-block";
+
+	if (myFiles[fn]=="SpouseName") {
+		document.getElementById(myFiles[fn]+"1_label").style.display = "inline-block";
+		document.getElementById(myFiles[fn]+"1_input").style.display = "inline-block";
+		document.getElementById(myFiles[fn]+"2_label").style.display = "inline-block";
+		document.getElementById(myFiles[fn]+"2_input").style.display = "inline-block";
+
+	} else if (myFiles[fn]!="") {
+		document.getElementById(myFiles[fn]+"_label").style.display = "inline-block";
+		document.getElementById(myFiles[fn]+"_input").style.display = "inline-block";
+	}
+
+
+		
+}
+
 </script>
 
 
