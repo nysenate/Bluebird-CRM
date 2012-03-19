@@ -48,6 +48,7 @@ if (!$testname) {
   	exit;
 }
 
+// Run test
 echo "Starting: "."phpunit ".$testname."<br/><br/>";
 system("phpunit ".$testname);
 

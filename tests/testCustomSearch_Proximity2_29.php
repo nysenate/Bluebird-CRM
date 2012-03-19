@@ -68,6 +68,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForPageToLoad('30000');
         
         $this->assertTitle('Proximity Search');
+        $this->waitForElementPresent('search-status');
         $this->assertTrue($this->isTextPresent("Selected records only"),"Custom Search: Contacts not found in the database ");
     }
 

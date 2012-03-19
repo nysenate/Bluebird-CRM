@@ -23,8 +23,9 @@
 		$handle = @fopen($filename, "r");
 		if ($handle) {
 		    while (($buffer = fgets($handle, 4096)) != false ) {
-		    	if (strlen(trim($buffer))>0 && $buffer[0]!='#') {
-		    		$sArray = explode('/', $buffer);
+		    	$buffer = trim($buffer);
+		    	if (strlen($buffer)>0 && $buffer[0]!='#') {
+		    		$sArray = explode("\t", $buffer);
 			    	$cfg = new configClass();
 			    	$cfg->displayName = $sArray[0];
 			    	$cfg->fileName = trim($sArray[1]);
@@ -47,7 +48,9 @@
 
 <?php
 
-for ($i=0; $i < $nConfig; $i++) {
+// display the list of scripts
+
+for ($i = 0; $i < $nConfig; $i++) {
    	echo "<p>";
    	echo "<input type='radio' name='testName' value='".$config[$i]->fileName."' onclick=\"javascript:radioclick($i);\" />";
    	echo $config[$i]->displayName;
@@ -60,29 +63,33 @@ for ($i=0; $i < $nConfig; $i++) {
 
 
 <div id="settings">
-<h3>Last Test Runs</h3>
+<h3>Last tests</h3>
 
 <?php
+
 // display list of settings
+
 $mysql_host = 'localhost';
 $mysql_user = 'root';
 $mysql_pwd  = 'mysql';
 $mysql_db   = 'selenium';
-$query = "SELECT * FROM `test` WHERE TRUE ORDER BY `tid` DESC LIMIT 10;";
+$query = "SELECT * FROM `test` WHERE TRUE ORDER BY `tid` DESC LIMIT 9;";
 
 $link = mysql_connect($mysql_host, $mysql_user, $mysql_pwd);
 mysql_select_db($mysql_db);
 $result = mysql_query($query, $link);
 echo "<table>";
+$i = 1;
 while ($row = mysql_fetch_array($result)) {
-	echo "<tr><td><a href=\"?update=1&link=".$row['tid']."\">".$row['host'];
+	echo "<tr><td ".(($i%2==0)?"class=\"even\"":"")."><a href=\"?update=1&link=".$row['tid']."\">".$row['host'];
 	echo "</a></td>";
-	echo "<td>".$row['testname']."</td>";
+	echo "<td ".(($i%2==0)?"class=\"even\"":"").">".$row['testname']."</td>";
 
 	$time = $row['time'];
 	$time = date("M,d g:i a",$time);	
 
-	echo "<td>".$time."</td>";
+	echo "<td ".(($i%2==0)?"class=\"even\"":"").">".$time."</td>";
+	$i++;
 }
 echo "</table>";
 ?>
@@ -92,7 +99,7 @@ echo "</table>";
 </div><!-- settings -->
 
 <div class="new-settings">
-<h3>General Settings</h3>
+<h3>General settings</h3>
 
 <?php
 if ($update==1) {
@@ -115,6 +122,9 @@ $row = mysql_fetch_array($result);
 </select> <br />
 
 
+<label>Number of instances:</label>
+<input type="text" name="nins" class="text" value="1" onkeydown="return kd(event)"><br />
+
 <label>Host:</label>
 <input type="text" name="host" class="text" value="<?php echo $row['host']; ?>" onkeydown="return kd(event)"><br />
 
@@ -129,10 +139,10 @@ $row = mysql_fetch_array($result);
 
 
 
-</div><!-- new settings -->
+</div><!-- /general settings -->
 
 <div class="new-settings" id="new-settings" style="display:none;">
-<h3>Specific Settings</h3>
+<h3>Specific settings</h3>
 
 
 <label id="SearchName_label">Search name:</label>
@@ -151,14 +161,17 @@ $row = mysql_fetch_array($result);
 <input type="hidden" name="save" id="save" value="yes" /> <!-- IGNORE THIS LINE! -->
 
 
-</div><!-- new settings -->
+</div><!-- /specific settings -->
 
-
-<input type="submit" id="submit" />
-
-</form>
 
 <div style="clear:both;" id="clear"></div>
+
+<input type="submit" id="submit" value="Start Test" />
+
+<div style="clear:both;" id="clear"></div>
+</form>
+
+
 
 <?php 
 	mysql_close($link);
@@ -168,9 +181,9 @@ $row = mysql_fetch_array($result);
 
 <script type="text/javascript">
 function kd(e) {
-    var intKey = (window.Event) ? e.which : e.keyCode;
-    document.getElementById("save").value = "yes";
-    return true;
+    // var intKey = (window.Event) ? e.which : e.keyCode;
+    // document.getElementById("save").value = "yes";
+    // return true;
 }
 
 <?php

@@ -12,7 +12,7 @@
 <div id="wrap">
 
 <div id="header">
-<h1>NY Senate</h1>
-<h2>Selenium Testing</h2>
+<h1 onclick="javascript:window.location='/';">NY Senate</h1>
+<h2 onclick="javascript:window.location='/';">Selenium Testing</h2>
 
 </div>
