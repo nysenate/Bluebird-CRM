@@ -49,6 +49,8 @@ $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_delete_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_update_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_insert_trigger;"
 
+# TODO: construct logging report instance
+# TODO: set report instance to access civiReport
 
 ### Cleanup ###
 
