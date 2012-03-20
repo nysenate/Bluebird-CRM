@@ -68,7 +68,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForPageToLoad('30000');
         
         $this->assertTitle('Advanced Search');
-        $this->assertTrue($this->isTextPresent("Selected records only"),"Advanced Search: Deleted contacts not found in the database ");
+        $this->assertTrue($this->isTextPresent("Select Records"),"Advanced Search: Deleted contacts not found in the database ");
     }
 
     private function openAdvancedSearch() {
