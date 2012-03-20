@@ -225,5 +225,17 @@ function setJobID( ) {
 }
 </script>
 
+<?php
+//store job id in db variable
+if ( $_SESSION['CiviCRM']['jobID'] ) {
+    $jobID = CRM_Core_DAO::singleValueQuery('SELECT @jobID');
+    if ( !$jobID ) {
+        $jobID = $_SESSION['CiviCRM']['jobID'];
+        CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($jobID, 'String')));
+    }
+    //CRM_Core_Error::debug_var('jobID',CRM_Core_DAO::singleValueQuery('SELECT @jobID'));
+}
+?>
+
 </body>
 </html>
