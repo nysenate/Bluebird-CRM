@@ -12,6 +12,8 @@ $mysql_user = 'root';
 $mysql_pwd  = 'mysql';
 $mysql_db   = 'selenium';
 
+$testname = $_POST['testName'];
+
 if ($_POST['save'] == 'yes') {
     // save to db
     $host = $_POST['host'];
@@ -33,7 +35,7 @@ if ($_POST['save'] == 'yes') {
 
     $time = time();
 
-	$query = "INSERT INTO `test`(`host`,`searchname`,`searchemail`,`spousename1`,`spousename2`,`time`,`browser`,`sleep`,`username`,`password`) VALUES ('$host','$searchname','$searchemail','$spousename1','$spousename2','$time','$browser','$sleep','$username','$password');";
+	$query = "INSERT INTO `test`(`host`,`searchname`,`searchemail`,`spousename1`,`spousename2`,`time`,`browser`,`sleep`,`username`,`password`,`testname`) VALUES ('$host','$searchname','$searchemail','$spousename1','$spousename2','$time','$browser','$sleep','$username','$password','$testname');";
 	
 	$link = mysql_connect($mysql_host, $mysql_user, $mysql_pwd);
 	mysql_select_db($mysql_db);
@@ -41,12 +43,12 @@ if ($_POST['save'] == 'yes') {
 	mysql_close($link);
 }
 
-$testname = $_POST['testName'];
 if (!$testname) {
   	header('Location: index.php');
   	exit;
 }
 
+// Run test
 echo "Starting: "."phpunit ".$testname."<br/><br/>";
 system("phpunit ".$testname);
 

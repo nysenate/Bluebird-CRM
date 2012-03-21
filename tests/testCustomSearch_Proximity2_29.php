@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 29, 2012
     This test script uses the Custom Search
     Find everybody within the 50 miles distance
@@ -69,6 +68,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForPageToLoad('30000');
         
         $this->assertTitle('Proximity Search');
+        $this->waitForElementPresent('search-status');
         $this->assertTrue($this->isTextPresent("Selected records only"),"Custom Search: Contacts not found in the database ");
     }
 

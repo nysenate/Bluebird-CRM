@@ -572,12 +572,18 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
         return;
     }
 
-    //ensure user id is set for logging purposes
-    $getUserID = CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id');
-    if ( !$getUserID ) {
-        $session = CRM_Core_Session::singleton();
+    //ensure user id and job id is set for logging purposes
+	$session = CRM_Core_Session::singleton();
+	//CRM_Core_Error::debug_var('session',$session);
+
+    if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
 		if ($session->get('userID')) {
             CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1', array(1 => array($session->get('userID'), 'Integer')));
+        }
+    }
+	if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
+		if ($session->get('jobID')) {
+            CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($session->get('jobID'), 'String')));
         }
     }
 

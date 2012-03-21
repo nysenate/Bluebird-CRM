@@ -1021,6 +1021,14 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                 $commonClauses[] = "civicrm_activity.activity_type_id = $activityTypeID";
             }
         }
+
+        //NYSS 5088 activity of last X days only clause
+        if ( ! empty( $input['past_days'] ) && $input['past_days'] != 'all' ) {
+            $pastDays = CRM_Utils_Type::escape( $input['past_days'], 'Positive' );
+            $commonClauses[] = "civicrm_activity.activity_date_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL $pastDays DAY)
+                                              AND CURRENT_DATE";
+        }
+
         $commonClause = implode( ' AND ', $commonClauses );
 
         $includeCaseActivities = false;

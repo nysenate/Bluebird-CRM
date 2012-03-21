@@ -1,5 +1,5 @@
-<?php
-/*
+<?php /* 
+
     Mar 7, 2012
     This test script uses the Reports generator
 

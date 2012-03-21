@@ -698,13 +698,19 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
         if ( !$contact->find(true) ) {
             return false;
         }
+
+        //NYSS reorder to ensure pre/post hooks are called on restore
+        $contactType = $contact->contact_type;
+        $action = ( $restore ) ? 'restore' : 'delete';
+
+        require_once 'CRM/Utils/Hook.php';
+        CRM_Utils_Hook::pre( $action, $contactType, $id, CRM_Core_DAO::$_nullArray );
         
         if ( $restore ) {
             self::contactTrashRestore( $contact->id, true );
+            CRM_Utils_Hook::post( $action, $contactType, $contact->id, $contact );
             return true;
         }
-        
-        $contactType = $contact->contact_type;
         
         // currently we only clear employer cache.
         // we are not deleting inherited membership if any. 
@@ -712,9 +718,6 @@ WHERE     civicrm_contact.id = " . CRM_Utils_Type::escape($id, 'Integer');
             require_once 'CRM/Contact/BAO/Contact/Utils.php';
             CRM_Contact_BAO_Contact_Utils::clearAllEmployee( $id );
         }
-        
-        require_once 'CRM/Utils/Hook.php';
-        CRM_Utils_Hook::pre( 'delete', $contactType, $id, CRM_Core_DAO::$_nullArray );
         
         // start a new transaction
         require_once 'CRM/Core/Transaction.php';

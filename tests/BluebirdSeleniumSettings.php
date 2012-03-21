@@ -23,7 +23,7 @@ class BluebirdSeleniumSettings {
     var $UFemail = 'noreply@civicrm.org';
 
     var $sleepTime = 0;
-
+    
 	function __construct() {
 		$this->fullSandboxPath = $this->sandboxURL . $this->sandboxPATH;
 	}

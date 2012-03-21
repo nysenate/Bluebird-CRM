@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 29, 2012
     This test script checks if all the menus exisis on the Dashboard
 

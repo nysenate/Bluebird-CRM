@@ -1,5 +1,6 @@
-<?php
-/*
+<?php /* DONT REMOVE THE NEXT LINE. IT CONTAINS SETTINGS
+SpouseName
+
     Mar 7, 2012
     This test script uses the Advanced Search
     Find the contact with name Ascher
