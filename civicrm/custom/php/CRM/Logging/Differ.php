@@ -116,7 +116,7 @@ class CRM_Logging_Differ
         }
 
         // populate $diffs with only the differences between $changed and $original
-        $skipped = array('log_action', 'log_conn_id', 'log_date', 'log_user_id');
+        $skipped = array('log_action', 'log_conn_id', 'log_date', 'log_user_id', 'log_job_id');//NYSS add job id
         foreach (array_keys(array_diff_assoc($changed, $original)) as $diff) {
             if (in_array($diff, $skipped)) {
                 continue;
