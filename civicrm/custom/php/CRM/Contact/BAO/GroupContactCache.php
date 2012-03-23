@@ -116,7 +116,7 @@ AND     ( g.cache_date IS NULL OR
         $processed = false;
 
         // NYSS 4769 - sort the values to avoid concurrent queries deadlocking with each other.
-        sort($values);
+        //sort($values); //NYSS 4777 - not a meaningful sort
 
         // to avoid long strings, lets do BULK_INSERT_COUNT values at a time
         while ( ! empty( $values ) ) {
@@ -207,10 +207,11 @@ WHERE  TIMESTAMPDIFF(MINUTE, cache_date, $now) >= $smartGroupCacheTimeout
             $params = array( );
         } else if ( is_array( $groupID ) ) {
             $query = "
-DELETE     g
-FROM       civicrm_group_contact_cache g
-WHERE      g.group_id IN ( %1 )
-";
+DELETE
+FROM       civicrm_group_contact_cache
+WHERE      group_id IN ( %1 )
+ORDER BY   contact_id
+"; //NYSS 4777
             $update = "
 UPDATE civicrm_group g
 SET    cache_date = null
@@ -301,7 +302,7 @@ WHERE  id = %1
                               SELECT contact_id FROM civicrm_group_contact 
                               WHERE civicrm_group_contact.status = 'Removed' 
                               AND   civicrm_group_contact.group_id = $groupID ) ";
-        }
+		}
 
         if ( $sql ) {
             $sql .= " UNION ";
@@ -313,7 +314,8 @@ WHERE  id = %1
 SELECT contact_id as $idName
 FROM   civicrm_group_contact
 WHERE  civicrm_group_contact.status = 'Added'
-  AND  civicrm_group_contact.group_id = $groupID ";
+  AND  civicrm_group_contact.group_id = $groupID
+ORDER BY $idName "; //NYSS 4777
 
         $dao = CRM_Core_DAO::executeQuery( $sql );
 
@@ -321,6 +323,7 @@ WHERE  civicrm_group_contact.status = 'Added'
         while ( $dao->fetch( ) ) {
             $values[] = "({$groupID},{$dao->$idName})";
         }
+        array_unique($values); //NYSS 4777
 
         $groupIDs = array( $groupID );
         self::remove( $groupIDs );

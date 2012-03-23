@@ -80,7 +80,18 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
                     array( 'id' => 'locType' )
                     );
 
-        $this->addElement('checkbox', 'includeLog', ts('Include most recent log activity date'));
+        $this->addElement('checkbox', 'includeLog', ts('Include most recent log date'));
+
+        $groups = CRM_Core_PseudoConstant::group( );
+        $this->add( 'select',
+                    'excludeGroups',
+                    ts( 'Exclude Groups' ),
+                    $groups,
+                    false,
+                    array( 'id'       => 'excludeGroups',
+                           'multiple' => 'multiple',
+                           'title'    => ts('- select -') )
+                    );
 
         $this->addDefaultButtons( 'Export District' );
 
@@ -100,7 +111,8 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $params = $this->controller->exportValues( $this->_name );
         $avanti_job_id = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
         $loc_type      = $params['locType'];
-		$include_log   = $params['includeLog'];
+        $include_log   = $params['includeLog'];
+        $excludeGroups = $params['excludeGroups'];
 
         //get instance name (strip first element from url)
         $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -133,11 +145,15 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
 
         $sql = "INSERT INTO tmpExport$rnd VALUES $ids;";
         $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+        if ( $excludeGroups ) {
+            excludeGroupContacts( "tmpExport$rnd", $excludeGroups );
+        }
         
         //4874
-		if ( $include_log ) {
+        if ( $include_log ) {
             $logTable = createLogTable( $rnd );
-		}
+        }
 
         $sql = "SELECT c.id, c.first_name, c.middle_name, c.last_name, c.suffix_id, ";
         $sql .= "street_number, street_number_suffix, street_name, street_unit, street_address, supplemental_address_1, supplemental_address_2, city, state_province_id, postal_code, postal_code_suffix, ";
@@ -146,9 +162,9 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $sql .= "email, a.location_type_id, is_deleted, a.id AS address_id, di.id AS districtinfo_id, p.id AS phone_id, e.id AS email_id ";
         
         //4874
-		if ( $include_log ) {
+        if ( $include_log ) {
             $sql .= ", lt.mod_date AS last_modified_date ";
-		}
+        }
 
         $sql .= " FROM civicrm_contact c ";
         $sql .= " INNER JOIN tmpExport$rnd t on t.id=c.id ";
@@ -158,9 +174,9 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $sql .= " LEFT JOIN civicrm_email e on e.contact_id=c.id AND e.is_primary=1 ";
     
         //4874 - include last log record timestamp
-		if ( $include_log ) {
+        if ( $include_log ) {
             $sql .= " LEFT JOIN $logTable lt ON c.id = lt.cid ";
-		}
+        }
 
         $sql .= " ORDER BY CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
         $sql .= " IFNULL(c.birth_date, '9999-01-01');";
@@ -240,15 +256,18 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         }
         //exit;
 
+        //final count
+        $count = CRM_Core_DAO::singleValueQuery("SELECT count(id) FROM tmpExport$rnd;");
+
         //get rid of helper table
         $sql = "DROP TABLE tmpExport$rnd;";
         $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
         
         //get rid of log table
-		if ( $include_log ) {
+        if ( $include_log ) {
             $sql = "DROP TABLE $logTable;";
             $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-		}
+        }
 
         $url = "http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.$filename;
         $urlclean = urlencode( $url );
@@ -257,7 +276,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $status = array();
         $status[] = "District Merge/Purge Export";
         $status[] = "District: $instance (task $rnd).";
-        $status[] = sizeof($this->_contactIds). " contact(s) were exported.";
+        $status[] = "$count contact(s) were exported.";
         $status[] = "<a href=\"$href\">Click here</a> to email the link to print production.";
 
         require_once 'CRM/Core/Permission.php';
@@ -361,21 +380,21 @@ function createLogTable( $rnd ) {
 
     //collapse resulting data in a separate table
     //this give us the latest mod date among both contact and activity logs
-	$sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
-	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-	
-	$sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
-	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-	
-	$sql = "INSERT INTO $tblLogDedupe
-	        SELECT cid, MAX(mod_date)
-			FROM $tblLog
-			GROUP BY cid
-			;";
-	$dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-	
-	//now drop first temp table
-	CRM_Core_DAO::executeQuery("DROP TABLE $tblLog;");
+    $sql = "CREATE TABLE $tblLogDedupe LIKE $tblLog;";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    $sql = "ALTER TABLE $tblLogDedupe ADD UNIQUE ( cid );";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    $sql = "INSERT INTO $tblLogDedupe
+            SELECT cid, MAX(mod_date)
+            FROM $tblLog
+            GROUP BY cid
+            ;";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //now drop first temp table
+    CRM_Core_DAO::executeQuery("DROP TABLE $tblLog;");
 
     //CRM_Core_Error::debug('tblIDs',$tblIDs);
     //CRM_Core_Error::debug('tblLog',$tblLog);
@@ -383,3 +402,23 @@ function createLogTable( $rnd ) {
 
     return $tblLogDedupe;
 } //createLogTable
+
+function excludeGroupContacts( $tbl, $groups ) {
+
+    require_once 'CRM/Contact/BAO/Group.php';
+
+    //get group contacts
+    $excludeContacts = array();
+    foreach ( $groups as $group ) {
+        $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
+        $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
+    }
+    $contactList = implode( ',', $excludeContacts );
+
+    //remove contacts from temp table
+    $sql = "DELETE FROM $tbl
+            WHERE id IN ( $contactList );";
+    CRM_Core_DAO::executeQuery($sql);
+
+    return;
+}

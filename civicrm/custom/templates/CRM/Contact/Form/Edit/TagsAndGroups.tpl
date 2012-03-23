@@ -70,7 +70,7 @@
 		{/if}
 	    {/foreach}
 	</tr>
-	<tr><td>{include file="CRM/common/Tag.tpl"}</td></tr>
+	<tr><td colspan="2" class="groupTagsKeywords">{include file="CRM/common/Tag.tpl"}</td></tr>
     </table>   
 {if $title}
  </div><!-- /.crm-accordion-body -->

@@ -4223,6 +4223,7 @@ SELECT COUNT( civicrm_contribution.total_amount ) as cancel_count,
                 $values = explode ( ',', CRM_Utils_Array::value( 0, explode(')',CRM_Utils_Array::value( 1, explode('(', $value ) ) ) ) );
                 //NYSS
                 if ( $dataType == 'Districts' ) {
+                    $value  = str_replace( array('(',')'), '', $value); //4969 make sure no parens were added (search bldr)
                     $values = array_map('trim', explode( ',', $value ) );
                     $dataType = 'Integer'; //return to expected format
                 }

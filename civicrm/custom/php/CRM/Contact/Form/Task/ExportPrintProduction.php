@@ -77,6 +77,18 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         $this->add( 'select', 'exclude_rt',  ts( 'Exclude Record Types' ), $rts, false, 
                     array( 'id' => 'exclude_rt',  'multiple'=> 'multiple', 'title' => ts('- select -') ));
 
+        require_once 'CRM/Core/PseudoConstant.php';
+        $groups = CRM_Core_PseudoConstant::group( );
+        $this->add( 'select',
+                    'excludeGroups',
+                    ts( 'Exclude Groups' ),
+                    $groups,
+                    false,
+                    array( 'id'       => 'excludeGroups',
+                           'multiple' => 'multiple',
+                           'title'    => ts('- select -') )
+                    );
+
         $this->addDefaultButtons( 'Export Print Production' );
         
     }
@@ -107,6 +119,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $avanti_job_id    = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
     $merge_households = $params['merge_households'];
     $exclude_rt       = implode( ',', $params['exclude_rt'] );
+    $excludeGroups    = $params['excludeGroups'];
     
     //get instance name (strip first element from url)
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -140,6 +153,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
     $sql = "INSERT INTO tmpExport{$rnd}_IDs VALUES $ids;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    if ( $excludeGroups ) {
+        excludeGroupContacts( "tmpExport{$rnd}_IDs", $excludeGroups );
+    }
 
     //now construct sql to retrieve fields and inject in a second tmp table
     $cFlds = getColumns( 'columns' );
@@ -204,9 +221,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     if ( $exclude_rt != null ) {
         $sql .= " AND ( cvci.record_type_61 IS NULL OR cvci.record_type_61 NOT IN ( $exclude_rt ) ) ";
     }
-	
-	//group by contact ID in case any joins with multiple records cause dupe primary in our temp table
-	$sql .= " GROUP BY c.id ";
+
+    //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
+    $sql .= " GROUP BY c.id ";
     
     //order export by individuals, oldest male, oldest female, empty gender values and empty birth dates last
     $sql .= " ORDER BY CASE WHEN c.contact_type='Individual' THEN 1 WHEN c.contact_type='Household' THEN 2 ELSE 3 END, "; 
@@ -703,4 +720,24 @@ function getColumns( $output = 'select' ) {
 
             return '';
     }
+}
+
+function excludeGroupContacts( $tbl, $groups ) {
+
+    require_once 'CRM/Contact/BAO/Group.php';
+
+    //get group contacts
+    $excludeContacts = array();
+    foreach ( $groups as $group ) {
+        $groupContacts = CRM_Contact_BAO_Group::getMember( $group );
+        $excludeContacts = array_merge( $excludeContacts, array_keys($groupContacts) );
+    }
+    $contactList = implode( ',', $excludeContacts );
+
+    //remove contacts from temp table
+    $sql = "DELETE FROM $tbl
+            WHERE id IN ( $contactList );";
+    CRM_Core_DAO::executeQuery($sql);
+
+    return;
 }

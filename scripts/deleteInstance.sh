@@ -47,6 +47,7 @@ fi
 [ "$domain" ] || domain=`$readConfig --ig $instance base.domain` || domain="$DEFAULT_BASE_DOMAIN"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
+db_log_prefix=`$readConfig --ig $instance db.log.prefix` || db_log_prefix="$DEFAULT_DB_LOG_PREFIX"
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 drupal_rootdir=`$readConfig --ig $instance drupal.rootdir` || drupal_rootdir="$DEFAULT_DRUPAL_ROOTDIR"
 data_rootdir=`$readConfig --ig $instance data.rootdir` || data_rootdir="$DEFAULT_DATA_ROOTDIR"
@@ -63,6 +64,7 @@ if [ $force_ok -eq 0 ]; then
   echo "Domain: $domain"
   echo "CiviCRM DB Prefix: $db_civi_prefix"
   echo "Drupal DB Prefix: $db_drup_prefix"
+  echo "Log DB Prefix: $db_log_prefix"
   echo "Drupal Root Directory: $drupal_rootdir"
   echo "Data Root Directory: $data_rootdir"
   if [ $db_only -ne 1 ]; then
@@ -72,6 +74,7 @@ if [ $force_ok -eq 0 ]; then
   if [ $files_only -ne 1 ]; then
     echo "Will delete DB: $db_drup_prefix$db_basename"
     echo "Will delete DB: $db_civi_prefix$db_basename"
+    echo "Will delete DB: $db_log_prefix$db_basename"
   fi
   echo
   echo -n "Are you sure that you want to delete instance $instance ([N]/y)? "
@@ -99,6 +102,12 @@ if [ $files_only -ne 1 ]; then
   echo "Deleting CiviCRM database for instance [$instance]"
   ( set -x
     $execSql -c "drop database $db_civi_prefix$db_basename"
+  ) || errcode=$(($errcode | 4))
+  set +x
+
+  echo "Deleting Log database for instance [$instance]"
+  ( set -x
+    $execSql -c "drop database $db_log_prefix$db_basename"
   ) || errcode=$(($errcode | 4))
   set +x
 fi

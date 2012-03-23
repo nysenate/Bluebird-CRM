@@ -1,0 +1,44 @@
+Installing Selenium and PHPUnit on Windows
+==========================================
+
+    # Download the last version of Selenium Server from the following page
+    # http://seleniumhq.org/download/
+    # Save .jar file to some directory and run it from the command line
+    java -jar selenium-server-standalone-2.20.0.jar
+
+    # NOTE: Selenium Server requires Java which can be found on
+    # http://www.java.com
+
+    
+Installing WAMP Server
+----------------------
+
+    # www.wampserver.com/en/
+    # It includes Apache, MySql and PHP
+
+
+Installing PEAR
+---------------
+
+    # Download go-pear.php from
+    # http://pear.php.net/go-pear
+    # and run it using PHP
+    php go-pear.php
+
+Installing PHPUnit
+------------------
+
+    # Run these commands in command line
+    pear channel-discover pear.phpunit.de
+    pear channel-discover pear.symfony-project.com
+
+    pear install phpunit/PHPUnit
+
+    # edit php.ini file
+    # uncomment ;extension=php_curl.dll
+
+    # install Selenium package
+    pear install phpunit/PHPUnit_Selenium
+
+
+

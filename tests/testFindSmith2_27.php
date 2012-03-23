@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 27, 2012
     This test script is trying to find Smith using the Find Contact
     And then using the Find Anything
@@ -15,8 +14,8 @@
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
@@ -36,12 +35,12 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $this->openAndWait(getMainURL());
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
-       
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password

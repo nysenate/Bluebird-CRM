@@ -17,6 +17,7 @@ execSql=$script_dir/execSql.sh
 pid=$$
 piddir=/var/run
 
+. "$script_dir/defaults.sh"
 
 usage() {
   echo "Usage: $prog [--quiet] [--all] [--live] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName] [--exclude-set instanceSet] [--bg] [--no-wait] [--serial uniq-id] [--timing] [cmd]" >&2
@@ -147,7 +148,7 @@ fi
 for instance in $instances; do
   if $readConfig --instance $instance --quiet; then
     realcmd=`echo "$cmd" | sed -e "s;%%INSTANCE%%;$instance;g" -e "s;{};$instance;g"`
-    [ $quiet_mode -eq 0 ] && echo "[`date +%Y-%m-%d\ %H:%M:%S`] About to exec: $realcmd" >&2
+    [ $quiet_mode -eq 0 ] && logdt "About to exec: $realcmd" >&2
     [ $show_timing -eq 1 ] && echo "==> START [`date +%H:%M:%S.%N`]"
     eval $realcmd $bg_jobs
     [ $show_timing -eq 1 ] && echo "<== FINISH [`date +%H:%M:%S.%N`]"
