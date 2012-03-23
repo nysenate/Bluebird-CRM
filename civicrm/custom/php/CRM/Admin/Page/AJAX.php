@@ -39,6 +39,9 @@
  */
 class CRM_Admin_Page_AJAX
 {
+    const OPENLEG_BASE_URL = 'http://open.nysenate.gov/legislation';
+
+
     /**
      * Function to build menu tree     
      */    
@@ -215,8 +218,11 @@ class CRM_Admin_Page_AJAX
         echo json_encode( $statusMessage );
         CRM_Utils_System::civiExit();
     }
-    
-    static function getTagList( ) {
+
+
+
+    static function getTagList()
+    {
         $name     = CRM_Utils_Type::escape( $_GET['name'], 'String' );
         $parentId = CRM_Utils_Type::escape( $_GET['parentId'], 'Integer' );
         
@@ -232,7 +238,7 @@ class CRM_Admin_Page_AJAX
             // always add current search term as possible tag
             // here we append :::value to determine if existing / new tag should be created
             if ( !$isSearch ) {
-              $tags[] = array( 'name' => $name, 'id' => $name. ":::value" );
+              $tags[] = array( 'name' => $name, 'id' => $name.":::value" );
             }
 
             $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = {$parentId} and name LIKE '%{$name}%'";
@@ -252,72 +258,45 @@ class CRM_Admin_Page_AJAX
             CRM_Utils_System::civiExit();
         }
         elseif ( $parentId == 292 ) {
-            /* NYSS leg positions should retrieve list from open leg and
-            ** create value in tag table.
+            /* NYSS leg positions should retrieve list from OpenLegislation
+            ** and create value in tag table.
             */
             $billNo = $name;
+            $target_url = self::OPENLEG_BASE_URL.'/search/?term=otype:bill+AND+oid:('.$billNo.'+OR+'.$billNo.'*)&searchType=&format=json&pageSize=10';
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL,"http://open.nysenate.gov/legislation/search/?term=otype:bill+AND+oid:(" . $billNo . "+OR+" . $billNo . "*)&searchType=&format=json&pageSize=10");
+            curl_setopt($ch, CURLOPT_URL, $target_url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $content = curl_exec($ch);
-            $content = iconv('ISO-8859-1', 'UTF-8', $content); //NYSS 5128
-            $json = array();
-            $json = json_decode($content, true);
             curl_close($ch);
-                            
+
+            // NYSS 5128 - Handle any non-printables
+            $content = iconv('ISO-8859-1', 'UTF-8', $content);
+            $json = json_decode($content, true);
+
+            // Sort bills by year (descending), and by bill number (ascending)
             function cmp($a, $b) {
-                $a1 = str_split($a['id']);
-                $b1 = str_split($b['id']);
-                $a1_c = count($a1);
-                $b1_c = count($b1);
-        
-                $a1_num = '';
-                $b1_num = '';
-                if (preg_match( "/^[A-Z]+$/",$a1[$a1_c-1])) {
-                    for ($i=1; $i<$a1_c - 1; $i++) {
-                        $a1_num .= $a1[$i] ;
-                    }
-                    $a1_num = intval($a1_num);
-                }
-                else {
-                    for ($i=1; $i<= $a1_c - 1; $i++) {
-                        $a1_num .= $a1[$i] ;
-                    }
-                    $a1_num = intval($a1_num);            
-                }
-                if (preg_match( "/^[A-Z]+$/",$b1[$b1_c-1])) {
-                    for ($i=1; $i<$b1_c - 1; $i++) {
-                        $b1_num .= $b1[$i] ;
-                    }
-                    $b1_num = intval($b1_num);
-                }
-                else { 
-                    for ($i=1; $i<= $b1_c - 1; $i++) {
-                        $b1_num .= $b1[$i] ;
-                    }
-                    $b1_num = intval($b1_num);            
-                }
+              $billid1 = $a['id'];
+              $billid2 = $b['id'];
+              list($billno1, $year1) = explode('-', $billid1);
+              list($billno2, $year2) = explode('-', $billid2);
 
-                if ($a1 == $b1) 
-                    return 0;
-                elseif ($a1[0] < $b1[0])
-                    return -1;
-                elseif ($a1[0] > $b1[0])
-                    return 1;
-                else {
-                    if ($a1_num < $b1_num)
-                        return -1;
-                    elseif ($a1_num > $b1_num)
-                        return 1;
-                    else {
-                        if ($a1 < $b1)
-                            return -1;
-                        elseif ($a1 > $b1)
-                            return 1;
-                    }
-                }
+              if ($year1 < $year2) {
+                return 1;
+              }
+              else if ($year1 > $year2) {
+                return -1;
+              }
+              else if ($billno1 < $billno2) {
+                return -1;
+              }
+              else if ($billno1 > $billno2) {
+                return 1;
+              }
+              else {
+                return 0;
+              }
             }
-
+                            
             usort($json, "cmp");
 
             for ($j=0; $j < count($json); $j++) {
@@ -338,11 +317,11 @@ class CRM_Admin_Page_AJAX
 
                     // Do lookup to see if tag exists in system already,
                     // else construct using standard format
-                    // kz:4315 - escape position tag name
+                    // NYSS 4315 - escape position tag name
                     $query = "SELECT id, name FROM civicrm_tag WHERE parent_id = 292 and name = '".str_replace("'", "''", $positiontag_name)."'";
 
                     $dao = CRM_Core_DAO::executeQuery( $query );
-                    if ( $dao->fetch( ) ) {
+                    if ( $dao->fetch() ) {
                         $tagID = $dao->id;
                     } else {
                         $tagID = $positiontag_name.':::value';
@@ -359,7 +338,10 @@ class CRM_Admin_Page_AJAX
         } //end leg pos condition
     }
     
-    static function mergeTagList( ) {
+
+
+    static function mergeTagList()
+    {
         $name   = CRM_Utils_Type::escape( $_GET['s'],      'String' );
         $fromId = CRM_Utils_Type::escape( $_GET['fromId'], 'Integer' );
         $limit  = CRM_Utils_Type::escape( $_GET['limit'],  'Integer' );
@@ -403,7 +385,10 @@ LIMIT $limit";
         CRM_Utils_System::civiExit( );
     }
 
-    static function processTags( ) {
+
+
+    static function processTags()
+    {
         $skipTagCreate = $skipEntityAction = $entityId = null;
         $action           = CRM_Utils_Type::escape( $_POST['action'], 'String' );
         $parentId         = CRM_Utils_Type::escape( $_POST['parentId'], 'Integer' );
@@ -437,7 +422,7 @@ LIMIT $limit";
         if ( $parentId == 292 ) {
             $ol_id = substr( $tagID, 0, strpos( $tagID, ' ' ) );
             if ( !$ol_id ) { $ol_id = $tagID; } //account for bill with no position appended
-            $ol_url = 'http://open.nysenate.gov/legislation/bill/'.$ol_id;
+            $ol_url = self::OPENLEG_BASE_URL.'/bill/'.$ol_id;
             $sponsor = ( $sponsor ) ? ' ('.$sponsor.')' : '';
             $bill_url = '<a href="'.$ol_url.'" target=_blank>'.$ol_url.'</a>'.$sponsor;
         }
@@ -497,7 +482,8 @@ LIMIT $limit";
 
 
 
-    function mappingList(  ) {
+    function mappingList()
+    {
         $params = array( 'mappingID' );
         foreach ( $params as $param ) {
             $$param = CRM_Utils_Array::value( $param, $_POST );
@@ -551,7 +537,8 @@ LIMIT $limit";
    
 
 
-    static function mergeTags( ) {
+    static function mergeTags()
+    {
         $tagAId = CRM_Utils_Type::escape( $_POST['fromId'], 'Integer' );
         $tagBId   = CRM_Utils_Type::escape( $_POST['toId'],   'Integer' );
         

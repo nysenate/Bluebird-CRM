@@ -163,8 +163,36 @@
                 {/if}
                 
                 {if !empty($contact_type_label) OR !empty($current_employer_id) OR !empty($job_title) OR !empty($legal_name) OR $sic_code OR !empty($nick_name) OR !empty($contactTag) OR !empty($source)}
+                
+                <!--start here-->
+
                 <div id="contactTopBar">
-                	<div class="subHeader"><!--Basic Constituent Information-->{$display_name}</div>
+                	<div class="subHeader" style="height:25px;">
+                        <!--Basic Constituent Information-->
+                        <div class="displayName" style="float:left;margin:5px">
+                            {$display_name}
+                        </div>
+                        <div class="contact_quick_comm_images" style="float:left;" >
+                            {if $privacy.do_not_phone}
+                                <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-donotphone.png" alt="Do Not Phone" style="margin:0 5px 0 0;"/>
+                            {/if}
+                            {if $privacy.do_not_mail}
+                                <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-donotmail.png" alt="Do Not Mail" style="margin:0 5px 0 0;"/>
+                            {/if}
+                            {if $privacy.do_not_email}
+                                <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-donotemail.png" alt="Do Not Email" style="margin:0 5px 0 0;"/>
+                            {/if}
+                            {if $privacy.do_not_sms}
+                                <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-donotsms.png" alt="Do Not SMS"  style="margin:0 5px 0 0;"/>
+                            {/if}
+                            {if $is_deceased eq 1}
+                                <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-deceased.png" alt="Deceased"style="margin:0 5px 0 0;"/>
+                            {/if}
+                            {if $is_deleted} 
+                                <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-trash.png" alt="Trashed" style="margin:0 5px 0 0;"/>
+                            {/if}
+                        </div>
+                    </div>
                     
                     <div class="contact_panel">
                         <div class="contactCardLeft">
@@ -173,7 +201,7 @@
                             <tr>
                                 <td class="label">{ts}Nickname{/ts}</td>
                                 <td>
-                                    {$nick_name}
+                                    {$nick_name}{do_not_email}
                                 </td>
                             </tr>
                         {/if}
