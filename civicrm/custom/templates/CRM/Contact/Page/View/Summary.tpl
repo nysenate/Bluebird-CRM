@@ -155,7 +155,7 @@
 	{/foreach}
 {/foreach}
 
-        <div title="Summary" id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if substr_count($custom_19.field_value, 'Yes')}friend-of-senator{/if}">
+        <div id="contact-summary" class="ui-tabs-panel ui-widget-content ui-corner-bottom {if substr_count($custom_19.field_value, 'Yes')}friend-of-senator{/if}">
             {if (isset($hookContentPlacement) and ($hookContentPlacement neq 3)) or empty($hookContentPlacement)}
                 
                 {if !empty($hookContent) and isset($hookContentPlacement) and $hookContentPlacement eq 2}
