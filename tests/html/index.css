@@ -37,5 +37,13 @@ input.text, select {margin-top:5px;margin-bottom:5px;}
 #new-settings label {display:none;}
 #new-settings input {display:none;}
 
+div.result {
+	width:95%;
+	padding:10px;
+	margin: 10px auto;
+	border: 1px #666 solid;
+	background-color:#eee;
+	font-family:Courier;
+}
 
 #footer { }
