@@ -118,7 +118,7 @@ $row = mysql_fetch_array($result);
 <select name="browser">
   <option value="*firefox" <?php if ($row['browser']=="*firefox") echo "selected"; ?> >Firefox</option>
   <option value="*chrome" <?php if ($row['browser']=="*chrome") echo "selected"; ?>>Chrome</option>
-  <option value="*iexplorer" <?php if ($row['browser']=="*iexplorer") echo "selected"; ?>>Internet Explorer</option>
+  <option value="*iexplore" <?php if ($row['browser']=="*iexplore") echo "selected"; ?>>Internet Explorer</option>
 </select> <br />
 
 
@@ -208,8 +208,6 @@ function radioclick(fn) {
 		document.getElementById(myFiles[fn]+"_input").style.display = "inline-block";
 	}
 
-
-		
 }
 
 </script>
