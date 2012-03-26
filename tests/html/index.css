@@ -2,7 +2,7 @@
 
 body {margin:20px 0px 0px;}
 
-#wrap {width:800px; margin:0 auto; background-color:#999; border:1px solid #000;padding:10px;};
+#wrap {width:800px; margin:0 auto; background-color:#BBB; border:1px solid #000;padding:10px;};
 
 
 #header {}
@@ -19,19 +19,19 @@ a:hover {color:#541957; background-color:#fff;}
 td {font-family: sans-serif; font-size:11px; margin: 0px;}
 td { padding-right:5px;padding-left:5px;}
 
-td.even {background-color:#AE9BAF;}
+td.even {background-color:#BFACBF;}
 
-label {font-family: sans-serif; font-size:12px; margin: 0px; width:100px; display: inline-block;}
+label {font-family: sans-serif; font-size:12px; text-align:right; margin: 0px; width:100px; display: inline-block;}
 
 input.text, select {margin-top:5px;margin-bottom:5px;}
 
-#script-tree {display:inline-block; background-color:#9d8a9e; width:350px; border:1px solid #000; padding:3px;float:left;}
+#script-tree {display:inline-block; background-color:#AE9BAF; width:350px; border:1px solid #000; padding:3px;float:left;}
 
-#settings {display:inline-block; background-color:#9d8a9e; width:420px; border:1px solid #000; padding:3px; margin-left:10px;}
+#settings {display:inline-block; background-color:#AE9BAF; width:420px; border:1px solid #000; padding:3px; margin-left:10px;}
 
-#main .new-settings {display:inline-block; background-color:#9d8a9e; width:420px; border:1px solid #000; padding:3px; margin-left:10px;margin-top:10px;}
+#main .new-settings {display:inline-block; background-color:#AE9BAF; width:420px; border:1px solid #000; padding:3px; margin-left:10px;margin-top:10px;}
 
-#submit {margin-left:10px;margin-top:12px; height:35px;float:right;}
+#submit {margin-left:10px;margin-top:12px; min-height:30px;float:right;}
 
 #new-settings {float:right; margin-right:4px;}
 #new-settings label {display:none;}
