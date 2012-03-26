@@ -131,7 +131,7 @@ $row = mysql_fetch_array($result);
 <label>Browser:</label>
 <select name="browser">
   <option value="*firefox" <?php if ($row['browser']=="*firefox") echo "selected"; ?> >Firefox</option>
-  <option value="*chrome" <?php if ($row['browser']=="*chrome") echo "selected"; ?>>Chrome</option>
+  <option value="*googlechrome" <?php if ($row['browser']=="*googlechrome") echo "selected"; ?>>Chrome</option>
   <option value="*iexplore" <?php if ($row['browser']=="*iexplore") echo "selected"; ?>>Internet Explorer</option>
 </select> <br />
 
