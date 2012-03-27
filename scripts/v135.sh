@@ -60,6 +60,8 @@ $execSql -i $instance -c "$res"
 setGroups="UPDATE civicrm_group SET is_reserved = 1 WHERE name = 'Case_Resources' OR name = 'Office_Staff' OR name = 'Mailing_Exclusions' OR name = 'Mailing_Seeds' OR name = 'Bluebird_Mail_Subscription' OR name = 'Email_Seeds'"
 $execSql -i $instance -c "$setGroups"
 
+# TODO: set drupal roles with administer reserved groups perm
+
 # 5113 alter on hold thresholds
 thresh="
 UPDATE civicrm_mailing_bounce_type SET hold_threshold = 1 WHERE id = 1;
