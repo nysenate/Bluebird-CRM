@@ -146,18 +146,23 @@ class CRM_Group_Page_Group extends CRM_Core_Page_Basic
     function browse($action = null) 
     {
         //NYSS 4887
-		$groupPermission =
+        $groupPermission =
             CRM_Core_Permission::check( 'edit groups' ) ? CRM_Core_Permission::EDIT : CRM_Core_Permission::VIEW;
         $this->assign( 'groupPermission', $groupPermission );
 
-		$showOrgInfo = false;
+        //NYSS 5036
+        $reservedPermission =
+            CRM_Core_Permission::check( 'administer reserved groups' ) ? CRM_Core_Permission::EDIT : CRM_Core_Permission::VIEW;
+        $this->assign( 'reservedPermission', $reservedPermission );
+
+        $showOrgInfo = false;
         if ( defined( 'CIVICRM_MULTISITE' ) && CIVICRM_MULTISITE && 
              CRM_Core_Permission::check( 'administer Multiple Organizations' ) ) {
             $showOrgInfo = true;  
         }
-		$this->assign( 'showOrgInfo', $showOrgInfo );
+        $this->assign( 'showOrgInfo', $showOrgInfo );
 
-		$this->search( );
+        $this->search( );
     }
     
     function search( ) {

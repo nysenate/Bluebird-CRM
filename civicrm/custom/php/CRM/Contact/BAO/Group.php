@@ -733,6 +733,9 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
            $groupPermissions[] = CRM_Core_Permission::EDIT;
            $groupPermissions[] = CRM_Core_Permission::DELETE;
        }
+	   
+	   //NYSS 5036
+	   $reservedPermission = CRM_Core_Permission::check( 'administer reserved groups' );
        
        require_once 'CRM/Core/OptionGroup.php';
        $links = self::links( );
@@ -770,6 +773,15 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
                }
 			   
                $action = $action & CRM_Core_Action::mask( $groupPermissions );
+
+               //NYSS 5036
+               if ( array_key_exists( 'is_reserved', $object ) ) {
+                   //if group is reserved and I don't have reserved permission, suppress delete/edit
+                   if ( $object->is_reserved && !$reservedPermission ) {
+                       $action -= CRM_Core_Action::DELETE;
+                       $action -= CRM_Core_Action::UPDATE;
+                   }
+               }
                
                $values[$object->id]['visibility'] = CRM_Contact_DAO_Group::tsEnum('visibility',
                                                                                   $values[$object->id]['visibility']);

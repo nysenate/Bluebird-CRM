@@ -19,7 +19,8 @@ function nyss_civihooks_perm() {
     return array( 'export print production files',
                   'delete contacts permanently',
                   'administer district',
-                  'view mass email' );
+                  'view mass email',
+                  'administer reserved groups' );
 }
 
 function nyss_civihooks_getfile() {
