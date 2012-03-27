@@ -603,20 +603,27 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
 	//4567 make admin breadcrumb unclickable if lacking permission
 	if ( $pagename == 'CRM_Admin_Page_Tag' ||
 	     $pagename == 'CRM_Admin_Page_Mapping' ||
-		 $pagename == 'CRM_Report_Page_TemplateList' ) {
+         $pagename == 'CRM_Report_Page_TemplateList' ) {
 
-		if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
-		    return;
-		}
+        if ( CRM_Core_Permission::check( 'administer CiviCRM' ) ) {
+            return;
+        }
 
-		$breadCrumb = drupal_get_breadcrumb( );
-		foreach ( $breadCrumb as $key => $crumb ) {
-			if ( $crumb == '<a href="/civicrm/admin?reset=1">Administer Bluebird</a>' ) {
-			    $breadCrumb[$key] = 'Administer Bluebird';
-			}
-		}
-		drupal_set_breadcrumb( $breadCrumb );
-	}
+        $breadCrumb = drupal_get_breadcrumb( );
+        foreach ( $breadCrumb as $key => $crumb ) {
+            if ( $crumb == '<a href="/civicrm/admin?reset=1">Administer Bluebird</a>' ) {
+                $breadCrumb[$key] = 'Administer Bluebird';
+            }
+        }
+        drupal_set_breadcrumb( $breadCrumb );
+    }
+
+    //NYSS 5149
+    if ( $pagename == 'CRM_Dashlet_Page_Activity' ||
+         $pagename == 'CRM_Activity_Page_Tab' ) {
+        $activityStatusList = CRM_Core_PseudoConstant::activityStatus();
+        $page->assign( 'activityStatusList', $activityStatusList);
+    }
 }
 
 function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form ) {

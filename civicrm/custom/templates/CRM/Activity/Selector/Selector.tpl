@@ -24,11 +24,19 @@
 <div id="contact-activity-selector-dashlet_pastDays">
     Show activities for past 
     <select id='pastDays'>
-        <option value='all'> - All - </option>
+        <option value='all' selected="selected"> - All - </option>
         <option value='7'>7</option>
         <option value='14'>14</option>
         <option value='30'>30</option>
-    </select> days
+    </select> days,
+    and for
+    <select id="statusID">
+        <option value="all" selected="selected"> - All - </option>
+        {foreach from=$activityStatusList key=statusID item=statusLabel}
+            <option value="{$statusID}">{$statusLabel}</option>
+        {/foreach}
+    </select>
+    status.
 </div>
 
 <table id="contact-activity-selector-{$context}">
@@ -61,6 +69,10 @@ cj( function ( ) {
    });
    //NYSS 5088
    cj('#pastDays').change( function( ) {
+       buildContactActivities{/literal}{$context}{literal}( true );
+   });
+   //NYSS 5149
+   cj('#statusID').change( function( ) {
        buildContactActivities{/literal}{$context}{literal}( true );
    });
 });
@@ -116,6 +128,10 @@ function buildContactActivities{/literal}{$context}{literal}( filterSearch ) {
             //NYSS 5088
             aoData.push(
                     {name:'past_days', value: cj(' select#pastDays').val()}
+                );
+            //NYSS 5149
+            aoData.push(
+                    {name:'status_id', value: cj(' select#statusID').val()}
                 );
             cj.ajax( {
                 "dataType": 'json', 
