@@ -89,22 +89,27 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
                            'title'    => ts('- select -') )
                     );
 
+        //5142
+        $bbconfig = get_bluebird_instance_config();
+        $allowedInstances = array( '3rdparty', '3rdpartystatewide' );
+
+        if ( ( CRM_Core_Permission::check( 'export print production files' ) && 
+               in_array($bbconfig['db.basename'], $allowedInstances) ) ||
+             $bbconfig['servername'] == 'sd99.crmdev.nysenate.gov' ||
+             $bbconfig['servername'] == 'sd99.crmtest.nysenate.gov' ) {
+
+            $this->addElement('text', 'district_excludes', ts('District # to Process Exclusions') );
+            $this->addRule( 'district_excludes', 
+                            ts('Please enter the district exclusion as a number (integer only).'), 
+                            'positiveInteger');
+        }
+
+        //5150
+        $this->addElement('checkbox', 'excludeSeeds', ts('Exclude Seeds Group'), null );
+
         $this->addDefaultButtons( 'Export Print Production' );
-        
     }
 
-    function addRules( )
-    {
-        $this->addFormRule( array( 'CRM_Contact_Form_Task_ExportPrintProduction', 'formRule' ) );
-    }
-    
-    static function formRule( $form, $rule) {
-        $errors =array();
-        if ( empty( $form['tag'] ) && empty( $form['taglist'] ) ) {
-            //$errors['_qf_default'] = "Please select atleast one tag.";
-        }
-        return $errors;
-    }
     /**
      * process the form after the input has been submitted and validated
      *
@@ -120,6 +125,8 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $merge_households = $params['merge_households'];
     $exclude_rt       = implode( ',', $params['exclude_rt'] );
     $excludeGroups    = $params['excludeGroups'];
+    $districtExclude  = $params['district_excludes'];
+    $excludeSeeds     = $params['excludeSeeds'];
     
     //get instance name (strip first element from url)
     $instance = substr( $_SERVER['HTTP_HOST'], 0, strpos( $_SERVER['HTTP_HOST'], '.' ) );
@@ -137,10 +144,15 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Exclusions';" );
     if ( !$eogid ) $eogid = 0; //prevent errors if group is not found
 
-    //add any members of the seed group
-    $sql = "SELECT contact_id FROM civicrm_group_contact WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds') AND status = 'Added';";
-    $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-    while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
+    //5150 add any members of the seed group unless intentionally excluding
+    if ( !$excludeSeeds ) {
+        $sql = "SELECT contact_id
+                FROM civicrm_group_contact
+                WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds')
+                  AND status = 'Added';";
+        $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+        while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
+    }
 
     $this->_contactIds = array_unique($this->_contactIds);
 
@@ -243,6 +255,11 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     //remove the household_id column so print prod processing is not altered
     $sql = "ALTER TABLE tmpExport$rnd DROP COLUMN household_id;";
     CRM_Core_DAO::executeQuery( $sql );
+
+    //5142 remove district exclusions
+    if ( $districtExclude ) {
+        processDistrictExclude( $districtExclude, "tmpExport$rnd" );
+    }
 
     //check if printProduction subfolder exists; if not, create it
     $config =& CRM_Core_Config::singleton();
@@ -428,7 +445,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     CRM_Core_Session::setStatus( $status );
     
     } //end of function
-}
+}//end class
 
 function fputcsv2 ($fh, array $fields, $delimiter = ',', $enclosure = '"', $mysql_null = false, $blank_as_null = false) {
 
@@ -738,6 +755,52 @@ function excludeGroupContacts( $tbl, $groups ) {
     $sql = "DELETE FROM $tbl
             WHERE id IN ( $contactList );";
     CRM_Core_DAO::executeQuery($sql);
+
+    return;
+}
+
+/**
+  *
+  * 5142
+  * given a district ID, collect district exclusions and remove from the import
+  *
+  */
+function processDistrictExclude( $districtID, $tbl ) {
+
+    //retrieve the instance name using the district ID
+    $instance = $dbBase = '';
+    $bbFullConfig = get_bluebird_config();
+    CRM_Core_Error::debug('bbFullConfig',$bbFullConfig);
+    foreach ( $bbFullConfig as $group => $details ) {
+        if ( strpos($group, 'instance:') !== false ) {
+            if ( $details['district'] == $districtID ) {
+                $instance = substr($group, 9);
+                $dbBase   = $details['db.basename'];
+                break;
+            }
+        }
+    }
+
+    //retrieve values using db basename and create temp table
+    $db   = $bbFullConfig['globals']['db.civicrm.prefix'].$dbBase;
+    $dTbl = "{$tbl}_d{$districtID}";
+
+    //need to list sa columns to avoid naming conflicts
+    $sql  = "CREATE TABLE $dTbl TYPE=myisam
+             SELECT c.id, sc.*, sa.address_id, sa.street_address, sa.country_id, sa.state_province_id, sa.supplemental_address_1, sa.supplemental_address_2, sa.postal_code, sa.city, e.email
+             FROM $db.civicrm_contact c
+             LEFT JOIN $db.shadow_contact sc
+               ON c.id = sc.contact_id
+             LEFT JOIN $db.shadow_address sa
+               ON c.id = sa.contact_id
+             LEFT JOIN $db.civicrm_email e
+               ON c.id = e.contact_id
+             WHERE c.is_deleted = 0
+               AND ( c.do_not_mail = 1 OR c.do_not_trade = 1 )";
+    $dao  = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    //now compare the district exclude table ($dTbl) to the main export table ($tbl)
+    //and remove matches from the main table
 
     return;
 }

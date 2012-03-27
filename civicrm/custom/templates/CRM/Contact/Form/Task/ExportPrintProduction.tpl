@@ -72,6 +72,14 @@
       {/literal}
   </dd>
 
+{if $form.district_excludes}
+  <dt>{$form.district_excludes.label}</dt>
+    <dd>{$form.district_excludes.html}</dd>
+{/if}
+
+<dt>{$form.excludeSeeds.label}</dt>
+  <dd>{$form.excludeSeeds.html}</dd>
+
 </dt>
   <dd>{$form.buttons.html}</dd>
 </dl>
