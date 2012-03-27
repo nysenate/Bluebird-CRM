@@ -770,7 +770,6 @@ function processDistrictExclude( $districtID, $tbl ) {
     //retrieve the instance name using the district ID
     $instance = $dbBase = '';
     $bbFullConfig = get_bluebird_config();
-    CRM_Core_Error::debug('bbFullConfig',$bbFullConfig);
     foreach ( $bbFullConfig as $group => $details ) {
         if ( strpos($group, 'instance:') !== false ) {
             if ( $details['district'] == $districtID ) {
