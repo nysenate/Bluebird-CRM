@@ -780,6 +780,7 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
                    if ( $object->is_reserved && !$reservedPermission ) {
                        $action -= CRM_Core_Action::DELETE;
                        $action -= CRM_Core_Action::UPDATE;
+                       $action -= CRM_Core_Action::DISABLE;
                    }
                }
                
