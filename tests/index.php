@@ -5,7 +5,11 @@
 <div id="main">
 
 <?php
-	$update = $_GET['update'];
+	if (isset($_GET['update'])) {
+		$update = $_GET['update'];	
+	} else {
+		$update = 0;
+	}	
 
 	class configClass {
 		public $displayName;
@@ -20,6 +24,8 @@
 	function readSettings($filename) {
 		global $config;
 		global $nConfig;
+		$sArray = array();
+		
 		$handle = @fopen($filename, "r");
 		if ($handle) {
 		    while (($buffer = fgets($handle, 4096)) != false ) {
@@ -78,6 +84,14 @@ $query = "SELECT * FROM `test` WHERE TRUE ORDER BY `tid` DESC LIMIT 9;";
 $link = mysql_connect($mysql_host, $mysql_user, $mysql_pwd);
 mysql_select_db($mysql_db);
 $result = mysql_query($query, $link);
+
+if (!mysql_num_rows($result)) {
+	// empty database?
+	$tmpQuery = "INSERT INTO `test`(`browser) VALUES ('*firefox');";
+	$result_2 = mysql_query($tmpQuery, $link);
+	$result = mysql_query($query, $link);
+}
+
 echo "<table>";
 $i = 1;
 while ($row = mysql_fetch_array($result)) {
@@ -117,8 +131,8 @@ $row = mysql_fetch_array($result);
 <label>Browser:</label>
 <select name="browser">
   <option value="*firefox" <?php if ($row['browser']=="*firefox") echo "selected"; ?> >Firefox</option>
-  <option value="*chrome" <?php if ($row['browser']=="*chrome") echo "selected"; ?>>Chrome</option>
-  <option value="*iexplorer" <?php if ($row['browser']=="*iexplorer") echo "selected"; ?>>Internet Explorer</option>
+  <option value="*googlechrome" <?php if ($row['browser']=="*googlechrome") echo "selected"; ?>>Chrome</option>
+  <option value="*iexplore" <?php if ($row['browser']=="*iexplore") echo "selected"; ?>>Internet Explorer</option>
 </select> <br />
 
 
@@ -208,8 +222,6 @@ function radioclick(fn) {
 		document.getElementById(myFiles[fn]+"_input").style.display = "inline-block";
 	}
 
-
-		
 }
 
 </script>

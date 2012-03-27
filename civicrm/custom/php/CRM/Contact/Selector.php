@@ -521,7 +521,11 @@ class CRM_Contact_Selector extends CRM_Core_Selector_Base implements CRM_Core_Se
 
         $mapMask = $mask & 4095; // mask value to hide map link if there are not lat/long
         
-        $gc = CRM_Core_SelectValues::groupContactStatus();
+        //NYSS 4800
+        //$gc = CRM_Core_SelectValues::groupContactStatus();
+        if ( $this->_searchContext == 'smog' ) {
+            $gc = CRM_Core_SelectValues::groupContactStatus();
+        }
 
         if ( $this->_ufGroupID ) {
             require_once 'CRM/Core/PseudoConstant.php';

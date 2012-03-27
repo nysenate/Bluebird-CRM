@@ -49,13 +49,14 @@ if (!$testname) {
 }
 
 // Run test
-echo "Starting: "."phpunit ".$testname."<br/><br/>";
-system("phpunit ".$testname);
-
+echo "Starting: <pre>"."c:\wamp\phpunit ".$testname."</pre>";
+echo "<div class=\"result\">";
+system("c:\wamp\phpunit ".$testname);
+echo "</div>";
 ?>
 
 
-<br/><br/><br/>
+<br/>
 <a href="index.php"><h3>Start over</h3></a>
 
 

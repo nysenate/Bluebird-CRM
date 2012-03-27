@@ -179,14 +179,17 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
             }
             
             if ( $this->_contactId ) {
-                require_once 'CRM/Contact/BAO/Contact.php';
-                $contact = new CRM_Contact_DAO_Contact( );
-                $contact->id = $this->_contactId;
-                if ( ! $contact->find( true ) ) {
+                //NYSS 4800
+				$defaults          = array();
+                $params            = array( 'id' => $this->_contactId );
+                $returnProperities = array( 'id', 'contact_type', 'contact_sub_type' );
+                CRM_Core_DAO::commonRetrieve('CRM_Contact_DAO_Contact', $params, $defaults, $returnProperities );
+
+                if ( !CRM_Utils_Array::value( 'id', $defaults ) ) {
                     CRM_Core_Error::statusBounce( ts('contact does not exist: %1', array(1 => $this->_contactId)) );
                 }
-                $this->_contactType = $contact->contact_type;
-                $this->_contactSubType = $contact->contact_sub_type;
+                $this->_contactType    = CRM_Utils_Array::value( 'contact_type', $defaults );
+                $this->_contactSubType = CRM_Utils_Array::value( 'contact_sub_type', $defaults );
                 
                 // check for permissions
                 require_once 'CRM/Contact/BAO/Contact/Permission.php';
@@ -195,15 +198,18 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
                      ! CRM_Contact_BAO_Contact_Permission::allow( $this->_contactId, CRM_Core_Permission::EDIT ) ) {
                     CRM_Core_Error::statusBounce( ts('You do not have the necessary permission to edit this contact.') );
                 }
-                
+
+                require_once 'CRM/Contact/BAO/Contact.php'; //NYSS 4800
                 list( $displayName, $contactImage ) = CRM_Contact_BAO_Contact::getDisplayAndImage( $this->_contactId );
                 
                 CRM_Utils_System::setTitle( $displayName, $contactImage . ' ' . $displayName );
                 $context = CRM_Utils_Request::retrieve( 'context', 'String', $this );
                 $qfKey = CRM_Utils_Request::retrieve( 'key', 'String', $this );
-                require_once 'CRM/Utils/Rule.php';
+
                 $urlParams = 'reset=1&cid='. $this->_contactId;
-                if ( $context ) $urlParams .= "&context=$context"; 
+                if ( $context ) $urlParams .= "&context=$context";
+
+				require_once 'CRM/Utils/Rule.php';
                 if ( CRM_Utils_Rule::qfKey( $qfKey ) ) $urlParams .= "&key=$qfKey"; 
                 $session->pushUserContext(CRM_Utils_System::url('civicrm/contact/view', $urlParams ));
                 
@@ -212,8 +218,14 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
                 if ( !empty( $values ) ) {
                     $this->_values = $values;
                 } else {
-                    $params = array( 'id'         => $this->_contactId,
-                                     'contact_id' => $this->_contactId ) ;
+                    //NYSS 4800
+                    $params = array( 'id'              => $this->_contactId,
+                                     'contact_id'      => $this->_contactId,
+                                     'noRelationships' => true,
+                                     'noNotes'         => true,
+                                     'noGroups'        => true
+                                   ) ;
+
                     $contact = CRM_Contact_BAO_Contact::retrieve( $params, $this->_values, true );
                     $this->set( 'values', $this->_values );
                 }
