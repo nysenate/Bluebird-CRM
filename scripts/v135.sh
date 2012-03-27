@@ -49,8 +49,31 @@ $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_delete_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_update_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_insert_trigger;"
 
-# TODO: construct logging report instance
+# TODO: enable change logging
+# TODO: construct logging report instance [may not be necessary]
 # TODO: set report instance to access civiReport
+
+# 5036 create is_reserved group field and set reserved groups
+res="ALTER TABLE civicrm_group ADD is_reserved TINYINT( 4 ) NULL DEFAULT '0'"
+$execSql -i $instance -c "$res"
+
+setGroups="UPDATE civicrm_group SET is_reserved = 1 WHERE name = 'Case_Resources' OR name = 'Office_Staff' OR name = 'Mailing_Exclusions' OR name = 'Mailing_Seeds' OR name = 'Bluebird_Mail_Subscription' OR name = 'Email_Seeds'"
+$execSql -i $instance -c "$setGroups"
+
+# 5113 alter on hold thresholds
+thresh="
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 1 WHERE id = 1;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 2;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 3;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 4;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 1 WHERE id = 5;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 1 WHERE id = 6;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 7;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 8;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 9;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 10;
+UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 11;"
+$execSql -i $instance -c "$thresh"
 
 ### Cleanup ###
 
