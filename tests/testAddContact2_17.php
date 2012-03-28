@@ -20,7 +20,7 @@ require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
+    protected $captureScreenshotOnFailure = FALSE;
     protected $screenshotPath = '/home/mgordo/screenshots';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
@@ -29,6 +29,10 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox") || strpos($this->settings->browser,"chrome")) {
+            $this->captureScreenshotOnFailure = TRUE;
+        }
         
         /* 
             for pause uncomment the following line
