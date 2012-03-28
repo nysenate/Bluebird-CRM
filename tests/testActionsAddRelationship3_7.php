@@ -142,7 +142,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
     }
 
 /*
