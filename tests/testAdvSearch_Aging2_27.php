@@ -25,7 +25,7 @@ require_once 'Config.php';
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
     protected $captureScreenshotOnFailure = FALSE;
-    protected $screenshotPath = getScreenshotPath();
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -36,6 +36,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         if (strpos($this->settings->browser,"firefox")) {
             $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
         }
         //$this->setSleep($this->settings->sleepTime);
     }
