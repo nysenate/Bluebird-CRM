@@ -50,11 +50,10 @@ if (!$testname) {
 
 // Run test
 echo "Starting: <pre>"."c:\wamp\phpunit ".$testname."</pre>";
-echo "<div class=\"result\">";
-system("c:\wamp\phpunit ".$testname);
-echo "</div>";
+echo "<div class=\"result\"><pre style="width:700px !important;">";
+$result = system("c:\wamp\phpunit ".$testname);
+echo "</pre></div>";
 ?>
-
 
 <br/>
 <a href="index.php"><h3>Start over</h3></a>

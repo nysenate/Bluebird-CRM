@@ -63,10 +63,9 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->check("Custom Search","xpath=//ul[@id='nyss-menu']/li[2]");          // custom search
         $this->check("Reports","xpath=//ul[@id='nyss-menu']/li[3]");                // reports
         $this->check("Manage","xpath=//ul[@id='nyss-menu']/li[4]");                 // manage
-        $this->check("Administer","xpath=//ul[@id='nyss-menu']/li[5]");             // Administer
+//        $this->check("Administer","xpath=//ul[@id='nyss-menu']/li[5]");             // Administer
 
         $this->check("Refresh Dashboard Data","xpath=//a[@class='button show-refresh']/span[1]");  // Refresh Dashboard Data
-
         $this->check("Find Contacts","civi_sort_name");     // Find contacts
         $this->check("Find Anything!","civi_text_search");   // Find Anything!
 
