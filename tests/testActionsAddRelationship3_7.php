@@ -92,7 +92,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // find Meeting and click on it
         $this->click("link=Add Relationship");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("search-button");
 
         $this->select("relationship_type_id","value=2_a_b"); // SPOUSE OF
@@ -108,7 +108,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         $this->click("_qf_Relationship_upload-top"); // save the relationship
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
 
         $this->waitForElementPresent("option11"); // wait for page to load
         $this->assertTrue($this->isTextPresent("Spouse of"),"Can not save the relationship ");
@@ -119,7 +119,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//table[@id='option11']/tbody[1]/tr[1]/td[8]/span[2]/ul[1]/li[2]/a[1]"); // "delete"
         
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->assertTrue(!$this->isTextPresent("Spouse of"),"Can not delete the relationship ");
 
 

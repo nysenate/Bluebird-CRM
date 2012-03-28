@@ -89,7 +89,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // find Meeting and click on it
         $this->click("link=Meeting");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("_qf_Activity_upload-bottom");
 
         // edit date. set tomorrow
@@ -119,7 +119,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // save it
         $this->click("_qf_Activity_upload-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("contact-activity-selector-activity");
         $this->assertTrue($this->isTextPresent("Scheduled"),"Can not create the meeting ");
 
@@ -127,13 +127,13 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent("xpath=//td[@class='crm-contact-activity-links']"); // View | Edit | Delete  - block
         $this->click("xpath=//td[@class='crm-contact-activity-links']/span[1]/a[3]"); // DELETE
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
 
         // confirm deletion
         $this->waitForElementPresent("_qf_Activity_next-bottom");
         $this->click("_qf_Activity_next-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("contact-activity-selector-activity");
 
         $this->assertTrue($this->isTextPresent("No matches found."),"Can not delete the meeting ");

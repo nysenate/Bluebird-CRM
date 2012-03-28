@@ -93,7 +93,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
 
         // find EDIT
         $this->waitForElementPresent("xpath=//ul[@id='actions']/li[2]/a[1]");
@@ -101,7 +101,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//ul[@id='actions']/li[2]/a[1]");
 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
         // wait for SAVE to present
         $this->waitForElementPresent("_qf_Contact_upload_view-bottom");
 
@@ -118,7 +118,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         $this->click("_qf_Contact_upload_view-bottom"); // save
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
         $this->assertTrue($this->isTextPresent("Do not phone"),"Can not set DO NOT PHONE ");
         $this->assertTrue($this->isTextPresent("Do not email"),"Can not set DO NOT EMAIL ");
         $this->assertTrue($this->isTextPresent("Do not sms"),"Can not set DO NOT SMS ");
@@ -140,7 +140,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
 
         // find EDIT
         $this->waitForElementPresent("xpath=//ul[@id='actions']/li[2]/a[1]");
@@ -148,7 +148,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//ul[@id='actions']/li[2]/a[1]");
 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
         // wait for SAVE to present
         $this->waitForElementPresent("_qf_Contact_upload_view-bottom");
 
@@ -165,7 +165,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         $this->click("_qf_Contact_upload_view-bottom"); // save
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
         $this->assertTrue(!$this->isTextPresent("Do not phone"),"Can not uncheck DO NOT PHONE ");
         $this->assertTrue(!$this->isTextPresent("Do not email"),"Can not uncheck DO NOT EMAIL ");
         $this->assertTrue(!$this->isTextPresent("Do not sms"),"Can not uncheck DO NOT SMS ");

@@ -115,25 +115,21 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // save it
         $this->click("_qf_Case_upload-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
         $this->waitForElementPresent("_qf_CaseView_cancel-bottom");
         $this->assertTrue($this->isTextPresent("Budget case"),"Can not create the case ");
 
         $this->click("_qf_CaseView_cancel-bottom"); // DONE button
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
 
         // now delete the case
 
         $this->waitForElementPresent("xpath=//table[@class='caseSelector']");
         $this->click("link=Delete");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
 
         $this->waitForElementPresent("_qf_Case_next-bottom");
         $this->click("_qf_Case_next-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
 
         $this->waitForElementPresent("Cases");
         $this->assertTrue(!$this->isTextPresent("Budget case"),"Couldn't delete the case. ");
