@@ -78,9 +78,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
     public function performTasks() {
         $this->setSleep($this->settings->sleepTime);
         $this->openAdvancedSearch();
-        $this->performTasks();
-
-
+        $this->performTasks2();
     }
 
     private function openAdvancedSearch() {
@@ -90,7 +88,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent('_qf_Advanced_refresh');
     }
 
-    private function performTasks() {
+    private function performTasks2() {
         // select issue code Aging
         $this->click('crmasmSelect2');
         $this->select('crmasmSelect2',  "value=5"); //5 is Aging in html source code of the include

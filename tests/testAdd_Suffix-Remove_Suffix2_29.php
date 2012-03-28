@@ -113,7 +113,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("_qf_Contact_upload_view-bottom"); // save
         $this->waitForPageToLoad('30000');
 
-        $this->assertTrue($this->isTextPresent("$keyword, PhD"),"Can not add suffix='PhD' ");
+        $this->assertTrue($this->isTextPresent(", PhD"),"Can not add suffix='PhD' ");
 
         // now REMOVE the suffix!
 
