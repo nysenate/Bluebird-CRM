@@ -26,6 +26,7 @@
 	function readSettings($filename) {
 		global $config;
 		global $nConfig;
+		global $domain;
 		$sArray = array();
 		
 		$handle = @fopen($filename, "r");
@@ -51,7 +52,7 @@
 
 	readSettings("config.cfg");
 
-	echo $domain;
+	//echo $domain; // for debugging
 ?>
 
 
