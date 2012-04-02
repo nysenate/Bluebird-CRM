@@ -15,10 +15,12 @@
 		public $displayName;
 		public $fileName;
 		public $settings;
+		public $comment;
 	}
 
 	$config = array();
 	$nConfig = 0;
+	$domain = "/";
 
 	// read configuration file
 	function readSettings($filename) {
@@ -30,14 +32,18 @@
 		if ($handle) {
 		    while (($buffer = fgets($handle, 4096)) != false ) {
 		    	$buffer = trim($buffer);
-		    	if (strlen($buffer)>0 && $buffer[0]!='#') {
+		    	if (strlen($buffer)>0 && $buffer[0]!='#' && $buffer[0]!=';') {
 		    		$sArray = explode("\t", $buffer);
 			    	$cfg = new configClass();
 			    	$cfg->displayName = $sArray[0];
 			    	$cfg->fileName = trim($sArray[1]);
 			    	$cfg->settings = trim($sArray[2]);
+			    	$cfg->comment = trim($sArray[3]);
 			    	$config[$nConfig++] = $cfg;
-			    }		    
+			    }
+			    if ($buffer[0]=='!') {                 // setting up the domain
+			    	$domain = trim(substr($buffer,1));
+			    }
 		    }
 		}
 		fclose($handle);
@@ -116,15 +122,21 @@ echo "</table>";
 <h3>General settings</h3>
 
 <?php
-if ($update==1) {
-	
+if ($update==1) {              // read some patricular settings	
 	$tid = $_GET['link'];
 	$query = "SELECT * FROM `test` WHERE `tid`='$tid';";
-} else {
+} else {                       // no settings specified - load the last one
 	$query = "SELECT * FROM `test` WHERE TRUE ORDER BY `tid` DESC LIMIT 1;";
 }
 $result = mysql_query($query, $link);
 $row = mysql_fetch_array($result);
+
+$host = $row['host'];                    // cut everything except for district name e.g. sd99
+if (substr($host,0,7)=="http://") {
+	$host = substr($host, 7);
+	$_host = explode("/", $host);
+	$host = $_host[0];
+}
 
 ?>
 
@@ -136,28 +148,32 @@ $row = mysql_fetch_array($result);
 </select> <br />
 
 
-<label>Number of instances:</label>
-<input type="text" name="nins" class="text" value="1" onkeydown="return kd(event)"><br />
-
 <label>Host:</label>
-<input type="text" name="host" class="text" value="<?php echo $row['host']; ?>" onkeydown="return kd(event)"><br />
+<input type="text" name="host" class="text" value="<?php echo $host; ?>" onkeydown="return kd(event)"><br />
 
-<label>Username:</label>
-<input type="text" name="username" class="text" value="<?php echo $row['username']; ?>" onkeydown="return kd(event)"><br />
+<h3 id="more-settings-link-h3"><a id="more-settings-link" href="javascript:givememore();">More settings ...</a></h3>
 
-<label>Password:</label>
-<input type="text" name="password" class="text" value="<?php echo $row['password']; ?>" onkeydown="return kd(event)"><br />
+<div id="more-settings" style="visibility: hidden;height:20px;">
+	<label>Number of instances:</label>
+	<input type="text" name="nins" class="text" value="1" onkeydown="return kd(event)"><br />
 
-<label>Pause:</label>
-<input type="text" name="sleep" class="text" value="<?php echo $row['sleep']; ?>" onkeydown="return kd(event)"><br />
+	<label>Username:</label>
+	<input type="text" name="username" class="text" value="<?php echo $row['username']; ?>" onkeydown="return kd(event)"><br />
 
+	<label>Password:</label>
+	<input type="text" name="password" class="text" value="<?php echo $row['password']; ?>" onkeydown="return kd(event)"><br />
+
+	<label>Pause:</label>
+	<input type="text" name="sleep" class="text" value="<?php echo $row['sleep']; ?>" onkeydown="return kd(event)"><br />
+</div><!-- /more-settings-->
 
 
 </div><!-- /general settings -->
 
-<div class="new-settings" id="new-settings" style="display:none;">
+<div class="new-settings" id="new-settings" style="display:none;margin-top:-125px;">
 <h3>Specific settings</h3>
 
+<div id="comment"></div>
 
 <label id="SearchName_label">Search name:</label>
 <input id="SearchName_input" type="text" name="searchname" class="text" value="<?php echo $row['searchname']; ?>" onkeydown="return kd(event)"><br />
@@ -173,6 +189,7 @@ $row = mysql_fetch_array($result);
 
 
 <input type="hidden" name="save" id="save" value="yes" /> <!-- IGNORE THIS LINE! -->
+<input type="hidden" name="domain" id="domain" value="<?php echo $domain;?>" /> <!-- IGNORE THIS LINE! -->
 
 
 </div><!-- /specific settings -->
@@ -202,14 +219,20 @@ function kd(e) {
 
 <?php
 	echo "var myFiles = new Array();\n";
+	echo "var myComments = new Array();\n";	
 	for($i = 0; $i < $nConfig; $i++) {
 		echo "myFiles[$i] = \"".$config[$i]->settings."\";\n";
+		echo "myComments[$i] = \"".$config[$i]->comment."\";\n";
 	}
 ?>
 
 function radioclick(fn) {
-	if (myFiles[fn]!="") 
+	if (myFiles[fn]!="") {
 		document.getElementById("new-settings").style.display = "inline-block";
+		document.getElementById("comment").innerHTML = "<p>"+myComments[fn]+"</p>";
+	} else {
+		document.getElementById("new-settings").style.display = "none";
+	}
 
 	if (myFiles[fn]=="SpouseName") {
 		document.getElementById(myFiles[fn]+"1_label").style.display = "inline-block";
@@ -222,6 +245,13 @@ function radioclick(fn) {
 		document.getElementById(myFiles[fn]+"_input").style.display = "inline-block";
 	}
 
+}
+
+function givememore() {
+	document.getElementById("more-settings-link").style.display = "none";
+	document.getElementById("more-settings").style.height = "auto";
+	document.getElementById("more-settings").style.visibility = "visible";
+	document.getElementById("new-settings").style.marginTop = "10px";	
 }
 
 </script>

@@ -1,7 +1,5 @@
 <?php
 
-// 	=][= 2-17-1
-
 class BluebirdSeleniumSettings {
 
 	var $publicSandbox  = false;
