@@ -137,8 +137,8 @@ $row = mysql_fetch_array($result);
 $host = $row['host'];                    // cut everything except for district name e.g. sd99
 if (substr($host,0,7)=="http://") {
 	$host = substr($host, 7);
-	$_host = explode(".", $host);
 	$_host = explode("/", $host);
+	$_host = explode(".", $_host[0]);	
 	$host = $_host[0];
 }
 
