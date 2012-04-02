@@ -41,7 +41,7 @@
 			    	$cfg->comment = trim($sArray[3]);
 			    	$config[$nConfig++] = $cfg;
 			    }
-			    if ($buffer[0]=='!') {                 // setting up the domain
+			    if ($buffer[0]==';') {                 // setting up the domain
 			    	$domain = trim(substr($buffer,1));
 			    }
 		    }
@@ -50,6 +50,8 @@
 	}
 
 	readSettings("config.cfg");
+
+	echo $domain;
 ?>
 
 
@@ -134,6 +136,7 @@ $row = mysql_fetch_array($result);
 $host = $row['host'];                    // cut everything except for district name e.g. sd99
 if (substr($host,0,7)=="http://") {
 	$host = substr($host, 7);
+	$_host = explode(".", $host);
 	$_host = explode("/", $host);
 	$host = $_host[0];
 }
