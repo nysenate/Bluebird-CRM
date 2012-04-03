@@ -20,8 +20,8 @@ require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -29,16 +29,23 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
-        
-        /* 
-            for pause uncomment the following line
-        */
-        $this->setSleep($this->settings->sleepTime);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
+        //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait(getMainURL());
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl.='/logout';                              //IE has problems closing the session
+        }
+
+        $this->openAndWait($myurl);
         $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
@@ -86,7 +93,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->type('first_name', $fname);
         $this->type('last_name', $lname);
         $this->type('email_1_email', $email);
-        $this->type('address_1_location_type_id', 'Home');
+        $this->select('address_1_location_type_id', 'value=1');
         
         // street address
         $this->type('address_1_street_address', getStreetAddress());
