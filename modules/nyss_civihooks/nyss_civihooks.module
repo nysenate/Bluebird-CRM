@@ -547,6 +547,9 @@ function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 }
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
+//CRM_Core_Error::debug_var('objectId',$objectId);
+//CRM_Core_Error::debug_var('objectRef',$objectRef);
+
 
     //NYSS #2729 strip line break
     if ( ( $op == 'edit' || $op == 'create' ) && 
@@ -571,7 +574,7 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
     }
 
     _setDBVars();
-}
+}//pre
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
 //CRM_Core_Error::debug($page);
@@ -650,13 +653,13 @@ function _setDBVars() {
 
     if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
 		if ($session->get('userID')) {
-            CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1', array(1 => array($session->get('userID'), 'Integer')));
+            CRM_Core_DAO::executeQuery('SET @civicrm_user_id := %1', array(1 => array($session->get('userID'), 'Integer')));
 			CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
         }
     }
 	if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
 		if ($session->get('jobID')) {
-            CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($session->get('jobID'), 'String')));
+            CRM_Core_DAO::executeQuery('SET @jobID := %1', array(1 => array($session->get('jobID'), 'String')));
 			//CRM_Core_Error::debug_log_message("job ID database variable reset to: {$session->get('jobID')}");
         }
     }

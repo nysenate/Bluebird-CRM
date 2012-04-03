@@ -87,19 +87,24 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
         if ( ! $dataExists ) {
             return null;
         }
-      
+
         $entityTag = new CRM_Core_BAO_EntityTag( );
         $entityTag->copyValues( $params );
 
         // dont save the object if it already exists, CRM-1276
         if ( ! $entityTag->find( true ) ) {
-            $entityTag->save( );
-			
-			//invoke post hook on entityTag
+			//NYSS invoke pre hook
+			//invoke pre/post hook on entityTag
         	require_once 'CRM/Utils/Hook.php';
+
             // we are using this format to keep things consistent between the single and bulk operations
             // so a bit different from other post hooks
-        	$object = array( 0 => array( 0 => $params['entity_id'] ), 1 => $params['entity_table'] );
+			$object = array( 0 => array( 0 => $params['entity_id'] ), 1 => $params['entity_table'] );
+
+            CRM_Utils_Hook::pre( 'create', 'EntityTag', $params['tag_id'], $params );
+
+            $entityTag->save( );
+
         	CRM_Utils_Hook::post( 'create', 'EntityTag', $params['tag_id'], $object );
         }
 
@@ -156,9 +161,17 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
      * @static
      */
     static function addEntitiesToTag( &$entityIds, $tagId, $entityTable = 'civicrm_contact' ) {
+
+        //NYSS invoke pre hook
+        //invoke pre/post hook on entityTag
+        require_once 'CRM/Utils/Hook.php';
+
         $numEntitiesAdded    = 0;
         $numEntitiesNotAdded = 0;
 		$entityIdsAdded      = array();
+
+        $preObject = array( $entityIds, $entityTable );
+        CRM_Utils_Hook::pre('create', 'EntityTag', $tagId, $preObject );
 		
         foreach ( $entityIds as $entityId ) {
             $tag = new CRM_Core_DAO_EntityTag( );
@@ -175,8 +188,6 @@ class CRM_Core_BAO_EntityTag extends CRM_Core_DAO_EntityTag
             }
         }
 
-        //invoke post hook on entityTag
-        require_once 'CRM/Utils/Hook.php';
         $object = array( $entityIdsAdded, $entityTable );
         CRM_Utils_Hook::post('create', 'EntityTag', $tagId, $object );
 
