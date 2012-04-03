@@ -1,0 +1,43 @@
+anselm               source/names1.1_fixed.txt
+beck                 source/names1.1_fixed.txt, source/nireland.txt, source/censusdiggin-female.txt
+bird                 source/censusdiggin-male.txt
+car                  source/names1.1_fixed.txt
+clement              source/names1.1_fixed.txt, source/nireland.txt
+cole                 source/names1.1_fixed.txt
+cornelia             source/names1.1_fixed.txt
+edwin                source/names1.1_fixed.txt
+elly                 source/names1.1_fixed.txt
+emily                source/names1.1_fixed.txt
+ernest               source/names1.1_fixed.txt
+ernestine            source/names1.1_fixed.txt
+felix                source/names1.1_fixed.txt
+frederica            source/names1.1_fixed.txt
+frederick            source/names1.1_fixed.txt
+gustie               source/names1.1_fixed.txt
+hank                 source/names1.1_fixed.txt, source/censusdiggin-female.txt, source/kknfa-female.txt
+harry                source/names1.1_fixed.txt
+henri                source/censusdiggin-female.txt
+hermie               source/censusdiggin-female.txt, source/kknfa-female.txt
+isadora              source/names1.1_fixed.txt
+isidore              source/names1.1_fixed.txt
+jem                  source/wikimedia.txt
+jez                  source/wikimedia.txt
+julius               source/names1.1_fixed.txt
+june                 source/censusdiggin-male.txt
+junie                source/censusdiggin-male.txt
+leona                source/names1.1_fixed.txt
+mabel                source/names1.1_fixed.txt, source/censusdiggin-female.txt
+mally                source/names1.1_fixed.txt
+marcia               source/names1.1_fixed.txt
+mart                 source/names1.1_fixed.txt
+mehitabel            source/names1.1_fixed.txt
+nappy                source/kknfa-female.txt
+odie                 source/names1.1_fixed.txt
+oliver               source/names1.1_fixed.txt
+philippa             source/names1.1_fixed.txt
+phyllis              source/names1.1_fixed.txt
+pol                  source/nireland.txt
+selma                source/names1.1_fixed.txt
+shel                 source/censusdiggin-male.txt
+tennie               source/censusdiggin-female.txt
+wilhelm              source/names1.1_fixed.txt
