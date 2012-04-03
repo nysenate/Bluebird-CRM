@@ -411,9 +411,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$fele->_options = $feleOptions;
 	}
 
+    _setDBVars();
+
     //CRM_Core_Error::debug($formName);
     //CRM_Core_Error::debug($form);
-	
 } //close buildForm
 
 function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
@@ -569,21 +570,7 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
         return;
     }
 
-    //ensure user id and job id is set for logging purposes
-	$session = CRM_Core_Session::singleton();
-	//CRM_Core_Error::debug_var('session',$session);
-
-    if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
-		if ($session->get('userID')) {
-            CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1', array(1 => array($session->get('userID'), 'Integer')));
-        }
-    }
-	if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
-		if ($session->get('jobID')) {
-            CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($session->get('jobID'), 'String')));
-        }
-    }
-
+    _setDBVars();
 }
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
@@ -621,6 +608,8 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
         $activityStatusList = CRM_Core_PseudoConstant::activityStatus();
         $page->assign( 'activityStatusList', $activityStatusList);
     }
+
+    _setDBVars();
 }
 
 function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form ) {
@@ -645,7 +634,30 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
             $form->setElementError("custom_$fld", NULL);
         }
     }
-
 }
 
+/**
+ * The User ID and Job ID are stored as db variables for inclusion
+ * in the log database via the triggers. At times, the variables
+ * are lost, causing no value to be stored and in the case of the
+ * user ID, preventing the log records from displaying properly
+ * (the log record change itself is not impacted). This function can
+ * be called to reset those values if they are not currently set.
+ */
+function _setDBVars() {
 
+	$session = CRM_Core_Session::singleton();
+
+    if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
+		if ($session->get('userID')) {
+            CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1', array(1 => array($session->get('userID'), 'Integer')));
+			CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
+        }
+    }
+	if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
+		if ($session->get('jobID')) {
+            CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($session->get('jobID'), 'String')));
+			//CRM_Core_Error::debug_log_message("job ID database variable reset to: {$session->get('jobID')}");
+        }
+    }
+}
