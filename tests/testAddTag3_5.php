@@ -1,7 +1,5 @@
 <?php 
-
 /* 
-
     Mar 5, 2012
     This test script uses the Advanced Search
     Find the contact named Mike Gordo
@@ -31,21 +29,32 @@ require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
-    protected $screenshotUrl  = 'http://localhost/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
+    protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
     {
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
         //$this->setSleep($this->settings->sleepTime);
     }
 
     public function testTitle()
     {
-        $this->openAndWait(getMainURL());
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl.='/logout';                              //IE has problems closing the session
+        }
+
+        $this->openAndWait($myurl);
         $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
@@ -84,7 +93,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
 
         // find Tags and click on it
         $this->waitForElementPresent("xpath=//li[@id='tab_tag']/a[1]");

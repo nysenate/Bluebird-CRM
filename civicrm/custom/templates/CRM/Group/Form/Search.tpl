@@ -144,11 +144,11 @@ function buildGroupSelector( filterSearch ) {
  
            if ( filterSearch ) {
                var groupTypes = '';
-	                if ( cj('.crm-group-search-form-block #group_type\\[1\\]').prop('checked') ) {
+	                if ( cj('.crm-group-search-form-block #group_type\\[1\\]').attr('checked') ) {
 	                    groupTypes = '1'; 
 	                }
 	                
-	                if ( cj('.crm-group-search-form-block #group_type\\[2\\]').prop('checked') ) {
+	                if ( cj('.crm-group-search-form-block #group_type\\[2\\]').attr('checked') ) {
 	                    if ( groupTypes ) {
 	                        groupTypes = groupTypes + ',2';
 	                    } else {
@@ -157,11 +157,11 @@ function buildGroupSelector( filterSearch ) {
 	                }
 	
 	                var groupStatus = '';
-	                if ( cj('.crm-group-search-form-block #group_status\\[1\\]').prop('checked') ) {
+	                if ( cj('.crm-group-search-form-block #group_status\\[1\\]').attr('checked') ) {
 	                    groupStatus = '1'; 
 	                }
 	                
-	                if ( cj('.crm-group-search-form-block #group_status\\[2\\]').prop('checked') ) {
+	                if ( cj('.crm-group-search-form-block #group_status\\[2\\]').attr('checked') ) {
 	                    if ( groupStatus ) {
 	                        groupStatus = '3';
 	                    } else {

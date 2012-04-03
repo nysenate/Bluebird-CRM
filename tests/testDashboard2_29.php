@@ -16,8 +16,8 @@ require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -25,17 +25,27 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
         //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait(getMainURL());
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl.='/logout';                              //IE has problems closing the session
+        }
+
+        $this->openAndWait($myurl);
         $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
-
 
 /*
     This function logs in to Bluebird using standard Username and Password
@@ -63,10 +73,9 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->check("Custom Search","xpath=//ul[@id='nyss-menu']/li[2]");          // custom search
         $this->check("Reports","xpath=//ul[@id='nyss-menu']/li[3]");                // reports
         $this->check("Manage","xpath=//ul[@id='nyss-menu']/li[4]");                 // manage
-        $this->check("Administer","xpath=//ul[@id='nyss-menu']/li[5]");             // Administer
+//        $this->check("Administer","xpath=//ul[@id='nyss-menu']/li[5]");             // Administer
 
         $this->check("Refresh Dashboard Data","xpath=//a[@class='button show-refresh']/span[1]");  // Refresh Dashboard Data
-
         $this->check("Find Contacts","civi_sort_name");     // Find contacts
         $this->check("Find Anything!","civi_text_search");   // Find Anything!
 

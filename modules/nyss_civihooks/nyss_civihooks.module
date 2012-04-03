@@ -260,29 +260,25 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 		$defaults['state_province_id'] = 1031;
 		$form->setDefaults( $defaults );
-	
-	}
-	
-	//set bounce reason default on, bounce report
-	if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
-		$defaults['fields[bounce_reason]'] = 1;
-		$form->setDefaults( $defaults );
-		
-		//4388 - removed; 4943 - restored
-		/*$keepOptions = array( 'Syntax', 'Invalid' );
-		$bounceType  =& $form->getElement('bounce_type_name_value');
-		$typeOptions =& $bounceType->_options;
-		
-		foreach ( $typeOptions as $key => $option ) {
-			if ( !in_array( $option['text'], $keepOptions ) ) {
-				unset($typeOptions[$key]);
-			}
-		}*/
-		
-		//CRM_Core_Error::debug('bounceType',$bounceType);
-		//CRM_Core_Error::debug($form);
-	}
-	
+    }
+
+    //5154
+    if ( $formName == 'CRM_Contact_Form_Search_Custom' ) {
+        $bC = drupal_get_breadcrumb( );
+        foreach (  $bC as $k => $v ) {
+            if ( strpos($v, 'Custom Searches') !== false ) {
+                unset($bC[$k]);
+            }
+        }
+        drupal_set_breadcrumb( $bC );
+    }
+
+    //set bounce reason default on, bounce report
+    if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
+        $defaults['fields[bounce_reason]'] = 1;
+        $form->setDefaults( $defaults );
+    }
+
 	//3674 add limit submit js to all submit buttons
 	if ( isset( $form->_elementIndex['buttons'] ) ) {
 		$buttons    =& $form->getElement( 'buttons' );
@@ -415,9 +411,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 		$fele->_options = $feleOptions;
 	}
 
+    _setDBVars();
+
     //CRM_Core_Error::debug($formName);
     //CRM_Core_Error::debug($form);
-	
 } //close buildForm
 
 function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
@@ -550,6 +547,9 @@ function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 }
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {
+//CRM_Core_Error::debug_var('objectId',$objectId);
+//CRM_Core_Error::debug_var('objectRef',$objectRef);
+
 
     //NYSS #2729 strip line break
     if ( ( $op == 'edit' || $op == 'create' ) && 
@@ -573,22 +573,8 @@ function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) 
         return;
     }
 
-    //ensure user id and job id is set for logging purposes
-	$session = CRM_Core_Session::singleton();
-	//CRM_Core_Error::debug_var('session',$session);
-
-    if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
-		if ($session->get('userID')) {
-            CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1', array(1 => array($session->get('userID'), 'Integer')));
-        }
-    }
-	if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
-		if ($session->get('jobID')) {
-            CRM_Core_DAO::executeQuery('SET @jobID = %1', array(1 => array($session->get('jobID'), 'String')));
-        }
-    }
-
-}
+    _setDBVars();
+}//pre
 
 function nyss_civihooks_civicrm_pageRun( &$page ) {
 //CRM_Core_Error::debug($page);
@@ -625,6 +611,8 @@ function nyss_civihooks_civicrm_pageRun( &$page ) {
         $activityStatusList = CRM_Core_PseudoConstant::activityStatus();
         $page->assign( 'activityStatusList', $activityStatusList);
     }
+
+    _setDBVars();
 }
 
 function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form ) {
@@ -649,7 +637,30 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
             $form->setElementError("custom_$fld", NULL);
         }
     }
-
 }
 
+/**
+ * The User ID and Job ID are stored as db variables for inclusion
+ * in the log database via the triggers. At times, the variables
+ * are lost, causing no value to be stored and in the case of the
+ * user ID, preventing the log records from displaying properly
+ * (the log record change itself is not impacted). This function can
+ * be called to reset those values if they are not currently set.
+ */
+function _setDBVars() {
 
+	$session = CRM_Core_Session::singleton();
+
+    if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
+		if ($session->get('userID')) {
+            CRM_Core_DAO::executeQuery('SET @civicrm_user_id := %1', array(1 => array($session->get('userID'), 'Integer')));
+			CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
+        }
+    }
+	if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
+		if ($session->get('jobID')) {
+            CRM_Core_DAO::executeQuery('SET @jobID := %1', array(1 => array($session->get('jobID'), 'String')));
+			//CRM_Core_Error::debug_log_message("job ID database variable reset to: {$session->get('jobID')}");
+        }
+    }
+}

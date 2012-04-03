@@ -1015,7 +1015,8 @@ function printCaseReport( ){
  	var dataUrl = {/literal}"{crmURL p='civicrm/case/report/print'}"{literal};
  	dataUrl     = dataUrl+ '&all=1&cid={/literal}{$contactID}{literal}' 
                       +'&caseID={/literal}{$caseID}{literal}';
-        window.location = dataUrl;
+    //NYSS 5153
+    window.open(dataUrl, '_blank');
 }
 	
 </script>
