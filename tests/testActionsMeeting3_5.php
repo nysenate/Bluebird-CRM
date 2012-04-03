@@ -26,8 +26,8 @@ require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -35,12 +35,23 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
         //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait(getMainURL());
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl.='/logout';                              //IE has problems closing the session
+        }
+
+        $this->openAndWait($myurl);
         $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
@@ -79,7 +90,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // find Meeting and click on it
         $this->click("link=Meeting");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("_qf_Activity_upload-bottom");
 
         // edit date. set tomorrow
@@ -109,7 +120,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // save it
         $this->click("_qf_Activity_upload-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("contact-activity-selector-activity");
         $this->assertTrue($this->isTextPresent("Scheduled"),"Can not create the meeting ");
 
@@ -117,13 +128,13 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent("xpath=//td[@class='crm-contact-activity-links']"); // View | Edit | Delete  - block
         $this->click("xpath=//td[@class='crm-contact-activity-links']/span[1]/a[3]"); // DELETE
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
 
         // confirm deletion
         $this->waitForElementPresent("_qf_Activity_next-bottom");
         $this->click("_qf_Activity_next-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("contact-activity-selector-activity");
 
         $this->assertTrue($this->isTextPresent("No matches found."),"Can not delete the meeting ");
@@ -141,12 +152,12 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');
         $this->assertTitle('Advanced Search');
-        $this->assertTrue($this->isTextPresent("The found record"),"Advanced Search: Contact is not found in the database ");
+        $this->assertTrue(!$this->isTextPresent("No matches found"),"Advanced Search: Contact is not found in the database ");
 
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
     }
 
 /*

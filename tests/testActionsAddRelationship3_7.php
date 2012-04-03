@@ -24,25 +24,35 @@ require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
-
+ 
     protected function setUp()
     {
-
         $this->searchName = getSSName(0);
         $this->spouseName = getSSName(1);
 
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
         //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait(getMainURL());
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl.='/logout';                              //IE has problems closing the session
+        }
+
+        $this->openAndWait($myurl);
         $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
@@ -82,7 +92,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // find Meeting and click on it
         $this->click("link=Add Relationship");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("search-button");
 
         $this->select("relationship_type_id","value=2_a_b"); // SPOUSE OF
@@ -98,7 +108,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         $this->click("_qf_Relationship_upload-top"); // save the relationship
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
 
         $this->waitForElementPresent("option11"); // wait for page to load
         $this->assertTrue($this->isTextPresent("Spouse of"),"Can not save the relationship ");
@@ -109,7 +119,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//table[@id='option11']/tbody[1]/tr[1]/td[8]/span[2]/ul[1]/li[2]/a[1]"); // "delete"
         
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->assertTrue(!$this->isTextPresent("Spouse of"),"Can not delete the relationship ");
 
 
@@ -132,7 +142,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
     }
 
 /*

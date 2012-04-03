@@ -32,6 +32,11 @@ if ($_POST['save'] == 'yes') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
+    $domain = $_POST['domain'];
+
+    if (substr($host, 0, 7)!="http://") {
+        $host = "http://" . $host . $domain;
+    }
 
     $time = time();
 
@@ -49,12 +54,14 @@ if (!$testname) {
 }
 
 // Run test
-echo "Starting: <pre>"."c:\wamp\phpunit ".$testname."</pre>";
-echo "<div class=\"result\">";
-system("c:\wamp\phpunit ".$testname);
-echo "</div>";
-?>
 
+echo "<a href=\"index.php\"><h3>Start over</h3></a><br />";
+
+echo "Starting: <pre>"."c:\wamp\phpunit ".$testname."</pre>";
+echo "<div class=\"result\"><pre style=\"width:700px !important;\">";
+system("c:\wamp\phpunit ".$testname);
+echo "</pre></div>";
+?>
 
 <br/>
 <a href="index.php"><h3>Start over</h3></a>

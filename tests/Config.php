@@ -16,6 +16,9 @@ function getMainURLTitle() {
 	return 'Bluebird';
 }
 
+function getScreenshotPath() {
+	return 'c:\selenium\temp';
+}
 
 // additional settings for different test cases
 
