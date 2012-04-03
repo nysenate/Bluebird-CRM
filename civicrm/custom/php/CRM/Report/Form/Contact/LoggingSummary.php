@@ -53,6 +53,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                         'no_display' => true,
                         'required'   => true,
                     ),
+                    //NYSS log type
+                    'log_type' => array(
+                        'title'    => ts('Log Type'),
+						'required' => true,
+						'default'  => true,
+                    ),
                     'log_date' => array(
                         'default'  => true,
                         'required' => true,
@@ -136,6 +142,64 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         parent::__construct();
     }
 
+    //NYSS - perform query manipulation so that we also pull the tag logs
+    function postProcess( ) {
+        $this->beginPostProcess( );
+		$this->buildQuery( true );
+
+		$contactReplace = array(
+		    //'log_civicrm_contact_log_action' => 'log_action',
+			//'log_civicrm_contact_log_date'   => 'log_date',
+			'SQL_CALC_FOUND_ROWS'             => '',
+			'crm_contact_civireport.log_type' => "'Contact'",
+			);
+		$contactSelect = str_replace( array_keys($contactReplace), array_values($contactReplace), $this->_select );
+
+		$contactSql = "{$contactSelect}, 'Contact' log_type {$this->_from} {$this->_groupBy}";
+		
+		$tagReplace = array(
+			'SQL_CALC_FOUND_ROWS'                 => '',
+		    'crm_contact_civireport.id'           => 'crm_contact_civireport.entity_id',
+			'crm_contact_civireport.display_name' => "CONCAT(tag_contact.display_name,'  [ ',tag_table.name,' ]')",
+			'crm_contact_civireport.is_deleted'   => 'tag_contact.is_deleted',
+			'crm_contact_civireport.log_type'     => "'Tag'",
+			);
+		
+		$tagSelect = str_replace( array_keys($tagReplace), array_values($tagReplace), $this->_select );
+		$tagFrom   = "FROM `{$this->loggingDB}`.log_civicrm_entity_tag crm_contact_civireport
+                      JOIN civicrm_contact     contact_civireport
+                        ON (crm_contact_civireport.log_user_id = contact_civireport.id)
+                      JOIN civicrm_contact tag_contact
+                        ON crm_contact_civireport.entity_id = tag_contact.id
+					  JOIN civicrm_tag tag_table
+                        ON crm_contact_civireport.tag_id = tag_table.id";
+        $tagWhere  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact'";
+        $tagSql    = "$tagSelect, 'Tag' log_type $tagFrom $tagWhere";
+
+        //now combine the query
+		$whereReplace = array(
+			'log_date'                            => 'log_civicrm_contact_log_date',
+			'crm_contact_civireport.display_name' => 'log_civicrm_contact_altered_contact',
+			'crm_contact_civireport.log_job_id'   => 'log_civicrm_contact_log_job_id',
+			'crm_contact_civireport.log_action'   => 'log_civicrm_contact_log_action',
+			'contact_civireport.display_name'     => 'civicrm_contact_altered_by',
+			);
+		$sqlWhere = str_replace( array_keys($whereReplace), array_values($whereReplace), $this->_where );
+
+        $sql = "SELECT SQL_CALC_FOUND_ROWS * 
+		        FROM ( ( $contactSql ) UNION ( $tagSql ) ) tmpCombined 
+				{$sqlWhere}
+				{$this->_orderBy}
+				{$this->_limit}";
+
+		CRM_Core_Error::debug_var('sql',$sql);
+
+        $this->buildRows ( $sql, $rows );
+        $this->formatDisplay( $rows );
+        $this->doTemplateAssignment( $rows );
+        $this->endPostProcess( $rows );
+    }
+
     function alterDisplay(&$rows)
     {
         // cache for id → is_deleted mapping
@@ -146,7 +210,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                 $isDeleted[$row['log_civicrm_contact_id']] = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $row['log_civicrm_contact_id'], 'is_deleted') !== '0';
             }
 
-            if (!$isDeleted[$row['log_civicrm_contact_id']]) {
+            if ( !$isDeleted[$row['log_civicrm_contact_id']] ) {
                 $row['log_civicrm_contact_altered_contact_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $row['log_civicrm_contact_id']);
                 $row['log_civicrm_contact_altered_contact_hover'] = ts("Go to contact summary");
             }
@@ -197,7 +261,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         $this->_from = "
             FROM `{$this->loggingDB}`.log_civicrm_contact {$this->_aliases['log_civicrm_contact']}
             JOIN civicrm_contact     {$this->_aliases['civicrm_contact']}
-            ON ({$this->_aliases['log_civicrm_contact']}.log_user_id = {$this->_aliases['civicrm_contact']}.id)
+              ON ({$this->_aliases['log_civicrm_contact']}.log_user_id = {$this->_aliases['civicrm_contact']}.id)
         ";
     }
 
