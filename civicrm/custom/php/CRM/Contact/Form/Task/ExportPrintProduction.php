@@ -835,5 +835,9 @@ function processDistrictExclude( $districtID, $tbl ) {
     )";
     $dao  = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
+    //remove temp tables
+    $sql = "DROP TABLE $dTbl;";
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
     return;
 }
