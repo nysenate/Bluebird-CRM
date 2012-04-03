@@ -786,20 +786,54 @@ function processDistrictExclude( $districtID, $tbl ) {
 
     //need to list sa columns to avoid naming conflicts
     $sql  = "CREATE TABLE $dTbl TYPE=myisam
-             SELECT c.id, sc.*, sa.address_id, sa.street_address, sa.country_id, sa.state_province_id, sa.supplemental_address_1, sa.supplemental_address_2, sa.postal_code, sa.city, e.email
+             SELECT c.id, sc.*, sa.address_id, sa.street_address, sa.country_id, sa.state_province_id, sa.supplemental_address_1, sa.supplemental_address_2, sa.postal_code, sa.city
              FROM $db.civicrm_contact c
              LEFT JOIN $db.shadow_contact sc
                ON c.id = sc.contact_id
              LEFT JOIN $db.shadow_address sa
                ON c.id = sa.contact_id
-             LEFT JOIN $db.civicrm_email e
-               ON c.id = e.contact_id
              WHERE c.is_deleted = 0
                AND ( c.do_not_mail = 1 OR c.do_not_trade = 1 )";
     $dao  = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //now compare the district exclude table ($dTbl) to the main export table ($tbl)
     //and remove matches from the main table
+    $sql = "
+    DELETE FROM $tbl
+    WHERE id IN ( SELECT id FROM (
+      SELECT source.id
+      FROM $tbl as source JOIN $dTbl as district USING (contact_type)
+      WHERE
+      -- One of the following three checks pass
+      (
+            -- Individual checks pass
+            ( contact_type = 'Individual'
+                AND BB_NORMALIZE(source.last_name) = district.last_name
+                AND BB_NORMALIZE(source.first_name) = district.first_name
+                AND (source.suffix_id IS NULL OR district.suffix_id IS NULL OR source.suffix_id = district.suffix_id)
+                AND (source.middle_name IS NULL OR district.middle_name IS NULL OR BB_NORMALIZE(source.middle_name) = district.middle_name)
+                AND (source.birth_date IS NULL OR district.birth_date IS NULL OR source.birth_date = district.birth_date)
+                AND (source.gender_id IS NULL OR district.gender_id IS NULL OR source.gender_id = district.gender_id) )
+
+            OR -- The organization checks pass
+
+            ( contact_type = 'Organization'
+                AND BB_NORMALIZE(source.organization_name) = district.organization_name )
+
+            OR -- The Household checks pass
+
+            ( contact_type = 'Household'
+                AND BB_NORMALIZE(source.household_name) = district.household_name )
+      )
+
+      -- AND all of the address checks pass
+      AND source.postal_code=district.postal_code
+      AND BB_NORMALIZE_ADDR(source.street_address) = district.street_address
+      AND (source.city IS NULL OR district.city IS NULL OR source.city = district.city)
+      AND (source.state_province_id IS NULL OR district.state_province_id IS NULL OR source.state_province_id = district.state_province_id)
+      ) AS tmpMatch
+    )";
+    $dao  = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     return;
 }
