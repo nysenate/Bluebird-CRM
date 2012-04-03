@@ -260,29 +260,25 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 	
 		$defaults['state_province_id'] = 1031;
 		$form->setDefaults( $defaults );
-	
-	}
-	
-	//set bounce reason default on, bounce report
-	if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
-		$defaults['fields[bounce_reason]'] = 1;
-		$form->setDefaults( $defaults );
-		
-		//4388 - removed; 4943 - restored
-		/*$keepOptions = array( 'Syntax', 'Invalid' );
-		$bounceType  =& $form->getElement('bounce_type_name_value');
-		$typeOptions =& $bounceType->_options;
-		
-		foreach ( $typeOptions as $key => $option ) {
-			if ( !in_array( $option['text'], $keepOptions ) ) {
-				unset($typeOptions[$key]);
-			}
-		}*/
-		
-		//CRM_Core_Error::debug('bounceType',$bounceType);
-		//CRM_Core_Error::debug($form);
-	}
-	
+    }
+
+    //5154
+    if ( $formName == 'CRM_Contact_Form_Search_Custom' ) {
+        $bC = drupal_get_breadcrumb( );
+        foreach (  $bC as $k => $v ) {
+            if ( strpos($v, 'Custom Searches') !== false ) {
+                unset($bC[$k]);
+            }
+        }
+        drupal_set_breadcrumb( $bC );
+    }
+
+    //set bounce reason default on, bounce report
+    if ( $formName == 'CRM_Report_Form_Mailing_Bounce' ) {
+        $defaults['fields[bounce_reason]'] = 1;
+        $form->setDefaults( $defaults );
+    }
+
 	//3674 add limit submit js to all submit buttons
 	if ( isset( $form->_elementIndex['buttons'] ) ) {
 		$buttons    =& $form->getElement( 'buttons' );
