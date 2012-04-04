@@ -22,9 +22,9 @@
 <body>
 <div id="wrap">
 	<div id="header">
-	<h1 onclick="javascript:window.location='/.';">NY Senate</h1>
+	<h1><a href="index.php">NY Senate</a></h1>
 	<h3 class="help-button"><a href="javascript:helppage();">help ?</a></h3>
-	<h2 onclick="javascript:window.location='/.';">Selenium Testing</h2>
+	<h2>Selenium Testing</h2>
 
 		<div id="helparea">
 			<h3>Helpful information</h3>
