@@ -100,7 +100,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
             $this->addElement('text', 'district_excludes', ts('District # to Process Exclusions') );
             $this->addRule( 'district_excludes',
-                            ts('Please enter the district exclusion as a number (integer only).'),
+                            ts('Please enter the district exclusion as a number (integer only). This will also add the district seeds to the export.'),
                             'positiveInteger');
         }
 
@@ -145,13 +145,19 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     if ( !$eogid ) $eogid = 0; //prevent errors if group is not found
 
     //5150 add any members of the seed group unless intentionally excluding
+    $localSeedsList = 0;
     if ( !$excludeSeeds ) {
+        $localSeeds = array();
         $sql = "SELECT contact_id
                 FROM civicrm_group_contact
                 WHERE group_id = (SELECT id FROM civicrm_group WHERE name LIKE 'Mailing_Seeds')
                   AND status = 'Added';";
         $dao = &CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
-        while ($dao->fetch()) $this->_contactIds[] = $dao->contact_id;
+        while ( $dao->fetch() ) {
+            $this->_contactIds[] = $dao->contact_id;
+            $localSeeds[] = $dao->contact_id;
+        }
+        $localSeedsList = implode(',',$localSeeds);
     }
 
     $this->_contactIds = array_unique($this->_contactIds);
@@ -167,13 +173,12 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     if ( $excludeGroups ) {
-        excludeGroupContacts( "tmpExport{$rnd}_IDs", $excludeGroups );
+        excludeGroupContacts( "tmpExport{$rnd}_IDs", $excludeGroups, $localSeedsList );
     }
 
     //now construct sql to retrieve fields and inject in a second tmp table
     $cFlds = getColumns( 'columns' );
     $sFlds = getColumns( 'select' );
-    
     //CRM_Core_Error::debug('cFlds', $cFlds);exit();
     
     $sql   = "CREATE TABLE tmpExport$rnd ( $cFlds ) TYPE = myisam;";
@@ -231,7 +236,10 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     
     //exclude RTs
     if ( $exclude_rt != null ) {
-        $sql .= " AND ( cvci.record_type_61 IS NULL OR cvci.record_type_61 NOT IN ( $exclude_rt ) ) ";
+        $sql .= " AND ( cvci.record_type_61 IS NULL OR 
+                        cvci.record_type_61 NOT IN ($exclude_rt) OR
+                        ( cvci.record_type_61 IN ($exclude_rt) AND t.id IN ($localSeedsList) )
+                      )";
     }
 
     //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
@@ -242,7 +250,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $sql .= " CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
     $sql .= " IFNULL(c.birth_date, '9999-01-01');";
     
-    //CRM_Core_Error::debug($sql); exit();
+    //CRM_Core_Error::debug_var($sql);
 
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
     //CRM_Core_Error::debug('dao insert fields', $dao); exit();
@@ -251,15 +259,15 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     if ( $merge_households ) {
         mergeHouseholds( "tmpExport$rnd" );
     }
-    
-    //remove the household_id column so print prod processing is not altered
-    $sql = "ALTER TABLE tmpExport$rnd DROP COLUMN household_id;";
-    CRM_Core_DAO::executeQuery( $sql );
 
     //5142 remove district exclusions
     if ( $districtExclude ) {
-        processDistrictExclude( $districtExclude, "tmpExport$rnd" );
+        processDistrictExclude( $districtExclude, "tmpExport$rnd", $localSeedsList );
     }
+
+    //remove the household_id column so print prod processing is not altered
+    $sql = "ALTER TABLE tmpExport$rnd DROP COLUMN household_id;";
+    CRM_Core_DAO::executeQuery( $sql );
 
     //check if printProduction subfolder exists; if not, create it
     $config =& CRM_Core_Config::singleton();
@@ -739,7 +747,7 @@ function getColumns( $output = 'select' ) {
     }
 }
 
-function excludeGroupContacts( $tbl, $groups ) {
+function excludeGroupContacts( $tbl, $groups, $localSeedsList ) {
 
     require_once 'CRM/Contact/BAO/Group.php';
 
@@ -751,9 +759,12 @@ function excludeGroupContacts( $tbl, $groups ) {
     }
     $contactList = implode( ',', $excludeContacts );
 
+    $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
+
     //remove contacts from temp table
     $sql = "DELETE FROM $tbl
-            WHERE id IN ( $contactList );";
+            WHERE id IN ( $contactList )
+              AND id NOT IN ( $localSeedsList );";
     CRM_Core_DAO::executeQuery($sql);
 
     return;
@@ -765,7 +776,7 @@ function excludeGroupContacts( $tbl, $groups ) {
   * given a district ID, collect district exclusions and remove from the import
   *
   */
-function processDistrictExclude( $districtID, $tbl ) {
+function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
 
     //retrieve the instance name using the district ID
     $instance = $dbBase = '';
@@ -779,6 +790,8 @@ function processDistrictExclude( $districtID, $tbl ) {
             }
         }
     }
+
+    $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
 
     //retrieve values using db basename and create temp table
     $db   = $bbFullConfig['globals']['db.civicrm.prefix'].$dbBase;
@@ -832,12 +845,87 @@ function processDistrictExclude( $districtID, $tbl ) {
       AND (source.city IS NULL OR district.city IS NULL OR source.city = district.city)
       AND (source.state_province_id IS NULL OR district.state_province_id IS NULL OR source.state_province_id = district.state_province_id)
       ) AS tmpMatch
-    )";
+    )
+    AND id NOT IN ($localSeedsList);";
     $dao  = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
-    //remove temp tables
+    //remove temp exclusion table
     $sql = "DROP TABLE $dTbl;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
+    //now retrieve district seeds and add them to the main temp table
+    addExternalSeeds($tbl, $db);
+
     return;
 }
+
+function addExternalSeeds($tbl, $db) {
+
+    $sFlds = getColumns( 'select' );
+    $sFlds = str_replace( 'c.id as id', "(c.id + 1000000000) as id", $sFlds ); //avoid conflicts with source db
+
+    $eogid = CRM_Core_DAO::singleValueQuery( "SELECT id FROM $db.civicrm_group WHERE name LIKE 'Mailing_Seeds';" );
+    if ( !$eogid ) $eogid = 0;
+
+    $sql = "INSERT INTO {$tbl}
+            SELECT $sFlds
+            FROM $db.civicrm_contact c";
+    $sql .= " LEFT JOIN $db.civicrm_address a
+                ON a.contact_id=c.id
+                AND a.id = IF((SELECT npm.id
+                               FROM $db.civicrm_address npm
+                               WHERE npm.contact_id = c.id
+                                 AND npm.location_type_id = 13
+                                 AND npm.is_primary = 0
+                               LIMIT 1),
+                              (SELECT npm.id
+                               FROM $db.civicrm_address npm
+                               WHERE npm.contact_id = c.id
+                                 AND npm.location_type_id = 13
+                                 AND npm.is_primary = 0
+                               LIMIT 1),
+                              (SELECT pm.id
+                               FROM $db.civicrm_address pm
+                               WHERE pm.contact_id = c.id
+                                 AND pm.is_primary = 1
+                               LIMIT 1)) ";
+    $sql .= " LEFT JOIN $db.civicrm_value_district_information_7 di
+                ON di.entity_id=a.id ";
+
+    //household joins
+    $sql .= " LEFT JOIN $db.civicrm_relationship cr
+                ON cr.contact_id_a = c.id
+                AND ( cr.end_date IS NULL || cr.end_date > Now() )
+                AND ( cr.relationship_type_id = 6 OR cr.relationship_type_id = 7 )
+                AND cr.is_active = 1 ";
+    $sql .= " LEFT JOIN $db.civicrm_contact ch
+                ON ch.id = cr.contact_id_b ";
+
+    //join with group to include Mailing_Exclusions
+    $sql .= " JOIN $db.civicrm_group_contact cgc
+                ON cgc.contact_id = c.id
+                AND status = 'Added'
+                AND group_id = $eogid ";
+
+    //exclude deceased, trashed, do not mail, do not mail (undeliverable/trade)
+    $sql .= " WHERE c.is_deceased = 0
+                AND c.is_deleted = 0
+                AND c.do_not_mail = 0
+                AND c.do_not_trade = 0 ";
+
+    //exclude empty last name, empty org name (if org type), and empty address
+    $sql .= " AND ( ( c.contact_type = 'Individual' AND c.last_name IS NOT NULL AND c.last_name != '' ) OR ( c.contact_type = 'Individual' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Individual' ) ";
+    $sql .= " AND ( ( c.contact_type = 'Organization' AND c.organization_name IS NOT NULL AND c.organization_name != '' ) OR c.contact_type != 'Organization' ) ";
+    $sql .= " AND ( ( a.street_address IS NOT NULL AND a.street_address != '' ) OR ( a.supplemental_address_1 IS NOT NULL AND a.supplemental_address_1 != '' ) ) ";
+
+    //exclude impossibly old contacts
+    $sql .= " AND ( c.birth_date IS NULL OR c.birth_date = '' OR c.birth_date > '1901-01-01' ) ";
+
+    //group by contact ID in case any joins with multiple records cause dupe primary in our temp table
+    $sql .= " GROUP BY c.id ";
+    //CRM_Core_Error::debug_var('sql',$sql);
+
+    $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
+
+    return;
+} //addExternalSeeds
