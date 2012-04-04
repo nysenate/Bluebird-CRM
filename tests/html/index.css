@@ -14,7 +14,7 @@ body {
 }
 
 #header h1 {
-	margin:0px; 
+	margin:0px;
 	color:#541957;
 }
 
@@ -62,11 +62,11 @@ a {
 	text-decoration:none;
 }
 
-a {
+#main a {
 	font-size:11px;
 }
 
-a:hover {
+#main a:hover {
 	color:#541957; 
 	background-color:#fff;
 }
@@ -133,11 +133,18 @@ select {
 	margin-top:10px;
 }
 
-#submit {
+#submit, #wait {
 	margin-left:10px;
 	margin-top:12px;
 	min-height:30px;
 	float:right;
+}
+
+#wait {
+	display: none;
+	padding:0px 5px;
+	line-height:30px;
+	background:white;
 }
 
 #new-settings {

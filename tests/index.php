@@ -131,7 +131,7 @@ echo "</table>";
 </div><!-- settings -->
 
 <div class="new-settings">
-<h3>General settings <span class="small">(test server: <?=$domain?>)</span></h3>
+<h3>General settings <span class="small">(test server: <?php echo $domain;?>)</span></h3>
 
 <?php
 if ($update==1) {              // read some patricular settings	
@@ -210,7 +210,8 @@ if (substr($host,0,7)=="http://") {
 
 <div style="clear:both;" id="clear"></div>
 
-<input type="submit" id="submit" value="Start Test" />
+<input type="submit" id="submit" onclick="javascript:actionBar();" value="Start Test" />
+<div id="wait">Wait...</div>
 
 <div style="clear:both;" id="clear"></div>
 </form>
@@ -276,6 +277,11 @@ function givememore() {
 	document.getElementById("more-settings-link").style.display = "none";
 	document.getElementById("more-settings").style.height = "auto";
 	document.getElementById("more-settings").style.display = "block";
+}
+
+function actionBar() {
+	document.getElementById("submit").style.display = "none";
+	document.getElementById("wait").style.display = "block";
 }
 
 </script>
