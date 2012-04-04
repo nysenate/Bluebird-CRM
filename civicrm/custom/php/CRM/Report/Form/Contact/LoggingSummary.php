@@ -192,8 +192,18 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                 {$sqlWhere}
                 {$this->_orderBy}
                 {$this->_limit}";
-
         //CRM_Core_Error::debug_var('sql',$sql);
+
+        //4198 get distinct contact count
+        $sqlDistinct = "SELECT *
+                        FROM ( ( $contactSql ) UNION ( $tagSql ) ) tmpCombined
+                        {$sqlWhere}
+                        GROUP BY log_civicrm_contact_id";
+        //CRM_Core_Error::debug_var('sqlDistinct',$sqlDistinct);
+        CRM_Core_DAO::executeQuery($sqlDistinct);
+
+        $this->_distinctCount = CRM_Core_DAO::singleValueQuery( "SELECT FOUND_ROWS();" );
+        //CRM_Core_Error::debug_var('distinctCount',$distinctCount);
 
         $this->buildRows ( $sql, $rows );
         $this->formatDisplay( $rows );
@@ -261,9 +271,18 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
     {
         $this->_from = "
             FROM `{$this->loggingDB}`.log_civicrm_contact {$this->_aliases['log_civicrm_contact']}
-            JOIN civicrm_contact     {$this->_aliases['civicrm_contact']}
+            LEFT JOIN civicrm_contact     {$this->_aliases['civicrm_contact']}
               ON ({$this->_aliases['log_civicrm_contact']}.log_user_id = {$this->_aliases['civicrm_contact']}.id)
         ";
+        //NYSS LEFT JOIN on user_id since sometimes its NULL (temp fix)
+    }
+
+    //4198 calculate distinct contacts
+    function statistics( &$rows ) {
+        $statistics = parent::statistics( $rows );
+        $statistics['counts']['rowsFound'] = array( 'title' => ts('Contact(s) Changed'),
+                                                    'value' => $this->_distinctCount );
+        return $statistics;
     }
 
     function getContactDetails( $cid ) {

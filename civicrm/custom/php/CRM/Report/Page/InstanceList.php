@@ -77,7 +77,11 @@ class CRM_Report_Page_InstanceList extends CRM_Core_Page
         $rows = array();
         $url  = 'civicrm/report/instance';
         while ( $dao->fetch( ) ) {
-            $enabled = in_array( "Civi{$dao->compName}", $config->enableComponents );
+            //NYSS 5166 suppress detail report
+            if ( $dao->report_id == 'logging/contact/detail' ) {
+                continue;
+            }
+			$enabled = in_array( "Civi{$dao->compName}", $config->enableComponents );
             if ( $dao->compName == 'Contact') {
                 $enabled = true;
             } 

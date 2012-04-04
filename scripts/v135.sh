@@ -50,7 +50,6 @@ $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_update_trigger;"
 $execSql -i $instance -c "DROP TRIGGER IF EXISTS shadow_contact_insert_trigger;"
 
 # TODO: enable change logging
-# TODO: construct logging report instance [may not be necessary]
 # TODO: set report instance to access civiReport
 
 # 5036 create is_reserved group field and set reserved groups
@@ -76,6 +75,14 @@ UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 9;
 UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 10;
 UPDATE civicrm_mailing_bounce_type SET hold_threshold = 2 WHERE id = 11;"
 $execSql -i $instance -c "$thresh"
+
+# 5166 rename logging reports
+logreport="
+UPDATE civicrm_report_instance SET title = 'Database Log (Enhanced)' WHERE title = 'Contact Logging Report (Summary)';
+UPDATE civicrm_report_instance SET title = 'Database Log (Archived)' WHERE title = 'Database Log Report';
+UPDATE civicrm_option_value SET label = 'Database Log (Enhanced)' WHERE label = 'Contact Logging Report (Summary)' AND option_group_id = 40;
+UPDATE civicrm_option_value SET label = 'Database Log (Archived)' WHERE label = 'Database Log Report' AND option_group_id = 40;"
+$execSql -i $instance -c "$logreport"
 
 ### Cleanup ###
 
