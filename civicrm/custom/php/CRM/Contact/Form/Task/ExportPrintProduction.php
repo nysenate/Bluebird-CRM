@@ -250,7 +250,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
     $sql .= " CASE WHEN c.gender_id=2 THEN 1 WHEN c.gender_id=1 THEN 2 WHEN c.gender_id=4 THEN 3 ELSE 999 END, ";
     $sql .= " IFNULL(c.birth_date, '9999-01-01');";
     
-    CRM_Core_Error::debug_var($sql);
+    //CRM_Core_Error::debug_var($sql);
 
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
     //CRM_Core_Error::debug('dao insert fields', $dao); exit();
@@ -790,7 +790,7 @@ function processDistrictExclude( $districtID, $tbl, $localSeedsList ) {
             }
         }
     }
-CRM_Core_Error::debug_var('processDistrictExclude localSeedsList',$localSeedsList);
+
     $localSeedsList = ( $localSeedsList ) ? $localSeedsList : 0;
 
     //retrieve values using db basename and create temp table
