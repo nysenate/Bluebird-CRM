@@ -56,7 +56,7 @@
 ?>
 
 
-<form method="post" action="index2.php" >
+<form method="post" action="index2.php" onsubmit="javascript:givememore();" >
 
 <div id="script-tree">
 <h3>Scripts available</h3>
@@ -82,7 +82,7 @@ for ($i = 0; $i < $nConfig; $i++) {
 
 <?php
 
-// display list of settings
+// display list of last tests
 
 $mysql_host = 'localhost';
 $mysql_user = 'root';
@@ -104,9 +104,18 @@ if (!mysql_num_rows($result)) {
 echo "<table>";
 $i = 1;
 while ($row = mysql_fetch_array($result)) {
-	echo "<tr><td ".(($i%2==0)?"class=\"even\"":"")."><a href=\"?update=1&link=".$row['tid']."\">".$row['host'];
+
+	$host_part = substr($row['host'],0,19);
+	if ($row['host'] != $host_part)
+		$host_part.="...";
+	
+	$test_part = substr($row['testname'],0,23);
+	if ($row['testname'] != $test_part)
+		$test_part.="...";
+
+	echo "<tr><td ".(($i%2==0)?"class=\"even\"":"")."><a href=\"?update=1&link=".$row['tid']."\">".$host_part;
 	echo "</a></td>";
-	echo "<td ".(($i%2==0)?"class=\"even\"":"").">".$row['testname']."</td>";
+	echo "<td ".(($i%2==0)?"class=\"even\"":"").">".$test_part."</td>";
 
 	$time = $row['time'];
 	$time = date("M,d g:i a",$time);	
@@ -122,7 +131,7 @@ echo "</table>";
 </div><!-- settings -->
 
 <div class="new-settings">
-<h3>General settings</h3>
+<h3>General settings <span class="small">(test server: <?php echo $domain;?>)</span></h3>
 
 <?php
 if ($update==1) {              // read some patricular settings	
@@ -157,7 +166,7 @@ if (substr($host,0,7)=="http://") {
 
 <h3 id="more-settings-link-h3"><a id="more-settings-link" href="javascript:givememore();">More settings ...</a></h3>
 
-<div id="more-settings" style="visibility: hidden;height:20px;">
+<div id="more-settings" style="display:none;">
 	<label>Number of instances:</label>
 	<input type="text" name="nins" class="text" value="1" onkeydown="return kd(event)"><br />
 
@@ -174,7 +183,7 @@ if (substr($host,0,7)=="http://") {
 
 </div><!-- /general settings -->
 
-<div class="new-settings" id="new-settings" style="display:none;margin-top:-125px;">
+<div class="new-settings" id="new-settings" style="display:none;">
 <h3>Specific settings</h3>
 
 <div id="comment"></div>
@@ -201,7 +210,8 @@ if (substr($host,0,7)=="http://") {
 
 <div style="clear:both;" id="clear"></div>
 
-<input type="submit" id="submit" value="Start Test" />
+<input type="submit" id="submit" onclick="javascript:actionBar();" value="Start Test" />
+<div id="wait">Wait...</div>
 
 <div style="clear:both;" id="clear"></div>
 </form>
@@ -215,6 +225,11 @@ if (substr($host,0,7)=="http://") {
 
 
 <script type="text/javascript">
+
+var vis = new Array();
+for (i=0;i<4;i++)
+	vis[i] = false;
+
 function kd(e) {
     // var intKey = (window.Event) ? e.which : e.keyCode;
     // document.getElementById("save").value = "yes";
@@ -231,11 +246,20 @@ function kd(e) {
 ?>
 
 function radioclick(fn) {
-	if (myFiles[fn]!="") {
+
+	document.getElementById("new-settings").style.display = "none";          // just make all the Specific Settings invisible
+	document.getElementById("SpouseName1_label").style.display = "none";
+	document.getElementById("SpouseName1_input").style.display = "none";
+	document.getElementById("SpouseName2_label").style.display = "none";
+	document.getElementById("SpouseName2_input").style.display = "none";
+	document.getElementById("SearchName_label").style.display = "none";
+	document.getElementById("SearchName_input").style.display = "none";
+	document.getElementById("SearchEmail_label").style.display = "none";
+	document.getElementById("SearchEmail_input").style.display = "none";
+
+	if (myFiles[fn]!="" || myComments[fn]!="") {
 		document.getElementById("new-settings").style.display = "inline-block";
 		document.getElementById("comment").innerHTML = "<p>"+myComments[fn]+"</p>";
-	} else {
-		document.getElementById("new-settings").style.display = "none";
 	}
 
 	if (myFiles[fn]=="SpouseName") {
@@ -243,19 +267,21 @@ function radioclick(fn) {
 		document.getElementById(myFiles[fn]+"1_input").style.display = "inline-block";
 		document.getElementById(myFiles[fn]+"2_label").style.display = "inline-block";
 		document.getElementById(myFiles[fn]+"2_input").style.display = "inline-block";
-
 	} else if (myFiles[fn]!="") {
 		document.getElementById(myFiles[fn]+"_label").style.display = "inline-block";
 		document.getElementById(myFiles[fn]+"_input").style.display = "inline-block";
 	}
-
 }
 
 function givememore() {
 	document.getElementById("more-settings-link").style.display = "none";
 	document.getElementById("more-settings").style.height = "auto";
-	document.getElementById("more-settings").style.visibility = "visible";
-	document.getElementById("new-settings").style.marginTop = "10px";	
+	document.getElementById("more-settings").style.display = "block";
+}
+
+function actionBar() {
+	document.getElementById("submit").style.display = "none";
+	document.getElementById("wait").style.display = "block";
 }
 
 </script>
