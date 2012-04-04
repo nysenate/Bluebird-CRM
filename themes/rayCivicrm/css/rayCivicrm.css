@@ -1459,12 +1459,12 @@ ul.token-input-list-facebook { width:265px;}
 .env-crmtest,
 .env-crmdev {
 	background:transparent url(../nyss_skin/images/env-marker-test.png) no-repeat;
-    bottom: 26px;
+    bottom: 0;
     right: 0;
     position: fixed;
 	height: 120px;
     width: 120px;
-	z-index: -1;
+	z-index: 2000;
 }
 .env-crmdev {
 	background:transparent url(../nyss_skin/images/env-marker-dev.png) no-repeat;
