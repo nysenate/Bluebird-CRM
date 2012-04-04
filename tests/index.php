@@ -224,6 +224,11 @@ if (substr($host,0,7)=="http://") {
 
 
 <script type="text/javascript">
+
+var vis = new Array();
+for (i=0;i<4;i++)
+	vis[i] = false;
+
 function kd(e) {
     // var intKey = (window.Event) ? e.which : e.keyCode;
     // document.getElementById("save").value = "yes";
@@ -240,11 +245,20 @@ function kd(e) {
 ?>
 
 function radioclick(fn) {
-	if (myFiles[fn]!="") {
+
+	document.getElementById("new-settings").style.display = "none";          // just make all the Specific Settings invisible
+	document.getElementById("SpouseName1_label").style.display = "none";
+	document.getElementById("SpouseName1_input").style.display = "none";
+	document.getElementById("SpouseName2_label").style.display = "none";
+	document.getElementById("SpouseName2_input").style.display = "none";
+	document.getElementById("SearchName_label").style.display = "none";
+	document.getElementById("SearchName_input").style.display = "none";
+	document.getElementById("SearchEmail_label").style.display = "none";
+	document.getElementById("SearchEmail_input").style.display = "none";
+
+	if (myFiles[fn]!="" || myComments[fn]!="") {
 		document.getElementById("new-settings").style.display = "inline-block";
 		document.getElementById("comment").innerHTML = "<p>"+myComments[fn]+"</p>";
-	} else {
-		document.getElementById("new-settings").style.display = "none";
 	}
 
 	if (myFiles[fn]=="SpouseName") {
@@ -252,12 +266,10 @@ function radioclick(fn) {
 		document.getElementById(myFiles[fn]+"1_input").style.display = "inline-block";
 		document.getElementById(myFiles[fn]+"2_label").style.display = "inline-block";
 		document.getElementById(myFiles[fn]+"2_input").style.display = "inline-block";
-
 	} else if (myFiles[fn]!="") {
 		document.getElementById(myFiles[fn]+"_label").style.display = "inline-block";
 		document.getElementById(myFiles[fn]+"_input").style.display = "inline-block";
 	}
-
 }
 
 function givememore() {
