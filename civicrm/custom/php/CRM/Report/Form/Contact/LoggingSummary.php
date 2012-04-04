@@ -271,9 +271,10 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
     {
         $this->_from = "
             FROM `{$this->loggingDB}`.log_civicrm_contact {$this->_aliases['log_civicrm_contact']}
-            JOIN civicrm_contact     {$this->_aliases['civicrm_contact']}
+            LEFT JOIN civicrm_contact     {$this->_aliases['civicrm_contact']}
               ON ({$this->_aliases['log_civicrm_contact']}.log_user_id = {$this->_aliases['civicrm_contact']}.id)
         ";
+        //NYSS LEFT JOIN on user_id since sometimes its NULL (temp fix)
     }
 
     //4198 calculate distinct contacts
