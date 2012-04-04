@@ -10,7 +10,7 @@ Adolph,Adolphus-Ad,Dolph,Olph
 Alabama-Bama,Al
 Alan-Al
 Alanson-Alan,Al,Lonson
-Albert-Al,Bert,Elbert,seealsoAdelbert
+Albert-Al,Bert,Elbert
 Aldrich-Al,Rich,Richie
 Alexander-Al,Alex,Eleck,Sandy
 Alfred-Al,Fred
@@ -30,7 +30,6 @@ Bartholomew-Bart,Bartel,Bat,Mees,Meus
 Basil-Baz
 Benedict-Ben,Bennie
 Benjamin-Ben,Bennie,Benjy,Jamie
-BenjaminFranklin-OftenfoundasB.F.
 Bernard-Barney,Berney
 Birt-Bird
 Bradford-Brad,Ford
@@ -92,8 +91,7 @@ Francis-Frank,Fran
 Franklin-Frank,Fran
 Frederick-Fred,Freddy,Fritz
 Gabriel-Gabe,Gabby
-Geoffrey,Jeffrey-Geoff,Jeff
-GeorgeWashington-OftenseenasG.W.orWash
+Geoffrey-Jeffrey,Geoff,Jeff
 Gerald-Jerry,Gerry
 Gerardo-Gera
 Gilbert-Gil,Bert,Wilber
@@ -111,7 +109,7 @@ Ignatius-Iggy,Nace,Nate,Natius
 Isaac-Ike,Zeke
 Isidore-Izzy
 Israel-Ziggy
-Jacob-Jaap,Jake,Jay,couldbeshortforJacobus.
+Jacob-Jake,Jay
 James-Jamie,Jem,Jim,Jimmy
 Jebadiah-Jeb
 Jedidiah-Jed
@@ -219,7 +217,7 @@ Wallace-Wally
 Washington-Wash
 Wilber,Wilbur-Will,Willie
 Wilfred-Will,Willie,Fred
-William-Will,Willie,Bill,Billy,sometimesBellorBela
+William-Will,Willie,Bill,Billy
 Winfield-Win,Winny,Field
 Woodrow-Wood,Woody,Drew
 Zachariah-Zach,Zachy,Zeke
