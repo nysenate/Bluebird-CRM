@@ -37,7 +37,7 @@ Dorcus-Darkey
 Dorothy-Dolly,DollorDotty
 Drusilla-Darkey,Drucie,Ella,Silla
 Eleanor-Elaine,Ellen,Ellender,Lanna,Nell,Nellie,Nora
-Elizabeth-Beth,Bett(ie)(y),Eliza,Libby,Lizzie,Tibby
+Elizabeth-Beth,Bettie,Betty,Eliza,Libby,Lizzie,Tibby
 Elmira-Ellie,Elly,Mira
 Emily-Emma,Emmy,Millie,Milly
 Fidelia-Delia
