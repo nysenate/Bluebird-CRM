@@ -56,7 +56,7 @@
 ?>
 
 
-<form method="post" action="index2.php" >
+<form method="post" action="index2.php" onsubmit="javascript:givememore();" >
 
 <div id="script-tree">
 <h3>Scripts available</h3>
@@ -82,7 +82,7 @@ for ($i = 0; $i < $nConfig; $i++) {
 
 <?php
 
-// display list of settings
+// display list of last tests
 
 $mysql_host = 'localhost';
 $mysql_user = 'root';
@@ -104,9 +104,18 @@ if (!mysql_num_rows($result)) {
 echo "<table>";
 $i = 1;
 while ($row = mysql_fetch_array($result)) {
-	echo "<tr><td ".(($i%2==0)?"class=\"even\"":"")."><a href=\"?update=1&link=".$row['tid']."\">".$row['host'];
+
+	$host_part = substr($row['host'],0,19);
+	if ($row['host'] != $host_part)
+		$host_part.="...";
+	
+	$test_part = substr($row['testname'],0,23);
+	if ($row['testname'] != $test_part)
+		$test_part.="...";
+
+	echo "<tr><td ".(($i%2==0)?"class=\"even\"":"")."><a href=\"?update=1&link=".$row['tid']."\">".$host_part;
 	echo "</a></td>";
-	echo "<td ".(($i%2==0)?"class=\"even\"":"").">".$row['testname']."</td>";
+	echo "<td ".(($i%2==0)?"class=\"even\"":"").">".$test_part."</td>";
 
 	$time = $row['time'];
 	$time = date("M,d g:i a",$time);	
@@ -157,7 +166,7 @@ if (substr($host,0,7)=="http://") {
 
 <h3 id="more-settings-link-h3"><a id="more-settings-link" href="javascript:givememore();">More settings ...</a></h3>
 
-<div id="more-settings" style="visibility: hidden;height:20px;">
+<div id="more-settings" style="display:none;">
 	<label>Number of instances:</label>
 	<input type="text" name="nins" class="text" value="1" onkeydown="return kd(event)"><br />
 
@@ -174,7 +183,7 @@ if (substr($host,0,7)=="http://") {
 
 </div><!-- /general settings -->
 
-<div class="new-settings" id="new-settings" style="display:none;margin-top:-125px;">
+<div class="new-settings" id="new-settings" style="display:none;">
 <h3>Specific settings</h3>
 
 <div id="comment"></div>
@@ -254,8 +263,7 @@ function radioclick(fn) {
 function givememore() {
 	document.getElementById("more-settings-link").style.display = "none";
 	document.getElementById("more-settings").style.height = "auto";
-	document.getElementById("more-settings").style.visibility = "visible";
-	document.getElementById("new-settings").style.marginTop = "10px";	
+	document.getElementById("more-settings").style.display = "block";
 }
 
 </script>
