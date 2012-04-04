@@ -176,4 +176,9 @@ div {
 	border-radius: 5px;
 }
 
+span.small {
+	font-size:.7em;
+	font-weight:normal;
+}
+
 #footer { }

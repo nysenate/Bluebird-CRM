@@ -131,7 +131,7 @@ echo "</table>";
 </div><!-- settings -->
 
 <div class="new-settings">
-<h3>General settings</h3>
+<h3>General settings <span class="small">(test server: <?=$domain?>)</span></h3>
 
 <?php
 if ($update==1) {              // read some patricular settings	
