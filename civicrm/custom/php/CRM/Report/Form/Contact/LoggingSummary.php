@@ -167,7 +167,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
 
         $tagSelect = str_replace( array_keys($tagReplace), array_values($tagReplace), $this->_select );
         $tagFrom   = "FROM `{$this->loggingDB}`.log_civicrm_entity_tag crm_contact_civireport
-                      JOIN civicrm_contact     contact_civireport
+                      LEFT JOIN civicrm_contact     contact_civireport
                         ON (crm_contact_civireport.log_user_id = contact_civireport.id)
                       JOIN civicrm_contact tag_contact
                         ON crm_contact_civireport.entity_id = tag_contact.id
