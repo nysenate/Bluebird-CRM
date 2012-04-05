@@ -298,10 +298,12 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
 								  '_qf_PDF_cancel',
 								  '_qf_Contact_upload_view', //handle separately
 								  '_qf_Relationship_upload', //4414
-								 );
+								  '_qf_Search_refresh',
+								  );
 		$btnExcludeValue = array( 'PDF', 
 		                          'Print Contact List',
-								  'File on case' );
+								  'File on case'
+								  );
 		
 		foreach ( $buttons->_elements as $key=>$button ) {
 			$btnType = $buttons->_elements[$key]->_attributes['type'];
