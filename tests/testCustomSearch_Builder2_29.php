@@ -7,7 +7,7 @@
     1. open sd99
     2. log in
     3. open custom search / search builder
-    4. set parameters Distance and Postal Code
+    4. set parameters
     5. run search 
 
 */

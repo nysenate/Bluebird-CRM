@@ -183,6 +183,17 @@ div {
 	border-radius: 5px;
 }
 
+div.small-help {
+	display: none;
+	padding: 8px;
+	margin:0px 10px;
+	background-color: #bbb;
+	border:1px solid #555;
+	text-align: justify;
+	font-family: sans-serif; 
+	font-size:12px; 
+}
+
 span.small {
 	font-size:.7em;
 	font-weight:normal;

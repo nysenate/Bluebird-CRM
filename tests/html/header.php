@@ -7,7 +7,7 @@
 	<script type="text/javascript">
 		var vis = false;
 		function helppage() {
-			if (vis) {
+			if (!vis) {
 				vis = !vis;
 				document.getElementById("helparea").style.display = "none";
 			} else {

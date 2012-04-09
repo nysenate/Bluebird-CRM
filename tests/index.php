@@ -1,5 +1,6 @@
 <?php
 	include_once "html/header.php";
+	include_once "html/functions.php";
 	?>
 
 <div id="main">
@@ -9,50 +10,14 @@
 		$update = $_GET['update'];	
 	} else {
 		$update = 0;
-	}	
-
-	class configClass {
-		public $displayName;
-		public $fileName;
-		public $settings;
-		public $comment;
 	}
 
 	$config = array();
 	$nConfig = 0;
-	$domain = "/";
-
-	// read configuration file
-	function readSettings($filename) {
-		global $config;
-		global $nConfig;
-		global $domain;
-		$sArray = array();
-		
-		$handle = @fopen($filename, "r");
-		if ($handle) {
-		    while (($buffer = fgets($handle, 4096)) != false ) {
-		    	$buffer = trim($buffer);
-		    	if (strlen($buffer)>0 && $buffer[0]!='#' && $buffer[0]!=';') {
-		    		$sArray = explode("\t", $buffer);
-			    	$cfg = new configClass();
-			    	$cfg->displayName = $sArray[0];
-			    	$cfg->fileName = trim($sArray[1]);
-			    	$cfg->settings = trim($sArray[2]);
-			    	$cfg->comment = trim($sArray[3]);
-			    	$config[$nConfig++] = $cfg;
-			    }
-			    if ($buffer[0]==';') {                 // setting up the domain
-			    	$domain = trim(substr($buffer,1));
-			    }
-		    }
-		}
-		fclose($handle);
-	}
+	$domain = "/";	
 
 	readSettings("config.cfg");
-
-	//echo $domain; // for debugging
+	readHelpFile("help.cfg");
 ?>
 
 
@@ -67,8 +32,11 @@
 
 for ($i = 0; $i < $nConfig; $i++) {
    	echo "<p>";
-   	echo "<input type='radio' name='testName' value='".$config[$i]->fileName."' onclick=\"javascript:radioclick($i);\" />";
+   	echo "<input type='radio' name='testName' value='".$config[$i]->fileName."' onclick=\"javascript:radioclick($i,".$config[$i]->id.");\" />";
    	echo $config[$i]->displayName;
+   	echo "<div class=\"small-help\" id=\"help_id".$config[$i]->id."\">";
+   	echo $config[$i]->help;
+   	echo "</div>\n";
    	echo "</p>\n";
 }
 
@@ -131,7 +99,7 @@ echo "</table>";
 </div><!-- settings -->
 
 <div class="new-settings">
-<h3>General settings <span class="small">(test server: <?php echo $domain;?>)</span></h3>
+<h3>General settings <span class="small">(test server: <em><?php echo $domain;?></em>)</span></h3>
 
 <?php
 if ($update==1) {              // read some patricular settings	
@@ -211,7 +179,7 @@ if (substr($host,0,7)=="http://") {
 <div style="clear:both;" id="clear"></div>
 
 <input type="submit" id="submit" onclick="javascript:actionBar();" value="Start Test" />
-<div id="wait">Wait...</div>
+<div id="wait">Please wait...</div>
 
 <div style="clear:both;" id="clear"></div>
 </form>
@@ -245,7 +213,16 @@ function kd(e) {
 	}
 ?>
 
-function radioclick(fn) {
+function radioclick(fn, helpbox) {
+
+	// hide all the help boxes
+	<?php
+		for ($i=0;$i<$nConfig;$i++)
+			echo "document.getElementById(\"help_id\"+".$config[$i]->id.").style.display = \"none\";\n";
+	?>
+
+	// display the correct one
+	document.getElementById("help_id"+helpbox).style.display = "inline-block";
 
 	document.getElementById("new-settings").style.display = "none";          // just make all the Specific Settings invisible
 	document.getElementById("SpouseName1_label").style.display = "none";
