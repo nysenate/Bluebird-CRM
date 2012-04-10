@@ -193,7 +193,44 @@ UPDATE civicrm_log
 		 $total_log_count = 0;
 		 $total_log_count = $contact_log_count + $activity_log_count;
 		 return $total_log_count;
-     }  
+     }
+
+     //NYSS 5173 calculate log records using enhanced logging
+     static function getEnhancedContactLogCount( $contactID ) {
+
+         $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
+         $loggingDB = $dsn['database'];
+
+         $counts = array();
+         $tblKey = array( 'civicrm_contact'    => array( 'id'    => 'id',
+                                                         'group' => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)' ),
+                          'civicrm_entity_tag' => array( 'id'    => 'entity_id',
+                                                         'where' => 'entity_table = "civicrm_contact"' ),
+                          );
+
+         foreach ( $tblKey as $tbl => $details ) {
+             $sql = "SELECT count(*)
+                     FROM $loggingDB.log_{$tbl}
+                     WHERE {$details['id']} = $contactID
+                       AND (log_action != 'Initialization')";
+             if ( isset($details['where']) && $details['where'] ) {
+                 $sql .= " AND {$details['where']} ";
+             }
+             if ( isset($details['group']) && $details['group'] ) {
+                 $sql .= " GROUP BY {$details['group']} ";
+             }
+             //CRM_Core_Error::debug('sql',$sql);
+             $counts[] = CRM_Core_DAO::singleValueQuery($sql);
+         }
+
+         $totalCount = 0;
+         foreach ( $counts as $count ) {
+             if ( $count ) {
+                 $totalCount += $count;
+             }
+         }
+         return $totalCount;
+     }
 
      /**
      * Function for find out whether to use logging schema entries for contact
