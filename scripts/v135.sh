@@ -80,8 +80,9 @@ $execSql -i $instance -c "$thresh"
 logreport="
 UPDATE civicrm_report_instance SET title = 'Database Log (Enhanced)' WHERE title = 'Contact Logging Report (Summary)';
 UPDATE civicrm_report_instance SET title = 'Database Log (Archived)' WHERE title = 'Database Log Report';
-UPDATE civicrm_option_value SET label = 'Database Log (Enhanced)' WHERE label = 'Contact Logging Report (Summary)' AND option_group_id = 40;
-UPDATE civicrm_option_value SET label = 'Database Log (Archived)' WHERE label = 'Database Log Report' AND option_group_id = 40;"
+UPDATE civicrm_option_value SET label = 'Database Log (Enhanced)', description = 'This report displays a log of database changes from April 14, 2012 forward, when the enhanced logging capabilities were enabled. Older log records may still be accessed using the "Database Log (Archived)" report, which may be accessed from Reports > Create Reports from Templates.' WHERE label = 'Contact Logging Report (Summary)' AND option_group_id = 40;
+UPDATE civicrm_option_value SET label = 'Database Log (Archived)', description = 'This report displays a basic log of database changes prior to April 14, 2012 forward, before the enhanced logging capabilities were enabled. For more recent changelog data go to Reports > Create Reports from Templates and select Database Log (Enhanced).' WHERE label = 'Database Log Report' AND option_group_id = 40;"
+UPDATE civicrm_option_value SET weight = 4 WHERE value = 'activitySummary' AND option_group_id = 40;"
 $execSql -i $instance -c "$logreport"
 
 ### Cleanup ###
