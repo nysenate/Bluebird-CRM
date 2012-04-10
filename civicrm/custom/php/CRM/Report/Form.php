@@ -1121,12 +1121,12 @@ class CRM_Report_Form extends CRM_Core_Form {
         list($from, $to) = self::getFromTo($relative, $from, $to);
         
         if ( $from ) {
-            $from = ($type == CRM_Utils_Type::T_DATE)?substr($from,0,8 ):$from;
+            //$from = ($type == CRM_Utils_Type::T_DATE)?substr($from,0,8 ):$from; //NYSS 4198
             $clauses[] = "( {$fieldName} >= $from )";
         }
 
         if ( $to ) {
-            $to   = ($type == CRM_Utils_Type::T_DATE)?substr($to, 0, 8 ):$to;
+            //$to   = ($type == CRM_Utils_Type::T_DATE)?substr($to, 0, 8 ):$to; //NYSS 4198
             $clauses[] = "( {$fieldName} <= {$to} )";
         }
 
