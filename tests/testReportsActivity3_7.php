@@ -89,6 +89,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent("fields[activity_subject]");
         $this->click("fields[activity_subject]");
 
+        $this->select("activity_type_id_value","value=1"); // select TYPE = MEETING
+
         $this->clickAndWait("_qf_Activity_submit"); // click Preview Report
 
         $this->assertTitle('Activity Report');

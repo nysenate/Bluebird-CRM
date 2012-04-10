@@ -141,13 +141,20 @@ class CRM_Core_DAO extends DB_DataObject
      * @param bool   $i18nRewrite  whether to rewrite the query
      * @return object              the current DAO object after the query execution
      */
-    function query($query, $i18nRewrite = true)
+    function query($query, $i18nRewrite = true, $setVars = true) //NYSS
     {
         // rewrite queries that should use $dbLocale-based views for multi-language installs
         global $dbLocale;
         if ($i18nRewrite and $dbLocale) {
             require_once 'CRM/Core/I18n/Schema.php';
             $query = CRM_Core_I18n_Schema::rewriteQuery($query);
+        }
+
+        //NYSS set db variables for logging
+        //TODO: condition on whether logging is enabled
+        //TODO: we really only need for INSERT/UPDATE/DELETE - can we limit for SELECT?
+        if ( $setVars ) {
+            self::_setDBVars();
         }
 
         return parent::query($query);
@@ -866,7 +873,8 @@ FROM   civicrm_domain
                                    $abort = true,
                                    $daoName = null,
                                    $freeDAO = false,
-                                   $i18nRewrite = true )
+                                   $i18nRewrite = true,
+                                   $setVars = true ) //NYSS
     {
         $queryStr = self::composeQuery( $query, $params, $abort );
         //CRM_Core_Error::debug( 'q', $queryStr );
@@ -877,7 +885,7 @@ FROM   civicrm_domain
             require_once(str_replace('_', DIRECTORY_SEPARATOR, $daoName) . ".php");
             eval( '$dao   = new ' . $daoName . '( );' );
         }
-        $dao->query( $queryStr, $i18nRewrite );
+        $dao->query( $queryStr, $i18nRewrite, $setVars ); //NYSS
 
         if ( $freeDAO ||
              preg_match( '/^(insert|update|delete|create|drop|replace)/i', $queryStr ) ) {
@@ -900,7 +908,8 @@ FROM   civicrm_domain
     static function &singleValueQuery( $query,
                                        $params = array( ),
                                        $abort = true,
-                                       $i18nRewrite = true ) 
+                                       $i18nRewrite = true,
+                                       $setVars = false ) //NYSS not needed for SELECT queries
     {
         $queryStr = self::composeQuery( $query, $params, $abort );
 
@@ -909,8 +918,8 @@ FROM   civicrm_domain
         if ( ! $_dao ) {
             $_dao = new CRM_Core_DAO( );
         }
-		//NYSS
-		$result = $_dao->query( $queryStr, $i18nRewrite );
+        //NYSS
+        $result = $_dao->query( $queryStr, $i18nRewrite, $setVars ); //NYSS
         if ( is_a( $result, 'DB_Error' ) ) {
             return $result;
         }
@@ -1521,6 +1530,44 @@ SELECT contact_id
                     CRM_Core_DAO::executeQuery( "DROP TRIGGER IF EXISTS $triggerName" );
                     CRM_Core_DAO::executeQuery( $triggerSQL );
                 }
+            }
+        }
+    }//NYSS end
+
+    /** NYSS
+     * The User ID and Job ID are stored as db variables for inclusion
+     * in the log database via the triggers. At times, the variables
+     * are lost, causing no value to be stored and in the case of the
+     * user ID, preventing the log records from displaying properly
+     * (the log record change itself is not impacted). This function can
+     * be called to reset those values if they are not currently set.
+     */
+    function _setDBVars() {
+
+        $session = CRM_Core_Session::singleton();
+
+        if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
+            if ($session->get('userID')) {
+                CRM_Core_DAO::executeQuery('SET @civicrm_user_id := %1',
+                                           array(1 => array($session->get('userID'), 'Integer')),
+                                           true,
+                                           null,
+                                           false,
+                                           true,
+                                           false );
+                CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
+            }
+        }
+        if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
+            if ($session->get('jobID')) {
+                CRM_Core_DAO::executeQuery('SET @jobID := %1',
+                                           array(1 => array($session->get('jobID'), 'String')),
+                                           true,
+                                           null,
+                                           false,
+                                           true,
+                                           false );
+                //CRM_Core_Error::debug_log_message("job ID database variable reset to: {$session->get('jobID')}");
             }
         }
     }//NYSS end
