@@ -76,14 +76,14 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
     {
         require_once 'CRM/Core/DAO/Log.php';
         
-		//NYSS - LCD #2365
-		$session = & CRM_Core_Session::singleton();
+        //NYSS - LCD #2365
+        $session = & CRM_Core_Session::singleton();
         $jobID = $session->get('jobID');
-		if ( $jobID ) {
-			$params['data'] .= ', [Job: '.$jobID.']';
-		}
-		//NYSS end
-		
+        if ( $jobID ) {
+            $params['data'] .= ', [Job: '.$jobID.']';
+        }
+        //NYSS end
+
         $log = new CRM_Core_DAO_Log( );
         $log->copyValues($params);
         $log->save();
@@ -124,13 +124,13 @@ class CRM_Core_BAO_Log extends CRM_Core_DAO_Log
 
         $logData = "$tableName,$tableID";
 
-		//NYSS - LCD #2365
-		$session = & CRM_Core_Session::singleton();
+        //NYSS - LCD #2365
+        $session = & CRM_Core_Session::singleton();
         $jobID = $session->get('jobID');
-		if ( $jobID ) {
-			$logData .= ', [Job: '.$jobID.']';
-		}
-		//NYSS end
+        if ( $jobID ) {
+            $logData .= ', [Job: '.$jobID.']';
+        }
+        //NYSS end
 
         if ( ! $log->id ) {
             $log->entity_table  = 'civicrm_contact';
@@ -162,37 +162,37 @@ UPDATE civicrm_log
      */
      static function getContactLogCount( $contactID ) {
          //NYSS 4574 include activity logs in count
-		 $query = "SELECT count(*) FROM civicrm_log 
+         $query = "SELECT count(*) FROM civicrm_log 
                    WHERE civicrm_log.entity_table = 'civicrm_contact' AND civicrm_log.entity_id = {$contactID}";
-         $contact_log_count  = CRM_Core_DAO::singleValueQuery( $query );		 
+         $contact_log_count  = CRM_Core_DAO::singleValueQuery( $query );
 
-		 require_once 'api/v2/ActivityContact.php';
-		 $params = array('contact_id' => $contactID);
-		 $activities = civicrm_activity_contact_get($params);
+         require_once 'api/v2/ActivityContact.php';
+         $params = array('contact_id' => $contactID);
+         $activities = civicrm_activity_contact_get($params);
 
-		 $activityIDs = array();
-		 $activitySubject = array();
-		 $bulkEmailID = CRM_Core_OptionGroup::getValue( 'activity_type', 'Bulk Email', 'name' );
+         $activityIDs = array();
+         $activitySubject = array();
+         $bulkEmailID = CRM_Core_OptionGroup::getValue( 'activity_type', 'Bulk Email', 'name' );
 
-		 foreach ( $activities['result'] as $activityID => $activityDetail ) {
-			if ( $activityDetail['activity_type_id'] != $bulkEmailID ) {
-			    $activityIDs[] = $activityID;
-			    $activitySubject[$activityID] = $activityDetail['subject'];
-			}
-		 }
-		 $activityIDlist = implode(',', $activityIDs);
-		 $activity_log_count = 0;
-		 
-		 if ( !empty($activityIDlist) ) {
-		     $query = "SELECT count(*) as aCount
-				       FROM civicrm_log
-				       WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);";
-		     $activity_log_count = CRM_Core_DAO::singleValueQuery( $query );
-		 }
+         foreach ( $activities['result'] as $activityID => $activityDetail ) {
+            if ( $activityDetail['activity_type_id'] != $bulkEmailID ) {
+                $activityIDs[] = $activityID;
+                $activitySubject[$activityID] = $activityDetail['subject'];
+            }
+         }
+         $activityIDlist = implode(',', $activityIDs);
+         $activity_log_count = 0;
 
-		 $total_log_count = 0;
-		 $total_log_count = $contact_log_count + $activity_log_count;
-		 return $total_log_count;
+         if ( !empty($activityIDlist) ) {
+             $query = "SELECT count(*) as aCount
+                       FROM civicrm_log
+                       WHERE entity_table = 'civicrm_activity' AND entity_id IN ($activityIDlist);";
+             $activity_log_count = CRM_Core_DAO::singleValueQuery( $query );
+         }
+
+         $total_log_count = 0;
+         $total_log_count = $contact_log_count + $activity_log_count;
+         return $total_log_count;
      }
 
      //NYSS 5173 calculate log records using enhanced logging
@@ -202,13 +202,31 @@ UPDATE civicrm_log
          $loggingDB = $dsn['database'];
 
          $counts = array();
-         $tblKey = array( 'civicrm_contact'    => array( 'id'    => 'id',
-                                                         'group' => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)' ),
-                          'civicrm_entity_tag' => array( 'id'    => 'entity_id',
-                                                         'where' => 'entity_table = "civicrm_contact"' ),
+         $tblKey = array( 'civicrm_contact'        => array( 'id'    => 'id',
+                                                             'group' => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
+                                                             ),
+                          'civicrm_entity_tag'     => array( 'id'    => 'entity_id',
+                                                             'where' => 'entity_table = "civicrm_contact"'
+                                                             ),
+                          'civicrm_note'           => array( 'id'    => 'entity_id',
+                                                             'where' => 'entity_table = "civicrm_contact"'
+                                                             ),
+                          'civicrm_group_contact'  => array( 'id'    => 'contact_id',
+                                                             ),
+                          'civicrm_relationship_a' => array( 'id'    => 'contact_id_a',
+                                                             'table' => 'civicrm_relationship',
+                                                             ),
+                          'civicrm_relationship_b' => array( 'id'    => 'contact_id_b',
+                                                             'table' => 'civicrm_relationship',
+                                                             ),
                           );
 
          foreach ( $tblKey as $tbl => $details ) {
+             
+             if ( isset($details['table']) && $details['table'] ) {
+                 $tbl = $details['table'];
+             }
+
              $sql = "SELECT count(*)
                      FROM $loggingDB.log_{$tbl}
                      WHERE {$details['id']} = $contactID
@@ -218,6 +236,9 @@ UPDATE civicrm_log
              }
              if ( isset($details['group']) && $details['group'] ) {
                  $sql .= " GROUP BY {$details['group']} ";
+
+                 //now wrap in a subquery to get total count
+                 $sql = "SELECT count(*) FROM ( $sql ) tmp";
              }
              //CRM_Core_Error::debug('sql',$sql);
              $counts[] = CRM_Core_DAO::singleValueQuery($sql);

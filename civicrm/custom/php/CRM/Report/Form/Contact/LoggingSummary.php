@@ -154,9 +154,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
             'crm_contact_civireport.log_type' => "'Contact'",
             );
         $contactSelect = str_replace( array_keys($contactReplace), array_values($contactReplace), $this->_select );
-
         $contactSql = "{$contactSelect}, 'Contact' log_type {$this->_from} {$this->_groupBy}";
 
+        //calculate tags
         $tagReplace = array(
             'SQL_CALC_FOUND_ROWS'                 => '',
             'crm_contact_civireport.id'           => 'crm_contact_civireport.entity_id',
@@ -176,6 +176,15 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         $tagWhere  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact'";
         $tagSql    = "$tagSelect, 'Tag' log_type $tagFrom $tagWhere";
 
+        //extend log to other tables
+        $sqlParams = array( 'logDB'  => $this->loggingDB,
+                            'select' => $this->_select
+                            );
+        $groupSql = self::_getGroupSQL($sqlParams);
+        $relASql  = self::_getRelationshipASQL($sqlParams);
+        $relBSql  = self::_getRelationshipBSQL($sqlParams);
+        $noteSql  = self::_getNoteSQL($sqlParams);
+
         //now combine the query
         $whereReplace = array(
             'log_date'                            => 'log_civicrm_contact_log_date',
@@ -188,7 +197,13 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         $sqlWhere = str_replace( array_keys($whereReplace), array_values($whereReplace), $this->_where );
 
         $sql = "SELECT SQL_CALC_FOUND_ROWS * 
-                FROM ( ( $contactSql ) UNION ( $tagSql ) ) tmpCombined 
+                FROM ( ( $contactSql ) UNION
+                       ( $tagSql ) UNION
+                       ( $noteSql ) UNION
+                       ( $groupSql ) UNION
+                       ( $relASql ) UNION
+                       ( $relBSql )
+                     ) tmpCombined 
                 {$sqlWhere}
                 {$this->_orderBy}
                 {$this->_limit}";
@@ -196,7 +211,13 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
 
         //4198 get distinct contact count
         $sqlDistinct = "SELECT *
-                        FROM ( ( $contactSql ) UNION ( $tagSql ) ) tmpCombined
+                        FROM ( ( $contactSql ) UNION
+                               ( $tagSql ) UNION
+                               ( $noteSql ) UNION
+                               ( $groupSql ) UNION
+                               ( $relASql ) UNION
+                               ( $relBSql )
+                             ) tmpCombined
                         {$sqlWhere}
                         GROUP BY log_civicrm_contact_id";
         //CRM_Core_Error::debug_var('sqlDistinct',$sqlDistinct);
@@ -351,5 +372,110 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         //CRM_Core_Error::debug_var('html',$html);
 
         return $html;
+    }
+
+    function _getGroupSQL( $sqlParams ) {
+
+        $replace = array(
+            'SQL_CALC_FOUND_ROWS'                 => '',
+            'crm_contact_civireport.id'           => 'crm_contact_civireport.contact_id',
+            'crm_contact_civireport.display_name' => "CONCAT(group_contact.display_name,'  [',group_table.title,']')",
+            'crm_contact_civireport.is_deleted'   => 'group_contact.is_deleted',
+            'crm_contact_civireport.log_type'     => "'Group'",
+            'crm_contact_civireport.log_action'   => 'crm_contact_civireport.status',
+            );
+
+        $select = str_replace( array_keys($replace), array_values($replace), $sqlParams['select'] );
+        $from   = "FROM `{$sqlParams['logDB']}`.log_civicrm_group_contact crm_contact_civireport
+                   LEFT JOIN civicrm_contact contact_civireport
+                     ON (crm_contact_civireport.log_user_id = contact_civireport.id)
+                   JOIN civicrm_contact group_contact
+                     ON crm_contact_civireport.contact_id = group_contact.id
+                   JOIN civicrm_group group_table
+                     ON crm_contact_civireport.group_id = group_table.id";
+        $where  = "";
+        $sql    = "$select, 'Group' log_type $from $where";
+        //CRM_Core_Error::debug('sql',$sql);
+
+        return $sql;
+    }
+
+    function _getRelationshipASQL( $sqlParams ) {
+
+        $replace = array(
+            'SQL_CALC_FOUND_ROWS'                 => '',
+            'crm_contact_civireport.id'           => 'crm_contact_civireport.contact_id_a',
+            'crm_contact_civireport.display_name' => "CONCAT(rel_contact.display_name,'  [',rel_table.label_a_b,']')",
+            'crm_contact_civireport.is_deleted'   => 'rel_contact.is_deleted',
+            'crm_contact_civireport.log_type'     => "'Relationship'",
+            'crm_contact_civireport.log_action'   => "IF ( crm_contact_civireport.log_action = 'Update', 
+                                                           'Modified', 
+                                                           crm_contact_civireport.log_action )",
+            );
+
+        $select = str_replace( array_keys($replace), array_values($replace), $sqlParams['select'] );
+        $from   = "FROM `{$sqlParams['logDB']}`.log_civicrm_relationship crm_contact_civireport
+                   LEFT JOIN civicrm_contact contact_civireport
+                     ON (crm_contact_civireport.log_user_id = contact_civireport.id)
+                   JOIN civicrm_contact rel_contact
+                     ON crm_contact_civireport.contact_id_a = rel_contact.id
+                   JOIN civicrm_relationship_type rel_table
+                     ON crm_contact_civireport.relationship_type_id = rel_table.id";
+        $where  = "";
+        $sql    = "$select, 'Relationship' log_type $from $where";
+        //CRM_Core_Error::debug('sql',$sql);
+
+        return $sql;
+    }
+
+    function _getRelationshipBSQL( $sqlParams ) {
+
+        $replace = array(
+            'SQL_CALC_FOUND_ROWS'                 => '',
+            'crm_contact_civireport.id'           => 'crm_contact_civireport.contact_id_b',
+            'crm_contact_civireport.display_name' => "CONCAT(rel_contact.display_name,'  [',rel_table.label_b_a,']')",
+            'crm_contact_civireport.is_deleted'   => 'rel_contact.is_deleted',
+            'crm_contact_civireport.log_type'     => "'Relationship'",
+            'crm_contact_civireport.log_action'   => "IF ( crm_contact_civireport.log_action = 'Update', 
+                                                           'Modified', 
+                                                           crm_contact_civireport.log_action )",
+            );
+
+        $select = str_replace( array_keys($replace), array_values($replace), $sqlParams['select'] );
+        $from   = "FROM `{$sqlParams['logDB']}`.log_civicrm_relationship crm_contact_civireport
+                   LEFT JOIN civicrm_contact contact_civireport
+                     ON (crm_contact_civireport.log_user_id = contact_civireport.id)
+                   JOIN civicrm_contact rel_contact
+                     ON crm_contact_civireport.contact_id_b = rel_contact.id
+                   JOIN civicrm_relationship_type rel_table
+                     ON crm_contact_civireport.relationship_type_id = rel_table.id";
+        $where  = "";
+        $sql    = "$select, 'Relationship' log_type $from $where";
+        //CRM_Core_Error::debug('sql',$sql);
+
+        return $sql;
+    }
+
+    function _getNoteSQL( $sqlParams ) {
+
+        $replace = array(
+            'SQL_CALC_FOUND_ROWS'                 => '',
+            'crm_contact_civireport.id'           => 'crm_contact_civireport.entity_id',
+            'crm_contact_civireport.display_name' => "CONCAT(note_contact.display_name,'  [',crm_contact_civireport.subject,']')",
+            'crm_contact_civireport.is_deleted'   => 'note_contact.is_deleted',
+            'crm_contact_civireport.log_type'     => "'Note'",
+            );
+
+        $select = str_replace( array_keys($replace), array_values($replace), $sqlParams['select'] );
+        $from   = "FROM `{$sqlParams['logDB']}`.log_civicrm_note crm_contact_civireport
+                   LEFT JOIN civicrm_contact     contact_civireport
+                     ON (crm_contact_civireport.log_user_id = contact_civireport.id)
+                   JOIN civicrm_contact note_contact
+                     ON crm_contact_civireport.entity_id = note_contact.id";
+        $where  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact'";
+        $sql    = "$select, 'Note' log_type $from $where";
+        //CRM_Core_Error::debug('sql',$sql);
+
+        return $sql;
     }
 }
