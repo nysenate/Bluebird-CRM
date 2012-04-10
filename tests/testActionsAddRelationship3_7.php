@@ -1,17 +1,16 @@
-<?php /* DONT REMOVE THE NEXT LINE. IT CONTAINS SETTINGS
-SpouseName
+<?php /*
 
     Mar 7, 2012
     This test script uses the Advanced Search
-    Find the contact with name Ascher
+    Find the contact by name
 
     1. open sd99
     2. log in
     3. open advanced search
-    4. run search by name = Ascher
+    4. run search by name 
     5. open first found contact 
     6. Actions / Add Relationship
-    7. Spouse of / Mike Gordo
+    7. Spouse of / second name
     8. Save relationship, check and delete the relationship
 
     *** check EVERY STEP!

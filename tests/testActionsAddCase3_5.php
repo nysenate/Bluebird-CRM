@@ -5,12 +5,12 @@
 
     Mar 5, 2012
     This test script uses the Advanced Search
-    Find the contact named Mike Gordo
+    Find the contact by name
 
     1. open sd99
     2. log in
     3. open advanced search
-    4. run search by name=Mike Gordo
+    4. run search by name
     5. open first found contact 
     6. Actions / Add case
     7. Medium in person
