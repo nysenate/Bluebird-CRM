@@ -646,6 +646,9 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
  */
 function _setDBVars() {
 
+    //returning immediately as we've moved this to Core_DAO; retaining code for now;
+    return;
+
     $session = CRM_Core_Session::singleton();
 
     if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
