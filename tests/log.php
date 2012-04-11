@@ -30,6 +30,7 @@ while ($row = mysql_fetch_array($result)) {
 	echo "<br><b>Login:</b> ".$row['username'].":".$row['password'];
 	echo "<br><b>Browser:</b> ".$row['browser'];
 	echo "<br><b>Test file:</b> ".$row['testname'];
+	echo "<br>Searchname:[".$row['searchname']."], spouse1:[".$row['spousename1']."], spouse2:[".$row['spousename2']."], email:[".$row['searchemail']."]";
 	echo "</td>";
 	echo "<td>".$row['text']."</td>";
 	echo "</tr>";

@@ -85,7 +85,7 @@
 
 		$log = '';
 		foreach($data as $d)
-			$log .= $d."\n";
+			$log .= $d."<br/>";
 
 		$query = "INSERT INTO `log`(`tid`,`text`) VALUES ('$record', '$log'); ";
 		mysql_query($query, $link);

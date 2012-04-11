@@ -217,6 +217,10 @@ span.small {
 	background-color:#aaa;
 }
 
+.log tbody tr:first-child td:nth-child(3) {
+	font-size:.9em;
+	border:1px #000 solid;
+}
 
 #footer { }
 
