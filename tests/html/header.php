@@ -19,6 +19,10 @@
 
 <?php
 include_once "html/functions.php";
+
+if (file_exists($tempfile)) {
+	dump($tempfile);
+}
 // check here if $tempfile exists, save it to the db
 // and unlink the file
 ?>

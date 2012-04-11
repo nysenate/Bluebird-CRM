@@ -69,14 +69,19 @@
 		fclose($handle);
 	}
 
-	function dump($data, $record) {
+	function dump($data) {
 		global $mysql_connect;
 		global $mysql_user;
 		global $mysql_pwd;
 		global $mysql_db;
+		global $tempfile;
 
 		$link = mysql_connect($mysql_host, $mysql_user, $mysql_pwd);
 		mysql_select_db($mysql_db);
+
+	    $result = mysql_query("SELECT `tid` FROM `test` WHERE `time` = (SELECT MAX(`time`) FROM `test`);", $link);
+	    $record = mysql_fetch_array($result);
+	    $record = $record['tid'];
 
 		$log = '';
 		foreach($data as $d)
@@ -85,6 +90,8 @@
 		$query = "INSERT INTO `log`(`tid`,`text`) VALUES ('$record', '$log'); ";
 		mysql_query($query, $link);
 		mysql_close($link);
+
+		unlink($tempfile);
 	}
 
 

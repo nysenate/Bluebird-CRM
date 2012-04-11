@@ -41,9 +41,6 @@ if ($_POST['save'] == 'yes') {
 	mysql_select_db($mysql_db);
 	mysql_query($query, $link);
 
-    $result = mysql_query("SELECT MAX(`tid`) FROM `test`;", $link);
-    $record = mysql_fetch_row($result);
-    $record = $record[0];
 	mysql_close($link);
 }
 
@@ -58,15 +55,14 @@ echo "<a href=\"index.php\"><h3>Start over</h3></a><br />";
 
 echo "Starting: <pre>".$testname."</pre>";
 echo "<div class=\"result\"><pre style=\"width:700px !important;\">";
-//$data = system("c:\wamp\phpunit ".$testname);
-system("./start.sh ".$testname);
+system("start.bat ".$testname);
+//system("./start.sh ".$testname);
 $data = file($tempfile);
 $log = '';
 foreach($data as $d)
-$log .= $d."\n";
+    $log .= $d."\n";
 echo $log;
-dump($data, $record);
-unlink($tempfile);
+dump($data);
 
 echo "</pre></div>";
 ?>
