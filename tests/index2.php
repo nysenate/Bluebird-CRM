@@ -65,6 +65,8 @@ echo $log;
 dump($data);
 
 echo "</pre></div>";
+
+echo '<META HTTP-EQUIV="Refresh" Content="0; URL=./log.php">';
 ?>
 
 <br/>
