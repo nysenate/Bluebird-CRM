@@ -1,5 +1,12 @@
 <?php
 	
+	$mysql_host = 'localhost';
+	$mysql_user = 'root';
+	$mysql_pwd  = 'mysql';
+	$mysql_db   = 'selenium';
+	$dir		= "c:\selenium\\";
+	$tempfile   = 'temp.log';
+
 	class configClass {
 		public $id;
 		public $displayName;
@@ -60,6 +67,24 @@
 		    }
 		}
 		fclose($handle);
+	}
+
+	function dump($data, $record) {
+		global $mysql_connect;
+		global $mysql_user;
+		global $mysql_pwd;
+		global $mysql_db;
+
+		$link = mysql_connect($mysql_host, $mysql_user, $mysql_pwd);
+		mysql_select_db($mysql_db);
+
+		$log = '';
+		foreach($data as $d)
+			$log .= $d."\n";
+
+		$query = "INSERT INTO `log`(`tid`,`text`) VALUES ('$record', '$log'); ";
+		mysql_query($query, $link);
+		mysql_close($link);
 	}
 
 

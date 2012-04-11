@@ -199,4 +199,24 @@ span.small {
 	font-weight:normal;
 }
 
+/* LOG */
+
+.log th {
+	border-left:1px #678 solid;
+	border-bottom:1px #678 solid;
+	padding:5px 10px;
+	font-family: sans-serif;
+	font-size:.7em;
+}
+
+.log th:first-child {
+	border-left:none;
+}
+
+.log tr:nth-child(odd) {
+	background-color:#aaa;
+}
+
+
 #footer { }
+
