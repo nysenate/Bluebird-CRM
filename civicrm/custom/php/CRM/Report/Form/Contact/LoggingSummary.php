@@ -75,8 +75,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                        'required'   => true
                     ),
                     'log_action' => array(
-                        'default' => true,
-                        'title'   => ts('Action'),
+                        'default'  => true,
+                        'title'    => ts('Action'),
+                        'required' => true,
                     ),
                     //NYSS add job ID
                     'log_job_id' => array(
