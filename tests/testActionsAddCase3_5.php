@@ -1,8 +1,5 @@
 <?php 
-
 /*
-
-
     Mar 5, 2012
     This test script uses the Advanced Search
     Find the contact by name
@@ -46,7 +43,6 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
             $this->captureScreenshotOnFailure = TRUE;
             $this->screenshotPath = getScreenshotPath();
         }
-        //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
@@ -54,7 +50,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $myurl = getMainURL();
 
         if (strpos($this->settings->browser,"explore")) {
-            $myurl.='/logout';                              //IE has problems closing the session
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
         }
 
         $this->openAndWait($myurl);

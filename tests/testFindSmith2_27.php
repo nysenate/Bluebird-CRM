@@ -42,7 +42,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $myurl = getMainURL();
 
         if (strpos($this->settings->browser,"explore")) {
-            $myurl.='/logout';                              //IE has problems closing the session
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
         }
 
         $this->openAndWait($myurl);

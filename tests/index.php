@@ -1,6 +1,5 @@
 <?php
 	include_once "html/header.php";
-	include_once "html/functions.php";
 	?>
 
 <div id="main">
@@ -52,10 +51,6 @@ for ($i = 0; $i < $nConfig; $i++) {
 
 // display list of last tests
 
-$mysql_host = 'localhost';
-$mysql_user = 'root';
-$mysql_pwd  = 'mysql';
-$mysql_db   = 'selenium';
 $query = "SELECT * FROM `test` WHERE TRUE ORDER BY `tid` DESC LIMIT 9;";
 
 $link = mysql_connect($mysql_host, $mysql_user, $mysql_pwd);

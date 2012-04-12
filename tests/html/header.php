@@ -8,22 +8,32 @@
 		var vis = false;
 		function helppage() {
 			if (!vis) {
-				vis = !vis;
 				document.getElementById("helparea").style.display = "none";
 			} else {
-				vis = !vis;
 				document.getElementById("helparea").style.display = "block";
 			}
+			vis = !vis;
 		}
 	</script>
 </head>
 
+<?php
+include_once "html/functions.php";
+
+if (file_exists($tempfile)) {
+	$data = file($tempfile);
+	dump($data);
+}
+// check here if $tempfile exists, save it to the db
+// and unlink the file
+?>
 
 <body>
 <div id="wrap">
 	<div id="header">
 	<h1><a href="index.php">NY Senate</a></h1>
 	<h3 class="help-button"><a href="javascript:helppage();">help ?</a></h3>
+	<h3 class="help-button"><a href="log.php">log</a></h3>
 	<h2>Selenium Testing</h2>
 
 		<div id="helparea">
