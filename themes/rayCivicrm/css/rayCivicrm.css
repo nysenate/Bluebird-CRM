@@ -956,7 +956,9 @@ ul.token-input-list-facebook { width:265px;}
 #_qf_Summary_submit_pdf,
 #_qf_Relationship_submit_pdf,
 #_qf_Activity_submit_pdf,
-#_qf_Case_submit_pdf {display:none;}
+#_qf_Case_submit_pdf {
+    /*display:none;*/
+}
 
 #search-status #task option[value='19'] {display:none;}
 
