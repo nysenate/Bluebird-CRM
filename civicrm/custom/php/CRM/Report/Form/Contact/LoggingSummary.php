@@ -306,6 +306,38 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         return $statistics;
     }
 
+    //NYSS 5184 alter pager url
+    function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
+        if ( $this->_limit && ($this->_limit != '') ) {
+            require_once 'CRM/Utils/Pager.php';
+            $sql    = "SELECT FOUND_ROWS();";
+            $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $sql );
+            $params = array( 'total'        => $this->_rowsFound,
+                             'rowCount'     => $rowCount,
+                             'status'       => ts( 'Records' ) . ' %%StatusMessage%%',
+                             'buttonBottom' => 'PagerBottomButton',
+                             'buttonTop'    => 'PagerTopButton',
+                             'pageID'       => $this->get( CRM_Utils_Pager::PAGE_ID ) );
+
+            $pager = new CRM_Utils_Pager( $params );
+
+            //NYSS
+            if ( CRM_Utils_Request::retrieve('context', 'String') == 'contact' ) {
+                $context = CRM_Utils_Request::retrieve('context', 'String');
+                $path = CRM_Utils_System::currentPath();
+                foreach ( $pager->_response as $k => $v) {
+                    $urlReplace = array( $path     => 'civicrm/contact/view',
+                                         'force=1' => 'selectedChild=log',
+                                         );
+                    $pager->_response[$k] = str_replace( array_keys($urlReplace), array_values($urlReplace), $v );
+                }
+                //CRM_Core_Error::debug('pager',$pager);
+            }
+
+            $this->assign_by_ref( 'pager', $pager );
+        }
+    }
+
     function getContactDetails( $cid ) {
 
         $left = $middle = $right = array();

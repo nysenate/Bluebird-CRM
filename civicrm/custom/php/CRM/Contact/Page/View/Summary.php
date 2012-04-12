@@ -290,8 +290,8 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
                 $q = "reset=1&snippet=1&force=1&cid={$this->_contactId}"; 
                 if ( CRM_Utils_Request::retrieve('isTest', 'Positive', $this) ) {
                     $q = $q."&isTest=1";
-                }                
-                $allTabs[] = array( 'id'     =>  $i,
+                }
+				$allTabs[] = array( 'id'     =>  $i,
                                     'url'    => CRM_Utils_System::url( "civicrm/contact/view/$u", $q ),
                                     'title'  => $elem['title'],
                                     'weight' => $elem['weight'],
@@ -323,9 +323,15 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
         
         foreach ( $rest as $k => $v ) {
             if ( CRM_Utils_Array::value($k, $this->_viewOptions) ) {
+                //NYSS 5184
+				$crmPID = '';
+				if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') && $k == 'log' ) {
+                    $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID', 'Integer');
+                }
+
                 $allTabs[] = array( 'id'     =>  $k,
                                     'url'    => CRM_Utils_System::url( "civicrm/contact/view/$k",
-                                                                       "reset=1&snippet=1&cid={$this->_contactId}" ),
+                                                                       "reset=1&snippet=1&cid={$this->_contactId}{$crmPID}" ),//NYSS
                                     'title'  => $v,
                                     'weight' => $weight,
                                     'count'  => CRM_Contact_BAO_Contact::getCountComponent( $k, $this->_contactId ) );
