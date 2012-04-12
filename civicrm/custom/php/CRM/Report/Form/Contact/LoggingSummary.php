@@ -75,8 +75,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                        'required'   => true
                     ),
                     'log_action' => array(
-                        'default' => true,
-                        'title'   => ts('Action'),
+                        'default'  => true,
+                        'title'    => ts('Action'),
+                        'required' => true,
                     ),
                     //NYSS add job ID
                     'log_job_id' => array(
@@ -257,6 +258,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                 $q = "reset=1&log_conn_id={$row['log_civicrm_contact_log_conn_id']}&log_date={$row['log_civicrm_contact_log_date']}";
                 if ( $this->cid ) $q .= '&cid='.$this->cid;
 
+                //NYSS append instance id so we return properly
+                $q .= '&instanceID='.$this->_id;
+
                 $url = CRM_Report_Utils_Report::getNextUrl('logging/contact/detail', $q, false, true);
                 $row['log_civicrm_contact_log_action_link'] = $url;
                 $row['log_civicrm_contact_log_action_hover'] = ts("View details for this update");
@@ -304,6 +308,38 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         $statistics['counts']['rowsFound'] = array( 'title' => ts('Contact(s) Changed'),
                                                     'value' => $this->_distinctCount );
         return $statistics;
+    }
+
+    //NYSS 5184 alter pager url
+    function setPager( $rowCount = self::ROW_COUNT_LIMIT ) {
+        if ( $this->_limit && ($this->_limit != '') ) {
+            require_once 'CRM/Utils/Pager.php';
+            $sql    = "SELECT FOUND_ROWS();";
+            $this->_rowsFound = CRM_Core_DAO::singleValueQuery( $sql );
+            $params = array( 'total'        => $this->_rowsFound,
+                             'rowCount'     => $rowCount,
+                             'status'       => ts( 'Records' ) . ' %%StatusMessage%%',
+                             'buttonBottom' => 'PagerBottomButton',
+                             'buttonTop'    => 'PagerTopButton',
+                             'pageID'       => $this->get( CRM_Utils_Pager::PAGE_ID ) );
+
+            $pager = new CRM_Utils_Pager( $params );
+
+            //NYSS
+            if ( CRM_Utils_Request::retrieve('context', 'String') == 'contact' ) {
+                $context = CRM_Utils_Request::retrieve('context', 'String');
+                $path = CRM_Utils_System::currentPath();
+                foreach ( $pager->_response as $k => $v) {
+                    $urlReplace = array( $path     => 'civicrm/contact/view',
+                                         'force=1' => 'selectedChild=log',
+                                         );
+                    $pager->_response[$k] = str_replace( array_keys($urlReplace), array_values($urlReplace), $v );
+                }
+                //CRM_Core_Error::debug('pager',$pager);
+            }
+
+            $this->assign_by_ref( 'pager', $pager );
+        }
     }
 
     function getContactDetails( $cid ) {

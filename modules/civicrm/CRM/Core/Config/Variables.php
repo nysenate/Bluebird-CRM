@@ -440,6 +440,12 @@ class CRM_Core_Config_Variables extends CRM_Core_Config_Defaults
      */
     public $doNotAttachPDFReceipt = false;
 
+    //NYSS 5097
+	/**
+     * Path to wkhtmltopdf if available
+     */
+    public $wkhtmltopdfPath = false;
+
     /**
      * Provide addressSequence
      *
