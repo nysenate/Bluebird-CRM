@@ -1,0 +1,14 @@
+PHPUnit 3.6.10 by Sebastian Bergmann.
+
+E
+
+Time: 9 seconds, Memory: 3.25Mb
+
+There was 1 error:
+
+1) WebTest::testTitle
+RuntimeException: ERROR: Command execution failure. Please search the user group at https://groups.google.com/forum/#!forum/selenium-users for error details from the log window.  The error message is: Component returned failure code: 0x80520001 (NS_ERROR_FILE_UNRECOGNIZED_PATH) [nsILocalFile.initWithPath]
+
+
+FAILURES!
+Tests: 1, Assertions: 6, Errors: 1.

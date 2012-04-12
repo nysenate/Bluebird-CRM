@@ -7,11 +7,6 @@
 <?php
 // check settings
 
-$mysql_host = 'localhost';
-$mysql_user = 'root';
-$mysql_pwd  = 'mysql';
-$mysql_db   = 'selenium';
-
 $testname = $_POST['testName'];
 
 if ($_POST['save'] == 'yes') {
@@ -45,6 +40,7 @@ if ($_POST['save'] == 'yes') {
 	$link = mysql_connect($mysql_host, $mysql_user, $mysql_pwd);
 	mysql_select_db($mysql_db);
 	mysql_query($query, $link);
+
 	mysql_close($link);
 }
 
@@ -57,10 +53,20 @@ if (!$testname) {
 
 echo "<a href=\"index.php\"><h3>Start over</h3></a><br />";
 
-echo "Starting: <pre>"."c:\wamp\phpunit ".$testname."</pre>";
+echo "Starting: <pre>".$testname."</pre>";
 echo "<div class=\"result\"><pre style=\"width:700px !important;\">";
-system("c:\wamp\phpunit ".$testname);
+system("start.bat ".$testname);
+//system("./start.sh ".$testname);
+$data = file($tempfile);
+$log = '';
+foreach($data as $d)
+    $log .= $d."\n";
+echo $log;
+dump($data);
+
 echo "</pre></div>";
+
+echo '<META HTTP-EQUIV="Refresh" Content="0; URL=./log.php">';
 ?>
 
 <br/>

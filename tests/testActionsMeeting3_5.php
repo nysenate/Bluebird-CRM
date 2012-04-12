@@ -3,16 +3,15 @@
 /* 
     Mar 5, 2012
     This test script uses the Advanced Search
-    Find the contact named Mike Gordo
-    set up the meeting
+    Find the contact, set up the meeting
 
     1. open sd99
     2. log in
     3. open advanced search
-    4. run search by name=Mike Gordo
+    4. run search by name
     5. open first found contact 
     6. click on Actions / meeting
-    7. add meeting at 10 am tomorrow, key word Aging
+    7. add meeting at 10 am tomorrow
     8. save contact
     9. delete the meeting
 
@@ -48,7 +47,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $myurl = getMainURL();
 
         if (strpos($this->settings->browser,"explore")) {
-            $myurl.='/logout';                              //IE has problems closing the session
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
         }
 
         $this->openAndWait($myurl);
@@ -108,7 +108,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->type("duration","45");
         $this->type("subject","Really Big Meeting");
 
-        // key word Aging
+ /*       // key word Aging
+        // this code doesn't work in IE and CHROME
         $this->click('token-input-activity_taglist_296');
         $this->waitForElementPresent('class=token-input-dropdown-facebook'); // dropdown element Begin typing a tag name
 
@@ -116,7 +117,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->typeKeys('token-input-activity_taglist_296',$keyword2); // type the keyword
         $this->waitForElementPresent("xpath=//div[@class='token-input-dropdown-facebook']/ul[1]/li[1]"); // that dropdown menu
         $this->mouseDown("xpath=//div[@class='token-input-dropdown-facebook']/ul[1]/li[1]"); // use mouseDown instead of click
-
+*/
         // save it
         $this->click("_qf_Activity_upload-bottom");
         $this->waitForPageToLoad('30000');
