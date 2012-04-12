@@ -73,7 +73,7 @@ class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail
             if ( $instanceID ) {
                 $backURL = CRM_Utils_System::url('civicrm/report/instance/'.$instanceID, "reset=1", false, null, false);
             } else {
-                $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, true);
+                $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, false);//NYSS don't get instance id
             }
             $this->assign('backURL', $backURL);
         }
