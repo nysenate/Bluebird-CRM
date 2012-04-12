@@ -130,9 +130,8 @@ class CRM_Utils_PDF_Utils {
         require_once 'packages/snappy/src/Knp/Snappy/Pdf.php';
         $config = CRM_Core_Config::singleton();
 
-        //NYSS set relative path
-        $bbconfig = get_bluebird_instance_config();
-        $wkhtmltopdfPath = $bbconfig['app.rootdir'].'/modules/civicrm/packages/wkhtmltopdf';
+        //NYSS - set default path to /usr/local/bin/ for now.
+        $wkhtmltopdfPath = '/usr/local/bin/wkhtmltopdf';
 
         //$snappy = new Knp_Snappy_Pdf($config->wkhtmltopdfPath);
         $snappy = new Knp_Snappy_Pdf($wkhtmltopdfPath);
