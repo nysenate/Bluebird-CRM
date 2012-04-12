@@ -68,7 +68,14 @@ class CRM_Report_Form_Contact_LoggingDetail extends CRM_Logging_ReportDetail
         } else {
             // link back to summary report
             require_once 'CRM/Report/Utils/Report.php';
-            $this->assign('backURL', CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, true));
+            //NYSS preserve summary instance source
+            $instanceID = CRM_Utils_Request::retrieve('instanceID', 'Integer');
+            if ( $instanceID ) {
+                $backURL = CRM_Utils_System::url('civicrm/report/instance/'.$instanceID, "reset=1", false, null, false);
+            } else {
+                $backURL = CRM_Report_Utils_Report::getNextUrl('logging/contact/summary', 'reset=1', false, true);
+            }
+            $this->assign('backURL', $backURL);
         }
     }
 
