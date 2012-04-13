@@ -246,7 +246,6 @@ function selectValue( val ) {
 
     function tokenReplText ( element )
     {
-	    //console.log(element);
         var token     = cj("#"+element.id).val( )[0];
         if ( element.id == 'token3' ) {
            ( isMailing ) ? text_message = "subject" : text_message = "msg_subject"; 
