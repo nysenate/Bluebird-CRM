@@ -14,3 +14,6 @@ drupal/sites/*
 
 #bluebird.cfg at root is installation specific
 bluebird.cfg*
+
+#user custom
+scripts/test.sh
