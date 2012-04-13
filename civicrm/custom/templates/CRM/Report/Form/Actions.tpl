@@ -95,7 +95,7 @@
 
 {literal}
 <script type="text/javascript">
-cj(".crm-tasks input[value='PDF']").click(function(){
+cj(".crm-tasks input[value='Create PDF']").click(function(){
     cj("#pdfProcessing").show( );
     cj("#pdfProcessing").dialog({
 		title: "PDF Processing",

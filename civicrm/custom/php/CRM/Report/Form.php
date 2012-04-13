@@ -778,7 +778,7 @@ class CRM_Report_Form extends CRM_Core_Form {
         $label = $this->_id ? ts( 'Print Report' ) : ts( 'Print Preview' );
         $this->addElement('submit', $this->_printButtonName, $label, array('onclick' => 'form.setAttribute("target", "_blank");') );
 
-        $label = $this->_id ? ts( 'PDF' ) : ts( 'Create PDF' );//NYSS 2489
+        $label = $this->_id ? ts( 'Create PDF' ) : ts( 'Create PDF' );//NYSS 2489
         $this->addElement('submit', $this->_pdfButtonName, $label, array('onclick' => 'form.setAttribute("target", "_self");') );
 
         $label = $this->_id ? ts( 'Export to CSV' ) : ts( 'Create CSV' );//NYSS 2489
@@ -2125,7 +2125,11 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                     //delete the object
                     imagedestroy($chart);
                 }
-                require_once 'CRM/Utils/PDF/Utils.php';                     
+
+                //NYSS 5207 - strip link tags
+                $content = strip_tags($content, '<html><head><body><div><h1><table><tr><th><td><script><style>');
+
+                require_once 'CRM/Utils/PDF/Utils.php';
                 CRM_Utils_PDF_Utils::html2pdf( $content, "BluebirdReport.pdf", false, array('orientation' => 'landscape') );
             }
             CRM_Utils_System::civiExit( );
