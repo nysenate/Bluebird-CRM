@@ -202,22 +202,23 @@ UPDATE civicrm_log
          $loggingDB = $dsn['database'];
 
          $counts = array();
-         $tblKey = array( 'civicrm_contact'        => array( 'id'    => 'id',
-                                                             'group' => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
+         $tblKey = array( 'civicrm_contact'        => array( 'id'     => 'id',
+                                                             'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
                                                              ),
-                          'civicrm_entity_tag'     => array( 'id'    => 'entity_id',
-                                                             'where' => 'entity_table = "civicrm_contact"'
+                          'civicrm_entity_tag'     => array( 'id'     => 'entity_id',
+                                                             'where'  => 'entity_table = "civicrm_contact"'
                                                              ),
-                          'civicrm_note'           => array( 'id'    => 'entity_id',
-                                                             'where' => 'entity_table = "civicrm_contact"'
+                          'civicrm_note'           => array( 'id'     => 'entity_id',
+                                                             'where'  => 'entity_table = "civicrm_contact"'
                                                              ),
-                          'civicrm_group_contact'  => array( 'id'    => 'contact_id',
+                          'civicrm_group_contact'  => array( 'id'     => 'contact_id',
+                                                             'noinit' => true,
                                                              ),
-                          'civicrm_relationship_a' => array( 'id'    => 'contact_id_a',
-                                                             'table' => 'civicrm_relationship',
+                          'civicrm_relationship_a' => array( 'id'     => 'contact_id_a',
+                                                             'table'  => 'civicrm_relationship',
                                                              ),
-                          'civicrm_relationship_b' => array( 'id'    => 'contact_id_b',
-                                                             'table' => 'civicrm_relationship',
+                          'civicrm_relationship_b' => array( 'id'     => 'contact_id_b',
+                                                             'table'  => 'civicrm_relationship',
                                                              ),
                           );
 
@@ -229,8 +230,10 @@ UPDATE civicrm_log
 
              $sql = "SELECT count(*)
                      FROM $loggingDB.log_{$tbl}
-                     WHERE {$details['id']} = $contactID
-                       AND (log_action != 'Initialization')";
+                     WHERE {$details['id']} = $contactID";
+             if ( !isset($details['noinit']) || !$details['noinit'] ) {
+                 $sql .= " AND (log_action != 'Initialization') ";
+             }
              if ( isset($details['where']) && $details['where'] ) {
                  $sql .= " AND {$details['where']} ";
              }

@@ -52,14 +52,13 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
 
         if ( $loggingReport ) {
             //NYSS 5184 pass page number
-            //CRM_Core_Error::debug('GET',$_GET);
             $this->_contactLog = true;
             $context = '&context=contact';
             $crmPID = '';
             if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') ) {
                 $crmPID  = '&crmPID='.CRM_Utils_Request::retrieve('crmPID', 'Integer');
             }
-            $this->assign( 'instanceUrl',  CRM_Utils_System::url( "civicrm/report/instance/{$loggingReport}", "reset=1&force=1&snippet=4&section=2&id_op=eq&id_value={$this->_contactId}&cid={$this->_contactId}{$crmPID}{$context}", false, null, false ) );
+            $this->assign( 'instanceUrl',  CRM_Utils_System::url( "civicrm/report/instance/{$loggingReport}", "reset=1&force=1&snippet=5&section=2&id_op=eq&id_value={$this->_contactId}&cid={$this->_contactId}{$crmPID}{$context}", false, null, false ) );
             return;
         }
         
@@ -80,16 +79,16 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
                                    'description' => $log->data ); //NYSS 2551
         }
 
-		//NYSS 2551 need to retrieve activity logs for the current record
-		//NYSS 4592 remove bulk email activities from displaying
-		require_once 'api/v2/ActivityContact.php';
-		$params = array('contact_id' => $this->_contactId);
-		$activities = civicrm_activity_contact_get($params);
-		//CRM_Core_Error::debug($activities);
+        //NYSS 2551 need to retrieve activity logs for the current record
+        //NYSS 4592 remove bulk email activities from displaying
+        require_once 'api/v2/ActivityContact.php';
+        $params = array('contact_id' => $this->_contactId);
+        $activities = civicrm_activity_contact_get($params);
+        //CRM_Core_Error::debug($activities);
 
-		$activityIDs = array();
-		$activitySubject = array();
-		$bulkEmailID = CRM_Core_OptionGroup::getValue( 'activity_type', 'Bulk Email', 'name' );
+        $activityIDs = array();
+        $activitySubject = array();
+        $bulkEmailID = CRM_Core_OptionGroup::getValue( 'activity_type', 'Bulk Email', 'name' );
 
 		foreach ( $activities['result'] as $activityID => $activityDetail ) {
 			if ( $activityDetail['activity_type_id'] != $bulkEmailID ) {

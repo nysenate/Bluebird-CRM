@@ -155,7 +155,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
             'crm_contact_civireport.log_type' => "'Contact'",
             );
         $contactSelect = str_replace( array_keys($contactReplace), array_values($contactReplace), $this->_select );
-        $contactSql = "{$contactSelect}, 'Contact' log_type {$this->_from} {$this->_groupBy}";
+        $cidWhere = ( $this->cid ) ? " crm_contact_civireport.id = {$this->cid} " : 1;
+        $contactSql = "{$contactSelect}, 'Contact' log_type {$this->_from} WHERE $cidWhere {$this->_groupBy}";
 
         //calculate tags
         $tagReplace = array(
@@ -165,7 +166,6 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
             'crm_contact_civireport.is_deleted'   => 'tag_contact.is_deleted',
             'crm_contact_civireport.log_type'     => "'Tag'",
             );
-
         $tagSelect = str_replace( array_keys($tagReplace), array_values($tagReplace), $this->_select );
         $tagFrom   = "FROM `{$this->loggingDB}`.log_civicrm_entity_tag crm_contact_civireport
                       LEFT JOIN civicrm_contact     contact_civireport
@@ -174,12 +174,14 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                         ON crm_contact_civireport.entity_id = tag_contact.id
                       JOIN civicrm_tag tag_table
                         ON crm_contact_civireport.tag_id = tag_table.id";
-        $tagWhere  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact'";
+        $cidWhere = ( $this->cid ) ? " crm_contact_civireport.entity_id = {$this->cid} " : 1;
+        $tagWhere  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact' AND $cidWhere";
         $tagSql    = "$tagSelect, 'Tag' log_type $tagFrom $tagWhere";
 
         //extend log to other tables
         $sqlParams = array( 'logDB'  => $this->loggingDB,
-                            'select' => $this->_select
+                            'select' => $this->_select,
+                            'cid'    => $this->cid,
                             );
         $groupSql = self::_getGroupSQL($sqlParams);
         $relASql  = self::_getRelationshipASQL($sqlParams);
@@ -208,10 +210,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                 {$sqlWhere}
                 {$this->_orderBy}
                 {$this->_limit}";
-        //CRM_Core_Error::debug_var('sql',$sql);
+        //CRM_Core_Error::debug_var('combined sql',$sql);
+        //CRM_Core_Error::debug_var('combined dao',CRM_Core_DAO::executeQuery($sql));
+        //CRM_Core_Error::debug_var('combined found',CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS();"));
 
-        //4198 get distinct contact count
-        $sqlDistinct = "SELECT *
+        //4198 get distinct contact count for log report total
+        $sqlDistinct = "SELECT SQL_CALC_FOUND_ROWS *
                         FROM ( ( $contactSql ) UNION
                                ( $tagSql ) UNION
                                ( $noteSql ) UNION
@@ -342,6 +346,23 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         }
     }
 
+    //NYSS change how pagination works in contact context
+    function buildForm( ) {
+
+        parent::buildForm( );
+
+        if ( CRM_Utils_Request::retrieve('context', 'String') == 'contact' &&
+             $cid = $this->cid ) {
+
+            $this->_attributes['action'] = "/civicrm/contact/view?reset=1&cid={$cid}&selectedChild=log";
+            $this->_attributes['method'] = "get";
+            $this->addElement( 'hidden', 'selectedChild', 'log' );
+            //CRM_Core_Error::debug_var('LoggingSummary buildForm $this->_attributes',$this->_attributes);
+            //CRM_Core_Error::debug_var('LoggingSummary buildForm this',$this);
+            //CRM_Core_Error::debug_var('cid',$cid);
+        }
+    }
+
     function getContactDetails( $cid ) {
 
         $left = $middle = $right = array();
@@ -415,7 +436,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         $replace = array(
             'SQL_CALC_FOUND_ROWS'                 => '',
             'crm_contact_civireport.id'           => 'crm_contact_civireport.contact_id',
-            'crm_contact_civireport.display_name' => "CONCAT(group_contact.display_name,'  [',group_table.title,']')",
+            'crm_contact_civireport.display_name' => "CONCAT(group_contact.display_name,'  [',IFNULL(group_table.title, crm_contact_civireport.group_id),']')",
             'crm_contact_civireport.is_deleted'   => 'group_contact.is_deleted',
             'crm_contact_civireport.log_type'     => "'Group'",
             'crm_contact_civireport.log_action'   => 'crm_contact_civireport.status',
@@ -427,11 +448,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                      ON (crm_contact_civireport.log_user_id = contact_civireport.id)
                    JOIN civicrm_contact group_contact
                      ON crm_contact_civireport.contact_id = group_contact.id
-                   JOIN civicrm_group group_table
+                   LEFT JOIN civicrm_group group_table
                      ON crm_contact_civireport.group_id = group_table.id";
-        $where  = "";
+        $cidWhere = ( $sqlParams['cid'] ) ? " crm_contact_civireport.contact_id = {$sqlParams['cid']} " : 1;
+        $where  = "WHERE $cidWhere";
         $sql    = "$select, 'Group' log_type $from $where";
-        //CRM_Core_Error::debug('sql',$sql);
+        //CRM_Core_Error::debug_var('sql',$sql);
 
         return $sql;
     }
@@ -457,7 +479,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                      ON crm_contact_civireport.contact_id_a = rel_contact.id
                    JOIN civicrm_relationship_type rel_table
                      ON crm_contact_civireport.relationship_type_id = rel_table.id";
-        $where  = "";
+        $cidWhere = ( $sqlParams['cid'] ) ? " crm_contact_civireport.contact_id_a = {$sqlParams['cid']} " : 1;
+        $where  = "WHERE $cidWhere";
         $sql    = "$select, 'Relationship' log_type $from $where";
         //CRM_Core_Error::debug('sql',$sql);
 
@@ -485,7 +508,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                      ON crm_contact_civireport.contact_id_b = rel_contact.id
                    JOIN civicrm_relationship_type rel_table
                      ON crm_contact_civireport.relationship_type_id = rel_table.id";
-        $where  = "";
+        $cidWhere = ( $sqlParams['cid'] ) ? " crm_contact_civireport.contact_id_b = {$sqlParams['cid']} " : 1;
+        $where  = "WHERE $cidWhere";
         $sql    = "$select, 'Relationship' log_type $from $where";
         //CRM_Core_Error::debug('sql',$sql);
 
@@ -508,7 +532,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                      ON (crm_contact_civireport.log_user_id = contact_civireport.id)
                    JOIN civicrm_contact note_contact
                      ON crm_contact_civireport.entity_id = note_contact.id";
-        $where  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact'";
+        $cidWhere = ( $sqlParams['cid'] ) ? " crm_contact_civireport.entity_id = {$sqlParams['cid']} " : 1;
+        $where  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact' AND $cidWhere";
         $sql    = "$select, 'Note' log_type $from $where";
         //CRM_Core_Error::debug('sql',$sql);
 
