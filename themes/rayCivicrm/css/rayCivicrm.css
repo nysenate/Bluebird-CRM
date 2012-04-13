@@ -1498,3 +1498,7 @@ form#Contact .groupTagsKeywords .tag-section {
 form#Contact .groupTagsKeywords .crm-section .label {
 	width: 10%;
 }
+
+#crm-container .crm-report .crm-report-log_civicrm_contact_altered_contact {
+	font-weight: bold;
+}
