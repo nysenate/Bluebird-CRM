@@ -1492,7 +1492,7 @@ SELECT contact_id
                     $template_values = array( $tableName   , $eventName    );
 
                     $sql = trim(str_replace($template_params, $template_values, $value['sql']));
-                    //$variables = trim(str_replace($template_params, $template_values, $value['variables'])); //NYSS
+                    $variables = trim(str_replace($template_params, $template_values, $value['variables']));
 
                     if ( ! isset( $triggers[$tableName][$eventName] ) ) {
                         $triggers[$tableName][$eventName] = array( );
