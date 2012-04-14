@@ -1,13 +1,13 @@
-<?php
+<?php 
 /*
     Mar 5, 2012
     This test script uses the Advanced Search
-    Find the contact named Mike Gordo
+    Find the contact by name
 
     1. open sd99
     2. log in
     3. open advanced search
-    4. run search by name=Mike Gordo
+    4. run search by name
     5. open first found contact 
     6. Actions / Add case
     7. Medium in person
@@ -19,17 +19,18 @@
     13. Save check and delete the case
 
     *** check EVERY STEP!
+
+    *** Individual MUST HAVE NO CASES!
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
-
+require_once 'Config.php';
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -37,16 +38,28 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
-        //$this->setSleep($this->settings->sleepTime);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
     }
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
+        }
+
+        $this->openAndWait($myurl);
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password
@@ -70,7 +83,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
     public function performTasks() {
         $this->setSleep($this->settings->sleepTime);
         $this->openAdvancedSearch();
-        $keyword = "Mike Gordo";
+
+        $keyword = getSearchName();  // Config.php
         $this->searchAndOpen($keyword);
 
         // find Actions and click on it
@@ -98,28 +112,24 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // save it
         $this->click("_qf_Case_upload-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
         $this->waitForElementPresent("_qf_CaseView_cancel-bottom");
-        $this->assertTrue($this->isTextPresent("Case Summary"),"Can not create the case ");
+        $this->assertTrue($this->isTextPresent("Budget case"),"Can not create the case ");
 
         $this->click("_qf_CaseView_cancel-bottom"); // DONE button
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
 
         // now delete the case
 
         $this->waitForElementPresent("xpath=//table[@class='caseSelector']");
         $this->click("link=Delete");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
 
         $this->waitForElementPresent("_qf_Case_next-bottom");
         $this->click("_qf_Case_next-bottom");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
 
-        $this->waitForElementPresent("link=open one now");
-        $this->assertTrue($this->isTextPresent("There are no case records for this contact"),"Can not delete the case ");
+        $this->waitForElementPresent("Cases");
+        $this->assertTrue(!$this->isTextPresent("Budget case"),"Couldn't delete the case. ");
  
      }
 
@@ -135,12 +145,11 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');
         $this->assertTitle('Advanced Search');
-        $this->assertTrue($this->isTextPresent("The found record"),"Advanced Search: Contact is not found in the database ");
+        $this->assertTrue(!$this->isTextPresent("No matches found"),"Advanced Search: Contact is not found in the database ");
 
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
     }
 
 /*

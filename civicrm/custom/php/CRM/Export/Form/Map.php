@@ -163,7 +163,15 @@ class CRM_Export_Form_Map extends CRM_Core_Form
         if ( !empty( $greetingOptions ) ) {
             foreach ( $greetingOptions as $key => $value ) {
                 if ( $option = CRM_Utils_Array::value( $key, $exportParams ) ) {
-                    if ( $greetingOptions[$key][$option] == 'Other' ) {
+                    /*if ( $greetingOptions[$key][$option] == 'Other' ) {
+                        $exportParams[$key] = '';
+                    } else {
+                        $exportParams[$key] = $greetingOptions[$key][$option];
+                    }*/
+					//NYSS 5026
+					if ( $greetingOptions[$key][$option] == ts('Other') ) {
+                        $exportParams[$key] = $exportParams["{$key}_other"];
+                    } else if ( $greetingOptions[$key][$option] == ts('List of names') ) {
                         $exportParams[$key] = '';
                     } else {
                         $exportParams[$key] = $greetingOptions[$key][$option];

@@ -1,5 +1,6 @@
-<?php
-/*
+<?php 
+/* 
+
     Feb 29, 2012
     This test script uses the Advanced Search
     Find the contact named Mike Gordo
@@ -22,14 +23,14 @@
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -37,16 +38,29 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
         //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
+        }
+
+        $this->openAndWait($myurl);
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password
@@ -71,17 +85,17 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->setSleep($this->settings->sleepTime);
         $this->openAdvancedSearch();
 
-        $keyword = "Mike Gordo";
+        $keyword = getSearchName();                  // Config.php
         $this->type('sort_name',$keyword);
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');
         $this->assertTitle('Advanced Search');
-        $this->assertTrue($this->isTextPresent("The found record"),"Advanced Search: Contact is not found in the database ");
+        $this->assertTrue($this->isTextPresent("Select Records"),"Advanced Search: Contact is not found in the database ");
 
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
 
         // find EDIT
         $this->waitForElementPresent("xpath=//ul[@id='actions']/li[2]/a[1]");
@@ -89,7 +103,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//ul[@id='actions']/li[2]/a[1]");
 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
         // wait for SAVE to present
         $this->waitForElementPresent("_qf_Contact_upload_view-bottom");
 
@@ -99,8 +113,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         $this->click("_qf_Contact_upload_view-bottom"); // save
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
-        $this->assertTrue($this->isTextPresent("$keyword, PhD"),"Can not add suffix='PhD' ");
+
+        $this->assertTrue($this->isTextPresent(", PhD"),"Can not add suffix='PhD' ");
 
         // now REMOVE the suffix!
 
@@ -109,12 +123,12 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click('_qf_Advanced_refresh');
         $this->waitForPageToLoad('30000');
         $this->assertTitle('Advanced Search');
-        $this->assertTrue($this->isTextPresent("The found record"),"Advanced Search: Contact is not found in the database ");
+        $this->assertTrue($this->isTextPresent("Select Records"),"Advanced Search: Contact is not found in the database ");
 
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
 
         // find EDIT
         $this->waitForElementPresent("xpath=//ul[@id='actions']/li[2]/a[1]");
@@ -122,7 +136,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//ul[@id='actions']/li[2]/a[1]");
 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
         // wait for SAVE to present
         $this->waitForElementPresent("_qf_Contact_upload_view-bottom");
 
@@ -132,7 +146,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         $this->click("_qf_Contact_upload_view-bottom"); // save
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
         $this->assertTrue(!$this->isTextPresent("$keyword, PhD"),"Can not remove suffix='PhD' ");
 
     }

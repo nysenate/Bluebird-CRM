@@ -39,13 +39,13 @@
                     <table class="form-layout-compressed">
                         <tr>
                             <td>{$form.$csv.html}&nbsp;&nbsp;</td>
-                            {*LCD - only display if low total record count *}
-                            {if $statistics.counts.rowsFound.value < 500}
+                            {*NYSS - only display if low total record count - restriction removed with 5097*}
+                            {*if $statistics.counts.rowsFound.value < 500*}
                             	<td>{$form.$print.html}&nbsp;&nbsp;</td>
                             	<td>{$form.$pdf.html}&nbsp;&nbsp;</td>
-                            {else}
+                            {*else}
                             	<td><span><em>To print or generate a PDF for your report, please reduce the number of contacts by further restricting your selection criteria. You may use the search tools to run your search and export to a .csv file, which may be opened and manipulated in Excel.</em></span></td>
-                            {/if}                 
+                            {/if*}                 
                             {if $instanceUrl}
                                 <td>&nbsp;&nbsp;&raquo;&nbsp;<a href="{$instanceUrl}">{ts}Existing report(s) from this template{/ts}</a></td>
                             {/if}
@@ -88,3 +88,23 @@
     </script>
     {/literal}
 {/if} {* NO print section ends *}
+
+<div id="pdfProcessing" style="display: none;">
+    <p>Your PDF report is processing. Depending on the length of the report and number of records, this may take a few minutes to complete. You will be prompted to save the file once processing has finished.</p>
+</div>
+
+{literal}
+<script type="text/javascript">
+cj(".crm-tasks input[value='Create PDF']").click(function(){
+    cj("#pdfProcessing").show( );
+    cj("#pdfProcessing").dialog({
+		title: "PDF Processing",
+		modal: true,
+		bgiframe: true,
+		overlay: { opacity: 0.5, background: "black" },
+		beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
+		buttons: { "Ok": function() { cj(this).dialog("close"); }}
+	});
+});
+</script>
+{/literal}

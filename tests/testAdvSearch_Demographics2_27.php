@@ -1,6 +1,5 @@
-<?php
+<?php /* 
 
-/*
     Feb 27, 2012
     This test script uses the Advanced Search
     /Demographics/Gender = Female
@@ -14,14 +13,14 @@
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -29,13 +28,25 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
         //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
+        }
+
+        $this->openAndWait($myurl);
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }

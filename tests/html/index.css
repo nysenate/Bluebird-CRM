@@ -1,0 +1,226 @@
+/* CSS FILE FOR WEB INTERFACE */
+/* CSS3 */
+
+body {
+	margin:20px 0px 0px;
+}
+
+#wrap {
+	width:800px; 
+	margin:0 auto; 
+	background-color:#BBB; 
+	border:1px solid #000;
+	padding:10px;
+}
+
+#header h1 {
+	margin:0px;
+	color:#541957;
+}
+
+#header h2 {
+	margin:0px; 
+	color:#541957;
+}
+
+#header h3.help-button {
+	float:right;
+	margin-right:20px;
+}
+
+#header #helparea {
+	display:none;
+	margin:10px auto;
+	background-color:#AFAFBF; 
+	width:750px;
+	border:1px solid #000;
+	padding:5px;
+}
+
+#main {
+	display:block; 
+	margin-top:20px;
+}
+
+h3 {
+	margin:0px; 
+	border-bottom: 1px dotted #541957;
+}
+
+p,li {
+	font-family: sans-serif; 
+	font-size:.9em; 
+	margin: 0px 0px 4px 0px;
+}
+
+ul {
+	margin:5px auto;
+}
+
+a {
+	color:#541957;
+	text-decoration:none;
+}
+
+#main a {
+	font-size:11px;
+}
+
+#main a:hover {
+	color:#541957; 
+	background-color:#fff;
+}
+
+td {
+	font-family: sans-serif; 
+	font-size:11px; 
+	margin: 0px;
+}
+
+td { 
+	padding-right:5px;
+	padding-left:5px;
+}
+
+td.even {
+	background-color:#BFACBF;
+}
+
+label {
+	font-family: sans-serif; 
+	font-size:12px; 
+	text-align:right; 
+	margin: 0px; 
+	width:100px; 
+	display: inline-block;
+}
+
+input.text, 
+select {
+	margin-top:5px;
+	margin-bottom:5px;
+}
+
+#script-tree {
+	display:inline-block; 
+	background-color:#AE9BAF; 
+	width:350px; 
+	border:1px solid #000; 
+	padding:3px;
+	float:left;
+}
+
+#script-tree p:hover {
+	background-color:#BFACBF;
+}
+
+#settings {
+	display:inline-block; 
+	background-color:#AE9BAF; 
+	width:420px; 
+	border:1px solid #000; 
+	padding:3px; 
+	margin-left:10px;
+}
+
+#main .new-settings {
+	display:inline-block; 
+	background-color:#AE9BAF; 
+	width:420px; 
+	border:1px solid #000; 
+	padding:3px; 
+	margin-left:10px;
+	margin-top:10px;
+}
+
+#submit, #wait {
+	margin-left:10px;
+	margin-top:12px;
+	min-height:30px;
+	float:right;
+}
+
+#wait {
+	display: none;
+	padding:0px 5px;
+	line-height:30px;
+	background:white;
+}
+
+#new-settings {
+	float:right; 
+	margin-right:4px;
+}
+
+#new-settings label {
+	display:none;
+}
+
+#new-settings input {
+	display:none;
+}
+
+#new-settings #comment p {
+	padding:15px;
+	font-style:italic;
+}
+
+#more-settings-link-h3 {
+	float: right;
+	margin-right:20px;	
+}
+
+div.result {
+	width:95%;
+	padding:10px;
+	margin: 10px auto;
+	border: 1px #666 solid;
+	background-color:#eee;
+	font-family:Courier;
+}
+
+div {
+	border-radius: 5px;
+}
+
+div.small-help {
+	display: none;
+	padding: 8px;
+	margin:0px 10px;
+	background-color: #bbb;
+	border:1px solid #555;
+	text-align: justify;
+	font-family: sans-serif; 
+	font-size:12px; 
+}
+
+span.small {
+	font-size:.7em;
+	font-weight:normal;
+}
+
+/* LOG */
+
+.log th {
+	border-left:1px #678 solid;
+	border-bottom:1px #678 solid;
+	padding:5px 10px;
+	font-family: sans-serif;
+	font-size:.7em;
+}
+
+.log th:first-child {
+	border-left:none;
+}
+
+.log tr:nth-child(odd) {
+	background-color:#aaa;
+}
+
+.log tbody tr:first-child td:nth-child(3) {
+	font-size:.9em;
+	border:1px #000 solid;
+}
+
+#footer { }
+

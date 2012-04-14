@@ -1,51 +1,63 @@
-<?php
-/*
+<?php /*
+
     Mar 7, 2012
     This test script uses the Advanced Search
-    Find the contact with name Ascher
+    Find the contact by name
 
     1. open sd99
     2. log in
     3. open advanced search
-    4. run search by name = Ascher
+    4. run search by name 
     5. open first found contact 
     6. Actions / Add Relationship
-    7. Spouse of / Mike Gordo
+    7. Spouse of / second name
     8. Save relationship, check and delete the relationship
 
     *** check EVERY STEP!
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
-
+ 
     protected function setUp()
     {
-
-        $this->searchName = 'Ascher';
-        $this->spouseName = 'Mike Gordo';
+        $this->searchName = getSSName(0);
+        $this->spouseName = getSSName(1);
 
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
         //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
+        }
+
+        $this->openAndWait($myurl);
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password
@@ -80,7 +92,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // find Meeting and click on it
         $this->click("link=Add Relationship");
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->waitForElementPresent("search-button");
 
         $this->select("relationship_type_id","value=2_a_b"); // SPOUSE OF
@@ -96,7 +108,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         $this->click("_qf_Relationship_upload-top"); // save the relationship
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
 
         $this->waitForElementPresent("option11"); // wait for page to load
         $this->assertTrue($this->isTextPresent("Spouse of"),"Can not save the relationship ");
@@ -107,7 +119,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->click("xpath=//table[@id='option11']/tbody[1]/tr[1]/td[8]/span[2]/ul[1]/li[2]/a[1]"); // "delete"
         
         $this->waitForPageToLoad('30000');
-        $this->assertTitle($keyword);
+
         $this->assertTrue(!$this->isTextPresent("Spouse of"),"Can not delete the relationship ");
 
 
@@ -130,7 +142,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // click on the first result
         $this->click("xpath=//table[@class='selector crm-row-highlighter-processed']/tbody[1]/tr[1]/td[3]/a"); 
         $this->waitForPageToLoad('30000');
-        $this->assertTitle("$keyword"); // check that right page is open
+
     }
 
 /*

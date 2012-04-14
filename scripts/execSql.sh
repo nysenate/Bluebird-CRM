@@ -16,7 +16,7 @@ readConfig=$script_dir/readConfig.sh
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [dbName]" >&2
+  echo "Usage: $prog [-f sqlFile | -c sqlCommand] [-d] [-t table] [-i instance] [-h host] [-u user] [-p password] [--column-names] [--quiet|-q] [--create] [--drupal] [--log] [dbName]" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -53,6 +53,7 @@ while [ $# -gt 0 ]; do
     --col*) colname_arg="--column-names" ;;
     --create) create_db=1 ;;
     --drupal) db_prefix_keyname=db.drupal.prefix; default_db_prefix="$DEFAULT_DB_DRUPAL_PREFIX" ;;
+    --log) db_prefix_keyname=db.log.prefix; default_db_prefix="$DEFAULT_DB_LOG_PREFIX" ;;
     -*) echo "$prog: $1: Invalid option" >&2; exit 1 ;;
     *) dbname="$1" ;;
   esac

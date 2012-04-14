@@ -44,6 +44,21 @@
 <dt>{$form.includeLog.label}</dt>
   <dd>{$form.includeLog.html}</dd>
 
+<dt>{$form.excludeGroups.label}</dt>
+  <dd>{$form.excludeGroups.html}
+      {literal}
+      <script type="text/javascript">
+        cj("select#excludeGroups").crmasmSelect({
+            addItemTarget: 'bottom',
+            animate: false,
+            highlight: true,
+            sortable: true,
+            respectParents: true
+            });
+      </script>
+      {/literal}
+  </dd>
+
 <dt></dt>
   <dd>{$form.buttons.html}</dd>
 </dl>

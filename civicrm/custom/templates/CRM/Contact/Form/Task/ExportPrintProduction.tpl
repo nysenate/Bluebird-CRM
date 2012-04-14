@@ -39,26 +39,46 @@
 {/if}
 
 <dt>{$form.exclude_rt.label}<dt>
-  <dd>
-                {$form.exclude_rt.html}
-                 {literal}
-					<script type="text/javascript">
-
-								cj("select#exclude_rt").crmasmSelect({
-									addItemTarget: 'bottom',
-									animate: false,
-									highlight: true,
-									sortable: true,
-									respectParents: true
-								});
-
-						</script>
-					{/literal}
+  <dd>{$form.exclude_rt.html}
+      {literal}
+      <script type="text/javascript">
+        cj("select#exclude_rt").crmasmSelect({
+            addItemTarget: 'bottom',
+            animate: false,
+            highlight: true,
+            sortable: true,
+            respectParents: true
+            });
+      </script>
+      {/literal}
                 
    </dd>
 
 <dt>{$form.merge_households.label}</dt>
   <dd>{$form.merge_households.html}</dd>
+
+<dt>{$form.excludeGroups.label}</dt>
+  <dd>{$form.excludeGroups.html}
+      {literal}
+      <script type="text/javascript">
+        cj("select#excludeGroups").crmasmSelect({
+            addItemTarget: 'bottom',
+            animate: false,
+            highlight: true,
+            sortable: true,
+            respectParents: true
+            });
+      </script>
+      {/literal}
+  </dd>
+
+{if $form.district_excludes}
+  <dt>{$form.district_excludes.label}</dt>
+    <dd>{$form.district_excludes.html}</dd>
+{/if}
+
+<dt>{$form.excludeSeeds.label}</dt>
+  <dd>{$form.excludeSeeds.html}</dd>
 
 </dt>
   <dd>{$form.buttons.html}</dd>

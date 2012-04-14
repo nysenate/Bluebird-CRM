@@ -996,9 +996,10 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                                 "civicrm_activity.is_current_revision =  1",
                                 "civicrm_activity.is_test = 0" );
 
-        if ( $input['context'] != 'activity' ) {
+        //5149
+        /*if ( $input['context'] != 'activity' ) {
             $commonClauses[] = "civicrm_activity.status_id = 1"; 
-        }
+        }*/
         
         //Filter on component IDs.
         $components = self::activityComponents( );
@@ -1021,13 +1022,28 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                 $commonClauses[] = "civicrm_activity.activity_type_id = $activityTypeID";
             }
         }
+
+        //NYSS 5088 activity of last X days only clause
+        if ( ! empty( $input['past_days'] ) && $input['past_days'] != 'all' ) {
+            $pastDays = CRM_Utils_Type::escape( $input['past_days'], 'Positive' );
+            $commonClauses[] = "civicrm_activity.activity_date_time BETWEEN DATE_SUB(CURRENT_DATE, INTERVAL $pastDays DAY) AND NOW()";
+        }
+
+        //NYSS 5149 activity with selected status_id only clause
+        if ( ! empty( $input['status_id'] ) ) {
+            if ($input['status_id'] != 'all' ) {
+                $status_id = CRM_Utils_Type::escape( $input['status_id'], 'Positive' );
+                $commonClauses[] = "civicrm_activity.status_id = $status_id"; 
+            }
+        } elseif ($input['context'] != 'activity') {
+            $commonClauses[] = "civicrm_activity.status_id = 1"; 
+        }
         $commonClause = implode( ' AND ', $commonClauses );
 
         $includeCaseActivities = false;
         if ( in_array( 'CiviCase', $components ) ) {
             $includeCaseActivities = true;
         }
-        
 
         // build main activity table select clause
         $sourceSelect = '';

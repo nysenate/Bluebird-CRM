@@ -83,7 +83,7 @@ class CRM_Export_BAO_Export
         $headerRows = $returnProperties = array();
         $primary    = $paymentFields    = false;
         $origFields = $fields;
-        $queryMode  = null; 
+        $queryMode  = $relationField = null; 
 
         $allCampaigns = array( );
         $exportCampaign = false;
@@ -226,7 +226,7 @@ class CRM_Export_BAO_Export
                 $returnProperties['contribution_id'] = 1;
             } else if ( $exportMode == CRM_Export_Form_Select::EVENT_EXPORT ) {
                 $returnProperties['participant_id'] = 1;
-                if ( $returnProperties['participant_role'] ) {
+                if ( CRM_Utils_Array::value( 'participant_role', $returnProperties ) ) {
                     unset( $returnProperties['participant_role'] );
                     $returnProperties['participant_role_id'] = 1;
                 }
@@ -355,6 +355,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
         $exportParams['postal_mailing_export']['temp_columns'] = array( );
         if ( $exportParams['exportOption'] == 2 && 
+             isset( $exportParams['postal_mailing_export'] ) &&
              $exportParams['postal_mailing_export']['postal_mailing_export'] == 1 ) {
             $postalColumns = array( 'is_deceased', 'do_not_mail', 'street_address', 'supplemental_address_1' );
             foreach ( $postalColumns as $column ) {
@@ -378,20 +379,18 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
             } else {
                 $setId = false;
             }
-            
-			//NYSS 4704
-			//also merge Head of Household
+          
+            //also merge Head of Household
             $relationKeyMOH = CRM_Utils_Array::key( 'Household Member of', $contactRelationshipTypes );
-			$relationKeyHOH = CRM_Utils_Array::key( 'Head of Household for', $contactRelationshipTypes );
-			
+            $relationKeyHOH = CRM_Utils_Array::key( 'Head of Household for', $contactRelationshipTypes );
+
             foreach ( $returnProperties as $key => $value ) {
                 if ( !array_key_exists( $key, $contactRelationshipTypes ) ) {
                     $returnProperties[$relationKeyMOH][$key] = $value;
-					$returnProperties[$relationKeyHOH][$key] = $value;
+                    $returnProperties[$relationKeyHOH][$key] = $value;
                 }
             }
             
-			//CRM_Core_Error::debug('returnProperties',$returnProperties); exit();
             unset( $returnProperties[$relationKeyMOH]['location_type'] );
             unset( $returnProperties[$relationKeyMOH]['im_provider'] );
             unset( $returnProperties[$relationKeyHOH]['location_type'] );
@@ -507,7 +506,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
         if ( CRM_Utils_Array::value( 'tags'  , $returnProperties ) || 
              CRM_Utils_Array::value( 'groups', $returnProperties ) ||
              CRM_Utils_Array::value( 'notes' , $returnProperties ) ||
-             $query->_useGroupBy ) { 
+             // CRM-9552
+             ( $queryMode & CRM_Contact_BAO_Query::MODE_CONTACTS && $query->_useGroupBy ) ) {
             $groupBy = " GROUP BY contact_a.id";
         }
         if ( $queryMode & CRM_Contact_BAO_Query::MODE_ACTIVITY ) {
@@ -534,7 +534,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
         }
         
         $header = $addPaymentHeader = false;
-        
+
+        $paymentDetails = array( );
         if ( $paymentFields ) {
             //special return properties for event and members
             $paymentHeaders = array( 'total_amount'        => ts('Total Amount'), 
@@ -568,8 +569,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
         // for CRM-3157 purposes
         require_once 'CRM/Core/I18n.php';
-        $i18n =& CRM_Core_I18n::singleton();
-        
+        $i18n = CRM_Core_I18n::singleton();
+
         while ( 1 ) {
             $limitQuery = "{$queryString} LIMIT {$offset}, {$rowCount}";
             $dao = CRM_Core_DAO::executeQuery( $limitQuery );
@@ -685,6 +686,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                         $dao->im_provider = $dao->provider_id;
                     }
                     //build row values (data)
+                    $fieldValue = null;
                     if ( property_exists( $dao, $field ) ) {
                         $fieldValue = $dao->$field;
                         // to get phone type from phone type id
@@ -701,16 +703,14 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                                 $viewRoles[] = $participantRoles[$v];
                             }
                             $fieldValue = implode( ',', $viewRoles );
+                        } else if ( $field == 'master_id' ) {
+                            $masterAddressId = null;
+                            if ( isset( $dao->master_id ) ) {
+                                $masterAddressId = $dao->master_id;
+                            }
+                            // get display name of contact that address is shared.
+                            $fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName( $masterAddressId, $dao->contact_id );
                         }
-                    } else if ( $field == 'master_id' ) {
-                        $masterAddressId = null;
-                        if ( isset( $dao->master_id ) ) {
-                            $masterAddressId = $dao->master_id;
-                        }
-                        // get display name of contact that address is shared.
-                        $fieldValue = CRM_Contact_BAO_Contact::getMasterDisplayName( $masterAddressId, $dao->contact_id );
-                    } else {
-                        $fieldValue = '';
                     }
                 
                     if ( $field == 'id' ) {
@@ -750,8 +750,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                             }
                         }
                     } else if ( array_key_exists( $field, $contactRelationshipTypes ) ) {
-                        $relDAO = $allRelContactArray[$field][$dao->contact_id];
-
+                        
+                        $relDAO = CRM_Utils_Array::value( $dao->contact_id, $allRelContactArray[$field] );
                         foreach ( $value as $relationField => $relationValue ) {
                             if ( is_object( $relDAO ) && property_exists( $relDAO, $relationField ) ) {
                                 $fieldValue = $relDAO->$relationField;
@@ -764,9 +764,9 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                                 $fieldValue = '';
                             }
                             $field = $field. '_';
-                            if ( $relationField == 'id' ) {
+                            if ( is_object( $relDAO ) && $relationField == 'id' ) {
                                 $row[$field .$relationField] = $relDAO->contact_id;
-                            } else  if ( is_array( $relationValue ) && $relationField == 'location' ) {
+                            } else  if ( is_object( $relDAO ) && is_array( $relationValue ) && $relationField == 'location' ) {
                                 foreach ( $relationValue as $ltype => $val ) {
                                     foreach ( array_keys( $val ) as $fld ) {
                                         $type     = explode( '-', $fld );
@@ -824,7 +824,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                                 $row[$field . $relationField] = '';             
                             }
                         }
-                    } else if ( isset( $fieldValue ) && $fieldValue != '' ) {
+                    } else if ( isset( $fieldValue ) &&
+                                $fieldValue != '' ) {
                         //check for custom data
                         if ( $cfID = CRM_Core_BAO_CustomField::getKeyID( $field ) ) {
                             $row[$field] = CRM_Core_BAO_CustomField::getDisplayValue( $fieldValue, $cfID, $query->_options );
@@ -892,7 +893,7 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
                 // add payment related information
                 if ( $paymentFields && isset( $paymentDetails[ $row[$paymentTableId] ] ) ) {
                     $row = array_merge( $row, $paymentDetails[ $row[$paymentTableId] ] );
-                } else if ( $paymentDetails ) {
+                } else if ( !empty($paymentDetails) ) {
                     $row = array_merge( $row, $nullContributionDetails );  
                 }
 
@@ -927,9 +928,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
 
             // merge the records if they have corresponding households
             if ( $mergeSameHousehold ) {
-			    //NYSS 4704
-				self::mergeSameHousehold( $exportTempTable, $headerRows, $sqlColumns, $relationKeyMOH );
-				self::mergeSameHousehold( $exportTempTable, $headerRows, $sqlColumns, $relationKeyHOH );
+                self::mergeSameHousehold( $exportTempTable, $headerRows, $sqlColumns, $relationKeyMOH );
+                self::mergeSameHousehold( $exportTempTable, $headerRows, $sqlColumns, $relationKeyHOH );
             }
             
             // fix the headers for rows with relationship type
@@ -939,7 +939,8 @@ INSERT INTO {$componentTable} SELECT distinct gc.contact_id FROM civicrm_group_c
             
             // if postalMailing option is checked, exclude contacts who are deceased, have 
             // "Do not mail" privacy setting, or have no street address
-            if ( $exportParams['postal_mailing_export']['postal_mailing_export'] == 1 ) {
+            if ( isset( $exportParams['postal_mailing_export']['postal_mailing_export']  ) &&
+                 $exportParams['postal_mailing_export']['postal_mailing_export'] == 1 ) {
                 self::postalMailingFormat( $exportTempTable, $headerRows, $sqlColumns, $exportMode );
             }
 
@@ -1505,8 +1506,8 @@ WHERE  id IN ( $deleteIDString )
     {
         $prefixColumn = $prefix .'_';
         $allKeys = array_keys( $sqlColumns );
-        $replaced = array( ); //NYSS 4704
-		$headerRows = array_values($headerRows); //NYSS 4704
+        $replaced = array( );
+        $headerRows = array_values($headerRows);
 
         // name map of the non standard fields in header rows & sql columns
         $mappingFields = array (
@@ -1533,8 +1534,8 @@ WHERE  id IN ( $deleteIDString )
             }
         }
         $query = "UPDATE $exportTempTable SET ";
-        
-		$clause = array();
+       
+        $clause = array();
         foreach( $replaced as $from => $to ) {
             $clause[] = "$from = $to ";
             unset( $sqlColumns[$to] );
@@ -1607,8 +1608,12 @@ LIMIT $offset, $limit
 
                 $componentDetails[] = $row;
             }
-            CRM_Core_Report_Excel::writeCSVFile( self::getExportFileName( 'csv', $exportMode ), $headerRows,
-                                                 $componentDetails, null, $writeHeader );
+
+            CRM_Core_Report_Excel::writeCSVFile( self::getExportFileName( 'csv', $exportMode ),
+                                                 $headerRows,
+                                                 $componentDetails,
+                                                 null,
+                                                 $writeHeader );
             $writeHeader = false;
             $offset += $limit;
         }

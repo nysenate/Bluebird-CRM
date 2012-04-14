@@ -1,6 +1,8 @@
-<?php
+<?php 
 
-/*
+/* 
+
+
     Feb 17, 2012
     This test script adds the Individual contact to the database
 
@@ -12,14 +14,14 @@
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
-require_once 'BluebirdSeleniumSettings.php';
 require_once 'SampleGenerator.php';
+require_once 'Config.php';
 
 
 class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 {
-    protected $captureScreenshotOnFailure = TRUE;
-    protected $screenshotPath = '/home/mgordo/screenshots';
+    protected $captureScreenshotOnFailure = FALSE;
+    protected $screenshotPath = '';
     protected $screenshotUrl = 'http://localhost/screenshots';
  
     protected function setUp()
@@ -27,22 +29,29 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->settings = new BluebirdSeleniumSettings();
         $this->setBrowser($this->settings->browser);
         $this->setBrowserUrl($this->settings->sandboxURL);
-        
-        /* 
-            for pause uncomment the following line
-        */
-        $this->setSleep($this->settings->sleepTime);
+
+        if (strpos($this->settings->browser,"firefox")) {
+            $this->captureScreenshotOnFailure = TRUE;
+            $this->screenshotPath = getScreenshotPath();
+        }
+        //$this->setSleep($this->settings->sleepTime);
     }
  
     public function testTitle()
     {
-        $this->openAndWait('http://sd99/');
-        $this->assertTitle('Bluebird');         // make sure Bluebird is open
+        $myurl = getMainURL();
+
+        if (strpos($this->settings->browser,"explore")) {
+            $myurl_ie=$myurl.'/logout';                              //IE has problems closing the session
+            $this->openAndWait($myurl_ie);
+        }
+
+        $this->openAndWait($myurl);
+        $this->assertTitle(getMainURLTitle());         // make sure Bluebird is open
         $this->webtestLogin();
         $this->performTasks();
-
-        $this->waitForPageToLoad('30000');
     }
+
 
 /*
     This function logs in to Bluebird using standard Username and Password
@@ -85,7 +94,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->type('first_name', $fname);
         $this->type('last_name', $lname);
         $this->type('email_1_email', $email);
-        $this->type('address_1_location_type_id', 'Home');
+        $this->select('address_1_location_type_id', 'value=1');
         
         // street address
         $this->type('address_1_street_address', getStreetAddress());

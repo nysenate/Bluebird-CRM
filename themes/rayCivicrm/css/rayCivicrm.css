@@ -956,7 +956,9 @@ ul.token-input-list-facebook { width:265px;}
 #_qf_Summary_submit_pdf,
 #_qf_Relationship_submit_pdf,
 #_qf_Activity_submit_pdf,
-#_qf_Case_submit_pdf {display:none;}
+#_qf_Case_submit_pdf {
+    /*display:none;*/
+}
 
 #search-status #task option[value='19'] {display:none;}
 
@@ -1459,12 +1461,12 @@ ul.token-input-list-facebook { width:265px;}
 .env-crmtest,
 .env-crmdev {
 	background:transparent url(../nyss_skin/images/env-marker-test.png) no-repeat;
-    top: 0;
-    left: 0;
+    bottom: 0;
+    right: 0;
     position: fixed;
 	height: 120px;
     width: 120px;
-	z-index: -1;
+	z-index: 2000;
 }
 .env-crmdev {
 	background:transparent url(../nyss_skin/images/env-marker-dev.png) no-repeat;
@@ -1477,4 +1479,26 @@ span.do-not-mail {
     background-image: url("/sites/all/modules/civicrm/i/stop-icon.png");
     padding-left: 24px;
     color: #F65 !important;
+}
+
+/*4963*/
+li.token-input-input-token-facebook {
+	margin: 3px;
+}
+form#Contact .groupTagsKeywords ul.token-input-list-facebook {
+	width: 600px;
+}
+form#Contact .groupTagsKeywords .crm-section .content {
+	float: left;
+	margin-left: 1%;
+}
+form#Contact .groupTagsKeywords .tag-section {
+	margin-top: 6px;
+}
+form#Contact .groupTagsKeywords .crm-section .label {
+	width: 10%;
+}
+
+#crm-container .crm-report .crm-report-log_civicrm_contact_altered_contact {
+	font-weight: bold;
 }

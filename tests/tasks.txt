@@ -83,17 +83,17 @@
 
 	And then Remove the relationship
 
-17. Reports
+* 17. Reports
 	District Stats
 	Check if there is tables with information
 	Open everything
 
-18. Reports
+* 18. Reports
 	Constituent Report (Summary)
 	Report criteria Display Columrs /Email
 	Make sure the data is there
 
-19. Reports
+* 19. Reports
 	Activity Report
 	Display column Subject
 	Set filter TYPE = Meeting

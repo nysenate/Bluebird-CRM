@@ -1,12 +1,10 @@
 <?php
 
-// 	=][= 2-17-1
-
 class BluebirdSeleniumSettings {
 
 	var $publicSandbox  = false;
 
-	var $browser = '*firefox';
+	var $browser = '*chrome';
 
 	var $sandboxURL = 'http://sd99/';
 
@@ -23,7 +21,7 @@ class BluebirdSeleniumSettings {
     var $UFemail = 'noreply@civicrm.org';
 
     var $sleepTime = 0;
-
+    
 	function __construct() {
 		$this->fullSandboxPath = $this->sandboxURL . $this->sandboxPATH;
 	}

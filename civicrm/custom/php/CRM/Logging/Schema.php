@@ -108,8 +108,8 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
         if (!$this->isEnabled()) return;
 
         //$this->dropTriggers();
-		//NYSS invoke the meta trigger creation call
- 	 	CRM_Core_DAO::triggerRebuild( );
+        //NYSS invoke the meta trigger creation call
+          CRM_Core_DAO::triggerRebuild( );
         $this->deleteReports();
     }
 
@@ -123,11 +123,12 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
         foreach ($this->tables as $table) {
             $this->createLogTableFor($table);
         }
-        //$this->createTriggers();
-		// invoke the meta trigger creation call //NYSS 5067
-        CRM_Core_DAO::triggerRebuild( );
 
-        $this->addReports();
+        $this->addReports(); //NYSS
+
+        //$this->createTriggers();
+        // invoke the meta trigger creation call //NYSS 5067
+        CRM_Core_DAO::triggerRebuild( );
     }
 
     /**
@@ -172,7 +173,7 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
 
         // recreate triggers to cater for the new columns
         //$this->createTriggersFor($table);
-		// invoke the meta trigger creation call //NYSS 5-67
+        // invoke the meta trigger creation call //NYSS 5-67
         CRM_Core_DAO::triggerRebuild( $table );
     }
 
@@ -254,11 +255,13 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
         // - drop non-column rows of the query (keys, constraints, etc.)
         // - set the ENGINE to ARCHIVE
         // - add log-specific columns (at the end of the table)
+        //NYSS handle job id
         $cols = <<<COLS
             log_date    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             log_conn_id INTEGER,
             log_user_id INTEGER,
-            log_action  ENUM('Initialization', 'Insert', 'Update', 'Delete')
+            log_action  ENUM('Initialization', 'Insert', 'Update', 'Delete'),
+            log_job_id VARCHAR (64) null
 COLS;
         $query = preg_replace("/^CREATE TABLE `$table`/i", "CREATE TABLE `{$this->db}`.log_$table", $query);
         $query = preg_replace("/ AUTO_INCREMENT/i", '', $query);
@@ -310,7 +313,15 @@ COLS;
      */
     public function isEnabled()
     {
-        return $this->tablesExist() and $this->triggersExist();
+        //NYSS alter how logging enabled is determined
+        $isEnabled = 0;
+        $config = CRM_Core_Config::singleton();
+        if ( $this->tablesExist() &&
+             $this->triggersExist() &&
+             $config->logging ) {
+            $isEnabled = 1;
+        }
+        return $isEnabled;
     }
 
     /**
@@ -327,11 +338,11 @@ COLS;
     private function triggersExist()
     {
         // FIXME: probably should be a bit more thorough…
-        return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_contact'");
+        return (bool) CRM_Core_DAO::singleValueQuery("SHOW TRIGGERS LIKE 'civicrm_domain'"); //NYSS
     }
 
-	//NYSS 5067
-	function triggerInfo( &$info, $tableName = null ) {
+    //NYSS 5067
+    function triggerInfo( &$info, $tableName = null ) {
         // check if we have logging enabled
         $config =& CRM_Core_Config::singleton( );
         if ( ! $config->logging ) {
@@ -356,15 +367,15 @@ COLS;
                 $upsertSQL .= "$column, ";
                 $deleteSQL .= "$column, ";
             }
-            $upsertSQL .= "log_conn_id, log_user_id, log_action) VALUES (";
-            $deleteSQL .= "log_conn_id, log_user_id, log_action) VALUES (";
+            $upsertSQL .= "log_conn_id, log_user_id, log_action, log_job_id) VALUES ("; //NYSS jobID
+            $deleteSQL .= "log_conn_id, log_user_id, log_action, log_job_id) VALUES ("; //NYSS jobID
             
             foreach ( $columns as $column ) {
                 $upsertSQL .= "NEW.$column, ";
                 $deleteSQL .= "OLD.$column, ";
             }
-            $upsertSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}');";
-            $deleteSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}');";
+            $upsertSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}', @jobID);"; //NYSS
+            $deleteSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}', @jobID);"; //NYSS
 
             $info[] = array( 'table' => array( $table ),
                              'when'  => 'AFTER',
