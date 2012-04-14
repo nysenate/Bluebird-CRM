@@ -1492,7 +1492,12 @@ SELECT contact_id
                     $template_values = array( $tableName   , $eventName    );
 
                     $sql = trim(str_replace($template_params, $template_values, $value['sql']));
-                    //$variables = trim(str_replace($template_params, $template_values, $value['variables'])); //NYSS
+                    //NYSS we need this key set or we get ugly PHP notices
+                    if ( !isset($value['variables']) ) {
+                        $value['variables'] = '';
+                    }
+
+                    $variables = trim(str_replace($template_params, $template_values, $value['variables']));
 
                     if ( ! isset( $triggers[$tableName][$eventName] ) ) {
                         $triggers[$tableName][$eventName] = array( );
