@@ -1,0 +1,1 @@
+c:\wamp\phpunit testActionsMeeting3_5.php > "temp.log"c:\wamp\phpunit testAddContact2_17.php > "temp.log"c:\wamp\phpunit testAddTag3_5.php > "temp.log"c:\wamp\phpunit testFindSmith2_27.php > "temp.log"c:\wamp\phpunit testReportsActivity3_7.php > "temp.log"

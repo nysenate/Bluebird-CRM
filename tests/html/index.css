@@ -101,6 +101,10 @@ select {
 	margin-bottom:5px;
 }
 
+input[type="checkbox"] {
+	display:none;
+}
+
 #script-tree {
 	display:inline-block; 
 	background-color:#AE9BAF; 
