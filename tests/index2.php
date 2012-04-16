@@ -13,13 +13,14 @@ $checks = $_POST['check'];
 if($multi) {
     $fp = fopen("multi.bat","w+");
     foreach ($checks as $c) {
-        fwrite($fp, "echo \"$phpunit\" >> \"temp.log\"\r\n");
+        fwrite($fp, "echo \"$c\" >> \"temp.log\"\r\n");
         fwrite($fp, "call $phpunit $c >> \"temp.log\"\r\n");
     }
     fclose($fp);
 }
 
 $testname = $_POST['testName'];
+if ($multi) $testname = "Chained tests";
 
 if ($_POST['save'] == 'yes') {
     // save to db
