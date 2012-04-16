@@ -10,12 +10,13 @@
 // save multi tests to file
 $multi = $_POST['multi'];
 $checks = $_POST['check'];
-$fp = fopen("multi.bat","w+");
-foreach ($checks as $c) {
-    fwrite($fp, "$phpunit $c > \"temp.log\"\r");
+if($multi) {
+    $fp = fopen("multi.bat","w+");
+    foreach ($checks as $c) {
+        fwrite($fp, "$phpunit $c > \"temp.log\"\r\n");
+    }
+    fclose($fp);
 }
-fclose($fp);
-return;
 
 $testname = $_POST['testName'];
 
