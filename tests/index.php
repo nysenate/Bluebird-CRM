@@ -23,7 +23,7 @@
 <form method="post" action="index2.php" onsubmit="javascript:givememore();" >
 
 <div id="script-tree">
-<h3>Scripts available</h3>
+<h3>Scripts available <span class="small" id="multi-link" style="float:right;margin:3px 15px 0px;"><a href="javascript:multitest();">Multi test</a></span></h3>
 
 <?php
 
@@ -32,6 +32,7 @@
 for ($i = 0; $i < $nConfig; $i++) {
    	echo "<p>";
    	echo "<input type='radio' name='testName' value='".$config[$i]->fileName."' onclick=\"javascript:radioclick($i,".$config[$i]->id.");\" />";
+   	echo "<input type='checkbox' name='check[]' value='".$config[$i]->fileName."' />";
    	echo $config[$i]->displayName;
    	echo "<div class=\"small-help\" id=\"help_id".$config[$i]->id."\">";
    	echo $config[$i]->help;
@@ -150,7 +151,7 @@ if (substr($host,0,7)=="http://") {
 <h3>Specific settings</h3>
 
 <div id="comment"></div>
-
+<br>
 <label id="SearchName_label">Search name:</label>
 <input id="SearchName_input" type="text" name="searchname" class="text" value="<?php echo $row['searchname']; ?>" onkeydown="return kd(event)"><br />
 
@@ -165,7 +166,8 @@ if (substr($host,0,7)=="http://") {
 
 
 <input type="hidden" name="save" id="save" value="yes" /> <!-- IGNORE THIS LINE! -->
-<input type="hidden" name="domain" id="domain" value="<?php echo $domain;?>" /> <!-- IGNORE THIS LINE! -->
+<input type="hidden" name="domain" id="domain" value="<?php echo $domain;?>" />
+<input type="hidden" name="multi" id="multi" value="" />
 
 
 </div><!-- /specific settings -->

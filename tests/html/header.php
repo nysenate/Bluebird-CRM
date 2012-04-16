@@ -4,6 +4,7 @@
 <head>
 	<title>NY Senate Selenium Testing</title>
 	<link rel="stylesheet" type="text/css" href="html/index.css">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		var vis = false;
 		function helppage() {
@@ -13,6 +14,17 @@
 				document.getElementById("helparea").style.display = "block";
 			}
 			vis = !vis;
+		}
+
+		function multitest() {
+			$("#multi-link").css('display','none');
+			$("#script-tree input[type='radio']").css('display', 'none');
+			$("#script-tree input[type='checkbox']").css('display', 'inline');
+			$("#multi").val('yes');
+			$("#new-settings").css('display', 'inline');
+			$("#new-settings").children().each(function() {
+				$(this).css('display', 'inline-block');
+			});
 		}
 	</script>
 </head>

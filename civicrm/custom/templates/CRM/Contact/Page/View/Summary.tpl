@@ -172,6 +172,8 @@
                         <div class="displayName" style="float:left;margin:5px">
                             {$display_name}
                         </div>
+                        <!-- NYSS-4774
+
                         <div class="contact_quick_comm_images" style="float:left;" >
                             {if $privacy.do_not_phone}
                                 <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-donotphone.png" alt="Do Not Phone" style="margin:0 5px 0 0;"/>
@@ -191,7 +193,7 @@
                             {if $is_deleted} 
                                 <img src="/sites/default/themes/rayCivicrm/nyss_skin/images/contact-trash.png" alt="Trashed" style="margin:0 5px 0 0;"/>
                             {/if}
-                        </div>
+                        </div>-->
                     </div>
                     
                     <div class="contact_panel">
