@@ -13,7 +13,8 @@ $checks = $_POST['check'];
 if($multi) {
     $fp = fopen("multi.bat","w+");
     foreach ($checks as $c) {
-        fwrite($fp, "$phpunit $c >> \"temp.log\"\r\n");
+        fwrite($fp, "echo \"$phpunit\" >> \"temp.log\"\r\n");
+        fwrite($fp, "call $phpunit $c >> \"temp.log\"\r\n");
     }
     fclose($fp);
 }
@@ -66,7 +67,10 @@ echo "<a href=\"index.php\"><h3>Start over</h3></a><br />";
 if (!$multi) echo '<META HTTP-EQUIV="Refresh" Content="1; URL=./log.php">';
 echo "Starting: <pre>".$testname."</pre>";
 echo "<div class=\"result\"><pre style=\"width:700px !important;\">";
-if ($multi) {echo "testing...<br>After tests are done, please follow this link: <a href="log.php">Log</a>";system("multi.bat");}
+if ($multi) {
+    echo "testing...<br>After tests are done, please follow this link: <a href=\"log.php\">Log</a><br><br>";
+    system("multi.bat");
+}
 else system("start.bat ".$testname);
 //system("./start.sh ".$testname);
 $data = file($tempfile);
