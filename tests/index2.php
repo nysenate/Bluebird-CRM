@@ -7,6 +7,16 @@
 <?php
 // check settings
 
+// save multi tests to file
+$multi = $_POST['multi'];
+$checks = $_POST['check'];
+$fp = fopen("multi.bat","w+");
+foreach ($checks as $c) {
+    fwrite($fp, "$phpunit $c > \"temp.log\"\r");
+}
+fclose($fp);
+return;
+
 $testname = $_POST['testName'];
 
 if ($_POST['save'] == 'yes') {
@@ -52,10 +62,11 @@ if (!$testname) {
 // Run test
 
 echo "<a href=\"index.php\"><h3>Start over</h3></a><br />";
-
+echo '<META HTTP-EQUIV="Refresh" Content="1; URL=./log.php">';
 echo "Starting: <pre>".$testname."</pre>";
 echo "<div class=\"result\"><pre style=\"width:700px !important;\">";
-system("start.bat ".$testname);
+if ($multi) system("multi.bat");
+else system("start.bat ".$testname);
 //system("./start.sh ".$testname);
 $data = file($tempfile);
 $log = '';
@@ -66,7 +77,7 @@ dump($data);
 
 echo "</pre></div>";
 
-echo '<META HTTP-EQUIV="Refresh" Content="0; URL=./log.php">';
+
 ?>
 
 <br/>

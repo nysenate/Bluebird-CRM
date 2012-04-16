@@ -5,6 +5,7 @@
 	$mysql_pwd  = 'mysql';
 	$mysql_db   = 'selenium';
 	$dir		= "c:\selenium\\";
+	$phpunit    = "c:\wamp\phpunit";
 	$tempfile   = 'temp.log';
 
 	class configClass {
@@ -85,7 +86,7 @@
 
 		$log = '';
 		foreach($data as $d)
-			$log .= $d."<br/>";
+			$log .= $d . "<br/>";
 
 		$query = "INSERT INTO `log`(`tid`,`text`) VALUES ('$record', '$log'); ";
 		mysql_query($query, $link);
