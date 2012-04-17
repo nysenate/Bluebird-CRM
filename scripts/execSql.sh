@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2011-03-08
+# Revised: 2012-04-12
 #
 
 prog=`basename $0`
@@ -64,9 +64,11 @@ ig_opt="--global"
 
 # By using the --instance option, this script can calculate the database
 # prefix and the database basename (which are concatenated to form the
-# actual database name).  However, there are two databases for each instance.
+# actual database name).  However, there are 3 databases for each instance:
+#    civicrm ("c"), drupal ("d"), and log "l")
 # This script defaults to the CiviCRM database.
 # Use the --drupal option to execute SQL on the Drupal DB instead.
+# Use the --log option to execute SQL on the Log DB instead.
 
 if [ "$instance" ]; then
   if ! $readConfig --instance $instance --quiet; then
