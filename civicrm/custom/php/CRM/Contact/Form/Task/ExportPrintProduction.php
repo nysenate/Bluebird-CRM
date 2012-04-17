@@ -158,6 +158,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
             $localSeeds[] = $dao->contact_id;
         }
         $localSeedsList = implode(',',$localSeeds);
+        if ( empty($localSeedsLIst) ) { $localSeedsList = 0; }
     }
 
     $this->_contactIds = array_unique($this->_contactIds);
