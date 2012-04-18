@@ -63,6 +63,7 @@ fi
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
+db_log_prefix=`$readConfig --ig $instance db.log.prefix` || db_log_prefix="$DEFAULT_DB_LOG_PREFIX"
 
 errcode=0
 
@@ -84,9 +85,11 @@ $unarc_cmd $archive_file || exit 1
 if [ $ignore_mismatch -eq 1 ]; then
   civi_file=$(echo $db_civi_prefix*.sql)
   drup_file=$(echo $db_drup_prefix*.sql)
+  log_file=$(echo $db_log_prefix*.sql)
 else
   civi_file=$db_civi_prefix$db_basename.sql
   drup_file=$db_drup_prefix$db_basename.sql
+  log_file=$db_log_prefix$db_basename.sql
 fi
 
 if [ ! -r "$civi_file" ]; then
@@ -96,6 +99,11 @@ if [ ! -r "$civi_file" ]; then
   exit 1
 elif [ ! -r "$drup_file" ]; then
   echo "$prog: $drup_file: Drupal database file not found in archive." >&2
+  popd
+  rm -rf $tmpdir/
+  exit 1
+elif [ ! -r "$log_file" ]; then
+  echo "$prog: $log_file: Logging database file not found in archive." >&2
   popd
   rm -rf $tmpdir/
   exit 1
@@ -112,6 +120,7 @@ fi
 
 $execSql -i "$instance" -f "$civi_file"
 $execSql -i "$instance" -f "$drup_file" --drupal
+$execSql -i "$instance" -f "$log_file" --log
 
 popd
 rm -rf $tmpdir/
