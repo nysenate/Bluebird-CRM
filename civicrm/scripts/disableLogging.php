@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * Author:      Brian Shaughnessy
+ * Date:        2012-04-13
+ * Description: Enable logging and rebuild triggers. Implemented with v1.3.5
+ */
+
+$prog = basename(__FILE__);
+
+require_once 'script_utils.php';
+$optList = civicrm_script_init();
+
+require_once 'CRM/Core/Config.php';
+$config = CRM_Core_Config::singleton();
+$config->logging = 0;
+
+//set logging value in settings
+require_once "CRM/Core/BAO/Setting.php";
+$params = array('logging' => 0);
+CRM_Core_BAO_Setting::add($params);
+
+echo "Disable Logging...\n";
+require_once 'CRM/Logging/Schema.php';
+$logging = new CRM_Logging_Schema;
+$logging->disableLogging();
+
+//CRM_Core_Error::debug('logging',$logging);
+
+//TODO: make sure the triggerRebuild picks up the hook triggers when they are not in schema info
+echo "Rebuild Triggers...\n";
+CRM_Core_DAO::triggerRebuild( );
+

@@ -75,26 +75,29 @@ $(document).ready(function() {
 	
 	var extID = $('#external_identifier').val();
     $('#external_identifier').after(extID).remove();
-	
-	//3674 prevent duplicate form submission with enter key
-	//exclude export and report form as it does not redirect and thus the submit buttons should remain active
-	var submitted = false;
-	$('form').submit(function(e){
-		//console.log(e);
-		var fname   = e.target.name; //alert(fid); //form name
-		var faction = e.target.action; //action value
-		var factionmatch = faction.search("civicrm/report/"); //-1 if not found
-		if ( submitted && 
-			 factionmatch == -1 &&
-			 fname != 'Select' && 
-			 fname != 'Map' && 
-			 fname != 'Label' 
-		   ) {
-			return false;
-		} else {
-			submitted = true;
-			return true;
-		}
-	});
-	
+
+    //3674 prevent duplicate form submission with enter key
+    //exclude export and report form as it does not redirect and thus the submit buttons should remain active
+    var submitted = false;
+    $('form').submit(function(e){
+        //console.log(e);
+        var fname   = e.target.name; //alert(fid); //form name
+        var faction = e.target.action; //action value
+        var factionmatch = faction.search("civicrm/report/"); //-1 if not found
+        var fbaseuri = e.target.baseURI;
+        var fbaseurimatch = fbaseuri.search("civicrm/report/");
+        if ( submitted &&
+             factionmatch == -1 &&
+             fbaseurimatch == -1 &&
+             fname != 'Select' &&
+             fname != 'Map' &&
+             fname != 'Label'
+           ) {
+            return false;
+        } else {
+            submitted = true;
+            return true;
+        }
+    });
+
 });
