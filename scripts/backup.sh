@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2011-05-05
+# Revised: 2012-04-18
 #
 # Note: When backing up to a non-local directory, SSH is used to make the
 #       connection.  The account under which this script is running should
@@ -23,6 +23,7 @@ backup_host=`$readConfig --global backup.cron.host`
 backup_dir=`$readConfig --global backup.cron.rootdir`
 db_civicrm_prefix=`$readConfig --global db.civicrm.prefix`
 db_drupal_prefix=`$readConfig --global db.drupal.prefix`
+db_log_prefix=`$readConfig --global db.log.prefix`
 app_rootdir=`$readConfig --global app.rootdir`
 data_rootdir=`$readConfig --global data.rootdir`
 import_rootdir=`$readConfig --global import.rootdir`
@@ -85,7 +86,7 @@ fi
 
 if [ $no_dbdump -eq 0 ]; then
   echo "Calculating databases to be backed up"
-  dbs=`$execSql -c "show databases" | egrep "^($db_civicrm_prefix|$db_drupal_prefix)"`
+  dbs=`$execSql -c "show databases" | egrep "^($db_civicrm_prefix|$db_drupal_prefix|$db_log_prefix)"`
   echo "Databases to be dumped: " $dbs
 
   echo "Dumping databases"

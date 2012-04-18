@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-12
-# Revised: 2011-06-13
+# Revised: 2012-04-18
 #
 
 prog=`basename $0`
@@ -19,13 +19,15 @@ civi_file=
 no_civi=0
 drup_file=
 no_drup=0
+log_file=
+no_log=0
 archive_dump=
 archive_file=
 
 . $script_dir/defaults.sh
 
 usage() {
-  echo "Usage: $prog [--civicrm-file file] [--no-civicrm] [--drupal-file file] [--no-drupal] [--tgz | --tbz2 | --zip] [--archive-file file] instanceName" >&2
+  echo "Usage: $prog [--civicrm-file file] [--no-civicrm] [--drupal-file file] [--no-drupal] [--logdb-file file] [--no-logdb] [--tgz | --tbz2 | --zip] [--archive-file file] instanceName" >&2
 }
 
 if [ $# -lt 1 ]; then
@@ -37,9 +39,11 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -c|--civi*-file) shift; civi_file="$1" ;;
     -d|--drup*-file) shift; drup_file="$1" ;;
+    -l|--log*-file) shift; log_file="$1" ;;
     -o|--arc*-file) shift; archive_file="$1" ;;
     --no-civi*) no_civi=1 ;;
     --no-drup*) no_drup=1 ;;
+    --no-log*) no_log=1 ;;
     --tgz) archive_dump=tgz ;;
     --tbz2) archive_dump=tbz2 ;;
     --zip) archive_dump=zip ;;
@@ -57,12 +61,16 @@ fi
 db_basename=`$readConfig --ig $instance db.basename` || db_basename="$instance"
 db_civi_prefix=`$readConfig --ig $instance db.civicrm.prefix` || db_civi_prefix="$DEFAULT_DB_CIVICRM_PREFIX"
 db_drup_prefix=`$readConfig --ig $instance db.drupal.prefix` || db_drup_prefix="$DEFAULT_DB_DRUPAL_PREFIX"
+db_log_prefix=`$readConfig --ig $instance db.log.prefix` || db_log_prefix="$DEFAULT_DB_LOG_PREFIX"
 
 if [ "$archive_dump" -o ! "$civi_file" ]; then
   civi_file=$db_civi_prefix$db_basename.sql
 fi
 if [ "$archive_dump" -o ! "$drup_file" ]; then
   drup_file=$db_drup_prefix$db_basename.sql
+fi
+if [ "$archive_dump" -o ! "$log_file" ]; then
+  log_file=$db_log_prefix$db_basename.sql
 fi
 
 errcode=0
@@ -86,6 +94,13 @@ if [ $no_drup -eq 0 ]; then
   ) || errcode=$(($errcode | 2))
 fi
 
+if [ $no_log -eq 0 ]; then
+  echo "Dumping Logging database for instance [$instance]"
+  ( set -x
+    $execSql --dump $db_log_prefix$db_basename > "$log_file"
+  ) || errcode=$(($errcode | 4))
+fi
+
 if [ "$archive_dump" ]; then
   if [ $errcode -eq 0 ]; then
     case "$archive_dump" in
@@ -96,7 +111,7 @@ if [ "$archive_dump" ]; then
 
     todays_date=`date +%Y%m%d`
     arc_file="${instance}_dump_$todays_date.$file_ext"
-    $arc_cmd "$arc_file" "$civi_file" "$drup_file" || errcode=$(($errcode | 4))
+    $arc_cmd "$arc_file" "$civi_file" "$drup_file" "$log_file" || errcode=$(($errcode | 8))
   fi
   popd
 
