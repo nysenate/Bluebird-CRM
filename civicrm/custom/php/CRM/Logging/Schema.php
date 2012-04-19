@@ -105,11 +105,10 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
      */
     function disableLogging()
     {
-        if (!$this->isEnabled()) return;
+        $this->dropTriggers();
 
-        //$this->dropTriggers();
         //NYSS invoke the meta trigger creation call
-          CRM_Core_DAO::triggerRebuild( );
+        CRM_Core_DAO::triggerRebuild( );
         $this->deleteReports();
     }
 
@@ -129,6 +128,19 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
         //$this->createTriggers();
         // invoke the meta trigger creation call //NYSS 5067
         CRM_Core_DAO::triggerRebuild( );
+    }
+
+    /**
+     * Drop triggers for all logged tables.
+     */
+    private function dropTriggers()
+    {
+        $dao = new CRM_Core_DAO;
+        foreach ($this->tables as $table) {
+            $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_insert");
+            $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_update");
+            $dao->executeQuery("DROP TRIGGER IF EXISTS {$table}_after_delete");
+        }
     }
 
     /**
