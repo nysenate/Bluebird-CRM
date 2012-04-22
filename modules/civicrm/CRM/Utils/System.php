@@ -338,6 +338,35 @@ class CRM_Utils_System {
         self::civiExit( );
     }
 
+    //NYSS 5227
+	/**
+     * use a html based file with javascript embedded to redirect to another url
+     * This prevent the too many redirect errors emitted by various browsers
+     *
+     * @param string $url the url to goto
+     *
+     * @return void
+     * @access public
+     * @static
+     */
+    static function jsRedirect( $url = null ) {
+        if ( ! $url ) {
+            $url = self::url( 'civicrm/dashboard', 'reset=1' );
+        }
+
+        // replace the &amp; characters with &
+        // this is kinda hackish but not sure how to do it right
+        $url = str_replace( '&amp;', '&', $url );
+
+        $template = CRM_Core_Smarty::singleton( );
+        $template->assign( 'redirectURL', $url );
+        $html = $template->fetch( 'CRM/common/redirectJS.tpl' );
+
+        echo $html;
+
+        self::civiExit( );
+    }
+
     /**
      * Append an additional breadcrumb tag to the existing breadcrumb
      *
