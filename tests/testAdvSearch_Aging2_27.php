@@ -1,6 +1,4 @@
 <?php /* 
-
-
     Feb 27, 2012
     This test script uses the Advanced Search
     /Issue_code Aging
@@ -14,7 +12,6 @@
     /Issue_code Aging
     /Keyword testkeyword
     /Positions S100-2011 (DIAZ)
-
 */
 
 require_once 'PHPUnit/Extensions/SeleniumTestCase.php';
@@ -98,8 +95,9 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         
         $this->click('token-input-contact_taglist_296');
         $this->waitForElementPresent('class=token-input-dropdown-facebook'); // dropdown element Begin typing a tag name
+        //$this->waitForElementPresent('class=token-input-input-token-facebook'); // dropdown element Begin typing a tag name
 
-        $keyword = "testkeyword";
+        $keyword = "test";
         $this->typeKeys('token-input-contact_taglist_296',$keyword); // type the keyword
         $this->waitForElementPresent("xpath=//div[@class='token-input-dropdown-facebook']/ul[1]/li[1]"); // that dropdown menu
         $this->mouseDown("xpath=//div[@class='token-input-dropdown-facebook']/ul[1]/li[1]"); // use mouseDown instead of click
