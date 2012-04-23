@@ -90,7 +90,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         // select issue code Aging
         $this->click('crmasmSelect2');
         $this->select('crmasmSelect2',  "value=5"); //5 is Aging in html source code of the include
-        $this->waitForElementPresent('class=crmasmListItem');
+        $this->waitForElementPresent("xpath=//[@id='crmasmContainer2']/ul[1]/li[1]");
         $this->assertTrue($this->isTextPresent("Aging"), "Can not choose the Issue Code(s)");
         
         $this->click('token-input-contact_taglist_296');
