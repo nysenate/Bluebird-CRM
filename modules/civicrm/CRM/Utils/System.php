@@ -338,6 +338,49 @@ class CRM_Utils_System {
         self::civiExit( );
     }
 
+    //NYSS 5227
+	/**
+     * use a html based file with javascript embedded to redirect to another url
+     * This prevent the too many redirect errors emitted by various browsers
+     *
+     * @param string $url the url to goto
+     *
+     * @return void
+     * @access public
+     * @static
+     */
+    static function jsRedirect(
+      $url     = null,
+      $title   = null,
+      $message = null
+    ) {
+        if ( ! $url ) {
+          $url = self::url( 'civicrm/dashboard', 'reset=1' );
+        }
+
+        if ( ! $title ) {
+          $title = ts( 'CiviCRM task in progress' );
+        }
+
+        if ( ! $message ) {
+          $message = ts( 'A long running CiviCRM task is currently in progress. This message will be refreshed till the task is completed' );
+        }
+
+        // replace the &amp; characters with &
+        // this is kinda hackish but not sure how to do it right
+        $url = str_replace( '&amp;', '&', $url );
+
+        $template = CRM_Core_Smarty::singleton( );
+        $template->assign( 'redirectURL', $url );
+        $template->assign( 'title'      , $title );
+        $template->assign( 'message'    , $message );
+        $html = $template->fetch( 'CRM/common/redirectJS.tpl' );
+
+        echo $html;
+
+        self::civiExit( );
+    }
+
     /**
      * Append an additional breadcrumb tag to the existing breadcrumb
      *
