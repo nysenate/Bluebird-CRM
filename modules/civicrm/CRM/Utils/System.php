@@ -349,9 +349,21 @@ class CRM_Utils_System {
      * @access public
      * @static
      */
-    static function jsRedirect( $url = null ) {
+    static function jsRedirect(
+      $url     = null,
+      $title   = null,
+      $message = null
+    ) {
         if ( ! $url ) {
-            $url = self::url( 'civicrm/dashboard', 'reset=1' );
+          $url = self::url( 'civicrm/dashboard', 'reset=1' );
+        }
+
+        if ( ! $title ) {
+          $title = ts( 'CiviCRM task in progress' );
+        }
+
+        if ( ! $message ) {
+          $message = ts( 'A long running CiviCRM task is currently in progress. This message will be refreshed till the task is completed' );
         }
 
         // replace the &amp; characters with &
@@ -360,6 +372,8 @@ class CRM_Utils_System {
 
         $template = CRM_Core_Smarty::singleton( );
         $template->assign( 'redirectURL', $url );
+        $template->assign( 'title'      , $title );
+        $template->assign( 'message'    , $message );
         $html = $template->fetch( 'CRM/common/redirectJS.tpl' );
 
         echo $html;

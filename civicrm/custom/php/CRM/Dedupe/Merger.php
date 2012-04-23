@@ -562,7 +562,7 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         $cacheKeyString .= $gid  ? "_{$gid}"  : '_0';
         $join  = "LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND 
                                                              pn.entity_id2 = de.contact_id2 )";
-        $limit = $redirectForPerformance ? 200 : 1; //NYSS
+        $limit = $redirectForPerformance ? 100 : 1; //NYSS
         $where = "de.id IS NULL LIMIT {$limit}";
 
 		//NYSS 4535
