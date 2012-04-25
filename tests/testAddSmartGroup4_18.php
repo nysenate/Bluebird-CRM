@@ -96,7 +96,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         // select Create New Group
         $this->waitForElementPresent("title");
-        $this->type("title","Smart Group of ".$keyword."s");
+        $groupname = "Smart Group of ".$keyword."s";
+        $this->type("title",$groupname);
         $this->type("description","This smart group was created by the test script.");
 
         // click Add To Group
