@@ -96,7 +96,8 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         // select Create New Group
         $this->waitForElementPresent("title");
-        $this->type("title","Smart Group of ".$keyword."s");
+        $groupname = "Smart Group of ".$keyword."s";
+        $this->type("title",$groupname);
         $this->type("description","This smart group was created by the test script.");
 
         // click Add To Group
@@ -105,6 +106,30 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForPageToLoad('30000');
 
         $this->assertTrue($this->isTextPresent("has been saved"),"Error: Script could not add contacts to the smart group ");
+
+        $this->click("xpath=//ul[@id='nyss-menu']/li[4]"); // using xpath to find the Manage menu
+        $this->waitForElementPresent('link=Manage Groups'); // wait until menu opens
+        $this->click('link=Manage Groups');  // click the link
+        $this->waitForPageToLoad('30000');
+
+        // delete group
+        $this->waitForElementPresent('title'); 
+        $this->type('title',$groupname);
+        $this->waitForElementPresent('_qf_Search_refresh');
+        $this->click('_qf_Search_refresh');
+
+        // click on more->
+        $this->waitForElementPresent('crm-group-selector');
+        $this->click("xpath=//table[@id='crm-group-selector']/tbody[1]/tr[1]/td[6]/span[2]");
+        // click on Delete
+        $this->click("link=Delete");
+        $this->waitForPageToLoad('30000');
+
+        $this->waitForElementPresent('_qf_Edit_next-bottom');
+        $this->click('_qf_Edit_next-bottom');
+        $this->waitForPageToLoad('30000');
+        
+        $this->assertTrue($this->isTextPresent("deleted"),"Error: Script could not delete the group ");
     }
 
     private function openAdvancedSearch() {
