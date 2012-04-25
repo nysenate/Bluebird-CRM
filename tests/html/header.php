@@ -26,6 +26,7 @@
 				$(this).css('display', 'inline-block');
 			});
 		}
+
 	</script>
 </head>
 

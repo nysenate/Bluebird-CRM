@@ -13,12 +13,13 @@
 
 	$config = array();
 	$nConfig = 0;
-	$domain = "/";	
+	$domain = array();
+	$list = array();
 
 	readSettings("config.cfg");
+	readDBlist("databases.cfg");
 	readHelpFile("help.cfg");
 ?>
-
 
 <form method="post" action="index2.php" onsubmit="javascript:givememore();" >
 
@@ -95,7 +96,7 @@ echo "</table>";
 </div><!-- settings -->
 
 <div class="new-settings">
-<h3>General settings <span class="small">(test server: <em><?php echo $domain;?></em>)</span></h3>
+<h3>General settings</h3>
 
 <?php
 if ($update==1) {              // read some patricular settings	
@@ -109,10 +110,11 @@ $row = mysql_fetch_array($result);
 
 $host = $row['host'];                    // cut everything except for district name e.g. sd99
 if (substr($host,0,7)=="http://") {
-	$host = substr($host, 7);
-	$_host = explode("/", $host);
+	$host_full = substr($host, 7);
+	$_host = explode("/", $host_full);
 	$_host = explode(".", $_host[0]);	
 	$host = $_host[0];
+	$envir = substr($host_full, strlen($host));  // current environment
 }
 
 ?>
@@ -124,21 +126,31 @@ if (substr($host,0,7)=="http://") {
   <option value="*iexplore" <?php if ($row['browser']=="*iexplore") echo "selected"; ?>>Internet Explorer</option>
 </select> <br />
 
+<label>Environment:</label>
+<select id="envir-select" name="domain">
+<?php
+	foreach ($domain as $d) {
+		echo "<option onclick=\"changed(".$d['id'].");\" value=\"".$d['domain']."\">".$d['domain']."</option>";
+	}
+?>
+</select><br/>
 
 <label>Host:</label>
-<input type="text" name="host" class="text" value="<?php echo $host; ?>" onkeydown="return kd(event)"><br />
+<select id="host-list" name="host">
+
+</select><br />
 
 <h3 id="more-settings-link-h3"><a id="more-settings-link" href="javascript:givememore();">More settings ...</a></h3>
 
 <div id="more-settings" style="display:none;">
-	<label>Number of instances:</label>
-	<input type="text" name="nins" class="text" value="1" onkeydown="return kd(event)"><br />
+	<!--<label>Number of instances:</label>
+	<input type="text" name="nins" class="text" value="1" onkeydown="return kd(event)"><br />-->
 
 	<label>Username:</label>
-	<input type="text" name="username" class="text" value="<?php echo $row['username']; ?>" onkeydown="return kd(event)"><br />
+	<input style="width:150px;" type="text" name="username" class="text" value="<?php echo $row['username']; ?>" onkeydown="return kd(event)"><br />
 
 	<label>Password:</label>
-	<input type="text" name="password" class="text" value="<?php echo $row['password']; ?>" onkeydown="return kd(event)"><br />
+	<input style="width:150px;" type="text" name="password" class="text" value="<?php echo $row['password']; ?>" onkeydown="return kd(event)"><br />
 
 	<label>Pause:</label>
 	<input type="text" name="sleep" class="text" value="<?php echo $row['sleep']; ?>" onkeydown="return kd(event)"><br />
@@ -166,7 +178,6 @@ if (substr($host,0,7)=="http://") {
 
 
 <input type="hidden" name="save" id="save" value="yes" /> <!-- IGNORE THIS LINE! -->
-<input type="hidden" name="domain" id="domain" value="<?php echo $domain;?>" />
 <input type="hidden" name="multi" id="multi" value="" />
 
 
