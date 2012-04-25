@@ -116,13 +116,13 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent('crm-group-selector');
         $this->click("xpath=//table[@id='crm-group-selector']/tbody[1]/tr[1]/td[6]/span[2]");
         // click on Delete
-        $this->click("xpath=//span[@class='btn-slide']/ul[@class='panel']/li[1]/a[1]");
+        $this->click("link=Delete");
         $this->waitForPageToLoad('30000');
 
         $this->waitForElementPresent('_qf_Edit_next-bottom');
         $this->click('_qf_Edit_next-bottom');
         $this->waitForPageToLoad('30000');
-        
+
         $this->assertTrue($this->isTextPresent("deleted"),"Error: Script could not delete the group ");
     }
 
