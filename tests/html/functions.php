@@ -31,7 +31,7 @@
 		    	$buffer = trim($buffer);
 		    	if (strlen($buffer)>0 && $buffer[0]!='#' && $buffer[0]!=';') {
 		    		
-		    		$sArray = explode("\t", $buffer);			    	
+		    		$sArray = explode("\t", $buffer);
 			    	$cfg = new configClass();
 			    	$cfg->id = trim($sArray[0]);
 			    	$cfg->displayName = $sArray[1];
@@ -41,12 +41,34 @@
 			    	$config[$nConfig++] = $cfg;
 			    }
 			    if ($buffer[0]==';') {                 // setting up the domain
-			    	$domain = trim(substr($buffer,1));
+			    	$temp = explode("\t",trim(substr($buffer,1)));
+			    	$domain[] = array('id'=>trim($temp[0]), 'domain'=>trim($temp[1]));
 			    }
 		    }
 		}
 		fclose($handle);
 	}
+
+
+// read databases list
+	function readDBlist($filename) {
+		global $domain;
+		global $list;
+		$handle = @fopen($filename, "r");
+		if ($handle) {
+		   	while (($buffer = fgets($handle, 4096)) != false ) {
+		   		$buffer = trim($buffer);
+		   		if (strlen($buffer)>0 && $buffer[0]!='#') {
+		   			$sArray = explode("\t", $buffer);
+		   			$sArray[0] = trim($sArray[0]);
+		   			$sArray[1] = trim($sArray[1]);
+		   			$list[$sArray[0]][] = $sArray[1];
+		   		}
+		   	}
+		}
+		fclose($handle);
+	}// function
+
 
 // read help file
 	function readHelpFile($filename) {
@@ -95,5 +117,25 @@
 		unlink($tempfile);
 	}
 
+
+/*
+Example of usage :
+
+$content = getFile('http://codepax.com');
+
+and the function itself :
+
+function getFile($url){
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	$tmp = curl_exec($ch);
+	curl_close($ch);
+	if ($tmp != false){
+		return $tmp;
+	}
+}
+*/
 
 ?>
