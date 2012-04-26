@@ -6,12 +6,13 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-09-23
-# Revised: 2012-04-12
+# Revised: 2012-04-26
 #
 
 prog=`basename $0`
 script_dir=`dirname $0`
 readConfig=$script_dir/readConfig.sh
+DEFAULT_MYSQL_ARGS="--batch --raw"
 
 . $script_dir/defaults.sh
 
@@ -87,20 +88,23 @@ fi
 [ "$dbuser" ] || dbuser=`$readConfig $ig_opt db.user` || dbhost=$DEFAULT_DB_USER
 [ "$dbpass" ] || dbpass=`$readConfig $ig_opt db.pass` || dbhost=$DEFAULT_DB_PASS
 
+common_args="-h $dbhost -u $dbuser -p$dbpass"
+mysql_args="$common_args $DEFAULT_MYSQL_ARGS $colname_arg"
+
 if [ $dump_db -eq 1 ]; then
   # Do not use 'set -x' here, since mysqldump writes to stdout
-  mysqldump -R -h $dbhost -u $dbuser -p$dbpass $dbname $tabname
+  mysqldump -R $common_args $dbname $tabname
 elif [ $create_db -eq 1 ]; then
   if [ ! "$dbname" ]; then
     echo "$prog: Cannot create a database without specifying its name or instance." >&2
     exit 1
   fi
   [ $be_quiet -eq 0 ] && set -x
-  mysql -h $dbhost -u $dbuser -p$dbpass -e "create database $dbname" --batch
+  mysql $mysql_args -e "create database $dbname"
 elif [ "$sqlfile" ]; then
   [ $be_quiet -eq 0 ] && set -x
-  cat $sqlfile | mysql -h $dbhost -u $dbuser -p$dbpass $dbname
+  cat $sqlfile | mysql $mysql_args $dbname
 else
   [ $be_quiet -eq 0 ] && set -x
-  mysql -h $dbhost -u $dbuser -p$dbpass -e "$sqlcmd" --batch $colname_arg $dbname
+  mysql $mysql_args -e "$sqlcmd" $dbname
 fi
