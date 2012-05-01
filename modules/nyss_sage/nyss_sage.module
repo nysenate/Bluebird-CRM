@@ -23,22 +23,20 @@ function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
 
         // If the address already exists, fetch it and compare with form values
         // Unless the address is being modified we never overwrite districts
-        $overwrite_districts = false;
         $old_addr = nyss_sage_address(CRM_Utils_Array::value('id',$params));
-        if($old_addr) {
-            if( nyss_sage_compare($old_addr,$params,'street_address')     ||
-                nyss_sage_compare($old_addr,$params,'city')               ||
-                nyss_sage_compare($old_addr,$params,'postal_code')        ||
-                nyss_sage_compare($old_addr,$params,'state_province_id')  ||
-                nyss_sage_compare($old_addr,$params,'country_id')         ||
-                nyss_sage_compare($old_addr,$params,'supplemental_address_1')) {
+        if( $old_addr === null ||
+            nyss_sage_compare($old_addr,$params,'street_address')     ||
+            nyss_sage_compare($old_addr,$params,'city')               ||
+            nyss_sage_compare($old_addr,$params,'postal_code')        ||
+            nyss_sage_compare($old_addr,$params,'state_province_id')  ||
+            nyss_sage_compare($old_addr,$params,'supplemental_address_1')) {
 
-                //We need to update the district information
-                $overwrite_districts = true;
-            }
+            //NYSS 5263 - Removed the check for country_id as the $params
+            //variable wasn't being given the country_id.
+            //In turn, lookups are only done when the address is different.
+
+            CRM_Utils_SAGE::lookup($params, $old_addr != null);
         }
-
-        CRM_Utils_SAGE::lookup($params,$overwrite_districts);
     }
     return true;
 }

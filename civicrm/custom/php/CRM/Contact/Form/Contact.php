@@ -930,7 +930,10 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
         $params['updateBlankLocInfo'] = true;
 
         require_once 'CRM/Contact/BAO/Contact.php';
-        $contact =& CRM_Contact_BAO_Contact::create( $params, true, false, true );
+
+        //NYSS 5263 - $fixAddress should always be false because the
+        //address will be updated later
+        $contact =& CRM_Contact_BAO_Contact::create( $params, false, false, true );
 
         // set the contact ID
         $this->_contactId = $contact->id;
