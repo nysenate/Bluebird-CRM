@@ -1551,7 +1551,7 @@ SELECT contact_id
 
         $session = CRM_Core_Session::singleton();
 
-        if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
+        /*if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
             if ($session->get('userID')) {
                 CRM_Core_DAO::executeQuery('SET @civicrm_user_id := %1',
                                            array(1 => array($session->get('userID'), 'Integer')),
@@ -1562,7 +1562,7 @@ SELECT contact_id
                                            false );
                 CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
             }
-        }
+        }*/
         if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
             if ($session->get('jobID')) {
                 CRM_Core_DAO::executeQuery('SET @jobID := %1',
