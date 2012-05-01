@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2010-12-03
-# Revised: 2012-02-09
+# Revised: 2012-04-26
 #
 
 prog=`basename $0`
@@ -20,7 +20,7 @@ piddir=/var/run
 . "$script_dir/defaults.sh"
 
 usage() {
-  echo "Usage: $prog [--quiet] [--all] [--live] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName] [--exclude-set instanceSet] [--bg] [--no-wait] [--serial uniq-id] [--timing] [cmd]" >&2
+  echo "Usage: $prog [--quiet] [--all] [--live] [--live-fast] [--locked] [--civimail] [--signups] [--training] [--set instanceSet] [--instance instanceName] [--exclude instanceName] [--exclude-set instanceSet] [--bg] [--no-wait] [--serial uniq-id] [--timing] [cmd]" >&2
   echo "Note: Any occurrence of '%%INSTANCE%%' or '{}' in the command will be replaced by the current instance name." >&2
 }
 
@@ -34,6 +34,7 @@ cmd=
 cmdfile=
 use_all=0
 use_live=0
+fast_live=0
 instance_set=
 instances=
 excludes=
@@ -48,6 +49,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --all) use_all=1 ;;
     --live) use_live=1 ;;
+    --live-fast) use_live=1; fast_live=1 ;;
     --locked) instance_set="LOCKED" ;;
     --civimail) instance_set="civimail" ;;
     --signups) instance_set="signups" ;;
@@ -92,18 +94,36 @@ if [ $use_all -eq 1 -o $use_live -eq 1 ]; then
   else
     instances=`$readConfig --list-all-instances | sed "s;^instance:;;"`
     if [ $use_live -eq 1 ]; then
-      # Iterate over all instances and probe for "live" instances by checking
-      # for the existence of a CiviCRM DB.  We cannot simply execute
-      # "show databases" on the server, since each instance can have its own
-      # database config.  Thus, we iterate over each instance and attempt to
-      # establish a quick connection with its DB to determine if it is "live".
       [ $quiet_mode -eq 0 ] && echo "Calculating live CRM instances..." >&2
       live_instances=
-      for instance in $instances; do
-        if $execSql -i $instance 2>/dev/null; then
-          live_instances="$live_instances $instance"
-        fi
-      done
+      if [ $fast_live -eq 0 ]; then
+        # This is the "slow" live check, where each instance is checked for
+        # a live database backing it.  This mode must be used if databases
+        # do not all reside on the same database server.
+        #
+        # Iterate over all instances and probe for "live" instances by checking
+        # for the existence of a CiviCRM DB.  We cannot simply execute
+        # "show databases" on the server, since each instance can have its own
+        # database config.  Thus, we iterate over each instance and attempt to
+        # establish a quick connection with its DB to determine if it is "live".
+        for instance in $instances; do
+          if $execSql -i $instance 2>/dev/null; then
+            live_instances="$live_instances $instance"
+          fi
+        done
+      else
+        # This is the "fast" live check, which assumes that all databases
+        # reside on the same database server.  The only connection made to
+        # the database server is to make a single "show databases" call.
+        db_civi_prefix=`$readConfig --global db.civicrm.prefix` || db_civi_prefix=$DEFAULT_DB_CIVICRM_PREFIX
+        dbs=`$execSql -q -c "show databases" | sed -n "s;^$db_civi_prefix;;p"`
+        for instance in $instances; do
+          dbbasename=`$readConfig --instance $instance db.basename` || dbbasename="$instance"
+          if echo "$dbs" | grep -x -q "$dbbasename"; then
+            live_instances="$live_instances $instance"
+          fi
+        done
+      fi
       instances="$live_instances"
     fi
   fi

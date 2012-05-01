@@ -10,7 +10,7 @@
     3. open advanced search
     4. run search by name=Mike Gordo
     5. open first found contact 
-    6. set the tag Senior
+    6. set the tag Senior Housing
     7. save contact
     8. open advanced search
     9. run search by name=Mike Gordo
@@ -100,10 +100,10 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
         $this->waitForElementPresent("xpath=//li[@id='tab_tag']/a[1]");
         $this->click("xpath=//li[@id='tab_tag']/a[1]");
 
-        // find TagTree and choose Senior
+        // find TagTree and choose Senior Housing
         $this->waitForElementPresent("tagtree");
         $this->click("xpath=//li[@id='tag_5']/ins[1]");
-        $this->click("check_46");
+        $this->click("check_44");
 
         // find Summary and click on it
         $this->waitForElementPresent("xpath=//li[@id='tab_summary']/a[1]");
@@ -119,7 +119,7 @@ class WebTest extends PHPUnit_Extensions_SeleniumTestCase
 
         // find TagTree and unchoose Senior
         $this->waitForElementPresent("tagtree");
-        $this->click("check_46");
+        $this->click("check_44");
 
         // find Summary and click on it
         $this->waitForElementPresent("xpath=//li[@id='tab_summary']/a[1]");

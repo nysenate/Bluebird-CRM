@@ -1,0 +1,13 @@
+
+# The FallbackResource directive was implemented as of Apache 2.2.16.
+# Once we move to Apache 2.4, we can make use of it.
+#<IfModule mod_dir.c>
+#  FallbackResource /index.php
+#</IfModule>
+
+# For now, since we're stuck on Apache 2.2.14, we must use a RewriteRule
+# in order to force all URLs to index.php.
+<IfModule mod_rewrite.c>
+  RewriteEngine on
+  RewriteRule ^(.*)$ index.php
+</IfModule>
