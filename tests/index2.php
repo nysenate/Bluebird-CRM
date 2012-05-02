@@ -41,6 +41,7 @@ if ($_POST['save'] == 'yes') {
     $password = $_POST['password'];
 
     $domain = $_POST['domain'];
+    if ($domain!='/' && $domain[0]!='.') $domain = ".".$domain;
 
     if (substr($host, 0, 7)!="http://") {
         $host = "http://" . $host . $domain;
