@@ -131,7 +131,7 @@ if (substr($host,0,7)=="http://") {
 <select id="envir-select" name="domain">
 <?php
 	foreach ($domain as $d) {
-		echo "<option value=\"".$d['domain']."\">".$d['domain']."</option>";
+		echo "<option id=\"".$d['id']."\" value=\"".$d['domain']."\">".$d['domain']."</option>";
 	}
 ?>
 </select><br/>
