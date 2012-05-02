@@ -10,8 +10,9 @@
 	$(document).ready(function(){
 		$("#envir-select").val('<?php echo $envir;?>');
 		//$("#envir-select option:selected").trigger('click');
-		$('#envir-select').bind('change', function(){
-			changed($('#envir-select').val());
+		$('#envir-select').change(function(){
+			var id = $(this).children(":selected").attr("id");
+			changed(id);
 		});
 		$("#envir-select").trigger('change');
 		$("#host-list").val('<?php echo $host;?>');
