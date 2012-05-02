@@ -17,7 +17,8 @@
 	$list = array();
 
 	readSettings("config.cfg");
-	readDBlist("databases.cfg");
+	//readDBlist("databases.cfg");
+	readInstances();
 	readHelpFile("help.cfg");
 ?>
 

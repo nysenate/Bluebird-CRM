@@ -51,6 +51,7 @@
 
 
 // read databases list
+// this function is not necessary, because now we get data through API
 	function readDBlist($filename) {
 		global $domain;
 		global $list;
@@ -117,13 +118,28 @@
 		unlink($tempfile);
 	}
 
-
-/*
-Example of usage :
-
-$content = getFile('http://codepax.com');
-
-and the function itself :
+	function readInstances(){
+		global $domain;
+		global $list;
+		
+		foreach ($domain as $d) {
+			//////// LOCAL ENVIRONMENT ////////
+			if ($d['domain']=='/') $url = 'crm/api/1.0/getInstances'; else {
+			///////////////////////////////////
+			if ($d['domain'][0]=='.')
+				$url = substr($d['domain'],1);
+				else $url = $d['domain'];
+			if ($d['domain'][strlen($d['domain'])-1]=='/')
+				$url .= 'api/1.0/getInstances';
+				else $url .= '/api/1.0/getInstances';
+			} // else
+			$content = getFile($url);
+			$data = explode(' ', $content);
+			foreach ($data as $dat) {
+				$list[$d['id']][] = trim($dat);
+			}
+		}
+}
 
 function getFile($url){
 	$ch = curl_init();
@@ -136,6 +152,5 @@ function getFile($url){
 		return $tmp;
 	}
 }
-*/
 
 ?>
