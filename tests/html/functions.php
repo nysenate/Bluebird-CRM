@@ -110,6 +110,7 @@
 		$log = '';
 		foreach($data as $d)
 			$log .= $d . "<br/>";
+		$log = addslashes($log);
 
 		$query = "INSERT INTO `log`(`tid`,`text`) VALUES ('$record', '$log'); ";
 		mysql_query($query, $link);
