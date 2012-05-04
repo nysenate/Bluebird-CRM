@@ -47,6 +47,7 @@ show_timing=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --help|-h) usage; exit 0 ;;
     --all) use_all=1 ;;
     --live) use_live=1 ;;
     --live-fast) use_live=1; fast_live=1 ;;
