@@ -32,6 +32,7 @@ fi
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    -h|--help) usage; exit 0 ;;
     --ok) force_ok=1 ;;
     -n|--dry-run) dry_run=1 ;;
     -u|--update*) update_contacts=1 ;;
@@ -42,7 +43,10 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-if ! $readConfig --instance $instance --quiet; then
+if [ ! "$instance" ]; then
+  echo "$prog: Must specify an instance to delete" >&2
+  exit 1
+elif ! $readConfig --instance $instance --quiet; then
   echo "$prog: $instance: Instance not found in config file" >&2
   exit 1
 fi

@@ -28,6 +28,7 @@ domain=
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --help|-h) usage; exit 0 ;;
     --ok) force_ok=1 ;;
     --files-only) files_only=1 ;;
     --db-only) db_only=1 ;;
@@ -40,7 +41,9 @@ done
 
 if [ ! "$instance" ]; then
   echo "$prog: Must specify an instance to delete" >&2
-  usage
+  exit 1
+elif ! $readConfig --instance $instance --quiet; then
+  echo "$prog: $instance: Instance not found in config file" >&2
   exit 1
 fi
 

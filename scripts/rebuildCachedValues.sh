@@ -40,13 +40,14 @@ fi
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    -h|--help) usage; exit 0 ;;
     --field-sortname) target_fields="$target_fields sort_name" ;;
     --field-displayname) target_fields="$target_fields display_name" ;;
     --field-streetaddress) target_fields="$target_fields street_address" ;;
     --rebuild-all*) rebuild_all_recs=1 ;;
     --rebuild-smart) rebuild_smart=1 ;;
     --ok) force_ok=1 ;;
-    --dry-run|-n) dry_run=1 ;;
+    -n|--dry-run) dry_run=1 ;;
     -*) echo "$prog: $1: Invalid option" >&2; usage; exit 1 ;;
     *) instance="$1" ;;
   esac
@@ -54,7 +55,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ ! "$instance" ]; then
-  echo "$prog: Must specify a CRM instance." >&2
+  echo "$prog: Must specify a CRM instance" >&2
   exit 1
 elif ! $readConfig --instance $instance --quiet; then
   echo "$prog: $instance: Instance not found in config file" >&2
