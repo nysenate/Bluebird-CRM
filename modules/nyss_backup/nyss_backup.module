@@ -113,13 +113,13 @@ function nyss_backup_backup_file($data_dir) {
 }
 
 function nyss_backup_restore_from_file($data_dir) {
-    $file = $_GET['file'];
+    $file_name = $_GET['file'];
 
     $instance_config = get_bluebird_instance_config();
     $restore_script = "{$instance_config['app.rootdir']}/scripts/restoreInstance.sh";
     if(!$file_name) {
         return false;
     }
-    passthru("$restore_script {$instance_config['shortname']} --archive-file {$dir}{$file_name} --ok > /dev/null", $err);
+    passthru("$restore_script {$instance_config['shortname']} --archive-file {$data_dir}{$file_name} --ok > /dev/null", $err);
     return array('success' => ($err == 0 ? true : false));
 }
