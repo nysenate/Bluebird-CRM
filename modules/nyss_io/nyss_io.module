@@ -253,11 +253,14 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 	$dryrun=$form_state['values']['dryrun'];
 	if (!$dryrun) $dryrun=false;
 
+	$ioOptions = array();
+	fillIoGetOptions(&$ioOptions);
+
 	//get some civicrm values and flip so we can easily lookup values
     $aStates = array_flip(ioGetStates());
-    $aGender = array_flip(ioGetOptions("gender"));
-    $aPrefix = array_flip(ioGetOptions("individual_prefix"));
-    $aSuffix = array_flip(ioGetOptions("individual_suffix"));
+    $aGender = array_flip(ioGetOptions("gender", &$ioOptions));
+    $aPrefix = array_flip(ioGetOptions("individual_prefix", &$ioOptions));
+    $aSuffix = array_flip(ioGetOptions("individual_suffix", &$ioOptions));
     $aLocTyp = array_flip(ioGetLocType());
 
 	nyss_out('status',"importing file with dryrun=$dryrun AND count=$runnum.<br>Import file: {$filename}.<br>Log File: {$logFilename}",true);
@@ -949,8 +952,8 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 		//contact record work
 		if ( $tbl == 'civicrm_contact' ) {
 			$l['contact_type'] = 'Individual';
-			$prefixes = ioGetOptions("individual_prefix");
-			$suffixes = ioGetOptions("individual_suffix");
+			$prefixes = ioGetOptions("individual_prefix", &$ioOptions);
+			$suffixes = ioGetOptions("individual_suffix", &$ioOptions);
 			$suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
 			$l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
 			//need to propercase these values before constructing display and sort name
@@ -1068,25 +1071,33 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 	}
 }
 
-function ioGetOptions($strGroup)
+function fillIoGetOptions(&$ioOptions)
 {
-  $session =& CRM_Core_Session::singleton();
+	$session = & CRM_Core_Session::singleton();
+	$dao = &CRM_Core_DAO::executeQuery("SELECT id, name from civicrm_option_group;");
+	
+	$optionGroups = array();
+	while($dao->fetch())
+	{
+		$optionGroups[$dao->id] = $dao->name;
+	}
 
-  $dao = &CRM_Core_DAO::executeQuery("SELECT id from civicrm_option_group where name='".$strGroup."';", CRM_Core_DAO::$_nullArray);
-  $dao->fetch();
-  $optionGroupID = $dao->id;
+	$dao = &CRM_Core_DAO::executeQuery("SELECT id, option_group_id, name, label, value from civicrm_option_value");
+	$options = array();
+	while($dao->fetch())
+	{
+		$name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
+		$options[$optionGroups[$dao->option_group_id]][$dao->value] = $name;
+	}
+	$ioOptions = $options;
+}
 
-  $dao = &CRM_Core_DAO::executeQuery("SELECT name, label, value from civicrm_option_value where option_group_id=$optionGroupID;", CRM_Core_DAO::$_nullArray);
-
-  $options = array();
-
-  while ($dao->fetch()) {
-    $name = (strlen($dao->label) > 0) ? $dao->label : $dao->name;
-    $options[$dao->value] = $name;
-  }
-
-  return $options;
-} // ioGetOptions()
+function ioGetOptions($strGroup, &$ioOptions)
+{
+	if(isset($ioOptions[$strGroup]) && !is_null($ioOptions[$strGroup]) && is_array($ioOptions[$strGroup]))
+		return $ioOptions[$strGroup];
+	return array();
+}
 
 function ioGetStates()
 {

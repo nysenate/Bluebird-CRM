@@ -193,7 +193,7 @@ class CRM_Core_BAO_Tag extends CRM_Core_DAO_Tag
                              $flatlist = true )
     {
         //NYSS - cache this expensive stuff!
-        $cacheKey = "CRM_getTags_$usedFor_$parentId";
+        $cacheKey = "CRM_getTags_{$usedFor}_{$parentId}";
         require_once "CRM/Utils/Cache.php";
         $cache = CRM_Utils_Cache::singleton();
         if($var = $cache->get($cacheKey)) {
