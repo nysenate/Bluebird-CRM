@@ -75,6 +75,9 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         //4677
         $this->addElement('checkbox', 'merge_households', ts('Merge Household Records'), null );
 
+        //5174
+        $this->addElement('checkbox', 'primaryAddress', ts('Export Primary Address'), null );
+
         require_once 'CRM/Core/OptionGroup.php';
         $rts = CRM_Core_OptionGroup::values('record_type_20100906230753');
         $this->add( 'select', 'exclude_rt',  ts( 'Exclude Record Types' ), $rts, false, 
@@ -101,7 +104,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
              $bbconfig['servername'] == 'sd99.crmdev.nysenate.gov' ||
              $bbconfig['servername'] == 'sd99.crmtest.nysenate.gov' ) {
 
-            $this->addElement('text', 'district_excludes', ts('District # to Process Exclusions') );
+            $this->addElement('text', 'district_excludes', ts('District # to Process Exclusions and Add Seeds') );
             $this->addRule( 'district_excludes',
                             ts('Please enter the district exclusion as a number (integer only). This will also add the district seeds to the export.'),
                             'positiveInteger');
@@ -120,15 +123,16 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
      * @return None
      */
     public function postProcess() {
-    
+
         //set start time
         if ( PPDEBUG ) { $tStart = microtime(); }
-    
+
         //get form values
         $params = $this->controller->exportValues( $this->_name );
 
         $avanti_job_id    = ( $params['avanti_job_id'] ) ? 'avanti-'.$params['avanti_job_id'].'_' : '';
         $merge_households = $params['merge_households'];
+        $primaryAddress   = $params['primaryAddress'];
         $exclude_rt       = implode( ',', $params['exclude_rt'] );
         $excludeGroups    = $params['excludeGroups'];
         $districtExclude  = $params['district_excludes'];
@@ -142,7 +146,7 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
         $aSuffix = getOptions("individual_suffix");
         $aPrefix = getOptions("individual_prefix");
         $aStates = getStates();
-    
+
         //generate random number for export and tables
         $rnd = date('Ymdhis');
 
@@ -205,11 +209,19 @@ class CRM_Contact_Form_Task_ExportPrintProduction extends CRM_Contact_Form_Task 
 
         $sql .= " JOIN civicrm_contact c ON t.id = c.id ";
 
-        //join with address if primary or BOE mailing and non primary
-        $sql .= " LEFT JOIN civicrm_address a 
-                    ON a.contact_id=t.id 
-                    AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0 LIMIT 1),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0 LIMIT 1),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = t.id AND pm.is_primary = 1 LIMIT 1)) ";    
-        $sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id=a.id ";
+        //address joins
+        if ( $primaryAddress ) {
+            //5174 if selected, export primary address only
+            $sql .= " LEFT JOIN civicrm_address a 
+                        ON a.contact_id = t.id 
+                        AND a.is_primary = 1 ";
+        } else {
+            //join with address if primary or BOE mailing and non primary
+            $sql .= " LEFT JOIN civicrm_address a 
+                        ON a.contact_id = t.id 
+                        AND a.id = IF((SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0 LIMIT 1),(SELECT npm.id FROM civicrm_address npm WHERE npm.contact_id = t.id AND npm.location_type_id = 13 AND npm.is_primary = 0 LIMIT 1),(SELECT pm.id FROM civicrm_address pm WHERE pm.contact_id = t.id AND pm.is_primary = 1 LIMIT 1)) ";
+        }
+        $sql .= " LEFT JOIN civicrm_value_district_information_7 di ON di.entity_id = a.id ";
 
         //household joins
         $sql .= " LEFT JOIN civicrm_relationship cr 
