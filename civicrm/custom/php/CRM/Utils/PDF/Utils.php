@@ -133,6 +133,11 @@ class CRM_Utils_PDF_Utils {
         //NYSS - set default path to /usr/local/bin/ for now.
         $wkhtmltopdfPath = '/usr/local/bin/wkhtmltopdf';
 
+        //NYSS 5270 make sure binary exists
+        if ( !file_exists($wkhtmltopdfPath) ) {
+            return self::_html2pdf_dompdf( $paper_size, $orientation, $html, $output, $filename );
+        }
+
         //$snappy = new Knp_Snappy_Pdf($config->wkhtmltopdfPath);
         $snappy = new Knp_Snappy_Pdf($wkhtmltopdfPath);
         $snappy->setOption( "page-width", $paper_size[2]."pt" );
