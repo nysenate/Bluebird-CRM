@@ -43,9 +43,22 @@ log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFA
 roles="UPDATE permission SET perm = REPLACE(perm, 'create users, ', '') WHERE rid IN (4,9);"
 $execSql -i $instance -c "$roles" --drupal
 
-
 ### CiviCRM ###
-
+## 4911/5251 create the civicrm_import_jobs table
+impjobs="CREATE TABLE IF NOT EXISTS civicrm_import_jobs (
+      id int(10) unsigned NOT NULL AUTO_INCREMENT,
+      name varchar(255) NOT NULL,
+      table_name varchar(255) NOT NULL,
+      source_file varchar(255) NOT NULL,
+      file_type varchar(255) NOT NULL,
+      field_separator varchar(10) NOT NULL,
+      contact_group_id int(10) unsigned NOT NULL,
+      created_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      created_by int(10) unsigned NOT NULL,
+      PRIMARY KEY (id),
+      KEY name (name)
+    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;"
+$execSql -i $instance -c "$impjobs"
 
 
 ### Cleanup ###
