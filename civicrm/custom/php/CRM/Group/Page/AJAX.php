@@ -71,6 +71,13 @@ class CRM_Group_Page_AJAX
             unset($selectorElements[5]); 
         }
 
+        //NYSS 5259 convert line breaks to html
+        foreach ( $groups as &$group ) {
+            $group['group_description'] = str_replace("\r\n", "\n",  $group['group_description']);
+            $group['group_description'] = str_replace("\r",   "\n",  $group['group_description']);
+            $group['group_description'] = str_replace("\n",   "<br />", $group['group_description']);
+        }
+
         echo CRM_Utils_JSON::encodeDataTableSelector( $groups, $sEcho, $iTotal, $iFilteredTotal, $selectorElements );
         CRM_Utils_System::civiExit( );
     }
