@@ -17,22 +17,6 @@ $(document).ready(function() {
 		$('.civi-adv-search-body').toggle();
 		return false;
 	});
-    
-    
-	/*$("input[name=sort_name]").focus(function(){
-		var defaultText = $(this).val();
-		if(defaultText === 'enter name or email'){
-			$(this).val('');
-			$(this).addClass('input-active');			
-			}
-		});*/
-	/*$("input[name=sort_name]").blur(function(){
-		var defaultText = $(this).val();
-		if(defaultText === ''){
-			$(this).val('enter name or email');
-			$(this).removeClass('input-active');
-			}
-		});	*/
 
 	$("#civi_text_search").focus(function(){
 		var defaultText = $(this).val();
@@ -69,7 +53,6 @@ $(document).ready(function() {
 	if ($('#civicrm-menu').length >0){
 		$('#civi-admin-menu').show();
 		}
-	/*$("#address_1_state_province_id option[value='1031']").attr('selected', 'selected');*/
 	
 	$('.action-item[innerHTML=File On Case]').remove();
 	
@@ -91,11 +74,15 @@ $(document).ready(function() {
              fbaseurimatch == -1 &&
              fname != 'Select' &&
              fname != 'Map' &&
-             fname != 'Label'
+             fname != 'Label' &&
+             global_formNavigate != false //5231
            ) {
             return false;
         } else {
-            submitted = true;
+            //5231 leave submit button unlocked if formNavigate has been triggered and canceled
+            if ( global_formNavigate != false ) {
+              submitted = true;
+            }
             return true;
         }
     });
