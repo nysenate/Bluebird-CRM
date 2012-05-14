@@ -69,7 +69,7 @@ class CRM_Utils_Wrapper
      * @access public
      */
     function run( $formName, $formLabel = null, $arguments = null ) {//NYSS 4775
-CRM_Core_Error::debug_var('formName',$formName);
+
         if ( is_array($arguments) ) {
             $mode         = CRM_Utils_Array::value( 'mode',        $arguments );
             $imageUpload  = (bool) CRM_Utils_Array::value( 'imageUpload' , $arguments, false );
@@ -89,8 +89,7 @@ CRM_Core_Error::debug_var('formName',$formName);
                                                              $addSequence ,
                                                              $ignoreKey   ,
                                                              $attachUpload );
-CRM_Core_Error::debug_log_message("after controller");
-//CRM_Core_Error::debug_var('this',$this);
+
         if ( array_key_exists('urlToSession', $arguments) ) {
             if ( is_array($arguments['urlToSession']) ) {
                 foreach ( $arguments['urlToSession'] as $params ) {
