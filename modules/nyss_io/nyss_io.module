@@ -231,11 +231,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     $logpath = isset($bbconfig['nyss_io.log_path']) ? $bbconfig['nyss_io.log_path'] : '/data/importData/logs/';
 
-    if ( !file_exists($path) ) {
-        mkdir( $path, 0775 );
-    }
     if ( !file_exists($logpath) ) {
-        mkdir( $logpath, 0775 );
+        mkdir( $logpath, 0775, true );
     }
 
     $logFilename = "import." . mt_rand(1,9999999999999999).".log";
