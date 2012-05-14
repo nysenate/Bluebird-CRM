@@ -44,7 +44,22 @@
     {if $item.email}
       <div class="crm-label">{$item.location_type}&nbsp;{ts}Email{/ts}</div>
       <div class="crm-content crm-contact_email"> <!-- start of content -->
-        <span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold - generally due to bouncing.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}><a href="mailto:{$item.email}">{$item.email}</a>{if $item.on_hold == 2}&nbsp;({ts}On Hold - Opt Out{/ts}){elseif $item.on_hold}&nbsp;({ts}On Hold{/ts}){/if}{if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}</span>
+        {*NYSS 4717*}
+        <span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold {if $item.on_hold eq 1}(bounce){elseif $item.on_hold eq 2}(unsubscribe){/if}.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
+        {if $privacy.do_not_email || $item.on_hold}{$item.email}
+        {else}<a href="mailto:{$item.email}">{$item.email}</a>
+        {/if}
+        {*NYSS 4603 4601*}
+        {if $item.on_hold}&nbsp;({ts}On Hold{/ts}
+          {if $item.on_hold == 2} - Opt Out: {/if}
+          {if $emailMailing.$blockId.mailingID}
+            {assign var=mid value=$emailMailing.$blockId.mailingID}
+            <a href="{crmURL p='civicrm/mailing/report/event' q="reset=1&event=bounce&mid=$mid"}" title="{ts}view bounce report{/ts}" target="_blank">{$item.hold_date|crmDate:"%m/%d/%Y"}</a>)
+          {else}{$item.hold_date|crmDate:"%m/%d/%Y"})
+          {/if}
+        {/if}
+        {if $item.is_bulkmail}&nbsp;({ts}Bulk{/ts}){/if}
+        </span>
         {if $item.signature_text OR $item.signature_html}
         <span class="signature-link description">
             <a href="#" title="{ts}Signature{/ts}" onClick="showHideSignature( '{$blockId}' ); return false;">{ts}(signature){/ts}</a>

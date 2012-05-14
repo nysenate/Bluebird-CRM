@@ -1541,3 +1541,10 @@ form#Contact .groupTagsKeywords .crm-section .label {
 #crm-container div.crm-table2div-layout {
   font-size: 11px;
 }
+#crm-container .contactCardLeft #crm-container-snippet {
+  width: 650px;
+}
+#crm-container .contactCardLeft {
+  z-index: 10;
+  position: relative;
+}

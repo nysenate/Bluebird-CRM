@@ -48,10 +48,13 @@ class CRM_Contact_Page_Inline_Email {
    *
    */
   function run() {
-    // get the emails for this contact      
+    require_once 'CRM/Core/BAO/Email.php';
+    require_once 'CRM/Core/BAO/Block.php';
+
+    // get the emails for this contact
     $contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', CRM_Core_DAO::$_nullObject, true, null, $_REQUEST );
  
-    $locationTypes = CRM_Core_PseudoConstant::locationDisplayName();
+    $locationTypes = CRM_Core_PseudoConstant::locationType();//NYSS
     
     $entityBlock = array( 'contact_id' => $contactId );
     $emails = CRM_Core_BAO_Email::getValues( $entityBlock );

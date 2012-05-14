@@ -340,13 +340,14 @@
 					
                     <div class="contact_panel">
                         <div class="contactCardLeft">
-                            {if $phone OR $im OR $openid}
                                 <table>
-                                    <tr><td>
-                                      <div class="crm-clear crm-summary-block" id="phone-block">
-                                        {include file="CRM/Contact/Page/Inline/Phone.tpl"}
-                                      </div>
-                                    </td></tr>
+                                    <tr>
+                                      <td>
+                                        <div class="crm-clear crm-summary-block" id="phone-block">
+                                          {include file="CRM/Contact/Page/Inline/Phone.tpl"}
+                                        </div>
+                                      </td>
+                                    </tr>
                                     <!--{foreach from=$phone item=item}
                                         {if $item.phone}
                                         <tr>
@@ -356,6 +357,7 @@
                                         </tr>
                                         {/if}
                                     {/foreach}-->
+                            {if $im OR $openid}
                                     {foreach from=$im item=item}
                                         {if $item.name or $item.provider}
                                         {if $item.name}<tr><td class="label">{$item.provider}&nbsp;({$item.location_type})</td><td {if $item.is_primary eq 1}class="primary"{/if}>{$item.name}</td></tr>{/if}
@@ -373,9 +375,9 @@
                                             </tr>
                                         {/if}
                                     {/foreach}
-                                
+                             {/if}
                                 </table>
-    						{/if}
+
                              <table>
                                {*NYSS 4775*}
                                <tr>

@@ -48,10 +48,14 @@ class CRM_Contact_Page_Inline_Phone {
    *
    */
   function run() {
+    require_once 'CRM/Core/PseudoConstant.php';
+    require_once 'CRM/Core/BAO/Phone.php';
+    require_once 'CRM/Core/BAO/Block.php';
+
     // get the emails for this contact      
     $contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', CRM_Core_DAO::$_nullObject, true, null, $_REQUEST );
  
-    $locationTypes = CRM_Core_PseudoConstant::locationDisplayName();
+    $locationTypes = CRM_Core_PseudoConstant::locationType();//NYSS
     $phoneTypes = CRM_Core_PseudoConstant::phoneType();
     
     $entityBlock = array( 'contact_id' => $contactId );

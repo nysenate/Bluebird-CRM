@@ -42,7 +42,7 @@
       <td>&nbsp;</td>
     </tr>
     {section name='i' start=1 loop=$totalBlocks}
-    {assign var='blockId' value=$smarty.section.i.index} 
+    {assign var='blockId' value=$smarty.section.i.index}
         <tr id="Email_Block_{$blockId}" {if $blockId gt $actualBlockCount}class="hiddenElement"{/if}>
             <td>{$form.email.$blockId.email.html|crmReplace:class:eighteen}&nbsp;{$form.email.$blockId.location_type_id.html}
             </td>
@@ -50,9 +50,9 @@
             {if $multipleBulk}
               <td align="center">{$form.email.$blockId.is_bulkmail.html}</td>
             {else}
-              <td align="center" class="crm-email-bulkmail">{$form.email.$blockId.is_bulkmail.1.html}</td>
+              <td align="center" class="crm-email-bulkmail">{$form.email.$blockId.is_bulkmail.html}</td>{*NYSS*}
             {/if}
-            <td align="center" class="crm-email-is_primary">{$form.email.$blockId.is_primary.1.html}</td>
+            <td align="center" class="crm-email-is_primary">{$form.email.$blockId.is_primary.html}</td>{*NYSS*}
             <td>
               {if $blockId gt 1}
                 <a title="{ts}delete email block{/ts}" class="crm-delete-email crm-link-action">{ts}delete{/ts}</a>
@@ -98,9 +98,12 @@
         });
       });
 
-      // add more
+      // add more and set focus to new row
       cj('#add-more').click(function() {
-        cj('tr[id^="Email_Block_"][class="hiddenElement"] :first').parent().removeClass('hiddenElement');
+        var rowSelector = cj('tr[id^="Email_Block_"][class="hiddenElement"] :first').parent(); 
+        rowSelector.removeClass('hiddenElement');
+        var rowId = rowSelector.attr('id').replace('Email_Block_', '');
+        cj('#email_' + rowId + '_email').focus();
         
         if ( cj('tr[id^="Email_Block_"][class="hiddenElement"]').length == 0  ) {
           cj('#add-more').hide();

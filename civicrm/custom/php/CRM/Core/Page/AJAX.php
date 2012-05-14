@@ -58,8 +58,10 @@ class CRM_Core_Page_AJAX {
         }
 
         //NYSS remove with autoload
-		require_once 'CRM/Contact/Form/Inline/Email.php';
-		require_once 'CRM/Contact/Form/Inline/Phone.php';
+        require_once 'CRM/Contact/Form/Inline/Email.php';
+        require_once 'CRM/Contact/Page/Inline/Email.php';
+        require_once 'CRM/Contact/Form/Inline/Phone.php';
+        require_once 'CRM/Contact/Page/Inline/Phone.php';
 
         if ( !$type ) {
           $wrapper = new CRM_Utils_Wrapper( );

@@ -25,17 +25,17 @@
 *}
 {* template for building phone block*}
 <div class="crm-table2div-layout" id="crm-phone-content">
-  <div class="crm-clear"> <!-- start of main --!>
+  <div class="crm-clear"> <!-- start of main -->
      {if $phone}
      <div class="crm-config-option">
       <a id="edit-phone" class="hiddenElement crm-link-action" title="{ts}click to add / edit{/ts}">
-        <span class="batch-edit"></span>{ts}add / edit phone{/ts}
+        <span class="batch-edit"></span>{ts}add/edit{/ts}
       </a>
     </div>
     {else}
       <div>
         <a id="edit-phone" class="crm-link-action" title="{ts}click to add / edit{/ts}">
-          <span class="batch-edit"></span>{ts}add / edit phone{/ts}
+          <span class="batch-edit"></span>{ts}add/edit phone{/ts}
         </a>
       </div>
     {/if}
