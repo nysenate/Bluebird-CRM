@@ -484,6 +484,7 @@ class CRM_Utils_String {
      * @static
      */
 	static function stripSpaces( $string )  {
+        // NYSS
         return (empty($string)) ? $string : preg_replace("/\s{2,}/", " ", trim($string));
 	}
 
