@@ -231,11 +231,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     $logpath = isset($bbconfig['nyss_io.log_path']) ? $bbconfig['nyss_io.log_path'] : '/data/importData/logs/';
 
-    if ( !file_exists($path) ) {
-        mkdir( $path, 0775 );
-    }
     if ( !file_exists($logpath) ) {
-        mkdir( $logpath, 0775 );
+        mkdir( $logpath, 0775, true );
     }
 
     $logFilename = "import." . mt_rand(1,9999999999999999).".log";
@@ -295,6 +292,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     $updated_contacts  = array();
     $new_contacts      = array();
     $addressDel        = array();
+
+    $keyword_lookup = array();
 
     while ($l = $fo->getLine()) {
 
@@ -461,8 +460,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         } //end BOE processing
         
         //set state id
-        if ( isset($l['st']) || isset($l['state_province_id']) ) {
-            $l['state_province_id'] = ( $aStates[$l['st']] ) ? $aStates[$l['st']] : $aStates[$l['state_province_id']];
+        if (!empty($l['st']) && !empty($aStates[$l['st']]) ) {
+            $l['state_province_id'] = $aStates[$l['st']];
+        } else if (!empty($l['state_province_id']) && !empty($aStates[$l['state_province_id']]) ) {
+            $l['state_province_id'] = $aStates[$l['state_province_id']];
+        } else {
+            $l['state_province_id'] = "";
         }
         
         //if street_unit value exists, and there is no "apt" text, prepend to value
@@ -626,19 +629,23 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         }
         //pipe separated list of keywords
         if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
-            $keywords = array();
             $keywords = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['keywords'])) );
             if ( !$dryrun ) {
                 foreach ( $keywords as $keyword ) {
-                    $params = array( 'name' => $keyword, 'parent_id' => '296' );
-                    $tag = civicrm_tag_get($params);
-                    //echo 'tag_get: '; nyss_out('debug', $tag, true);
-                    if ( $tag['is_error'] ) {
-                        echo 'creating tag: '.$keyword.'<br />';
-                        $tag = civicrm_tag_create($params);
-                        $tagid = $tag['tag_id'];
+                    if (empty($keyword_lookup[$keyword])) {
+                      $params = array( 'name' => $keyword, 'parent_id' => '296' );
+                      $tag = civicrm_tag_get($params);
+                      //echo 'tag_get: '; nyss_out('debug', $tag, true);
+                      if ( $tag['is_error'] ) {
+                          echo 'creating tag: '.$keyword.'<br />';
+                          $tag = civicrm_tag_create($params);
+                          $tagid = $tag['tag_id'];
+                      } else {
+                          $tagid = $tag['id'];
+                      }
+                      $keyword_lookup[$keyword] = $tagid;
                     } else {
-                        $tagid = $tag['id'];
+                      $tagid = $keyword_lookup[$keyword];
                     }
                     
                     //only add tag to contact if not already present
@@ -855,7 +862,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
             $tmp[] = "`{$importField['fld']}` as '{$key}'";
 
-            if ($importField['PK']) {
+            if (isset($importField['PK']) && $importField['PK']) {
                 $nyss_select[$table]['PK']['importField'] = $key;
                 $nyss_select[$table]['PK']['civiField'] = $importField['fld'];
             }
@@ -946,6 +953,10 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
     //otherwise just insert
     } else {
+        $skip = false;
+        $sqlINSERT  = "";
+        $insertKeys = array();
+
         //nyss_out('debug', $l, true);
         $up = array();
 
