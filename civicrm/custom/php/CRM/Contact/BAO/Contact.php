@@ -1014,7 +1014,8 @@ WHERE id={$id}; ";
      * @return array array of importable Fields
      * @access public
      */
-    function &importableFields( $contactType = 'Individual',
+    // NYSS - Make Static
+    static function &importableFields( $contactType = 'Individual',
                                 $status = false,
                                 $showAll = false, 
                                 $isProfile = false,

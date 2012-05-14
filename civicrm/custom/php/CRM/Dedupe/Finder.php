@@ -90,7 +90,8 @@ class CRM_Dedupe_Finder
      *
      * @return array  matching contact ids
      */
-    function dupesByParams($params,
+    // NYSS - Make static
+    static function dupesByParams($params,
                            $ctype,
                            $level = 'Strict',
                            $except = array(),
@@ -196,7 +197,8 @@ class CRM_Dedupe_Finder
      *
      * @return array  valid $params array for dedupe
      */
-    function formatParams($fields, $ctype) {
+    // NYSS - Make Static
+    static function formatParams($fields, $ctype) {
         $flat = array();
         CRM_Utils_Array::flatten($fields, $flat);
 
@@ -251,7 +253,9 @@ class CRM_Dedupe_Finder
         // if the key is dotted, keep just the last part of it
         foreach($flat as $key => $value) {
             if (substr_count($key, '.')) {
-                $last = array_pop(explode('.', $key));
+                //NYSS - handle E_STRICT warnings
+                $parts = explode('.', $key);
+                $last = array_pop($parts);
                 // make sure the first occurence is kept, not the last
                 if (!isset($flat[$last])) $flat[$last] = $value;
                 unset($flat[$key]);

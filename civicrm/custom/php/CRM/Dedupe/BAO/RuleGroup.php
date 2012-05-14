@@ -65,7 +65,8 @@ class CRM_Dedupe_BAO_RuleGroup extends CRM_Dedupe_DAO_RuleGroup
      *
      * @return array  a table-keyed array of field-keyed arrays holding supported fields' titles
      */
-    function &supportedFields($requestedType) {
+    // NYSS - Make static
+    static function &supportedFields($requestedType) {
         static $fields = null;
         if (!$fields) {
             // this is needed, as we're piggy-backing importableFields() below
