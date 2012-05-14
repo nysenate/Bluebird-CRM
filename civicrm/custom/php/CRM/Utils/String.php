@@ -483,21 +483,8 @@ class CRM_Utils_String {
      * @access public
      * @static
      */
-	static function stripSpaces( $string ) 
-	{
-        if ( empty($string) ) {
-            return $string;
-        }
-        
-        $pat = array( 0 => "/^\s+/",
-                      1 =>  "/\s{2,}/", 
-                      2 => "/\s+\$/" );
-        
-        $rep = array( 0 => "",
-                      1 => " ",
-                      2 => "" );
-        
-        return preg_replace( $pat, $rep, $string );
+	static function stripSpaces( $string )  {
+        return (empty($string)) ? $string : preg_replace("/\s{2,}/", " ", trim($string));
 	}
 
     /**
