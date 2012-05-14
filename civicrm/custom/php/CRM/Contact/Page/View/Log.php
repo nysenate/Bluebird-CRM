@@ -51,7 +51,7 @@ class CRM_Contact_Page_View_Log extends CRM_Core_Page {
         $this->assign( 'useLogging', $loggingReport );
 
         if ( $loggingReport ) {
-            //NYSS 5184 pass page number
+            //NYSS 5184/5185 pass page number
             $this->_contactLog = true;
             $context = '&context=contact';
             $crmPID = '';

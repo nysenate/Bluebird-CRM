@@ -323,10 +323,16 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
         
         foreach ( $rest as $k => $v ) {
             if ( CRM_Utils_Array::value($k, $this->_viewOptions) ) {
-                //NYSS 5184
-				$crmPID = '';
-				if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') && $k == 'log' ) {
+                //NYSS 5184/5185
+                $crmPID = '';
+                if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') &&
+                     CRM_Utils_Request::retrieve('PagerTopButton', 'String') &&
+                     $k == 'log' ) {
                     $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID', 'Integer');
+                } elseif ( CRM_Utils_Request::retrieve('crmPID_B', 'Integer') &&
+                     CRM_Utils_Request::retrieve('PagerBottomButton', 'String') &&
+                     $k == 'log' ) {
+                    $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID_B', 'Integer');
                 }
 
                 $allTabs[] = array( 'id'     =>  $k,
