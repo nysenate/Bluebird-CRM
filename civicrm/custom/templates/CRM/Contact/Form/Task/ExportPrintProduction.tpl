@@ -38,6 +38,14 @@
     <dd>{$form.avanti_job_id.html}</dd>
 {/if}
 
+<dt>{$form.merge_households.label}</dt>
+  <dd>{$form.merge_households.html}</dd>
+
+<dt>{$form.primaryAddress.label}</dt>
+  <dd>{$form.primaryAddress.html}
+      <span class="description">By default, we export BOE mailing addresses if they exist and the BOE physical address is flagged as primary. This option overrides that behavior and exports the primary address regardless of what BOE addresses exist.</span>
+      </dd>
+
 <dt>{$form.exclude_rt.label}<dt>
   <dd>{$form.exclude_rt.html}
       {literal}
@@ -53,9 +61,6 @@
       {/literal}
                 
    </dd>
-
-<dt>{$form.merge_households.label}</dt>
-  <dd>{$form.merge_households.html}</dd>
 
 <dt>{$form.excludeGroups.label}</dt>
   <dd>{$form.excludeGroups.html}

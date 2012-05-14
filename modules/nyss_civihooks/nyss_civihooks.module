@@ -14,6 +14,11 @@ function nyss_civihooks_menu() {
   return $items;
 }
 
+function nyss_civihooks_menu_alter( &$items ) {
+  //5253
+  $items['admin/user/user/create']['access arguments'] = array('create users');
+}//menu_alter
+
 function nyss_civihooks_perm() {
 
     return array( 'export print production files',
