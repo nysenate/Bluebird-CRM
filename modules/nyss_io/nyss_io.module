@@ -293,6 +293,8 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     $new_contacts      = array();
     $addressDel        = array();
 
+    $keyword_lookup = array();
+
     while ($l = $fo->getLine()) {
 
         //nyss_out('debug', $l, true); exit();
@@ -623,19 +625,23 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         }
         //pipe separated list of keywords
         if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
-            $keywords = array();
             $keywords = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['keywords'])) );
             if ( !$dryrun ) {
                 foreach ( $keywords as $keyword ) {
-                    $params = array( 'name' => $keyword, 'parent_id' => '296' );
-                    $tag = civicrm_tag_get($params);
-                    //echo 'tag_get: '; nyss_out('debug', $tag, true);
-                    if ( $tag['is_error'] ) {
-                        echo 'creating tag: '.$keyword.'<br />';
-                        $tag = civicrm_tag_create($params);
-                        $tagid = $tag['tag_id'];
+                    if (empty($keyword_lookup[$keyword])) {
+                      $params = array( 'name' => $keyword, 'parent_id' => '296' );
+                      $tag = civicrm_tag_get($params);
+                      //echo 'tag_get: '; nyss_out('debug', $tag, true);
+                      if ( $tag['is_error'] ) {
+                          echo 'creating tag: '.$keyword.'<br />';
+                          $tag = civicrm_tag_create($params);
+                          $tagid = $tag['tag_id'];
+                      } else {
+                          $tagid = $tag['id'];
+                      }
+                      $keyword_lookup[$keyword] = $tagid;
                     } else {
-                        $tagid = $tag['id'];
+                      $tagid = $keyword_lookup[$keyword];
                     }
                     
                     //only add tag to contact if not already present
