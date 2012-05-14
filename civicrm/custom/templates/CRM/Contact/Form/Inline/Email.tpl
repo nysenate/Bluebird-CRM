@@ -66,22 +66,22 @@
 <script type="text/javascript">
     cj( function() {
       // check first primary radio
-      cj('#Email_1_IsPrimary').prop('checked', true );
+      cj('#Email_1_IsPrimary').attr('checked', true );
      
       // make sure only one is primary radio is checked
       cj('.crm-email-is_primary input').click(function(){
         cj('.crm-email-is_primary input').each(function(){
-          cj(this).prop('checked', false);
+          cj(this).attr('checked', false);
         });
-        cj(this).prop('checked', true);
+        cj(this).attr('checked', true);
       });
 
       // make sure only one bulkmail radio is checked
       cj('.crm-email-bulkmail input').click(function(){
         cj('.crm-email-bulkmail input').each(function(){
-          cj(this).prop('checked', false);
+          cj(this).attr('checked', false);
         });
-        cj(this).prop('checked', true);
+        cj(this).attr('checked', true);
       });
 
       // handle delete of block
@@ -90,9 +90,9 @@
           cj(this).find('input').val('');
           //if the primary is checked for deleted block
           //unset and set first as primary
-          if (cj(this).find('.crm-email-is_primary input').prop('checked') ) {
-            cj(this).find('.crm-email-is_primary input').prop('checked', false);
-            cj('#Email_1_IsPrimary').prop('checked', true );
+          if (cj(this).find('.crm-email-is_primary input').attr('checked') ) {
+            cj(this).find('.crm-email-is_primary input').attr('checked', false);
+            cj('#Email_1_IsPrimary').attr('checked', true );
           }
           cj(this).addClass('hiddenElement');
         });

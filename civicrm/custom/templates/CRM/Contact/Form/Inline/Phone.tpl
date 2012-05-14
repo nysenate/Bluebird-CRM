@@ -61,14 +61,14 @@
 <script type="text/javascript">
     cj( function() {
       // check first primary radio
-      cj('#Phone_1_IsPrimary').prop('checked', true );
+      cj('#Phone_1_IsPrimary').attr('checked', true );
      
       // make sure only one is primary radio is checked
       cj('.crm-phone-is_primary input').click(function(){
         cj('.crm-phone-is_primary input').each(function(){
-          cj(this).prop('checked', false);
+          cj(this).attr('checked', false);
         });
-        cj(this).prop('checked', true);
+        cj(this).attr('checked', true);
       });
 
       // handle delete of block
@@ -77,9 +77,9 @@
           cj(this).find('input').val('');
           //if the primary is checked for deleted block
           //unset and set first as primary
-          if (cj(this).find('.crm-phone-is_primary input').prop('checked') ) {
-            cj(this).find('.crm-phone-is_primary input').prop('checked', false);
-            cj('#Phone_1_IsPrimary').prop('checked', true );
+          if (cj(this).find('.crm-phone-is_primary input').attr('checked') ) {
+            cj(this).find('.crm-phone-is_primary input').attr('checked', false);
+            cj('#Phone_1_IsPrimary').attr('checked', true );
           }
           cj(this).addClass('hiddenElement');
         });

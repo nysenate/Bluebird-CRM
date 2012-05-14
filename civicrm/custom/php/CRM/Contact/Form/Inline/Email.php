@@ -34,6 +34,8 @@
  *
  */
 
+require_once 'CRM/Core/Form.php'; //NYSS
+
 /**
  * form helper class for an Email object
  */
@@ -57,13 +59,17 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
    * call preprocess
    */
   public function preProcess() {
+    //NYSS accommodate the absence of autoload
+    require_once 'CRM/Core/BAO/Email.php';
+    require_once 'CRM/Utils/Request.php';
+    require_once 'CRM/Core/BAO/Block.php';
+
     //get all the existing email addresses
     $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true, null, $_REQUEST );
-    
+
     $this->assign( 'contactId', $this->_contactId );
     $email = new CRM_Core_BAO_Email( );
     $email->contact_id = $this->_contactId;
-//CRM_Core_Error::debug_var('email', $email);
     $this->_emails = CRM_Core_BAO_Block::retrieveBlock( $email, null );
   }
 
@@ -73,7 +79,9 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
    * @return void
    * @access public
    */
-  public function buildQuickForm( ) {        
+  public function buildQuickForm( ) {
+    require_once 'CRM/Contact/Form/Edit/Email.php'; //NYSS
+
     $totalBlocks    = $this->_blockCount;
     $actualBlockCount = 1;
     if ( count( $this->_emails ) > 1 ) {

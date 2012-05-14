@@ -57,6 +57,9 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
    * call preprocess
    */
   public function preProcess() {
+    require_once 'CRM/Core/BAO/Phone.php'; //NYSS
+    require_once 'CRM/Core/BAO/Block.php';
+
     //get all the existing phones
     $this->_contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', $this, true, null, $_REQUEST );
     
@@ -74,6 +77,8 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
    * @access public
    */
   public function buildQuickForm( ) {        
+    require_once 'CRM/Contact/Form/Edit/Phone.php'; //NYSS
+
     $totalBlocks    = $this->_blockCount;
     $actualBlockCount = 1;
     if ( count( $this->_phones ) > 1 ) {

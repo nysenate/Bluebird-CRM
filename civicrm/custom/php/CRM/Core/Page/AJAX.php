@@ -55,7 +55,11 @@ class CRM_Core_Page_AJAX {
 
         if ( !$className ) {
             CRM_Core_Error::fatal( ts('Invalid className: %1', array( 1 => $className )) );
-        }    
+        }
+
+        //NYSS remove with autoload
+		require_once 'CRM/Contact/Form/Inline/Email.php';
+		require_once 'CRM/Contact/Form/Inline/Phone.php';
 
         if ( !$type ) {
           $wrapper = new CRM_Utils_Wrapper( );
