@@ -460,8 +460,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         } //end BOE processing
         
         //set state id
-        if ( isset($l['st']) || isset($l['state_province_id']) ) {
-            $l['state_province_id'] = ( $aStates[$l['st']] ) ? $aStates[$l['st']] : $aStates[$l['state_province_id']];
+        if (!empty($l['st']) && !empty($aStates[$l['st']]) ) {
+            $l['state_province_id'] = $aStates[$l['st']];
+        } else if (!empty($l['state_province_id']) && !empty($aStates[$l['state_province_id']]) ) {
+            $l['state_province_id'] = $aStates[$l['state_province_id']];
+        } else {
+            $l['state_province_id'] = "";
         }
         
         //if street_unit value exists, and there is no "apt" text, prepend to value
@@ -858,7 +862,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
             $tmp[] = "`{$importField['fld']}` as '{$key}'";
 
-            if ($importField['PK']) {
+            if (isset($importField['PK']) && $importField['PK']) {
                 $nyss_select[$table]['PK']['importField'] = $key;
                 $nyss_select[$table]['PK']['civiField'] = $importField['fld'];
             }
@@ -949,6 +953,10 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
     //otherwise just insert
     } else {
+        $skip = false;
+        $sqlINSERT  = "";
+        $insertKeys = array();
+
         //nyss_out('debug', $l, true);
         $up = array();
 
