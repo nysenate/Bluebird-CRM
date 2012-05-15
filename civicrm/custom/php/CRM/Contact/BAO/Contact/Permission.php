@@ -53,8 +53,16 @@ class CRM_Contact_BAO_Contact_Permission {
        
         # FIXME: push this somewhere below, to not give this permission so many rights
         $isDeleted = (bool) CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $id, 'is_deleted');
-        if (CRM_Core_Permission::check('access deleted contacts') and $isDeleted) {
+        if (CRM_Core_Permission::check('access deleted contacts') && $isDeleted) {//NYSS
             return true;
+        }
+
+        //NYSS 5268
+		// short circuit for admin rights here so we avoid unneeeded queries
+        // some duplication of code, but we skip 3-5 queries
+        if (CRM_Core_Permission::check('edit all contacts') ||
+          ($type == CRM_ACL_API::VIEW && CRM_Core_Permission::check('view all contacts')) ) {
+          return true;
         }
 
         //check permission based on relationship, CRM-2963

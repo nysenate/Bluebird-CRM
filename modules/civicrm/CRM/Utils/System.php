@@ -1162,6 +1162,29 @@ class CRM_Utils_System {
         require_once 'CRM/Utils/Cache.php';
         $cache =& CRM_Utils_Cache::singleton( );
         $cache->flush( );
+		
+		//NYSS 5268
+		// also reset the various static memory caches
+		require_once 'CRM/Core/BAO/Cache.php';
+		require_once 'CRM/ACL/BAO/Cache.php';
+		require_once 'CRM/Contact/BAO/Contact.php';
+
+        // reset the memory or array cache
+        CRM_Core_BAO_Cache::deleteGroup( 'contact fields', null, false );
+
+        // reset ACL cache
+        CRM_ACL_BAO_Cache::resetCache( );
+
+        // reset various static arrays used here
+        CRM_Contact_BAO_Contact::$_importableFields
+          = CRM_Contact_BAO_Contact::$_exportableFields
+          = CRM_Contribute_BAO_Contribution::$_importableFields
+          = CRM_Contribute_BAO_Contribution::$_exportableFields
+          = CRM_Pledge_BAO_Pledge::$_exportableFields
+          = CRM_Contribute_BAO_Query::$_contributionFields
+          = CRM_Core_BAO_CustomField::$_importFields
+          = CRM_Core_DAO::$_dbColumnValueCache
+          = null;
     }
 
     /**
