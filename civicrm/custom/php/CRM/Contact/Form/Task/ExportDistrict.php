@@ -140,7 +140,7 @@ class CRM_Contact_Form_Task_ExportDistrict extends CRM_Contact_Form_Task {
         $ids = implode("),(",$this->_contactIds);
         $ids = "($ids)";
 
-        $sql = "CREATE TABLE tmpExport$rnd (id int not null primary key) TYPE=myisam;";
+        $sql = "CREATE TABLE tmpExport$rnd (id int not null primary key) ENGINE=myisam;";
         $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
         $sql = "INSERT INTO tmpExport$rnd VALUES $ids;";
@@ -349,7 +349,7 @@ function createLogTable( $rnd ) {
     $tblLog       = "tmpLog$rnd";
     $tblLogDedupe = "tmpLogDedupe$rnd";
 
-    $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) TYPE=myisam;";
+    $sql = "CREATE TABLE $tblLog ( cid int not null, mod_date date, INDEX (cid) ) ENGINE=myisam;";
     $dao = CRM_Core_DAO::executeQuery( $sql, CRM_Core_DAO::$_nullArray );
 
     //first retrieve latest contact and activity log records for unique
