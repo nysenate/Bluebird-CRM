@@ -172,12 +172,12 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
         //get contacts with changes to either the contact object or tag
         CRM_Core_DAO::executeQuery("SET SESSION group_concat_max_len = 100000;");
-        $query = "SELECT id, DATE_FORMAT(log_date, %m/%d/%Y) as logDate, null as tagList
+        $query = "SELECT id, DATE_FORMAT(log_date, '%m/%d/%Y') as logDate, null as tagList
                   FROM {$logDB}.log_civicrm_contact
                   WHERE ( $sqlWhere )
                     AND log_action != 'Initialization'
                   UNION
-                  SELECT et.entity_id, DATE_FORMAT(log_date, %m/%d/%Y) as logDate, GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ')
+                  SELECT et.entity_id, DATE_FORMAT(log_date, '%m/%d/%Y') as logDate, GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ')
                   FROM {$logDB}.log_civicrm_entity_tag et
                   JOIN {$civiDB}.civicrm_tag t
                     ON et.tag_id = t.id
