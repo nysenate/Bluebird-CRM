@@ -104,14 +104,14 @@
   
   <!--NYSS 3808-->
   <item>
- 	 <path>civicrm/ajax/mergeTags</path>
- 	 <page_callback>CRM_Admin_Page_AJAX::mergeTags</page_callback>
- 	 <access_arguments>access CiviCRM</access_arguments>
+    <path>civicrm/ajax/mergeTags</path>
+    <page_callback>CRM_Admin_Page_AJAX::mergeTags</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-     <path>civicrm/ajax/mergeTagList</path>
-     <page_callback>CRM_Admin_Page_AJAX::mergeTagList</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
+    <path>civicrm/ajax/mergeTagList</path>
+    <page_callback>CRM_Admin_Page_AJAX::mergeTagList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
 
   <!--  Tagging Interface -->
@@ -158,5 +158,12 @@
     <path>civicrm/ajax/inline</path>
     <page_callback>CRM_Core_Page_AJAX::run</page_callback>
     <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+
+  <!--5260-->
+  <item>
+    <path>civicrm/logging/proofingreport</path>
+    <page_callback>CRM_Logging_Form_ProofingReport</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

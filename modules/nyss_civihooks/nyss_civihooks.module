@@ -641,6 +641,25 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
     }
 }
 
+function nyss_civihooks_civicrm_navigationMenu( &$params ) {
+
+    //5260
+    $maxKey = ( max( array_keys($params) ) );
+ 
+    $params[$maxKey+1] = array (
+      'attributes' => array ( 'label'      => 'Changelog Proofing Report',
+                              'name'       => 'Changelog Proofing Report',
+                              'url'        => 'civicrm/logging/proofingreport?reset=1',
+                              'permission' => null,
+                              'operator'   => null,
+                              'separator'  => null,
+                              'parentID'   => null,
+                              'navID'      => $maxKey+1,
+                              'active'     => 1
+                              ),
+      );
+}
+
 /**
  * The User ID and Job ID are stored as db variables for inclusion
  * in the log database via the triggers. At times, the variables
