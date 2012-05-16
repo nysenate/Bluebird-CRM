@@ -50,10 +50,7 @@ class CRM_Utils_Array {
      *
      */
     static function value( $key, &$list, $default = null ) {
-        if ( is_array( $list ) ) {
-            return array_key_exists( $key, $list ) ? $list[$key] : $default;
-        }
-        return $default;
+        return (empty($list[$key])) ? $default : $list[$key];
     }
 
     /**
