@@ -281,7 +281,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         $formAction =  $form->_attributes['action'];
 
         //handle case add form differently as buttons element is constructed twice due to embedded form
-        if ( $formID == 'Case' && $formAction == '/civicrm/case/add' ) {
+        if ( $formID == 'Case' &&
+             $formAction == '/civicrm/case/add' &&
+             $form->_context != 'standalone'
+        ) {
             $form->removeElement( 'buttons' );
             $buttons =& $form->getElement( 'buttons' );
         }
