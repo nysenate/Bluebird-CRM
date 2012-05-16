@@ -642,22 +642,57 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
 }
 
 function nyss_civihooks_civicrm_navigationMenu( &$params ) {
+  //CRM_Core_Error::debug_var('navigationMenu params',$params);
 
-    //5260
-    $maxKey = ( max( array_keys($params) ) );
- 
-    $params[$maxKey+1] = array (
-      'attributes' => array ( 'label'      => 'Changelog Proofing Report',
-                              'name'       => 'Changelog Proofing Report',
-                              'url'        => 'civicrm/logging/proofingreport?reset=1',
-                              'permission' => 'access CiviReport',
-                              'operator'   => 'AND',
-                              'separator'  => null,
-                              'parentID'   => null,
-                              'navID'      => $maxKey+1,
-                              'active'     => 1
-                              ),
-      );
+  //5260
+  //first find parents
+  $reportNavID = $manageNavID = '';
+  foreach ( $params as $navID => $navDetails ) {
+    if ( $navDetails['attributes']['name'] == 'Reports' ) {
+      $reportNavID = $navID;
+    } elseif ( $navDetails['attributes']['name'] == 'Manage' ) {
+      $manageNavID = $navID;
+    }
+    //if both found, stop searching
+    if ( $reportNavID && $manageNavID ) {
+      break;
+    }
+  }
+
+  //get max key
+  $maxKey = ( max( array_keys($params) ) );
+
+  //5260 add changelog proofing report
+  $params[$reportNavID]['child'][$maxKey+1] = array (
+    'attributes' => array ( 'label'      => 'Changelog Proofing Report',
+                            'name'       => 'Changelog Proofing Report',
+                            'url'        => 'civicrm/logging/proofingreport?reset=1',
+                            'permission' => 'access CiviReport',
+                            'operator'   => 'AND',
+                            'separator'  => 0,
+                            'parentID'   => $reportNavID,
+                            'navID'      => $maxKey+1,
+                            'active'     => 1
+                            ),
+    'child' => array(),
+    );
+
+  //5230 add duplicate address removal tool
+  $params[$manageNavID]['child'][$maxKey+2] = array (
+    'attributes' => array ( 'label'      => 'Duplicate Address Removal',
+                            'name'       => 'Duplicate Address Removal',
+                            'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
+                            'permission' => 'export print production files',
+                            'operator'   => 'AND',
+                            'separator'  => 0,
+                            'parentID'   => $manageNavID,
+                            'navID'      => $maxKey+2,
+                            'active'     => 1
+                            ),
+    'child' => array(),
+    );
+
+  //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 
 /**

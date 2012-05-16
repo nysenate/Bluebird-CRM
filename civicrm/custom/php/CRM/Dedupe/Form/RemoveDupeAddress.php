@@ -40,7 +40,7 @@ require_once 'CRM/Core/Form.php';
  * This class generates form components for DedupeRules
  * 
  */
-class CRM_Dedupe_RemoveDupeAddress extends CRM_Core_Form
+class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
 {
 
   /**
@@ -53,13 +53,21 @@ class CRM_Dedupe_RemoveDupeAddress extends CRM_Core_Form
   {
     $sql = "SELECT count(id)
             FROM ( 
-			  SELECT id
+              SELECT id
               FROM civicrm_address
- 			  GROUP BY contact_id, location_type_id, street_address, supplemental_address_1, 
-          			   supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
- 			  HAVING count(id) > 1 
-			) as dupes";
-	$dupeCount = CRM_Core_Error::singleValueQuery($sql);
+              GROUP BY contact_id, location_type_id, street_address, supplemental_address_1, 
+                       supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
+              HAVING count(id) > 1 
+            ) as dupes";
+    $dupeCount = CRM_Core_DAO::singleValueQuery($sql);
+    if ( !$dupeCount ) {
+      $url = CRM_Utils_System::url( 'civicrm','reset=1' );
+      CRM_Core_Error::statusBounce( 'There are no duplicate addresses in this database.', $url );
+	}
+	else {
+	  $this->_dupeCount = $dupeCount;
+      $this->assign('dupeCount',$dupeCount);
+    }
   }
 
   /**
@@ -70,7 +78,6 @@ class CRM_Dedupe_RemoveDupeAddress extends CRM_Core_Form
    */
   public function buildQuickForm()
   {
-
     $this->addButtons( array(
                          array ( 'type'      => 'next',
                                  'name'      => ts('Continue'),
@@ -89,24 +96,33 @@ class CRM_Dedupe_RemoveDupeAddress extends CRM_Core_Form
    */
   public function postProcess() 
   {
-
-    if ( CRM_Utils_Array::value( '_qf_DedupeFind_submit', $_POST ) ) {
-      //used for cancel button
-      CRM_Utils_System::redirect( CRM_Utils_System::url( 'civicrm/contact/deduperules','reset=1') );
-      return;
-    }
-
+    //remove duplicate addresses; prefer removing address with larger id (newer)
     $sql = "DELETE FROM civicrm_address
-			WHERE id = (
-			  SELECT id
-			  FROM (
-			    SELECT * 
-				FROM civicrm_address
-				ORDER BY id DESC ) as addr1
-			  GROUP BY contact_id, location_type_id, street_address, supplemental_address_1, 
+            WHERE id = (
+              SELECT id
+              FROM (
+                SELECT * 
+                FROM civicrm_address
+                ORDER BY id DESC ) as addr1
+              GROUP BY contact_id, location_type_id, street_address, supplemental_address_1, 
                        supplemental_address_2, city, state_province_id, postal_code_suffix, postal_code
               HAVING count(id) > 1 );";
-        
-    CRM_Utils_System::redirect($url);
+    $dao = CRM_Core_DAO::executeQuery($sql);
+
+    //also cleanup any orphaned district block sets
+    $sql = "DELETE FROM civicrm_value_district_information_7
+            WHERE id = (
+              SELECT id
+              FROM (
+                SELECT vdi.id
+                FROM civicrm_value_district_information_7 vdi
+                LEFT JOIN civicrm_address a
+                  ON vdi.entity_id = a.id
+                WHERE a.id IS NULL ) as orphans
+            );";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+
+    $url = CRM_Utils_System::url( 'civicrm','reset=1');
+    CRM_Core_Error::statusBounce( 'Contacts with duplicate addresses have been cleaned up.', $url );
   }    
 }
