@@ -36,23 +36,24 @@
       <td>{ts}Email{/ts}&nbsp; 
       <span id="add-more" title="{ts}click to add more{/ts}"><a class="crm-link-action">{ts}add{/ts}</a></span>
       </td>
-	    <td>{ts}On Hold?{/ts}</td>
-	    <td>{ts}Bulk Mailings?{/ts}</td>
+      <td>{ts}Location{/ts}</td>
+      <td>{ts}On Hold?{/ts}</td>
+      <td>{ts}Bulk Mailings?{/ts}</td>
       <td>{ts}Primary?{/ts}</td>
       <td>&nbsp;</td>
     </tr>
     {section name='i' start=1 loop=$totalBlocks}
     {assign var='blockId' value=$smarty.section.i.index}
         <tr id="Email_Block_{$blockId}" {if $blockId gt $actualBlockCount}class="hiddenElement"{/if}>
-            <td>{$form.email.$blockId.email.html|crmReplace:class:eighteen}&nbsp;{$form.email.$blockId.location_type_id.html}
-            </td>
+            <td>{$form.email.$blockId.email.html|crmReplace:class:eighteen}</td>
+            <td>{$form.email.$blockId.location_type_id.html}</td>
             <td align="center">{$form.email.$blockId.on_hold.html}</td>
             {if $multipleBulk}
               <td align="center">{$form.email.$blockId.is_bulkmail.html}</td>
             {else}
               <td align="center" class="crm-email-bulkmail">{$form.email.$blockId.is_bulkmail.html}</td>{*NYSS*}
             {/if}
-            <td align="center" class="crm-email-is_primary">{$form.email.$blockId.is_primary.html}</td>{*NYSS*}
+            <td align="center" class="crm-email-is_primary">{$form.email.$blockId.is_primary.1.html}</td>{*NYSS*}
             <td>
               {if $blockId gt 1}
                 <a title="{ts}delete email block{/ts}" class="crm-delete-email crm-link-action">{ts}delete{/ts}</a>

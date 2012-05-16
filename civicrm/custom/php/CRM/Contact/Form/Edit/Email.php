@@ -103,6 +103,7 @@ class CRM_Contact_Form_Edit_Email
             if ( !$blockEdit ) {
               $js['onClick'] =  'singleSelect( this.id );';
             }
+            $form->addElement( 'radio', "email[$blockId][is_primary]", '', '', '1', $js );
             
             if ( CRM_Utils_System::getClassName( $form ) == 'CRM_Contact_Form_Contact' ) {
            

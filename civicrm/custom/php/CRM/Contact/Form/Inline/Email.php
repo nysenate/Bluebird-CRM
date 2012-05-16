@@ -147,6 +147,13 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
       CRM_Core_BAO_Block::create( 'email', $params );
 
       $response = array( 'status' => 'save' );
+
+      //NYSS hit contact object so we can access changelog
+      require_once 'CRM/Contact/DAO/Contact.php';
+      $contact = new CRM_Contact_DAO_Contact( );
+      $contact->id = $this->_contactId;
+      $contact->find(true);
+      $contact->save();
     }
 
     echo json_encode( $response );
