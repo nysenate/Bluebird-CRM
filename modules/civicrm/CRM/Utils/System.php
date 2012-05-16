@@ -1168,6 +1168,9 @@ class CRM_Utils_System {
 		require_once 'CRM/Core/BAO/Cache.php';
 		require_once 'CRM/ACL/BAO/Cache.php';
 		require_once 'CRM/Contact/BAO/Contact.php';
+		require_once 'CRM/Contribute/BAO/Query.php';
+		require_once 'CRM/Pledge/BAO/Pledge.php';
+		require_once 'CRM/Contribute/BAO/Contribution.php';
 
         // reset the memory or array cache
         CRM_Core_BAO_Cache::deleteGroup( 'contact fields', null, false );
