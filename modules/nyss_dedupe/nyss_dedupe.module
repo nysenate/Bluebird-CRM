@@ -279,7 +279,7 @@ function nyss_dedupe_individual_default_strict_record($o) {
 
     if($middle_name)
         $where .= "
-          AND (contact1.middle_name IS NULL or contact1.middle_name = '$middle_name')";
+          AND (contact1.middle_name IS NULL or contact1.middle_name = BB_NORMALIZE('$middle_name'))";
 
 
     // Add on the bits that make us smart around addresses
@@ -383,7 +383,7 @@ function nyss_dedupe_individual_default_fuzzy_record($o) {
 
     if($middle_name)
         $where .= "
-          AND (contact1.middle_name IS NULL or contact1.middle_name = '$middle_name')";
+          AND (contact1.middle_name IS NULL or contact1.middle_name = BB_NORMALIZE('$middle_name'))";
 
 
     // Add on the bits that make us smart around addresses if we have any address parts
