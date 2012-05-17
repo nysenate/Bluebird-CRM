@@ -51,7 +51,7 @@ class CRM_Utils_Array {
      */
     static function value( $key, &$list, $default = null ) {
         // NYSS - much faster
-        return (empty($list[$key])) ? $default : $list[$key];
+        return (isset($list[$key])) ? $list[$key] : $default;
     }
 
     /**
