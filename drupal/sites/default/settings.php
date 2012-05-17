@@ -23,6 +23,10 @@ $bbconfig = get_bluebird_instance_config();
 
 if ($bbconfig == null) {
   $GLOBALS['maintenance_message'] = "<br/>There is no such CRM instance:<br/><br/>".$_SERVER['HTTP_HOST'];
+  // The LANGUAGE bootstrap has not yet happened, so the $language global is
+  // not set.  Set it here in order to avoid warnings in the logs.
+  global $language;
+  $language = language_default();
   drupal_maintenance_theme();
   drupal_site_offline();
   exit(1);
