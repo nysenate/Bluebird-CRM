@@ -98,7 +98,7 @@ if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   }
 
   xhprof_enable($flags, array('ignored_functions' => $ignored_functions));
-  register_shutdown_function('xhprof_shutdown_func', $bbconfig['shortname'], NULL);
+  register_shutdown_function('xhprof_shutdown_func', "{$bbconfig['install_class']}_{$bbconfig['shortname']}", NULL);
 }
 
 
