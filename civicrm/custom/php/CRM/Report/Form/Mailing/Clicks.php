@@ -243,7 +243,8 @@ class CRM_Report_Form_Mailing_Clicks extends CRM_Report_Form {
         }
 
         if ( CRM_Utils_Array::value('charts', $this->_params) ) {
-            $select[] = "COUNT(civicrm_mailing_event_trackable_url_open.id) as civicrm_mailing_click_count";
+            //NYSS 5319 make sure we handle this with our alias
+            $select[] = "COUNT({$this->_aliases['civicrm_event_trackable_url_open']}.id) as civicrm_mailing_click_count";
             $this->_columnHeaders["civicrm_mailing_click_count"]['title'] = ts('Click Count'); 
         }
 
