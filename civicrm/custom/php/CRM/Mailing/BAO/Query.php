@@ -184,14 +184,22 @@ class CRM_Mailing_BAO_Query
             case 'mailing_delivery_status':
                 //require_once('CRM/Mailing/PseudoConstant.php');
 				//NYSS
+				$options = CRM_Mailing_PseudoConstant::yesNoOptions('delivered');
 				list( $name, $op, $value, $grouping, $wildcard ) = $values;
 				if ( $value == 'Y' ) {
                     self::mailingEventQueryBuilder($query, $values,
-                        'civicrm_mailing_event_bounce', 'mailing_delivery_status', ts('Mailing Delivery Status'), CRM_Mailing_PseudoConstant::yesNoOptions('bounce'));
+                        'civicrm_mailing_event_delivered', 
+						'mailing_delivery_status', 
+						ts('Mailing Delivery'), 
+                        $options);
 				} elseif ( $value == 'N' ) {
-				    $values = array( $name, $op, 'Y', $grouping, $wildcard );
+				    $options['Y'] = $options['N'];
+					$values = array( $name, $op, 'Y', $grouping, $wildcard );
 					self::mailingEventQueryBuilder($query, $values,
-                        'civicrm_mailing_event_sendgrid_delivered', 'mailing_delivery_status', ts('Mailing Delivery Status'), CRM_Mailing_PseudoConstant::yesNoOptions('success'));
+                        'civicrm_mailing_event_sendgrid_bounce', 
+						'mailing_delivery_status', 
+						ts('Mailing Delivery'), 
+                        $options);
 				}
                 return;
             case 'mailing_open_status':
@@ -227,7 +235,7 @@ class CRM_Mailing_BAO_Query
                                                ts('Mailing: '), $valueTitle);
                 return;
             case 'mailing_forward':
-                $valueTitle = array( 1 => ts('Forwards') );
+                $valueTitle = array( 'Y' => ts('Forwards') );
 				$values[2]  = 'Y'; // since its a checkbox
                 self::mailingEventQueryBuilder($query, $values,
                                                'civicrm_mailing_event_forward', 'mailing_forward', 
@@ -261,7 +269,7 @@ class CRM_Mailing_BAO_Query
 
         // event filters
         require_once('CRM/Mailing/PseudoConstant.php');
-        $form->addRadio( 'mailing_delivery_status', ts('Delivery Status'), CRM_Mailing_PseudoConstant::yesNoOptions('bounce'));
+        $form->addRadio( 'mailing_delivery_status', ts('Delivery Status'), CRM_Mailing_PseudoConstant::yesNoOptions('delivered'));
         $form->addRadio( 'mailing_open_status', ts('Trackable Opens'), CRM_Mailing_PseudoConstant::yesNoOptions('open'));
         $form->addRadio( 'mailing_click_status', ts('Trackable URLs'), CRM_Mailing_PseudoConstant::yesNoOptions('click'));
         $form->addRadio( 'mailing_reply_status', ts('Trackable Replies'), CRM_Mailing_PseudoConstant::yesNoOptions('reply'));
@@ -293,10 +301,10 @@ class CRM_Mailing_BAO_Query
                CRM_Utils_Array::value('mailing_open_status', $fields) ||
                CRM_Utils_Array::value('mailing_click_status', $fields) ||
                CRM_Utils_Array::value('mailing_reply_status', $fields) ) &&
-             ( !CRM_Utils_Array::value('mailing_name', $fields) &&
+             ( !CRM_Utils_Array::value('mailing_id', $fields) &&
                !CRM_Utils_Array::value('mailing_date_low', $fields) &&
                !CRM_Utils_Array::value('mailing_date_high', $fields) ) ) {
-            $errors['mailing_name'] = ts('Must specify mailing name or date');
+            $errors['mailing_id'] = ts('Must specify mailing name or date');
             // Keep search form opened in case of form rule.
             if ( is_a($self, 'CRM_Contact_Form_Search_Advanced') && !isset(CRM_Contact_BAO_Query::$_openedPanes['Mailings']) ) {
                 CRM_Contact_BAO_Query::$_openedPanes['Mailings'] = true;

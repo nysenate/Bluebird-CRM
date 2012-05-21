@@ -2040,9 +2040,9 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
                                 $value     = "{$pair[$op]} " . $val;
                             } else if ( !is_array( $val ) && ( !empty( $val ) || $val == '0' ) && isset($field['options']) &&
                                         is_array( $field['options'] ) && !empty( $field['options'] ) ) { 
-                                $value = "{$pair[$op]} " . CRM_Utils_Array::value( $val, $field['options'], $val );
+                                $value = CRM_Utils_Array::value( $op, $pair ) . " " . CRM_Utils_Array::value( $val, $field['options'], $val );
                             } else if ( $val ) {
-                                $value = "{$pair[$op]} " . $val;
+                                $value = CRM_Utils_Array::value( $op, $pair ) . " " . $val;
                             }
                         }
                         if ( $value ) {

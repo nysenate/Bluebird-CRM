@@ -1769,26 +1769,60 @@ AND civicrm_contact.is_opt_out =0";
         );
 		//NYSS 4718
 		require_once 'CRM/Report/Utils/Report.php';
-        $actionLinks = array(
-                             CRM_Core_Action::VIEW     => 
-                             array(
-                                   'name'  => ts('Report'),
-                                   'url'   => 
-                                   CRM_Report_Utils_Report::getNextUrl( 'contribute/detail', 
-                                                                        'reset=1&someFilter=1', false, true ),
-                                   ),
-                             CRM_Core_Action::ADVANCED => 
-                             array(
-                                   'name'  => ts('Advanced Search'),
-                                   'url'   => 'civicrm/contact/search/advanced',
-                                   'qs'    => 'force=1&someFilter=sth',
-                                   ),
-                             );
-        $action = array_sum(array_keys($actionLinks));
+        $actionLinks = array( CRM_Core_Action::VIEW => array( 'name' => ts('Report'), ), );
+        if ( CRM_Core_Permission::check( 'view all contacts' ) ) {
+            $actionLinks[CRM_Core_Action::ADVANCED] = 
+                              array( 'name'  => ts('Advanced Search'),
+                                     'url'   => 'civicrm/contact/search/advanced', );
+        }
+		$action = array_sum(array_keys($actionLinks));
 
         $report['event_totals']['actionlinks'] = array();
         foreach ( array('clicks', 'clicks_unique', 'queue', 'delivered', 'bounce', 'unsubscribe', 
                         'forward', 'reply', 'opened', 'optout' ) as $key ) {
+            $url    = 'mailing/detail';
+            $reportFilter = "reset=1&mailing_id_value={$mailing_id}";
+            $searchFilter = "force=1&mailing_id={$mailing_id}";
+            switch ( $key ) {
+            case 'delivered':
+                $reportFilter .= "&delivery_status_value=successful"; 
+                $searchFilter .= "&mailing_delivery_status=Y"; 
+                break;
+            case 'bounce':
+                $url = "mailing/bounce"; 
+                $searchFilter .= "&mailing_delivery_status=N"; 
+                break;
+            case 'forward':
+                $reportFilter .= "&is_forwarded_value=1"; 
+                $searchFilter .= "&mailing_forward=1"; 
+                break;
+            case 'reply':
+                $reportFilter .= "&is_replied_value=1"; 
+                $searchFilter .= "&mailing_reply_status=Y"; 
+                break;
+            case 'unsubscribe':
+                $reportFilter .= "&is_unsubscribed_value=1"; 
+                $searchFilter .= "&mailing_unsubscribe=1"; 
+                break;
+            case 'optout':
+                $reportFilter .= "&is_optout_value=1"; 
+                $searchFilter .= "&mailing_optout=1"; 
+                break;
+            case 'opened':
+                $url = "mailing/opened";
+                $searchFilter .= "&mailing_open_status=Y";
+                break;
+            case 'clicks':
+            case 'clicks_unique':
+                $url = "mailing/clicks";
+                $searchFilter .= "&mailing_click_status=Y";
+                break;
+            }
+            $actionLinks[CRM_Core_Action::VIEW]['url'] = 
+                CRM_Report_Utils_Report::getNextUrl( $url, $reportFilter, false, true );
+            if ( array_key_exists(CRM_Core_Action::ADVANCED, $actionLinks) ) {
+			  $actionLinks[CRM_Core_Action::ADVANCED]['qs'] = $searchFilter;
+            }
             $report['event_totals']['actionlinks'][$key] = 
                 CRM_Core_Action::formLink($actionLinks, $action, array());
         }
