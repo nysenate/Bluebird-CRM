@@ -16,6 +16,8 @@
   
 require_once 'script_utils.php';
 
+define('BATCHSIZE', 250);
+
 error_reporting(E_ERROR | E_PARSE | E_WARNING);
 
 
@@ -81,10 +83,21 @@ function run()
     echo "(The dry-run option is enabled.  No contacts will be updated.)\n";
   }
   else {
+    require_once 'CRM/Core/DAO.php';
+
     while ($dao->fetch()) {
+      if($cnt%BATCHSIZE == 0) {
+        CRM_Core_DAO::executeQuery("START TRANSACTION;");
+      }
       echo "Processing contact id {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
       CRM_Contact_BAO_Contact::processGreetings($dao);
       $cnt++;
+      if($cnt%BATCHSIZE == 0) {
+        CRM_Core_DAO::executeQuery("COMMIT");
+      }
+    }
+    if($cnt%BATCHSIZE !=0) {
+      CRM_Core_DAO::executeQuery("COMMIT");
     }
   }
 
