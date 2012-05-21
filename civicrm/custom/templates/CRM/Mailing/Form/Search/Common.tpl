@@ -1,8 +1,18 @@
 <tr>
-  <td>
-    {$form.mailing_name.label}
+  <td>{*NYSS 4718*}
+    {$form.mailing_id.label}
     <br />
-    {$form.mailing_name.html}
+    {$form.mailing_id.html}
+    {literal}
+    <script type="text/javascript">
+      cj("select#mailing_id").crmasmSelect({
+        addItemTarget: 'bottom',
+        animate: false,
+        highlight: true,
+        sortable: true,
+      });
+    </script>
+    {/literal}
   </td>
   {*NYSS 4845*}
   <td>
@@ -49,5 +59,30 @@
     <br />
     {$form.mailing_reply_status.html}
     <span class="crm-clear-link">(<a href="javascript:unselectRadio('mailing_reply_status','{$form.formName}')">{ts}clear{/ts}</a>)</span>
+  </td>
+</tr>
+{*NYSS 4718*}
+<tr>
+  <td>
+    <table>
+      <tr>
+         {$form.mailing_unsubscribe.html}&nbsp;
+         {$form.mailing_unsubscribe.label}
+      </tr>
+    </table>
+  </td>
+  <td>
+    <table>
+      <tr>
+         <td>
+            {$form.mailing_optout.html}&nbsp;
+            {$form.mailing_optout.label}
+         </td>
+         <td>
+            {$form.mailing_forward.html}&nbsp;
+            {$form.mailing_forward.label}
+         </td>
+      </tr>
+    </table>
   </td>
 </tr>

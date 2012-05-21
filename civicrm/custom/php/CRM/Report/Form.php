@@ -182,6 +182,7 @@ class CRM_Report_Form extends CRM_Core_Form {
     protected $_having             = null;
     protected $_rowsFound          = null;
     protected $_select             = null;        
+	public $_columnHeaders = array( ); //NYSS 4718
     protected $_selectAliases      = array();
     protected $_rollup             = null;
     protected $_limit              = null;
@@ -586,7 +587,10 @@ class CRM_Report_Form extends CRM_Core_Form {
             if ( array_key_exists('fields', $table) ) {
                 foreach ( $table['fields'] as $fieldName => $field ) {
                     if ( !array_key_exists('no_display', $field) ) {
-                        if ( isset($table['grouping']) ) { 
+                        //NYSS 4718
+						if ( isset($field['grouping']) ) {
+                            $tableName = $field['grouping'];
+                        } else if ( isset($table['grouping']) ) { 
                             $tableName = $table['grouping'];
                         }
                         $colGroups[$tableName]['fields'][$fieldName] = CRM_Utils_Array::value('title',$field);
@@ -1454,7 +1458,7 @@ WHERE cg.extends IN ('" . implode( "','", $this->_customGroupExtends ) . "') AND
     function select( ) {
         $select = array( );
 
-        $this->_columnHeaders = array( );
+        //$this->_columnHeaders = array( );//NYSS 4718
         foreach ( $this->_columns as $tableName => $table ) {
             if ( array_key_exists('fields', $table) ) {
                 foreach ( $table['fields'] as $fieldName => $field ) {

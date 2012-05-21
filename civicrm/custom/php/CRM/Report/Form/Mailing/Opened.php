@@ -60,8 +60,9 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 				'id' => array( 
 					'title' => ts('Contact ID'),
 					'required'  => true, 
-				), 						
-				'first_name' => array(
+				), 	
+				//NYSS 4718					
+				/*'first_name' => array(
 					'title' => ts('First Name'),
 					'required' => true,
 					'no_repeat' => true,	
@@ -70,9 +71,10 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
 					'title' => ts('Last Name'),
 					'required' => true,
 					'no_repeat' => true,	
-				),
+				),*/
                 'sort_name' => array( 
-					'title' => ts( 'Contact Name' )
+					'title' => ts( 'Contact Name' ),
+					'required'  => true,
 				),
 			),
 			'filters' => array( 
@@ -319,8 +321,8 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
         CRM_Utils_OpenFlashChart::buildChart( $chartInfo, $this->_params['charts'] );
         $this->assign( 'chartType', $this->_params['charts'] ); 
     }
-
-    function alterDisplay( &$rows ) {
+//NYSS 4718
+    /*function alterDisplay( &$rows ) {
         // custom code to alter rows
         $entryFound = false;
         foreach ( $rows as $rowNum => $row ) {
@@ -357,7 +359,7 @@ class CRM_Report_Form_Mailing_Opened extends CRM_Report_Form {
                 break;
             }
         }
-    }
+    }*/
 
 	function mailing_select() {
 		require_once('CRM/Mailing/BAO/Mailing.php');

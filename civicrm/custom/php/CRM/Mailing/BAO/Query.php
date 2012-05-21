@@ -32,6 +32,10 @@
  * $Id$
  *
  */
+ 
+//NYSS 4718
+require_once 'CRM/Mailing/BAO/Mailing.php';
+require_once 'CRM/Mailing/PseudoConstant.php';
 
 class CRM_Mailing_BAO_Query
 {
@@ -98,6 +102,8 @@ class CRM_Mailing_BAO_Query
             case 'civicrm_mailing_event_sendgrid_delivered': //NYSS
             case 'civicrm_mailing_event_opened':
             case 'civicrm_mailing_event_reply':
+			case 'civicrm_mailing_event_unsubscribe': //NYSS 4718
+            case 'civicrm_mailing_event_forward': //NYSS 4718
             case 'civicrm_mailing_event_trackable_url_open':
                 $from = " $side JOIN $name ON $name.event_queue_id = civicrm_mailing_event_queue.id";
                  break;
@@ -120,14 +126,30 @@ class CRM_Mailing_BAO_Query
         $fields = array( );
         $fields = self::getFields();
         switch ( $name ) {
-            case 'mailing_name':
+            /*case 'mailing_name':
                 $value = strtolower( addslashes( $value ) );
                 if ( $wildcard ) {
                     $value = "%$value%";
                     $op    = 'LIKE';
                 }                
                 $query->_where[$grouping][] = "LOWER(civicrm_mailing.name) $op '$value'";
-                $query->_qill[$grouping][]  = "Mailing Name $op \"$value\"";
+                $query->_qill[$grouping][]  = "Mailing Name $op \"$value\"";*/
+            //NYSS 4718
+			case 'mailing_id':
+                $selectedMailings = array_flip($value);
+
+                $value = "(" . implode( ',', $value ) . ")";
+                $op    = 'IN';
+                $query->_where[$grouping][] = "civicrm_mailing.id $op $value";
+
+                $mailings = CRM_Mailing_BAO_Mailing::getMailingsList( );
+                foreach ( $selectedMailings as $id => $dnc ) {
+                    $selectedMailings[$id] = $mailings[$id];
+                }
+                $selectedMailings = implode( ' or ', $selectedMailings );
+
+                $query->_qill[$grouping][]  = "Mailing Name $op \"$selectedMailings\"";
+
                 $query->_tables['civicrm_mailing_event_queue'] = $query->_whereTables['civicrm_mailing_event_queue'] = 1;
                 $query->_tables['civicrm_mailing_job'] = $query->_whereTables['civicrm_mailing_job'] = 1;
                 $query->_tables['civicrm_mailing'] = $query->_whereTables['civicrm_mailing'] = 1;
@@ -160,7 +182,7 @@ class CRM_Mailing_BAO_Query
                 return;
 
             case 'mailing_delivery_status':
-                require_once('CRM/Mailing/PseudoConstant.php');
+                //require_once('CRM/Mailing/PseudoConstant.php');
 				//NYSS
 				list( $name, $op, $value, $grouping, $wildcard ) = $values;
 				if ( $value == 'Y' ) {
@@ -173,19 +195,43 @@ class CRM_Mailing_BAO_Query
 				}
                 return;
             case 'mailing_open_status':
-                require_once('CRM/Mailing/PseudoConstant.php');
+                //require_once('CRM/Mailing/PseudoConstant.php');
                 self::mailingEventQueryBuilder($query, $values,
                     'civicrm_mailing_event_opened', 'mailing_open_status', ts('Mailing: Trackable Opens'), CRM_Mailing_PseudoConstant::yesNoOptions('open'));
                 return;
             case 'mailing_click_status':
-                require_once('CRM/Mailing/PseudoConstant.php');
+                //require_once('CRM/Mailing/PseudoConstant.php');
                 self::mailingEventQueryBuilder($query, $values,
                     'civicrm_mailing_event_trackable_url_open', 'mailing_click_status', ts('Mailing: Trackable URL Clicks'), CRM_Mailing_PseudoConstant::yesNoOptions('click'));
                 return;
             case 'mailing_reply_status':
-                require_once('CRM/Mailing/PseudoConstant.php');
+                //require_once('CRM/Mailing/PseudoConstant.php');
                 self::mailingEventQueryBuilder($query, $values,
                     'civicrm_mailing_event_reply', 'mailing_reply_status', ts('Mailing: Trackable Replies'), CRM_Mailing_PseudoConstant::yesNoOptions('reply'));
+                return;
+            //NYSS 4718
+			case 'mailing_optout':
+                $valueTitle = array( 1 => ts('Opt-out Requests') );
+                // include opt-out events only
+                $query->_where[$grouping][] = "civicrm_mailing_event_unsubscribe.org_unsubscribe = 1";
+                self::mailingEventQueryBuilder($query, $values,
+                                               'civicrm_mailing_event_unsubscribe', 'mailing_unsubscribe', 
+                                               ts('Mailing: '), $valueTitle);
+                return;
+			case 'mailing_unsubscribe':
+                $valueTitle = array( 1 => ts('Unsubscribe Requests') );
+				// exclude opt-out events
+                $query->_where[$grouping][] = "civicrm_mailing_event_unsubscribe.org_unsubscribe = 0";
+                self::mailingEventQueryBuilder($query, $values,
+                                               'civicrm_mailing_event_unsubscribe', 'mailing_unsubscribe', 
+                                               ts('Mailing: '), $valueTitle);
+                return;
+            case 'mailing_forward':
+                $valueTitle = array( 1 => ts('Forwards') );
+				$values[2]  = 'Y'; // since its a checkbox
+                self::mailingEventQueryBuilder($query, $values,
+                                               'civicrm_mailing_event_forward', 'mailing_forward', 
+                                               ts('Mailing: '), $valueTitle);
                 return;
 
         }
@@ -200,7 +246,14 @@ class CRM_Mailing_BAO_Query
      */
     static function buildSearchForm( &$form ) {
         // mailing selectors
-        $form->addElement( 'text', 'mailing_name', ts('Mailing Name'), CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'name') );
+//NYSS 4718
+//        $form->addElement( 'text', 'mailing_name', ts('Mailing Name'), CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'name') );
+		$mailings = CRM_Mailing_BAO_Mailing::getMailingsList( );
+		if ( !empty($mailings) ) {
+            $form->add( 'select', 'mailing_id',  ts( 'Mailing Name(s)' ), $mailings, false, 
+                        array( 'id' => 'mailing_id',  'multiple'=> 'multiple', 'title' => ts('- select -') ));
+        }
+
 		//NYSS 4845
         $form->addElement( 'text', 'mailing_subject', ts('Mailing Subject'), CRM_Core_DAO::getAttribute('CRM_Mailing_DAO_Mailing', 'subject') );
         $form->addDate( 'mailing_date_low', ts('Mailing Date - From'), false, array( 'formatType' => 'searchDate') );
@@ -212,6 +265,11 @@ class CRM_Mailing_BAO_Query
         $form->addRadio( 'mailing_open_status', ts('Trackable Opens'), CRM_Mailing_PseudoConstant::yesNoOptions('open'));
         $form->addRadio( 'mailing_click_status', ts('Trackable URLs'), CRM_Mailing_PseudoConstant::yesNoOptions('click'));
         $form->addRadio( 'mailing_reply_status', ts('Trackable Replies'), CRM_Mailing_PseudoConstant::yesNoOptions('reply'));
+
+        //NYSS 4718
+		$form->add( 'checkbox', 'mailing_unsubscribe', ts('Unsubscribe Requests') );
+        $form->add( 'checkbox', 'mailing_optout',  ts('Opt-out Requests') );
+        $form->add( 'checkbox', 'mailing_forward', ts('Forwards') );
 
         $form->assign( 'validCiviMailing', true );
         $form->addFormRule( array( 'CRM_Mailing_BAO_Query', 'formRule' ), $form );
@@ -277,7 +335,7 @@ class CRM_Mailing_BAO_Query
             return;
         }
 
-        if ($value == 'Y') {
+        if ( $value == 'Y' ) {
             $query->_where[$grouping][] = $tableName . ".id is not null ";
         } else if ($value == 'N') {
             $query->_where[$grouping][] = $tableName . ".id is null ";
