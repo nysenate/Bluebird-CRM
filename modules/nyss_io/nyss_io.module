@@ -303,7 +303,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     while ($l = $fo->getLine()) {
 
-        if ($nyss_ioline%BATCH_SIZE==0) {
+        if ($nyss_ioline%BATCHSIZE==0) {
           mysql_query("START TRANSACTION", $nyss_conn);
         }
 
@@ -718,14 +718,14 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             }
         }
 
-        if ($nyss_ioline%BATCH_SIZE==0) {
+        if ($nyss_ioline%BATCHSIZE==0) {
           mysql_query("COMMIT", $nyss_conn);
         }
 
     } //end record processing
 
     // Commit any straglers!
-    if ($nyss_ioline%BATCH_SIZE!=0) {
+    if ($nyss_ioline%BATCHSIZE!=0) {
       mysql_query("COMMIT", $nyss_conn);
     }
 
