@@ -1,5 +1,6 @@
 <?php
 
+define('BATCHSIZE', 250);
 define("NYSSIODEBUG",true);
 
 require_once(dirname(__FILE__) . '/nyss_lib.php');
@@ -220,6 +221,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     global $user;
     global $nyss_ioline;
     global $nyss_iototallines;
+    global $nyss_conn;
 
 //nyss_out("debug",$form_state,true);
 
@@ -228,6 +230,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     $config =& CRM_Core_Config::singleton();
     
     require_once 'CRM/Utils/String.php';
+
+    $nyss_conn = new CRM_Core_DAO();
+    $nyss_conn = $nyss_conn->getDatabaseConnection();
+    $nyss_conn = $nyss_conn->connection;
 
     $logpath = isset($bbconfig['nyss_io.log_path']) ? $bbconfig['nyss_io.log_path'] : '/data/importData/logs/';
 
@@ -296,6 +302,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     $keyword_lookup = array();
 
     while ($l = $fo->getLine()) {
+
+        if ($nyss_ioline%BATCH_SIZE==0) {
+          mysql_query("START TRANSACTION", $nyss_conn);
+        }
 
         //nyss_out('debug', $l, true); exit();
 
@@ -427,21 +437,43 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
             $params = CRM_Dedupe_Finder::formatParams($params, 'Individual');
             $params['check_permission'] = 0;
-            $dupeIDs = CRM_Dedupe_Finder::dupesByParams($params, 'Individual', 'Strict', array(), $form_state['values']['deduperule'] );
+
+            $o = new stdClass();
+            $o->name = 'Individual Strict (first + last + (street + zip | email))';
+            $o->params = $params;
+            $o->noRules = false;
+            $tableQueries = array();
+            $sql = nyss_dedupe_civicrm_dupeQuery($o, 'table', $tableQueries);
+            $sql = $tableQueries['civicrm.custom.5'];
+            $sql = "SELECT contact.id
+                    FROM civicrm_contact as contact JOIN ($sql) as dupes
+                    WHERE dupes.id1=contact.id AND contact.is_deleted=0";
+
+            if (! $result = mysql_query($sql, $nyss_conn) ) {
+              var_dump(mysql_error($nyss_conn)); exit();
+            }
+
+            $dupeIDs = array();
+            while($row = mysql_fetch_assoc($result)) {
+              $dupeIDs[] = $row['id'];
+            }
             
             //if dupe found, set contact import id
             if ( is_array( $dupeIDs ) && !empty( $dupeIDs ) ) {
                 $l['id'] = $dupeIDs[0];
             }
+
             //nyss_out('debug', $l, true); exit();
         } //end dedupe lookup
         
         //look for existing related record in custom table
         if ( !empty($l['id']) ) {
             $sql = "SELECT id AS constinfo_id FROM civicrm_value_constituent_information_1 WHERE entity_id = {$l['id']}";
-            $dao = &CRM_Core_DAO::executeQuery( $sql );
-            if ( $dao->fetch() ) $l['constinfo_id'] = $dao->constinfo_id;
-            CRM_Core_DAO::freeResult( );
+            $result = mysql_query($sql, $nyss_conn);
+            if($result && $row = mysql_fetch_assoc($result)) {
+                $l['constinfo_id'] = $row['constinfo_id'];
+            }
+            mysql_free_result($result);
         }
         
         //process several fields for BOE imports
@@ -511,8 +543,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         
         //strip leading/trailing/double spaces for all imported data; escape all single quotes
         foreach ( $l as $k => $v ) {
+          if (is_string($v)) {
             $v = CRM_Utils_String::stripSpaces($v);
-            $l[$k] = mysql_real_escape_string($v);
+          }
+          $l[$k] = mysql_real_escape_string($v);
         }
 
         //identify addresses to be deleted and store for later processing
@@ -530,31 +564,35 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                       AND street_number LIKE '{$l['street_number']}' 
                       AND street_name LIKE '{$l['street_name']}' 
                       AND city LIKE '{$l['city']}' 
-                      AND ( postal_code LIKE '{$l['postal_cod']}' OR postal_code LIKE '{$l['postal_code']}' )";
-            $dao = &CRM_Core_DAO::executeQuery( $sql );
-            if ($dao->fetch()) { 
-                $l['address_id']         = $dao->address_id;
-                $l['address_is_primary'] = $dao->address_is_primary;
+                      AND ( postal_code LIKE '{$l['postal_code']}' OR postal_code LIKE '{$l['postal_code']}' )";
+            $result = mysql_query($sql, $nyss_conn);
+            if($result && $row = mysql_fetch_assoc($result)) {
+                $l['address_id']         = $row['address_id'];
+                $l['address_is_primary'] = $row['address_is_primary'];
                 //reset primary flag here to prevent being overwritten by the import file 
                 //due to unexpected lookup/match with existing record
             }
-            CRM_Core_DAO::freeResult( );
+            mysql_free_result($result);
         }
 
         //find district id if address id set
         if ( !empty($l['address_id']) && empty($l['districtinfo_id']) ) {
             $sql = "SELECT id AS districtinfo_id FROM civicrm_value_district_information_7 WHERE entity_id = {$l['address_id']}";
-            $dao = &CRM_Core_DAO::executeQuery( $sql );
-            if ( $dao->fetch() ) $l['districtinfo_id'] = $dao->districtinfo_id;
-            CRM_Core_DAO::freeResult( );
+            $result = mysql_query($sql, $nyss_conn);
+            if($result && $row = mysql_fetch_assoc($result)) {
+                $l['districtinfo_id'] = $row['districtinfo_id'];
+            }
+            mysql_free_result($result);
         }
 
         //find email id if email is set
         if ( !empty($l['id']) && !empty($l['email']) && empty($l['email_id']) ) {
             $sql = "SELECT id AS email_id FROM civicrm_email WHERE email = '{$l['email']}' AND contact_id = {$l['id']}";
-            $dao = &CRM_Core_DAO::executeQuery( $sql );
-            if ( $dao->fetch() ) $l['email_id'] = $dao->email_id;
-            CRM_Core_DAO::freeResult( );
+            $result = mysql_query($sql, $nyss_conn);
+            if($result && $row = mysql_fetch_assoc($result)) {
+                $l['email_id'] = $row['email_id'];
+            }
+            mysql_free_result($result);
         }
 
         //nyss_out('debug', 'ready to begin importing record...', true);
@@ -611,13 +649,13 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         //process special fields using API/BAO
         //echo 'now begin processing special fields:<br />';
         if ( array_key_exists( 'current_employer', $l ) && !empty($l['current_employer']) ) {
-            $sql = "SELECT c.id 
+            $sql = sprintf("SELECT c.id
                     FROM civicrm_contact c 
-                    WHERE c.organization_name = %1 AND c.contact_type = 'Organization' AND is_deleted = 0 
-                    LIMIT 1";
-            $sqlParams = array( 1 => array( $l['current_employer'], 'String' ) );
-            if ( $orgID = CRM_Core_DAO::singleValueQuery( $sql, $sqlParams ) ) {
-                $current_employer = $orgID;
+                    WHERE c.organization_name = %s AND c.contact_type = 'Organization' AND is_deleted = 0
+                    LIMIT 1", mysql_real_escape_string($l['current_employer'], $nyss_conn));
+            $result = mysql_query($sql, $nyss_conn);
+            if ( $result && $row = mysql_fetch_assoc($result) ) {
+                $current_employer = $row['orgID'];
             } else {
                 $current_employer = convertProperCase($l['current_employer']);
             }
@@ -626,6 +664,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             } else {
                 $organization = CRM_Contact_BAO_Contact_Utils::createCurrentEmployerRelationship( $l['id'], $current_employer );
             }
+            mysql_free_result($result);
         }
         //pipe separated list of keywords
         if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
@@ -649,8 +688,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                     }
                     
                     //only add tag to contact if not already present
-                    $entityTags =& CRM_Core_BAO_EntityTag::getTag($l['id']);
-                    if ( !in_array($tagid, $entityTags) ) {
+                    $sql = "SELECT tagid FROM civicrm_entity_tag WHERE entity_id={$l['id']} AND entity_type='civicrm_contact' AND tag_id=$tagid";
+                    $result = mysql_query($sql, $nyss_conn);
+                    if ($result && mysql_num_rows($result) == 0) {
                         $entityParams = array('tag_id' => $tagid, 'contact_id' => $l['id'] );
                         //nyss_out('debug', $entityParams, true);
                         $entityTag = civicrm_entity_tag_add( $entityParams );
@@ -677,7 +717,17 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                 $note = civicrm_note_create( $params );
             }
         }
+
+        if ($nyss_ioline%BATCH_SIZE==0) {
+          mysql_query("COMMIT", $nyss_conn);
+        }
+
     } //end record processing
+
+    // Commit any straglers!
+    if ($nyss_ioline%BATCH_SIZE!=0) {
+      mysql_query("COMMIT", $nyss_conn);
+    }
 
     //Begin post process
     
@@ -776,9 +826,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             $groupcontact = civicrm_group_contact_add( $group_params );
             
             //set do not mail
-            $dao = &CRM_Core_DAO::executeQuery( $setDNM );
-            CRM_Core_DAO::freeResult( );
-            
+            mysql_query($setDNM, $nyss_conn);
         } else {
             nyss_out('status',"Adding "+count($new_contacts)+" to the Email Only group",true);
         }
@@ -790,7 +838,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         $addressDelList  = implode( ',', $addressDel );
         $sqlAD = "DELETE FROM civicrm_address
                   WHERE id IN ( $addressDelList );";
-        CRM_Core_DAO::executeQuery($sqlAD);
+        mysql_query($sqlAD, $nyss_conn);
     }
 
     if ( $form_state['values']['sendmail']==1 ) {
@@ -850,6 +898,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
     global $nyss_iofields;
     global $nyss_select;
     global $nyss_ioline;
+    global $nyss_conn;
 
     //build the select array once and store global for efficiency
     if ( empty($nyss_select) ) {
@@ -893,9 +942,17 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
         //get the existing data
         $sql = "SELECT ".$nyss_select[$tbl]['fields']." FROM {$tbl} WHERE {$pkCivi}={$l[$pkImport]}";
-        $dao = &CRM_Core_DAO::executeQuery( $sql );
 
-        if ( !$dao->fetch() ) nyss_out('error','no civirecord found. not importing.',true);
+        $result = mysql_query($sql, $nyss_conn);
+
+        $dao = new stdClass();
+        if ( !$result || mysql_num_rows($result) == 0) {
+           nyss_out('error','no civirecord found. not importing.',true);
+        } else {
+           $dao = mysql_fetch_object($result);
+        }
+
+        mysql_free_result($result);
 
         $up = array();
     
@@ -931,16 +988,13 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
             }
         }
 
-        CRM_Core_DAO::freeResult( );
-
         //if there is something to update, do it!
         if (!empty($up)) {
             $sqlUP = "UPDATE {$tbl} SET ".implode(',',$up). " WHERE {$pkCivi}={$l[$pkImport]}";
             //print_r($sqlUP."<br>");
 
             if ( !$dryrun ) {
-                $dao=&CRM_Core_DAO::executeQuery( $sqlUP );
-                CRM_Core_DAO::freeResult( );
+                mysql_query($sqlUP, $nyss_conn);
             } else {
                 //if ($tbl=='civicrm_value_constituent_information_1' || $tbl=='civicrm_value_district_information_7') {
                 print_r($sqlUP."<br>"); //debug
@@ -1067,14 +1121,8 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
         
         //process if sql insert exists and not dryrun
         if ( !$dryrun && $sqlINSERT ) {
-            $dao = & CRM_Core_DAO::executeQuery( $sqlINSERT, CRM_Core_DAO::$_nullArray );
-            CRM_Core_DAO::freeResult( );
-
-            $dao = & CRM_Core_DAO::executeQuery( "SELECT LAST_INSERT_ID() as lastid", CRM_Core_DAO::$_nullArray );
-            $dao->fetch();
-            $l[$pkImport]=$dao->lastid;
-
-            CRM_Core_DAO::freeResult( );
+            mysql_query($sqlINSERT, $nyss_conn);
+            $l[$pkImport]=mysql_insert_id($nyss_conn);
         } else {
             //if ($tbl=='civicrm_value_constituent_information_1') {
             print_r($sqlINSERT."<br>"); //debug
