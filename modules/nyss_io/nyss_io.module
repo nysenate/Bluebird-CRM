@@ -13,7 +13,7 @@ function nyss_io_menu () {
   $items['importdata'] = array (
     'title' => t('Import Data'),
     'page callback' => 'nyss_ioimportdata_page',
-    'access arguments' => array('export print production files'),
+    'access arguments' => array('import print production'),
     'type' => MENU_SUGGESTED_ITEM,
   );
 

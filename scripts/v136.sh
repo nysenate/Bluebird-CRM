@@ -43,6 +43,20 @@ log_db_prefix=`$readConfig --ig $instance db.log.prefix` || log_db_prefix="$DEFA
 roles="UPDATE permission SET perm = REPLACE(perm, 'create users, ', '') WHERE rid IN (4,9);"
 $execSql -i $instance -c "$roles" --drupal
 
+# 5303 add print prod staff role and amend existing pp role
+ppsrole="INSERT INTO role (rid, name) VALUES (17, 'Print Production Staff');"
+$execSql -i $instance -c "$ppsrole" --drupal
+
+ppsperm="INSERT INTO permission (rid, perm, tid) SELECT 17, perm, tid WHERE rid = 7;"
+$execSql -i $instance -c "$ppsperm" --drupal
+
+pprole="UPDATE permission SET perm = 'access CiviCRM, access CiviReport, access all custom data, edit groups, import contacts, profile listings, profile view, view all contacts, administer reserved groups, export print production files, import print production, administer site configuration' WHERE rid = 7;"
+$execSql -i $instance -c "$pprole" --drupal
+
+ppnav="UPDATE civicrm_navigation SET permission = REPLACE(permission, 'export print production files', 'import print production') WHERE url = 'importData';"
+$execSql -i $instance -c "$ppnav"
+
+
 ### CiviCRM ###
 ## 4911/5251 create the civicrm_import_jobs table
 impjobs="CREATE TABLE IF NOT EXISTS civicrm_import_jobs (

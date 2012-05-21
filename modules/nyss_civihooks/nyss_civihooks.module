@@ -25,7 +25,9 @@ function nyss_civihooks_perm() {
                   'delete contacts permanently',
                   'administer district',
                   'view mass email',
-                  'administer reserved groups' );
+                  'administer reserved groups',
+                  'import print production',
+                  );
 }
 
 function nyss_civihooks_getfile() {
