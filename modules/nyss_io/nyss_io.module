@@ -303,7 +303,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     while ($l = $fo->getLine()) {
 
-        if ($nyss_ioline%BATCH_SIZE==0) {
+        if ($nyss_ioline%BATCHSIZE==0) {
           mysql_query("START TRANSACTION", $nyss_conn);
         }
 
@@ -325,11 +325,17 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         if ($nyss_ioline%20==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
 
         //fix the gender entries
-        if ( isset($l['gender']) || isset($l['gender_id']) ) {
-            $l['gender'] = ( $l['gender'] ) ? $l['gender'] : $l['gender_id'];
-            if ($l['gender']=='M') $l['gender'] = 'Male';
-            if ($l['gender']=='F') $l['gender'] = 'Female';
-            $l['gender_id'] = $aGender[$l['gender']];
+        if ( !empty($l['gender']) ) {
+            $gender_key = 'gender';
+        }
+        elseif ( !empty($l['gender_id']) ) {
+            $gender_key = 'gender_id';
+        }
+
+        if (!empty($gender_key)) {
+            if ($l[$gender_key]=='M') $l['gender'] = 'Male';
+            if ($l[$gender_key]=='F') $l['gender'] = 'Female';
+            $l['gender_id'] = $aGender[$l[$gender_key]];
             unset($l['gender']); //remove text value
         }
 
@@ -391,16 +397,14 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         
         //fix suffixes
         if ( isset( $l['suffix_id'] ) ) {
-            $suffix_val = '';
             if ( array_key_exists( $l['suffix_id'], $aSuffix ) ) { //if a valid value, retain
-                $suffix_val = $l['suffix_id'];
+                $l['suffix_id'] = $aSuffix[$l['suffix_id']];
             } elseif ( array_key_exists( strtoupper($l['suffix_id']), $nyss_iosuffixes ) ) { //check if in suffix map
-                $suffix_val = $nyss_iosuffixes[strtoupper($l['suffix_id'])];
+                $l['suffix_id'] = $aSuffix[$nyss_iosuffixes[strtoupper($l['suffix_id'])]];
             } else { //if odd, ignore
-                $suffix_val = '';
+                $l['suffix_id'] = '';
             }
-            $l['suffix_id'] = $aSuffix[$suffix_val];
-        }    
+        }
         
         //set the last import timestamp if address fields are passed
         $addressExists = false;
@@ -718,14 +722,14 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             }
         }
 
-        if ($nyss_ioline%BATCH_SIZE==0) {
+        if ($nyss_ioline%BATCHSIZE==0) {
           mysql_query("COMMIT", $nyss_conn);
         }
 
     } //end record processing
 
     // Commit any straglers!
-    if ($nyss_ioline%BATCH_SIZE!=0) {
+    if ($nyss_ioline%BATCHSIZE!=0) {
       mysql_query("COMMIT", $nyss_conn);
     }
 
@@ -1022,14 +1026,15 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
             $l['contact_type'] = 'Individual';
             $prefixes = ioGetOptions("individual_prefix", $ioOptions);
             $suffixes = ioGetOptions("individual_suffix", $ioOptions);
-            $suffix = ( $suffixes[$l['suffix_id']] ) ? ', '.$suffixes[$l['suffix_id']] : '';
-            $l['middle_name'] = ( $l['mid'] ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
+            $suffix = ( !empty($l['suffix_id']) && !empty($suffixes[$l['suffix_id']]) ) ? ', '.$suffixes[$l['suffix_id']] : '';
+            $l['middle_name'] = ( !empty($l['mid']) ) ? $l['mid'] : $l['middle_name']; //account for both possible field names
             //need to propercase these values before constructing display and sort name
             $fnc = trim(convertProperCase( $l['first_name'], true ));
             $mnc = trim(convertProperCase( $l['middle_name'], true ));
             $fnc = ( $mnc ) ? $fnc.' ' : $fnc;
             $lnc = trim(convertProperCase( $l['last_name'], true ));
-            $display_name = $prefixes[$l['prefix_id']].' '.$fnc.$mnc.' '.$lnc.$suffix;
+            $prefix = ( !empty($l['prefix_id']) && !empty($prefixes[$l['prefix_id']]) ) ? $prefixes[$l['prefix_id']] : '';
+            $display_name = $prefix.' '.$fnc.$mnc.' '.$lnc.$suffix;
             $l['display_name'] = nyss_stripSpaces( $display_name );
             if ( !empty($l['display_name']) ) $l['sort_name'] = $lnc.', '.$fnc.$mnc.$suffix;
         }
@@ -1050,10 +1055,10 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
         }
         if ( array_key_exists('phone', $l) ) {
             $l['phone_type_id'] = 1; //set to phone
-            if ( !$l['phone_location_type_id'] ) {
+            if ( empty($l['phone_location_type_id']) ) {
                 $l['phone_location_type_id'] = 1; //set to home
             }
-            if ( !$l['phone_is_primary'] ) {
+            if ( empty($l['phone_is_primary']) ) {
                 $l['phone_is_primary'] = 1; //set to primary
             }
         } else { 
