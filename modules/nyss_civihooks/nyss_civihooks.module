@@ -14,13 +14,20 @@ function nyss_civihooks_menu() {
   return $items;
 }
 
+function nyss_civihooks_menu_alter( &$items ) {
+  //5253
+  $items['admin/user/user/create']['access arguments'] = array('create users');
+}//menu_alter
+
 function nyss_civihooks_perm() {
 
     return array( 'export print production files',
                   'delete contacts permanently',
                   'administer district',
                   'view mass email',
-                  'administer reserved groups' );
+                  'administer reserved groups',
+                  'import print production',
+                  );
 }
 
 function nyss_civihooks_getfile() {
@@ -281,7 +288,10 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
         $formAction =  $form->_attributes['action'];
 
         //handle case add form differently as buttons element is constructed twice due to embedded form
-        if ( $formID == 'Case' && $formAction == '/civicrm/case/add' ) {
+        if ( $formID == 'Case' &&
+             $formAction == '/civicrm/case/add' &&
+             $form->_context != 'standalone'
+        ) {
             $form->removeElement( 'buttons' );
             $buttons =& $form->getElement( 'buttons' );
         }
@@ -634,6 +644,60 @@ function nyss_civihooks_civicrm_validate( $formName, &$fields, &$files, &$form )
             $form->setElementError("custom_$fld", NULL);
         }
     }
+}
+
+function nyss_civihooks_civicrm_navigationMenu( &$params ) {
+  //CRM_Core_Error::debug_var('navigationMenu params',$params);
+
+  //5260
+  //first find parents
+  $reportNavID = $manageNavID = '';
+  foreach ( $params as $navID => $navDetails ) {
+    if ( $navDetails['attributes']['name'] == 'Reports' ) {
+      $reportNavID = $navID;
+    } elseif ( $navDetails['attributes']['name'] == 'Manage' ) {
+      $manageNavID = $navID;
+    }
+    //if both found, stop searching
+    if ( $reportNavID && $manageNavID ) {
+      break;
+    }
+  }
+
+  //get max key
+  $maxKey = ( max( array_keys($params) ) );
+
+  //5260 add changelog proofing report
+  $params[$reportNavID]['child'][$maxKey+1] = array (
+    'attributes' => array ( 'label'      => 'Changelog Proofing Report',
+                            'name'       => 'Changelog Proofing Report',
+                            'url'        => 'civicrm/logging/proofingreport?reset=1',
+                            'permission' => 'access CiviReport',
+                            'operator'   => 'AND',
+                            'separator'  => 0,
+                            'parentID'   => $reportNavID,
+                            'navID'      => $maxKey+1,
+                            'active'     => 1
+                            ),
+    'child' => array(),
+    );
+
+  //5230 add duplicate address removal tool
+  $params[$manageNavID]['child'][$maxKey+2] = array (
+    'attributes' => array ( 'label'      => 'Duplicate Address Removal',
+                            'name'       => 'Duplicate Address Removal',
+                            'url'        => 'civicrm/dedupe/dupeaddress?reset=1',
+                            'permission' => 'export print production files',
+                            'operator'   => 'AND',
+                            'separator'  => 0,
+                            'parentID'   => $manageNavID,
+                            'navID'      => $maxKey+2,
+                            'active'     => 1
+                            ),
+    'child' => array(),
+    );
+
+  //CRM_Core_Error::debug_var('navigationMenu params (after)',$params);
 }
 
 /**

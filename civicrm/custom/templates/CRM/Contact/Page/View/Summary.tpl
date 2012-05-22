@@ -340,9 +340,15 @@
 					
                     <div class="contact_panel">
                         <div class="contactCardLeft">
-                            {if $phone OR $im OR $openid}
                                 <table>
-                                    {foreach from=$phone item=item}
+                                    <tr>
+                                      <td>
+                                        <div class="crm-clear crm-summary-block" id="phone-block">
+                                          {include file="CRM/Contact/Page/Inline/Phone.tpl"}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <!--{foreach from=$phone item=item}
                                         {if $item.phone}
                                         <tr>
                                             <td class="label">{$item.location_type}&nbsp;{$item.phone_type}</td>
@@ -350,7 +356,8 @@
                                             <td {if $item.is_primary eq 1}class="primary"{/if}><span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>{$item.phone}{if $item.phone_ext}&nbsp;&nbsp;{ts}ext.{/ts} {$item.phone_ext}{/if}</span></td>
                                         </tr>
                                         {/if}
-                                    {/foreach}
+                                    {/foreach}-->
+                            {if $im OR $openid}
                                     {foreach from=$im item=item}
                                         {if $item.name or $item.provider}
                                         {if $item.name}<tr><td class="label">{$item.provider}&nbsp;({$item.location_type})</td><td {if $item.is_primary eq 1}class="primary"{/if}>{$item.name}</td></tr>{/if}
@@ -368,11 +375,24 @@
                                             </tr>
                                         {/if}
                                     {/foreach}
-                                
+                             {/if}
                                 </table>
-    						{/if}
+
                              <table>
-                                {foreach from=$email key="blockId" item=item}
+                               {*NYSS 4775*}
+                               <tr>
+                                 <td id="email-block-cell">
+                                 <div class="crm-clear crm-summary-block" id="email-block">
+                                   {include file="CRM/Contact/Page/Inline/Email.tpl"}
+                                 </div>
+                                 </td>
+                                 
+                                 <!--<td id="email-block2">
+                                 <table>
+                                 <tr><td colspan="3">
+                                 <div id="edit-email" class="hiddenElement" style="float:right;"><a href="#" title="{ts}click to edit{/ts}">[edit]</a></div>
+                                 </td></tr>
+                               {foreach from=$email key="blockId" item=item}
                                     {if $item.email}
                                     <tr>
                                         <td class="label">{$item.location_type}&nbsp;{ts}Email{/ts}</td>
@@ -403,6 +423,11 @@
                                     </tr>
                                     {/if}
                                 {/foreach}
+                                {*NYSS 4775*}
+                                </table>
+                                </td>
+                                </tr>-->
+
                                 {if $website}
                                 {foreach from=$website item=item}
                                     {if $item.url}
@@ -706,40 +731,8 @@ function stopSpinner( ) {
  </script>
 
 {/if}
-{literal}
-<script type="text/javascript">
-function showHideSignature( blockId ) {
-	  cj("#Email_Block_" + blockId + "_signature").show( );   
-	  
-	  cj("#Email_Block_" + blockId + "_signature").dialog({
-		title: "Signature",
-		modal: true,
-		bgiframe: true,
-		width: 900,
-		height: 500,
-		overlay: { 
-			opacity: 0.5, 
-			background: "black"
-		},
 
-		beforeclose: function(event, ui) {
-            		cj(this).dialog("destroy");
-        	},
-
-		open:function() {
-		},
-
-		buttons: { 
-			"Done": function() { 
-				cj(this).dialog("destroy"); 
-			} 
-		} 
-		
-	  });
-}
-
-</script>
-{/literal}
+{*NYSS 4775 moved to include file*}
 
 {if !empty($isAddressCustomPresent)}
     {literal}

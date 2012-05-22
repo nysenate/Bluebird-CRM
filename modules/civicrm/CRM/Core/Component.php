@@ -347,9 +347,13 @@ class CRM_Core_Component
         $info = self::_info( );
         
         $tasks = array( );
-        foreach( $info as $name => $value ) {
-            if( CRM_Utils_Array::value( 'task', $info[$name] ) ) {
-                $tasks += $info[$name]['task'];
+        foreach( $info as $value ) {
+            // NYSS - Check for tasks properly
+            if( isset($value->task) ) {
+                // TODO: This will only work if task is an array
+                //       what is it supposed to be??
+                // This works for now since ->task is never implemented..
+                $tasks += $value->task;
             }
         }
         return $tasks;

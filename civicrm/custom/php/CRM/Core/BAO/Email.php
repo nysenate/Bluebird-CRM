@@ -197,22 +197,35 @@ ORDER BY e.is_primary DESC, email_id ASC ";
     {
         //check for update mode
         if ( $email->id ) {
-            //get hold date
-            $holdDate = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Email', $email->id, 'hold_date' );
+            //NYSS 5268
+			$params = array( 1 => array( $email->id, 'Integer' ) );
+      if ( $email->on_hold && $email->on_hold != 'null' ) {
+        $sql = "
+SELECT id
+FROM   civicrm_email
+WHERE  id = %1
+AND    hold_date IS NULL
+";
+        if ( CRM_Core_DAO::singleValueQuery( $sql, $params ) ) {
+          $email->hold_date  = date('YmdHis');
+          $email->reset_date = 'null';
+        }
+      } else if ($email->on_hold == 'null') {
+        $sql = "
+SELECT id
+FROM   civicrm_email
+WHERE  id = %1
+AND    hold_date IS NOT NULL
+AND    reset_date IS NULL
+";
+        if ( CRM_Core_DAO::singleValueQuery( $sql, $params ) ) {
+          //set reset date only if it is not set and if hold date is set
+          $email->on_hold = false;
+          $email->hold_date = 'null';
+          $email->reset_date = date('YmdHis');
+        }
+      }
 
-            //get reset date
-            $resetDate = CRM_Core_DAO::getFieldValue( 'CRM_Core_DAO_Email', $email->id, 'reset_date' );
-
-            //set hold date only if it is not set and e
-            if ( ($email->on_hold != 'null') && !$holdDate && $email->on_hold) {
-                $email->hold_date  = date( 'YmdHis' );
-                $email->reset_date = '';
-            } else if ( $holdDate && ( $email->on_hold == 'null' ) && !$resetDate ) {
-                //set reset date only if it is not set and if hold date is set
-                $email->on_hold     = false;
-                $email->hold_date   = '';
-                $email->reset_date  = date( 'YmdHis' );
-            }
         } else {
             if ( ($email->on_hold != 'null') && $email->on_hold ) {
                 $email->hold_date   = date( 'YmdHis' );

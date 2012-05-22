@@ -712,8 +712,10 @@ function addRole() {
 </div><!-- /.crm-accordion-wrapper -->
 
     <div id="manageTags">
-        <div class="label">{$form.case_tag.label}</div>
-        <div class="view-value"><div class="crm-select-container">{$form.case_tag.html}</div>
+        {*NYSS 5320*}
+        {*<div class="label">{$form.case_tag.label}</div>*}
+        <div class="view-value">
+        {*<div class="crm-select-container">{$form.case_tag.html}</div>*}
         <br/>
         <div style="text-align:left;">{include file="CRM/common/Tag.tpl" tagsetType='case'}</div>
         <br/>

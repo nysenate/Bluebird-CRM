@@ -1576,7 +1576,7 @@ AND civicrm_contact.is_opt_out =0";
         $report['jobs'] = array();
         $report['event_totals'] = array();
         $elements = array(  'queue', 'delivered', 'url', 'forward',
-                            'reply', 'unsubscribe', 'opened', 'bounce', 'spool' );
+                            'reply', 'unsubscribe', 'optout', 'opened', 'bounce', 'spool' );//NYSS 4718
 
         // initialize various counters
         foreach ( $elements as $field ) {
@@ -1599,9 +1599,11 @@ AND civicrm_contact.is_opt_out =0";
             
             // compute unsub total separately to discount duplicates
             // CRM-1783
-            $row['unsubscribe'] = CRM_Mailing_Event_BAO_Unsubscribe::getTotalCount( $mailing_id, $mailing->id, true );
+            $row['unsubscribe'] = CRM_Mailing_Event_BAO_Unsubscribe::getTotalCount( $mailing_id, $mailing->id, true, true );//NYSS 4718
             $report['event_totals']['unsubscribe'] += $row['unsubscribe'];
-
+			//NYSS 4718
+            $row['optout'] = CRM_Mailing_Event_BAO_Unsubscribe::getTotalCount( $mailing_id, $mailing->id, true, false );
+            $report['event_totals']['optout'] += $row['optout'];
 
             foreach ( array_keys(CRM_Mailing_BAO_Job::fields( ) ) as $field ) {
                 $row[$field] = $mailing->$field;
@@ -1614,10 +1616,14 @@ AND civicrm_contact.is_opt_out =0";
                     $mailing->queue;
                 $row['unsubscribe_rate'] = (100.0 * $row['unsubscribe'] ) /
                     $mailing->queue;
+				//NYSS 4718
+				$row['optout_rate'] = (100.0 * $row['optout'] ) /
+                    $mailing->queue;
             } else {
                 $row['delivered_rate'] = 0;
                 $row['bounce_rate'] = 0;
                 $row['unsubscribe_rate'] = 0;
+				$row['optout_rate'] = 0;//NYSS 4718
             }
             
             $row['links'] = array(
@@ -1679,10 +1685,12 @@ AND civicrm_contact.is_opt_out =0";
             $report['event_totals']['delivered_rate'] = (100.0 * $report['event_totals']['delivered']) / $report['event_totals']['queue'];
             $report['event_totals']['bounce_rate'] = (100.0 * $report['event_totals']['bounce']) / $report['event_totals']['queue'];
             $report['event_totals']['unsubscribe_rate'] = (100.0 * $report['event_totals']['unsubscribe']) / $report['event_totals']['queue'];
+			$report['event_totals']['optout_rate'] = (100.0 * $report['event_totals']['optout']) / $report['event_totals']['queue'];//NYSS 4718
         } else {
             $report['event_totals']['delivered_rate'] = 0;
             $report['event_totals']['bounce_rate'] = 0;
             $report['event_totals']['unsubscribe_rate'] = 0;
+			$report['event_totals']['optout_rate'] = 0;//NYSS 4718
         }
 
         /* Get the click-through totals, grouped by URL */
@@ -1759,6 +1767,65 @@ AND civicrm_contact.is_opt_out =0";
                             "reset=1&event=opened&mid=$mailing_id"
             ),
         );
+		//NYSS 4718
+		require_once 'CRM/Report/Utils/Report.php';
+        $actionLinks = array( CRM_Core_Action::VIEW => array( 'name' => ts('Report'), ), );
+        if ( CRM_Core_Permission::check( 'view all contacts' ) ) {
+            $actionLinks[CRM_Core_Action::ADVANCED] = 
+                              array( 'name'  => ts('Advanced Search'),
+                                     'url'   => 'civicrm/contact/search/advanced', );
+        }
+		$action = array_sum(array_keys($actionLinks));
+
+        $report['event_totals']['actionlinks'] = array();
+        foreach ( array('clicks', 'clicks_unique', 'queue', 'delivered', 'bounce', 'unsubscribe', 
+                        'forward', 'reply', 'opened', 'optout' ) as $key ) {
+            $url    = 'mailing/detail';
+            $reportFilter = "reset=1&mailing_id_value={$mailing_id}";
+            $searchFilter = "force=1&mailing_id={$mailing_id}";
+            switch ( $key ) {
+            case 'delivered':
+                $reportFilter .= "&delivery_status_value=successful"; 
+                $searchFilter .= "&mailing_delivery_status=Y"; 
+                break;
+            case 'bounce':
+                $url = "mailing/bounce"; 
+                $searchFilter .= "&mailing_delivery_status=N"; 
+                break;
+            case 'forward':
+                $reportFilter .= "&is_forwarded_value=1"; 
+                $searchFilter .= "&mailing_forward=1"; 
+                break;
+            case 'reply':
+                $reportFilter .= "&is_replied_value=1"; 
+                $searchFilter .= "&mailing_reply_status=Y"; 
+                break;
+            case 'unsubscribe':
+                $reportFilter .= "&is_unsubscribed_value=1"; 
+                $searchFilter .= "&mailing_unsubscribe=1"; 
+                break;
+            case 'optout':
+                $reportFilter .= "&is_optout_value=1"; 
+                $searchFilter .= "&mailing_optout=1"; 
+                break;
+            case 'opened':
+                $url = "mailing/opened";
+                $searchFilter .= "&mailing_open_status=Y";
+                break;
+            case 'clicks':
+            case 'clicks_unique':
+                $url = "mailing/clicks";
+                $searchFilter .= "&mailing_click_status=Y";
+                break;
+            }
+            $actionLinks[CRM_Core_Action::VIEW]['url'] = 
+                CRM_Report_Utils_Report::getNextUrl( $url, $reportFilter, false, true );
+            if ( array_key_exists(CRM_Core_Action::ADVANCED, $actionLinks) ) {
+			  $actionLinks[CRM_Core_Action::ADVANCED]['qs'] = $searchFilter;
+            }
+            $report['event_totals']['actionlinks'][$key] = 
+                CRM_Core_Action::formLink($actionLinks, $action, array());
+        }
 
         return $report;
     }
@@ -2493,7 +2560,24 @@ DELETE FROM civicrm_mailing_recipients
 
         $dao = CRM_Core_DAO::executeQuery( $sql, $params );
     }
+	//NYSS 4718
+	function getMailingsList() {
+        static $list = array( );
+
+        if ( empty($list) ) {
+            $query   = "
+SELECT civicrm_mailing.id, civicrm_mailing.name, civicrm_mailing_job.end_date 
+FROM   civicrm_mailing 
+INNER JOIN civicrm_mailing_job ON civicrm_mailing.id = civicrm_mailing_job.mailing_id
+ORDER BY civicrm_mailing.name";
+            $mailing = CRM_Core_DAO::executeQuery($query);
+            
+            while($mailing->fetch()) {
+                $list[mysql_real_escape_string($mailing->id)] = "{$mailing->name} :: {$mailing->end_date}";
+            }
+        }
+
+        return $list;
+    }
 
 }
-
-

@@ -1014,7 +1014,8 @@ WHERE id={$id}; ";
      * @return array array of importable Fields
      * @access public
      */
-    function &importableFields( $contactType = 'Individual',
+    // NYSS - Make Static
+    static function &importableFields( $contactType = 'Individual',
                                 $status = false,
                                 $showAll = false, 
                                 $isProfile = false,
@@ -2198,7 +2199,8 @@ UNION
         case 'log' :
             require_once 'CRM/Core/BAO/Log.php';
             if ( CRM_Core_BAO_Log::useLoggingReport( ) ) {
-                return CRM_Core_BAO_Log::getEnhancedContactLogCount( $contactId );//NYSS 5173
+                //NYSS 5173
+                return CRM_Core_BAO_Log::getEnhancedContactLogCount( $contactId );
             }
             return CRM_Core_BAO_Log::getContactLogCount( $contactId );
         

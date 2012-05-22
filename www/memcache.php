@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-$VERSION='$Id: memcache.php,v 1.1.2.3 2008/08/28 18:07:54 mikl Exp $';
+$VERSION='$Id: memcache.php 309747 2011-03-27 17:28:56Z hradtke $';
 
 define('ADMIN_USERNAME','memcache'); 	// Admin Username
 define('ADMIN_PASSWORD','nyss');  	// Admin Password
@@ -26,6 +26,8 @@ define('GRAPH_SIZE',200);
 define('MAX_ITEM_DUMP',50);
 
 $MEMCACHE_SERVERS[] = 'localhost:11211'; // add more as an array
+//$MEMCACHE_SERVERS[] = 'mymemcache-server1:11211'; // add more as an array
+//$MEMCACHE_SERVERS[] = 'mymemcache-server2:11211'; // add more as an array
 
 
 ////////// END OF DEFAULT CONFIG AREA /////////////////////////////////////////////////////////////
@@ -47,12 +49,22 @@ EOB;
 
 ///////////MEMCACHE FUNCTIONS /////////////////////////////////////////////////////////////////////
 
+function get_host_port_from_server($server){
+	$values = explode(':', $server);
+	if (($values[0] == 'unix') && (!is_numeric( $values[1]))) {
+		return array($server, 0);
+	}
+	else {
+		return $values;
+	}
+}
+
 function sendMemcacheCommands($command){
     global $MEMCACHE_SERVERS;
 	$result = array();
 
 	foreach($MEMCACHE_SERVERS as $server){
-		$strs = explode(':',$server);
+		$strs = get_host_port_from_server($server);
 		$host = $strs[0];
 		$port = $strs[1];
 		$result[$server] = sendMemcacheCommand($host,$port,$command);
@@ -109,7 +121,7 @@ function parseMemcacheResults($str){
 }
 
 function dumpCacheSlab($server,$slabId,$limit){
-    list($host,$port) = explode(':',$server);
+    list($host,$port) = get_host_port_from_server($server);
     $resp = sendMemcacheCommand($host,$port,'stats cachedump '.$slabId.' '.$limit);
 
    return $resp;
@@ -117,7 +129,7 @@ function dumpCacheSlab($server,$slabId,$limit){
 }
 
 function flushServer($server){
-    list($host,$port) = explode(':',$server);
+    list($host,$port) = get_host_port_from_server($server);
     $resp = sendMemcacheCommand($host,$port,'flush_all');
     return $resp;
 }
@@ -841,17 +853,25 @@ EOB;
         $theKey = htmlentities(base64_decode($_GET['key']));
 
         $theserver = $MEMCACHE_SERVERS[(int)$_GET['server']];
-        list($h,$p) = explode(':',$theserver);
+        list($h,$p) = get_host_port_from_server($theserver);
         $r = sendMemcacheCommand($h,$p,'get '.$theKey);
         echo <<<EOB
         <div class="info"><table cellspacing=0><tbody>
 			<tr><th>Server<th>Key</th><th>Value</th><th>Delete</th></tr>
 EOB;
-        echo "<tr><td class=td-0>",$theserver,"</td><td class=td-0>",$theKey,
-             " <br/>flag:",$r['VALUE'][$theKey]['stat']['flag'],
-             " <br/>Size:",bsize($r['VALUE'][$theKey]['stat']['size']),
-             "</td><td>",chunk_split($r['VALUE'][$theKey]['value'],40),"</td>",
-             '<td><a href="',$PHP_SELF,'&op=5&server=',(int)$_GET['server'],'&key=',base64_encode($theKey),"\">Delete</a></td>","</tr>";
+        if (!isset($r['VALUE'])) {
+            echo "<tr><td class=td-0>",$theserver,"</td><td class=td-0>",$theKey,
+                 "</td><td>[The requested item was not found or has expired]</td>",
+                 "<td></td>","</tr>";
+        }
+        else {
+
+            echo "<tr><td class=td-0>",$theserver,"</td><td class=td-0>",$theKey,
+                 " <br/>flag:",$r['VALUE'][$theKey]['stat']['flag'],
+                 " <br/>Size:",bsize($r['VALUE'][$theKey]['stat']['size']),
+                 "</td><td>",chunk_split($r['VALUE'][$theKey]['value'],40),"</td>",
+                 '<td><a href="',$PHP_SELF,'&op=5&server=',(int)$_GET['server'],'&key=',base64_encode($theKey),"\">Delete</a></td>","</tr>";
+        }
         echo <<<EOB
 			</tbody></table>
 			</div><hr/>
@@ -864,7 +884,7 @@ EOB;
         }
         $theKey = htmlentities(base64_decode($_GET['key']));
 		$theserver = $MEMCACHE_SERVERS[(int)$_GET['server']];
-		list($h,$p) = explode(':',$theserver);
+		list($h,$p) = get_host_port_from_server($theserver);
         $r = sendMemcacheCommand($h,$p,'delete '.$theKey);
         echo 'Deleting '.$theKey.':'.$r;
 	break;

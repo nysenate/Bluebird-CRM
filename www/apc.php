@@ -3,7 +3,7 @@
   +----------------------------------------------------------------------+
   | APC                                                                  |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2008 The PHP Group                                     |
+  | Copyright (c) 2006-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -22,7 +22,7 @@
 
  */
 
-$VERSION='$Id: apc.php,v 3.68.2.2 2008/05/11 18:57:00 rasmus Exp $';
+$VERSION='$Id: apc.php 307048 2011-01-03 23:53:17Z kalle $';
 
 ////////// READ OPTIONAL CONFIGURATION FILE ////////////
 if (file_exists("apc.conf.php")) include("apc.conf.php");
@@ -49,6 +49,8 @@ defaults('DATE_FORMAT', 'Y/m/d H:i:s'); 	// US
 
 defaults('GRAPH_SIZE',200);					// Image size
 
+//defaults('PROXY', 'tcp://127.0.0.1:8080');
+
 ////////// END OF DEFAULT CONFIG AREA /////////////////////////////////////////////////////////////
 
 
@@ -59,10 +61,13 @@ function defaults($d,$v) {
 
 // rewrite $PHP_SELF to block XSS attacks
 //
-$PHP_SELF= isset($_SERVER['PHP_SELF']) ? htmlentities(strip_tags($_SERVER['PHP_SELF'],''), ENT_QUOTES) : '';
+$PHP_SELF= isset($_SERVER['PHP_SELF']) ? htmlentities(strip_tags($_SERVER['PHP_SELF'],''), ENT_QUOTES, 'UTF-8') : '';
 $time = time();
-$host = getenv('HOSTNAME');
+$host = php_uname('n');
 if($host) { $host = '('.$host.')'; }
+if (isset($_SERVER['SERVER_ADDR'])) {
+  $host .= ' ('.$_SERVER['SERVER_ADDR'].')';
+}
 
 // operation constants
 define('OB_HOST_STATS',1);
@@ -340,6 +345,7 @@ if (isset($MYREQUEST['IMG']))
 		for($i=0; $i<$mem['num_seg']; $i++) {	
 			$ptr = 0;
 			$free = $mem['block_lists'][$i];
+			uasort($free, 'block_sort');
 			foreach($free as $block) {
 				if($block['offset']!=$ptr) {       // Used block
 					$angle_to = $angle_from+($block['offset']-$ptr)/$s;
@@ -397,6 +403,7 @@ if (isset($MYREQUEST['IMG']))
 		for($i=0; $i<$mem['num_seg']; $i++) {	
 			$ptr = 0;
 			$free = $mem['block_lists'][$i];
+			uasort($free, 'block_sort');
 			foreach($free as $block) {
 				if($block['offset']!=$ptr) {       // Used block
 					$h=(GRAPH_SIZE-5)*($block['offset']-$ptr)/$s;
@@ -491,6 +498,15 @@ EOB;
 		print <<<EOB
 			<a href="$MY_SELF&LO=1&OB={$MYREQUEST['OB']}">$s</a>
 EOB;
+	}
+}
+
+function block_sort($array1, $array2)
+{
+	if ($array1['offset'] > $array2['offset']) {
+		return 1;
+	} else {
+		return -1;
 	}
 }
 
@@ -727,7 +743,7 @@ echo
 	
 if ($AUTHENTICATED) {
 	echo <<<EOB
-		<li><a class="aright" href="$MY_SELF&CC=1&OB={$MYREQUEST['OB']}" onClick="javascipt:return confirm('Are you sure?');">Clear $cache_mode Cache</a></li>
+		<li><a class="aright" href="$MY_SELF&CC=1&OB={$MYREQUEST['OB']}" onClick="javascript:return confirm('Are you sure?');">Clear $cache_mode Cache</a></li>
 EOB;
 }
 echo <<<EOB
@@ -975,14 +991,14 @@ EOB;
 					echo
 						"<tr class=tr-$m>",
 						"<td class=td-0>",ucwords(preg_replace("/_/"," ",$k)),"</td>",
-						"<td class=td-last>",(preg_match("/time/",$k) && $value!='None') ? date(DATE_FORMAT,$value) : $value,"</td>",
+						"<td class=td-last>",(preg_match("/time/",$k) && $value!='None') ? date(DATE_FORMAT,$value) : htmlspecialchars($value, ENT_QUOTES, 'UTF-8'),"</td>",
 						"</tr>";
 					$m=1-$m;
 				}
 				if($fieldkey=='info') {
 					echo "<tr class=tr-$m><td class=td-0>Stored Value</td><td class=td-last><pre>";
 					$output = var_export(apc_fetch($entry[$fieldkey]),true);
-					echo htmlspecialchars($output);
+					echo htmlspecialchars($output, ENT_QUOTES, 'UTF-8');
 					echo "</pre></td></tr>\n";
 				}
 				break;
@@ -1078,7 +1094,7 @@ EOB;
 		}
 		if (!$AUTHENTICATED) {
 			// hide all path entries if not logged in
-			$list[$k.$entry[$fieldname]]=preg_replace('/^.*(\\/|\\\\)/','<i>&lt;hidden&gt;</i>/',$entry);
+			$list[$k.$entry[$fieldname]]=preg_replace('/^.*(\\/|\\\\)/','*hidden*/',$entry);
 		} else {
 			$list[$k.$entry[$fieldname]]=$entry;
 		}
@@ -1097,9 +1113,10 @@ EOB;
 		$i=0;
 		foreach($list as $k => $entry) {
       if(!$MYREQUEST['SEARCH'] || preg_match($MYREQUEST['SEARCH'], $entry[$fieldname]) != 0) {  
+        $field_value = htmlentities(strip_tags($entry[$fieldname],''), ENT_QUOTES, 'UTF-8');
         echo
           '<tr class=tr-',$i%2,'>',
-          "<td class=td-0><a href=\"$MY_SELF&OB=",$MYREQUEST['OB'],"&SH=",md5($entry[$fieldkey]),"\">",$entry[$fieldname],'</a></td>',
+          "<td class=td-0><a href=\"$MY_SELF&OB=",$MYREQUEST['OB'],"&SH=",md5($entry[$fieldkey]),"\">",$field_value,'</a></td>',
           '<td class="td-n center">',$entry['num_hits'],'</td>',
           '<td class="td-n right">',$entry['mem_size'],'</td>',
           '<td class="td-n center">',date(DATE_FORMAT,$entry['access_time']),'</td>',
@@ -1284,8 +1301,12 @@ case OB_VERSION_CHECK:
 		<th></th>
 		</tr>
 EOB;
-
-	$rss = @file_get_contents("http://pecl.php.net/feeds/pkg_apc.rss");
+  if (defined('PROXY')) {
+    $ctxt = stream_context_create( array( 'http' => array( 'proxy' => PROXY, 'request_fulluri' => True ) ) );
+    $rss = @file_get_contents("http://pecl.php.net/feeds/pkg_apc.rss", False, $ctxt);
+  } else {
+    $rss = @file_get_contents("http://pecl.php.net/feeds/pkg_apc.rss");
+  }
 	if (!$rss) {
 		echo '<tr class="td-last center"><td>Unable to fetch version information.</td></tr>';
 	} else {
@@ -1316,8 +1337,8 @@ EOB;
 			} else if (!$i--) {
 				break;
 			}
-			echo "<b><a href=\"http://pecl.php.net/package/APC/$ver\">".htmlspecialchars($v)."</a></b><br><blockquote>";
-			echo nl2br(htmlspecialchars(current($match[2])))."</blockquote>";
+			echo "<b><a href=\"http://pecl.php.net/package/APC/$ver\">".htmlspecialchars($v, ENT_QUOTES, 'UTF-8')."</a></b><br><blockquote>";
+			echo nl2br(htmlspecialchars(current($match[2]), ENT_QUOTES, 'UTF-8'))."</blockquote>";
 			next($match[2]);
 		}
 		echo '</td></tr>';

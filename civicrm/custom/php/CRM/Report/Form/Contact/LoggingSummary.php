@@ -183,10 +183,11 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                             'select' => $this->_select,
                             'cid'    => $this->cid,
                             );
-        $groupSql = self::_getGroupSQL($sqlParams);
-        $relASql  = self::_getRelationshipASQL($sqlParams);
-        $relBSql  = self::_getRelationshipBSQL($sqlParams);
-        $noteSql  = self::_getNoteSQL($sqlParams);
+        $groupSql   = self::_getGroupSQL($sqlParams);
+        $relASql    = self::_getRelationshipASQL($sqlParams);
+        $relBSql    = self::_getRelationshipBSQL($sqlParams);
+        $noteSql    = self::_getNoteSQL($sqlParams);
+        $commentSql = self::_getCommentSQL($sqlParams, $this->_where);
 
         //now combine the query
         $whereReplace = array(
@@ -203,6 +204,7 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                 FROM ( ( $contactSql ) UNION
                        ( $tagSql ) UNION
                        ( $noteSql ) UNION
+                       ( $commentSql ) UNION
                        ( $groupSql ) UNION
                        ( $relASql ) UNION
                        ( $relBSql )
@@ -212,13 +214,13 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                 {$this->_limit}";
         //CRM_Core_Error::debug_var('combined sql',$sql);
         //CRM_Core_Error::debug_var('combined dao',CRM_Core_DAO::executeQuery($sql));
-        //CRM_Core_Error::debug_var('combined found',CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS();"));
 
         //4198 get distinct contact count for log report total
         $sqlDistinct = "SELECT SQL_CALC_FOUND_ROWS *
                         FROM ( ( $contactSql ) UNION
                                ( $tagSql ) UNION
                                ( $noteSql ) UNION
+                               ( $commentSql ) UNION
                                ( $groupSql ) UNION
                                ( $relASql ) UNION
                                ( $relBSql )
@@ -524,6 +526,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
             'crm_contact_civireport.display_name' => "CONCAT(note_contact.display_name,'  [',crm_contact_civireport.subject,']')",
             'crm_contact_civireport.is_deleted'   => 'note_contact.is_deleted',
             'crm_contact_civireport.log_type'     => "'Note'",
+            'crm_contact_civireport.log_action'   => "IF ( crm_contact_civireport.log_action = 'Update', 
+                                                           'Modified', 
+                                                           crm_contact_civireport.log_action )",
             );
 
         $select = str_replace( array_keys($replace), array_values($replace), $sqlParams['select'] );
@@ -536,6 +541,36 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
         $where  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact' AND $cidWhere";
         $sql    = "$select, 'Note' log_type $from $where";
         //CRM_Core_Error::debug('sql',$sql);
+
+        return $sql;
+    }
+
+    //NYSS 5217
+    function _getCommentSQL( $sqlParams, $rawWhere ) {
+
+        $replace = array(
+            'SQL_CALC_FOUND_ROWS'                 => '',
+            'crm_contact_civireport.id'           => 'note_tbl.entity_id',
+            'crm_contact_civireport.display_name' => "CONCAT(note_contact.display_name,'  [',crm_contact_civireport.subject,']')",
+            'crm_contact_civireport.is_deleted'   => 'note_contact.is_deleted',
+            'crm_contact_civireport.log_type'     => "'Comment'",
+            'crm_contact_civireport.log_action'   => "IF ( crm_contact_civireport.log_action = 'Update', 
+                                                           'Modified', 
+                                                           crm_contact_civireport.log_action )",
+            );
+
+        $select = str_replace( array_keys($replace), array_values($replace), $sqlParams['select'] );
+        $from   = "FROM `{$sqlParams['logDB']}`.log_civicrm_note crm_contact_civireport
+                   JOIN civicrm_note note_tbl
+                     ON crm_contact_civireport.entity_id = note_tbl.id
+                   LEFT JOIN civicrm_contact contact_civireport
+                     ON (crm_contact_civireport.log_user_id = contact_civireport.id)
+                   JOIN civicrm_contact note_contact
+                     ON note_tbl.entity_id = note_contact.id";
+        $cidWhere = ( $sqlParams['cid'] ) ? " note_tbl.entity_id = {$sqlParams['cid']} " : 1;
+        $where  = "WHERE crm_contact_civireport.entity_table = 'civicrm_note' AND $cidWhere";
+        $sql    = "$select, 'Comment' log_type $from $where";
+        //CRM_Core_Error::debug_var('comment sql',$sql);
 
         return $sql;
     }
