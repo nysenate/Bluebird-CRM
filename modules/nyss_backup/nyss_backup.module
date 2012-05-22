@@ -12,7 +12,7 @@ function nyss_backup_menu () {
 
 function nyss_backup_page() {
     $instance_config = get_bluebird_instance_config();
-    $data_dir = "{$instance_config['data.rootdir']}/{$instance_config['db.basename']}/{$instance_config['backup.ui.dirname']}/";
+    $data_dir = "{$instance_config['data.rootdir']}/{$instance_config['db.basename']}.{$instance_config['base.domain']}/{$instance_config['backup.ui.dirname']}/";
 
     // If we have a folder name, and it either a directory or we can create it as such
     if($instance_config['backup.ui.dirname'] && (is_dir($data_dir) || mkdir($data_dir))) {

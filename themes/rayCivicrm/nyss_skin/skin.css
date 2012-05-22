@@ -170,7 +170,7 @@ input.form-submit {
 
 #crm-create-new-wrapper, 
 #crm-contact-actions-wrapper {
-    z-index: 4;
+    z-index: 11;
     }
     
 div.token-input-dropdown-facebook {

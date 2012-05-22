@@ -142,16 +142,17 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         $dateNow  = date('F jS Y h:i a');
 
         //begin construction of html
-        $html  = "<h2>SOS Proofing Report - $dateNow</h2>";
+        $html  = self::_reportCSS();
+        $html .= "<h2>SOS Proofing Report: $dateNow</h2>";
 
         if ( $startDate || $endDate ) {
           $dateRange = '';
           if ( $startDate && !$endDate ) {
-            $dateRange = "$startDate - Now";
+            $dateRange = "$startDate &#8211; Now";
           } elseif ( !$startDate && $endDate ) {
             $dateRange = "Before $endDate";
           } else {
-            $dateRange = "$startDate - $endDate";
+            $dateRange = "$startDate &#8211; $endDate";
           }
           $html .= "<h3>Date Range: $dateRange</h3>";
         }
@@ -234,4 +235,44 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         CRM_Utils_System::civiExit( );
 
     }//postProcess
+
+    //generate css
+    function _reportCSS() {
+      $css = "
+<style type='text/css'>
+<!--
+h2, h3 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+}
+h3 {
+    font-weight: bold;
+}
+table {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+th {
+    background-color: #CCCCCC;
+    vertical-align: top;
+    border-bottom: solid 1px #999999;
+    border-right: solid 1px #999999;
+    padding: 4px;
+}
+td {
+    vertical-align: top;
+    border-bottom: solid 1px #CCCCCC;
+    border-right: solid 1px #CCCCCC;
+    padding: 4px;
+}
+tr.tableSummary td {
+    font-weight: bold;
+    background-color: #CCCCCC;
+}
+-->
+</style>
+";
+
+      return $css;
+    }
 }
