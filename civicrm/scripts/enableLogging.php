@@ -9,7 +9,9 @@
 $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
-$optList = civicrm_script_init();
+$optList = civicrm_script_init("", array(), True);
+
+drupal_script_init();
 
 require_once 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
