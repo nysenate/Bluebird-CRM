@@ -14,9 +14,19 @@ function is_cli_script()
   return php_sapi_name() == "cli";
 } // is_cli_script()
 
+function drupal_script_init() {
+  define('DRUPAL_ROOT', realpath(__DIR__.'/../../drupal'));
+  $oldwd = getcwd();
+  chdir(DRUPAL_ROOT);
+  $_SERVER['REQUEST_METHOD'] = 'GET';
+  $_SERVER['HTTP_USER_AGENT'] = 'Terminal';
+  $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+  require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
+  drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+  chdir($oldwd);
+}
 
-
-function civicrm_script_init($shopts = "", $longopts = array())
+function civicrm_script_init($shopts = "", $longopts = array(), $session=True)
 {
   // Determine if script is running from command line, or from web server.
 
@@ -26,7 +36,7 @@ function civicrm_script_init($shopts = "", $longopts = array())
   if (is_cli_script()) {
     // Script is being run from the command line.
     $force_auth = false;
-    $myopts = civicrm_script_init_cli($shopts, $longopts);
+    $myopts = civicrm_script_init_cli($shopts, $longopts, $session);
   }
   else {
     // Script is being run from the web server.
@@ -49,9 +59,9 @@ function civicrm_script_init($shopts = "", $longopts = array())
 
 
 
-function civicrm_script_init_cli($shopts, $longopts)
+function civicrm_script_init_cli($shopts, $longopts, $session=True)
 {
-  $old_incpath = add_packages_to_include_path();
+  $old_incpath = add_packages_to_include_path($session);
   if ($old_incpath === false) {
     error_log("Unable to set the script include_path.");
     return null;
@@ -93,10 +103,12 @@ function civicrm_script_init_http($longopts)
 
 
 
-function add_packages_to_include_path()
+function add_packages_to_include_path($session=True)
 {
   $old_incpath = set_include_path(SCRIPT_UTILS_CIVIROOT."/packages".PATH_SEPARATOR.get_include_path());
-  session_start();
+  if ($session) {
+    session_start();
+  }
   return $old_incpath;
 } // add_packages_to_include_path()
 
