@@ -60,7 +60,7 @@ $execSql -i $instance -c "$ppnav"
 ### CiviCRM ###
 
 ## 4911/5251 create the civicrm_import_jobs table
-impjobs="CREATE TABLE IF NOT EXISTS civicrm_import_jobs (
+impjobs="CREATE TABLE IF NOT EXISTS civicrm_importer_jobs (
       id int(10) unsigned NOT NULL AUTO_INCREMENT,
       name varchar(255) NOT NULL,
       table_name varchar(255) NOT NULL,

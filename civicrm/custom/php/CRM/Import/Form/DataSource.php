@@ -304,7 +304,7 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             $dao = new CRM_Core_DAO();
             $db = $dao->getDatabaseConnection();
             $db->simpleQuery(
-                "INSERT INTO civicrm_import_jobs
+                "INSERT INTO civicrm_importer_jobs
                     (name, table_name, source_file, file_type, field_separator, created_by)
                  VALUES
                     ( '$importJobName',
