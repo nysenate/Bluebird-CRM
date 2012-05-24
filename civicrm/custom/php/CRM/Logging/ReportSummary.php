@@ -56,7 +56,7 @@ class CRM_Logging_ReportSummary extends CRM_Report_Form
 
     function groupBy()
     {
-        $this->_groupBy = 'GROUP BY log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)';
+        $this->_groupBy = 'GROUP BY log_conn_id, log_user_id, EXTRACT(DAY_MICROSECOND FROM log_date)';//NYSS 5260
     }
 
     function orderBy()
