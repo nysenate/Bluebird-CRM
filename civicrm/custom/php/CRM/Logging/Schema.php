@@ -361,8 +361,10 @@ COLS;
             return;
         }
 
-        $upsert = array( 'INSERT', 'UPDATE' );
-        $delete = array( 'DELETE' );
+        //NYSS 5260
+        $insert = array('INSERT');
+        $update = array('UPDATE');
+        $delete = array('DELETE');
 
         if ( $tableName ) {
             $tableNames = array( $tableName );
@@ -374,25 +376,50 @@ COLS;
         foreach ( $tableNames as $table ) {
             $columns = $this->columnsOf($table);
 
-            $upsertSQL = $deleteSQL = "INSERT INTO `{$this->db}`.log_{tableName} (";
+            //NYSS 5260
+            // only do the change if any data has changed
+            $cond = array( );
             foreach ( $columns as $column ) {
-                $upsertSQL .= "$column, ";
-                $deleteSQL .= "$column, ";
+                $cond[] = "OLD.$column <> NEW.$column";
             }
-            $upsertSQL .= "log_conn_id, log_user_id, log_action, log_job_id) VALUES ("; //NYSS jobID
-            $deleteSQL .= "log_conn_id, log_user_id, log_action, log_job_id) VALUES ("; //NYSS jobID
-            
+            $updateSQL = "IF ( (" . implode( ' OR ', $cond ) . ") AND ( @civicrm_disable_logging IS NULL || @civicrm_disable_logging = 0 ) ) THEN ";
+
+            $sqlStmt = "INSERT INTO `{$this->db}`.log_{tableName} (";
+
+            foreach ($columns as $column) {
+              $sqlStmt .= "$column, ";
+            }
+            $sqlStmt .= "log_conn_id, log_user_id, log_action, log_job_id) VALUES ("; //NYSS jobID
+
+            $insertSQL = $deleteSQL = "IF ( @civicrm_disable_logging IS NULL || @civicrm_disable_logging = 0 ) THEN $sqlStmt ";
+
+            $updateSQL .= $sqlStmt;
+
+            $sqlStmt = '';
             foreach ( $columns as $column ) {
-                $upsertSQL .= "NEW.$column, ";
+                $sqlStmt   .= "NEW.$column, ";
                 $deleteSQL .= "OLD.$column, ";
             }
-            $upsertSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}', @jobID);"; //NYSS
+            $sqlStmt   .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}', @jobID);"; //NYSS
             $deleteSQL .= "CONNECTION_ID(), @civicrm_user_id, '{eventName}', @jobID);"; //NYSS
+
+            $sqlStmt   .= "END IF;";
+            $deleteSQL .= "END IF;";
+
+            $insertSQL .= $sqlStmt;
+            $updateSQL .= $sqlStmt;
 
             $info[] = array( 'table' => array( $table ),
                              'when'  => 'AFTER',
-                             'event' => $upsert,
-                             'sql'   => $upsertSQL );
+                             'event' => $insert,
+                             'sql'   => $insertSQL 
+                             );
+
+            $info[] = array('table' => array($table),
+                            'when' => 'AFTER',
+                            'event' => $update,
+                            'sql' => $updateSQL,
+                            );
 
             $info[] = array( 'table' => array( $table ),
                              'when'  => 'AFTER',
@@ -400,4 +427,20 @@ COLS;
                              'sql'   => $deleteSQL );
         }
     } //triggerInfo
+
+  /**
+   * This allow logging to be temporarily disabled for certain cases
+   * where we want to do a mass cleanup but dont want to bother with
+   * an audit trail
+   *
+   * @static
+   * @public
+   */
+  static function disableLoggingForThisConnection( ) {
+    // do this only if logging is enabled
+    $config = CRM_Core_Config::singleton( );
+    if ( $config->logging ) {
+      CRM_Core_DAO::executeQuery( 'SET @civicrm_disable_logging = 1' );
+    }
+  }
 }
