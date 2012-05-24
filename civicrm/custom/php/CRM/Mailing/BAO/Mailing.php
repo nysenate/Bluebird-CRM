@@ -1090,6 +1090,7 @@ AND civicrm_contact.is_opt_out =0";
         $mailParams['job_id']         = $job_id;
         $mailParams['event_queue_id'] = $event_queue_id;
         $mailParams['is_test']        = $test;
+        $mailParams['contact_id']     = $contactId;//5354
 
         require_once 'CRM/Utils/Hook.php';
         CRM_Utils_Hook::alterMailParams( $mailParams, 'civimail' );
@@ -2125,7 +2126,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
         if ( $extraParams ) {
             $params = array_merge( $params, $extraParams );
         }
-            
+
         // if return properties are not passed then get all return properties
         if ( empty( $returnProperties ) ) {
             require_once 'CRM/Contact/BAO/Contact.php';
@@ -2143,7 +2144,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
                 $custom[] = $cfID;
             }
         }
-                
+
         //get the total number of contacts to fetch from database.
         $numberofContacts = count( $contactIDs );
 
