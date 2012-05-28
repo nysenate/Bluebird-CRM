@@ -15,6 +15,17 @@ function nyss_sage_compare($old_address, $params, $key) {
     return strcmp($old_address->$key, $params[$key]) != 0;
 }
 
+// NYSS 5308 Search through parameters for a key
+// that starts with custom_{$id} and return it
+function nyss_sage_custom_value($params, $id, $addrId) {
+    foreach($params as $k => $v) {
+        if(substr($k, 0, 9) == "custom_{$id}") {
+            return $v;
+        }
+    }
+    return null;
+}
+
 function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
 {
     //Don't do anything unless we are saving an address
@@ -23,7 +34,7 @@ function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
 
         // If the address already exists, fetch it and compare with form values
         // Unless the address is being modified we never overwrite districts
-        $old_addr = nyss_sage_address(CRM_Utils_Array::value('id',$params));
+        $old_addr = nyss_sage_address($id);
 
         $addr_changed = ($old_addr === null ||
             nyss_sage_compare($old_addr,$params,'street_address')     ||
@@ -35,10 +46,20 @@ function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
 
         $geo_missing = empty($old_addr->geo_code_1) || empty($old_addr->geo_code_2);
 
+        $custom_46 = nyss_sage_custom_value($params, 46, $old_addr->id);
+        $custom_47 = nyss_sage_custom_value($params, 47, $old_addr->id);
+        $custom_48 = nyss_sage_custom_value($params, 48, $old_addr->id);
+        $custom_49 = nyss_sage_custom_value($params, 49, $old_addr->id);
+
+        $district_info_missing = empty($custom_46)  ||
+                                 empty($custom_47)  ||
+                                 empty($custom_48)  ||
+                                 empty($custom_49);
+
         //NYSS 5308 - Changed code to check for postal_code_suffix as well as
         //empty geo_code lat/lon. If empty, or suffix changed, then lookup
         //the new geocode information.
-        if( $addr_changed || $geo_missing) {
+        if( $addr_changed || $geo_missing || $district_info_missing) {
 
             //NYSS 5263 - Removed the check for country_id as the $params
             //variable wasn't being given the country_id.
