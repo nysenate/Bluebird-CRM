@@ -188,7 +188,7 @@ class CRM_Mailing_BAO_Query
 				list( $name, $op, $value, $grouping, $wildcard ) = $values;
 				if ( $value == 'Y' ) {
                     self::mailingEventQueryBuilder($query, $values,
-                        'civicrm_mailing_event_delivered', 
+                        'civicrm_mailing_event_sendgrid_delivered', 
 						'mailing_delivery_status', 
 						ts('Mailing Delivery'), 
                         $options);
@@ -196,7 +196,7 @@ class CRM_Mailing_BAO_Query
 				    $options['Y'] = $options['N'];
 					$values = array( $name, $op, 'Y', $grouping, $wildcard );
 					self::mailingEventQueryBuilder($query, $values,
-                        'civicrm_mailing_event_sendgrid_bounce', 
+                        'civicrm_mailing_event_bounce', 
 						'mailing_delivery_status', 
 						ts('Mailing Delivery'), 
                         $options);
