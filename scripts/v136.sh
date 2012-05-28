@@ -97,9 +97,17 @@ INSERT INTO civicrm_navigation
 ( domain_id, url, label, name, permission, permission_operator, parent_id, is_active, has_separator, weight )
 VALUES
 ( 1, CONCAT('civicrm/report/instance/', @instanceID,'&reset=1'), 'Mass Email Detail Report', 'Mass Email Detail Report', 'administer CiviMail', 'OR', @reportlastID, '1', NULL, @nav_max_weight+1 );
-UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;
+UPDATE civicrm_report_instance SET navigation_id = LAST_INSERT_ID() WHERE id = @instanceID;"
 
 $execSql -i $instance -c "$maildetail"
+
+## 5304 pdf page option ##
+pdfpage="
+SELECT @optGroup := id FROM civicrm_option_group WHERE name = 'pdf_format';
+INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id) 
+VALUES
+(@optGroup, 'Letter Landscape', '{\"paper_size\":\"letter\",\"orientation\":\"landscape\",\"metric\":\"in\",\"margin_top\":0.5,\"margin_bottom\":0.5,\"margin_left\":0.5,\"margin_right\":0.5}', 'Letter Landscape', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, NULL, NULL, NULL);"
+
 
 ### Cleanup ###
 

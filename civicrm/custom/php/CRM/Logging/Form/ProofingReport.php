@@ -43,6 +43,8 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
         $this->addElement( 'text', 'jobID', ts('Job ID') );
 
+        $this->addElement( 'text', 'alteredBy', ts('Altered By') );
+
         $this->addDate( 'start_date', ts('Date from'), false, array( 'formatType' => 'custom') );
         $this->addDate( 'end_date', ts('...to'), false, array( 'formatType' => 'custom') );
 
@@ -93,10 +95,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         $errors = array( );
 
         if ( empty($fields['jobID']) &&
+             empty($fields['alteredBy']) &&
              empty($fields['start_date']) &&
              empty($fields['end_date']) ) {
 
-            $errors['jobID'] = ts('You must select a Job ID or date field to run this report.');
+            $errors['jobID'] = ts('You must select a Job ID, Altered By value, or date field to run this report.');
         }
 
         return $errors;
@@ -121,9 +124,13 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
         $sqlParams = array();
         $sqlWhere  = 1;
-        $startDate = $endDate = '';
+        $startDate = $endDate = $alteredByFrom = '';
         if ( $formParams['jobID'] ) {
             $sqlParams[] = "log_job_id = '{$formParams['jobID']}'";
+        }
+        if ( $formParams['alteredBy'] ) {
+            $sqlParams[] = "ab.sort_name LIKE '%{$formParams['alteredBy']}%'";
+            $alteredByFrom = "LEFT JOIN $civiDB.civicrm_contact ab ON logTbl.log_user_id = ab.id ";
         }
         if ( $formParams['start_date'] ) {
             $startDate = date( 'Y-m-d', strtotime($formParams['start_date']) );
@@ -160,6 +167,9 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
         if ( $formParams['jobID'] ) {
           $html .= "<h3>Job ID: {$formParams['jobID']}</h3>";
         }
+        if ( $formParams['alteredBy'] ) {
+          $html .= "<h3>Altered By Search: {$formParams['alteredBy']}</h3>";
+        }
 
         $html .= "<table>
                     <tr>
@@ -173,19 +183,21 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
         //get contacts with changes to either the contact object or tag
         CRM_Core_DAO::executeQuery("SET SESSION group_concat_max_len = 100000;");
-        $query = "SELECT id, DATE_FORMAT(log_date, '%m/%d/%Y') as logDate, null as tagList
-                  FROM {$logDB}.log_civicrm_contact
+        $query = "SELECT logTbl.id, DATE_FORMAT(log_date, '%m/%d/%Y') as logDate, null as tagList
+                  FROM {$logDB}.log_civicrm_contact logTbl
+                  $alteredByFrom
                   WHERE ( $sqlWhere )
                     AND log_action != 'Initialization'
                   UNION
-                  SELECT et.entity_id, DATE_FORMAT(log_date, '%m/%d/%Y') as logDate, GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ')
-                  FROM {$logDB}.log_civicrm_entity_tag et
+                  SELECT logTbl.entity_id, DATE_FORMAT(log_date, '%m/%d/%Y') as logDate, GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ')
+                  FROM {$logDB}.log_civicrm_entity_tag logTbl
                   JOIN {$civiDB}.civicrm_tag t
-                    ON et.tag_id = t.id
+                    ON logTbl.tag_id = t.id
+                  $alteredByFrom
                   WHERE ( $sqlWhere )
                     AND entity_table = 'civicrm_contact'
                     AND log_action != 'Initialization'
-                  GROUP BY et.entity_id;";                  
+                  GROUP BY logTbl.entity_id;";
         //CRM_Core_Error::debug_var('query',$query);
         $dao = CRM_Core_DAO::executeQuery($query);
 
@@ -195,6 +207,12 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
                              'id'      => $dao->id,
                              );
             $cDetails = civicrm_api('contact','getsingle',$params);
+            //CRM_Core_Error::debug('cDetails',$cDetails);
+
+            $dob = '';
+            if ( isset($cDetails['birth_date']) && !empty($cDetails['birth_date']) ) {
+                $dob = date('m/d/Y', strtotime($cDetails['birth_date']));
+            }
 
             $html .= "<tr>
                         <td>{$dao->logDate}</td>
@@ -204,11 +222,11 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
                             {$cDetails['city']}, {$cDetails['state_name']} {$cDetails['postal_code']}
                             </td>
                         <td>{$cDetails['gender']}<br />
-                            {$cDetails['date_of_birth']}<br />
+                            {$dob}<br />
                             {$cDetails['phone']}
                             </td>
-                        <td>{$cDetails['email']}</td>
-                        <td>{$dao->tagList}</td>
+                        <td>{$cDetails['email']}&nbsp;</td>
+                        <td>{$dao->tagList}&nbsp;</td>
                       </tr>";
         }
 
@@ -247,6 +265,7 @@ h2, h3 {
 }
 h3 {
     font-weight: bold;
+    font-size: 16px;
 }
 table {
     font-family: Arial, Helvetica, sans-serif;
