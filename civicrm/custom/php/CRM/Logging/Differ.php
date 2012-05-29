@@ -90,18 +90,12 @@ class CRM_Logging_Differ
             3 => array($id,                'Integer'),
         );
 
-        // look for all the changes in the given connection that happended less than 10 seconds later than log_date to the given id to catch multi-query changes
+        // look for the last change in the given connection that happended less than 10 seconds later than log_date to the given id to catch multi-query changes
         $changedSQL = "SELECT * FROM `{$this->db}`.`log_$table` WHERE log_conn_id = %1 AND log_date < DATE_ADD(%2, INTERVAL 10 SECOND) AND id = %3 ORDER BY log_date DESC LIMIT 1";
-        //$changed    = $this->sqlToArray($changedSQL, $params);//NYSS 5260
-
-      $changedDAO = CRM_Core_DAO::executeQuery($changedSQL, $params);
-      while ($changedDAO->fetch( )) {
-        $changed = $changedDAO->toArray();
+        $changed    = $this->sqlToArray($changedSQL, $params);
 
         // return early if nothing found
-        if (empty($changed)) {
-          continue;
-        }
+        if (empty($changed)) return array();
 
         switch ($changed['log_action']) {
         case 'Delete':
@@ -144,8 +138,8 @@ class CRM_Logging_Differ
                              'to'     => CRM_Utils_Array::value($diff,$changed),
                              );
         }
-      }//NYSS 5260
-      return $diffs;
+
+        return $diffs;
     }
 
     function titlesAndValuesForTable($table)
