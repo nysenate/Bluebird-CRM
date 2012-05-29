@@ -342,7 +342,7 @@
                         <div class="contactCardLeft">
                                 <table>
                                     <tr>
-                                      <td>
+                                      <td colspan="2">
                                         <div class="crm-clear crm-summary-block" id="phone-block">
                                           {include file="CRM/Contact/Page/Inline/Phone.tpl"}
                                         </div>
@@ -381,7 +381,7 @@
                              <table>
                                {*NYSS 4775*}
                                <tr>
-                                 <td id="email-block-cell">
+                                 <td id="email-block-cell" colspan="3">
                                  <div class="crm-clear crm-summary-block" id="email-block">
                                    {include file="CRM/Contact/Page/Inline/Email.tpl"}
                                  </div>

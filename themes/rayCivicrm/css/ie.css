@@ -1,11 +1,15 @@
 /* put IE hacks in here */
 #crm-contact-actions-link {
-    width:70px;
+  width:70px;
 }
 
-.crm-actions-ribbon {z-index:5}
+.crm-actions-ribbon {
+  z-index:11
+}
 
-#crm-contact-actions-list {overflow: visible;}
+#crm-contact-actions-list {
+  overflow: visible;
+}
 
 .crm-contact-actions-list-inner { zoom:1; width:490px;}
 

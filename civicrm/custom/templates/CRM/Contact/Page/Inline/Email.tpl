@@ -77,10 +77,10 @@
 {literal}
 <script type="text/javascript">
 cj(function(){
-    cj('#email-block').mouseover( function() {
+    cj('#email-block').mouseenter( function() {
       cj(this).addClass('crm-inline-edit-hover');
       cj('#edit-email').show();
-    }).mouseout( function() {
+    }).mouseleave( function() {
       cj(this).removeClass('crm-inline-edit-hover');
       {/literal}{if $email}{literal}
       cj('#edit-email').hide();

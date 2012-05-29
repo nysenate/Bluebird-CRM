@@ -55,10 +55,10 @@
 {literal}
 <script type="text/javascript">
 cj(function(){
-    cj('#phone-block').mouseover( function() {
+    cj('#phone-block').mouseenter( function() {
       cj(this).addClass('crm-inline-edit-hover');
       cj('#edit-phone').show();
-    }).mouseout( function() {
+    }).mouseleave( function() {
       cj(this).removeClass('crm-inline-edit-hover');
       {/literal}{if $phone}{literal}
       cj('#edit-phone').hide();
