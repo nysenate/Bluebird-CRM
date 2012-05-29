@@ -335,12 +335,18 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
                     $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID_B', 'Integer');
                 }
 
-                $allTabs[] = array( 'id'     =>  $k,
+                $tempTab = array(   'id'     =>  $k,
                                     'url'    => CRM_Utils_System::url( "civicrm/contact/view/$k",
                                                                        "reset=1&snippet=1&cid={$this->_contactId}{$crmPID}" ),//NYSS
                                     'title'  => $v,
-                                    'weight' => $weight,
-                                    'count'  => CRM_Contact_BAO_Contact::getCountComponent( $k, $this->_contactId ) );
+                                    'weight' => $weight
+                                );
+                if($k == 'log') {
+                    $tempTab['count'] = '<script>$().ready( function() { getChangeLogCount(); } );</script>';
+                } else {
+                    $tempTab['count'] = CRM_Contact_BAO_Contact::getCountComponent( $k, $this->_contactId );
+                }
+                $allTabs[] = $tempTab;
                 $weight += 10;
             }
         }

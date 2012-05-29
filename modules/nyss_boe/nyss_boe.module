@@ -157,25 +157,27 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
         $element = $form->getElement( $elementName );
         $element->freeze( );
 
-		$eleLoc  = $form->getElement( $elementLoc );
+        $eleLoc  = $form->getElement( $elementLoc );
         $eleLoc->freeze( );
       }
     }
 
     //suppress special location type options
-    for ( $i = 1; ; $i++ ) {
+    for ( $i = 1; $i <= 5; $i++ ) {
       $elementLoc = "{$name}[$i][location_type_id]";
       if ( ! $form->elementExists( $elementLoc ) ) {
-        break;
+        continue;
       }
       $eleLoc =& $form->getElement( $elementLoc );
-      $specialTypes = array('BOE', 'BOEmailing', 'Billing', 'NCOA');
+      $specialTypes = array('BOE', 'Billing', 'NCOA');
       foreach ( $eleLoc->_options as $index => $options ) {
         if ( in_array($options['text'], $specialTypes) &&
              ! $eleLoc->_flagFrozen ) {
           unset($eleLoc->_options[$index]);
         }
       }
+      //reset array keys or we have issues with the display
+      $eleLoc->_options = array_values($eleLoc->_options);
     }
 
     //CRM_Core_Error::debug_var('form',$form);

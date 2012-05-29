@@ -34,10 +34,10 @@
     </tr>
     <tr>
       <td>{ts}Phone{/ts}&nbsp; 
-      <span id="add-more" title="{ts}click to add more{/ts}"><a class="crm-link-action">{ts}add{/ts}</a></span>
+      <span id="add-more-phone" title="{ts}click to add more{/ts}"><a class="crm-link-action">{ts}add{/ts}</a></span>
       </td>
-	    <td>{ts}Phone Location{/ts}</td>
-	    <td>{ts}Phone Type{/ts}</td>
+        <td>{ts}Phone Location{/ts}</td>
+        <td>{ts}Phone Type{/ts}</td>
       <td>{ts}Primary?{/ts}</td>
       <td>&nbsp;</td>
     </tr>
@@ -86,13 +86,16 @@
       });
 
       // add more
-      cj('#add-more').click(function() {
+      cj('#add-more-phone').click(function() {
         cj('tr[id^="Phone_Block_"][class="hiddenElement"] :first').parent().removeClass('hiddenElement');
 
         if ( cj('tr[id^="Phone_Block_"][class="hiddenElement"]').length == 0  ) {
-          cj('#add-more').hide();
+          cj('#add-more-phone').hide();
         }
       });
+      if ( cj('tr[id^="Phone_Block_5"] input#phone_5_phone').val().length != 0  ) {
+        cj('#add-more-phone').hide();
+      }
 
       // handle ajax form submitting
       var options = { 

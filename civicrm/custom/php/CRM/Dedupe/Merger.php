@@ -813,8 +813,12 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
                                              CRM_Utils_array::value('preferred_communication_method', $contact));
             //NYSS api 3 returns pref_comm_method as an array, which breaks the lookup; so we reconstruct
             $sep = CRM_Core_DAO::VALUE_SEPARATOR;
-            $prefCommList = implode($sep, $specialValues[$moniker]['preferred_communication_method']);
-            $specialValues[$moniker]['preferred_communication_method'] = $sep.$prefCommList.$sep;
+            if ( !empty($specialValues[$moniker]['preferred_communication_method']) ) {
+              $prefCommList = implode($sep, $specialValues[$moniker]['preferred_communication_method']);
+              $specialValues[$moniker]['preferred_communication_method'] = $sep.$prefCommList.$sep;
+            } else {
+              $specialValues[$moniker]['preferred_communication_method'] = '';
+            }
 
             $names = array('preferred_communication_method' =>
                            array('newName'   => 'preferred_communication_method_display',
@@ -1238,8 +1242,8 @@ INNER JOIN  civicrm_membership membership2 ON membership1.membership_type_id = m
         $names['postal_greeting']   = array( 'newName' => 'postal_greeting_id', 'groupName' => 'postal_greeting' );
         CRM_Core_OptionGroup::lookupValues( $submitted, $names, true );
 
-        // fix custom fields so they're edible by createProfileContact()
-		//NYSS
+        // fix custom fields so they're editable by createProfileContact()
+        //NYSS
         static $treeCache = array();
         if ( !array_key_exists($migrationInfo['main_details']['contact_type'], $treeCache) ) {
             $treeCache[$migrationInfo['main_details']['contact_type']] = 

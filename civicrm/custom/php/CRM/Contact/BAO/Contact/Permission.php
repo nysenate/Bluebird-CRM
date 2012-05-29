@@ -60,6 +60,7 @@ class CRM_Contact_BAO_Contact_Permission {
         //NYSS 5268
 		// short circuit for admin rights here so we avoid unneeeded queries
         // some duplication of code, but we skip 3-5 queries
+        require_once 'CRM/ACL/API.php'; //5345
         if (CRM_Core_Permission::check('edit all contacts') ||
           ($type == CRM_ACL_API::VIEW && CRM_Core_Permission::check('view all contacts')) ) {
           return true;

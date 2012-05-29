@@ -34,7 +34,7 @@
     </tr>
     <tr>
       <td>{ts}Email{/ts}&nbsp; 
-      <span id="add-more" title="{ts}click to add more{/ts}"><a class="crm-link-action">{ts}add{/ts}</a></span>
+      <span id="add-more-email" title="{ts}click to add more{/ts}"><a class="crm-link-action">{ts}add{/ts}</a></span>
       </td>
       <td>{ts}Location{/ts}</td>
       <td>{ts}On Hold?{/ts}</td>
@@ -100,16 +100,19 @@
       });
 
       // add more and set focus to new row
-      cj('#add-more').click(function() {
+      cj('#add-more-email').click(function() {
         var rowSelector = cj('tr[id^="Email_Block_"][class="hiddenElement"] :first').parent(); 
         rowSelector.removeClass('hiddenElement');
         var rowId = rowSelector.attr('id').replace('Email_Block_', '');
         cj('#email_' + rowId + '_email').focus();
         
         if ( cj('tr[id^="Email_Block_"][class="hiddenElement"]').length == 0  ) {
-          cj('#add-more').hide();
+          cj('#add-more-email').hide();
         }
       });
+      if ( cj('tr[id^="Email_Block_5"] input#email_5_email').val().length != 0  ) {
+        cj('#add-more-email').hide();
+      }
 
       // handle ajax form submitting
       var options = { 
@@ -138,8 +141,18 @@
              }
           }).responseText;
 
+          //NYSS force status cancel
+          if ( !status ) {
+            var isCancel = false;
+            for (var i = 0;i<formData.length;i++) {
+              if ( formData[i]['name'] == '_qf_Email_refresh' ) {
+                isCancel = true;
+              }
+            }
+          }
+
           //check if form is submitted successfully
-          if ( status ) {
+          if ( status || isCancel ) {
             // fetch the view of email block after edit
             var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1' }"{literal}; 
             var queryString = 'class_name=CRM_Contact_Page_Inline_Email&type=page&cid=' + {/literal}"{$contactId}"{literal};
@@ -155,7 +168,7 @@
           }
             
           cj('#email-block').html( response );
-          
+
           // here we could return false to prevent the form from being submitted; 
           // returning anything other than false will allow the form submit to continue 
           return false; 

@@ -13,7 +13,15 @@
         </div>
         <div class="clear"></div>
     </div>
-    
+
+    <div class="crm-section">
+        <div class="label"><label>{$form.alteredBy.label}</label></div>
+        <div class="content">
+          {$form.alteredBy.html}
+        </div>
+        <div class="clear"></div>
+    </div>
+
     <div class="crm-section">
         <div class="label">{$form.start_date.label}</div>
         <div class="content">
