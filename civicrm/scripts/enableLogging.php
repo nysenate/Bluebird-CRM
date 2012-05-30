@@ -9,7 +9,7 @@
 $prog = basename(__FILE__);
 
 require_once 'script_utils.php';
-$optList = civicrm_script_init("", array(), True);
+$optList = civicrm_script_init("", array(), False);
 
 drupal_script_init();
 
