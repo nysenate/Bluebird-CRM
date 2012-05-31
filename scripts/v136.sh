@@ -68,7 +68,7 @@ impjobs="CREATE TABLE IF NOT EXISTS civicrm_importer_jobs (
       file_type varchar(255) NOT NULL,
       field_separator varchar(10) NOT NULL,
       contact_group_id int(10) unsigned NOT NULL,
-      created_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      created_on timestamp,
       created_by int(10) unsigned NOT NULL,
       PRIMARY KEY (id),
       KEY name (name)
@@ -87,7 +87,7 @@ INSERT INTO civicrm_option_value
 INSERT INTO civicrm_report_instance
 ( domain_id, title, report_id, description, permission, form_values)
 VALUES 
-( 1, 'Mass Email Detail Report', 'mailing/detail', 'Provides reporting on Intended and Successful Deliveries, Unsubscribes and Opt-outs, Replies and Forwards.', '', 'a:30:{s:6:\"fields\";a:6:{s:9:\"sort_name\";s:1:\"1\";s:12:\"mailing_name\";s:1:\"1\";s:11:\"delivery_id\";s:1:\"1\";s:14:\"unsubscribe_id\";s:1:\"1\";s:9:\"optout_id\";s:1:\"1\";s:5:\"email\";s:1:\"1\";}s:12:\"sort_name_op\";s:3:\"has\";s:15:\"sort_name_value\";s:0:\"\";s:6:\"id_min\";s:0:\"\";s:6:\"id_max\";s:0:\"\";s:5:\"id_op\";s:3:\"lte\";s:8:\"id_value\";s:0:\"\";s:13:\"mailing_id_op\";s:2:\"in\";s:16:\"mailing_id_value\";a:0:{}s:18:\"delivery_status_op\";s:2:\"eq\";s:21:\"delivery_status_value\";s:0:\"\";s:18:\"is_unsubscribed_op\";s:2:\"eq\";s:21:\"is_unsubscribed_value\";s:0:\"\";s:12:\"is_optout_op\";s:2:\"eq\";s:15:\"is_optout_value\";s:0:\"\";s:13:\"is_replied_op\";s:2:\"eq\";s:16:\"is_replied_value\";s:0:\"\";s:15:\"is_forwarded_op\";s:2:\"eq\";s:18:\"is_forwarded_value\";s:0:\"\";s:6:\"gid_op\";s:2:\"in\";s:9:\"gid_value\";a:0:{}s:9:\"order_bys\";a:1:{i:1;a:2:{s:6:\"column\";s:9:\"sort_name\";s:5:\"order\";s:3:\"ASC\";}}s:11:\"description\";s:21:\"Mailing Detail Report\";s:13:\"email_subject\";s:0:\"\";s:8:\"email_to\";s:0:\"\";s:8:\"email_cc\";s:0:\"\";s:10:\"permission\";s:1:\"0\";s:9:\"parent_id\";s:0:\"\";s:6:\"groups\";s:0:\"\";s:9:\"domain_id\";i:1;}');
+( 1, 'Mass Email Detail Report', 'mailing/detail', 'Provides reporting on Intended and Successful Deliveries, Unsubscribes and Opt-outs, Replies and Forwards.', 'access CiviReport', 'a:30:{s:6:\"fields\";a:6:{s:9:\"sort_name\";s:1:\"1\";s:12:\"mailing_name\";s:1:\"1\";s:11:\"delivery_id\";s:1:\"1\";s:14:\"unsubscribe_id\";s:1:\"1\";s:9:\"optout_id\";s:1:\"1\";s:5:\"email\";s:1:\"1\";}s:12:\"sort_name_op\";s:3:\"has\";s:15:\"sort_name_value\";s:0:\"\";s:6:\"id_min\";s:0:\"\";s:6:\"id_max\";s:0:\"\";s:5:\"id_op\";s:3:\"lte\";s:8:\"id_value\";s:0:\"\";s:13:\"mailing_id_op\";s:2:\"in\";s:16:\"mailing_id_value\";a:0:{}s:18:\"delivery_status_op\";s:2:\"eq\";s:21:\"delivery_status_value\";s:0:\"\";s:18:\"is_unsubscribed_op\";s:2:\"eq\";s:21:\"is_unsubscribed_value\";s:0:\"\";s:12:\"is_optout_op\";s:2:\"eq\";s:15:\"is_optout_value\";s:0:\"\";s:13:\"is_replied_op\";s:2:\"eq\";s:16:\"is_replied_value\";s:0:\"\";s:15:\"is_forwarded_op\";s:2:\"eq\";s:18:\"is_forwarded_value\";s:0:\"\";s:6:\"gid_op\";s:2:\"in\";s:9:\"gid_value\";a:0:{}s:9:\"order_bys\";a:1:{i:1;a:2:{s:6:\"column\";s:9:\"sort_name\";s:5:\"order\";s:3:\"ASC\";}}s:11:\"description\";s:21:\"Mailing Detail Report\";s:13:\"email_subject\";s:0:\"\";s:8:\"email_to\";s:0:\"\";s:8:\"email_cc\";s:0:\"\";s:10:\"permission\";s:1:\"0\";s:9:\"parent_id\";s:0:\"\";s:6:\"groups\";s:0:\"\";s:9:\"domain_id\";i:1;}');
 
 SELECT @reportlastID       := MAX(id) FROM civicrm_navigation where name = 'Mass Email';
 SELECT @nav_max_weight     := MAX(ROUND(weight)) from civicrm_navigation WHERE parent_id = @reportlastID;
@@ -107,6 +107,8 @@ SELECT @optGroup := id FROM civicrm_option_group WHERE name = 'pdf_format';
 INSERT INTO civicrm_option_value (option_group_id, label, value, name, grouping, filter, is_default, weight, description, is_optgroup, is_reserved, is_active, component_id, domain_id, visibility_id) 
 VALUES
 (@optGroup, 'Letter Landscape', '{\"paper_size\":\"letter\",\"orientation\":\"landscape\",\"metric\":\"in\",\"margin_top\":0.5,\"margin_bottom\":0.5,\"margin_left\":0.5,\"margin_right\":0.5}', 'Letter Landscape', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, NULL, NULL, NULL);"
+
+$execSql -i $instance -c "$pdfpage"
 
 
 ### Cleanup ###
