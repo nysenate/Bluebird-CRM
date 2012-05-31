@@ -100,7 +100,10 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
         print '<a href="/" style="float:right;"> &raquo; back to Bluebird</a><h2><a href="/">'. $quickTitle[0] .'</a></h2> ';
       }
  ?>
-  <div class="clear span-24 main-container <?php if (arg(0) != 'civicrm') {?>standard-container<?php } ?>">
+  <div class="clear span-24 main-container <?php 
+    if ( arg(0) != 'civicrm' ) { echo 'standard-container '; }
+	if ( arg(0) == 'admin' && arg(2) == 'user' ) { echo 'user-admin'; } //NYSS 5253
+  ?>">
   <div id="breadcrumb"><?php print $breadcrumb; ?></div>
   <?php if ($user->uid && arg(0) == 'civicrm') { ?>
   	<div id="edit-profile">

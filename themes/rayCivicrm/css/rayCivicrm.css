@@ -1548,3 +1548,8 @@ form#Contact .groupTagsKeywords .crm-section .label {
   z-index: 10;
   position: relative;
 }
+
+/*NYSS 5253*/
+.user-admin .help {
+  display: none;
+}
