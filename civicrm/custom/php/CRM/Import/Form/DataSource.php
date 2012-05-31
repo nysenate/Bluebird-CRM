@@ -305,13 +305,14 @@ class CRM_Import_Form_DataSource extends CRM_Core_Form {
             $db = $dao->getDatabaseConnection();
             $db->simpleQuery(
                 "INSERT INTO civicrm_importer_jobs
-                    (name, table_name, source_file, file_type, field_separator, created_by)
+                    (name, table_name, source_file, file_type, field_separator, created_on, created_by)
                  VALUES
                     ( '$importJobName',
                       '{$this->_params['import_table_name']}',
                       '{$this->_params['uploadFile']['name']}',
                       '{$this->_params['dataSource']}',
                       '{$this->_params['fieldSeparator']}',
+                      NOW(),
                       $user->uid
                     )"
             );
