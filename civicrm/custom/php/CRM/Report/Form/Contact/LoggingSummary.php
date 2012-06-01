@@ -454,7 +454,8 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                      ON crm_contact_civireport.group_id = group_table.id";
         $cidWhere = ( $sqlParams['cid'] ) ? " crm_contact_civireport.contact_id = {$sqlParams['cid']} " : 1;
         $where  = "WHERE $cidWhere
-                     AND group_table.is_hidden != 1";
+                     AND group_table.is_hidden != 1
+                     AND crm_contact_civireport.log_action != 'Initialization'";
         $sql    = "$select, 'Group' log_type $from $where";
         //CRM_Core_Error::debug_var('sql',$sql);
 
