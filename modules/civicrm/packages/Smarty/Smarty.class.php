@@ -570,6 +570,7 @@ class Smarty
     {
       $this->assign('SCRIPT_NAME', isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME']
                     : @$GLOBALS['HTTP_SERVER_VARS']['SCRIPT_NAME']);
+      $this->register_prefilter( array($this, 'add_strip_tags') );
     }
 
     /**
@@ -1988,6 +1989,15 @@ class Smarty
 			return $function;
 		}
 	}
+
+    function add_strip_tags($source, &$smarty)
+    {
+        $template_vars = $this->get_template_vars();
+        if(!$template_vars['config']->debug) {
+            $source = '{strip}' . $source . '{/strip}';
+        }
+        return $source;
+    }
   
     /**#@-*/
 
