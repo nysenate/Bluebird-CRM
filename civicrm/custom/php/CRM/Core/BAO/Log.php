@@ -201,6 +201,9 @@ UPDATE civicrm_log
          $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
          $loggingDB = $dsn['database'];
 
+         $bbconfig = get_bluebird_instance_config();
+         $civiDB   = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
+
          $counts = array();
          $tblKey = array( 'civicrm_contact'        => array( 'id'     => 'id',
                                                              'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
@@ -220,6 +223,9 @@ UPDATE civicrm_log
                                                              ),
                           'civicrm_group_contact'  => array( 'id'     => 'contact_id',
                                                              'noinit' => true,
+                                                             'join'   => "JOIN $civiDB.civicrm_group cg
+                                                                            ON civicrm_group_contact.group_id = cg.id",
+                                                             'where'  => 'cg.is_hidden != 1',
                                                              ),
                           'civicrm_relationship_a' => array( 'id'     => 'contact_id_a',
                                                              'table'  => 'civicrm_relationship',
