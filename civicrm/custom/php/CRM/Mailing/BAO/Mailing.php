@@ -2154,7 +2154,11 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
 
         //NYSS 5189 - don't LIMIT as there may be multiple emails per contact
         //NYSS 5389 - sort by is_primary so we prefer that value over others
-        $details = $query->apiQuery( $params, $returnProperties, NULL, 'is_primary ASC', 0, 0 );
+        $setOrder = NULL;
+        if ( isset($returnProperties['is_primary']) ) {
+          $setOrder = 'is_primary ASC';
+        }
+        $details = $query->apiQuery( $params, $returnProperties, NULL, $setOrder, 0, 0 );
         
         $contactDetails =& $details[0];
                 
