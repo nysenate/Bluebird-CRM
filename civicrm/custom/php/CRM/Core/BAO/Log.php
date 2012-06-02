@@ -225,7 +225,8 @@ UPDATE civicrm_log
                                                              'noinit' => true,
                                                              'join'   => "JOIN $civiDB.civicrm_group cg
                                                                             ON civicrm_group_contact.group_id = cg.id",
-                                                             'where'  => 'cg.is_hidden != 1',
+                                                             'where'  => "cg.is_hidden != 1
+                                                                            AND log_action != 'Initialization'",
                                                              ),
                           'civicrm_relationship_a' => array( 'id'     => 'contact_id_a',
                                                              'table'  => 'civicrm_relationship',

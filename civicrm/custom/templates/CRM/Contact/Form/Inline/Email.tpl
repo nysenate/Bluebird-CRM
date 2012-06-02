@@ -114,6 +114,13 @@
         cj('#add-more-email').hide();
       }
 
+	  // error handling / show hideen elements duing form validation
+      cj('tr[id^="Email_Block_"]' ).each( function() {
+          if( cj(this).find('td:first span').length > 0 ) {
+            cj(this).removeClass('hiddenElement');
+          } 
+      });
+
       // handle ajax form submitting
       var options = { 
           beforeSubmit:  showRequest  // pre-submit callback  
