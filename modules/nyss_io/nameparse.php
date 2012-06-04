@@ -1,4 +1,4 @@
-<?
+<?php
 /*
 Name:	nameparse.php
 Version: 0.2a
