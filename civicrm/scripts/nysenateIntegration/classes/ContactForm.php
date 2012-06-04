@@ -1,4 +1,4 @@
-<?
+<?php
     require_once 'get_services/xmlrpc-api-messages.inc';
 
     require_once 'Form.php';
