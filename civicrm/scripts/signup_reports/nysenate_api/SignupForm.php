@@ -1,4 +1,4 @@
-<?
+<?php
 	require_once 'get_services/xmlrpc-api-signups.inc';
 
 	require_once 'Form.php';
