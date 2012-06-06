@@ -68,7 +68,7 @@ impjobs="CREATE TABLE IF NOT EXISTS civicrm_importer_jobs (
       file_type varchar(255) NOT NULL,
       field_separator varchar(10) NOT NULL,
       contact_group_id int(10) unsigned NOT NULL,
-      created_on timestamp,
+      created_on timestamp NULL DEFAULT NULL,
       created_by int(10) unsigned NOT NULL,
       PRIMARY KEY (id),
       KEY name (name)

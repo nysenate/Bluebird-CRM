@@ -1,4 +1,4 @@
-<?
+<?php
 	require_once 'get_services/nyss_signup_classes.inc';
 	require_once 'get_services/xmlrpc-api-signups.inc';
 	

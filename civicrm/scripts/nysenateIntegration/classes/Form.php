@@ -1,4 +1,4 @@
-<?
+<?php
 	abstract class Form {
 		abstract function getRawEntries($start_date, $end_date, $start_id, $end_id, $limit = 1000);
 		abstract function getFormContacts($start_date, $end_date, $start_id, $end_id, $limit = 1000);
