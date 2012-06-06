@@ -110,7 +110,7 @@ cj(".crm-tasks input[value='Create PDF']").click(function(){
 		buttons: { "Ok": function() { cj(this).dialog("close"); }}
 	});
 });
-cj(".crm-tasks input[value='Export to CSV']").click(function(){
+cj(".crm-tasks input[value='Export to CSV'], .crm-tasks input[value='Create CSV']").click(function(){
     cj("#csvProcessing").show( );
     cj("#csvProcessing").dialog({
 		title: "CSV Processing",
