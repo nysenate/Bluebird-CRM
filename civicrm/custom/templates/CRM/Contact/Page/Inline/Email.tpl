@@ -42,7 +42,7 @@
  
   {foreach from=$email key="blockId" item=item}
     {if $item.email}
-      <div class="crm-label">{$item.location_type}&nbsp;{ts}Email{/ts}</div>
+      <div class="crm-label">{$item.location_type} {ts}Email{/ts}</div>
       <div class="crm-content crm-contact_email"> <!-- start of content -->
         {*NYSS 4717*}
         <span class={if $privacy.do_not_email}"do-not-email" title="{ts}Privacy flag: Do Not Email{/ts}" {elseif $item.on_hold}"email-hold" title="{ts}Email on hold {if $item.on_hold eq 1}(bounce){elseif $item.on_hold eq 2}(unsubscribe){/if}.{/ts}" {elseif $item.is_primary eq 1}"primary"{/if}>
@@ -69,6 +69,7 @@
           <strong>{ts}Signature HTML{/ts}</strong><br />{$item.signature_html}<br /><br />
         <strong>{ts}Signature Text{/ts}</strong><br />{$item.signature_text|nl2br}</div>
       </div> <!-- end of content -->
+      <div class="crm-clear"></div>
     {/if}
   {/foreach}
   </div> <!-- end of main !-->
