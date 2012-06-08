@@ -2559,8 +2559,13 @@ WHERE  id IN ( $groupIDs )
         $this->_tables[$etTable] = $this->_whereTables[$etTable] =
             " LEFT JOIN civicrm_entity_tag {$etTable} ON ( {$etTable}.entity_id = contact_a.id  AND 
                         {$etTable}.entity_table = 'civicrm_contact' ) ";
-       
-        $this->_where[$grouping][] = "{$etTable}.tag_id $op (". $value . ')';
+
+        //NYSS 2037
+        if ( in_array( $op, array( 'IS NULL', 'IS NOT NULL' ) ) ) {
+          $this->_where[$grouping][] = "{$etTable}.tag_id $op";
+        } else {
+          $this->_where[$grouping][] = "{$etTable}.tag_id $op (". $value . ')';
+        }
         $this->_qill[$grouping][]  = ts('Tagged %1', array( 1 => $op ) ). ' ' . $names;
     } 
 
