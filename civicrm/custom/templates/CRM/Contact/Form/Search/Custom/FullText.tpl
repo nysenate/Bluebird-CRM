@@ -25,6 +25,10 @@
 *}
 {* Template for Full-text search component. *}
 {assign var=csID value=15} {*NYSS temp hack*}
+{*NYSS 2193 - also append qfkey to all view all links*}
+{if $smarty.get.key}
+  {assign var=qfKey value=$smarty.get.key}
+{/if}
 <div class="crm-block crm-form-block crm-search-form-block">
 <div id="searchForm">
     <div class="form-item">
@@ -69,7 +73,7 @@
                 {/foreach}
             </table>
             {/strip}
-	    {if !$table and $rowCount < $summary.Count.Contact}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Contact&text=$text"}" title="{ts}View all results for contacts{/ts}">&raquo;&nbsp;{ts}View all results for contacts{/ts}</a></div>{/if}
+	    {if !$table and $rowCount < $summary.Count.Contact}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Contact&text=$text&context=fulltext&key=`$qfKey`"}" title="{ts}View all results for contacts{/ts}">&raquo;&nbsp;{ts}View all results for contacts{/ts}</a></div>{/if}
 	    {* note we using location="below" because we don't want to use rows per page for now. And therefore don't put location="bottom" for now. *}
 	    {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
     {* END Actions/Results section *}
@@ -117,7 +121,7 @@
                 {/foreach}
             </table>
             {/strip}
-	    {if !$table and $rowCount < $summary.Count.Activity}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Activity&text=$text"}" title="{ts}View all results for activities{/ts}">&raquo;&nbsp;{ts}View all results for activities{/ts}</a></div>{/if}
+	    {if !$table and $rowCount < $summary.Count.Activity}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Activity&text=$text&context=fulltext&key=`$qfKey`"}" title="{ts}View all results for activities{/ts}">&raquo;&nbsp;{ts}View all results for activities{/ts}</a></div>{/if}
             {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
     {* END Actions/Results section *}
 </div>
@@ -162,7 +166,7 @@
                 {/foreach}
             </table>
             {/strip}
-	    {if !$table and $rowCount < $summary.Count.Case}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Case&text=$text"}" title="{ts}View all results for cases{/ts}">&raquo;&nbsp;{ts}View all results for cases{/ts}</a></div>{/if}
+	    {if !$table and $rowCount < $summary.Count.Case}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Case&text=$text&context=fulltext&key=`$qfKey`"}" title="{ts}View all results for cases{/ts}">&raquo;&nbsp;{ts}View all results for cases{/ts}</a></div>{/if}
             {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
     {* END Actions/Results section *}
 </div>
@@ -204,7 +208,7 @@
                 {/foreach}
             </table>
             {/strip}
-	    {if !$table and $rowCount < $summary.Count.Contribution}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Contribution&text=$text"}" title="{ts}View all results for contributions{/ts}">&raquo;&nbsp;{ts}View all results for contributions{/ts}</a></div>{/if}
+	    {if !$table and $rowCount < $summary.Count.Contribution}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Contribution&text=$text&context=fulltext&key=`$qfKey`"}" title="{ts}View all results for contributions{/ts}">&raquo;&nbsp;{ts}View all results for contributions{/ts}</a></div>{/if}
             {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
     {* END Actions/Results section *}
 </div>
@@ -250,7 +254,7 @@
                 {/foreach}
             </table>
             {/strip}
-	    {if !$table and $rowCount < $summary.Count.Participant}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Participant&text=$text"}" title="{ts}View all results for participants{/ts}">&raquo;&nbsp;{ts}View all results for participants{/ts}</a></div>{/if}
+	    {if !$table and $rowCount < $summary.Count.Participant}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Participant&text=$text&context=fulltext&key=`$qfKey`"}" title="{ts}View all results for participants{/ts}">&raquo;&nbsp;{ts}View all results for participants{/ts}</a></div>{/if}
             {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
     {* END Actions/Results section *}
 </div>
@@ -296,7 +300,7 @@
                 {/foreach}
             </table>
             {/strip}
-	    {if !$table and $rowCount < $summary.Count.Membership}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Membership&text=$text"}" title="{ts}View all results for memberships{/ts}">&raquo;&nbsp;{ts}View all results for memberships{/ts}</a></div>{/if}
+	    {if !$table and $rowCount < $summary.Count.Membership}<div class="crm-section full-text-view-all-section"><a href="{crmURL p='civicrm/contact/search/custom' q="csid=`$csID`&reset=1&force=1&table=Membership&text=$text&context=fulltext&key=`$qfKey`"}" title="{ts}View all results for memberships{/ts}">&raquo;&nbsp;{ts}View all results for memberships{/ts}</a></div>{/if}
             {if $table}{include file="CRM/common/pager.tpl" location="below"}{/if}
     {* END Actions/Results section *}
 </div>
