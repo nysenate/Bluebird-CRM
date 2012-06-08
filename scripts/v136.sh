@@ -44,10 +44,10 @@ roles="UPDATE permission SET perm = REPLACE(perm, 'create users, ', '') WHERE ri
 $execSql -i $instance -c "$roles" --drupal
 
 # 5303 add print prod staff role and amend existing pp role
-ppsrole="INSERT INTO role (rid, name) VALUES (17, 'Print Production Staff');"
+ppsrole="INSERT INTO role (rid, name) VALUES (18, 'Print Production Staff');"
 $execSql -i $instance -c "$ppsrole" --drupal
 
-ppsperm="INSERT INTO permission (rid, perm, tid) SELECT 17, perm, tid FROM permission WHERE rid = 7;"
+ppsperm="INSERT INTO permission (rid, perm, tid) SELECT 18, perm, tid FROM permission WHERE rid = 7;"
 $execSql -i $instance -c "$ppsperm" --drupal
 
 pprole="UPDATE permission SET perm = 'access CiviCRM, access CiviReport, access all custom data, edit groups, import contacts, profile listings, profile view, view all contacts, administer reserved groups, export print production files, import print production, administer site configuration' WHERE rid = 7;"
@@ -74,6 +74,24 @@ impjobs="CREATE TABLE IF NOT EXISTS civicrm_importer_jobs (
       KEY name (name)
     ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;"
 $execSql -i $instance -c "$impjobs"
+
+impjobslog="CREATE TABLE IF NOT EXISTS log_civicrm_importer_jobs (
+      id int(10) unsigned NOT NULL,
+      name varchar(255) NOT NULL,
+      table_name varchar(255) NOT NULL,
+      source_file varchar(255) NOT NULL,
+      file_type varchar(255) NOT NULL,
+      field_separator varchar(10) NOT NULL,
+      contact_group_id int(10) unsigned NOT NULL,
+      created_on timestamp NULL DEFAULT NULL,
+      created_by int(10) unsigned NOT NULL,
+      log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      log_conn_id INTEGER,
+      log_user_id INTEGER,
+      log_action  ENUM('Initialization', 'Insert', 'Update', 'Delete'),
+      log_job_id VARCHAR (64) null
+    ) ENGINE=ARCHIVE DEFAULT CHARSET=utf8;"
+$execSql -i $instance -c "$impjobslog" --log
 
 ## 4718 ##
 maildetail="
@@ -109,6 +127,10 @@ VALUES
 (@optGroup, 'Letter Landscape', '{\"paper_size\":\"letter\",\"orientation\":\"landscape\",\"metric\":\"in\",\"margin_top\":0.5,\"margin_bottom\":0.5,\"margin_left\":0.5,\"margin_right\":0.5}', 'Letter Landscape', NULL, NULL, NULL, 1, NULL, NULL, NULL, 1, NULL, NULL, NULL);"
 
 $execSql -i $instance -c "$pdfpage"
+
+## fix log group is_reserved field
+fixLog="ALTER TABLE log_civicrm_group ADD is_reserved TINYINT( 4 ) NOT NULL DEFAULT '0' AFTER is_hidden"
+$execSql -i $instance -c "$fixLog" --log
 
 
 ### Cleanup ###
