@@ -104,14 +104,14 @@
   
   <!--NYSS 3808-->
   <item>
- 	 <path>civicrm/ajax/mergeTags</path>
- 	 <page_callback>CRM_Admin_Page_AJAX::mergeTags</page_callback>
- 	 <access_arguments>access CiviCRM</access_arguments>
+    <path>civicrm/ajax/mergeTags</path>
+    <page_callback>CRM_Admin_Page_AJAX::mergeTags</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-     <path>civicrm/ajax/mergeTagList</path>
-     <page_callback>CRM_Admin_Page_AJAX::mergeTagList</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
+    <path>civicrm/ajax/mergeTagList</path>
+    <page_callback>CRM_Admin_Page_AJAX::mergeTagList</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
   </item>
 
   <!--  Tagging Interface -->
@@ -151,5 +151,31 @@
     <path>civicrm/ajax/grouplist</path>
     <page_callback>CRM_Group_Page_AJAX::getGroupList</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--4775-->
+  <item>
+    <path>civicrm/ajax/inline</path>
+    <page_callback>CRM_Core_Page_AJAX::run</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+
+  <!--5260-->
+  <item>
+    <path>civicrm/logging/proofingreport</path>
+    <page_callback>CRM_Logging_Form_ProofingReport</page_callback>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+
+  <!--5230-->
+  <item>
+    <path>civicrm/dedupe/dupeaddress</path>
+    <page_callback>CRM_Dedupe_Form_RemoveDupeAddress</page_callback>
+    <access_arguments>export print production files</access_arguments>
+  </item>
+  <item>
+     <path>civicrm/ajax/changelog</path>
+     <page_callback>CRM_Contact_Page_AJAX::getChangeLogCount</page_callback>
+     <access_arguments>access CiviCRM</access_arguments>
   </item>
 </menu>

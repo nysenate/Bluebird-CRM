@@ -24,7 +24,7 @@ CKEDITOR.editorConfig = function( config )
 	config.pasteFromWordNumberedHeadingToList = true;
  
     // disable auto spell check
-    config.scayt_autoStartup = false;
+    //config.scayt_autoStartup = true; //NYSS 5353
     
     // This is actually the default value.
     config.toolbar_Full =
@@ -35,7 +35,7 @@ CKEDITOR.editorConfig = function( config )
         ['Link','Unlink'],
         ['Image'], //NYSS
         ['NumberedList','BulletedList'], //NYSS
-        ['PasteText','PasteFromWord'], //NYSS
+        ['PasteText','PasteFromWord'], //NYSS ,'SpellChecker','Scayt'
         ['RemoveFormat'],
         ['Source'], //NYSS
     ];

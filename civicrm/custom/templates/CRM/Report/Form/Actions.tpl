@@ -89,8 +89,12 @@
     {/literal}
 {/if} {* NO print section ends *}
 
+{*NYSS 5210/5214*}
 <div id="pdfProcessing" style="display: none;">
     <p>Your PDF report is processing. Depending on the length of the report and number of records, this may take a few minutes to complete. You will be prompted to save the file once processing has finished.</p>
+</div>
+<div id="csvProcessing" style="display: none;">
+    <p>Your CSV report is processing. Depending on the length of the report and number of records, this may take a few minutes to complete. You will be prompted to save the file once processing has finished.</p>
 </div>
 
 {literal}
@@ -99,6 +103,17 @@ cj(".crm-tasks input[value='Create PDF']").click(function(){
     cj("#pdfProcessing").show( );
     cj("#pdfProcessing").dialog({
 		title: "PDF Processing",
+		modal: true,
+		bgiframe: true,
+		overlay: { opacity: 0.5, background: "black" },
+		beforeclose: function(event, ui) { cj(this).dialog("destroy"); },
+		buttons: { "Ok": function() { cj(this).dialog("close"); }}
+	});
+});
+cj(".crm-tasks input[value='Export to CSV'], .crm-tasks input[value='Create CSV']").click(function(){
+    cj("#csvProcessing").show( );
+    cj("#csvProcessing").dialog({
+		title: "CSV Processing",
 		modal: true,
 		bgiframe: true,
 		overlay: { opacity: 0.5, background: "black" },

@@ -141,6 +141,10 @@ class CRM_Core_Invoke
         if ( $item ) {
             // CRM-7656 - make sure we send a clean sanitized path to create printer friendly url
             $printerFriendly = CRM_Utils_System::makeURL( 'snippet', false, false, $item['path'] ) . '2';
+            //NYSS 5103 - retain full instance path for reports when creating printer friendly link
+            if ( $item['path'] == 'civicrm/report/instance' ) {
+              $printerFriendly = CRM_Utils_System::makeURL( 'snippet', false, false, $path ) . '2';
+            }
             $template->assign ( 'printerFriendly', $printerFriendly );
 
             if ( ! array_key_exists( 'page_callback', $item ) ) {

@@ -117,15 +117,15 @@ class CRM_Contact_Form_Task_EmailCommon
         }
 
         $form->_fromEmails = CRM_Utils_Array::crmArrayMerge( $emails, $domainEmails);
-		
-		//NYSS 4810
-		$form->_searchKey = CRM_Utils_Request::retrieve( 'key', 'String', $form );
-		if ( empty($form->_searchKey) ) {
-			$form->_searchKey     = $form->controller->_key;
-			$form->_searchContext = $form->_context;
-		}
-		//CRM_Core_Error::debug('key', $form->_searchKey);exit();
-		//CRM_Core_Error::debug('form', $form);exit();
+
+        //NYSS 4810
+        $form->_searchKey = CRM_Utils_Request::retrieve( 'key', 'String', $form );
+        if ( empty($form->_searchKey) ) {
+            $form->_searchKey     = $form->controller->_key;
+            $form->_searchContext = $form->_context;
+        }
+        //CRM_Core_Error::debug('key', $form->_searchKey);exit();
+        //CRM_Core_Error::debug('form', $form);exit();
     }
     
     /**
@@ -191,25 +191,32 @@ class CRM_Contact_Form_Task_EmailCommon
             $form->_contactIds = $contact;
         }
         
-    	if ( is_array ( $form->_contactIds ) && $toSetDefault ) {
+        if ( is_array ( $form->_contactIds ) && $toSetDefault ) {
             $returnProperties = array( 'sort_name'             => 1, 
                                        'email'                 => 1, 
                                        'do_not_email'          => 1, 
                                        'is_deceased'           => 1,
                                        'on_hold'               => 1, 
                                        'display_name'          => 1, 
-                                       'preferred_mail_format' => 1 );
+                                       'preferred_mail_format' => 1,
+                                       'is_primary'            => 1, //5389
+                                       );
         
             require_once 'CRM/Mailing/BAO/Mailing.php';
-            
-            list( $form->_contactDetails ) = CRM_Mailing_BAO_Mailing::getDetails( $form->_contactIds, $returnProperties, false, false );
+
+            //NYSS 5389
+            list( $form->_contactDetails ) = CRM_Mailing_BAO_Mailing::getDetails( $form->_contactIds, $returnProperties, true, true );
 
             // make a copy of all contact details
             $form->_allContactDetails = $form->_contactDetails;
         
             foreach ( $form->_contactIds as $key => $contactId ) {
                 $value = $form->_contactDetails[$contactId];
-                if ( $value['do_not_email'] || empty( $value['email'] ) || CRM_Utils_Array::value( 'is_deceased', $value ) || $value['on_hold'] ) {
+                if ( $value['do_not_email'] ||
+                     empty( $value['email'] ) ||
+                     CRM_Utils_Array::value( 'is_deceased', $value ) ||
+                     $value['on_hold'] ) {
+
                     $suppressedEmails++;
 
                     // unset contact details for contacts that we won't be sending email. This is prevent extra computation 
@@ -226,24 +233,28 @@ class CRM_Contact_Form_Task_EmailCommon
                 }
             }
 
-    		if ( empty( $toArray ) ) {
-				//NYSS 4810
-				if ( CRM_Utils_Rule::qfKey( $form->_searchKey ) ) {
-            		$urlParams  = "&qfKey=$form->_searchKey";
-				}
-				if ( $form->_searchContext ) {
-					$urlContext = $form->_searchContext;
-				} else {
-					$urlContext = 'basic';
-				}
-				//CRM_Core_Error::debug('form',$form);exit();
-    			CRM_Core_Error::statusBounce( ts('Selected contact(s) do not have a valid email address, or communication preferences specify DO NOT EMAIL, or they are deceased or Primary email address is On Hold.'),
-				                              CRM_Utils_System::url('civicrm/contact/search/'.$urlContext, $urlParams) ); //NYSS 4810
-    		}
-    	}
-	
-		$form->assign('toContact', json_encode( $toArray ) );
-		$form->assign('suppressedEmails', $suppressedEmails);
+            if ( empty( $toArray ) ) {
+                //NYSS 4810/5389 - bounce to contact if triggered from there, else bounce to search results
+                $urlRedirect = null;
+                if ( !$form->_single ) {
+                  if ( CRM_Utils_Rule::qfKey( $form->_searchKey ) ) {
+                    $urlParams  = "&qfKey=$form->_searchKey";
+                  }
+                  if ( $form->_searchContext ) {
+                    $urlContext = $form->_searchContext;
+                  } else {
+                    $urlContext = 'basic';
+                  }
+                  $urlRedirect = CRM_Utils_System::url('civicrm/contact/search/'.$urlContext, $urlParams);
+                }
+                //CRM_Core_Error::debug('form',$form);exit();
+                CRM_Core_Error::statusBounce( ts('Selected contact(s) do not have a valid email address, or communication preferences specify DO NOT EMAIL, or they are deceased or Primary email address is On Hold.'),
+                                              $urlRedirect ); //NYSS 4810
+            }
+        }
+
+        $form->assign('toContact', json_encode( $toArray ) );
+        $form->assign('suppressedEmails', $suppressedEmails);
         
         $form->assign('totalSelectedContacts',count($form->_contactIds));
         

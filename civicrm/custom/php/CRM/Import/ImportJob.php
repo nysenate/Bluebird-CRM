@@ -285,7 +285,7 @@ class CRM_Import_ImportJob {
         $group = CRM_Contact_BAO_Group::create($group_params);
         $gc_result = CRM_Contact_BAO_GroupContact::addContactsToGroup($contactIds, $group->id);
         $form->set('importGroupId',$group->id);
-        CRM_Core_DAO::executeQuery("UPDATE civicrm_import_jobs SET contact_group_id={$group->id} where table_name='{$this->_tableName}'");
+        CRM_Core_DAO::executeQuery("UPDATE civicrm_importer_jobs SET contact_group_id={$group->id}, created_on = NOW() WHERE table_name='{$this->_tableName}'");
 
         //get the related contactIds. CRM-2926
         $relatedContactIds = $this->_parser->getRelatedImportedContacts( );

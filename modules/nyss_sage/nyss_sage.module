@@ -15,6 +15,17 @@ function nyss_sage_compare($old_address, $params, $key) {
     return strcmp($old_address->$key, $params[$key]) != 0;
 }
 
+// NYSS 5308 Search through parameters for a key
+// that starts with custom_{$id} and return it
+function nyss_sage_custom_value($params, $id, $addrId) {
+    foreach($params as $k => $v) {
+        if(substr($k, 0, 9) == "custom_{$id}") {
+            return $v;
+        }
+    }
+    return null;
+}
+
 function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
 {
     //Don't do anything unless we are saving an address
@@ -23,22 +34,38 @@ function nyss_sage_civicrm_pre( $op, $objectName, $id, &$params )
 
         // If the address already exists, fetch it and compare with form values
         // Unless the address is being modified we never overwrite districts
-        $overwrite_districts = false;
-        $old_addr = nyss_sage_address(CRM_Utils_Array::value('id',$params));
-        if($old_addr) {
-            if( nyss_sage_compare($old_addr,$params,'street_address')     ||
-                nyss_sage_compare($old_addr,$params,'city')               ||
-                nyss_sage_compare($old_addr,$params,'postal_code')        ||
-                nyss_sage_compare($old_addr,$params,'state_province_id')  ||
-                nyss_sage_compare($old_addr,$params,'country_id')         ||
-                nyss_sage_compare($old_addr,$params,'supplemental_address_1')) {
+        $old_addr = nyss_sage_address($id);
 
-                //We need to update the district information
-                $overwrite_districts = true;
-            }
+        $addr_changed = ($old_addr === null ||
+            nyss_sage_compare($old_addr,$params,'street_address')     ||
+            nyss_sage_compare($old_addr,$params,'city')               ||
+            nyss_sage_compare($old_addr,$params,'postal_code')        ||
+            nyss_sage_compare($old_addr,$params,'postal_code_suffix') ||
+            nyss_sage_compare($old_addr,$params,'state_province_id')  ||
+            nyss_sage_compare($old_addr,$params,'supplemental_address_1'));
+
+        $geo_missing = empty($old_addr->geo_code_1) || empty($old_addr->geo_code_2);
+
+        $custom_46 = nyss_sage_custom_value($params, 46, $old_addr->id);
+        $custom_47 = nyss_sage_custom_value($params, 47, $old_addr->id);
+        $custom_48 = nyss_sage_custom_value($params, 48, $old_addr->id);
+        $custom_49 = nyss_sage_custom_value($params, 49, $old_addr->id);
+
+        $district_info_missing = empty($custom_46)  ||
+                                 empty($custom_47)  ||
+                                 empty($custom_48)  ||
+                                 empty($custom_49);
+
+        //NYSS 5308 - Changed code to check for postal_code_suffix as well as
+        //empty geo_code lat/lon. If empty, or suffix changed, then lookup
+        //the new geocode information.
+        if( $addr_changed || $geo_missing || $district_info_missing) {
+
+            //NYSS 5263 - Removed the check for country_id as the $params
+            //variable wasn't being given the country_id.
+            //In turn, lookups are only done when the address is different.
+            CRM_Utils_SAGE::lookup($params, $addr_changed, true);
         }
-
-        CRM_Utils_SAGE::lookup($params,$overwrite_districts);
     }
     return true;
 }

@@ -201,6 +201,9 @@ UPDATE civicrm_log
          $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
          $loggingDB = $dsn['database'];
 
+         $bbconfig = get_bluebird_instance_config();
+         $civiDB   = $bbconfig['db.civicrm.prefix'].$bbconfig['db.basename'];
+
          $counts = array();
          $tblKey = array( 'civicrm_contact'        => array( 'id'     => 'id',
                                                              'group'  => 'log_conn_id, log_user_id, EXTRACT(DAY_MINUTE FROM log_date)'
@@ -211,8 +214,19 @@ UPDATE civicrm_log
                           'civicrm_note'           => array( 'id'     => 'entity_id',
                                                              'where'  => 'entity_table = "civicrm_contact"'
                                                              ),
+                          'civicrm_comments'       => array( 'table'  => 'civicrm_note',
+                                                             'id'     => 'n.entity_id',
+                                                             'join'   => "JOIN $loggingDB.log_civicrm_note n 
+                                                                            ON civicrm_comments.entity_id = n.id
+                                                                            AND n.log_action = 'Insert'",
+                                                             'where'  => 'civicrm_comments.entity_table = "civicrm_note"'
+                                                             ),
                           'civicrm_group_contact'  => array( 'id'     => 'contact_id',
                                                              'noinit' => true,
+                                                             'join'   => "JOIN $civiDB.civicrm_group cg
+                                                                            ON civicrm_group_contact.group_id = cg.id",
+                                                             'where'  => "cg.is_hidden != 1
+                                                                            AND log_action != 'Initialization'",
                                                              ),
                           'civicrm_relationship_a' => array( 'id'     => 'contact_id_a',
                                                              'table'  => 'civicrm_relationship',
@@ -224,15 +238,17 @@ UPDATE civicrm_log
 
          foreach ( $tblKey as $tbl => $details ) {
              
+             $alias = $tbl;
              if ( isset($details['table']) && $details['table'] ) {
-                 $tbl = $details['table'];
+               $tbl = $details['table'];
              }
 
              $sql = "SELECT count(*)
-                     FROM $loggingDB.log_{$tbl}
+                     FROM $loggingDB.log_{$tbl} $alias
+                     {$details['join']}
                      WHERE {$details['id']} = $contactID";
              if ( !isset($details['noinit']) || !$details['noinit'] ) {
-                 $sql .= " AND (log_action != 'Initialization') ";
+                 $sql .= " AND ($alias.log_action != 'Initialization') ";
              }
              if ( isset($details['where']) && $details['where'] ) {
                  $sql .= " AND {$details['where']} ";
@@ -243,9 +259,10 @@ UPDATE civicrm_log
                  //now wrap in a subquery to get total count
                  $sql = "SELECT count(*) FROM ( $sql ) tmp";
              }
-             //CRM_Core_Error::debug('sql',$sql);
-             $counts[] = CRM_Core_DAO::singleValueQuery($sql);
+             //CRM_Core_Error::debug_var('sql',$sql);
+             $counts[$alias] = CRM_Core_DAO::singleValueQuery($sql);
          }
+         //CRM_Core_Error::debug_var('counts',$counts);
 
          $totalCount = 0;
          foreach ( $counts as $count ) {
@@ -253,6 +270,7 @@ UPDATE civicrm_log
                  $totalCount += $count;
              }
          }
+
          return $totalCount;
      }
 

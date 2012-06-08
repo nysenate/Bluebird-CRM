@@ -323,18 +323,30 @@ class CRM_Contact_Page_View_Summary extends CRM_Contact_Page_View {
         
         foreach ( $rest as $k => $v ) {
             if ( CRM_Utils_Array::value($k, $this->_viewOptions) ) {
-                //NYSS 5184
-				$crmPID = '';
-				if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') && $k == 'log' ) {
+                //NYSS 5184/5185
+                $crmPID = '';
+                if ( CRM_Utils_Request::retrieve('crmPID', 'Integer') &&
+                     $k == 'log' ) {
                     $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID', 'Integer');
                 }
+				if ( CRM_Utils_Request::retrieve('crmPID_B', 'Integer') &&
+                     CRM_Utils_Request::retrieve('PagerBottomButton', 'String') &&
+                     $k == 'log' ) {
+                    $crmPID = '&crmPID='.CRM_Utils_Request::retrieve('crmPID_B', 'Integer');
+                }
 
-                $allTabs[] = array( 'id'     =>  $k,
+                $tempTab = array(   'id'     =>  $k,
                                     'url'    => CRM_Utils_System::url( "civicrm/contact/view/$k",
                                                                        "reset=1&snippet=1&cid={$this->_contactId}{$crmPID}" ),//NYSS
                                     'title'  => $v,
-                                    'weight' => $weight,
-                                    'count'  => CRM_Contact_BAO_Contact::getCountComponent( $k, $this->_contactId ) );
+                                    'weight' => $weight
+                                );
+                if($k == 'log') {
+                    $tempTab['count'] = '<script>$().ready( function() { getChangeLogCount(); } );</script>';
+                } else {
+                    $tempTab['count'] = CRM_Contact_BAO_Contact::getCountComponent( $k, $this->_contactId );
+                }
+                $allTabs[] = $tempTab;
                 $weight += 10;
             }
         }

@@ -233,6 +233,13 @@ class CRM_Core_Config extends CRM_Core_Config_Variables
 
             // make sure session is always initialised            
             $session = CRM_Core_Session::singleton();
+
+			//NYSS 5261 for logging purposes, pass the userID to the db
+            $userID = $session->get('userID');
+            if ( $userID ) {
+              CRM_Core_DAO::executeQuery('SET @civicrm_user_id = %1',
+                array( 1 => array( $userID, 'Integer' ) ) );
+			}
         }
         return self::$_singleton;
     }

@@ -611,6 +611,18 @@ WHERE sort_name LIKE '%$name%'";
     }
 
     /**
+     * Function to get the count of the change log.
+     *
+     */
+    static function getChangeLogCount( ) {
+        if( $contactId = CRM_Utils_Array::value( 'contactId', $_POST ) ) {
+            require_once 'CRM/Contact/BAO/Contact.php';
+            echo CRM_Contact_BAO_Contact::getCountComponent( 'log', $contactId  );
+        }
+        CRM_Utils_System::civiExit( );
+    }
+
+    /**
      * Function to perform enable / disable actions on record.
      *
      */

@@ -49,6 +49,7 @@ class CRM_Core_DAO extends DB_DataObject
      */
     static $_nullObject = null;
     static $_nullArray  = array( );
+	static $_dbColumnValueCache = null; //NYSS
 
     const
         NOT_NULL        =   1,
@@ -726,24 +727,31 @@ FROM   civicrm_domain
             // adding this year since developers forget to check for an id
             // and hence we get the first value in the db
             CRM_Core_Error::fatal( );
-            return null;
+            //return null; //NYSS 5268
         }
-        
-        require_once(str_replace('_', DIRECTORY_SEPARATOR, $daoName) . ".php");
-        eval( '$object   = new ' . $daoName . '( );' );
-        $object->$searchColumn =  $searchValue;
-        $object->selectAdd( );
-        if ( $returnColumn == 'id' ) {
-            $object->selectAdd( 'id' );
-        } else {
-            $object->selectAdd( "id, $returnColumn" );
-        }
-        $result = null;
-        if ( $object->find( true ) ) {
-            $result = $object->$returnColumn;
-        }
-        $object->free( );
-        return $result;
+
+      //NYSS 5268
+      $cacheKey = "{$daoName}:{$searchValue}:{$returnColumn}:{$searchColumn}";
+      if ( self::$_dbColumnValueCache === null ) {
+        self::$_dbColumnValueCache = array( );
+      }
+
+      if ( ! array_key_exists( $cacheKey, self::$_dbColumnValueCache ) ) {
+      require_once(str_replace('_', DIRECTORY_SEPARATOR, $daoName) . ".php");
+      eval( '$object   = new ' . $daoName . '( );' );
+      $object->$searchColumn =  $searchValue;
+      $object->selectAdd( );
+      $object->selectAdd( $returnColumn );
+
+      $result = null;
+      if ( $object->find( true ) ) {
+        $result = $object->$returnColumn;
+      }
+      $object->free( );
+
+      self::$_dbColumnValueCache[$cacheKey] = $result;
+	  }
+	  return self::$_dbColumnValueCache[$cacheKey];
     }
     
     /**
@@ -1551,7 +1559,7 @@ SELECT contact_id
 
         $session = CRM_Core_Session::singleton();
 
-        if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
+        /*if ( !CRM_Core_DAO::singleValueQuery('SELECT @civicrm_user_id') ) {
             if ($session->get('userID')) {
                 CRM_Core_DAO::executeQuery('SET @civicrm_user_id := %1',
                                            array(1 => array($session->get('userID'), 'Integer')),
@@ -1562,7 +1570,7 @@ SELECT contact_id
                                            false );
                 CRM_Core_Error::debug_log_message("user ID database variable reset to: {$session->get('userID')}");
             }
-        }
+        }*/
         if ( !CRM_Core_DAO::singleValueQuery('SELECT @jobID') ) {
             if ($session->get('jobID')) {
                 CRM_Core_DAO::executeQuery('SET @jobID := %1',

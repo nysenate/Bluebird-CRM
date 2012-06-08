@@ -116,21 +116,29 @@ class CRM_Core_BAO_Cache extends CRM_Core_DAO_Cache
      * @static
      * @access public
      */
-    static function deleteGroup( $group = null ) {
-        $dao = new CRM_Core_DAO_Cache( );
-        
-        if ( ! empty( $group ) ) {
-            $dao->group_name = $group;
-        }
-        $dao->delete( );
-
-        // also reset ACL Cache
-        require_once 'CRM/ACL/BAO/Cache.php';
-        CRM_ACL_BAO_Cache::resetCache( );
-
-        // also reset memory cache if any
-        CRM_Utils_System::flushCache( );
-    }
+   //NYSS 5268
+   static function deleteGroup( $group = null, $path = null, $clearAll = true ) {
+       $dao = new CRM_Core_DAO_Cache( );
+ 
+       if ( ! empty( $group ) ) {
+           $dao->group_name = $group;
+       }
+ 
+       if ( ! empty( $path ) ) {
+           $dao->path = $path;
+       }
+ 
+       $dao->delete( );
+ 
+       if ( $clearAll ) {
+	     require_once 'CRM/ACL/BAO/Cache.php';
+         // also reset ACL Cache
+         CRM_ACL_BAO_Cache::resetCache( );
+ 
+         // also reset memory cache if any
+         CRM_Utils_System::flushCache( );
+       }
+   }
 
     /**
      * The next two functions are internal functions used to store and retrieve session from

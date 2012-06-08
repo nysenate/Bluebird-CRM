@@ -4,6 +4,7 @@ require_once 'CRM/Core/BAO/Preferences.php';
 require_once 'CRM/Core/Error.php';
 require_once 'HTTP/Request.php';
 require_once 'CRM/Core/BAO/Address.php';
+require_once 'CRM/Core/PseudoConstant.php';
 
 define( 'MAX_STATUS_LEN', 200 ); //threshold length for status message
 
@@ -173,6 +174,12 @@ class CRM_Utils_SAGE
         //The address could be stored in a couple different places
         //get the address and remember where we found it for later
         list($addr_field, $addr) = self::getAddress($values);
+
+        //If there is a state province id, set the value of the state province in the query
+        //for SAGE.
+        if (isset($values['state_province_id'])) {
+            $values['state_province'] = CRM_Core_PseudoConstant::stateProvinceAbbreviation($values['state_province_id']);
+        }
         if (!$addr) {
             $session->setStatus(ts('SAGE Warning: Not enough address info.'));
             return false;

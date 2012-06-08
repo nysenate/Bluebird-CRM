@@ -1502,3 +1502,54 @@ form#Contact .groupTagsKeywords .crm-section .label {
 #crm-container .crm-report .crm-report-log_civicrm_contact_altered_contact {
 	font-weight: bold;
 }
+
+/*4775*/
+#crm-container div.contact_panel div.crm-summary-block {
+  border: 2px dashed white;
+}
+#crm-container div.contact_panel div.crm-inline-edit-hover {
+  border: 2px dashed lightgrey;
+}
+#crm-container .eighteen {width: 18em;}
+#crm-container div.crm-config-option {
+  float: right;
+  padding-right: 10px;
+  padding-top: 5px;
+}
+#crm-container a.crm-link-action {
+  cursor: pointer;
+  cursor: hand;
+}
+#crm-container div.crm-clear {
+  clear:both;
+  margin-bottom: 1px;
+}
+#crm-container div.crm-label {
+  background-color: #FAFAFA;
+  color: #7A7A60;
+  text-align: left;
+  width: 98px;
+  float:left;
+  padding: 4px 0px 5px 4px;
+  margin-right: 5px;
+}
+#crm-container div.crm-content {
+  background-color: #F4F4ED;
+  padding: 4px 0px 5px 4px;
+  margin-bottom: 1px;
+}
+#crm-container div.crm-table2div-layout {
+  font-size: 11px;
+}
+#crm-container .contactCardLeft #crm-container-snippet {
+  width: 650px;
+}
+#crm-container .contactCardLeft {
+  z-index: 10;
+  position: relative;
+}
+
+/*NYSS 5253*/
+.user-admin .help {
+  display: none;
+}

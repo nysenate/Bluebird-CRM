@@ -44,7 +44,7 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
 {    
     if ( $formName == 'CRM_Contact_Form_Contact' ) {
         
-		//do not allow to edit as well as set 'Board of Election' loc type.
+        //do not allow to edit as well as set 'Board of Election' loc type.
         require_once 'CRM/Core/PseudoConstant.php';
         require_once 'CRM/Utils/Request.php';
         require_once 'CRM/Core/BAO/Preferences.php';
@@ -107,9 +107,9 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
                     _civicrm_processElement( $form, "address[$blockId][$key]", $freezeElement );
                 }
                 //hide 'Use Household Address' if location type is 'Board Of Election'
-				//c3.3 update for shared address element
+                //c3.3 update for shared address element
                 if ( $blockId == 1 && $freezeElement ) {
-					$form->removeElement( 'address[1][use_shared_address]' );
+                    $form->removeElement( 'address[1][use_shared_address]' );
                 }
             } else {
                 $dataElementName = "{$name}[$blockId][$name]";
@@ -128,6 +128,60 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
             _civicrm_processElement( $form, "{$name}[$blockId][location_type_id]", $freezeElement, $unsetOption );
         }
     }
+
+  if ( $formName == 'CRM_Contact_Form_Inline_Email' ||
+       $formName == 'CRM_Contact_Form_Inline_Phone'
+  ) {
+
+    require_once 'CRM/Core/PseudoConstant.php';
+    $locationTypes     = CRM_Core_PseudoConstant::locationType( );
+    $boardOfElectionId = CRM_Utils_Array::key( 'BOE', $locationTypes );
+
+    //determine if phone or email
+    $name    = 'phone';
+    $objName = '_phones';
+    if ( $formName == 'CRM_Contact_Form_Inline_Email'
+    ) {
+      $name    = 'email';
+      $objName = '_emails';
+    }
+
+    foreach ( $form->_defaultValues[$name] as $blockId => $block ) {
+      if ( $block['location_type_id'] == $boardOfElectionId ) {
+        $elementName = "{$name}[$blockId][$name]";
+        $elementLoc  = "{$name}[$blockId][location_type_id]";
+        if ( ! $form->elementExists( $elementName ) ) {
+          continue;
+        }
+
+        $element = $form->getElement( $elementName );
+        $element->freeze( );
+
+        $eleLoc  = $form->getElement( $elementLoc );
+        $eleLoc->freeze( );
+      }
+    }
+
+    //suppress special location type options
+    for ( $i = 1; $i <= 5; $i++ ) {
+      $elementLoc = "{$name}[$i][location_type_id]";
+      if ( ! $form->elementExists( $elementLoc ) ) {
+        continue;
+      }
+      $eleLoc =& $form->getElement( $elementLoc );
+      $specialTypes = array('BOE', 'Billing', 'NCOA');
+      foreach ( $eleLoc->_options as $index => $options ) {
+        if ( in_array($options['text'], $specialTypes) &&
+             ! $eleLoc->_flagFrozen ) {
+          unset($eleLoc->_options[$index]);
+        }
+      }
+      //reset array keys or we have issues with the display
+      $eleLoc->_options = array_values($eleLoc->_options);
+    }
+
+    //CRM_Core_Error::debug_var('form',$form);
+  }
 }
 
 /**
@@ -146,17 +200,17 @@ function _civicrm_processElement( &$form, $elementName, $freezeElement = false, 
     if ( $freezeElement ) {
         $element->freeze( );
     }
-	
+
     if ( $unsetOption ) {
         $newOptions = array();
-		foreach ( $element->_options as $index => $options ) {
-			if ( $options['text'] != 'BOE' && 
-		         $options['text'] != 'Billing' &&
+        foreach ( $element->_options as $index => $options ) {
+            if ( $options['text'] != 'BOE' &&
+                 $options['text'] != 'Billing' &&
                  $options['text'] != 'NCOA' ) {
-				 
-				 $newOptions[] = $element->_options[$index];
-			}
+
+                 $newOptions[] = $element->_options[$index];
+            }
         }
-		$element->_options = $newOptions;
+        $element->_options = $newOptions;
     }
 }
