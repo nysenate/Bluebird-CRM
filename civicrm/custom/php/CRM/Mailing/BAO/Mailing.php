@@ -2304,7 +2304,8 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
 		                               '{domain.phone}',
 		                               '{domain.email}',
 									   '{domain.name}',
-									   '{domain.address}'
+									   '{domain.address}',
+									   '{mailing.viewUrl}'
 		                             );
 		foreach ( $tokens as $token => $dontcare ) { 
 			if ( in_array( $token, $mailingTokensRemove ) ) {
