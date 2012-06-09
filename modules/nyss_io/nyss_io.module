@@ -33,7 +33,7 @@ function nyss_ioimport_form() {
    require_once 'CRM/Core/Config.php';
    require_once 'CRM/Core/DAO.php';
 
-   $config =& CRM_Core_Config::singleton();
+   $config = CRM_Core_Config::singleton();
 
    $form = array();
 
@@ -665,6 +665,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             mysql_free_result($result);
         }
         //pipe separated list of keywords
+        //CRM_Core_Error::debug_var('keyword_lookup',$keyword_lookup);
         if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
             $keywords = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['keywords'])) );
             if ( !$dryrun ) {
@@ -676,7 +677,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                                        );
                       $tag = civicrm_api('tag', 'get', $params);
 
-                      if ( $tag['is_error'] ) {
+                      if ( $tag['is_error'] || !$tag['count'] ) {
                           echo 'creating tag: '.$keyword.'<br />';
                           $tag   = civicrm_api('tag', 'create', $params);
                           $tagid = $tag['id'];
@@ -687,6 +688,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                     } else {
                       $tagid = $keyword_lookup[$keyword];
                     }
+                    //CRM_Core_Error::debug_var('tagid',$tagid);
                     
                     //add tag to contact
                     $params = array('version'    => 3,
