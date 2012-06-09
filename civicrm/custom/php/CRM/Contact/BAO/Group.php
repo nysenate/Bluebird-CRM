@@ -902,6 +902,8 @@ class CRM_Contact_BAO_Group extends CRM_Contact_DAO_Group
    }
  
 	function links () {
+       require_once 'CRM/Core/Action.php';//NYSS
+
        $links = array(
            CRM_Core_Action::VIEW => array(
                'name'  => ts('Contacts'),
