@@ -33,7 +33,7 @@ function nyss_ioimport_form() {
    require_once 'CRM/Core/Config.php';
    require_once 'CRM/Core/DAO.php';
 
-   $config =& CRM_Core_Config::singleton();
+   $config = CRM_Core_Config::singleton();
 
    $form = array();
 
