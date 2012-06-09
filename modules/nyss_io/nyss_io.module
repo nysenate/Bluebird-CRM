@@ -29,6 +29,12 @@ function nyss_ioimportdata_page() {
 //define form
 function nyss_ioimport_form() {
 
+   civicrm_initialize( );
+   require_once 'CRM/Core/Config.php';
+   require_once 'CRM/Core/DAO.php';
+
+   $config =& CRM_Core_Config::singleton();
+
    $form = array();
 
    $form['#attributes'] = array('enctype' => "multipart/form-data");
@@ -87,19 +93,13 @@ function nyss_ioimport_form() {
      '#default_value' => 0,
      '#description'   => t('When enabled, imported records will be compared and matched with existing contact records using the default individual strict rule. Records should have first name, middle name, last name, suffix, street address, and postal code, in order to effectively match.'),
    );
-   
-   civicrm_initialize( );
-   require_once 'CRM/Core/Config.php';
-   require_once 'CRM/Core/DAO.php';
-   require_once 'api/v2/Group.php';
-   require_once 'api/v2/GroupContact.php';
 
-   $config =& CRM_Core_Config::singleton();
+   $rules = CRM_Core_DAO::executeQuery("SELECT name, id
+                                        FROM civicrm_dedupe_rule_group
+                                        WHERE contact_type = 'Individual'
+                                        ORDER BY name;");
 
-   $rules = new CRM_Core_DAO();
-   $rules->query("SELECT name, id FROM civicrm_dedupe_rule_group WHERE contact_type = 'Individual' ORDER BY name;");
-
-  $dedupeoptions = array( );
+   $dedupeoptions = array( );
    while ($rules->fetch()) {
        $dedupeoptions[$rules->id] = $rules->name;
    }
@@ -213,6 +213,7 @@ function nyss_iovalidateuploadform( $form, &$form_state ) {
 
 //main function for processing import
 function nyss_ioimport_form_submit($form, &$form_state) {
+    //nyss_out("debug",$form_state,true);
 
     // Load the configuration for this instance
     require_once dirname(__FILE__).'/../../civicrm/scripts/bluebird_config.php';
@@ -223,13 +224,12 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     global $nyss_iototallines;
     global $nyss_conn;
 
-//nyss_out("debug",$form_state,true);
-
     civicrm_initialize( );
     require_once 'CRM/Core/Config.php';
-    $config =& CRM_Core_Config::singleton();
+    $config = CRM_Core_Config::singleton();
     
     require_once 'CRM/Utils/String.php';
+    require_once 'api/api.php';
 
     $nyss_conn = new CRM_Core_DAO();
     $nyss_conn = $nyss_conn->getDatabaseConnection();
@@ -274,12 +274,6 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     //set includes based on column headers
     $columns = $fo->header;
     if ( array_key_exists('current_employer', $columns) ) { require_once 'CRM/Contact/BAO/Contact/Utils.php'; }
-    if ( array_key_exists('keywords', $columns) ) {
-        require_once 'api/v2/Tag.php';
-        require_once 'api/v2/EntityTag.php';
-        require_once 'CRM/Core/BAO/EntityTag.php';
-    }
-    if ( array_key_exists('note', $columns) ) { require_once 'api/v2/Note.php'; }
     
     //include parsename helper if set
     $parse = $form_state['values']['parsename'];
@@ -676,13 +670,16 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             if ( !$dryrun ) {
                 foreach ( $keywords as $keyword ) {
                     if (empty($keyword_lookup[$keyword])) {
-                      $params = array( 'name' => $keyword, 'parent_id' => '296' );
-                      $tag = civicrm_tag_get($params);
-                      //echo 'tag_get: '; nyss_out('debug', $tag, true);
+                      $params = array( 'version'   => 3,
+                                       'name'      => $keyword,
+                                       'parent_id' => '296'
+                                       );
+                      $tag = civicrm_api('tag', 'get', $params);
+
                       if ( $tag['is_error'] ) {
                           echo 'creating tag: '.$keyword.'<br />';
-                          $tag = civicrm_tag_create($params);
-                          $tagid = $tag['tag_id'];
+                          $tag   = civicrm_api('tag', 'create', $params);
+                          $tagid = $tag['id'];
                       } else {
                           $tagid = $tag['id'];
                       }
@@ -691,23 +688,20 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                       $tagid = $keyword_lookup[$keyword];
                     }
                     
-                    //only add tag to contact if not already present
-                    $sql = "SELECT tagid FROM civicrm_entity_tag WHERE entity_id={$l['id']} AND entity_type='civicrm_contact' AND tag_id=$tagid";
-                    $result = mysql_query($sql, $nyss_conn);
-                    if ($result && mysql_num_rows($result) == 0) {
-                        $entityParams = array('tag_id' => $tagid, 'contact_id' => $l['id'] );
-                        //nyss_out('debug', $entityParams, true);
-                        $entityTag = civicrm_entity_tag_add( $entityParams );
-                    }
+                    //add tag to contact
+                    $params = array('version'    => 3,
+                                    'tag_id'     => $tagid,
+                                    'contact_id' => $l['id'] );
+                    //nyss_out('debug', $params, true);
+                    $entityTag = civicrm_api('entity_tag', 'create', $params );
                 } 
             } else {
                 nyss_out('debug', $l['keywords'], true); 
             }
         }
         if ( array_key_exists( 'note', $l ) && !empty($l['note']) ) {
-            require_once 'api/v2/Note.php';
-            $params = array();
             $params = array(
+                    'version'       => 3,
                     'entity_table'  => 'civicrm_contact',
                     'entity_id'     => $l['id'],
                     'note'          => $l['note'],
@@ -718,7 +712,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             if ( $dryrun ) {
                 nyss_out('debug', $l['note'], true);
             } else {
-                $note = civicrm_note_create( $params );
+                $note = civicrm_api('note', 'create', $params );
             }
         }
 
@@ -736,30 +730,38 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     //Begin post process
     
     //Add contacts to group if set
-    if ( !empty($form_state['values']['addtogroup']) && $form_state['values']['addtogroup_handling'] != 'none' ) {
+    if ( !empty($form_state['values']['addtogroup']) &&
+         $form_state['values']['addtogroup_handling'] != 'none' ) {
     
-        //create group/retrieve existing
-        $groupID = '';
-        $groupname = $form_state['values']['addtogroup'];
-        $groupparams = array( 'title' => $groupname );
-        $get_group =& civicrm_group_get( $groupparams );
-        
-        if ( $get_group['is_error'] ) {
+        //retrieve group if exists
+        $groupID   = '';
+        $groupName = $form_state['values']['addtogroup'];
+        $params    = array( 'version' => 3,
+                            'title' => $groupName
+                            );
+        $group     = civicrm_api('group', 'getsingle', $params);
+        //CRM_Core_Error::debug_var('get group',$group);
+
+        if ( $group['is_error'] ) {
             if (!$dryrun ) {
-                $params = array( 'title' => $groupname, 
-                                 'is_active' => 1 );
-                $group = civicrm_group_add( $params );
-                $groupID = $group['result']->id;
+                $params = array( 'version'   => 3,
+                                 'title'     => $groupName,
+                                 'is_active' => 1,
+                                 );
+                $groupNew = civicrm_api('group', 'create', $params);
+                $groupID  = $groupNew['id'];
+                nyss_out('status', "The {$groupName} group did not exist; it was created during import.", true);
             } else {
-                nyss_out('status',"The {$groupname} group does not exist; it will be created during import.",true);
+                nyss_out('status', "The {$groupName} group does not exist; it will be created during import.", true);
             }
         } else {
-            $group = array_keys($get_group);
-            $groupID = $group[0];
+            $groupID = $group['id'];
         }
-        
+
         //now prepare array for adding contacts to group
-        $group_params = array('group_id' => $groupID);
+        $params = array('version'  => 3,
+                        'group_id' => $groupID,
+                        );
 
         //construct the list of contacts to add
         switch ($form_state['values']['addtogroup_handling']) {
@@ -773,18 +775,20 @@ function nyss_ioimport_form_submit($form, &$form_state) {
                 $groupContacts = '';
                 break;
         }
-        foreach($groupContacts as $index=>$contact_id) {
-            if ($index == 0)
-                $group_params['contact_id'] = $contact_id;
+        foreach($groupContacts as $i => $contact_id) {
+            if ($i == 0)
+                $params['contact_id'] = $contact_id;
             else
-                $group_params["contact_id.$index"] = $contact_id;
+                $params["contact_id.$i"] = $contact_id;
         }
-        
+        //CRM_Core_Error::debug_var('create group_contact params',$params);
+
         if (!$dryrun) {
-            $groupcontact = civicrm_group_contact_add( $group_params );
-        } else {
-            nyss_out('status',"Adding "+count($groupContacts)+" to the {$groupname} group",true);
+            $gc = civicrm_api( 'group_contact', 'create', $params );
         }
+
+        $groupContactsCount = count($groupContacts);
+        nyss_out('status', "Adding {$groupContactsCount} to the {$groupName} group.", true);
 
     } //end add to group
 
@@ -792,33 +796,36 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     if ( $form_state['values']['emailimport'] == 1 ) {
 
         //Create the group if it doesn't already exist
-        $email_group_id = '';
-        $groupparams = array( 'title' => 'Email Only' );
-        $get_group =& civicrm_group_get( $groupparams );
-        if ( $get_group['is_error'] ) {
+        $emailGroupID = '';
+        $params       = array( 'version' => 3,
+                               'name'    => 'Email_Only',
+                               );
+        $emailGroup   = civicrm_api('group', 'getsingle', $params);
+        if ( $emailGroup['is_error'] ) {
             if (!$dryrun ) {
-                $params = array( 'title' => 'Email Only', 
-                                 'is_active' => 1,
+                $params = array( 'version'     => 3,
+                                 'title'       => 'Email Only', 
+                                 'is_active'   => 1,
                                  'description' => 'Contacts in this group will be excluded from postal mailings processed through Corporate Woods, and may be exclude from internal exports using the print processing option.' );
-                $group = civicrm_group_add( $params );
-                $email_group_id = $group['result']->id;
+                $emailGroup = civicrm_api( $params );
+                nyss_out('status', "The 'Email Only' group did not exist; it was created during import.", true);
             } else {
                 nyss_out('status',"The 'Email Only' group does not exist; it will be created during import.",true);
             }
-        } else {
-            $group = array_keys($get_group);
-            $email_group_id = $group[0];
         }
+        $emailGroupID = $emailGroup['id'];
 
-        //Add all the contacts to the email only group
-        $group_params = array('group_id' => $email_group_id);
+        //add all the contacts to the email only group
+        $params = array('version'  => 3,
+                        'group_id' => $emailGroupID,
+                        );
 
-        //Construct the API's kinda convoluted argument structure
-        foreach($new_contacts as $index=>$contact_id) {
-            if ($index == 0)
-                $group_params['contact_id'] = $contact_id;
+        //construct the list of contacts to add to groups
+        foreach($new_contacts as $i => $contact_id) {
+            if ($i == 0)
+                $params['contact_id'] = $contact_id;
             else
-                $group_params["contact_id.$index"] = $contact_id;
+                $params["contact_id.$i"] = $contact_id;
         }
         
         //we also need to set these new contacts to 'do_not_mail'
@@ -827,14 +834,14 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
         if ( !$dryrun ) {
             // Create the GroupContact joins for each of these contacts
-            $groupcontact = civicrm_group_contact_add( $group_params );
+            $emailGroupContact = civicrm_api('group_contact', 'create', $params);
             
             //set do not mail
             mysql_query($setDNM, $nyss_conn);
-        } else {
-            nyss_out('status',"Adding "+count($new_contacts)+" to the Email Only group",true);
         }
-    } //end add to email only group
+        $newContactsCount = count($new_contacts);
+        nyss_out('status', "Adding {$newContactsCount} to the Email Only group", true);
+    }//end add to email only group
 
     //delete addresses flagged for deletion
     $addressDelCount = count($addressDel);
@@ -860,10 +867,9 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     $num_updated = count($updated_contacts);
     $num_created = count($new_contacts);
+
     nyss_out('status',"$num_updated updated, $num_created created.", true);
-
     nyss_out('status',"$addressDelCount addresses deleted.", true);
-
     nyss_out('status',"Imported $nyss_ioline lines. access the log file <a href=\"http://".$_SERVER['HTTP_HOST'].'/nyss_getfile?file='.urlencode($logFilename)."\">click here.</a>",true);
 
     //various postProcessing cleanup steps
