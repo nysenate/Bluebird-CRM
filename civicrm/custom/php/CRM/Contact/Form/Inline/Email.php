@@ -153,6 +153,9 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
       $contact = new CRM_Contact_DAO_Contact( );
       $contact->id = $this->_contactId;
       $contact->find(true);
+	  //make sure dates doesn't get reset
+      $contact->birth_date    = CRM_Utils_Date::isoToMysql($contact->birth_date); 
+      $contact->deceased_date = CRM_Utils_Date::isoToMysql($contact->deceased_date);
       $contact->save();
     }
 
