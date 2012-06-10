@@ -236,6 +236,16 @@ function nyss_civihooks_civicrm_buildForm( $formName, &$form ) {
                 }
             }
         }
+
+		//4775 ensure birth_date default is correct
+        if ( isset( $form->_elementIndex['birth_date'] ) ) {
+		  $bdd = $form->_values['birth_date_display'];
+		  if ( $bdd == '0000-00-00' ) {
+		    $bd =& $form->getElement( 'birth_date' );
+			CRM_Core_Error::debug_var('bd',$bd);
+			$bd->_attributes['value'] = null;
+		  }
+        } //end birth date
     }
 
     //advanced search
