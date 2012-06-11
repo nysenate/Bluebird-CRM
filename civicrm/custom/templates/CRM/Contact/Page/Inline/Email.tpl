@@ -33,7 +33,7 @@
       </a>
     </div>
     {else}
-      <div style="display:none;">
+      <div>
         <a id="edit-email" class="crm-link-action" title="{ts}click to add / edit{/ts}">
           <span class="batch-edit"></span>{ts}add/edit email{/ts}
         </a>
