@@ -215,6 +215,9 @@ function nyss_iovalidateuploadform( $form, &$form_state ) {
 function nyss_ioimport_form_submit($form, &$form_state) {
     //nyss_out("debug",$form_state,true);
 
+    //track processing time
+    $timeStart = time();
+
     // Load the configuration for this instance
     require_once dirname(__FILE__).'/../../civicrm/scripts/bluebird_config.php';
     $bbconfig = get_bluebird_instance_config();
@@ -292,6 +295,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     $updated_contacts  = array();
     $new_contacts      = array();
     $addressDel        = array();
+    $tagContacts       = array();
 
     $keyword_lookup = array();
 
@@ -316,7 +320,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             }
         }
 
-        if ($nyss_ioline%20==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
+        if ($nyss_ioline%100==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
 
         //fix the gender entries
         if ( !empty($l['gender']) ) {
@@ -665,40 +669,10 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             mysql_free_result($result);
         }
         //pipe separated list of keywords
-        //CRM_Core_Error::debug_var('keyword_lookup',$keyword_lookup);
         if ( array_key_exists( 'keywords', $l ) && !empty($l['keywords']) ) {
             $keywords = explode( '|', str_replace('| ', '|', str_replace('"', '', $l['keywords'])) );
-            if ( !$dryrun ) {
-                foreach ( $keywords as $keyword ) {
-                    if (empty($keyword_lookup[$keyword])) {
-                      $params = array( 'version'   => 3,
-                                       'name'      => $keyword,
-                                       'parent_id' => '296'
-                                       );
-                      $tag = civicrm_api('tag', 'get', $params);
-
-                      if ( $tag['is_error'] || !$tag['count'] ) {
-                          echo 'creating tag: '.$keyword.'<br />';
-                          $tag   = civicrm_api('tag', 'create', $params);
-                          $tagid = $tag['id'];
-                      } else {
-                          $tagid = $tag['id'];
-                      }
-                      $keyword_lookup[$keyword] = $tagid;
-                    } else {
-                      $tagid = $keyword_lookup[$keyword];
-                    }
-                    //CRM_Core_Error::debug_var('tagid',$tagid);
-                    
-                    //add tag to contact
-                    $params = array('version'    => 3,
-                                    'tag_id'     => $tagid,
-                                    'contact_id' => $l['id'] );
-                    //nyss_out('debug', $params, true);
-                    $entityTag = civicrm_api('entity_tag', 'create', $params );
-                } 
-            } else {
-                nyss_out('debug', $l['keywords'], true); 
+            foreach ( $keywords as $keyword ) {
+              $tagContacts[$keyword][] = $l['id'];
             }
         }
         if ( array_key_exists( 'note', $l ) && !empty($l['note']) ) {
@@ -730,6 +704,47 @@ function nyss_ioimport_form_submit($form, &$form_state) {
     }
 
     //Begin post process
+
+    //Handle tag processing
+    if ( !$dryrun ) {
+      foreach ( $tagContacts as $keyword => $tContacts ) {
+        if (empty($keyword_lookup[$keyword])) {
+          $params = array( 'version'   => 3,
+                           'name'      => $keyword,
+                           'parent_id' => '296'
+                           );
+          $tag = civicrm_api('tag', 'get', $params);
+
+          if ( $tag['is_error'] || !$tag['count'] ) {
+            echo 'creating tag: '.$keyword.'<br />';
+            $tag   = civicrm_api('tag', 'create', $params);
+          }
+          $tagid = $tag['id'];
+          $keyword_lookup[$keyword] = $tagid;
+        } else {
+          $tagid = $keyword_lookup[$keyword];
+        }
+        //CRM_Core_Error::debug_var('tagid',$tagid);
+
+        //convert contact IDs to correct format
+        $buildContacts = array();
+        foreach ( $tContacts as $i => $cid ) {
+          $buildContacts["contact_id.{$i}"] = $cid;
+        }
+
+        //add tag to contacts
+        $params = array( 'version'    => 3,
+                         'tag_id'     => $tagid,
+                         );
+        $params = array_merge($params, $buildContacts);
+        //nyss_out('debug', $params, true);
+        //CRM_Core_Error::debug_var('params',$params);
+        $entityTag = civicrm_api('entity_tag', 'create', $params );
+      }
+    } else {
+      nyss_out('debug', $tagContacts, true);
+    }
+    //end tags
     
     //Add contacts to group if set
     if ( !empty($form_state['values']['addtogroup']) &&
@@ -896,6 +911,11 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         nyss_out('status', $flagEmailCleanup, true);
     }
 
+    //track processing time
+    $timeEnd  = time();
+    $timeDiff = $timeEnd - $timeStart;
+    nyss_out('status',"Processing time: $timeDiff sec.",true);
+
     nyss_out('status','<a href="">click here</a> to continue and return to the import page.',true);
 
     exit();
@@ -904,7 +924,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
 function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
 
-    nyss_out('debug', "tbl top: $tbl", true);
+    //nyss_out('debug', "tbl top: $tbl", true);
     //nyss_out('debug', $l, true);
 
     global $nyss_iofields;
@@ -1136,7 +1156,7 @@ function nyss_ioimportData( $tbl, &$l, $dryrun, $logFile, $form_state ) {
         if ( !$dryrun && $sqlINSERT ) {
             mysql_query($sqlINSERT, $nyss_conn);
             $l[$pkImport]=mysql_insert_id($nyss_conn);
-        } else {
+        } elseif ( $sqlINSERT ) {
             //if ($tbl=='civicrm_value_constituent_information_1') {
             print_r($sqlINSERT."<br>"); //debug
             //}
