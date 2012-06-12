@@ -39,6 +39,10 @@ class CRM_Utils_PDF_Utils {
 
   // use a 4MiB chunk size
   const CHUNK_SIZE = 4194304;
+  // No need to strip extra whitespace from the HTML, since the incoming
+  // HTML should now be optimized.  Set this to TRUE to force this potentially
+  // redundant search-and-replace.
+  const HTML_STRIP_SPACE = false;
 
 
   static function html2pdf( &$text, $fileName = 'civicrm.pdf', $output = false, $pdfFormat = null )
@@ -109,10 +113,10 @@ class CRM_Utils_PDF_Utils {
           $cur_chunk = preg_replace($tailElems, '', $cur_chunk);
         }
         // Now eliminate extra spaces, and add newlines after end-tags.
-        /*
-        $cur_chunk = preg_replace(array('/>\s+/', '/\s+</', '#</[^>]+>#'),
-                                  array('>', '<', "$0\n"), $cur_chunk);
-        */
+        if (self::HTML_STRIP_SPACE === true) {
+          $cur_chunk = preg_replace(array('/>\s+/', '/\s+</', '#</[^>]+>#'),
+                                    array('>', '<', "$0\n"), $cur_chunk);
+        }
         fwrite($fp, $cur_chunk);
         $startpos += self::CHUNK_SIZE;
       }
