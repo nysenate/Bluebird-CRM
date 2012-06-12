@@ -50,6 +50,7 @@ class CRM_Contact_Page_Inline_Email {
   function run() {
     require_once 'CRM/Core/BAO/Email.php';
     require_once 'CRM/Core/BAO/Block.php';
+    require_once 'CRM/Contact/BAO/Contact.php';
 
     // get the emails for this contact
     $contactId = CRM_Utils_Request::retrieve( 'cid', 'Positive', CRM_Core_DAO::$_nullObject, true, null, $_REQUEST );
@@ -63,10 +64,22 @@ class CRM_Contact_Page_Inline_Email {
         $value['location_type'] = $locationTypes[$value['location_type_id']];
       }  
     }
-    
+
+    //NYSS 4775 make sure privacy is passed to template
+    $contact = new CRM_Contact_BAO_Contact( );
+    $contact->id = $contactId;
+    $contact->find(true);
+    $privacy = array( );
+    foreach ( CRM_Contact_BAO_Contact::$_commPrefs as $name ) {
+      if ( isset( $contact->$name ) ) {
+        $privacy[$name] = $contact->$name;
+      }
+    }
+
     $template = CRM_Core_Smarty::singleton( );
     $template->assign( 'contactId', $contactId );
     $template->assign( 'email', $emails );
+    $template->assign( 'privacy', $privacy );//NYSS
 
     echo $content = $template->fetch('CRM/Contact/Page/Inline/Email.tpl');
     CRM_Utils_System::civiExit( ); 
