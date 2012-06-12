@@ -109,8 +109,10 @@ class CRM_Utils_PDF_Utils {
           $cur_chunk = preg_replace($tailElems, '', $cur_chunk);
         }
         // Now eliminate extra spaces, and add newlines after end-tags.
+        /*
         $cur_chunk = preg_replace(array('/>\s+/', '/\s+</', '#</[^>]+>#'),
                                   array('>', '<', "$0\n"), $cur_chunk);
+        */
         fwrite($fp, $cur_chunk);
         $startpos += self::CHUNK_SIZE;
       }
