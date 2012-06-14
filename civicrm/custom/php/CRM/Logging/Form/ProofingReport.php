@@ -255,7 +255,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
         //add summary counts
         $html .= "<tr class='tableSummary'>
-                    <td>Contact's Changed:</td>
+                    <td>Contacts Changed:</td>
                     <td colspan='5'>{$dao->N}</td>
                   </tr>";
 
