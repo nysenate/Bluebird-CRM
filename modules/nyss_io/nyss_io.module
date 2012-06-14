@@ -333,7 +333,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
         if (!empty($gender_key)) {
             if ($l[$gender_key]=='M') $l['gender'] = 'Male';
             if ($l[$gender_key]=='F') $l['gender'] = 'Female';
-            $l['gender_id'] = $aGender[$l[$gender_key]];
+            $l['gender_id'] = $aGender[$l['gender']];
             unset($l['gender']); //remove text value
         }
 
