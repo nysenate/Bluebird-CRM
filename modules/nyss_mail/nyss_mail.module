@@ -74,7 +74,6 @@ function nyss_mail_civicrm_alterMailParams( &$params, $context )
                                   'queue_id'      => $event_queue_id,
                                   'is_test'       => $test
                            ));
-        $hdr->addFilterSetting('clicktrack', 'enable', 0);
     } else {
         //$params['replyTo'] = $replyto;
         // Sendgrid SMTP-API
