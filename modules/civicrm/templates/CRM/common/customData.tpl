@@ -43,16 +43,16 @@ function buildCustomData( type, subType, subName, cgCount, groupID, isMultiple )
 	
 	{/literal}
 		{if $urlPathVar}
-			dataUrl = dataUrl + '&' + '{$urlPathVar}'
+			dataUrl = dataUrl + '&' + '{$urlPathVar}';
 		{/if}
 		{if $groupID}
-			dataUrl = dataUrl + '&groupID=' + '{$groupID}'
+			dataUrl = dataUrl + '&groupID=' + '{$groupID}';
 		{/if}
 		{if $qfKey}
-			dataUrl = dataUrl + '&qfKey=' + '{$qfKey}'
+			dataUrl = dataUrl + '&qfKey=' + '{$qfKey}';
 		{/if}
 		{if $entityID}
-			dataUrl = dataUrl + '&entityID=' + '{$entityID}'
+			dataUrl = dataUrl + '&entityID=' + '{$entityID}';
 		{/if}
 	{literal}
 
