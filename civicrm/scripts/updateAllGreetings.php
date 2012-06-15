@@ -83,21 +83,24 @@ function run()
     echo "(The dry-run option is enabled.  No contacts will be updated.)\n";
   }
   else {
-    require_once 'CRM/Core/DAO.php';
+    require_once 'CRM/Core/Transaction.php';
 
     while ($dao->fetch()) {
-      if($cnt%BATCHSIZE == 0) {
-        CRM_Core_DAO::executeQuery("START TRANSACTION;");
+      if ($cnt % BATCHSIZE == 0) {
+        if (isset($transaction)) {
+          $transaction->commit();
+          unset($transaction);
+        }
+        $transaction = new CRM_Core_Transaction();
       }
       echo "Processing contact id {$dao->id} (type={$dao->contact_type}) {$dao->display_name}\n";
       CRM_Contact_BAO_Contact::processGreetings($dao);
       $cnt++;
-      if($cnt%BATCHSIZE == 0) {
-        CRM_Core_DAO::executeQuery("COMMIT");
-      }
     }
-    if($cnt%BATCHSIZE !=0) {
-      CRM_Core_DAO::executeQuery("COMMIT");
+
+    if (isset($transaction)) {
+      $transaction->commit();
+      unset($transaction);
     }
   }
 
