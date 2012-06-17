@@ -481,13 +481,13 @@ class CRM_Core_SelectValues
     {
         static $map = null;
         //NYSS
-		if (! $map ) {
+        if (! $map ) {
             return CRM_Utils_System::getPluginList( 'templates/CRM/Contact/Form/Task/Map', ".tpl" );
         }
         return $map;
     }
 
-	//NYSS
+    //NYSS
     /**
      * Function to get the Geocoding Providers from available plugins
      * 
@@ -547,7 +547,7 @@ class CRM_Core_SelectValues
                              '{domain.email}'          => ts('Domain (organization) email'),
                              '{mailing.name}'          => ts('Mailing name'),
                              '{mailing.group}'         => ts('Mailing group'),
-                             '{mailing.viewUrl}'	   => ts('Mailing permalink'),
+                             '{mailing.viewUrl}'       => ts('Mailing permalink'),
                           );
         }
         return $tokens;
