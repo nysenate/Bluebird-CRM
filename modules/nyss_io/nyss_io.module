@@ -1,6 +1,7 @@
 <?php
 
 define('BATCHSIZE', 250);
+define('BATCHSIZETAG', 5000);
 define("NYSSIODEBUG",true);
 
 require_once(dirname(__FILE__) . '/nyss_lib.php');
@@ -320,7 +321,7 @@ function nyss_ioimport_form_submit($form, &$form_state) {
             }
         }
 
-        if ($nyss_ioline%100==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
+        if ($nyss_ioline%500==0) nyss_out('status', "processed {$nyss_ioline} lines", true);
 
         //fix the gender entries
         if ( !empty($l['gender']) ) {
@@ -707,39 +708,63 @@ function nyss_ioimport_form_submit($form, &$form_state) {
 
     //Handle tag processing
     if ( !$dryrun ) {
-      foreach ( $tagContacts as $keyword => $tContacts ) {
-        if (empty($keyword_lookup[$keyword])) {
-          $params = array( 'version'   => 3,
-                           'name'      => $keyword,
-                           'parent_id' => '296'
-                           );
-          $tag = civicrm_api('tag', 'get', $params);
+      if ( !empty($tagContacts) ) {
+        //make sure entity_tag table is clean and index exists
+        checkTagIndex();
 
-          if ( $tag['is_error'] || !$tag['count'] ) {
-            echo 'creating tag: '.$keyword.'<br />';
-            $tag   = civicrm_api('tag', 'create', $params);
+        $tagStart = time();
+        foreach ( $tagContacts as $keyword => $tContacts ) {
+          if (empty($keyword_lookup[$keyword])) {
+            $params = array( 'version'   => 3,
+                             'name'      => $keyword,
+                             'parent_id' => '296'
+                             );
+            $tag = civicrm_api('tag', 'get', $params);
+
+            if ( $tag['is_error'] || !$tag['count'] ) {
+              echo 'creating tag: '.$keyword.'<br />';
+              $tag   = civicrm_api('tag', 'create', $params);
+            }
+            $tagid = $tag['id'];
+            $keyword_lookup[$keyword] = $tagid;
+          } else {
+            $tagid = $keyword_lookup[$keyword];
           }
-          $tagid = $tag['id'];
-          $keyword_lookup[$keyword] = $tagid;
-        } else {
-          $tagid = $keyword_lookup[$keyword];
-        }
-        //CRM_Core_Error::debug_var('tagid',$tagid);
+          //CRM_Core_Error::debug_var('tagid',$tagid);
 
-        //convert contact IDs to correct format
-        $buildContacts = array();
-        foreach ( $tContacts as $i => $cid ) {
-          $buildContacts["contact_id.{$i}"] = $cid;
-        }
+          //create sql insert; process in batches
+          $eTList    = array();
+          $eTSqlList = '';
+          $b         = 0; //batch count
+          $tagCount  = count($tContacts);
 
-        //add tag to contacts
-        $params = array( 'version'    => 3,
-                         'tag_id'     => $tagid,
-                         );
-        $params = array_merge($params, $buildContacts);
-        //nyss_out('debug', $params, true);
-        //CRM_Core_Error::debug_var('params',$params);
-        $entityTag = civicrm_api('entity_tag', 'create', $params );
+          foreach ( $tContacts as $i => $cid ) {
+            $eTList[] = "'civicrm_contact', $cid, $tagid";
+            if ( ( $i%BATCHSIZETAG == 0 && $i !== 0 ) ||
+                 $i == $tagCount - 1 ) {
+
+              $entityTagStart = time();
+
+              $eTSql  = 'INSERT IGNORE INTO civicrm_entity_tag ( entity_table, entity_id, tag_id ) VALUES (';
+              $eTSql .= implode('), (', $eTList);
+              $eTSql .= ');';
+              CRM_Core_DAO::executeQuery($eTSql);
+
+              //free memory
+              unset($eTList);
+              $eTList = array();
+
+              $entityTagEnd  = time();
+              $entityTagDiff = $entityTagEnd - $entityTagStart;
+
+              nyss_out('debug', "tag: $keyword | set: $b | record: $i | processing time: $entityTagDiff secs.", true);
+              $b++;
+            }
+          }
+        }
+        $tagEnd  = time();
+        $tagDiff = $tagEnd - $tagStart;
+        nyss_out('debug', "tag processing time: $tagDiff secs.", true);
       }
     } else {
       nyss_out('debug', $tagContacts, true);
@@ -1260,6 +1285,27 @@ function convertProperCase( $string, $skipMixed = false, $skipSpecial = false ) 
     return $string;
 }
 
-function cacheGreetings(  ) {
+function checkTagIndex() {
 
+  $sql = "SHOW INDEX FROM civicrm_entity_tag WHERE Key_name = 'index_civicrm_entity_tag_entity_table_entity_id_tag_id'";
+  $ti  = CRM_Core_DAO::singleValueQuery($sql);
+
+  if ( !$ti ) {
+    //remove duplicates and add index
+    $bbconfig = get_bluebird_instance_config();
+
+    //run duplicate primary flag cleanup
+    $fixET = $bbconfig['app.rootdir'].'/scripts/fixEntityTags.sh --dups-only --ok '.$bbconfig['shortname'];
+    $fixETout = shell_exec( $fixET );
+    nyss_out('status', $fixETout, true);
+
+    //create index
+    $sql = "ALTER TABLE civicrm_entity_tag
+            ADD UNIQUE index_civicrm_entity_tag_entity_table_entity_id_tag_id
+              ( entity_table, entity_id, tag_id ) ";
+    $ind = CRM_Core_DAO::executeQuery($sql);
+    nyss_out('status', 'index_civicrm_entity_tag_entity_table_entity_id_tag_id created', true);
+  }
+
+  return;
 }
