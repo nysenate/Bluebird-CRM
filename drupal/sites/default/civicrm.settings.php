@@ -52,8 +52,7 @@ define('CIVICRM_PETITION_CONTACTS','Petition Contacts');
 define('CIVICRM_CIVIMAIL_WORKFLOW', 1 );
 
 // Cache-related constants
-define('CIVICRM_USE_ARRAYCACHE', get_config_value($bbconfig, 'cache.arraycache', 0));
-define('CIVICRM_USE_MEMCACHE', get_config_value($bbconfig, 'cache.memcache', 0));
+define('CIVICRM_DB_CACHE_CLASS', get_config_value($bbconfig, 'cache.db.class', null));
 define('CIVICRM_MEMCACHE_TIMEOUT', get_config_value($bbconfig, 'cache.memcache.timeout', 600));
 define('CIVICRM_MEMCACHE_PREFIX', $bbconfig['servername']);
 
@@ -63,12 +62,13 @@ define('SAGE_API_BASE', $bbconfig['sage.api.base']);
 
 if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
   function xhprof_shutdown_func($source, $run_id=NULL) {
-    // Hopefully we don't throw an exception cause there's no way to catch it now...
+    // Hopefully we don't throw an exception; there's no way to catch it now...
     $xhprof_data = xhprof_disable();
 
     // Check to see if the custom/civicrm/php path has been added to the path
-    if (!stream_resolve_include_path("xhprof_lib/utils/xhprof_runs.php"))
+    if (!stream_resolve_include_path("xhprof_lib/utils/xhprof_runs.php")) {
       return; // Can't do anything without this...
+    }
 
     require_once "xhprof_lib/utils/xhprof_runs.php";
 
@@ -84,12 +84,15 @@ if (isset($bbconfig['xhprof.profile']) && $bbconfig['xhprof.profile']) {
 
   // Build the profiling flags based on configuration parameters
   $flags = 0;
-  if (isset($bbconfig['xhprof.memory']) && $bbconfig['xhprof.memory'])
+  if (isset($bbconfig['xhprof.memory']) && $bbconfig['xhprof.memory']) {
     $flags += XHPROF_FLAGS_MEMORY;
-  if (isset($bbconfig['xhprof.cpu']) && $bbconfig['xhprof.cpu'])
+  }
+  if (isset($bbconfig['xhprof.cpu']) && $bbconfig['xhprof.cpu']) {
     $flags += XHPROF_FLAGS_CPU;
-  if (!isset($bbconfig['xhprof.builtins']) || !$bbconfig['xhprof.builtins'])
+  }
+  if (!isset($bbconfig['xhprof.builtins']) || !$bbconfig['xhprof.builtins']) {
     $flags += XHPROF_FLAGS_NO_BUILTINS;
+  }
 
   // Build the ignore list based on configuration parameters
   $ignored_functions = array();

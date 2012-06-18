@@ -65,39 +65,35 @@ class CRM_Utils_Cache {
      * @static
      *
      */
-    static function &singleton( ) {
+    static function &singleton( )
+    {
         if (self::$_singleton === null ) {
-            if ( defined( 'CIVICRM_USE_MEMCACHE' ) &&
-                 CIVICRM_USE_MEMCACHE ) {
-                require_once 'CRM/Utils/Cache/Memcache.php';
-                $settings = self::getCacheSettings( );
-				//NYSS 5296
-                if (strtolower(CIVICRM_USE_MEMCACHE) === 'memcached') {
-                  self::$_singleton = new CRM_Utils_Cache_Memcached(
-                    $settings['host'],
-                    $settings['port'],
-                    $settings['timeout'],
-                    $settings['prefix']
-                  );
-                }
-                else {
-                  self::$_singleton = new CRM_Utils_Cache_Memcache(
-                    $settings['host'],
-                    $settings['port'],
-                    $settings['timeout'],
-                    $settings['prefix']
-                  );
-                }
-            } else if ( defined( 'CIVICRM_USE_ARRAYCACHE' ) && 
-                        CIVICRM_USE_ARRAYCACHE ) {
-                require_once 'CRM/Utils/Cache/ArrayCache.php';
-                self::$_singleton = new CRM_Utils_Cache_ArrayCache();
-            } else {
-                self::$_singleton = new CRM_Utils_Cache( );
+            // Maintain backward compatibility for now.
+            // Setting CIVICRM_USE_MEMCACHE or CIVICRM_USE_ARRAYCACHE will
+            // override the CIVICRM_DB_CACHE_CLASS setting.
+            // Going forward, CIVICRM_USE_xxxCACHE should be deprecated.
+            if (defined('CIVICRM_USE_MEMCACHE') && CIVICRM_USE_MEMCACHE) {
+                define('CIVICRM_DB_CACHE_CLASS', 'Memcache');
+            }
+            else if (defined('CIVICRM_USE_ARRAYCACHE') && CIVICRM_USE_ARRAYCACHE) {
+                define('CIVICRM_DB_CACHE_CLASS', 'ArrayCache');
+            }
+
+            // NYSS 5296 - implemented Memcached class and provided for
+            // a generic method for utilizing any of the available db caches.
+            if (defined('CIVICRM_DB_CACHE_CLASS') && CIVICRM_DB_CACHE_CLASS) {
+                $dbCacheClass = 'CRM_Utils_Cache_'.CIVICRM_DB_CACHE_CLASS;
+                require_once(str_replace('_', DIRECTORY_SEPARATOR, $dbCacheClass).'.php');
+                $settings = self::getCacheSettings(CIVICRM_DB_CACHE_CLASS);
+                self::$_singleton = new $dbCacheClass($settings);
+            }
+            else {
+                self::$_singleton = new CRM_Utils_Cache();
             }
         }
         return self::$_singleton;
     }
+
 
     /**
      * Get cache relevant settings
@@ -106,31 +102,32 @@ class CRM_Utils_Cache {
      *   associative array of settings for the cache
      * @static
      */
-    static function getCacheSettings( ) {
-        if ( !defined( 'CIVICRM_USE_MEMCACHE' ) or !CIVICRM_USE_MEMCACHE ) {
+    static function getCacheSettings($cachePlugin)
+    {
+        if ($cachePlugin !== 'Memcache' && $cachePlugin !== 'Memcached') {
           return array();
         }
-        $defaults =
-            array (
+
+        $defaults = array (
             'host'    =>  'localhost',
             'port'    =>  11211,
             'timeout' =>  3600,
             'prefix'  =>  ''
             );
 
-        if ( defined(  'CIVICRM_MEMCACHE_HOST' ) ) {
+        if (defined('CIVICRM_MEMCACHE_HOST')) {
             $defaults['host'] = CIVICRM_MEMCACHE_HOST;
         }
 
-        if ( defined(  'CIVICRM_MEMCACHE_PORT' ) ) {
+        if (defined('CIVICRM_MEMCACHE_PORT')) {
             $defaults['port'] = CIVICRM_MEMCACHE_PORT;
         }
 
-        if ( defined(  'CIVICRM_MEMCACHE_TIMEOUT' ) ) {
+        if (defined('CIVICRM_MEMCACHE_TIMEOUT')) {
             $defaults['timeout'] = CIVICRM_MEMCACHE_TIMEOUT;
         }
 
-        if ( defined(  'CIVICRM_MEMCACHE_PREFIX' ) ) {
+        if (defined('CIVICRM_MEMCACHE_PREFIX')) {
             $defaults['prefix'] = CIVICRM_MEMCACHE_PREFIX;
         }
 
