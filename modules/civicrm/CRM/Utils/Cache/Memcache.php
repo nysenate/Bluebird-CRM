@@ -101,35 +101,35 @@ class CRM_Utils_Cache_Memcache
             $this->_prefix = $config['prefix'];
         }
 
-        $this->_cache = new Memcache( );
+        $this->_cache = new Memcache();
         
-        if ( ! $this->_cache->connect( $this->_host, $this->_port ) ) {
+        if (!$this->_cache->connect($this->_host, $this->_port)) {
             // dont use fatal here since we can go in an infinite loop
             echo 'Could not connect to Memcached server';
-            CRM_Utils_System::civiExit( );
+            CRM_Utils_System::civiExit();
         }
     }
 
-    function set( $key, &$value ) {
-        if ( ! $this->_cache->set( $this->_prefix . $key, $value, false, $this->_timeout ) ) {
+    function set($key, &$value) {
+        $key = $this->_prefix.$key;
+        if (!$this->_cache->set($key, $value, false, $this->_timeout)) {
             return false;
         }
         return true;
     }
 
-    function &get( $key ) {
-        $result =& $this->_cache->get( $this->_prefix . $key );
+    function &get($key) {
+        $key = $this->_prefix.$key;
+        $result =& $this->_cache->get($key);
         return $result;
     }
 
-    function delete( $key ) {
-        return $this->_cache->delete( $this->_prefix . $key );
+    function delete($key) {
+        $key = $this->_prefix.$key;
+        return $this->_cache->delete($key);
     }
 
-    function flush( ) {
-        return $this->_cache->flush( );
+    function flush() {
+        return $this->_cache->flush();
     }
-        
 }
-
-
