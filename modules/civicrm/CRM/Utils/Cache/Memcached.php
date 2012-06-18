@@ -32,7 +32,12 @@
  * $Id$
  *
  */
-class CRM_Utils_Cache_Memcached {
+class CRM_Utils_Cache_Memcached
+{
+  const DEFAULT_HOST = 'localhost';
+  const DEFAULT_PORT = 11211;
+  const DEFAULT_TIMEOUT = 3600;
+  const DEFAULT_PREFIX = '';
 
   /**
    * The host name of the memcached server
@@ -76,22 +81,23 @@ class CRM_Utils_Cache_Memcached {
   /**
    * Constructor
    *
-   * @param string  $host      the memcached server host
-   * @param int     $port      the memcached server port
-   * @param int     $timeout   the default timeout
-   * @param string  $prefix    the prefix prepended to a cache key
-   *
+   * @param array   $config  an array of configuration params
    * @return void
    */
-  function __construct($host = 'localhost',
-    $port    = 11211,
-    $timeout = 3600,
-    $prefix  = ''
-  ) {
-    $this->_host    = $host;
-    $this->_port    = $port;
-    $this->_timeout = $timeout;
-    $this->_prefix  = $prefix;
+  function __construct($config)
+  {
+    if (isset($config['host'])) {
+      $this->_host = $config['host'];
+    }
+    if (isset($config['port'])) {
+      $this->_port = $config['port'];
+    }
+    if (isset($config['timeout'])) {
+      $this->_timeout = $config['timeout'];
+    }
+    if (isset($config['prefix'])) {
+      $this->_prefix = $config['prefix'];
+    }
 
     $this->_cache = new Memcached();
 
