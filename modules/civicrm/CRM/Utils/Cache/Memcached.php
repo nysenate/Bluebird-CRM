@@ -44,21 +44,21 @@ class CRM_Utils_Cache_Memcached
    *
    * @var string
    */
-  protected $_host;
+  protected $_host = self::DEFAULT_HOST;
 
   /**
-   * The port on which to connect on
+   * The port on which to connect
    *
    * @var int
    */
-  protected $_port;
+  protected $_port = self::DEFAULT_PORT;
 
   /**
    * The default timeout to use
    *
    * @var int
    */
-  protected $_timeout;
+  protected $_timeout = self::DEFAULT_TIMEOUT;
 
   /**
    * The actual memcache object
@@ -76,7 +76,7 @@ class CRM_Utils_Cache_Memcached
    *
    * @var string
    */
-  protected $_prefix;
+  protected $_prefix = self::DEFAULT_PREFIX;
 
   /**
    * Constructor
@@ -111,16 +111,16 @@ class CRM_Utils_Cache_Memcached
   function set($key, &$value) {
     $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
     if (!$this->_cache->set($key, $value, $this->_timeout)) {
-      CRM_Core_Error::debug( 'Result Code: ', $this->_cache->getResultMessage());
-      CRM_Core_Error::fatal("memcached set failed, wondering why?, $key", $value );
-      return FALSE;
+      CRM_Core_Error::debug('Result Code: ', $this->_cache->getResultMessage());
+      CRM_Core_Error::fatal("memcached set failed, wondering why?, $key", $value);
+      return false;
     }
-    return TRUE;
+    return true;
   }
 
   function &get($key) {
     $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
-    $result = $this->_cache->get($key);
+    $result =& $this->_cache->get($key);
     return $result;
   }
 
