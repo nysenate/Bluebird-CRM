@@ -34,28 +34,33 @@
  *
  */
 
-class CRM_Utils_Cache_Memcache {
+class CRM_Utils_Cache_Memcache
+{
+    const DEFAULT_HOST = 'localhost';
+    const DEFAULT_PORT = 11211;
+    const DEFAULT_TIMEOUT = 3600;
+    const DEFAULT_PREFIX = '';
 
     /**
      * The host name of the memcached server
      *
      * @var string
      */
-    protected $_host;
+    protected $_host = self::DEFAULT_HOST;
 
     /**
-     * The port on which to connect on
+     * The port on which to connect
      *
      * @var int
      */
-    protected $_port;
+    protected $_port = self::DEFAULT_PORT;
 
     /**
      * The default timeout to use
      *
      * @var int
      */
-    protected $_timeout;
+    protected $_timeout = self::DEFAULT_TIMEOUT;
 
     /**
      * The actual memcache object
@@ -73,56 +78,58 @@ class CRM_Utils_Cache_Memcache {
      *
      * @var string
      */
-    protected $_prefix;
+    protected $_prefix = self::DEFAULT_PREFIX;
 
     /**
      * Constructor
      *
-     * @param string  $host      the memcached server host
-     * @param int     $port      the memcached server port
-     * @param int     $timeout   the default timeout
-     * @param string  $prefix    the prefix prepended to a cache key
-     *
+     * @param array   $config  an array of configuration params
      * @return void
      */
-    function __construct( $host      = 'localhost',
-                          $port      = 11211,
-                          $timeout   = 3600,
-                          $prefix    = '' ) {
-        $this->_host    = $host;
-        $this->_port    = $port;
-        $this->_timeout = $timeout;
-        $this->_prefix  = $prefix;
+    function __construct($config)
+    {
+        if (isset($config['host'])) {
+            $this->_host = $config['host'];
+        }
+        if (isset($config['port'])) {
+            $this->_port = $config['port'];
+        }
+        if (isset($config['timeout'])) {
+            $this->_timeout = $config['timeout'];
+        }
+        if (isset($config['prefix'])) {
+            $this->_prefix = $config['prefix'];
+        }
 
-        $this->_cache = new Memcache( );
+        $this->_cache = new Memcache();
         
-        if ( ! $this->_cache->connect( $this->_host, $this->_port ) ) {
+        if (!$this->_cache->connect($this->_host, $this->_port)) {
             // dont use fatal here since we can go in an infinite loop
             echo 'Could not connect to Memcached server';
-            CRM_Utils_System::civiExit( );
+            CRM_Utils_System::civiExit();
         }
     }
 
-    function set( $key, &$value ) {
-        if ( ! $this->_cache->set( $this->_prefix . $key, $value, false, $this->_timeout ) ) {
+    function set($key, &$value) {
+        $key = $this->_prefix.$key;
+        if (!$this->_cache->set($key, $value, false, $this->_timeout)) {
             return false;
         }
         return true;
     }
 
-    function &get( $key ) {
-        $result =& $this->_cache->get( $this->_prefix . $key );
+    function &get($key) {
+        $key = $this->_prefix.$key;
+        $result =& $this->_cache->get($key);
         return $result;
     }
 
-    function delete( $key ) {
-        return $this->_cache->delete( $this->_prefix . $key );
+    function delete($key) {
+        $key = $this->_prefix.$key;
+        return $this->_cache->delete($key);
     }
 
-    function flush( ) {
-        return $this->_cache->flush( );
+    function flush() {
+        return $this->_cache->flush();
     }
-        
 }
-
-

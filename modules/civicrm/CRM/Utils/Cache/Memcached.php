@@ -32,28 +32,33 @@
  * $Id$
  *
  */
-class CRM_Utils_Cache_Memcached {
+class CRM_Utils_Cache_Memcached
+{
+  const DEFAULT_HOST = 'localhost';
+  const DEFAULT_PORT = 11211;
+  const DEFAULT_TIMEOUT = 3600;
+  const DEFAULT_PREFIX = '';
 
   /**
    * The host name of the memcached server
    *
    * @var string
    */
-  protected $_host;
+  protected $_host = self::DEFAULT_HOST;
 
   /**
-   * The port on which to connect on
+   * The port on which to connect
    *
    * @var int
    */
-  protected $_port;
+  protected $_port = self::DEFAULT_PORT;
 
   /**
    * The default timeout to use
    *
    * @var int
    */
-  protected $_timeout;
+  protected $_timeout = self::DEFAULT_TIMEOUT;
 
   /**
    * The actual memcache object
@@ -71,27 +76,28 @@ class CRM_Utils_Cache_Memcached {
    *
    * @var string
    */
-  protected $_prefix;
+  protected $_prefix = self::DEFAULT_PREFIX;
 
   /**
    * Constructor
    *
-   * @param string  $host      the memcached server host
-   * @param int     $port      the memcached server port
-   * @param int     $timeout   the default timeout
-   * @param string  $prefix    the prefix prepended to a cache key
-   *
+   * @param array   $config  an array of configuration params
    * @return void
    */
-  function __construct($host = 'localhost',
-    $port    = 11211,
-    $timeout = 3600,
-    $prefix  = ''
-  ) {
-    $this->_host    = $host;
-    $this->_port    = $port;
-    $this->_timeout = $timeout;
-    $this->_prefix  = $prefix;
+  function __construct($config)
+  {
+    if (isset($config['host'])) {
+      $this->_host = $config['host'];
+    }
+    if (isset($config['port'])) {
+      $this->_port = $config['port'];
+    }
+    if (isset($config['timeout'])) {
+      $this->_timeout = $config['timeout'];
+    }
+    if (isset($config['prefix'])) {
+      $this->_prefix = $config['prefix'];
+    }
 
     $this->_cache = new Memcached();
 
@@ -105,16 +111,16 @@ class CRM_Utils_Cache_Memcached {
   function set($key, &$value) {
     $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
     if (!$this->_cache->set($key, $value, $this->_timeout)) {
-      CRM_Core_Error::debug( 'Result Code: ', $this->_cache->getResultMessage());
-      CRM_Core_Error::fatal("memcached set failed, wondering why?, $key", $value );
-      return FALSE;
+      CRM_Core_Error::debug('Result Code: ', $this->_cache->getResultMessage());
+      CRM_Core_Error::fatal("memcached set failed, wondering why?, $key", $value);
+      return false;
     }
-    return TRUE;
+    return true;
   }
 
   function &get($key) {
     $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
-    $result = $this->_cache->get($key);
+    $result =& $this->_cache->get($key);
     return $result;
   }
 
