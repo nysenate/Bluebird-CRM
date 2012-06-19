@@ -262,7 +262,12 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
 
             if ($row['log_civicrm_contact_log_action'] == 'Update') {
                 $q = "reset=1&log_conn_id={$row['log_civicrm_contact_log_conn_id']}&log_date={$row['log_civicrm_contact_log_date']}";
-                if ( $this->cid ) $q .= '&cid='.$this->cid;
+                //NYSS
+                if ( $this->cid ) {
+                  $q .= '&cid='.$this->cid;
+                } else {
+                  $q .= '&cid='.$row['log_civicrm_contact_id'];
+                }
 
                 //NYSS append instance id so we return properly
                 $q .= '&instanceID='.$this->_id;

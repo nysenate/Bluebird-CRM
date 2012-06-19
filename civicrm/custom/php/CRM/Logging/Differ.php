@@ -43,12 +43,13 @@ class CRM_Logging_Differ
     private $log_conn_id;
     private $log_date;
 
-    function __construct($log_conn_id, $log_date)
+    function __construct($log_conn_id, $log_date, $log_cid)//NYSS
     {
         $dsn = defined('CIVICRM_LOGGING_DSN') ? DB::parseDSN(CIVICRM_LOGGING_DSN) : DB::parseDSN(CIVICRM_DSN);
         $this->db          = $dsn['database'];
         $this->log_conn_id = $log_conn_id;
         $this->log_date    = $log_date;
+        $this->log_cid     = $log_cid;//NYSS
     }
 
     function diffsInTables($tables)
@@ -69,9 +70,26 @@ class CRM_Logging_Differ
             1 => array($this->log_conn_id, 'Integer'),
             2 => array($this->log_date,    'String'),
         );
+        //NYSS 5457
+        $cidSql = '';
+        if ( $this->log_cid ) {
+          switch ($table) {
+            case 'civicrm_contact':
+              $cidSql = "AND id = {$this->log_cid}";
+              break;
+            case 'civicrm_entity_tag':
+              $cidSql = "AND entity_id = {$this->log_cid}";
+              break;
+            default:
+              $cidSql = "AND contact_id = {$this->log_cid}";
+              if ( strpos($table, 'civicrm_value') !== false ) {
+                $cidSql = "AND entity_id = {$this->log_cid}";
+              }
+          }
+        }
 
         // find ids in this table that were affected in the given connection (based on connection id and a ±10 s time period around the date)
-        $sql = "SELECT DISTINCT id FROM `{$this->db}`.`log_$table` WHERE log_conn_id = %1 AND log_date BETWEEN DATE_SUB(%2, INTERVAL 10 SECOND) AND DATE_ADD(%2, INTERVAL 10 SECOND)";
+        $sql = "SELECT DISTINCT id FROM `{$this->db}`.`log_$table` WHERE log_conn_id = %1 AND log_date BETWEEN DATE_SUB(%2, INTERVAL 10 SECOND) AND DATE_ADD(%2, INTERVAL 10 SECOND) $cidSql";
         $dao = CRM_Core_DAO::executeQuery($sql, $params);
         while ($dao->fetch()) {
             $diffs = array_merge($diffs, $this->diffsInTableForId($table, $dao->id));
