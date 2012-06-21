@@ -483,10 +483,11 @@ class CRM_Utils_String {
      * @access public
      * @static
      */
-	static function stripSpaces( $string )  {
-        // NYSS
-        return (empty($string)) ? $string : preg_replace("/\s{2,}/", " ", trim($string));
-	}
+    static function stripSpaces( $string, $tabs = FALSE )  {
+      //NYSS
+      $match = ( $tabs ) ? "/ {2,}|\t/" : "/ {2,}/";
+      return (empty($string)) ? $string : preg_replace($match, " ", trim($string));
+    }
 
     /**
      * This function is used to clean the URL 'path' variable that we use 

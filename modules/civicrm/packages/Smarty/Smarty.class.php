@@ -1997,7 +1997,7 @@ class Smarty
         $template_vars = $this->get_template_vars();
         if(!$template_vars['config']->debug) {
           require_once 'CRM/Utils/String.php';
-          $source = CRM_Utils_String::stripSpaces($source);
+          $source = CRM_Utils_String::stripSpaces($source, TRUE);
         }
         return $source;
     }
