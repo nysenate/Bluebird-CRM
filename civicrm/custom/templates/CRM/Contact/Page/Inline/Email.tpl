@@ -26,12 +26,12 @@
 {* template for building email block*}
 <div class="crm-table2div-layout" id="crm-email-content">
   <div class="crm-clear"> <!-- start of main -->
-     {if $email}
+    {if $email}
      <div class="crm-config-option">
       <a id="edit-email" class="hiddenElement crm-link-action" title="{ts}click to add / edit{/ts}">
         <span class="batch-edit"></span>{ts}add/edit{/ts}
       </a>
-    </div>
+     </div>
     {else}
       <div>
         <a id="edit-email" class="crm-link-action" title="{ts}click to add / edit{/ts}">
@@ -84,7 +84,9 @@ cj(function(){
     }).mouseleave( function() {
       cj(this).removeClass('crm-inline-edit-hover');
       {/literal}{if $email}{literal}
-      cj('#edit-email').hide();
+        if ( cj('#edit-email').text().trim() == 'add/edit' ) {
+          cj('#edit-email').hide();
+        }
       {/literal}{/if}{literal}
     });
 
@@ -95,9 +97,9 @@ cj(function(){
                         data: { 'class_name':'CRM_Contact_Form_Inline_Email' },
                         url: dataUrl,
                         async: false
-					}).responseText;
+                    }).responseText;
 
-	    cj( '#email-block' ).html( response );
+        cj( '#email-block' ).html( response );
     });
 });
 
