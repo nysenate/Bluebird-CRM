@@ -113,6 +113,39 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
         $errors["email[".array_pop($hasPrimary)."][is_primary]"] = ts( 'Only one email can be marked as primary.' );
       }
     }
+
+    if ( empty($hasData) ) {
+      //no emails set; make sure we have fname/lname/org/house
+      require_once 'CRM/Contact/BAO/Contact.php';
+
+      $hasContact = true;
+
+      $contact = new CRM_Contact_BAO_Contact( );
+      $contact->id = $fields['cid'];
+      $contact->find(true);
+
+      switch ( $contact->contact_type ) {
+        case 'Individual':
+          if ( empty($contact->first_name) && empty($contact->last_name) ) {
+            $hasContact = false;
+          }
+          break;
+        case 'Organization':
+          if ( empty($contact->organization_name) ) {
+            $hasContact = false;
+          }
+          break;
+        case 'Household':
+          if ( empty($contact->household_name) ) {
+            $hasContact = false;
+          }
+          break;
+      }
+      if ( !$hasContact ) {
+        $errors["email[1][email]"] = ts('Email must be set if no contact name is present.' );
+      }
+    }
+
     return $errors;
   }
 
