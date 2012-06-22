@@ -163,7 +163,8 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
     }
 
     //suppress special location type options
-    for ( $i = 1; $i <= 5; $i++ ) {
+    $blockCount = count( $this->$objName );
+    for ( $i = 1; $i <= $blockCount; $i++ ) {
       $elementLoc = "{$name}[$i][location_type_id]";
       if ( ! $form->elementExists( $elementLoc ) ) {
         continue;

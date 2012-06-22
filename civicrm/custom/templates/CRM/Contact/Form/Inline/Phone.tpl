@@ -62,6 +62,11 @@
     cj( function() {
       // check first primary radio
       cj('#Phone_1_IsPrimary').attr('checked', true );
+      cj('.crm-phone-is_primary input').each(function(){
+        if ( cj(this).attr('checked') && cj(this).attr('id') != 'Phone_1_IsPrimary'  ) {
+          cj('#Phone_1_IsPrimary').attr('checked', false );
+        }
+      });
      
       // make sure only one is primary radio is checked
       cj('.crm-phone-is_primary input').click(function(){
