@@ -124,8 +124,18 @@
              }
           }).responseText;
 
+          //NYSS force status cancel
+          if ( !status ) {
+            var isCancel = false;
+            for (var i = 0;i<formData.length;i++) {
+              if ( formData[i]['name'] == '_qf_Phone_refresh' ) {
+                isCancel = true;
+              }
+            }
+          }
+
           //check if form is submitted successfully
-          if ( status ) {
+          if ( status || isCancel ) {
             // fetch the view of email block after edit
             var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1' }"{literal}; 
             var queryString = 'class_name=CRM_Contact_Page_Inline_Phone&type=page&cid=' + {/literal}"{$contactId}"{literal};

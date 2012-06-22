@@ -958,7 +958,7 @@ AND civicrm_contact.is_opt_out =0";
         require_once 'CRM/Activity/BAO/Activity.php';
         $config = CRM_Core_Config::singleton( );
         $knownTokens = $this->getTokens();
-        
+
         if ($this->_domain == null) {
             require_once 'CRM/Core/BAO/Domain.php';
             $this->_domain =& CRM_Core_BAO_Domain::getDomain( );
@@ -1232,13 +1232,11 @@ AND civicrm_contact.is_opt_out =0";
             $domain =& CRM_Core_BAO_Domain::getDomain( );
             $data = CRM_Utils_Token::getDomainTokenReplacement($token, $domain, $html);
         } else if( $type == 'mailing') {
-            require_once 'CRM/Mailing/BAO/Mailing.php';
-            $mailing = new CRM_Mailing_BAO_Mailing( );
-            $mailing->find( true );
+            //NYSS 4996 correct mailing token replacement
             if ( $token == 'name' ) {
-                $data = $mailing->name ;
+                $data = $this->name ;
             } else if ( $token == 'group' ) {
-                $groups = $mailing->getGroupNames( );
+                $groups = $this->getGroupNames( );
                 $data = implode(', ', $groups);
             }         
         } else {

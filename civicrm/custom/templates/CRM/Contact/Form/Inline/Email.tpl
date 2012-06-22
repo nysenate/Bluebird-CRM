@@ -68,6 +68,12 @@
     cj( function() {
       // check first primary radio
       cj('#Email_1_IsPrimary').attr('checked', true );
+      cj('.crm-email-is_primary input').each(function(){
+          if ( cj(this).attr('checked') && cj(this).attr('id') != 'Email_1_IsPrimary'  ) {
+            cj('#Email_1_IsPrimary').attr('checked', false );
+          }
+        });
+        cj(this).attr('checked', true);
      
       // make sure only one is primary radio is checked
       cj('.crm-email-is_primary input').click(function(){
@@ -78,12 +84,12 @@
       });
 
       // make sure only one bulkmail radio is checked
-      cj('.crm-email-bulkmail input').click(function(){
+      /*cj('.crm-email-bulkmail input').click(function(){
         cj('.crm-email-bulkmail input').each(function(){
           cj(this).attr('checked', false);
         });
         cj(this).attr('checked', true);
-      });
+      });*/
 
       // handle delete of block
       cj('.crm-delete-email').click( function(){
@@ -114,7 +120,7 @@
         cj('#add-more-email').hide();
       }
 
-	  // error handling / show hideen elements duing form validation
+      // error handling / show hideen elements duing form validation
       cj('tr[id^="Email_Block_"]' ).each( function() {
           if( cj(this).find('td:first span').length > 0 ) {
             cj(this).removeClass('hiddenElement');

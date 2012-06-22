@@ -309,7 +309,8 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
         case 'fulltext' :
             //NYSS 2193
             if ( $qfKey ) {
-              $urlParams = '_qf_Custom_display=true';
+              $text = CRM_Utils_Request::retrieve( 'text', 'String', $this );
+              $urlParams = "_qf_Custom_display=true&text=$text";
             }
             $urlString = 'civicrm/contact/search/custom';
             break;

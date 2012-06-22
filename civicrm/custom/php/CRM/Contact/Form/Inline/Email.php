@@ -80,23 +80,20 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
    *
    * @param array $fields     posted values of the form
    * @param array $errors     list of errors to be posted back to the form
-   * @param int   $self       form object.
    *
    * @return $errors
    * @static
    * @access public
    */
-  static function formRule( $fields, $errors, $self ) {
+  static function formRule( $fields, $errors ) {
 
     require_once 'CRM/Contact/Form/Contact.php';
-
     $hasData = $hasPrimary = $errors = array( );
     if ( CRM_Utils_Array::value( 'email', $fields ) && is_array( $fields['email'] ) ) {
       foreach ( $fields['email'] as $instance => $blockValues ) {
         $dataExists = CRM_Contact_Form_Contact::blockDataExists( $blockValues );
 
         if ( $dataExists ) {
-
           $hasData[] = $instance;
           if ( CRM_Utils_Array::value( 'is_primary', $blockValues ) ) {
             $hasPrimary[] = $instance;
@@ -132,8 +129,14 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
     $actualBlockCount = 1;
     if ( count( $this->_emails ) > 1 ) {
       $actualBlockCount = $totalBlocks = count( $this->_emails );
-      $additionalBlocks = $this->_blockCount - $totalBlocks;
-      $totalBlocks      += $additionalBlocks;  
+      if ( $totalBlocks < $this->_blockCount ) {
+        $additionalBlocks = $this->_blockCount - $totalBlocks;
+        $totalBlocks      += $additionalBlocks;
+      }
+      else {
+        $actualBlockCount++;
+        $totalBlocks++;
+      }
     }
 
     $this->assign('actualBlockCount', $actualBlockCount);
@@ -201,7 +204,7 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
       $contact = new CRM_Contact_DAO_Contact( );
       $contact->id = $this->_contactId;
       $contact->find(true);
-	  //make sure dates doesn't get reset
+      //make sure dates doesn't get reset
       $contact->birth_date    = CRM_Utils_Date::isoToMysql($contact->birth_date); 
       $contact->deceased_date = CRM_Utils_Date::isoToMysql($contact->deceased_date);
       $contact->save();
