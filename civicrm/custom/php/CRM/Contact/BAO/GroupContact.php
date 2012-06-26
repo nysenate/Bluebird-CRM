@@ -832,7 +832,8 @@ WHERE  contact_id = %2
 
             //NYSS 5433 if groupID is not set, we should bounce before we attempt to insert/replace
             if ( !is_numeric($groupID) ) {
-              CRM_Core_Error::statusBounce( ts('There was a problem adding the contact(s) to the selected group. Please retry your operation.') );
+			  CRM_Core_Error::debug_log_message("bulkAddContactsToGroup: $groupID is not an integer.");
+			  CRM_Core_Error::statusBounce( ts('There was a problem adding the contact(s) to the selected group. Please retry your operation.') );
             }
 
  	        $numContactsAdded    = 0;
