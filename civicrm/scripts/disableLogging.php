@@ -24,6 +24,10 @@ $dropList = array( 'civicrm_domain_after_update',
                    'civicrm_option_value_after_insert',
                    'civicrm_uf_match_after_update',
                    'civicrm_uf_match_after_insert',
+                   'civicrm_group_after_update',
+                   'civicrm_group_after_insert',
+                   'civicrm_menu_after_update',
+                   'civicrm_menu_after_insert',
                    );
 foreach ( $dropList as $triggerName ) {
     CRM_Core_DAO::executeQuery("DROP TRIGGER IF EXISTS $triggerName");
@@ -39,6 +43,7 @@ echo "Disable Logging...\n";
 require_once 'CRM/Logging/Schema.php';
 $logging = new CRM_Logging_Schema;
 $logging->disableLogging();
+$logging->dropTriggers();
 
 //CRM_Core_Error::debug('logging',$logging);
 
