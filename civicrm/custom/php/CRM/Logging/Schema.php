@@ -133,7 +133,7 @@ AND    TABLE_NAME LIKE 'log_civicrm_%'
     /**
      * Drop triggers for all logged tables.
      */
-    private function dropTriggers()
+    function dropTriggers()
     {
         $dao = new CRM_Core_DAO;
         foreach ($this->tables as $table) {

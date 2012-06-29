@@ -40,7 +40,7 @@
       </div>
     {/if}
     {foreach from=$phone item=item}
-      {if $item.phone}
+      {if $item.phone || $item.phone_ext}
         <div class="crm-label">{$item.location_type} {$item.phone_type}</div>
         <div class="crm-content {if $item.is_primary eq 1}crm-content primary{/if}">
           <span {if $privacy.do_not_phone} class="do-not-phone" title={ts}"Privacy flag: Do Not Phone"{/ts} {/if}>
@@ -62,7 +62,9 @@ cj(function(){
     }).mouseleave( function() {
       cj(this).removeClass('crm-inline-edit-hover');
       {/literal}{if $phone}{literal}
-      cj('#edit-phone').hide();
+        if ( cj('#edit-phone').text().trim() == 'add/edit' ) {
+          cj('#edit-phone').hide();
+        }
       {/literal}{/if}{literal}
     });
 

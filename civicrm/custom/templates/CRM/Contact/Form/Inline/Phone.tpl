@@ -102,6 +102,14 @@
         cj('#add-more-phone').hide();
       }
 
+      // error handling / show hidden elements during form validation
+      cj('tr[id^="Phone_Block_"]' ).each( function() {
+          if( cj(this).find('td:first input').val().length == 0 &&
+              cj(this).find('td.crm-phone-is_primary input').attr('checked') ) {
+            cj(this).removeClass('hiddenElement');
+          }
+      });
+
       // handle ajax form submitting
       var options = { 
           beforeSubmit:  showRequest  // pre-submit callback  
