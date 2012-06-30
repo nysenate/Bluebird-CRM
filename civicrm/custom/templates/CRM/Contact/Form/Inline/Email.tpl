@@ -45,7 +45,7 @@
     {section name='i' start=1 loop=$totalBlocks}
     {assign var='blockId' value=$smarty.section.i.index}
         <tr id="Email_Block_{$blockId}" {if $blockId gt $actualBlockCount}class="hiddenElement"{/if}>
-            <td>{$form.email.$blockId.email.html|crmReplace:class:eighteen}</td>
+            <td>{$form.email.$blockId.email.html}</td>
             <td>{$form.email.$blockId.location_type_id.html}</td>
             <td align="center">{$form.email.$blockId.on_hold.html}</td>
             {if $multipleBulk}
@@ -68,18 +68,15 @@
     cj( function() {
       // check first primary radio
       cj('#Email_1_IsPrimary').attr('checked', true );
+      cj('.crm-email-is_primary input').each(function(){
+        if ( cj(this).attr('checked') && cj(this).attr('id') != 'Email_1_IsPrimary'  ) {
+          cj('#Email_1_IsPrimary').attr('checked', false );
+        }
+      });
      
       // make sure only one is primary radio is checked
       cj('.crm-email-is_primary input').click(function(){
         cj('.crm-email-is_primary input').each(function(){
-          cj(this).attr('checked', false);
-        });
-        cj(this).attr('checked', true);
-      });
-
-      // make sure only one bulkmail radio is checked
-      cj('.crm-email-bulkmail input').click(function(){
-        cj('.crm-email-bulkmail input').each(function(){
           cj(this).attr('checked', false);
         });
         cj(this).attr('checked', true);
@@ -114,11 +111,14 @@
         cj('#add-more-email').hide();
       }
 
-	  // error handling / show hideen elements duing form validation
+      // error handling / show hidden elements duing form validation
       cj('tr[id^="Email_Block_"]' ).each( function() {
-          if( cj(this).find('td:first span').length > 0 ) {
+          if( cj(this).find('td:first span').length > 0 ||
+		      cj(this).find('td:first input').val().length > 0 ) {
             cj(this).removeClass('hiddenElement');
-          } 
+          }
+          //NYSS 4775
+          cj(this).find('td:first input').addClass('eighteen');
       });
 
       // handle ajax form submitting

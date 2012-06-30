@@ -62,6 +62,11 @@
     cj( function() {
       // check first primary radio
       cj('#Phone_1_IsPrimary').attr('checked', true );
+      cj('.crm-phone-is_primary input').each(function(){
+        if ( cj(this).attr('checked') && cj(this).attr('id') != 'Phone_1_IsPrimary'  ) {
+          cj('#Phone_1_IsPrimary').attr('checked', false );
+        }
+      });
      
       // make sure only one is primary radio is checked
       cj('.crm-phone-is_primary input').click(function(){
@@ -97,6 +102,14 @@
         cj('#add-more-phone').hide();
       }
 
+      // error handling / show hidden elements during form validation
+      cj('tr[id^="Phone_Block_"]' ).each( function() {
+          if( cj(this).find('td:first input').val().length == 0 &&
+              cj(this).find('td.crm-phone-is_primary input').attr('checked') ) {
+            cj(this).removeClass('hiddenElement');
+          }
+      });
+
       // handle ajax form submitting
       var options = { 
           beforeSubmit:  showRequest  // pre-submit callback  
@@ -124,8 +137,18 @@
              }
           }).responseText;
 
+          //NYSS force status cancel
+          if ( !status ) {
+            var isCancel = false;
+            for (var i = 0;i<formData.length;i++) {
+              if ( formData[i]['name'] == '_qf_Phone_refresh' ) {
+                isCancel = true;
+              }
+            }
+          }
+
           //check if form is submitted successfully
-          if ( status ) {
+          if ( status || isCancel ) {
             // fetch the view of email block after edit
             var postUrl = {/literal}"{crmURL p='civicrm/ajax/inline' h=0 q='snippet=5&reset=1' }"{literal}; 
             var queryString = 'class_name=CRM_Contact_Page_Inline_Phone&type=page&cid=' + {/literal}"{$contactId}"{literal};

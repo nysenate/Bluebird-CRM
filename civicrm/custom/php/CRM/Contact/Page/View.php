@@ -156,13 +156,10 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
         $path = CRM_Utils_System::url( 'civicrm/contact/view', 'reset=1&cid=' . $this->_contactId );
         CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('View Contact'),
                                                           'url'   => $path ) ) );
-        //NYSS - LCD http://senatedev.senate.state.ny.us/issues/show/2193
-		//http://issues.civicrm.org/jira/browse/CRM-6517
-		//if context = fulltext, don't append
-		if ($_GET['context'] != 'fulltext') {
-			CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('Search Results'),
-        	                                                  'url'   => self::getSearchURL( ) ) ) );
-		}
+        //NYSS 2193 Jira 6517 - reverted earlier suppression when in full text
+        CRM_Utils_System::appendBreadCrumb( array( array( 'title' => ts('Search Results'),
+                                                          'url'   => self::getSearchURL( ) ) ) );
+
         if ( $image_URL  = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $this->_contactId , 'image_URL') ) {
             
             //CRM-7265 --time being fix. 
@@ -310,6 +307,11 @@ class CRM_Contact_Page_View extends CRM_Core_Page {
         switch ( $context ) {
         case 'custom' :
         case 'fulltext' :
+            //NYSS 2193
+            if ( $qfKey ) {
+              $text = CRM_Utils_Request::retrieve( 'text', 'String', $this );
+              $urlParams = "_qf_Custom_display=true&text=$text";
+            }
             $urlString = 'civicrm/contact/search/custom';
             break;
             

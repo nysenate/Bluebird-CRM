@@ -38,6 +38,7 @@ class CRM_Utils_Cache_Memcached
   const DEFAULT_PORT = 11211;
   const DEFAULT_TIMEOUT = 3600;
   const DEFAULT_PREFIX = '';
+  const MAX_KEY_LEN = 62;
 
   /**
    * The host name of the memcached server
@@ -109,7 +110,7 @@ class CRM_Utils_Cache_Memcached
   }
 
   function set($key, &$value) {
-    $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
+    $key = $this->cleanKey($key);
     if (!$this->_cache->set($key, $value, $this->_timeout)) {
       CRM_Core_Error::debug('Result Code: ', $this->_cache->getResultMessage());
       CRM_Core_Error::fatal("memcached set failed, wondering why?, $key", $value);
@@ -119,14 +120,24 @@ class CRM_Utils_Cache_Memcached
   }
 
   function &get($key) {
-    $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
+    $key = $this->cleanKey($key);
     $result =& $this->_cache->get($key);
     return $result;
   }
 
   function delete($key) {
-    $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
+    $key = $this->cleanKey($key);
     return $this->_cache->delete($key);
+  }
+
+  function cleanKey($key) {
+    $key = preg_replace('/\s+|\W+/', '_', $this->_prefix . $key);
+    if (strlen($key) > self::MAX_KEY_LEN) {
+      $md5key = md5($key);  // this should be 32 characters in length
+      $subkeylen = self::MAX_KEY_LEN - 1 - strlen($md5key);
+      $key = substr($key, 0, $subkeylen) . "_" . $md5key;
+    }
+    return $key;
   }
 
   function flush() {

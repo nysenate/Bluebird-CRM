@@ -73,6 +73,82 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
     $this->_emails = CRM_Core_BAO_Block::retrieveBlock( $email, null );
   }
 
+
+
+  /**
+   * global validation rules for the form
+   *
+   * @param array $fields     posted values of the form
+   * @param array $errors     list of errors to be posted back to the form
+   *
+   * @return $errors
+   * @static
+   * @access public
+   */
+  static function formRule( $fields, $errors ) {
+
+    require_once 'CRM/Contact/Form/Contact.php';
+    $hasData = $hasPrimary = $errors = array( );
+    if ( CRM_Utils_Array::value( 'email', $fields ) && is_array( $fields['email'] ) ) {
+      foreach ( $fields['email'] as $instance => $blockValues ) {
+        $dataExists = CRM_Contact_Form_Contact::blockDataExists( $blockValues );
+
+        if ( $dataExists ) {
+          $hasData[] = $instance;
+          if ( CRM_Utils_Array::value( 'is_primary', $blockValues ) ) {
+            $hasPrimary[] = $instance;
+            if ( !$primaryID &&
+                 CRM_Utils_Array::value( 'email', $blockValues ) ) {
+              $primaryID = $blockValues['email'];
+            }
+          }
+        }
+      }
+
+      if ( empty( $hasPrimary ) && !empty( $hasData ) ) {
+        $errors["email[1][is_primary]"] = ts('One email should be marked as primary.' );
+      }
+
+      if ( count( $hasPrimary ) > 1 ) {
+        $errors["email[".array_pop($hasPrimary)."][is_primary]"] = ts( 'Only one email can be marked as primary.' );
+      }
+    }
+
+    if ( empty($hasData) ) {
+      //no emails set; make sure we have fname/lname/org/house
+      require_once 'CRM/Contact/BAO/Contact.php';
+
+      $hasContact = true;
+
+      $contact = new CRM_Contact_BAO_Contact( );
+      $contact->id = $fields['cid'];
+      $contact->find(true);
+
+      switch ( $contact->contact_type ) {
+        case 'Individual':
+          if ( empty($contact->first_name) && empty($contact->last_name) ) {
+            $hasContact = false;
+          }
+          break;
+        case 'Organization':
+          if ( empty($contact->organization_name) ) {
+            $hasContact = false;
+          }
+          break;
+        case 'Household':
+          if ( empty($contact->household_name) ) {
+            $hasContact = false;
+          }
+          break;
+      }
+      if ( !$hasContact ) {
+        $errors["email[1][email]"] = ts('Email must be set if no contact name is present.' );
+      }
+    }
+
+    return $errors;
+  }
+
   /**
    * build the form elements for an email object
    *
@@ -86,8 +162,14 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
     $actualBlockCount = 1;
     if ( count( $this->_emails ) > 1 ) {
       $actualBlockCount = $totalBlocks = count( $this->_emails );
-      $additionalBlocks = $this->_blockCount - $totalBlocks;
-      $totalBlocks      += $additionalBlocks;  
+      if ( $totalBlocks < $this->_blockCount ) {
+        $additionalBlocks = $this->_blockCount - $totalBlocks;
+        $totalBlocks      += $additionalBlocks;
+      }
+      else {
+        $actualBlockCount++;
+        $totalBlocks++;
+      }
     }
 
     $this->assign('actualBlockCount', $actualBlockCount);
@@ -109,6 +191,8 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
         'name'      => ts('Cancel') ) );
 
     $this->addButtons(  $buttons );
+
+    $this->addFormRule( array( 'CRM_Contact_Form_Inline_Email', 'formRule' ), $this );//NYSS
   }
 
   /**
@@ -153,10 +237,15 @@ class CRM_Contact_Form_Inline_Email extends CRM_Core_Form {
       $contact = new CRM_Contact_DAO_Contact( );
       $contact->id = $this->_contactId;
       $contact->find(true);
+      //make sure dates doesn't get reset
+      $contact->birth_date    = CRM_Utils_Date::isoToMysql($contact->birth_date); 
+      $contact->deceased_date = CRM_Utils_Date::isoToMysql($contact->deceased_date);
       $contact->save();
     }
 
     echo json_encode( $response );
     CRM_Utils_System::civiExit( );    
   }
+
+
 }

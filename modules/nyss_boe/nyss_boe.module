@@ -146,6 +146,7 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
       $objName = '_emails';
     }
 
+    $b = 0;
     foreach ( $form->_defaultValues[$name] as $blockId => $block ) {
       if ( $block['location_type_id'] == $boardOfElectionId ) {
         $elementName = "{$name}[$blockId][$name]";
@@ -160,10 +161,12 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
         $eleLoc  = $form->getElement( $elementLoc );
         $eleLoc->freeze( );
       }
+      $b++;
     }
+    $b = ($b < 5) ? 5 : $b;
 
     //suppress special location type options
-    for ( $i = 1; $i <= 5; $i++ ) {
+    for ( $i = 1; $i <= $b; $i++ ) {
       $elementLoc = "{$name}[$i][location_type_id]";
       if ( ! $form->elementExists( $elementLoc ) ) {
         continue;

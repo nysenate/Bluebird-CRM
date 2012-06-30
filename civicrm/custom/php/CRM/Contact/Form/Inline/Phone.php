@@ -83,8 +83,14 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
     $actualBlockCount = 1;
     if ( count( $this->_phones ) > 1 ) {
       $actualBlockCount = $totalBlocks = count( $this->_phones );
-      $additionalBlocks = $this->_blockCount - $totalBlocks;
-      $totalBlocks      += $additionalBlocks;  
+      if ( $totalBlocks < $this->_blockCount ) {
+        $additionalBlocks = $this->_blockCount - $totalBlocks;
+        $totalBlocks     += $additionalBlocks;
+      }
+      else {
+        $actualBlockCount++;
+        $totalBlocks++;
+      }
     }
 
     $this->assign('actualBlockCount', $actualBlockCount);
@@ -106,6 +112,48 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
         'name'      => ts('Cancel') ) );
 
     $this->addButtons(  $buttons );
+
+    $this->addFormRule( array( 'CRM_Contact_Form_Inline_Phone', 'formRule' ) );
+  }
+
+  /**
+   * global validation rules for the form
+   *
+   * @param array $fields     posted values of the form
+   * @param array $errors     list of errors to be posted back to the form
+   *
+   * @return $errors
+   * @static
+   * @access public
+   */
+  static function formRule( $fields, $errors ) {
+    require_once 'CRM/Contact/Form/Contact.php';
+    $hasData = $hasPrimary = $errors = array( );
+    if ( CRM_Utils_Array::value( 'phone', $fields ) && is_array( $fields['phone'] ) ) {
+      foreach ( $fields['phone'] as $instance => $blockValues ) {
+        $dataExists = CRM_Contact_Form_Contact::blockDataExists( $blockValues );
+
+        if ( $dataExists ) {
+          $hasData[] = $instance;
+          if ( CRM_Utils_Array::value( 'is_primary', $blockValues ) ) {
+            $hasPrimary[] = $instance;
+            if ( !$primaryID &&
+              CRM_Utils_Array::value( 'phone', $blockValues ) ) {
+                $primaryID = $blockValues['phone'];
+            }
+          }
+        }
+      }
+
+      if ( empty( $hasPrimary ) && !empty( $hasData ) ) {
+        $errors["phone[1][is_primary]"] = ts('One phone should be marked as primary.' );
+      }
+
+      if ( count( $hasPrimary ) > 1 ) {
+        $errors["phone[".array_pop($hasPrimary)."][is_primary]"] = ts( 'Only one phone can be marked as primary.' );
+      }
+    }
+    return $errors;
   }
 
   /**
@@ -150,6 +198,9 @@ class CRM_Contact_Form_Inline_Phone extends CRM_Core_Form {
       $contact = new CRM_Contact_DAO_Contact( );
       $contact->id = $this->_contactId;
       $contact->find(true);
+      //make sure dates doesn't get reset
+      $contact->birth_date    = CRM_Utils_Date::isoToMysql($contact->birth_date); 
+      $contact->deceased_date = CRM_Utils_Date::isoToMysql($contact->deceased_date);
       $contact->save();
     }
 

@@ -27,16 +27,20 @@
 {literal}
 <style type="text/css">
 <!--
+#districts table {
+  table-layout: fixed;
+}
 #districts th {
-	width: 70px;
+  width: 75px;
+  overflow: hidden;
 }
 #districts .IssueCodes th,
 #districts .Keywords th,
 #districts .Positions th {
-	width: 150px;
+  width: 150px;
 }
 #districts table {
-	width: 100%;
+  width: 100%;
 }
 -->
 </style>

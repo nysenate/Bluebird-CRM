@@ -113,6 +113,9 @@
  
     function getChangeLogCount( ) {
         var postUrl = {/literal}"{crmURL p='civicrm/ajax/changelog' h=0 }"{literal};
+        {/literal}
+        {if $contactId}
+        {literal}
         var contactID = {/literal}{$contactId};{literal}
         cj.ajax({
           type: "POST",
@@ -129,6 +132,9 @@
               }
           }
         });
+        {/literal}
+        {/if}
+        {literal}
     }
 {/literal}
 </script>

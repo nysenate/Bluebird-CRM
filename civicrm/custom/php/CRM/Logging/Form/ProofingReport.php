@@ -183,24 +183,28 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
         //get contacts with changes to either the contact object or tag
         CRM_Core_DAO::executeQuery("SET SESSION group_concat_max_len = 100000;");
-        $query = "SELECT logTbl.id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, null as tagList
-                  FROM {$logDB}.log_civicrm_contact logTbl
-                  $alteredByFrom
-                  WHERE ( $sqlWhere )
-                    AND log_action != 'Initialization'
-                  GROUP BY logTbl.id
+        $query = "SELECT *
+                  FROM (
+                    SELECT logTbl.entity_id as id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ') as tagList
+                    FROM {$logDB}.log_civicrm_entity_tag logTbl
+                    JOIN {$civiDB}.civicrm_tag t
+                      ON logTbl.tag_id = t.id
+                    $alteredByFrom
+                    WHERE ( $sqlWhere )
+                      AND entity_table = 'civicrm_contact'
+                      AND log_action != 'Initialization'
+                    GROUP BY logTbl.entity_id
                   UNION
-                  SELECT logTbl.entity_id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, GROUP_CONCAT(t.name ORDER BY t.name SEPARATOR ', ')
-                  FROM {$logDB}.log_civicrm_entity_tag logTbl
-                  JOIN {$civiDB}.civicrm_tag t
-                    ON logTbl.tag_id = t.id
-                  $alteredByFrom
-                  WHERE ( $sqlWhere )
-                    AND entity_table = 'civicrm_contact'
-                    AND log_action != 'Initialization'
-                  GROUP BY logTbl.entity_id
+                    SELECT logTbl.id, DATE_FORMAT(log_date, '%m/%d/%Y %h:%i %p') as logDate, log_date as logDateLong, null as tagList
+                    FROM {$logDB}.log_civicrm_contact logTbl
+                    $alteredByFrom
+                    WHERE ( $sqlWhere )
+                      AND log_action != 'Initialization'
+                    GROUP BY logTbl.id
+                  ) contactsChanged
+                  GROUP BY id
                   ORDER BY logDateLong;";
-        //CRM_Core_Error::debug_var('query',$query);
+        //CRM_Core_Error::debug('query',$query);
         $dao = CRM_Core_DAO::executeQuery($query);
 
         while ( $dao->fetch() ) {
@@ -251,7 +255,7 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
 
         //add summary counts
         $html .= "<tr class='tableSummary'>
-                    <td>Contact's Changed:</td>
+                    <td>Contacts Changed:</td>
                     <td colspan='5'>{$dao->N}</td>
                   </tr>";
 
