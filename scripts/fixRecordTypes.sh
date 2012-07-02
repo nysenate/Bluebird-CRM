@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2011-11-23
-# Revised: 2011-12-01
+# Revised: 2012-07-01
 #
 
 prog=`basename $0`
@@ -59,7 +59,7 @@ echo "==> Processing CRM instance [$instance]" >&2
 rt_capture="preg_capture('/RT: ([0-9]+)/',n.note,1)"
 tabs="civicrm_note n, civicrm_value_constituent_information_1 ci"
 updt="ci.record_type_61=$rt_capture"
-cond="n.entity_id=ci.entity_id and n.subject='OMIS DATA' and n.entity_table='civicrm_contact' and ci.record_type_61<>$rt_capture"
+cond="n.entity_id=ci.entity_id and n.subject='OMIS DATA' and n.entity_table='civicrm_contact' and ifnull(ci.record_type_61,'')<>$rt_capture"
 sql="select count(*) from $tabs where $cond;"
 cnt=`$execSql -q -i $instance -c "$sql"`
 
