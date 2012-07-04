@@ -157,7 +157,7 @@
   <item>
     <path>civicrm/ajax/inline</path>
     <page_callback>CRM_Core_Page_AJAX::run</page_callback>
-    <access_arguments>administer CiviCRM</access_arguments>
+    <access_arguments>edit all contacts</access_arguments>
   </item>
 
   <!--5260-->
