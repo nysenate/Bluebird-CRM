@@ -550,8 +550,14 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
 
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 
-    unset($tasks[19]); //remove pdf letter creation task, #2284
+  unset($tasks[19]); //remove pdf letter creation task, #2284
 
+  //5370
+  if ( $objectType == 'contact' && CRM_Core_Permission::check('administer CiviCRM') ) {
+    $tasks[30] = array('title' => ts('Alter Communication Preferences'),
+                       'class' => 'CRM_Contact_Form_Task_AlterDoNot',
+                       );
+  }
 }
 
 function nyss_civihooks_civicrm_pre( $op, $objectName, $objectId, &$objectRef ) {

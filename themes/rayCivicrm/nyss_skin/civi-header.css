@@ -354,7 +354,10 @@ img.menu-item-arrow {
 
 /* bulk tagging box */
 
-#crm-container .listing-box { height: 500px; }
+#crm-container .listing-box { 
+  max-height: 500px;
+  min-height: 125px;
+}
 
 /* twitter dashlet icons */
 #crm-container .column-1 .widget-icon {background-image:url(images/icons-FFFFFF.png) ;}
