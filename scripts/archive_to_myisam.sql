@@ -77,7 +77,7 @@ ALTER TABLE `log_civicrm_phone`
 ALTER TABLE `log_civicrm_relationship`
     ADD INDEX `contact_id_a` (`contact_id_a` ASC),
     ADD INDEX `contact_id_b` (`contact_id_b` ASC),
-    ADD INDEX `relatonship_type_id` (`relatonship_type_id` ASC),
+    ADD INDEX `relationship_type_id` (`relationship_type_id` ASC),
     ADD INDEX `log_date` (`log_date` ASC),
     ADD INDEX `log_conn_id` (`log_conn_id` ASC),
     ADD INDEX `log_user_id` (`log_user_id` ASC),
