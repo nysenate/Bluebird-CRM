@@ -551,6 +551,7 @@ function nyss_civihooks_civicrm_postProcess( $formName, &$form ) {
 function nyss_civihooks_civicrm_searchTasks( $objectType, &$tasks ) {
 
   unset($tasks[19]); //remove pdf letter creation task, #2284
+  unset($tasks[20]); //remove mass email task, #5498
 
   //5370
   if ( $objectType == 'contact' && CRM_Core_Permission::check('administer CiviCRM') ) {
