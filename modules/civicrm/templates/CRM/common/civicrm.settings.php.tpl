@@ -237,11 +237,17 @@ define('CIVICRM_CIVIMAIL_WORKFLOW', 0 );
 
 /**
  * If you have a memcache server configured and want CiviCRM to make use of it,
- * set the following to 1.  You should only set this once you have your memcache
+ * set the following constant.  You should only set this once you have your memcache
  * server up and working, because CiviCRM will not start up if your server is
- * unavailable on the host and port that you specify.
+ * unavailable on the host and port that you specify. By default CiviCRM will use
+ * an in-memory array cache
+ *
+ * To use the php extension memcache  use a value of 'Memcache'
+ * To use the php extension memcached use a value of 'Memcached'
+ * To not use any caching (not recommended), use a value of 'NoCache'
+ *
  */
-define( 'CIVICRM_USE_MEMCACHE', 0 );
+define( 'CIVICRM_DB_CACHE_CLASS', 'ArrayCache' );
 
 /**
  * Change this to the IP address of your memcache server if it is not on the
