@@ -116,6 +116,7 @@
       }; 
       
       // bind form using 'ajaxForm'
+      cj('#Phone').validate( );
       cj('#Phone').ajaxForm( options );
 
       // pre-submit callback 

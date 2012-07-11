@@ -71,7 +71,11 @@ $(document).ready(function() {
           var fbaseurimatch = fbaseuri.search("civicrm/report/");
         }
 
-        //console.log('gfN', global_formNavigate);
+        //prevent undefined error
+        if(typeof global_formNavigate === 'undefined'){
+          var global_formNavigate;
+        }
+
         if ( submitted &&
              factionmatch == -1 &&
              fbaseurimatch == -1 &&

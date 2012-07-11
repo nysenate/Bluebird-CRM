@@ -127,6 +127,7 @@
       }; 
       
       // bind form using 'ajaxForm'
+      cj('#Email').validate( );
       cj('#Email').ajaxForm( options );
 
       // pre-submit callback 
