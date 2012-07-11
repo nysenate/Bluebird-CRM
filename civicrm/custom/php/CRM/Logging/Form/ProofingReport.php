@@ -224,9 +224,10 @@ class CRM_Logging_Form_ProofingReport extends CRM_Core_Form
               $address[] = $cDetails['supplemental_address_1'];
             }
             if ( !empty($cDetails['city']) || !empty($cDetails['postal_code']) ) {
+              $postSuffix = ( $cDetails['postal_code_suffix'] ) ? '-'.$cDetails['postal_code_suffix'] : '';
               $address[] = $cDetails['city'].', '
                           .$cDetails['state_province'].' '
-                          .$cDetails['postal_code'];
+                          .$cDetails['postal_code'].$postSuffix;
             }
             $addressHTML = implode('<br />', $address);
 
