@@ -26,6 +26,7 @@
 {* template for building email block*}
 <div class="crm-table2div-layout" id="crm-email-content">
   <div class="crm-clear"> <!-- start of main -->
+    {if $permission EQ 'edit'}
     {if $email}
      <div class="crm-config-option">
       <a id="edit-email" class="hiddenElement crm-link-action" title="{ts}click to add / edit{/ts}">
@@ -38,6 +39,7 @@
           <span class="batch-edit"></span>{ts}add/edit email{/ts}
         </a>
       </div>
+    {/if}
     {/if}
  
   {foreach from=$email key="blockId" item=item}
@@ -77,6 +79,7 @@
 
 {literal}
 <script type="text/javascript">
+{/literal}{if $permission EQ 'edit'}{literal}
 cj(function(){
     cj('#email-block').mouseenter( function() {
       cj(this).addClass('crm-inline-edit-hover');
@@ -102,6 +105,7 @@ cj(function(){
         cj( '#email-block' ).html( response );
     });
 });
+{/literal}{/if}{literal}
 
 function showHideSignature( blockId ) {
   cj("#Email_Block_" + blockId + "_signature").show( );   
