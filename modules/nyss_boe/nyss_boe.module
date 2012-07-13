@@ -108,7 +108,9 @@ function nyss_boe_civicrm_buildForm( $formName, &$form )
                 }
                 //hide 'Use Household Address' if location type is 'Board Of Election'
                 //c3.3 update for shared address element
-                if ( $blockId == 1 && $freezeElement ) {
+                //NYSS 5505 - added call to elementExists, or else it could throw an error when
+                //            trying to dremove an element that doesn't exist.
+                if ( $blockId == 1 && $freezeElement && $form->elementExists( 'address[1][use_shared_address]' ) ) {
                     $form->removeElement( 'address[1][use_shared_address]' );
                 }
             } else {
