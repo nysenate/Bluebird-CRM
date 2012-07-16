@@ -544,7 +544,9 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
                                               "reset=1&aid={$activity->id}&cid={$caseContactID}&caseID={$params['case_id']}&context=home" );
             } else {
                 $q = "action=view&reset=1&id={$activity->id}&atype={$activity->activity_type_id}&cid={$activity->source_contact_id}&context=home";
-                if ( $activity->activity_type_id != CRM_Core_OptionGroup::getValue( 'activity_type', 'Email', 'name' ) ) {
+                //NYSS 5507
+                if ( $activity->activity_type_id != CRM_Core_OptionGroup::getValue( 'activity_type', 'Email', 'name' ) &&
+                     CRM_Core_Permission::check('access all cases and activities') ) {
                     $url = CRM_Utils_System::url( 'civicrm/activity', $q );
                     if ( $activity->activity_type_id == CRM_Core_OptionGroup::getValue( 'activity_type', 'Print PDF Letter', 'name' ) ) {
                         $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/activity/pdf/add', 
@@ -2333,6 +2335,13 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
             $page = new CRM_Core_Page();
             CRM_Contact_Page_View::checkUserPermission( $page, $params['contact_id'] );
             $permissions = array( $page->_permission );
+
+            //NYSS 5507 remove edit if not permissioned
+            if ( !CRM_Core_Permission::check('access all cases and activities') ) {
+              $permissions[] = CRM_Core_Permission::VIEW;
+              unset($permissions[array_search(CRM_Core_Permission::EDIT, $permissions)]);
+            }
+
             if ( CRM_Core_Permission::check( 'delete activities' ) ) {
                 $permissions[] = CRM_Core_Permission::DELETE;
             }
