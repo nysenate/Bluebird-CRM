@@ -70,26 +70,27 @@ class CRM_Utils_Cache {
     static function &singleton( )
     {
         if (self::$_singleton === null ) {
-            // Maintain backward compatibility for now.
+            $className = 'ArrayCache';   // default to ArrayCache for now
+
+            // Maintain backward compatibility for the time being.
             // Setting CIVICRM_USE_MEMCACHE or CIVICRM_USE_ARRAYCACHE will
             // override the CIVICRM_DB_CACHE_CLASS setting.
             // Going forward, CIVICRM_USE_xxxCACHE should be deprecated.
             if (defined('CIVICRM_USE_MEMCACHE') && CIVICRM_USE_MEMCACHE) {
-                define('CIVICRM_DB_CACHE_CLASS', 'Memcache');
+                $className = 'Memcache';
             }
             else if (defined('CIVICRM_USE_ARRAYCACHE') && CIVICRM_USE_ARRAYCACHE) {
-                define('CIVICRM_DB_CACHE_CLASS', 'ArrayCache');
+                $className = 'ArrayCache';
             }
-
-            if (!defined('CIVICRM_DB_CACHE_CLASS') || !CIVICRM_DB_CACHE_CLASS) {
-                define('CIVICRM_DB_CACHE_CLASS', 'ArrayCache');
+            else if (defined('CIVICRM_DB_CACHE_CLASS') && CIVICRM_DB_CACHE_CLASS) {
+                $className = CIVICRM_DB_CACHE_CLASS;
             }
 
             // NYSS 5296 - implement Memcached class and provide for
             // a generic method for utilizing any of the available db caches.
-            $dbCacheClass = 'CRM_Utils_Cache_'.CIVICRM_DB_CACHE_CLASS;
+            $dbCacheClass = 'CRM_Utils_Cache_'.$className;
             require_once(str_replace('_', DIRECTORY_SEPARATOR, $dbCacheClass).'.php');
-            $settings = self::getCacheSettings(CIVICRM_DB_CACHE_CLASS);
+            $settings = self::getCacheSettings($className);
             self::$_singleton = new $dbCacheClass($settings);
         }
         return self::$_singleton;
