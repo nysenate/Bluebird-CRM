@@ -26,8 +26,9 @@
 {* template for building phone block*}
 <div class="crm-table2div-layout" id="crm-phone-content">
   <div class="crm-clear"> <!-- start of main -->
-     {if $phone}
-     <div class="crm-config-option">
+    {if $permission EQ 'edit'}
+    {if $phone}
+    <div class="crm-config-option">
       <a id="edit-phone" class="hiddenElement crm-link-action" title="{ts}click to add / edit{/ts}">
         <span class="batch-edit"></span>{ts}add/edit{/ts}
       </a>
@@ -38,6 +39,7 @@
           <span class="batch-edit"></span>{ts}add/edit phone{/ts}
         </a>
       </div>
+    {/if}
     {/if}
     {foreach from=$phone item=item}
       {if $item.phone || $item.phone_ext}
@@ -53,6 +55,7 @@
    </div> <!-- end of main !-->
 </div>
 
+{if $permission EQ 'edit'}
 {literal}
 <script type="text/javascript">
 cj(function(){
@@ -83,3 +86,4 @@ cj(function(){
 
 </script>
 {/literal}
+{/if}

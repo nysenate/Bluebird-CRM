@@ -12,6 +12,10 @@
         <td class="crm-contact-form-block-activity_type_filter_id">
             {$form.activity_type_filter_id.html}
         </td>
+        {*NYSS 5462*}
+        <td class="crm-contact-form-block-activity_type_exclude_filter_id">
+            {$form.activity_type_exclude_filter_id.html}
+        </td>
         <!--td style="vertical-align: bottom;">
 		<span class="crm-button"><input class="form-submit default" name="_qf_Basic_refresh" value="Search" type="button" onclick="buildContactActivities( true )"; /></span>
 	</td-->
@@ -65,6 +69,10 @@ cj( function ( ) {
    var context = {/literal}"{$context}"{literal}; 
    buildContactActivities{/literal}{$context}{literal}( false );
    cj('.crm-activity-selector-'+ context +' #activity_type_filter_id').change( function( ) {
+       buildContactActivities{/literal}{$context}{literal}( true );
+   });
+   //NYSS
+   cj('.crm-activity-selector-'+ context +' #activity_type_exclude_filter_id').change( function( ) {
        buildContactActivities{/literal}{$context}{literal}( true );
    });
    //NYSS 5088
@@ -122,7 +130,9 @@ function buildContactActivities{/literal}{$context}{literal}( filterSearch ) {
             );
             if ( filterSearch ) {
                 aoData.push(	     
-                    {name:'activity_type_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val()}
+                    {name:'activity_type_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_filter_id').val()},
+                    //NYSS
+                    {name:'activity_type_exclude_id', value: cj('.crm-activity-selector-'+ context +' select#activity_type_exclude_filter_id').val()}
                 );                
             }	
             //NYSS 5088

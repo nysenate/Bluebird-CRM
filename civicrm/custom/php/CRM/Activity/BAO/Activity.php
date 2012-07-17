@@ -544,7 +544,9 @@ class CRM_Activity_BAO_Activity extends CRM_Activity_DAO_Activity
                                               "reset=1&aid={$activity->id}&cid={$caseContactID}&caseID={$params['case_id']}&context=home" );
             } else {
                 $q = "action=view&reset=1&id={$activity->id}&atype={$activity->activity_type_id}&cid={$activity->source_contact_id}&context=home";
-                if ( $activity->activity_type_id != CRM_Core_OptionGroup::getValue( 'activity_type', 'Email', 'name' ) ) {
+                //NYSS 5507
+                if ( $activity->activity_type_id != CRM_Core_OptionGroup::getValue( 'activity_type', 'Email', 'name' ) &&
+                     CRM_Core_Permission::check('access all cases and activities') ) {
                     $url = CRM_Utils_System::url( 'civicrm/activity', $q );
                     if ( $activity->activity_type_id == CRM_Core_OptionGroup::getValue( 'activity_type', 'Print PDF Letter', 'name' ) ) {
                         $recentOther['editUrl'] = CRM_Utils_System::url( 'civicrm/activity/pdf/add', 
@@ -1022,6 +1024,20 @@ LEFT JOIN   civicrm_case_activity ON ( civicrm_case_activity.activity_id = tbl.a
                 $commonClauses[] = "civicrm_activity.activity_type_id = $activityTypeID";
             }
         }
+
+    //NYSS 5462 exclude specified activity types
+    if (!empty($input['activity_type_exclude_id'])) {
+      if (is_array($input['activity_type_exclude_id'])) {
+        foreach ($input['activity_type_exclude_id'] as $idx => $value) {
+          $input['activity_type_exclude_id'][$idx] = CRM_Utils_Type::escape($value, 'Positive');
+        }
+        $commonClauses[] = "civicrm_activity.activity_type_id NOT IN ( " . implode(",", $input['activity_type_exclude_id']) . " ) ";
+      }
+      else {
+        $activityTypeID = CRM_Utils_Type::escape($input['activity_type_exclude_id'], 'Positive');
+        $commonClauses[] = "civicrm_activity.activity_type_id != $activityTypeID";
+      }
+    }
 
         //NYSS 5088 activity of last X days only clause
         if ( ! empty( $input['past_days'] ) && $input['past_days'] != 'all' ) {
@@ -2319,6 +2335,13 @@ INNER JOIN  civicrm_option_group grp ON ( grp.id = val.option_group_id AND grp.n
             $page = new CRM_Core_Page();
             CRM_Contact_Page_View::checkUserPermission( $page, $params['contact_id'] );
             $permissions = array( $page->_permission );
+
+            //NYSS 5507 remove edit if not permissioned
+            if ( !CRM_Core_Permission::check('access all cases and activities') ) {
+              $permissions[] = CRM_Core_Permission::VIEW;
+              unset($permissions[array_search(CRM_Core_Permission::EDIT, $permissions)]);
+            }
+
             if ( CRM_Core_Permission::check( 'delete activities' ) ) {
                 $permissions[] = CRM_Core_Permission::DELETE;
             }
