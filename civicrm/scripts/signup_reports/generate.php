@@ -120,6 +120,8 @@ function get_signups($district, $bronto, $conn) {
               LEFT JOIN issue ON issue.id=subscription.issue_id
             WHERE (list.id=senator.list_id OR list.id=committee.list_id OR (list.title='New York Senate Updates' AND person.district=senator.district))
               AND signup.reported=0
+              AND senator.active=1
+              AND committee.active=1
               AND person.bronto=".(($bronto)?'1':'0')."
             GROUP BY person.id
             ORDER BY `Signup Date` asc";
