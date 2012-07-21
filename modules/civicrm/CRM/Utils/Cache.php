@@ -53,9 +53,11 @@ class CRM_Utils_Cache {
     /**
      * Constructor
      *
+     * @param array $config an array of configuration params
      * @return void
      */
-    function __construct( ) {
+    function __construct(&$config) {
+        CRM_Core_Error::fatal(ts('this is just an interface and should not be called directly'));
     }
 
     /**
@@ -68,28 +70,28 @@ class CRM_Utils_Cache {
     static function &singleton( )
     {
         if (self::$_singleton === null ) {
-            // Maintain backward compatibility for now.
+            $className = 'ArrayCache';   // default to ArrayCache for now
+
+            // Maintain backward compatibility for the time being.
             // Setting CIVICRM_USE_MEMCACHE or CIVICRM_USE_ARRAYCACHE will
             // override the CIVICRM_DB_CACHE_CLASS setting.
             // Going forward, CIVICRM_USE_xxxCACHE should be deprecated.
             if (defined('CIVICRM_USE_MEMCACHE') && CIVICRM_USE_MEMCACHE) {
-                define('CIVICRM_DB_CACHE_CLASS', 'Memcache');
+                $className = 'Memcache';
             }
             else if (defined('CIVICRM_USE_ARRAYCACHE') && CIVICRM_USE_ARRAYCACHE) {
-                define('CIVICRM_DB_CACHE_CLASS', 'ArrayCache');
+                $className = 'ArrayCache';
+            }
+            else if (defined('CIVICRM_DB_CACHE_CLASS') && CIVICRM_DB_CACHE_CLASS) {
+                $className = CIVICRM_DB_CACHE_CLASS;
             }
 
-            // NYSS 5296 - implemented Memcached class and provided for
+            // NYSS 5296 - implement Memcached class and provide for
             // a generic method for utilizing any of the available db caches.
-            if (defined('CIVICRM_DB_CACHE_CLASS') && CIVICRM_DB_CACHE_CLASS) {
-                $dbCacheClass = 'CRM_Utils_Cache_'.CIVICRM_DB_CACHE_CLASS;
-                require_once(str_replace('_', DIRECTORY_SEPARATOR, $dbCacheClass).'.php');
-                $settings = self::getCacheSettings(CIVICRM_DB_CACHE_CLASS);
-                self::$_singleton = new $dbCacheClass($settings);
-            }
-            else {
-                self::$_singleton = new CRM_Utils_Cache();
-            }
+            $dbCacheClass = 'CRM_Utils_Cache_'.$className;
+            require_once(str_replace('_', DIRECTORY_SEPARATOR, $dbCacheClass).'.php');
+            $settings = self::getCacheSettings($className);
+            self::$_singleton = new $dbCacheClass($settings);
         }
         return self::$_singleton;
     }
@@ -133,22 +135,4 @@ class CRM_Utils_Cache {
 
         return $defaults;
     }
-
-    function set( $key, &$value ) {
-        return false;
-    }
-
-    function get( $key ) {
-        return null;
-    }
-
-
-    function delete( $key ) {
-        return false;
-    }
-
-    function flush( ) {
-        return false;
-    }
-
 }
