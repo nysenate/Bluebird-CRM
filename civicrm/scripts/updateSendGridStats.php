@@ -2,39 +2,39 @@
 
 require_once 'script_utils.php';
 
+// Bootstrap the script from the command line
 $prog = basename(__FILE__);
-
-$shortOpts   = 'm:l:acosdrbn';
-$longOpts    = array('maxbatch=','limit=','all','click', 'open', 'spamreport', 'delivered', 'dropped', 'bounce', 'unsubscribe');
-
+$shortOpts   = 'm:l:acosdrbnfp';
+$longOpts    = array('maxbatch=','limit=','all','click', 'open', 'spamreport', 'delivered', 'dropped', 'bounce', 'unsubscribe', 'deferred', 'processed');
 $stdusage = civicrm_script_usage();
-$scriptUsage = "[--limit|-l LIMIT=0] [--maxbatch|-m MAX_BATCH=1] [--all|-a] [--click|-c] [--open|-o] [--spamreport|-s] [--delivered|-d] [--dropped|-r] [--bounce|-b] [--unsubscribe|-n]";
-
+$scriptUsage = "[--limit|-l LIMIT=0] [--maxbatch|-m MAX_BATCH=1] [--all|-a] [--click|-c] [--open|-o] [--spamreport|-s] [--delivered|-d] [--dropped|-r] [--bounce|-b] [--unsubscribe|-n] [--deferred|-f] [--processed|-p]";
 if (! $optList = civicrm_script_init($shortOpts, $longOpts) ) {
   error_log("Usage: $prog  $stdusage $scriptUsage");
   exit(1);
 }
 
-//Creating the CRM_Core_Config class bootstraps the rest
+// Creating the CRM_Core_Config class bootstraps the rest
 require_once 'CRM/Core/Config.php';
+require_once 'CRM/Core/DAO.php';
 $config = CRM_Core_Config::singleton();
+$bbconfig = get_bluebird_instance_config();
 
 // Store the run parameters in a map for easy looping and clean DRY code.
 // Key is the table name of the event in the accumulator
 // Value is the function accepting ($events, $optList, $bbconfig) where
-//   events is an array of at least one array of event parameters
+// events is an array of at least one array of event parameters
 // To disable an event from processing, just change the value. This should be
 // configurable in the future in one of a few different ways.
 $event_map = array(
-    'bounce'        => 'process_bounce_events',
-    'click'         => 'process_click_events',
-    //'deferred'      => '', //Ignore these, don't need to record delays
-    'delivered'     => 'process_delivered_events',
-    'dropped'       => 'process_dropped_events',
-    'open'          => 'process_open_events',
-    //'processed'     => '', //Ignore these, already have a record from our side
-    'spamreport'    => 'process_spamreport_events',
-    'unsubscribe'   => 'process_unsubscribe_events'
+    'bounce' => 'process_bounce_events',
+    'click' => 'process_click_events',
+    'deferred' => 'process_deferred_events',
+    'delivered' => 'process_delivered_events',
+    'dropped' => 'process_dropped_events',
+    'open' => 'process_open_events',
+    'processed' => 'process_processed_events',
+    'spamreport' => 'process_spamreport_events',
+    'unsubscribe' => 'process_unsubscribe_events'
 );
 
 // Allow filtering of the events to be processed on the commandline
@@ -56,83 +56,131 @@ $limit = array_get('limit', $optList, FALSE);
 // was processed
 $batch_size = array_get('maxbatch', $optList, 1);
 
-$bbconfig = get_bluebird_instance_config();
+// Establish a connection to the accumulator
 global $conn;
 $conn = get_accumulator_connection($bbconfig);
 
 $event_types = implode(',',array_keys($event_map));
+
+// Load the accumulator instance id
+global $instance_id;
+$result = exec_query("SELECT id FROM instance WHERE servername='{$bbconfig['servername']}'", $conn);
+if ($row = mysql_fetch_assoc($result)) {
+    $instance_id = $row['id'];
+} else {
+    exec_query("INSERT INTO instance (install_class, servername, name) VALUES ('{$bbconfig['install_class']}','{$bbconfig['servername']}','{$bbconfig['shortname']}');", $conn);
+    $instance_id = mysql_insert_id($conn);
+}
+
+// Initialize a dict for messages
+global $messages;
+$messages = array();
+
+// process all th event_types one by one
 log_("[NOTICE] Running on '{$bbconfig['servername']}' for events ($event_types) with limit of ".(int)$limit." and batchsize of $batch_size.");
-
-require_once 'CRM/Core/DAO.php';
-
 $total_events = 0;
 $total_events_processed = 0;
+foreach ($event_map as $event_type => $callback) {
+    $result = exec_query("
+        SELECT *
+        FROM incoming
+        JOIN {$event_type} USING (event_id)
+        WHERE servername='{$bbconfig['servername']}'
+          AND event_type='{$event_type}'
+        ORDER BY dt_created ASC
+        ".( $limit ? " LIMIT $limit" : ''), $conn
+    );
 
-foreach ($event_map as $event_type => $event_processor) {
-    //Skip event types without active processors
-    if ($event_processor) {
-        $new_events = exec_query("
-            SELECT *
-            FROM event
-            JOIN $event_type ON event.id=$event_type.event_id
-            WHERE processed=0
-              AND servername='{$bbconfig['servername']}'
-              AND IFNULL(queue_id,0) != 0
-            ORDER BY timestamp
-            ".( $limit ? " LIMIT $limit" : ''), $conn
-        );
-        $total_events += mysql_num_rows($new_events);
+    $event_count = mysql_num_rows($result);
+    $total_events += $event_count;
+    log_("[NOTICE]   Processing ".$event_count." {$event_type} events.");
 
-        if (mysql_num_rows($new_events) != 0)
-            log_("[NOTICE]   Processing ".mysql_num_rows($new_events)." {$event_type} events.");
-
-        $events = array();
-        $in_process = true;
-        while ($in_process) {
-            if ($row = mysql_fetch_assoc($new_events)) {
-                //We should always have a queue_event, but if we don't...
-                if (! $queue = get_queue_event($row)) {
-                    //Now what? We can't do anything useful here. Log it?
-                    log_("[ERROR]      Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
-                    continue;
-                }
-                $events[$row['id']] = array('event'=>$row, 'queue'=>$queue);
-
-            } else {
-                $in_process = false;
+    $batch = array();
+    $errors = array();
+    $in_process = true;
+    while($in_process) {
+        if( $row = mysql_fetch_assoc($result) ) {
+            if (! $queue = get_queue_event($row)) {
+                // Log this as a failure! TODO: Mark as failure for archival as well.
+                log_("[ERROR]      Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
+                $errors[$row['event_id']] = $row;
+                continue;
             }
-
-            //When we've reached the batch limit or the end of the rows
-            if (!empty($events) && (count($events) >= $batch_size || $in_process == false)) {
-                // Pass in both the optList and the bbconfig just in case one
-                // of the event processors needs to be configurable either on
-                // an instance or runtime basis.
-                // Record the successful processing of the batch in the database
-                // This isn't a great way to do it (what if the event processor
-                // encounters an error after the first one?) but CiviCRM doesn't
-                // give you a chance to recover from errors so...we'll do this.
-
-                $processed_ids = call_user_func($event_processor, $events, $optList, $bbconfig);
-
-                if ($failures = array_diff(array_keys($events), $processed_ids))
-                    log_("[ERROR]      ".count($failures)." events failed processing.");
-
-                if ($processed_ids) {
-                    exec_query("UPDATE event
-                                SET processed=1, dt_processed=NOW()
-                                WHERE id IN (".implode(',',$processed_ids).")", $conn);
-                }
-
-                //Reset for the next batch
-                $total_events_processed += count($processed_ids);
-                $events = array();
-            }
+            $batch[$row['event_id']] = array('event'=>$row, 'queue'=>$queue);
+        } else {
+            $in_process = false;
         }
+
+        //When we've reached the batch limit or the end of the rows
+        if (!empty($batch) && (count($batch) >= $batch_size || $in_process == false)) {
+            // Pass in both the optList and the bbconfig just in case one
+            // of the event processors needs to be configurable either on
+            // an instance or runtime basis.
+            // Record the successful processing of the batch in the database
+            // This isn't a great way to do it (what if the event processor
+            // encounters an error after the first one?) but CiviCRM doesn't
+            // give you a chance to recover from errors so...we'll do this.
+            list($archived, $skipped, $failed) = call_user_func($callback, $batch, $optList, $bbconfig);
+            $failed += $errors;
+
+            if (!empty($failed) && count($failed)) {
+                log_("[ERROR]      ".count($failed)." events failed processing.");
+                archive_events($failed, "FAILED", $optList, $bbconfig);
+            }
+
+            if (count($archived)) {
+                log_("[NOTICE]      ".count($archived)." events were archived.");
+                archive_events($archived, "ARCHIVED", $optList, $bbconfig);
+            }
+
+            if (count($skipped)) {
+                log_("[NOTICE]      ".count($skipped)." events were skipped.");
+                archive_events($skipped, "SKIPPED", $optList, $bbconfig);
+            }
+
+            //Reset for the next batch
+            $batch = array();
+            $errors = array();
+        }
+
     }
 }
-log_("[NOTICE] Processed $total_events_processed/$total_events events.");
+log_("[NOTICE] Processed $total_events events.");
 exit(0);
 
+function archive_events($events, $result, $optList, $bbconfig) {
+    global $instance_id, $messages, $conn;
+    $archive = array();
+    foreach ($events as $event_id => $pair) {
+        list($event, $queue_event) = array_values($pair);
+        $mailing_id = $event['mailing_id'];
+        if (isset($messages[$mailing_id])) {
+            $message_id = $messages[$mailing_id];
+        } else {
+            if(is_null($mailing_id)) {
+                $mailing_id = 0;
+            }
+            $queryResult = exec_query("SELECT id as message_id FROM message WHERE instance_id=$instance_id AND mailing_id=$mailing_id", $conn);
+            if ($row = mysql_fetch_assoc($queryResult)) {
+                $message_id = $row['message_id'];
+            } else {
+                exec_query("INSERT INTO message (instance_id, mailing_id, category) VALUES ($instance_id, $mailing_id, '".mysql_real_escape_string($event['category'], $conn)."')", $conn);
+                $message_id = mysql_insert_id($conn);
+            }
+            $messages[$mailing_id] = $message_id;
+        }
+        // Move the row now that it has been compressed
+        $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '{$result}', '{$event['email']}', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
+    }
+
+    // Do the transaction
+    exec_query("BEGIN", $conn);
+    exec_query("DELETE FROM incoming WHERE event_id IN (".implode(',',array_keys($events)).");", $conn);
+    exec_query("INSERT INTO archive
+                    (event_id, message_id, job_id, queue_id, event_type, result, email, is_test, dt_created, dt_received, dt_processed)
+                VALUES ".implode(',',$archive), $conn);
+    exec_query("COMMIT", $conn);
+}
 
 function process_delivered_events($events, $opts, $bbcfg) {
     /* Requires the following table to be created....
@@ -146,8 +194,6 @@ function process_delivered_events($events, $opts, $bbcfg) {
     );
     */
 
-    require_once 'CRM/Core/DAO.php';
-
     $values = array();
     foreach ($events as $pair) {
         $values[] = "({$pair['queue']['id']},NOW())";
@@ -160,27 +206,39 @@ function process_delivered_events($events, $opts, $bbcfg) {
     );
 
     // Successful insert for all of them (or die!). SQL keeps consistency for us
-    return array_keys($events);
+    return array($events, array(), array());
 }
 
 
 function process_open_events($events, $opts, $bbcfg) {
     require_once 'CRM/Mailing/Event/BAO/Opened.php';
-    $successful_ids = array();
+    $successes = array();
+    $errors = array();
     foreach ($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
-        if ( CRM_Mailing_Event_BAO_Opened::open($queue_event['id']) )
-           $successful_ids[] = $event_id;
-        else
+        if ( CRM_Mailing_Event_BAO_Opened::open($queue_event['id']) ) {
+           $successes[$event_id] = $pair;
+        }
+        else {
+            $errors[$event_id] = $pair;
             log_("[ERROR]      Failed to process open event id '$event_id'");
+        }
     }
-    return $successful_ids;
+    return array($successes, array(), $errors);
+}
+
+function process_deferred_events($events, $opts, $bbcfg) {
+    return array(array(), $events, array());
+}
+
+function process_processed_events($events, $opts, $bbcfg) {
+    return array(array(), $events, array());
 }
 
 function process_click_events($events, $opts, $bbcfg) {
     require_once 'CRM/Mailing/BAO/TrackableURL.php';
     require_once 'CRM/Mailing/Event/BAO/TrackableURLOpen.php';
-    $successful_ids = array();
+    $successes = array();
     foreach ($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         // Create the new urls as we come across them since we don't use the
@@ -192,11 +250,9 @@ function process_click_events($events, $opts, $bbcfg) {
             $tracker->save();
 
         CRM_Mailing_Event_BAO_TrackableURLOpen::track($queue_event['id'], $tracker->id);
-
-        //Couldn't figure out how to tell if this failed or not, assume success
-        $successful_ids[] = $event_id;
     }
-    return $successful_ids;
+    //Couldn't figure out how to tell if this failed or not, assume success for all
+    return array($events, array(), array());
 }
 
 
@@ -204,7 +260,8 @@ function process_bounce_events($events, $opts, $bbcfg) {
     require_once 'CRM/Mailing/Event/BAO/Bounce.php';
     require_once 'CRM/Mailing/BAO/BouncePattern.php';
 
-    $successful_ids = array();
+    $errors = array();
+    $successes = array();
     //If there was a way to do this in batches it'd be awesome....
     foreach ($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
@@ -218,18 +275,21 @@ function process_bounce_events($events, $opts, $bbcfg) {
         $params += CRM_Mailing_BAO_BouncePattern::match($event['reason']);
 
         if ( CRM_Mailing_Event_BAO_Bounce::create($params) )
-            $successful_ids[] = $event_id;
-        else
+            $successes[$event_id] = $pair;
+        else {
+            $errors[$event_id] = $pair;
             log_("[ERROR]      Failed to process bounce event id '$event_id'");
+        }
     }
-    return $successful_ids;
+    return array($successes, array(), $errors);
 }
 
 
 function process_unsubscribe_events($events, $opts, $bbcfg) {
     require_once 'CRM/Mailing/Event/BAO/Unsubscribe.php';
 
-    $successful_ids = array();
+    $errors = array();
+    $successes = array();
     foreach ($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         $unsubs = CRM_Mailing_Event_BAO_Unsubscribe::unsub_from_domain(
@@ -239,11 +299,13 @@ function process_unsubscribe_events($events, $opts, $bbcfg) {
                   );
 
         if ($unsubs)
-            $successful_ids[] = $event_id;
-        else
+            $successes[$event_id] = $pair;
+        else {
+            $errors[$event_id] = $pair;
             log_("[ERROR]      Failed to process unsubscribe/spamreport event id $event_id");
+        }
     }
-    return $successful_ids;
+    return array($successes, array(), $errors);
 }
 
 
@@ -257,6 +319,7 @@ function process_spamreport_events($events, $opts, $bbcfg) {
 
 
 function process_dropped_events($events, $opts, $bbcfg) {
+    $errors = array();
     $spam_events = array();
     $bounce_events = array();
     $unsubscribed_events = array();
@@ -292,21 +355,19 @@ function process_dropped_events($events, $opts, $bbcfg) {
                 $bounce_events[$event_id] = array($event, $queue_event);
                 break;
             default:
+                $errors[$event_id] = $event;
                 log_("[ERROR]      Unknown dropped reason '{$event['reason']}' encountered on event {$event['id']}");
         }
     }
 
-    $successful_ids  = process_unsubscribe_events($unsubscribed_events, $opts, $bbcfg);
-    $successful_ids += process_spamreport_events($spam_events, $opts, $bbcfg);
-    $successful_ids += process_bounce_events($bounce_events, $opts, $bbcfg);
-
-    return $successful_ids;
+    list($archive1, $skip1, $error1) = process_unsubscribe_events($unsubscribed_events, $opts, $bbcfg);
+    list($archive2, $skip2, $error2) = process_spamreport_events($spam_events, $opts, $bbcfg);
+    list($archive3, $skip3, $error3) = process_bounce_events($bounce_events, $opts, $bbcfg);
+    return array($archive1+$archive2+$archive3, $skip1+$skip2+$skip3, $error1+$error2+$error3);
 }
 
 
 function get_queue_event($event) {
-    require_once 'CRM/Core/DAO.php';
-
     $result = CRM_Core_DAO::executeQuery("
         SELECT queue.*
         FROM civicrm_mailing_event_queue as queue
