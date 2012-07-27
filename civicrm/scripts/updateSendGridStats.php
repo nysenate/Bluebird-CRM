@@ -62,16 +62,6 @@ $conn = get_accumulator_connection($bbconfig);
 
 $event_types = implode(',',array_keys($event_map));
 
-// Load the accumulator instance id
-global $instance_id;
-$result = exec_query("SELECT id FROM instance WHERE servername='{$bbconfig['servername']}'", $conn);
-if ($row = mysql_fetch_assoc($result)) {
-    $instance_id = $row['id'];
-} else {
-    exec_query("INSERT INTO instance (install_class, servername, name) VALUES ('{$bbconfig['install_class']}','{$bbconfig['servername']}','{$bbconfig['shortname']}');", $conn);
-    $instance_id = mysql_insert_id($conn);
-}
-
 // Initialize a dict for messages
 global $messages;
 $messages = array();
@@ -146,30 +136,27 @@ foreach ($event_map as $event_type => $callback) {
     }
 }
 log_("[NOTICE] Processed $total_events events.");
-exit(0);
+
+$result = exec_query("SELECT * FROM incoming WHERE IFNULL(servername, '')=''", $conn);
+$count = mysql_num_rows($result);
+if ($count != 0) {
+    $orphans = array();
+    while($row = mysql_fetch_assoc($result)) {
+        $orphans[] = array($row,array());
+    }
+    archive_events($orphans,'FAILED', $optList, $bbconfig);
+    log_("[NOTICE] Processed $count orphaned events (no servername).");
+}
 
 function archive_events($events, $result, $optList, $bbconfig) {
     global $instance_id, $messages, $conn;
     $archive = array();
+    $instance_id = "returnInstance('{$bbconfig['install_class']}','{$bbconfig['servername']}','{$bbconfig['shortname']}')";
     foreach ($events as $event_id => $pair) {
         list($event, $queue_event) = array_values($pair);
         $mailing_id = $event['mailing_id'];
-        if (isset($messages[$mailing_id])) {
-            $message_id = $messages[$mailing_id];
-        } else {
-            if(is_null($mailing_id)) {
-                $mailing_id = 0;
-            }
-            $queryResult = exec_query("SELECT id as message_id FROM message WHERE instance_id=$instance_id AND mailing_id=$mailing_id", $conn);
-            if ($row = mysql_fetch_assoc($queryResult)) {
-                $message_id = $row['message_id'];
-            } else {
-                exec_query("INSERT INTO message (instance_id, mailing_id, category) VALUES ($instance_id, $mailing_id, '".mysql_real_escape_string($event['category'], $conn)."')", $conn);
-                $message_id = mysql_insert_id($conn);
-            }
-            $messages[$mailing_id] = $message_id;
-        }
-        // Move the row now that it has been compressed
+        $category = mysql_real_escape_string($event['category'], $conn);
+        $message_id = "returnMessage($instance_id, $mailing_id, '$category')";
         $archive[] = "($event_id, $message_id, {$event['job_id']}, {$event['queue_id']}, '{$event['event_type']}', '{$result}', '{$event['email']}', {$event['is_test']}, '{$event['dt_created']}', '{$event['dt_received']}', NOW())";
     }
 
