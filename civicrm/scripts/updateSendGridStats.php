@@ -184,8 +184,9 @@ function process_delivered_events($events, $opts, $bbcfg) {
     */
 
     $values = array();
-    foreach ($events as $pair) {
-        $values[] = "({$pair['queue']['id']},NOW())";
+    foreach ($events as $event_id => $pair) {
+        list($event, $queue_event) = array_values($pair);
+        $values[] = "({$queue_event['id']},NOW())";
     }
 
     CRM_Core_DAO::executeQuery("
