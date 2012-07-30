@@ -93,7 +93,7 @@ foreach ($event_map as $event_type => $callback) {
             if (! $queue = get_queue_event($row)) {
                 // Log this as a failure! TODO: Mark as failure for archival as well.
                 log_("[ERROR]      Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
-                $errors[$row['event_id']] = $row;
+                $errors[$row['event_id']] = array('$row', array());
                 continue;
             }
             $batch[$row['event_id']] = array('event'=>$row, 'queue'=>$queue);
@@ -102,7 +102,9 @@ foreach ($event_map as $event_type => $callback) {
         }
 
         //When we've reached the batch limit or the end of the rows
-        if (!empty($batch) && (count($batch) >= $batch_size || $in_process == false)) {
+        if ((count($batch) >= $batch_size || $in_process == false)) {
+            list($archived, $skipped, $failed) = array(array(), array(), array());
+
             // Pass in both the optList and the bbconfig just in case one
             // of the event processors needs to be configurable either on
             // an instance or runtime basis.
