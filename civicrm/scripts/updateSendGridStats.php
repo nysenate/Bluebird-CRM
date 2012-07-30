@@ -93,7 +93,7 @@ foreach ($event_map as $event_type => $callback) {
             if (! $queue = get_queue_event($row)) {
                 // Log this as a failure! TODO: Mark as failure for archival as well.
                 log_("[ERROR]      Queue Id {$row['queue_id']} not found in {$bbconfig['servername']}");
-                $errors[$row['event_id']] = array('$row', array());
+                $errors[$row['event_id']] = array($row, array());
                 continue;
             }
             $batch[$row['event_id']] = array('event'=>$row, 'queue'=>$queue);
@@ -112,7 +112,9 @@ foreach ($event_map as $event_type => $callback) {
             // This isn't a great way to do it (what if the event processor
             // encounters an error after the first one?) but CiviCRM doesn't
             // give you a chance to recover from errors so...we'll do this.
-            list($archived, $skipped, $failed) = call_user_func($callback, $batch, $optList, $bbconfig);
+            if(!empty($batch)) {
+                list($archived, $skipped, $failed) = call_user_func($callback, $batch, $optList, $bbconfig);
+            }
             $failed += $errors;
 
             if (!empty($failed) && count($failed)) {
