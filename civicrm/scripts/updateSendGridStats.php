@@ -189,11 +189,13 @@ function process_delivered_events($events, $opts, $bbcfg) {
         $values[] = "({$queue_event['id']},NOW())";
     }
 
-    CRM_Core_DAO::executeQuery("
-        INSERT INTO civicrm_mailing_event_sendgrid_delivered
-            (event_queue_id, time_stamp)
-        VALUES ".implode(', ',$values)
-    );
+    if (!empty($values)) {
+        CRM_Core_DAO::executeQuery("
+            INSERT INTO civicrm_mailing_event_sendgrid_delivered
+                (event_queue_id, time_stamp)
+            VALUES ".implode(', ',$values)
+        );
+    }
 
     // Successful insert for all of them (or die!). SQL keeps consistency for us
     return array($events, array(), array());
