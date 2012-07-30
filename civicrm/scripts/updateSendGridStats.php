@@ -142,7 +142,7 @@ $count = mysql_num_rows($result);
 if ($count != 0) {
     $orphans = array();
     while($row = mysql_fetch_assoc($result)) {
-        $orphans[$row['event_id'] = array($row,array());
+        $orphans[$row['event_id']] = array($row,array());
     }
     archive_events($orphans,'FAILED', $optList, $bbconfig);
     log_("[NOTICE] Processed $count orphaned events (no servername).");
