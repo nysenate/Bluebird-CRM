@@ -92,9 +92,11 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
    * Function to process the form
    *
    * @access public
+   * @param output_status Determines if the status will be output.  This should
+   *                      be set to false when running from the CLI.
    * @return None
    */
-  public function postProcess() 
+  public function postProcess($output_status = true)
   {
     $sTime = microtime(true);
 
@@ -123,7 +125,9 @@ class CRM_Dedupe_Form_RemoveDupeAddress extends CRM_Core_Form
     $eTime = microtime(true);
     $diffTime = $eTime - $sTime;
 
-    $url = CRM_Utils_System::url( 'civicrm','reset=1');
-    CRM_Core_Error::statusBounce( "Contacts with duplicate addresses have been cleaned up. The process took $diffTime seconds.", $url );
+    if ($output_status === true) {
+      $url = CRM_Utils_System::url( 'civicrm','reset=1');
+      CRM_Core_Error::statusBounce( "Contacts with duplicate addresses have been cleaned up. The process took $diffTime seconds.", $url );
+    }
   }    
 }
