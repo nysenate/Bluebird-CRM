@@ -32,10 +32,13 @@ function run()
       echo "<pre>\n";
   }
 
+  require_once 'CRM/Core/Config.php';
+  $config = CRM_Core_Config::singleton();
+
   require_once 'api/api.php';
   require_once 'CRM/Core/Error.php';
   require_once 'CRM/Core/DAO.php';
-  require_once '../custom/php/CRM/Dedupe/Form/RemoveDupeAddress.php';
+  require_once 'CRM/Dedupe/Form/RemoveDupeAddress.php';
   
   //print_r($optlist);
   
@@ -43,8 +46,8 @@ function run()
   CRM_Core_Error::debug_log_message('dedupeAddresses.php');
 
   echo "Removing duplicate addresses for: {$optlist['site']}\n";
-  CRM_Dedupe_Form_RemoveDupeAddress::postProcess();
-  
+  $output_status = false;
+  CRM_Dedupe_Form_RemoveDupeAddress::postProcess($output_status);
 }
 
 run();
