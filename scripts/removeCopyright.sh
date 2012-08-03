@@ -6,7 +6,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2012-04-24
-# Revised: 2012-04-26
+# Revised: 2012-08-03
 #
 
 prog=`basename $0`
@@ -46,8 +46,8 @@ fi
 
 echo "==> Processing CRM instance [$instance]" >&2
 
-html_regexp='<tr><td colspan="[0-9]"><div mc:edit="std_footer"><em>Copyright &copy;[0-9]{4} New York State Senate, All rights reserved.</em></div></td></tr>[\r\n]*'
-text_regexp='[\r\n]*Copyright [0-9]{4} New York State Senate, All rights reserved.[\r\n]*'
+html_regexp='<tr><td colspan="[0-9]"><div mc:edit="std_footer"><em>Copyright &copy;[0-9]{4}(-[0-9]{4})? New York State Senate, All rights reserved.</em></div></td></tr>[\r\n]*'
+text_regexp='[\r\n]*Copyright [0-9]{4}(-[0-9]{4})? New York State Senate, All rights reserved.[\r\n]*'
 sqlend="from civicrm_mailing_component where component_type='Footer' and ( body_html like '%copyright%' or body_text like '%copyright%' )"
 
 sql="select count(*) $sqlend;"
