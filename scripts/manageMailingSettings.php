@@ -156,15 +156,11 @@ http://'.$instance.'.nysenate.gov
   $footerhtml = '</div></td></tr></table></td></tr></table></td></tr><tr><td align="center" valign="top"><table border="0" cellpadding="10" cellspacing="0" width="600" id="templateFooter"><tr><td valign="top" class="footerContent">
 	
 <table border="0" cellpadding="10" cellspacing="0" width="100%">
-<tr><td colspan="2"><div mc:edit="std_footer"><em>Copyright &copy;2011-2012 New York State Senate, All rights reserved.</em></div></td></tr>
 <tr><td valign="top" width="50%"><div mc:edit="std_footer"><strong>Albany Address:</strong><br />ADDRESS</div></td><td valign="top" width="50%"><div mc:edit="std_footer"><strong>District Address:</strong><br />ADDRESS</div></td></tr>
 </table>
 	
 	</td></tr></table><table border="0" cellpadding="0" cellspacing="0" width="600" id="templateHeader"><tr><td class="headerContent"><a href="http://www.nysenate.gov" target=_blank><img src="http://'.$crmhost.'/sites/'.$crmhost.'/pubfiles/images/template/footer.png" style="max-width:600px;" alt="New York State Senate Seal" id="headerImage campaign-icon" mc:label="header_image" mc:edit="header_image" mc:allowdesigner mc:allowtext /></a></td></tr></table></td></tr></table><br /></td></tr></table></center></body></html>';
-  $footertext = '
-
-Copyright 2011-2012 New York State Senate, All rights reserved.
-http://www.nysenate.gov
+  $footertext = 'http://www.nysenate.gov
 
 ';
   $footername = 'NYSS Mailing Footer';
