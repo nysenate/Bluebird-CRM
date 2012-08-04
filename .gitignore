@@ -17,3 +17,4 @@ bluebird.cfg*
 
 #user custom
 scripts/test.sh
+.idea
