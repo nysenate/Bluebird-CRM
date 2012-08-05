@@ -35,11 +35,12 @@ function devel_drush_command() {
       'function' => 'The name of the function or method to view.',
     ),
     'options' => array(
-      '--pipe' => 'Output just the filename of the function',
+      'pipe' => 'Output just the filename of the function',
+      'format' => 'Specify how the filename should be printed. Available placeholders are !startline, !endline and !file',
     ),
     'examples' => array(
       'fn-view drupal_set_breadcrumb' => 'View the source code for function "drupal_set_breadcrumb"',
-      'vi `drush --pipe fn-view user_access`' => 'Edit the file that contains the function "user_access"',
+      'vi `drush --pipe fn-view user_access --format=\'+!startline !file\'`' => 'Edit the file that contains the function "user_access"',
       'fn-view NodeController::load' => 'View the source code for method load in the class NodeController'
     ),
     'aliases' => array('fnv'),
@@ -82,7 +83,7 @@ function drush_devel_download() {
       $path .= '/' . libraries_get_path('FirePHPCore') . '/FirePHPCore';
     }
     else {
-      $path .= '/'. drupal_get_path('module', 'devel') . '/FirePHPCore';
+      $path .= '/' . drupal_get_path('module', 'devel') . '/FirePHPCore';
     }
   }
 
@@ -93,7 +94,7 @@ function drush_devel_download() {
     drush_log(dt('FirePHP has been exported via svn to @path.', array('@path' => $path)), 'success');
   }
   else {
-    drush_log(dt('Drush was unable to export FirePHP to @path.', array('@path' => $path)), 'error');
+    drush_log(dt('Drush was unable to export FirePHP to @path.', array('@path' => $path)), 'warning');
   }
 }
 
@@ -113,13 +114,13 @@ function drush_devel_post_pm_enable() {
 }
 
 /**
- * Command handler. Show hook implementations
+ * Command handler. Show hook implementations.
  */
 function drush_devel_fn_hook($hook) {
   // Get implementations in the .install files as well.
   include_once './includes/install.inc';
   drupal_load_updates();
-  
+
   if ($hook_implementations = module_implements($hook)) {
     if ($choice = drush_choice(array_combine($hook_implementations, $hook_implementations), 'Enter the number of the hook implementation you wish to view.')) {
       return drush_devel_fn_view($choice . "_$hook");
@@ -137,7 +138,7 @@ function drush_devel_fn_view($function_name) {
   // Get implementations in the .install files as well.
   include_once './includes/install.inc';
   drupal_load_updates();
-  
+
   if (strpos($function_name, '::') === FALSE) {
     if (!function_exists($function_name)) {
       return drush_set_error(dt('Function not found'));
@@ -152,8 +153,8 @@ function drush_devel_fn_view($function_name) {
     $reflect = new ReflectionMethod($class, $method);
   }
   $func_info = array('!file' => $reflect->getFileName(), '!startline' => $reflect->getStartLine(), '!endline' => $reflect->getEndLine());
-  //drush_print_pipe(dt("!file -line !startline", $func_info));
-  drush_print_pipe($reflect->getFileName());
+  $format = drush_get_option('format', '!file');
+  drush_print_pipe(dt($format, $func_info));
   drush_print(dt("// file: !file, lines !startline-!endline", $func_info));
 
   _drush_devel_print_function($reflect->getFileName(), $reflect->getStartLine(), $reflect->getEndLine());

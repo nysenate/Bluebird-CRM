@@ -1,332 +1,134 @@
 <?php
-// $Id: rules_admin.module,v 1.1.2.8 2010/11/25 11:14:53 fago Exp $
-
 
 /**
- * @file Rules administration UI
- *
- * Only hook implementations should be inside the .module file.
+ * @file Rules Admin UI
  */
 
-// Defines paths of the admin interface
-define('RULES_ADMIN_PATH', 'admin/rules');
-define('RULES_ADMIN_TRIGGER_PATH', RULES_ADMIN_PATH .'/trigger');
-define('RULES_ADMIN_SET_PATH', RULES_ADMIN_PATH .'/rule_sets');
-define('RULES_ADMIN_RULE_PATH', RULES_ADMIN_PATH .'/rules');
-
 /**
- * Implementation of hook_help().
- */
-function rules_help($path, $arg) {
-  switch ($path) {
-    case RULES_ADMIN_SET_PATH:
-      return '<p>'. t('Rule sets are similar in concept to subroutines and can be invoked by actions or manually by code or another module.') .'</p>';
-
-    case RULES_ADMIN_TRIGGER_PATH:
-      return '<p>'. t('This is an overview about rules that are triggered by a certain event. A rule may contain conditions and actions, which are executed only when the conditions are met.') .'</p>';
-  }
-}
-
-/**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function rules_admin_menu() {
-  $items = array();
-  $items[RULES_ADMIN_PATH] = array(
+  // Reaction rules UI menu entries.
+  $reaction_path = 'admin/config/workflow/rules/reaction';
+  $items = rules_ui()->config_menu($reaction_path);
+
+  $items[$reaction_path] = array(
     'title' => 'Rules',
-    'description' => 'Rules administration links.',
-    'position' => 'right',
-    'weight' => 5,
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('administer rules'),
-    'file' => 'system.admin.inc',
-    'file path' => drupal_get_path('module', 'system'),
-  );
-  $items[RULES_ADMIN_PATH .'/autocomplete'] = array(
-    'page callback' => 'rules_admin_categories_autocomplete',
-    'access arguments' => array('administer rules'),
-    'type' => MENU_CALLBACK,
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-  $items[RULES_ADMIN_TRIGGER_PATH] = array(
-    'title' => 'Triggered rules',
-    'description' => 'Customize your site by configuring rules that are evaluated on events.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_overview'),
-    'access arguments' => array('administer rules'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => -2,
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-  $items[RULES_ADMIN_TRIGGER_PATH .'/list'] = array(
-    'title' => 'Overview',
-    'weight' => -5,
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1,
   );
-  $items[RULES_ADMIN_TRIGGER_PATH .'/add'] = array(
-    'title' => 'Add a new rule',
-    'type' => MENU_LOCAL_TASK,
+  $items[$reaction_path . '/add'] = array(
+    'title' => 'Add new rule',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_add_rule', FALSE),
+    'page arguments' => array('rules_admin_add_reaction_rule', $reaction_path),
     'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-
-  foreach (rules_get_items() as $item_type => $info) {
-    $items[RULES_ADMIN_PATH .'/'. $item_type .'/%rules_item/delete'] = array(
-      'title' => 'Delete',
-      'type' => MENU_CALLBACK,
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('rules_admin_item_form_delete', 2, 3),
-      'access arguments' => array('administer rules'),
-      'load arguments' => array(2),
-      'file' => 'rules_admin.sets.inc',
-    );
-    $items[RULES_ADMIN_PATH .'/'. $item_type .'/%rules_item/revert'] = array(
-      'title' => 'Revert',
-      'type' => MENU_CALLBACK,
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('rules_admin_item_form_revert', 2, 3),
-      'access arguments' => array('administer rules'),
-      'load arguments' => array(2),
-      'file' => 'rules_admin.sets.inc',
-    );
-  }
-
-  $items[RULES_ADMIN_PATH .'/ie'] = array(
-    'title' => 'Import / Export',
-    'description' => 'Export your rules as text or import rules.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_export'),
-    'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.export.inc',
-    'weight' => 5,
-    'type' => MENU_NORMAL_ITEM,
-  );
-  $items[RULES_ADMIN_PATH .'/ie/export'] = array(
-    'title' => 'Export',
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'rules_admin.inc',
     'weight' => 0,
-    'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  $items[RULES_ADMIN_PATH .'/ie/import'] = array(
-    'title' => 'Import',
+  $items[$reaction_path . '/import'] = array(
+    'title' => 'Import rule',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_import'),
+    'page arguments' => array('rules_ui_import_form', $reaction_path),
     'access arguments' => array('administer rules'),
-    'weight' => 7,
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'rules_admin.export.inc',
+    'file' => 'ui/ui.forms.inc',
+    'file path' => drupal_get_path('module', 'rules'),
+    'type' => MENU_LOCAL_ACTION,
   );
-  $items[RULES_ADMIN_PATH .'/settings'] = array(
+
+  // Components UI menu entries.
+  $component_path = 'admin/config/workflow/rules/components';
+  $items += rules_ui()->config_menu($component_path);
+  $items[$component_path] = array(
+    'title' => 'Components',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rules_admin_components_overview', $component_path),
+    'access arguments' => array('administer rules'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'rules_admin.inc',
+    'weight' => 0,
+  );
+  $items[$component_path . '/add'] = array(
+    'title' => 'Add new component',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rules_admin_add_component', $component_path),
+    'access arguments' => array('administer rules'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'rules_admin.inc',
+    'weight' => 0,
+  );
+  $items[$component_path . '/import'] = array(
+    'title' => 'Import component',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rules_ui_import_form', $component_path),
+    'access arguments' => array('administer rules'),
+    'file' => 'ui/ui.forms.inc',
+    'file path' => drupal_get_path('module', 'rules'),
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  // Some general rules admin menu items.
+  $items['admin/config/workflow/rules'] = array(
+    'title' => 'Rules',
+    'position' => 'right',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('rules_admin_reaction_overview', $reaction_path),
+    'description' => 'Manage reaction rules and rule components.',
+    'access arguments' => array('administer rules'),
+    'file' => 'rules_admin.inc',
+  );
+  $items['admin/config/workflow/rules/settings'] = array(
     'title' => 'Settings',
-    'description' => 'Set display options, show/hide Rules messages.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('rules_admin_settings'),
     'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.rule_forms.inc',
-    'weight' => 7,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'rules_admin.inc',
+    'weight' => 1,
   );
-  //paths for modifing rules
-  $items[RULES_ADMIN_RULE_PATH .'/%rule'] = array(
-    'title callback' => 'rules_admin_rule_title',
-    'title arguments' => array('Editing rule @label', 3),
-    'type' => MENU_CALLBACK,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_edit_rule', 3),
-    'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-  $items[RULES_ADMIN_RULE_PATH .'/%rule/add'] = array(
-    'title' => 'Add',
-    'type' => MENU_CALLBACK,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_add', 3),
-    'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-  $items[RULES_ADMIN_RULE_PATH .'/%rule/edit/%rule_element'] = array(
-    'title' => 'Edit',
-    'type' => MENU_CALLBACK,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_edit', 3, 5),
-    'access arguments' => array('administer rules'),
-    'load arguments' => array(3),
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-  $items[RULES_ADMIN_RULE_PATH .'/%rule/delete/%rule_element'] = array(
-    'title' => 'Delete',
-    'type' => MENU_CALLBACK,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_delete', 3, 5),
-    'access arguments' => array('administer rules'),
-    'load arguments' => array(3),
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-  $items[RULES_ADMIN_RULE_PATH .'/%rule/clone'] = array(
-    'title' => 'Clone rule',
-    'type' => MENU_CALLBACK,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_clone', 3),
-    'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.rule_forms.inc',
-  );
-  $items[RULES_ADMIN_SET_PATH] = array(
-    'title' => 'Rule sets',
-    'description' => 'Create and manage rule sets.',
-    'page callback' => 'rules_admin_sets_overview',
-    'access arguments' => array('administer rules'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 0,
-    'file' => 'rules_admin.sets.inc',
-  );
-  $items[RULES_ADMIN_SET_PATH .'/list'] = array(
-    'title' => 'Overview',
-    'weight' => -5,
+  $items['admin/config/workflow/rules/settings/basic'] = array(
+    'title' => 'Basic',
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
   );
-  $items[RULES_ADMIN_SET_PATH .'/add'] = array(
-    'title' => 'Add a new rule set',
+  $items['admin/config/workflow/rules/settings/advanced'] = array(
+    'title' => 'Advanced',
     'type' => MENU_LOCAL_TASK,
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_add_rule_set', 2),
+    'page arguments' => array('rules_admin_settings_advanced'),
     'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.sets.inc',
-    'weight' => 3,
-  );
-
-  $items[RULES_ADMIN_SET_PATH .'/js'] = array(
-    'type' => MENU_CALLBACK,
-    'page callback' => 'rules_admin_form_js',
-    'page arguments' => array('rules_admin_form_add_rule_set_add_arguments'),
-    'access arguments' => array('administer rules'),
-    'file' => 'rules_admin.sets.inc',
-  );
-  $items[RULES_ADMIN_SET_PATH .'/%rules_item'] = array(
-    'type' => MENU_CALLBACK,
-    'title callback' => 'rules_admin_item_title',
-    'title arguments' => array(3),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_edit_rule_set', 3),
-    'access arguments' => array('administer rules'),
-    'load arguments' => array(2),
-    'file' => 'rules_admin.sets.inc',
-  );
-  $items[RULES_ADMIN_SET_PATH .'/%rules_item/list'] = array(
-    'title' => 'Overview',
-    'weight' => -5,
-    'load arguments' => array(2),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
-  $items[RULES_ADMIN_SET_PATH .'/%rules_item/add'] = array(
-    'title' => 'Add a new rule',
-    'type' => MENU_LOCAL_TASK,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('rules_admin_form_add_rule', 3),
-    'access arguments' => array('administer rules'),
-    'load arguments' => array(2),
-    'file' => 'rules_admin.rule_forms.inc',
+    'file' => 'rules_admin.inc',
   );
   return $items;
 }
 
 /**
- * Loads the admin proxy of the rule with the given name
+ * Implements hook_form_alter().
+ *
+ * Since the overview forms are GET forms, we don't want them to send a wide
+ * variety of information. We need to use hook_form_alter() because the
+ * properties are added after form creation.
  */
-function rule_load($name) {
-  static $proxies = array();
-
-  if (!isset($proxies[$name])) {
-    $proxies[$name] = FALSE;
-    $rules = rules_get_configured_items('rules');
-    // Let's make sure the #set actually exists
-    if (isset($rules[$name]) && rules_get_rule_sets($rules[$name]['#set'])) {
-      rules_include('rules_admin');
-      $proxies[$name] = new rules_admin_rule_proxy($name, $rules[$name]);
-      rules_admin_fix_breadcrumb($rules[$name], $name);
-    }
+function rules_admin_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'rules_admin_reaction_overview' || $form_id == 'rules_admin_components_overview') {
+    $form['form_build_id']['#access'] = FALSE;
+    $form['form_token']['#access'] = FALSE;
+    $form['form_id']['#access'] = FALSE;
   }
-  return $proxies[$name];
-}
-
-function rule_element_load($id, $rule_name) {
-  $proxy = rule_load($rule_name);
-  $element = $proxy->get_element($id);
-  return is_array($element) ? $element + array('#id' => intval($id)) : FALSE;
-}
-
-function rules_admin_rule_title($text, $proxy) {
-  $rule = $proxy->get_rule();
-  return t($text, array('@label' => $rule['#label']));
 }
 
 /**
- * Validate the machine name.
+ * Implements hook_system_info_alter().
+ *
+ * Adds configuration links for Rules and Rules Scheduler in the modules list.
+ * (This is done by the Rules UI module, without which there would be no
+ * configuration pages to visit.)
  */
-function rules_admin_validate_machine_name($item_type, $element_name, $machine_name) {
-  // Check that the machine name is valid. We only
-  if (!preg_match('/^[a-z][a-z0-9_]*$/', $machine_name)) {
-    form_set_error($element_name, t('Machine name must be alphanumeric and underscores only, and the first character must be a lower case letter.'));
-    return;
+function rules_admin_system_info_alter(&$info, $file, $type) {
+  if ($file->name == 'rules') {
+    $info['configure'] = 'admin/config/workflow/rules';
   }
-  // Fetch information about table.
-  $info = rules_get_items($item_type);
-  // Check that the machine name doesn't exist.
-  $count = db_result(db_query("SELECT COUNT(*) FROM {" . $info['db_table'] . "} WHERE name = '%s'", 'rules_' . $machine_name));
-  if ($count) {
-    form_set_error($element_name, t('The given machine name already exists.'));
+  if ($file->name == 'rules_scheduler') {
+    $info['configure'] = 'admin/config/workflow/rules/schedule';
   }
 }
-
-function rules_item_load($name, $item_type) {
-  $items = rules_get_configured_items($item_type);
-  if (!isset($items[$name])) {
-    return FALSE;
-  }
-  return $items[$name] + array('name' => $name);
-}
-
-function rules_admin_item_title($item) {
-  return check_plain(rules_get_element_label($item));
-}
-
-/**
- * Implementation of hook_perm().
- */
-function rules_admin_perm() {
-  return array('administer rules');
-}
-
-/**
- * Implementation of hook_theme()
- */
-function rules_admin_theme() {
-  foreach (array('rules_admin_rule_render', 'rule', 'condition', 'action', 'rules_icon', 'rules_operation', 'OR', 'AND', 'rules_logical_operation_label') as $name) {
-    $items[$name] = array(
-      'arguments' => array('elements' => NULL),
-      'file' => 'rules_admin.render.inc',
-    );
-  }
-  $items['rules_admin_form_arguments'] = array(
-    'arguments' => array('elements' => NULL),
-    'file' => 'rules_admin.sets.inc',
-  );
-  $items['rules_admin_unsatisfied_elements'] = array(
-    'arguments' => array('element' => NULL),
-    'file' => 'rules_admin.inc',
-  );
-  $items['rules_admin_unsatisfied_elements_group'] = array(
-    'arguments' => array('grouped_rules' => NULL, 'elements' => array()),
-    'file' => 'rules_admin.inc',
-  );
-  $items['rules_admin_unsatisfied_elements_group'] = array(
-    'arguments' => array('grouped_rules' => NULL, 'elements' => array()),
-    'file' => 'rules_admin.inc',
-  );
-  $items['rules_admin_configuration_status'] = array(
-    'arguments' => array('status' => NULL),
-    'file' => 'rules_admin.inc',
-  );
-  return $items;
-}
-

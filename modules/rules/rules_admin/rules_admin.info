@@ -1,12 +1,14 @@
-; $Id: rules_admin.info,v 1.1.2.2 2009/03/30 17:34:26 fago Exp $
-name = Rules Administration UI
-description = Provides the administration UI for rules.
-dependencies[] = rules
+name = Rules UI
+description = Administrative interface for managing rules.
 package = Rules
-core = 6.x
-; Information added by drupal.org packaging script on 2011-01-05
-version = "6.x-1.4"
-core = "6.x"
+core = 7.x
+files[] = rules_admin.module
+files[] = rules_admin.inc
+dependencies[] = rules
+
+; Information added by drupal.org packaging script on 2012-08-03
+version = "7.x-2.2"
+core = "7.x"
 project = "rules"
-datestamp = "1294236219"
+datestamp = "1343980733"
 

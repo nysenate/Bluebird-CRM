@@ -1,33 +1,110 @@
 <?php
-require_once 'SolrPhpClient/Apache/Solr/Service.php';
 
-class Drupal_Apache_Solr_Service extends Apache_Solr_Service {
+/**
+ * Copyright (c) 2007-2009, Conduit Internet Technologies, Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  - Neither the name of Conduit Internet Technologies, Inc. nor the names of
+ *    its contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @copyright Copyright 2007-2009 Conduit Internet Technologies, Inc. (http://conduit-it.com)
+ * @license New BSD (http://solr-php-client.googlecode.com/svn/trunk/COPYING)
+ * @version $Id: Service.php 22 2009-11-09 22:46:54Z donovan.jimenez $
+ *
+ * @package Apache
+ * @subpackage Solr
+ * @author Donovan Jimenez <djimenez@conduit-it.com>
+ */
 
-  protected $luke;
-  protected $luke_cid;
-  protected $stats;
+/**
+ * Additional code Copyright (c) 2008-2011 by Robert Douglass, James McKinney,
+ * Jacob Singh, Alejandro Garza, Peter Wolanin, and additional contributors.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at
+ * your option) any later version.
+
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program as the file LICENSE.txt; if not, please see
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
+ */
+
+/**
+ * Starting point for the Solr API. Represents a Solr server resource and has
+ * methods for pinging, adding, deleting, committing, optimizing and searching.
+ */
+
+class DrupalApacheSolrService {
+  /**
+   * How NamedLists should be formatted in the output.  This specifically effects facet counts. Valid values
+   * are 'map' (default) or 'flat'.
+   *
+   */
+  const NAMED_LIST_FORMAT = 'map';
+
+  /**
+   * Servlet mappings
+   */
+  const PING_SERVLET = 'admin/ping';
+  const UPDATE_SERVLET = 'update';
+  const SEARCH_SERVLET = 'select';
   const LUKE_SERVLET = 'admin/luke';
+  const SYSTEM_SERVLET = 'admin/system';
   const STATS_SERVLET = 'admin/stats.jsp';
 
   /**
-   * Whether {@link Apache_Solr_Response} objects should create {@link Apache_Solr_Document}s in
-   * the returned parsed data
+   * Server url
    *
-   * @var boolean
-   *
-   * @override to FALSE by default.
+   * @var array
    */
-  protected $_createDocuments = FALSE;
+  protected $parsed_url;
 
   /**
-   * Whether {@link Apache_Solr_Response} objects should have multivalue fields with only a single value
-   * collapsed to appear as a single value would.
+   * Constructed servlet full path URLs
    *
-   * @var boolean
-   *
-   * @override to FALSE by default
+   * @var string
    */
-  protected $_collapseSingleValueArrays = FALSE;
+  protected $update_url;
+
+  /**
+   * Default HTTP timeout when one is not specified (initialized to default_socket_timeout ini setting)
+   *
+   * var float
+   */
+  protected $_defaultTimeout;
+  protected $env_id;
+  protected $luke;
+  protected $stats;
+  protected $system_info;
+
 
   /**
    * Call the /admin/ping servlet, to test the connection to the server.
@@ -43,11 +120,15 @@ class Drupal_Apache_Solr_Service extends Apache_Solr_Service {
     if ($timeout <= 0.0) {
       $timeout = -1;
     }
+    $pingUrl = $this->_constructUrl(self::PING_SERVLET);
     // Attempt a HEAD request to the solr ping url.
-    list($data, $headers) = $this->_makeHttpRequest($this->_pingUrl, 'HEAD', array(), NULL, $timeout);
-    $response = new Apache_Solr_Response($data, $headers);
+    $options = array(
+      'method' => 'HEAD',
+      'timeout' => $timeout,
+    );
+    $response = $this->_makeHttpRequest($pingUrl, $options);
 
-    if ($response->getHttpStatus() == 200) {
+    if ($response->code == 200) {
       // Add 0.1 ms to the ping time so we never return 0.0.
       return microtime(TRUE) - $start + 0.0001;
     }
@@ -57,13 +138,68 @@ class Drupal_Apache_Solr_Service extends Apache_Solr_Service {
   }
 
   /**
+   * Call the /admin/system servlet
+   *
+   * @return
+   *   (array) With all the system info
+   */
+  public function setSystemInfo() {
+    $url = $this->_constructUrl(self::SYSTEM_SERVLET, array('wt' => 'json'));
+    if ($this->env_id) {
+      $this->system_info_cid = $this->env_id . ":system:" . drupal_hash_base64($url);
+      $cache = cache_get($this->system_info_cid, 'cache_apachesolr');
+      if (isset($cache->data)) {
+        $this->system_info = json_decode($cache->data);
+      }
+    }
+    // Second pass to populate the cache if necessary.
+    if (empty($this->system_info)) {
+      $response = $this->_sendRawGet($url);
+      $this->system_info = json_decode($response->data);
+      if ($this->env_id) {
+        cache_set($this->system_info_cid, $response->data, 'cache_apachesolr');
+      }
+    }
+  }
+
+  /**
+   * Get information about the Solr Core.
+   *
+   * @return
+   *   (string) system info encoded in json
+   */
+  public function getSystemInfo() {
+    if (!isset($this->system_info)) {
+      $this->setSystemInfo();
+    }
+    return $this->system_info;
+  }
+
+  /**
    * Sets $this->luke with the meta-data about the index from admin/luke.
    */
   protected function setLuke($num_terms = 0) {
     if (empty($this->luke[$num_terms])) {
-      $url = $this->_constructUrl(self::LUKE_SERVLET, array('numTerms' => "$num_terms", 'wt' => self::SOLR_WRITER));
+      $params = array(
+        'numTerms' => "$num_terms",
+        'wt' => 'json',
+        'json.nl' => self::NAMED_LIST_FORMAT,
+      );
+      $url = $this->_constructUrl(self::LUKE_SERVLET, $params);
+      if ($this->env_id) {
+        $cid = $this->env_id . ":luke:" . drupal_hash_base64($url);
+        $cache = cache_get($cid, 'cache_apachesolr');
+        if (isset($cache->data)) {
+          $this->luke = $cache->data;
+        }
+      }
+    }
+    // Second pass to populate the cache if necessary.
+    if (empty($this->luke[$num_terms])) {
       $this->luke[$num_terms] = $this->_sendRawGet($url);
-      cache_set($this->luke_cid, $this->luke, 'cache_apachesolr');
+      if ($this->env_id) {
+        cache_set($cid, $this->luke, 'cache_apachesolr');
+      }
     }
   }
 
@@ -92,15 +228,20 @@ class Drupal_Apache_Solr_Service extends Apache_Solr_Service {
     // Only try to get stats if we have connected to the index.
     if (empty($this->stats) && isset($data->index->numDocs)) {
       $url = $this->_constructUrl(self::STATS_SERVLET);
-      $this->stats_cid = "apachesolr:stats:" . md5($url);
-      $cache = cache_get($this->stats_cid, 'cache_apachesolr');
-      if (isset($cache->data)) {
-        $this->stats = simplexml_load_string($cache->data);
+      if ($this->env_id) {
+        $this->stats_cid = $this->env_id . ":stats:" . drupal_hash_base64($url);
+        $cache = cache_get($this->stats_cid, 'cache_apachesolr');
+        if (isset($cache->data)) {
+          $this->stats = simplexml_load_string($cache->data);
+        }
       }
-      else {
+      // Second pass to populate the cache if necessary.
+      if (empty($this->stats)) {
         $response = $this->_sendRawGet($url);
-        $this->stats = simplexml_load_string($response->getRawResponse());
-        cache_set($this->stats_cid, $response->getRawResponse(), 'cache_apachesolr');
+        $this->stats = simplexml_load_string($response->data);
+        if ($this->env_id) {
+          cache_set($this->stats_cid, $response->data, 'cache_apachesolr');
+        }
       }
     }
   }
@@ -131,25 +272,28 @@ class Drupal_Apache_Solr_Service extends Apache_Solr_Service {
      '@deletes_total' => '',
      '@schema_version' => '',
      '@core_name' => '',
+     '@index_size' => '',
     );
 
     if (!empty($stats)) {
       $docs_pending_xpath = $stats->xpath('//stat[@name="docsPending"]');
-      $summary['@pending_docs'] = (int) trim($docs_pending_xpath[0]);
+      $summary['@pending_docs'] = (int) trim(current($docs_pending_xpath));
       $max_time_xpath = $stats->xpath('//stat[@name="autocommit maxTime"]');
       $max_time = (int) trim(current($max_time_xpath));
       // Convert to seconds.
       $summary['@autocommit_time_seconds'] = $max_time / 1000;
       $summary['@autocommit_time'] = format_interval($max_time / 1000);
       $deletes_id_xpath = $stats->xpath('//stat[@name="deletesById"]');
-      $summary['@deletes_by_id'] = (int) trim($deletes_id_xpath[0]);
+      $summary['@deletes_by_id'] = (int) trim(current($deletes_id_xpath));
       $deletes_query_xpath = $stats->xpath('//stat[@name="deletesByQuery"]');
-      $summary['@deletes_by_query'] = (int) trim($deletes_query_xpath[0]);
+      $summary['@deletes_by_query'] = (int) trim(current($deletes_query_xpath));
       $summary['@deletes_total'] = $summary['@deletes_by_id'] + $summary['@deletes_by_query'];
       $schema = $stats->xpath('/solr/schema[1]');
       $summary['@schema_version'] = trim($schema[0]);;
       $core = $stats->xpath('/solr/core[1]');
       $summary['@core_name'] = trim($core[0]);
+      $size_xpath = $stats->xpath('//stat[@name="indexSize"]');
+      $summary['@index_size'] = trim(current($size_xpath));
     }
 
     return $summary;
@@ -169,30 +313,61 @@ class Drupal_Apache_Solr_Service extends Apache_Solr_Service {
   }
 
   protected function _clearCache() {
-    cache_clear_all("apachesolr:luke:", 'cache_apachesolr', TRUE);
-    cache_clear_all("apachesolr:stats:", 'cache_apachesolr', TRUE);
+    if ($this->env_id) {
+      cache_clear_all($this->env_id . ":stats:", 'cache_apachesolr', TRUE);
+      cache_clear_all($this->env_id . ":luke:", 'cache_apachesolr', TRUE);
+    }
     $this->luke = array();
     $this->stats = NULL;
   }
 
   /**
-   * Clear the cache whenever we commit changes.
+   * Constructor
    *
-   * @see Apache_Solr_Service::commit()
+   * @param $url
+   *   The URL to the Solr server, possibly including a core name.  E.g. http://localhost:8983/solr/
+   *   or https://search.example.com/solr/core99/
+   * @param $env_id
+   *   The machine name of a corresponding saved configuration used for loading
+   *   data like which facets are enabled.
    */
-  public function commit($optimize = TRUE, $waitFlush = TRUE, $waitSearcher = TRUE, $timeout = 3600) {
-    parent::commit($optimize, $waitFlush, $waitSearcher, $timeout);
-    $this->_clearCache();
+  public function __construct($url, $env_id = NULL) {
+    $this->env_id = $env_id;
+    $this->setUrl($url);
+
+    // determine our default http timeout from ini settings
+    $this->_defaultTimeout = (int) ini_get('default_socket_timeout');
+
+    // double check we didn't get 0 for a timeout
+    if ($this->_defaultTimeout <= 0) {
+      $this->_defaultTimeout = 60;
+    }
+  }
+
+  function getId() {
+    return $this->env_id;
   }
 
   /**
-   * Construct the Full URLs for the three servlets we reference
+   * Check the reponse code and thow an exception if it's not 200.
    *
-   * @see Apache_Solr_Service::_initUrls()
+   * @param stdClass $response
+   *   response object.
+   *
+   * @return
+   *  response object
+   * @thows Exception
    */
-  protected function _initUrls() {
-    parent::_initUrls();
-    $this->_lukeUrl = $this->_constructUrl(self::LUKE_SERVLET, array('numTerms' => '0', 'wt' => self::SOLR_WRITER));
+  protected function checkResponse($response) {
+    $code = (int) $response->code;
+    if ($code != 200) {
+      if ($code >= 400 && $code != 403 && $code != 404) {
+        // Add details, like Solr's exception message.
+        $response->status_message .= $response->data;
+      }
+      throw new Exception('"' . $code . '" Status: ' . $response->status_message);
+    }
+    return $response;
   }
 
   /**
@@ -204,181 +379,427 @@ class Drupal_Apache_Solr_Service extends Apache_Solr_Service {
    * @param array $params
    *   Any request parameters when constructing the URL.
    *
-   * @param string $method
-   *   'GET', 'POST', 'PUT', or 'HEAD'.
-   *
-   * @param array $request_headers
-   *   Keyed array of header names and values.  Should include 'Content-Type'
-   *   for POST or PUT.
-   *
-   * @param string $rawPost
-   *   Must be an empty string unless method is POST or PUT.
-   *
-   * @param float $timeout
-   *   Read timeout in seconds or FALSE.
+   * @param array $options
+   *  @see drupal_http_request() $options.
    *
    * @return
-   *  Apache_Solr_Response object
+   *  response object
+   *
+   * @thows Exception
    */
-  public function makeServletRequest($servlet, $params = array(), $method = 'GET', $request_headers = array(), $rawPost = '', $timeout = FALSE) {
-    if ($method == 'GET' || $method == 'HEAD') {
-      // Make sure we are not sending a request body.
-      $rawPost = '';
-    }
+  public function makeServletRequest($servlet, $params = array(), $options = array()) {
     // Add default params.
     $params += array(
-      'wt' => self::SOLR_WRITER,
+      'wt' => 'json',
+      'json.nl' => self::NAMED_LIST_FORMAT,
     );
 
     $url = $this->_constructUrl($servlet, $params);
-    list($data, $headers) = $this->_makeHttpRequest($url, $method, $request_headers, $rawPost, $timeout);
-    $response = new Apache_Solr_Response($data, $headers, $this->_createDocuments, $this->_collapseSingleValueArrays);
-    $code = (int) $response->getHttpStatus();
-    if ($code != 200) {
-      $message = $response->getHttpStatusMessage();
-      if ($code >= 400 && $code != 403 && $code != 404) {
-        // Add details, like Solr's exception message.
-        $message .= $response->getRawResponse();
-      }
-      throw new Exception('"' . $code . '" Status: ' . $message);
-    }
-    return $response;
+    $response = $this->_makeHttpRequest($url, $options);
+    return $this->checkResponse($response);
   }
 
   /**
-   * Put Luke meta-data from the cache into $this->luke when we instantiate.
-   *
-   * @see Apache_Solr_Service::__construct()
+   * Central method for making a GET operation against this Solr Server
    */
-  public function __construct($host = 'localhost', $port = 8180, $path = '/solr/') {
-    parent::__construct($host, $port, $path);
-    $this->luke_cid = "apachesolr:luke:" . md5($this->_lukeUrl);
-    $cache = cache_get($this->luke_cid, 'cache_apachesolr');
-    if (isset($cache->data)) {
-      $this->luke = $cache->data;
-    }
+  protected function _sendRawGet($url, $options = array()) {
+    $response = $this->_makeHttpRequest($url, $options);
+    return $this->checkResponse($response);
   }
 
   /**
-   * Switch to POST for search if resultant query string is too long.
-   *
-   * Default threshold is 4000 characters. Note that this is almost an
-   * exact copy of Apache_Solr_Service::search().
-   *
-   * @see Apache_Solr_Service::search
+   * Central method for making a POST operation against this Solr Server
    */
-  public function search($query, $offset = 0, $limit = 10, $params = array(), $method = self::METHOD_GET) {
-    if (!is_array($params)) {
-      $params = array();
+  protected function _sendRawPost($url, $options = array()) {
+    $options['method'] = 'POST';
+    // Normally we use POST to send XML documents.
+    if (!isset($options['headers']['Content-Type'])) {
+      $options['headers']['Content-Type'] = 'text/xml; charset=UTF-8';
     }
-
-    // Common parameters in this interface.
-    $params['wt'] = self::SOLR_WRITER;
-    $params['json.nl'] = $this->_namedListTreatment;
-
-    $params['q'] = $query;
-    $params['start'] = $offset;
-    $params['rows'] = $limit;
-
-    // Use http_build_query to encode our arguments because its faster
-    // than urlencoding all the parts ourselves in a loop.
-    $queryString = http_build_query($params, null, $this->_queryStringDelimiter);
-
-    // Because http_build_query treats arrays differently than we want
-    // to, correct the query string by changing foo[#]=bar (# being an actual
-    // number) parameter strings to just multiple foo=bar strings. This regex
-    // should always work since '=' will be urlencoded anywhere else the
-    // regex isn't expecting it.
-    $queryString = preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', $queryString);
-
-    // Check string length of the query string, change method to POST
-    // if longer than 4000 characters.
-    if (strlen($queryString) > variable_get('apachesolr_search_post_threshold', 4000)) {
-      $method = self::METHOD_POST;
-    }
-
-    if ($method == self::METHOD_GET) {
-      return $this->_sendRawGet($this->_searchUrl . $this->_queryDelimiter . $queryString);
-    }
-    else if ($method == self::METHOD_POST) {
-      return $this->_sendRawPost($this->_searchUrl, $queryString, FALSE, 'application/x-www-form-urlencoded');
-    }
-    else {
-      throw new Exception("Unsupported method '$method', please use the Apache_Solr_Service::METHOD_* constants");
-    }
-  }
-
- /**
-   * Central method for making a get operation against this Solr Server
-   *
-   * @see Apache_Solr_Service::_sendRawGet()
-   */
-  protected function _sendRawGet($url, $timeout = FALSE) {
-    list($data, $headers) = $this->_makeHttpRequest($url, 'GET', array(), '', $timeout);
-    $response = new Apache_Solr_Response($data, $headers, $this->_createDocuments, $this->_collapseSingleValueArrays);
-    $code = (int) $response->getHttpStatus();
-    if ($code != 200) {
-      $message = $response->getHttpStatusMessage();
-      if ($code >= 400 && $code != 403 && $code != 404) {
-        // Add details, like Solr's exception message.
-        $message .= $response->getRawResponse();
-      }
-      throw new Exception('"' . $code . '" Status: ' . $message);
-    }
-    return $response;
+    $response = $this->_makeHttpRequest($url, $options);
+    return $this->checkResponse($response);
   }
 
   /**
-   * Central method for making a post operation against this Solr Server
+   * Central method for making the actual http request to the Solr Server
    *
-   * @see Apache_Solr_Service::_sendRawPost()
+   * This is just a wrapper around drupal_http_request().
    */
-  protected function _sendRawPost($url, $rawPost, $timeout = FALSE, $contentType = 'text/xml; charset=UTF-8') {
-    $request_headers = array('Content-Type' => $contentType);
-    list($data, $headers) = $this->_makeHttpRequest($url, 'POST', $request_headers, $rawPost, $timeout);
-    $response = new Apache_Solr_Response($data, $headers, $this->_createDocuments, $this->_collapseSingleValueArrays);
-    $code = (int) $response->getHttpStatus();
-    if ($code != 200) {
-      $message = $response->getHttpStatusMessage();
-      if ($code >= 400 && $code != 403 && $code != 404) {
-        // Add details, like Solr's exception message.
-        $message .= $response->getRawResponse();
-      }
-      throw new Exception('"' . $code . '" Status: ' . $message);
+  protected function _makeHttpRequest($url, $options = array()) {
+    if (!isset($options['method']) || $options['method'] == 'GET' || $options['method'] == 'HEAD') {
+      // Make sure we are not sending a request body.
+      $options['data'] = NULL;
     }
-    return $response;
-  }
 
-  protected function _makeHttpRequest($url, $method = 'GET', $headers = array(), $content = '', $timeout = FALSE) {
-    // Set a response timeout
-    if ($timeout) {
-      $default_socket_timeout = ini_set('default_socket_timeout', $timeout);
-    }
-    $result = drupal_http_request($url, $headers, $method, $content);
-    // Restore the response timeout
-    if ($timeout) {
-      ini_set('default_socket_timeout', $default_socket_timeout);
-    }
+    $result = drupal_http_request($url, $options);
 
     if (!isset($result->code) || $result->code < 0) {
       $result->code = 0;
       $result->status_message = 'Request failed';
+      $result->protocol = 'HTTP/1.0';
     }
-
+    // Additional information may be in the error property.
     if (isset($result->error)) {
       $result->status_message .= ': ' . check_plain($result->error);
     }
 
     if (!isset($result->data)) {
       $result->data = '';
+      $result->response = NULL;
     }
-
-    $headers[] = "{$result->protocol} {$result->code} {$result->status_message}";
-    if (isset($result->headers)) {
-      foreach ($result->headers as $name => $value) {
-        $headers[] = "$name: $value";
+    else {
+      $response = json_decode($result->data);
+      if (is_object($response)) {
+        foreach ($response as $key => $value) {
+          $result->$key = $value;
+        }
       }
     }
-    return array($result->data, $headers);
+    return $result;
+  }
+
+
+  /**
+   * Escape a value for special query characters such as ':', '(', ')', '*', '?', etc.
+   *
+   * NOTE: inside a phrase fewer characters need escaped, use {@link DrupalApacheSolrService::escapePhrase()} instead
+   *
+   * @param string $value
+   * @return string
+   */
+  static public function escape($value)
+  {
+    //list taken from http://lucene.apache.org/java/docs/queryparsersyntax.html#Escaping%20Special%20Characters
+    $pattern = '/(\+|-|&&|\|\||!|\(|\)|\{|}|\[|]|\^|"|~|\*|\?|:|\\\)/';
+    $replace = '\\\$1';
+
+    return preg_replace($pattern, $replace, $value);
+  }
+
+  /**
+   * Escape a value meant to be contained in a phrase for special query characters
+   *
+   * @param string $value
+   * @return string
+   */
+  static public function escapePhrase($value)
+  {
+    $pattern = '/("|\\\)/';
+    $replace = '\\\$1';
+
+    return preg_replace($pattern, $replace, $value);
+  }
+
+  /**
+   * Convenience function for creating phrase syntax from a value
+   *
+   * @param string $value
+   * @return string
+   */
+  static public function phrase($value)
+  {
+    return '"' . self::escapePhrase($value) . '"';
+  }
+
+  /**
+   * Return a valid http URL given this server's host, port and path and a provided servlet name
+   *
+   * @param $servlet
+   *  A string path to a Solr request handler.
+   * @param $params
+   * @param $parsed_url
+   *   A url to use instead of the stored one.
+   *
+   * @return string
+   */
+  protected function _constructUrl($servlet, $params = array(), $added_query_string = NULL) {
+    // PHP's built in http_build_query() doesn't give us the format Solr wants.
+    $query_string = $this->httpBuildQuery($params);
+
+    if ($query_string) {
+      $query_string = '?' . $query_string;
+      if ($added_query_string) {
+        $query_string = $query_string . '&' . $added_query_string;
+      }
+    }
+    elseif ($added_query_string) {
+      $query_string = '?' . $added_query_string;
+    }
+
+    $url = $this->parsed_url;
+    return $url['scheme'] . $url['user'] . $url['pass'] . $url['host'] . $url['port'] . $url['path'] . $servlet . $query_string;
+  }
+
+  /**
+   * Get the Solr url
+   *
+   * @return string
+   */
+  public function getUrl() {
+    return $this->_constructUrl('');
+  }
+
+  /**
+   * Set the Solr url.
+   *
+   * @param $url
+   *
+   * @return $this
+   */
+  public function setUrl($url) {
+    $parsed_url = parse_url($url);
+
+    if (!isset($parsed_url['scheme'])) {
+      $parsed_url['scheme'] = 'http';
+    }
+    $parsed_url['scheme'] .= '://';
+
+    if (!isset($parsed_url['user'])) {
+      $parsed_url['user'] = '';
+    }
+    else {
+      $parsed_url['host'] = '@' . $parsed_url['host'];
+    }
+    $parsed_url['pass'] = isset($parsed_url['pass']) ? ':' . $parsed_url['pass'] : '';
+    $parsed_url['port'] = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+
+    if (isset($parsed_url['path'])) {
+      // Make sure the path has a single leading/trailing slash.
+      $parsed_url['path'] = '/' . ltrim($parsed_url['path'], '/');
+      $parsed_url['path'] = rtrim($parsed_url['path'], '/') . '/';
+    }
+    else {
+      $parsed_url['path'] = '/';
+    }
+    // For now we ignore query and fragment.
+    $this->parsed_url = $parsed_url;
+    // Force the update url to be rebuilt.
+    unset($this->update_url);
+    return $this;
+  }
+
+  /**
+   * Raw update Method. Takes a raw post body and sends it to the update service. Post body
+   * should be a complete and well formed xml document.
+   *
+   * @param string $rawPost
+   * @param float $timeout Maximum expected duration (in seconds)
+   *
+   * @return response object
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function update($rawPost, $timeout = FALSE) {
+    // @todo: throw exception if updates are disabled.
+    if (empty($this->update_url)) {
+      // Store the URL in an instance variable since many updates may be sent
+      // via a single instance of this class.
+      $this->update_url = $this->_constructUrl(self::UPDATE_SERVLET, array('wt' => 'json'));
+    }
+    $options['data'] = $rawPost;
+    if ($timeout) {
+      $options['timeout'] = $timeout;
+    }
+    return $this->_sendRawPost($this->update_url, $options);
+  }
+
+  /**
+   * Add an array of Solr Documents to the index all at once
+   *
+   * @param array $documents Should be an array of ApacheSolrDocument instances
+   * @param boolean $allowDups
+   * @param boolean $overwritePending
+   * @param boolean $overwriteCommitted
+   *
+   * @return response objecte
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function addDocuments($documents, $overwrite = NULL, $commitWithin = NULL) {
+    $attr = '';
+
+    if (isset($overwrite)) {
+      $attr .= ' overwrite="' . empty($overwrite) ? 'false"' : 'true"';
+    }
+    if (isset($commitWithin)) {
+      $attr .= ' commitWithin="' . intval($commitWithin) . '"';
+    }
+
+    $rawPost = "<add{$attr}>";
+    foreach ($documents as $document) {
+      if (is_object($document) && ($document instanceof ApacheSolrDocument)) {
+        $rawPost .= ApacheSolrDocument::documentToXml($document);
+      }
+    }
+    $rawPost .= '</add>';
+
+    return $this->update($rawPost);
+  }
+
+  /**
+   * Send a commit command.  Will be synchronous unless both wait parameters are set to false.
+   *
+   * @param boolean $optimize Defaults to true
+   * @param boolean $waitFlush Defaults to true
+   * @param boolean $waitSearcher Defaults to true
+   * @param float $timeout Maximum expected duration (in seconds) of the commit operation on the server (otherwise, will throw a communication exception). Defaults to 1 hour
+   *
+   * @return response object
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function commit($optimize = true, $waitFlush = true, $waitSearcher = true, $timeout = 3600) {
+    $optimizeValue = $optimize ? 'true' : 'false';
+    $flushValue = $waitFlush ? 'true' : 'false';
+    $searcherValue = $waitSearcher ? 'true' : 'false';
+
+    $rawPost = '<commit optimize="' . $optimizeValue . '" waitFlush="' . $flushValue . '" waitSearcher="' . $searcherValue . '" />';
+
+    $response = $this->update($rawPost, $timeout);
+    $this->_clearCache();
+    return $response;
+  }
+
+  /**
+   * Create a delete document based on document ID
+   *
+   * @param string $id Expected to be utf-8 encoded
+   * @param float $timeout Maximum expected duration of the delete operation on the server (otherwise, will throw a communication exception)
+   *
+   * @return response object
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function deleteById($id, $timeout = 3600) {
+    return $this->deleteByMultipleIds(array($id), $timeout);
+  }
+
+  /**
+   * Create and post a delete document based on multiple document IDs.
+   *
+   * @param array $ids Expected to be utf-8 encoded strings
+   * @param float $timeout Maximum expected duration of the delete operation on the server (otherwise, will throw a communication exception)
+   *
+   * @return response object
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function deleteByMultipleIds($ids, $timeout = 3600) {
+    $rawPost = '<delete>';
+
+    foreach ($ids as $id) {
+      $rawPost .= '<id>' . htmlspecialchars($id, ENT_NOQUOTES, 'UTF-8') . '</id>';
+    }
+    $rawPost .= '</delete>';
+
+    return $this->update($rawPost, $timeout);
+  }
+
+  /**
+   * Create a delete document based on a query and submit it
+   *
+   * @param string $rawQuery Expected to be utf-8 encoded
+   * @param float $timeout Maximum expected duration of the delete operation on the server (otherwise, will throw a communication exception)
+   * @return stdClass response object
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function deleteByQuery($rawQuery, $timeout = 3600) {
+    $rawPost = '<delete><query>' . htmlspecialchars($rawQuery, ENT_NOQUOTES, 'UTF-8') . '</query></delete>';
+
+    return $this->update($rawPost, $timeout);
+  }
+
+  /**
+   * Send an optimize command.  Will be synchronous unless both wait parameters are set
+   * to false.
+   *
+   * @param boolean $waitFlush
+   * @param boolean $waitSearcher
+   * @param float $timeout Maximum expected duration of the commit operation on the server (otherwise, will throw a communication exception)
+   *
+   * @return response object
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function optimize($waitFlush = true, $waitSearcher = true, $timeout = 3600) {
+    $flushValue = $waitFlush ? 'true' : 'false';
+    $searcherValue = $waitSearcher ? 'true' : 'false';
+
+    $rawPost = '<optimize waitFlush="' . $flushValue . '" waitSearcher="' . $searcherValue . '" />';
+
+    return $this->update($rawPost, $timeout);
+  }
+
+  /**
+   * Like PHP's built in http_build_query(), but uses rawurlencode() and no [] for repeated params.
+   */
+  public function httpBuildQuery(array $query, $parent = '') {
+    $params = array();
+
+    foreach ($query as $key => $value) {
+      $key = ($parent ? $parent : rawurlencode($key));
+
+      // Recurse into children.
+      if (is_array($value)) {
+        $params[] = $this->httpBuildQuery($value, $key);
+      }
+      // If a query parameter value is NULL, only append its key.
+      elseif (!isset($value)) {
+        $params[] = $key;
+      }
+      else {
+        $params[] = $key . '=' . rawurlencode($value);
+      }
+    }
+
+    return implode('&', $params);
+  }
+
+  /**
+   * Simple Search interface
+   *
+   * @param string $query The raw query string
+   * @param array $params key / value pairs for other query parameters (see Solr documentation), use arrays for parameter keys used more than once (e.g. facet.field)
+   *
+   * @return response object
+   *
+   * @throws Exception If an error occurs during the service call
+   */
+  public function search($query = '', $params = array(), $method = 'GET') {
+    if (!is_array($params)) {
+      $params = array();
+    }
+    // Always use JSON. See http://code.google.com/p/solr-php-client/issues/detail?id=6#c1 for reasoning
+    $params['wt'] = 'json';
+    // Additional default params.
+    $params += array(
+      'json.nl' => self::NAMED_LIST_FORMAT,
+    );
+    if ($query) {
+      $params['q'] = $query;
+    }
+    // PHP's built in http_build_query() doesn't give us the format Solr wants.
+    $queryString = $this->httpBuildQuery($params);
+    // Check string length of the query string, change method to POST
+    // if longer than 4000 characters (typical server handles 4096 max).
+    // @todo - make this a per-server setting.
+    if (strlen($queryString) > variable_get('apachesolr_search_post_threshold', 4000)) {
+      $method = 'POST';
+    }
+
+    if ($method == 'GET') {
+      $searchUrl = $this->_constructUrl(self::SEARCH_SERVLET, array(), $queryString);
+      return $this->_sendRawGet($searchUrl);
+    }
+    else if ($method == 'POST') {
+      $searchUrl = $this->_constructUrl(self::SEARCH_SERVLET);
+      $options['data'] = $queryString;
+      $options['headers']['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+      return $this->_sendRawPost($searchUrl, $options);
+    }
+    else {
+      throw new Exception("Unsupported method '$method' for search(), use GET or POST");
+    }
   }
 }

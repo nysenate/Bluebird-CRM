@@ -1,384 +1,418 @@
 <?php
-// $Id: rules_admin.inc,v 1.1.2.14 2010/11/25 11:14:53 fago Exp $
-
 
 /**
- * @file Rules Admin UI - Utility functions
+ * @file Rules Admin UI
+ *   Implements rule management and configuration screens.
  */
-require_once drupal_get_path('module', 'rules_admin') .'/rules_admin.rule_proxy.inc';
 
 /**
- * Gets the variable, which is assigned (mapped) to the given argument.
+ * Reaction rules overview.
  */
-function rules_admin_element_map_variable_name($name, $element) {
-  if (!isset($element['#settings']['#argument map'])) {
-    //per default try the the same name
-    return $name;
-  }
-  $map = $element['#settings']['#argument map'];
-  return isset($map[$name]) ? $map[$name] : $name;
-}
+function rules_admin_reaction_overview($form, &$form_state, $base_path) {
+  RulesPluginUI::formDefaults($form, $form_state);
 
-/**
- * Shows the element help
- */
-function rules_admin_element_help(&$form, $element) {
-  $info = rules_retrieve_element_info($element);
-  if (isset($info['help']) || isset($element['help'])) {
-    $help = isset($element['help']) ? $element['help'] : $info['help'];
-  }
-  else if (isset($element['#type']) && in_array($element['#type'], array('action', 'condition'))) {
-    rules_include('rules_forms');
-    $help = rules_element_invoke($element, 'help', array());
-  }
-  if (isset($help) && $help) {
-    $form['help'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Description'),
-      '#description' => $help,
-    );
-  }
-}
-
-/**
- * Gets all compatible sets, which means that all arguments are available in the other set too
- */
-function rules_admin_get_compatible_sets($rule, $sets) {
-  if (isset($rule['#set']) && $rule['#set']) {
-    $set = rules_get_rule_sets($rule['#set']);
-    foreach ($sets as $key => $this_set) {
-      if (array_diff(array_keys($set['arguments']), array_keys($this_set['arguments']))) {
-        unset($sets[$key]);
-      }
-    }
-  }
-  return $sets;
-}
-
-/**
- * Gets an array of element labels grouped by modules
- *
- * @param $elements
- *   An array of info elements, e.g. as returned from rules_get_events().
- * @param $key
- *   The key for which the value is used for grouping the elements.
- */
-function rules_admin_get_grouped_labels($elements, $key = 'module') {
-  $grouped = array();
-  $ungrouped = array();
-
-  foreach (array_filter($elements, 'rules_admin_element_filter') as $name => $element) {
-    if (isset($element[$key])) {
-      $grouped[$element[$key]][$name] = rules_get_element_label($element);
-    }
-    else {
-      $ungrouped[$name] = rules_get_element_label($element);
-    }
-  }
-  foreach ($grouped as $name => $group) {
-    asort($grouped[$name]);
-  }
-  ksort($grouped);
-  asort($ungrouped);
-  return $ungrouped + $grouped;
-}
-
-/**
- * This is used for filtering the rules, sets, action and conditions that should be shown.
- * Rules and sets are filtered when they are fixed and the variable 'rules_show_fixed'
- * is  not set to on. Actions and conditions are filtered out if they are marked as
- * being hidden.
- *
- * @return TRUE, when the element should be kept. Else FALSE.
- */
-function rules_admin_element_filter($element) {
-  if (!variable_get('rules_show_fixed', FALSE)) {
-    if (isset($element['#status']) && $element['#status'] == 'fixed') {
-      return FALSE;
-    }
-    if (isset($element['status']) && $element['status'] == 'fixed') {
-      return FALSE;
-    }
-  }
-  if (isset($element['hidden']) && $element['hidden']) {
-    return FALSE;
-  }
-  return TRUE;
-}
-
-/**
- * Determines if the given data type is valid for the given argument.
- *
- * @param $data_type
- *   The data type to check.
- * @param $arg_type
- *   The arguments needed data type.
- *
- * @return
- *   True or false.
- */
-function rules_admin_is_valid_data_type($data_type, $arg_type) {
-  if (is_array($arg_type)) {
-    foreach ($arg_type as $type) {
-      // We have multiple options to check for.
-      if (rules_admin_is_valid_data_type($data_type, $type)) {
-        return TRUE;
-      }
-    }
-    return FALSE;
-  }
-  if ($arg_type == '*') {
-    return TRUE;
-  }
-  return $arg_type == $data_type;
-}
-
-/**
- * Filters the info about elements (actions, conditions), so that only elements
- * compatible with the given variables are kept, which means suiting variables
- * for all arguments are available, so that the action/condition can be
- * configured.
- * Additionally, arguments having no suiting variables are recorded
- * in the 'unsatisfied arguments' slot of the element in $infos.
- */
-function rules_admin_filter_info($variables, &$infos) {
-  $filtered = array();
-  foreach ($infos as $key => $info) {
-    if (isset($info['arguments']) && is_array($info['arguments'])) {
-      foreach ($info['arguments'] as $name => $argument_info) {
-        if (!rules_admin_argument_satisifable($argument_info, $variables)) {
-          // Get the unsatisfied arguments.
-          $infos[$key] += array('unsatisfied arguments' => array());
-          $infos[$key]['unsatisfied arguments'][$name] = $argument_info['label'];
-        }
-      }
-      if (empty($infos[$key]['unsatisfied arguments'])) {
-        $filtered[$key] = $info;
-      }
-    }
-    else {
-      $filtered[$key] = $info;
-    }
-  }
-  return $filtered;
-}
-
-/**
- * Determines whether the argument can be configured properly, so whether
- * there are matching variables available or needed.
- */
-function rules_admin_argument_satisifable($info, $variables) {
-  if ($info['type'] == '*') {
-    return TRUE;
-  }
-  if (($type_info = rules_get_data_types($info['type']))) {
-    // For backward compatibility use_input_form is interpreted as !identifiable if it's unset.
-    if (!empty($type_info['use_input_form']) || (!isset($type_info['use_input_form']) && empty($type_info['identifiable']))) {
-      // Argument value will be set on configuration time.
-      return TRUE;
-    }
-  }
-  if (count(rules_admin_map_get_possible_arguments($info, $variables))) {
-    return TRUE;
-  }
-  return FALSE;
-}
-
-/**
- * Gets the possible variables (= of the same entity) for an argument
- */
-function rules_admin_map_get_possible_arguments($arg_info, $variables) {
-  $matches = array();
-  foreach ($variables as $name => $info) {
-    if (rules_admin_is_valid_data_type($info['type'], $arg_info)) {
-      $matches[$name] = $info['label'];
-    }
-  }
-  return $matches;
-}
-
-/**
- * Returns an array of all existing categories
- *
- * @param $item_type
- *   Either 'rules' or 'rule_sets'
- *
- * @return
- *   An array of categories to use.
- */
-function rules_admin_get_categories($item_type) {
-  $categories = array();
-  foreach (array_filter(rules_get_configured_items($item_type), 'rules_admin_element_filter') as $item) {
-    if ($item_type == 'rules' && isset($item['#categories']) && is_array($item['#categories'])) {
-      $categories = $categories + drupal_map_assoc($item['#categories']);
-    }
-    if ($item_type == 'rule_sets' && isset($item['categories']) && is_array($item['categories'])) {
-      $categories = $categories + drupal_map_assoc($item['categories']);
-    }
-  }
-  return array_filter($categories);
-}
-
-/**
- * Gets the label for the info of the given element by apply label callbacks.
- * Note that this is also used for argument infos.
- *
- * @param $cfirst
- *   If TRUE, capitalize the first letter, if FALSE lower case the first letter.
- * @param $element
- *   The element having or containing this label. Pass by referenec to allow
- *   callbacks to alter some info, used by rules_core_node_label_callback().
- *
- * @return An array of changed properties of the given info
- */
-function _rules_admin_get_label(&$form_state, $info, &$element, $value, $cfirst = NULL) {
-  $info_changes = array();
-
-  if (drupal_strtolower($info['label']) != drupal_strtolower($value)) {
-    //label has been customized
-    $info_changes['label'] = $value;
-    $info_changes['label callback'] = FALSE;
-  }
-  else if (isset($info['label callback']) && $info['label callback'] && function_exists($info['label callback'])) {
-    $argument_labels = rules_admin_get_argument_labels($form_state['proxy'], $element);
-    $info_changes['label'] = $info['label callback']($element['#settings'], $argument_labels, $element);
-    // Labels are treated as user input, so we decode any entites.
-    $info_changes['label'] = decode_entities($info_changes['label']);
-    if (isset($cfirst)) {
-      $function = $cfirst ? 'drupal_strtoupper' : 'drupal_strtolower';
-      $info_changes['label'] = $function(drupal_substr($info_changes['label'], 0, 1)) . drupal_substr($info_changes['label'], 1);
-    }
-  }
-  return $info_changes;
-}
-
-/**
- * Gets the labels of the variables, which are configured to be passed as arguments
- * to the given element.
- */
-function rules_admin_get_argument_labels($proxy, $element, $prefix = '@') {
-  $labels = array();
-  $names  = rules_get_mapped_argument_names($element);
-  $vars   = $proxy->get_available_variables($element['#id']);
-  $labels = array();
-  foreach ($names as $argument_name => $variable_name) {
-    if (isset($vars[$variable_name]['label'])) {
-      $labels[$prefix . $argument_name] = $vars[$variable_name]['label'];
-    }
-  }
-  return $labels;
-}
-
-/**
- * Returns a table of rules filtered by the given parameters
- *
- * Supported parameters: fixed, category, set, active.
- * Category and set may be set to NULL to hide their columns.
- */
-function rules_admin_overview_table($params) {
-  $rules = rules_get_configured_items('rules');
-  _rules_element_defaults($rules);
-  rules_sort_children($rules);
-
-  //set parameter defaults
-  $params += array('category' => NULL, 'set' => NULL, 'active' => TRUE, 'fixed' => FALSE);
-  extract($params);
-
-  $is_set = $set && strpos($set, 'event_') !== 0;
-
-  $header = array(t('Label'), $is_set ? t('Set') : t('Event'), t('Category'), t('Status'), t('Operations'));
-  $rows = array();
-
-  foreach (element_children($rules) as $name) {
-    $rule = $rules[$name];
-    _rules_element_defaults($rule);
-
-    if ((!$category || in_array($category, $rule['#categories'])) && (!$set && strpos($rule['#set'], 'event_') === 0 || $rule['#set'] == $set) && $rule['#active'] == $active && ($rule['#status'] == 'fixed') == $fixed) {
-      $path = RULES_ADMIN_RULE_PATH .'/'. $name;
-      $ops = array();
-      if ($rule['#status'] == 'custom') {
-        $ops[] = l(t('delete'), $path .'/delete', array('query' => drupal_get_destination()));
-      }
-      else if ($rule['#status'] == 'altered') {
-        $ops[] = l(t('revert'), $path .'/revert', array('query' => drupal_get_destination()));
-      }
-      $ops[] = l(t('clone'), $path .'/clone', array(), drupal_get_destination());
-      $categories = array_map('check_plain', $rule['#categories']);
-
-      $set_info = rules_get_rule_sets($rule['#set']);
-      // If the set info is missing, the module providing the event is gone and the
-      // rule can't be edited.
-      $rows[] = array(
-        $set_info ? l($rule['#label'], $path .'/edit') : check_plain($rule['#label']),
-        $set_info ? check_plain(rules_get_element_label($set_info)) : array('class' => 'error', 'data' => check_plain($rule['#set'])),
-        implode(', ', $categories),
-        theme('rules_admin_configuration_status', $rule['#status']),
-        implode(' ', $ops),
-      );
-      if (!$set_info) {
-        rules_handle_error_msg("%set can't be found. Probably the providing module has been deactivated.", array('%set' => $rule['#set']));
-      }
-    }
-  }
-
-  if (count($rows)) {
-    return array('#value' => theme('table', $header, $rows, array('class' => 'rules-rule-configurations')));
-  }
-  return array('#value' => '<p>'. t('None') .'</p>');
-}
-
-/**
- * Returns the given status rendered as html.
- */
-function theme_rules_admin_configuration_status($status) {
-  if ($status == 'altered') {
-    $help = t('This rule has been provided by a module, but has been modified.');
-    return '<span title="'. $help .'">'. t('Modified') .'</span>';
-  }
-  else if ($status == 'fixed') {
-    $help = t("This rule has been provided by a module and can't be customized.");
-    return '<span title="'. $help .'">'. t('Fixed') .'</span>';
-  }
-  else if ($status == 'custom') {
-    $help = t('A custom defined rule.');
-    return '<span title="'. $help .'">'. t('Custom') .'</span>';
-  }
-  $help = t('This rule has been provided by a module.');
-  return '<span title="'. $help .'">'. t('Default') .'</span>';
-}
-
-/**
- * Fixes the breadcrumb on the rule edit/delete/revert
- */
-function rules_admin_fix_breadcrumb($rule, $name) {
-  $crumbs = array();
-  if (strpos($rule['#set'], 'event_') !== 0) {
-    $crumbs[] = l(t('Rule sets'), RULES_ADMIN_SET_PATH);
-    $set_info = rules_get_rule_sets($rule['#set']);
-    $crumbs[] = l($set_info['label'], RULES_ADMIN_SET_PATH .'/'. $rule['#set']);
+  $conditions = array('plugin' => 'reaction rule', 'active' => TRUE);
+  $collapsed = TRUE;
+  if (empty($_GET['tag'])) {
+    $tag = 0;
   }
   else {
-    $crumbs[] = l(t('Triggered rules'), RULES_ADMIN_TRIGGER_PATH);
+    $tag = $_GET['tag'];
+    $conditions['tags'] = array($tag);
+    $collapsed = FALSE;
   }
-  if (arg(5)) {
-    // Also add a crumb to the rule itself.
-    array_unshift($crumbs, l(t('Rules'), RULES_ADMIN_PATH));
-    $crumbs[] = l($rule['#label'], RULES_ADMIN_RULE_PATH .'/'. $name);
+  if (empty($_GET['event'])) {
+    $event = 0;
   }
-  rules_admin_add_crumbs($crumbs);
+  else {
+    $event = $_GET['event'];
+    $conditions['event'] = $event;
+    $collapsed = FALSE;
+  }
+  $form['help'] = array(
+    '#type' => 'markup',
+    '#markup' => t('Reaction rules, listed below, react on selected events on the site. Each reaction rule may fire any number of <em>actions</em>, and may have any number of <em>conditions</em> that must be met for the actions to be executed. You can also set up <a href="@url1">components</a> – stand-alone sets of Rules configuration that can be used in Rules and other parts of your site. See <a href="@url2">the online documentation</a> for an introduction on how to use Rules.',
+      array('@url1' => url('admin/config/workflow/rules/components'),
+            '@url2' => rules_external_help('rules'))),
+  );
+
+  $form['filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Filter'),
+    '#collapsible' => TRUE,
+  );
+  $form['filter']['#id'] = 'rules-filter-form';
+  $form['filter']['#attached']['css'][] = drupal_get_path('module', 'rules') . '/ui/rules.ui.css';
+  $form['filter']['event'] = array(
+    '#type' => 'select',
+    '#title' => t('Filter by event'),
+    '#options' => array(0 => t('<All>')) + RulesPluginUI::getOptions('event'),
+    '#default_value' => $event,
+  );
+  $form['filter']['tag'] = array(
+    '#type' => 'select',
+    '#title' => t('Filter by tag'),
+    '#options' => array(0 => t('<All>')) + RulesPluginUI::getTags(),
+    '#default_value' => $tag,
+  );
+  $form['filter']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+    '#name' => '', // prevent from showing up in $_GET.
+  );
+
+  $options = array('show plugin' => FALSE, 'base path' => $base_path);
+  $form['active'] = rules_ui()->overviewTable($conditions, $options);
+  $form['active']['#caption'] = t('Active rules');
+  $form['active']['#empty'] = t('There are no active rules. <a href="!url">Add new rule</a>.', array('!url' => url('admin/config/workflow/rules/reaction/add')));
+
+  $conditions['active'] = FALSE;
+  $form['inactive'] = rules_ui()->overviewTable($conditions, $options);
+  $form['inactive']['#caption'] = t('Inactive rules');
+  $form['inactive']['#empty'] = t('There are no inactive rules.');
+
+  $form['filter']['#collapsed'] = $collapsed;
+  $form['#submit'][] = 'rules_form_submit_rebuild';
+  $form['#method'] = 'get';
+  return $form;
 }
 
 /**
- * Adds some further crumbs to the breadcrumb.
- * Due to the bug http://drupal.org/node/430304, some pages might have no breadcrumb.
+ * Components overview.
  */
-function rules_admin_add_crumbs($crumbs) {
-  if ($breadcrumb = drupal_get_breadcrumb()) {
-    $breadcrumb = array_merge($breadcrumb, $crumbs);
-    drupal_set_breadcrumb($breadcrumb);
+function rules_admin_components_overview($form, &$form_state, $base_path) {
+  RulesPluginUI::formDefaults($form, $form_state);
+
+  $collapsed = TRUE;
+  if (empty($_GET['tag'])) {
+    $tag = 0;
+  }
+  else {
+    $tag = $_GET['tag'];
+    $conditions['tags'] = array($tag);
+    $collapsed = FALSE;
+  }
+  if (empty($_GET['plugin'])) {
+    // Get the plugin name usable as component.
+    $conditions['plugin'] = array_keys(rules_filter_array(rules_fetch_data('plugin_info'), 'component', TRUE));
+    $plugin = 0;
+  }
+  else {
+    $plugin = $_GET['plugin'];
+    $conditions['plugin'] = $plugin;
+    $collapsed = FALSE;
+  }
+  $form['help'] = array(
+    '#type' => 'markup',
+    '#markup' => t('Components are stand-alone sets of Rules configuration that can be used by Rules and other modules on your site. Components are for example useful if you want to use the same conditions, actions or rules in multiple places, or call them from your custom module. You may also export each component separately. See <a href="@url">the online documentation</a> for more information about how to use components.',
+      array('@url' => rules_external_help('components'))),
+  );
+  $form['filter'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Filter'),
+    '#collapsible' => TRUE,
+  );
+  $form['filter']['#id'] = 'rules-filter-form';
+  $form['filter']['#attached']['css'][] = drupal_get_path('module', 'rules') . '/ui/rules.ui.css';
+  $form['filter']['plugin'] = array(
+    '#type' => 'select',
+    '#title' => t('Filter by plugin'),
+    '#options' => array(0 => t('<All>')) + rules_admin_component_options(),
+    '#default_value' => $plugin,
+  );
+  $form['filter']['tag'] = array(
+    '#type' => 'select',
+    '#title' => t('Filter by tag'),
+    '#options' => array(0 => '<All>') + RulesPluginUI::getTags(),
+    '#default_value' => $tag,
+  );
+  $form['filter']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filter'),
+    '#name' => '', // prevent from showing up in $_GET.
+  );
+
+  $form['table'] = RulesPluginUI::overviewTable($conditions, array('hide status op' => TRUE));
+  $form['table']['#empty'] = t('There are no rule components.');
+
+  $form['filter']['#collapsed'] = $collapsed;
+  $form['#submit'][] = 'rules_form_submit_rebuild';
+  $form['#method'] = 'get';
+  return $form;
+}
+
+/**
+ * Rules settings form.
+ */
+function rules_admin_settings($form, &$form_state) {
+
+  if (module_exists('path')) {
+    // Present a list of available path cleaning callbacks.
+    // @see rules_clean_path()
+    $options = array(
+      'rules_path_default_cleaning_method' => t('Rules (built in)'),
+    );
+    if (module_exists('ctools')) {
+      $options['rules_path_clean_ctools'] = t('CTools');
+    }
+    if (module_exists('pathauto')) {
+      $options['rules_path_clean_pathauto'] = t('Pathauto');
+      $pathauto_help = t("Note that Pathauto's URL path cleaning method can be configured at <a href='!url'>admin/config/search/path/settings</a>.", array('!url' => url('admin/config/search/path/settings')));
+    }
+    else {
+      $pathauto_help = t('Install the <a href="http://drupal.org/project/pathauto">Pathauto module</a> in order to get a configurable URL path cleaning method.');
+    }
+
+    $form['path']['rules_path_cleaning_callback'] = array(
+      '#type' => 'select',
+      '#title' => t('URL path cleaning method'),
+      '#description' => t('Choose the path cleaning method to be applied when generating URL path aliases.') . ' ' . $pathauto_help,
+      '#default_value' => variable_get('rules_path_cleaning_callback', 'rules_path_default_cleaning_method'),
+      '#options' => $options,
+    );
+  }
+
+  $form['rules_log_errors'] = array(
+    '#type' => 'radios',
+    '#title' => t('Logging of Rules evaluation errors'),
+    '#options' => array(
+      RulesLog::WARN => t('Log all warnings and errors'),
+      RulesLog::ERROR => t('Log errors only'),
+    ),
+    '#default_value' => variable_get('rules_log_errors', RulesLog::WARN),
+    '#description' => t('Evaluations errors are logged to the system log.'),
+  );
+
+  $form['debug'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Debugging'),
+  );
+  $form['debug']['rules_debug_log'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Log debug information to the system log'),
+    '#default_value' => variable_get('rules_debug_log', 0),
+  );
+  $form['debug']['rules_debug'] = array(
+    '#type' => 'radios',
+    '#title' => t('Show debug information'),
+    '#default_value' => variable_get('rules_debug', 0),
+    '#options' => array(
+      0 => t('Never'),
+      RulesLog::WARN => t('In case of errors'),
+      RulesLog::INFO => t('Always'),
+    ),
+    '#description' => t('Debug information is only shown when rules are evaluated and is visible for users having the permission <a href="!url">%link</a>.', array('%link' => t('Access the Rules debug log'), '!url' => url('admin/people/permissions', array('fragment' => 'module-rules')))),
+  );
+
+  $form['debug']['regions'] = array(
+    '#type' => 'container',
+    '#states' => array(
+      // Hide the regions settings when the debug log is disabled.
+      'invisible' => array(
+        'input[name="rules_debug"]' => array('value' => '0'),
+      ),
+    ),
+  );
+
+  $theme_default = variable_get('theme_default', 'bartik');
+  $admin_theme = variable_get('admin_theme', 'seven');
+
+  $form['debug']['regions']['rules_debug_region_' . $theme_default] = array(
+    '#type' => 'select',
+    '#title' => t('Default theme region'),
+    '#description' => t("The region, where the debug log should be displayed on the default theme %theme. For other themes, Rules will try to display the log on the same region, or hide it in case it doesn't exist.", array('%theme' => $theme_default)),
+    '#options' => system_region_list($theme_default, REGIONS_VISIBLE),
+    '#default_value' => variable_get('rules_debug_region_' . $theme_default, 'help'),
+  );
+
+  $form['debug']['regions']['rules_debug_region_' . $admin_theme] = array(
+    '#type' => 'select',
+    '#title' => t('Admin theme region'),
+    '#description' => t('The region, where the debug log should be displayed on the admin theme %theme.', array('%theme' => $admin_theme)),
+    '#options' => system_region_list($admin_theme, REGIONS_VISIBLE),
+    '#default_value' => variable_get('rules_debug_region_' . $admin_theme, 'help'),
+  );
+  if (db_table_exists('rules_rules')) {
+    drupal_set_message(t('There are left over rule configurations from a previous Rules 1.x installation. Proceed to the <a href="!url">upgrade page</a> to convert them and consult the README.txt for more details.', array('!url' => url('admin/config/workflow/rules/upgrade'))), 'warning');
+  }
+
+  return system_settings_form($form);
+}
+
+/**
+ * Advanced settings form.
+ */
+function rules_admin_settings_advanced($form, &$form_state) {
+
+  $form['integrity'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Integrity'),
+    '#description' => t('Rules checks the integrity of your configurations to discover and exclude broken configurations from evaluation.'),
+  );
+  $form['integrity']['start_integrity_check'] = array(
+    '#type' => 'submit',
+    '#value' => t('Recheck integrity'),
+    '#submit' => array('rules_admin_settings_integrity_check_submit'),
+  );
+  $form['cache'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Cache'),
+    '#description' => t('Rules caches information about available actions, conditions and data types. Additionally all components and reaction rules are cached for efficient evaluation.'),
+  );
+  $form['cache']['rebuild_rules_cache'] = array(
+    '#type' => 'submit',
+    '#value' => t("Rebuild Rules' cache"),
+    '#weight' => 2,
+    '#submit' => array('rules_admin_settings_cache_rebuild_submit'),
+  );
+  return $form;
+}
+
+/**
+ * Form submit callback to check the integrity of all configurations.
+ */
+function rules_admin_settings_integrity_check_submit($form, &$form_state) {
+  $start = microtime(TRUE);
+  $count = 0;
+  $rules_configs = rules_config_load_multiple(FALSE);
+  foreach ($rules_configs as $rules_config) {
+    rules_config_update_dirty_flag($rules_config, TRUE, TRUE);
+    if ($rules_config->dirty) {
+      $count++;
+      $variables = array('%label' => $rules_config->label(), '%name' => $rules_config->name, '@plugin' => $rules_config->plugin(), '!uri'=> url(RulesPluginUI::path($rules_config->name)));
+      drupal_set_message(t('The @plugin <a href="!uri">%label (%name)</a> fails the integrity check and cannot be executed.', $variables), 'error');
+    }
+
+  }
+  drupal_set_message(t('Integrity of %count configurations checked in %duration seconds. %count_failed broken configurations found.', array(
+    '%count' => count($rules_configs),
+    '%count_failed' => $count,
+    '%duration' => round(microtime(TRUE) - $start, 2),
+  )));
+}
+
+/**
+ * Form submit callback: Rebuild the Rules' cache.
+ */
+function rules_admin_settings_cache_rebuild_submit($form, &$form_state) {
+  $start = microtime(TRUE);
+  rules_clear_cache();
+  // Manually trigger cache rebuilding of all caches.
+  rules_get_cache();
+  _rules_rebuild_component_cache();
+  RulesEventSet::rebuildEventCache();
+  drupal_set_message(t('Rules cache rebuilt in %duration seconds.', array(
+    '%duration' => round(microtime(TRUE) - $start, 2),
+  )));
+}
+
+/**
+ * Add reaction rules form.
+ */
+function rules_admin_add_reaction_rule($form, &$form_state, $base_path) {
+  RulesPluginUI::formDefaults($form, $form_state);
+
+  $rules_config = rules_reaction_rule();
+  $rules_config->form($form, $form_state, array('show settings' => TRUE, 'button' => TRUE));
+
+  $form['settings']['#collapsible'] = FALSE;
+  $form['settings']['#type'] = 'container';
+  $form['settings']['label']['#default_value'] = '';
+
+  // Hide the rule elements stuff for now.
+  foreach (array('elements', 'conditions', 'add', 'events') as $key) {
+    $form[$key]['#access'] = FALSE;
+  }
+  foreach (array('active', 'weight') as $key) {
+    $form['settings'][$key]['#access'] = FALSE;
+  }
+  // Incorporate the form to add the first event.
+  $form['settings'] += rules_ui_add_event(array(), $form_state, $rules_config, $base_path);
+  $form['settings']['event']['#tree'] = FALSE;
+  unset($form['settings']['help']);
+
+  unset($form['settings']['submit']);
+  $form['submit']['#value'] = t('Save');
+
+  $form_state += array('rules_config' => $rules_config);
+  $form['#validate'][] = 'rules_ui_edit_element_validate';
+  $form['#submit'][] = 'rules_ui_add_event_apply';
+  $form['#submit'][] = 'rules_ui_edit_element_submit';
+  return $form;
+}
+
+/**
+ * Add component form.
+ */
+function rules_admin_add_component($form, &$form_state, $base_path) {
+  RulesPluginUI::$basePath = $base_path;
+  RulesPluginUI::formDefaults($form, $form_state);
+
+  $form['plugin_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Component plugin'),
+    '#options' => rules_admin_component_options(),
+    '#description' => t('Choose which kind of component to create. Each component type is described in <a href="@url">the online documentation</a>.',
+      array('@url' => rules_external_help('component-types'))),
+    '#weight' => -2,
+    '#default_value' => isset($form_state['values']['plugin_name']) ? $form_state['values']['plugin_name'] : '',
+  );
+
+  if (!isset($form_state['rules_config'])) {
+    $form['continue'] = array(
+      '#type' => 'submit',
+      '#name' => 'continue',
+      '#submit' => array('rules_admin_add_component_create_submit'),
+      '#value' => t('Continue'),
+    );
+  }
+  else {
+    $form['plugin_name']['#disabled'] = TRUE;
+    $form_state['rules_config']->form($form, $form_state, array('show settings' => TRUE, 'button' => TRUE, 'init' => TRUE));
+    $form['settings']['#collapsible'] = FALSE;
+    $form['settings']['#type'] = 'container';
+    $form['settings']['label']['#default_value'] = '';
+    $form['settings']['#weight'] = -1;
+
+    // Hide the rule elements stuff for now.
+    foreach (array('elements', 'negate') as $key) {
+      $form[$key]['#access'] = FALSE;
+    }
+    foreach (array('active', 'weight') as $key) {
+      $form['settings'][$key]['#access'] = FALSE;
+    }
+  }
+  return $form;
+}
+
+function rules_admin_component_options() {
+  $cache = rules_get_cache();
+  return rules_extract_property(rules_filter_array($cache['plugin_info'], 'component', TRUE), 'label');
+}
+
+/**
+ * Submit callback that creates the new component object initially.
+ */
+function rules_admin_add_component_create_submit($form, &$form_state) {
+  $form_state['rules_config'] = rules_plugin_factory($form_state['values']['plugin_name']);
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Validation callback for adding a component.
+ */
+function rules_admin_add_component_validate($form, &$form_state) {
+  if (isset($form_state['rules_config'])) {
+    $form_state['rules_config']->form_validate($form, $form_state);
   }
 }
 
-function rules_admin_is_event_rule($rule) {
-  return !empty($rule['#set']) && strpos($rule['#set'], 'event_') === 0;
+/**
+ * Final submit callback for adding a component.
+ */
+function rules_admin_add_component_submit($form, &$form_state) {
+  $rules_config = $form_state['rules_config'];
+  $rules_config->form_submit($form, $form_state);
+  drupal_set_message(t('Your changes have been saved.'));
+  $form_state['redirect'] = RulesPluginUI::path($rules_config->name);
 }

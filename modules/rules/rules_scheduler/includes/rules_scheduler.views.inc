@@ -1,5 +1,4 @@
 <?php
-// $Id: rules_scheduler.views.inc,v 1.1.2.1 2009/07/13 13:34:27 fago Exp $
 
 /**
  * @file
@@ -7,25 +6,8 @@
  */
 
 /**
- * Implementation of hook_views_handlers().
- */
-function rules_scheduler_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'rules_scheduler') .'/includes',
-    ),
-    // A handler for datetime
-    'handlers' => array(
-      'rules_scheduler_views_handler_datetime' => array(
-        'parent' => 'views_handler_field_date',
-      ),
-    ),
-  );
-}
-
-/**
- * Implementation of hook_views_data(). Specifies the list of future scheduled
- * tasks displayed on the scheduling page.
+ * Implements hook_views_data(). Specifies the list of future scheduled
+ * tasks displayed on the schedule page.
  */
 function rules_scheduler_views_data() {
   $table = array(
@@ -34,14 +16,14 @@ function rules_scheduler_views_data() {
         'group' => 'Rules scheduler',
         'base' => array(
           'field' => 'tid',
-          'title' => t('Scheduled rule sets'),
-          'help' => t("Scheduled rules that are executed based on time and cron"),
+          'title' => t('Scheduled Rules components'),
+          'help' => t("Scheduled Rules components that are executed based on time and cron"),
           'weight' => -10,
         ),
       ),
       'tid' => array(
         'title' => t('Tid'),
-        'help' => t('The internal ID of the scheduled rule set'),
+        'help' => t('The internal ID of the scheduled component'),
         'field' => array(
           'click sortable' => TRUE,
         ),
@@ -52,14 +34,17 @@ function rules_scheduler_views_data() {
           'handler' => 'views_handler_sort',
         ),
       ),
-      'set_name' => array(
-        'title' => t('Rule set name'),
-        'help' => t('The name of the rule set'),
+      'config' => array(
+        'title' => t('Component name'),
+        'help' => t('The name of the component'),
         'field' => array(
           'click sortable' => TRUE,
         ),
         'filter' => array(
-          'handler' => 'views_handler_filter',
+          'handler' => 'rules_scheduler_views_filter',
+        ),
+        'argument' => array(
+          'handler' => 'views_handler_argument_string',
         ),
         'sort' => array(
           'handler' => 'views_handler_sort',
@@ -69,7 +54,7 @@ function rules_scheduler_views_data() {
         'title' => t('Scheduled date'),
         'help' => t('Scheduled date and time stamp'),
         'field' => array(
-          'handler' => 'rules_scheduler_views_handler_datetime',
+          'handler' => 'views_handler_field_date',
           'click sortable' => TRUE,
         ),
         'filter' => array(
