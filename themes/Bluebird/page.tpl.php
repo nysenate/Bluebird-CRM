@@ -83,11 +83,11 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
       <a title="<?php print $site_name; ?><?php if ($site_slogan != '') print ' &ndash; '. $site_slogan; ?>" href="<?php print url(); ?>"><?php print $site_name; ?><?php if ($site_slogan != '') print ' &ndash; '. $site_slogan; ?></a>
     </h1> -->
     <?php print $header; ?>
-    <?php if (isset($primary_links)) : ?>
-      <?php print theme('links', $primary_links, array('id' => 'nav', 'class' => 'links')) ?>
+    <?php if (isset($main_menu)) : ?>
+      <?php print theme('links', $main_menu, array('id' => 'nav', 'class' => 'links')) ?>
     <?php endif; ?>
-    <?php if (isset($secondary_links)) : ?>
-      <?php print theme('links', $secondary_links, array('id' => 'subnav', 'class' => 'links')) ?>
+    <?php if (isset($secondary_menu)) : ?>
+      <?php print theme('links', $secondary_menu, array('id' => 'subnav', 'class' => 'links')) ?>
     <?php endif; ?>
   </div>
 

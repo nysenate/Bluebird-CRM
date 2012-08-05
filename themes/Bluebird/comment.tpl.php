@@ -1,4 +1,4 @@
-<div class="clear-block comment<?php print ($comment->new) ? ' comment-new' : ''; print(isset($comment->status) && $comment->status == COMMENT_NOT_PUBLISHED) ? ' comment-unpublished' : ''; if (isset($author_comment)) print ' author'; print ' '. $zebra; ?>">
+<div class="clearfix comment<?php print ($comment->new) ? ' comment-new' : ''; print(isset($comment->status) && $comment->status == COMMENT_NOT_PUBLISHED) ? ' comment-unpublished' : ''; if (isset($author_comment)) print ' author'; print ' '. $zebra; ?>">
   <?php if ($picture): ?>
     <div class="picture span-3">
       <?php print $picture ?>
@@ -23,7 +23,7 @@
       <?php if ($title): ?><h3><?php print $title; ?></h3><?php endif; ?>
       <?php print $content ?>
       <?php if ($signature): ?>
-        <div class="user-signature clear-block">
+        <div class="user-signature clearfix">
           <?php print $signature ?>
         </div>
       <?php endif; ?>

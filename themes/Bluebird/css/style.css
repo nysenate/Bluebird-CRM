@@ -4,7 +4,7 @@
 	color: #74C0FC;
 	}
 
-.not-logged-in #block-user-0,
+.not-logged-in #block-user-login,
 .not-logged-in form#user-login {
 	background:transparent url(../nyss_skin/images/login.png) no-repeat top center;
 	margin-top:50px;
@@ -35,27 +35,27 @@
     width:120px;
     }
 
-.not-logged-in #block-user-0 .content {
+.not-logged-in #block-user-login .content {
 	color:#FFFFFF;
 	font-size:16px;
 	padding:45px 370px 45px 332px;
 	text-align:left;
 	}
 
-.not-logged-in #block-user-0 .item-list { display:none; }
+.not-logged-in #block-user-login .item-list { display:none; }
 
-.not-logged-in #block-user-0 .form-item {
+.not-logged-in #block-user-login .form-item {
 	margin:4px 0px;
 	height:45px;
 	}	
 
-.not-logged-in #block-user-0 label {
+.not-logged-in #block-user-login label {
     display: block;
     float: left;
     margin-top:8px;
     }
 	
-.not-logged-in #block-user-0 #edit-submit {
+.not-logged-in #block-user-login #edit-submit {
 	background-color:#457AA4;
 	border:medium none;
 	color:#FFFFFF;
@@ -65,7 +65,7 @@
 	cursor: pointer;
 	}
 
-.not-logged-in #block-user-0 h3 {
+.not-logged-in #block-user-login h3 {
 	display: none;
 	}
 
