@@ -3,7 +3,7 @@
 #
 
 # Protect files and directories from prying eyes.
-<FilesMatch "\.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)$|^(\..*|Entries.*|Repository|Root|Tag|Template)$">
+<FilesMatch "\.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl|svn-base)$|^(code-style\.pl|Entries.*|Repository|Root|Tag|Template|all-wcprops|entries|format)$">
   Order allow,deny
 </FilesMatch>
 
@@ -13,8 +13,12 @@ Options -Indexes
 # Follow symbolic links in this directory.
 Options +FollowSymLinks
 
+# NYSS Do not infer file names.  Users must access files properly.
+Options -MultiViews
+
 # Make Drupal handle any 404 errors.
-ErrorDocument 404 /index.php
+# NYSS disable
+# ErrorDocument 404 /index.php
 
 # Set the default handler.
 DirectoryIndex index.php index.html index.htm
@@ -99,6 +103,8 @@ DirectoryIndex index.php index.html index.htm
 
   # Pass all requests not referring directly to files in the filesystem to
   # index.php. Clean URLs are handled in drupal_environment_initialize().
+  # NYSS add sites
+  RewriteCond %{REQUEST_URI} !^/sites/
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_URI} !=/favicon.ico
