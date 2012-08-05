@@ -3,5 +3,5 @@ name = NYSS Backup/Restore
 description = NYSS Backup/Restore module.
 dependencies[] = civicrm
 package = CiviCRM
-version="3.3"
-core="6.x"
+core = 7.x
+version = 4.2
