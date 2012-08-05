@@ -53,6 +53,8 @@ echo "enabling modules for: $instance"
 $drush $instance en apc -y
 $drush $instance en ldap -y
 
+## run drupal upgrade
+$drush $instance civicrm-upgrade-db
 
 ### CiviCRM ###
 
