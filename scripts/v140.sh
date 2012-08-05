@@ -46,6 +46,12 @@ $drush $instance dis comment -y
 $drush $instance dis help -y
 $drush $instance dis taxonomy -y
 $drush $instance dis update -y
+$drush $instance dis admin_menu -y
+$drush $instance dis imce -y
+
+echo "enabling modules for: $instance"
+$drush $instance en apc -y
+$drush $instance en ldap -y
 
 
 ### CiviCRM ###
