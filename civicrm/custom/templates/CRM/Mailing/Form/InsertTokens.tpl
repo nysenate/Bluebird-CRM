@@ -334,11 +334,11 @@ function selectValue( val ) {
             $('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
         }
         if ( element == 'Subject' ) { //NYSS 4245 limit alterations to text box only
-	        var getStartPosition = cj('input#subject').focus().getSelection().start;
-	        var getEndPosition = cj('input#subject').focus().getSelection().end;
-	        $('.positionplace').remove();
-	        $('body').append('<div id="gSP" class="positionplace" style="display:none">' + getStartPosition + '</div>');
-	        $('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
+	    var getStartPosition = cj('.crm-contactEmail-form-block-subject input').focus().getSelection().start;
+	    var getEndPosition = cj('.crm-contactEmail-form-block-subject input').focus().getSelection().end;
+	    $('.positionplace').remove();
+	    $('body').append('<div id="gSP" class="positionplace" style="display:none">' + getStartPosition + '</div>');
+	    $('body').append('<div id="gEP" class="positionplace" style="display:none">' + getEndPosition + '</div>');
         }
         initFilter(id);
         cj("#token"+id).css({"width":"290px", "size":"8"});
