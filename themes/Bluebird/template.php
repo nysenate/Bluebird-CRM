@@ -14,7 +14,7 @@
  * @param $vars
  *   A sequential array of variables passed to the theme function.
  */
-function rayCivicrm_preprocess_page(&$vars) {
+function Bluebird_preprocess_page(&$vars) {
   global $user;
   $vars['path'] = base_path() . path_to_theme() .'/';
   $vars['user'] = $user;
@@ -78,13 +78,13 @@ function rayCivicrm_preprocess_page(&$vars) {
   // SEO optimization, add in the node's teaser, or if on the homepage, the mission statement
   // as a description of the page that appears in search engines
   if ($vars['is_front'] && $vars['mission'] != '') {
-    $vars['meta'] .= '<meta name="description" content="'. rayCivicrm_trim_text($vars['mission']) .'" />'."\n";
+    $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['mission']) .'" />'."\n";
   }
   else if (isset($vars['node']->teaser) && $vars['node']->teaser != '') {
-    $vars['meta'] .= '<meta name="description" content="'. rayCivicrm_trim_text($vars['node']->teaser) .'" />'."\n";
+    $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->teaser) .'" />'."\n";
   }
   else if (isset($vars['node']->body) && $vars['node']->body != '') {
-    $vars['meta'] .= '<meta name="description" content="'. rayCivicrm_trim_text($vars['node']->body) .'" />'."\n";
+    $vars['meta'] .= '<meta name="description" content="'. Bluebird_trim_text($vars['node']->body) .'" />'."\n";
   }
   // SEO optimization, if the node has tags, use these as keywords for the page
   if (isset($vars['node']->taxonomy)) {
@@ -121,7 +121,7 @@ function rayCivicrm_preprocess_page(&$vars) {
  * @param $vars
  *   A sequential array of variables passed to the theme function.
  */
-function rayCivicrm_preprocess_node(&$vars) {
+function Bluebird_preprocess_node(&$vars) {
   $node = $vars['node']; // for easy reference
   // for easy variable adding for different node types
   switch ($node->type) {
@@ -136,7 +136,7 @@ function rayCivicrm_preprocess_node(&$vars) {
  * @param $vars
  *   A sequential array of variables passed to the theme function.
  */
-function rayCivicrm_preprocess_comment(&$vars) {
+function Bluebird_preprocess_comment(&$vars) {
   static $comment_count = 1; // keep track the # of comments rendered
   
   // Calculate the comment number for each comment with accounting for pages.
@@ -184,7 +184,7 @@ function rayCivicrm_preprocess_comment(&$vars) {
  * @param $hook
  *   The name of the template being rendered ("block" in this case.)
  */
-function rayCivicrm_preprocess_block(&$vars, $hook) {
+function Bluebird_preprocess_block(&$vars, $hook) {
   $block = $vars['block'];
 
   // Special classes for blocks.
@@ -199,8 +199,8 @@ function rayCivicrm_preprocess_block(&$vars, $hook) {
   $vars['edit_links'] = '';
   
   if (user_access('administer blocks')) {
-    include_once './' . drupal_get_path('theme', 'rayCivicrm') . '/template.block-editing.inc';
-    rayCivicrm_preprocess_block_editing($vars, $hook);
+    include_once './' . drupal_get_path('theme', 'Bluebird') . '/template.block-editing.inc';
+    Bluebird_preprocess_block_editing($vars, $hook);
     $classes[] = 'with-block-editing';
   }
 
@@ -215,7 +215,7 @@ function rayCivicrm_preprocess_block(&$vars, $hook) {
  * @param $vars
  *   A sequential array of variables passed to the theme function.
  */
-function rayCivicrm_preprocess_box(&$vars) {
+function Bluebird_preprocess_box(&$vars) {
   // rename to more common text
   if (strpos($vars['title'], 'Post new comment') === 0) {
     $vars['title'] = 'Add your comment';
@@ -233,7 +233,7 @@ function rayCivicrm_preprocess_box(&$vars) {
  *   A string containing an HTML link to the user's page if the passed object
  *   suggests that this is a site user. Otherwise, only the username is returned.
  */
-function rayCivicrm_username($object) {
+function Bluebird_username($object) {
   if ($object->uid && $object->name) {
     // Shorten the name when it is too long or it will break many tables.
     if (drupal_strlen($object->name) > 20) {
@@ -276,7 +276,7 @@ function rayCivicrm_username($object) {
  *
  * @return a string containing the helptext for the current page.
  */
-function rayCivicrm_help() {
+function Bluebird_help() {
   $help = menu_get_active_help();
   // Drupal sometimes returns empty <p></p> so strip tags to check if empty
   if (strlen(strip_tags($help)) > 1) {
@@ -293,7 +293,7 @@ function rayCivicrm_help() {
  *   An array containing the breadcrumb links.
  * @return a string containing the breadcrumb output.
  */
-function rayCivicrm_breadcrumb($breadcrumb) {
+function Bluebird_breadcrumb($breadcrumb) {
   if (count($breadcrumb) > 2) {
     unset($breadcrumb[1]);
     unset($breadcrumb[0]);
@@ -305,18 +305,18 @@ function rayCivicrm_breadcrumb($breadcrumb) {
 /**
  * Rewrite of theme_form_element() to suppress ":" if the title ends with a punctuation mark.
  */
-function rayCivicrm_form_element($element, $value) {
+function Bluebird_form_element($element, $value) {
   $args = func_get_args();
   return preg_replace('@([.!?]):\s*(</label>)@i', '$1$2', call_user_func_array('theme_form_element', $args));
 }
 
 /**
- * Set status messages to use rayCivicrm CSS classes.
+ * Set status messages to use Bluebird CSS classes.
  */
-function rayCivicrm_status_messages($display = NULL) {
+function Bluebird_status_messages($display = NULL) {
   $output = '';
   foreach (drupal_get_messages($display) as $type => $messages) {
-    // rayCivicrm can either call this success or notice
+    // Bluebird can either call this success or notice
     if ($type == 'status') {
       $type = 'success';
     }
@@ -339,7 +339,7 @@ function rayCivicrm_status_messages($display = NULL) {
 /**
  * Override comment wrapper to show you must login to comment.
  */
-function rayCivicrm_comment_wrapper($content, $node) {
+function Bluebird_comment_wrapper($content, $node) {
   global $user;
   $output = '';
 
@@ -370,7 +370,7 @@ function rayCivicrm_comment_wrapper($content, $node) {
  *
  * @ingroup themeable
  */
-function rayCivicrm_forum_icon($new_posts, $num_posts = 0, $comment_mode = 0, $sticky = 0) {
+function Bluebird_forum_icon($new_posts, $num_posts = 0, $comment_mode = 0, $sticky = 0) {
   // because we are using a theme() instead of copying the forum-icon.tpl.php into the theme
   // we need to add in the logic that is in preprocess_forum_icon() since this isn't available
   if ($num_posts > variable_get('forum_hot_topic', 15)) {
@@ -391,7 +391,7 @@ function rayCivicrm_forum_icon($new_posts, $num_posts = 0, $comment_mode = 0, $s
   $output = theme('image', path_to_theme() . "/images/icons/forum-$icon.png");
 
   if ($new_posts) {
-    $output = "<a name=\"new\">$output</a>";
+    $output = "<a id='new-posts'>$output</a>";
   }
 
   return $output;
@@ -403,14 +403,14 @@ function rayCivicrm_forum_icon($new_posts, $num_posts = 0, $comment_mode = 0, $s
  * Makes forums look better and is great for performance
  * More: http://www.sysarchitects.com/node/70
  */
-function rayCivicrm_forum_topic_navigation($node) {
+function Bluebird_forum_topic_navigation($node) {
   return '';
 }
 
 /**
  * Trim a post to a certain number of characters, removing all HTML.
  */
-function rayCivicrm_trim_text($text, $length = 150) {
+function Bluebird_trim_text($text, $length = 150) {
   // remove any HTML or line breaks so these don't appear in the text
   $text = trim(str_replace(array("\n", "\r"), ' ', strip_tags($text)));
   $text = trim(substr($text, 0, $length));

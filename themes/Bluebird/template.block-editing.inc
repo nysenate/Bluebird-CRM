@@ -14,7 +14,7 @@
  * @param $hook
  *   The name of the template being rendered ("block" in this case.)
  */
-function rayCivicrm_preprocess_block_editing(&$vars, $hook) {
+function Bluebird_preprocess_block_editing(&$vars, $hook) {
   $block = $vars['block'];
   // Display 'edit block' for custom blocks.
   if ($block->module == 'block') {

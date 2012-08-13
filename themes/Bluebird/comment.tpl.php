@@ -1,7 +1,7 @@
 <div class="clearfix comment<?php print ($comment->new) ? ' comment-new' : ''; print(isset($comment->status) && $comment->status == COMMENT_NOT_PUBLISHED) ? ' comment-unpublished' : ''; if (isset($author_comment)) print ' author'; print ' '. $zebra; ?>">
-  <?php if ($picture): ?>
-    <div class="picture span-3">
-      <?php print $picture ?>
+  <?php if ($user_picture): ?>
+    <div class="user-picture span-3">
+      <?php print $user_picture ?>
     </div>
   <?php endif; ?>
 

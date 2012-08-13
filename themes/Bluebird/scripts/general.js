@@ -31,7 +31,4 @@ Blueprint.formCheck = function() {
   });
 };
 
-// Global Killswitch.
-if (Drupal.jsEnabled) {
-  $(document).ready(Blueprint.formCheck);
-}
+$(document).ready(Blueprint.formCheck);

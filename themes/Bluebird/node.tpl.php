@@ -17,7 +17,7 @@
 <?php endif; ?>
 
   <div class="content clearfix">
-    <?php print $picture ?>
+    <?php print $user_picture ?>
     <?php print $content ?>
   </div>
 

@@ -14,7 +14,6 @@ if ( isset($_POST['set_JobID']) && $_POST['set_JobID'] ) $_SESSION['CiviCRM']['j
   <?php print $head; ?>
   <?php print $styles; ?>
   <!--[if lte IE 8]>
-    <?php /*?><link rel="stylesheet" href="<?php print $path; ?>blueprint/blueprint/ie.css" type="text/css" media="screen, projection"><?php */?>
   	<link href="<?php print $path; ?>css/ie.css" rel="stylesheet"  type="text/css"  media="screen, projection" />
   <![endif]-->
   <!--[if lte IE 6]>
