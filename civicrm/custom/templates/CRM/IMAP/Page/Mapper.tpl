@@ -1,76 +1,23 @@
 <div class="crm-content-block imapperbox">
 	<div class='full'>
-	<h1>Unmatched Results <small>5 results</small></h1>
+	<h1>Unmatched Results <small id='total_results'>Loading results</small></h1>
 	</div>
 	<div class='full'>
-	<ul class='datagrid'>
-		<li class='list_header'>
-			<span class='checkbox checkall'> <input type="checkbox" name="checkall" value="" /></span>
-			<span class='name'>Name</span>
-			<span class='email'>Email Address</span>
-			<span class='subject'>Message Subject</span>
-			<span class='date'>Date</span>
-			<span class='controlls'>
-				<span class='find_match'>Actions</span>
-			</span>
-		</li>
-		<li class='entry id#'>
-			<span class='checkbox'> <input type="checkbox" name="" value="" checked /></span>
-			<span class='name'>Bob Barker</span>
-			<span class='email'>Thepriceiswrong@gmail.com</span>
-			<span class='subject'>Did you see my last message?</span>
-			<span class='date'>08/03/12</span>
-			<span class='controlls'>
-				<span class='find_match'><a href='#'>Find match</a></span>
-				<span class='delete'><a href='#'>Delete</a></span>
-			</span>
-			<br/>
-			<span class='hidden details'>
-				<span class='hidden_content'>
-					<span class='name'>Matched Name</span>
-					<span class='email'>Birthday </span>
-					<span class='subject'>Address</span>
-				</span>
-			</span>
-		</li>
-		<li class='entry id#'>
-			<span class='checkbox'> <input type="checkbox" name="" value="" /></span>
-			<span class='name'>name</span>
-			<span class='email'>email</span>
-			<span class='subject'>A okay well there is no data dictionary for this shapefilethere is no data dictionary for this shapefile </span>
-			<span class='date'>date</span>
-			<span class='controlls'>
-				<span class='find_match'><a href='#'>Find match</a></span>
-				<span class='delete'><a href='#'>Delete</a></span>
-			</span>
-			 
-		</li>
-		<li class='entry id#'>
-			<span class='checkbox'> <input type="checkbox" name="" value="" /></span>
-			<span class='name'>name</span>
-			<span class='email'>email</span>
-			<span class='subject'>A okay well there is no data dictionary for this shapefilethere is no data dictionary for this shapefile </span>
-			<span class='date'>date</span>
-			<span class='controlls'>
-				<span class='find_match'><a href='#'>Find match</a></span>
-				<span class='delete'><a href='#'>Delete</a></span>
-			</span>
-			 
-		</li>
-		<li class='entry id#'>
-			<span class='checkbox'> <input type="checkbox" name="" value="" /></span>
-			<span class='name'>name</span>
-			<span class='email'>email</span>
-			<span class='subject'>A okay well there is no data dictionary for this shapefilethere is no data dictionary for this shapefile </span>
-			<span class='date'>date</span>
-			<span class='controlls'>
-				<span class='find_match'><a href='#'>Find match</a></span>
-				<span class='delete'><a href='#'>Delete</a></span>
-			</span>
-			 
-		</li>
-
-	</ul>
+		<table id="sortable_results" class=""> 
+			<thead> 
+				<tr class='list_header'> 
+				    <th class='checkbox' ><input type="checkbox" name="" value="" /></th> 
+				    <th class='Name'>Name</th> 
+				    <th class='Email'>Email</th> 
+				    <th class='Subject'>Subject</th> 
+				    <th class='Date'>Date</th> 
+				   	<th class='Actions'>Actions</th> 
+				</tr> 
+			</thead> 
+			<tbody id='imapper-messages-list' > 
+				
+			</tbody> 
+		</table> 
 	</div>
 
 

@@ -126,13 +126,22 @@ function buildMessageList() {
 	if(messages == '' || messages == null)
 		return;
 	var messagesHtml = '';
+var total_results =0;
 	$.each(messages, function(key, value) {
-		messagesHtml += '<div class="imapper-message-box" data-id="'+value.uid+'">';
-		messagesHtml += '<input type="radio" class="imapper-select-button" name="message_uid" value="'+value.uid+'" />';
-		messagesHtml += value.from_name + ' &lt;' + value.from_email + '&gt; (' + value.subject + ')';
-		messagesHtml += '</div>';
+		total_results++;
+		messagesHtml += '<tr data-id="'+value.uid+'"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+		if( value.from_name != ''){
+			messagesHtml += '<td class="name">'+value.from_name +'</td>';
+		}else {
+			messagesHtml += '<td class="name"> N/A </td>';
+		}
+		messagesHtml += '<td class="email">'+value.from_email +'</td>';
+		messagesHtml += '<td class="subject">'+value.subject +'</td>';
+		messagesHtml += '<td class="date">'+value.date_fmt +'</td>';
+		messagesHtml += '<td class="Actions"><span class="find_match"><a href="#">Find match</a></span> | <span class="delete"><a href="#">Delete</a></span></td> </tr>';
 	});
 	cj('#imapper-messages-list').html(messagesHtml);
+	cj("#total_results").html(total_results+' results');
 }
 
 function buildContactList() {
