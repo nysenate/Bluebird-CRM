@@ -62,8 +62,10 @@ class CRM_IMAP_AJAX {
                     $header->from_email = $matches[2];
                     $header->from_name = $matches[1];
                 } else {
-                    $header->from_email = $header->from_email;
-                    $header->from_name = $header->from_name;
+                    $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $header->from, $matches);
+
+                    $header->from_email = $matches[2];
+                    $header->from_name = $matches[1];
                 }
 
                 $messages[$header->uid] = $header;
@@ -76,7 +78,8 @@ class CRM_IMAP_AJAX {
     public static function getMessageDetails() {
         self::setupImap();
         $id = self::get('id');
-        $imap_id = self::get('imap_id');
+        //$imap_id = self::get('imap_id');
+        $imap_id = 0;
         $imap = new CRM_Utils_IMAP(self::$server,
                                     self::$imap_accounts[$imap_id]['user'],
                                     self::$imap_accounts[$imap_id]['pass']);
