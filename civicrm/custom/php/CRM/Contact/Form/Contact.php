@@ -731,7 +731,7 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
         $cacheTagValues = $cache->get($cacheKeyTagValues);
 
         // We're on the edit or save page, and it's not via ajax (_get['block'])
-        if($cacheElements && $this->controller->isModal() && empty($_GET['block']) ) {
+        if($cacheElements && $this->controller->isModal() && empty($_GET['block']) && !empty($_POST) ) {
             // Load the classes for all of the QuickForm element types or else
             // we'll get PHP Incomplete Class objects.
             require_once('HTML/QuickForm.php');
@@ -751,9 +751,9 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
 
             if ( $this->_addBlockName ) {
                 require_once( str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_addBlockName ) . '.php');
-                if(empty($_POST)) {
-                    return eval( 'CRM_Contact_Form_Edit_' . $this->_addBlockName . '::buildQuickForm( $this );' );
-                }
+                //if(empty($_POST)) {
+                    eval( 'CRM_Contact_Form_Edit_' . $this->_addBlockName . '::buildQuickForm( $this );' );
+                //}
             }
             require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $this->_contactType) . '.php');
             foreach( $this->_editOptions as $name => $label ) {
@@ -762,16 +762,16 @@ class CRM_Contact_Form_Contact extends CRM_Core_Form
                     continue;
                 }
                 require_once(str_replace('_', DIRECTORY_SEPARATOR, 'CRM_Contact_Form_Edit_' . $name ) . '.php');
-                if(empty($_POST)) {
+                //if(empty($_POST)) {
                     eval( 'CRM_Contact_Form_Edit_' . $name . '::buildQuickForm( $this );' );
-                }
+                //}
             }
 
             // If it's a form (not a submission) then build the location quick form.
-            if(empty($_POST)) {
+            //if(empty($_POST)) {
                 // build location blocks.
                 CRM_Contact_Form_Location::buildQuickForm( $this );
-            }
+            //}
             return;
         }
 

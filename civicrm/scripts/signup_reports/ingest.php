@@ -55,21 +55,20 @@ function get_options() {
 function updateSenators($optList, $env) {
     require_once 'nysenate_api/get_services/xmlrpc-api.inc';
 
-    //TODO: If senators get removed from this list (new senators come in) we
-    //currently have no way to reflect that fact. Will cause future problems.
+    // Fetch all the senators from NYSenate.gov
     list($domain, $apikey, $conn) = array_values($env);
-
     $view_service = new viewsGet($domain, $apikey);
     $senators = $view_service->get(array('view_name'=>'senators'));
 
-    if ($optList['dryrun']) {
-      echo "[DRYRUN] Retrieved senators from website: ".print_r($senators, true)."\n";
-      return;
-    }
+    // Retrieve all senator ids from the database
+    $inactive_senators = array();
+    $result = mysql_query("SELECT nid, title FROM senator WHERE active=1", $conn);
+    while ($row = mysql_fetch_assoc($result)) { $inactive_senators[$row['nid']] = $row['title']; }
 
     foreach ($senators as $senator) {
         $node_service = new nodeGet($domain, $apikey);
         $senatorData = $node_service->get(array('nid'=>$senator['nid']));
+        unset($inactive_senators[$senator['nid']]);
 
         //Clean basic information
         $nid = (int)$senatorData['nid'];
@@ -83,59 +82,98 @@ function updateSenators($optList, $env) {
         //Get the list id
         $list_title = $senatorData['field_bronto_mailing_list'][0]['value'];
         if (!$list_title) {
-            echo "Skipping senator: $title; no mailing list found.\n";
-            continue;
-        }
-        $list_id = get_or_create_list($list_title, $conn);
+            echo "Skipping senator: D$district\t$title [$nid]; no mailing list found.\n";
 
-        //Insert/Update the senator
-        echo "Updating senator: $title...\n";
-        $sql = "INSERT INTO senator (nid, title, district, list_id) VALUES ($nid, '$title', $district, $list_id) ON DUPLICATE KEY UPDATE title='$title', district=$district, list_id=$list_id";
-        if (!mysql_query($sql,$conn)) {
-          die(mysql_error($conn)."\n".$sql);
+        } else if ($optList['dryrun']) {
+            echo "[DRYRUN] Updating senator: D$district\t$title [$nid]; list: $list_title\n";
+
+        } else {
+            $list_id = get_or_create_list($list_title, $conn);
+
+            //Insert/Update the senator
+            echo "Updating senator: D$district\t$title [$nid]; list: $list_title\n";
+            $sql = "INSERT INTO senator (nid, title, district, list_id, active) VALUES ($nid, '$title', $district, $list_id, 1) ON DUPLICATE KEY UPDATE title='$title', district=$district, list_id=$list_id, active=1";
+            if (!mysql_query($sql,$conn)) {
+              die(mysql_error($conn)."\n".$sql);
+            }
         }
     }
+
+    if (count($inactive_senators)>0) {
+        if ($optList['dryrun']) {
+            echo "[DRYRUN] Deactivating senators: ".implode(',', array_values($inactive_senators))."\n";
+
+        } else {
+            // Mark all senators not updated as inactive
+            echo "Deactivating senators: ".implode(',', array_values($inactive_senators))."\n";
+            mysql_query("UPDATE senator SET active=0 WHERE nid IN (".implode(array_keys($inactive_senators)).")", $conn);
+        }
+    }
+
 } // updateSenators()
 
 
 function updateCommittees($optList, $env) {
     require_once 'nysenate_api/get_services/xmlrpc-api.inc';
 
-    //TODO: If committees wind up not on this list (decommissioned) we don't update
-    //to reflect that fact. Could cause a problem in the future.
+    // Fetch all the committees from NYSenate.gov
     list($domain, $apikey, $conn) = array_values($env);
-
     $view_service = new viewsGet($domain, $apikey);
     $committees = $view_service->get(array('view_name'=>'committees'));
 
-    if ($optList['dryrun']) {
-      echo "[DRYRUN] Retrieved committees from website: ".print_r($committees, true)."\n";
-      return;
-    }
+    // Retrieve all committee ids from the database
+    $inactive_committees = array();
+    $result = mysql_query("SELECT nid, title FROM committee WHERE active=1", $conn);
+    while ($row = mysql_fetch_assoc($result)) { $inactive_committees[$row['nid']] = $row['title']; }
 
     foreach ($committees as $committee) {
         $node_service = new nodeGet($domain, $apikey);
         $committeeData = $node_service->get(array('nid'=>$committee['nid']));
+        unset($inactive_committees[$committee['nid']]);
 
         //Clean basic information
         $nid = (int)$committeeData['nid'];
         $chair_nid = (int)$committeeData['field_chairs'][0]['nid'];
         $title = mysql_real_escape_string($committeeData['title'], $conn);
 
+        //Get chair information for log entries
+        $node_service = new nodeGet($domain, $apikey);
+        if($chair_nid) {
+            $chairData = $node_service->get(array('nid'=>$chair_nid));
+            $chair_title = $chairData['title'];
+        } else {
+            $chair_title = "None";
+        }
+
         //Get the list id
         $list_title = $committeeData['field_bronto_mailing_list'][0]['value'];
         if(!$list_title) {
-            echo "Skipping committee: $title; no mailing list found.\n";
-            continue;
-        }
-        $list_id = get_or_create_list($list_title, $conn);
+            echo "Skipping committee: $title [$nid], chair: $chair_title, no mailing list found.\n";
 
-        //Insert/Update the committee
-        //TODO: Use ON DUPLICATE KEY UPDATE instead, plays nicers with foreign key constraints
-        echo "Updating committee: $title...\n";
-        $sql = "INSERT INTO committee (nid, title, chair_nid, list_id) VALUES ($nid, '$title', $chair_nid, $list_id) ON DUPLICATE KEY UPDATE title='$title', chair_nid=$chair_nid, list_id=$list_id";
-        if (!mysql_query($sql,$conn)) {
-          die(mysql_error($conn)."\n".$sql);
+        } else if ($optList['dryrun']) {
+
+            echo "[DRYRUN] Updating committee: $title [$nid], chair: $chair_title\n";
+
+        } else {
+            $list_id = get_or_create_list($list_title, $conn);
+
+            //Insert/Update the committee
+            echo "Updating committee: $title [$nid], chair: $chair_title\n";
+            $sql = "INSERT INTO committee (nid, title, chair_nid, list_id) VALUES ($nid, '$title', $chair_nid, $list_id) ON DUPLICATE KEY UPDATE title='$title', chair_nid=$chair_nid, list_id=$list_id";
+            if (!mysql_query($sql,$conn)) {
+              die(mysql_error($conn)."\n".$sql);
+            }
+        }
+    }
+
+    if (count($inactive_committees)>0) {
+        if ($optList['dryrun']) {
+            echo "[DRYRUN] Deactivating committees: ".implode(',', array_values($inactive_committees))."\n";
+
+        } else {
+            // Mark all senators not updated as inactive
+            echo "Deactivating committees: ".implode(',', array_values($inactive_committees))."\n";
+            mysql_query("UPDATE committee SET active=0 WHERE nid IN (".implode(array_keys($inactive_committees)).")", $conn);
         }
     }
 } // updateCommittees()

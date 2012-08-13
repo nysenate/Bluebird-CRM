@@ -7,7 +7,7 @@
 # Author: Ken Zalewski
 # Organization: New York State Senate
 # Date: 2012-03-14
-# Revised: 2012-03-14
+# Revised: 2012-07-19
 #
 
 prog=`basename $0`
@@ -44,6 +44,10 @@ if [ $force_ok -eq 0 ]; then
   confirm_yes_no "Are you sure you want to pull signups and e-mail reports to all senators" || exit 0
 fi
 
+logdt "Retrieving Senator information and refreshing if necessary"
+php $signup_dir/ingest.php $passthru_args --senators
+logdt "Retrieving Committee information and refreshing if necessary"
+php $signup_dir/ingest.php $passthru_args --committees
 logdt "Retrieving signups from NYSenate.gov website"
 php $signup_dir/ingest.php $passthru_args --signups
 logdt "Geocoding signup records to determine Senate Districts"

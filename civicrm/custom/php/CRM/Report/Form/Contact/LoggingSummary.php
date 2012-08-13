@@ -172,7 +172,9 @@ class CRM_Report_Form_Contact_LoggingSummary extends CRM_Logging_ReportSummary
                         ON (crm_contact_civireport.log_user_id = contact_civireport.id)
                       JOIN civicrm_contact tag_contact
                         ON crm_contact_civireport.entity_id = tag_contact.id
-                      JOIN civicrm_tag tag_table
+                      JOIN ( SELECT *
+                             FROM `{$this->loggingDB}`.log_civicrm_tag
+                             GROUP BY id ) as tag_table
                         ON crm_contact_civireport.tag_id = tag_table.id";
         $cidWhere = ( $this->cid ) ? " crm_contact_civireport.entity_id = {$this->cid} " : 1;
         $tagWhere  = "WHERE crm_contact_civireport.entity_table = 'civicrm_contact' AND $cidWhere";
