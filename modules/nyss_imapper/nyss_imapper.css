@@ -40,3 +40,27 @@
 .contactList .contactItem .left {float:left; cursor:pointer;}
 .contactList .contactItem .left div {font-size:10px;}
 .contactList .contactItem .right {float:right; margin-top:5px;}
+
+
+.imapperbox .full{ width:940px; float:left; border-bottom:solid 1px #e1e1e1; margin-bottom: 10px;}
+.imapperbox .full h1{ padding:10px 3px; margin-bottom: 0;}
+.imapperbox .full h1 small{ color:#999; font-size: 20px;}
+
+.imapperbox .full ul, .imapperbox .full ul li { margin:0; padding:0; list-style: none; }
+.imapperbox .full ul li { margin:5px 0; border-bottom: #ccc 1px solid; display: block; float: left; width: 940px; }
+.imapperbox .full ul li span {float:left; display: inline; padding-bottom: 5px; word-wrap: break-word;}
+
+.imapperbox .full .list_header{ font-weight: bold;}
+
+.imapperbox .full ul li .checkbox{ width:25px;}
+.imapperbox .full ul li .name,.imapperbox .full ul li .email, .imapperbox .full ul li .date { width:140px;}
+.imapperbox .full ul li .subject { width:330px;}
+
+
+.imapperbox .full .controlls{ float:right; width:150px; text-align: right;}
+.imapperbox .full .controlls .find_match {padding-right: 10px; }
+
+.imapperbox .full .details{float:left;  background: #f8f8f8; border-top: #e1e1e1 1px solid; margin:4px 0 0; padding:0; width: 100%;}
+.imapperbox .full .details .hidden_content{ margin:4px 3px 4px 25px;}
+.delete a{color:red !important;}
+
