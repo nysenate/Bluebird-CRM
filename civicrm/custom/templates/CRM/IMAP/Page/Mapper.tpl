@@ -15,7 +15,7 @@
 				</tr> 
 			</thead> 
 			<tbody id='imapper-messages-list' > 
-				
+				<tr><td>Loading Message data</td></tr>	
 			</tbody> 
 		</table> 
 	</div>

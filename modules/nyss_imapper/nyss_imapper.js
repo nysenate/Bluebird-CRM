@@ -12,6 +12,7 @@ $(document).ready(function(){
 	var filter = cj('#filter');
 	var assign = cj('#assign');
 	
+
 	reset.click(function() {
 		city.val("");
 		last_name.val("");
@@ -92,15 +93,31 @@ $(document).ready(function(){
 
 	pullMessageHeaders();
 
-	cj(".imapper-message-box").live('click', function() {
-		var radioButton = cj(this).find(".imapper-select-button");
-		radioButton.attr('checked', 'checked');
-		var messageId = cj(this).attr('data-id');
+	cj(".find_match").live('click', function() {
+
+			var dialog = cj('<div><div id="message_left"></div><div id="message_right"></div></div>')
+				 
+				.dialog({
+					modal: true,
+					height: 500,
+					width: 950,
+					title: 'Basic Dialog'
+			});
+
+		var messageId = cj(this).parent().parent().attr('data-id');
+
 		cj.ajax({
 			url: '/civicrm/imap/ajax/message',
 			data: {id: messageId},
 			success: function(data,status) {
-				$.prompt(data, []);
+				console.log(data);
+				cj('#message_left').html(data);
+				dialog.dialog({ 
+					title:  messageId, 
+
+				});
+				dialog.dialog('open');
+ 
 			}
 		});
 	});
@@ -121,6 +138,9 @@ function pullMessageHeaders() {
 		}
 	});
 }
+function makeListSortable(){
+	cj("#sortable_results").dataTable(); 
+}
 
 function buildMessageList() {
 	if(messages == '' || messages == null)
@@ -129,7 +149,7 @@ function buildMessageList() {
 var total_results =0;
 	$.each(messages, function(key, value) {
 		total_results++;
-		messagesHtml += '<tr data-id="'+value.uid+'"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+		messagesHtml += '<tr data-id="'+value.uid+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
 		if( value.from_name != ''){
 			messagesHtml += '<td class="name">'+value.from_name +'</td>';
 		}else {
@@ -142,6 +162,7 @@ var total_results =0;
 	});
 	cj('#imapper-messages-list').html(messagesHtml);
 	cj("#total_results").html(total_results+' results');
+	makeListSortable();
 }
 
 function buildContactList() {

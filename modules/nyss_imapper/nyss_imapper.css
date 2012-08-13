@@ -58,6 +58,10 @@
 
 .delete a{color:red !important;}
 
+#message_left{ width:650px; float:left; border:1px solid red; margin:0 10px 0 0;}
+
+#message_right{ width:250px; float:left; border: 1px solid green;}
+
 #assign_container {
 	padding-left: 100px;
 }
