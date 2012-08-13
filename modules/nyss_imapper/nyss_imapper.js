@@ -94,14 +94,13 @@ $(document).ready(function(){
 	pullMessageHeaders();
 
 	cj(".find_match").live('click', function() {
-
-			var dialog = cj('<div><div id="message_left"></div><div id="message_right"></div></div>')
-				 
+			var dialog = cj('<div><div id="message_left"></div><div id="message_right"><div id="tabs"><ul><li><a href="#tabs-1">Nunc tincidunt</a></li><li><a href="#tabs-2">Proin dolor</a></li></ul><div id="tabs-1">1</div><div id="tabs-2">2</div></div></div></div>')
 				.dialog({
 					modal: true,
 					height: 500,
 					width: 950,
-					title: 'Basic Dialog'
+					autoOpen: false,
+					title: 'Loading Data'
 			});
 
 		var messageId = cj(this).parent().parent().attr('data-id');
@@ -114,10 +113,13 @@ $(document).ready(function(){
 				cj('#message_left').html(data);
 				dialog.dialog({ 
 					title:  messageId, 
+					 close: function(event, ui) { 
+					 	cj(this).remove();
 
+					 }	
 				});
 				dialog.dialog('open');
- 
+ 				cj( "#tabs" ).tabs();
 			}
 		});
 	});
