@@ -41,36 +41,41 @@ class CRM_IMAP_AJAX {
     public static function getUnmatchedMessages() {
         self::setupImap();
         //Fetch the IMAP Headers
-        $conn = imap_open(self::$server, self::$imap_accounts[0]['user'], self::$imap_accounts[0]['pass']);
-        $ids = imap_search($conn,"",SE_UID);
-        $headers = imap_fetch_overview($conn,implode(',',$ids),FT_UID);
-        $messages = array();
+       $messages = array();
         require_once 'CRM/Utils/IMAP.php';
-        
-        $imap = new CRM_Utils_IMAP(self::$server,
-                                    self::$imap_accounts[0]['user'],
-                                    self::$imap_accounts[0]['pass']);
-        foreach($headers as $header) {
-            if( in_array($header->uid,$ids)) {
-                $message = $imap->getmsg_uid($header->uid);
-                $matches = array();
 
-                $count = preg_match("/From:\s+[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $message->plainmsg, $matches);
+        for($imap_id = 0; $imap_id < count(self::$imap_accounts); $imap_id++) {
+            $imap = new CRM_Utils_IMAP(self::$server,
+                                    self::$imap_accounts[$imap_id]['user'],
+                                    self::$imap_accounts[$imap_id]['pass']);
+            $ids = imap_search($imap->conn(),"",SE_UID);
+            $headers = imap_fetch_overview($imap->conn(),implode(',',$ids),FT_UID);
 
-                //use the forward address, otherwise use the direct from address
-                if ($count > 0) {
-                    $header->from_email = $matches[2];
-                    $header->from_name = $matches[1];
-                } else {
-                    $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $header->from, $matches);
+            foreach($headers as $header) {
+                if( in_array($header->uid,$ids)) {
+                    $message = $imap->getmsg_uid($header->uid);
+                    $matches = array();
 
-                    $header->from_email = $matches[2];
-                    $header->from_name = $matches[1];
+                    $count = preg_match("/From:\s+[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $message->plainmsg, $matches);
+
+                    //use the forward address, otherwise use the direct from address
+                    if ($count > 0) {
+                        $header->from_email = $matches[2];
+                        $header->from_name = $matches[1];
+                    } else {
+                        $count = preg_match("/[\"']?(.*?)[\"']?\s*(?:\[mailto:|<)(.*?)(?:[\]>])/", $header->from, $matches);
+
+                        $header->from_email = $matches[2];
+                        $header->from_name = $matches[1];
+                    }
+
+                    $header->imap_id = $imap_id;
+
+                    $messages[$header->uid] = $header;
                 }
-
-                $messages[$header->uid] = $header;
             }
         }
+       
         echo json_encode($messages);
         CRM_Utils_System::civiExit();
     }
@@ -78,7 +83,7 @@ class CRM_IMAP_AJAX {
     public static function getMessageDetails() {
         self::setupImap();
         $id = self::get('id');
-        //$imap_id = self::get('imap_id');
+        $imap_id = self::get('imapId');
         $imap_id = 0;
         $imap = new CRM_Utils_IMAP(self::$server,
                                     self::$imap_accounts[$imap_id]['user'],
@@ -91,11 +96,11 @@ class CRM_IMAP_AJAX {
     public static function deleteMessage() {
         self::setupImap();
         $id = self::get('id');
-        $imap_id = self::get('imap_id');
+        $imap_id = self::get('imapId');
         $imap = new CRM_Utils_IMAP(self::$server,
                                     self::$imap_accounts[$imap_id]['user'],
                                     self::$imap_accounts[$imap_id]['pass']);
-        $email = $imap->getmsg_uid($id);
+        $status = $imap->deletemsg_uid($id);
         CRM_Utils_System::civiExit();
     }
 

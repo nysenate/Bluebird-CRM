@@ -104,10 +104,12 @@ $(document).ready(function(){
 			});
 
 		var messageId = cj(this).parent().parent().attr('data-id');
+		var imapId = cj(this).parent().parent().attr('data-imap_id');
 
 		cj.ajax({
 			url: '/civicrm/imap/ajax/message',
-			data: {id: messageId},
+			data: {id: messageId,
+				   imapId: imapId },
 			success: function(data,status) {
 				console.log(data);
 				cj('#message_left').html(data);
@@ -148,10 +150,10 @@ function buildMessageList() {
 	if(messages == '' || messages == null)
 		return;
 	var messagesHtml = '';
-var total_results =0;
+	var total_results =0;
 	$.each(messages, function(key, value) {
 		total_results++;
-		messagesHtml += '<tr data-id="'+value.uid+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
+		messagesHtml += '<tr data-id="'+value.uid+'" data-imap_id="'+value.imap_id+'" class="imapper-message-box"> <td class="checkboxieout" ><input type="checkbox" name="" value="" /></td>';
 		if( value.from_name != ''){
 			messagesHtml += '<td class="name">'+value.from_name +'</td>';
 		}else {

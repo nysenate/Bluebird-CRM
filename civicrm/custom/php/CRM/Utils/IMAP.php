@@ -8,6 +8,10 @@ class CRM_Utils_IMAP {
         $this->conn = imap_open($server, $user, $pass);
     }
 
+    public function conn() {
+        return $this->conn;
+    }
+
     public function getmsg_uid($uid) {
         return $this->getmsg(imap_msgno($this->conn,$uid));
     }
