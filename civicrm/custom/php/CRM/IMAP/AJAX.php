@@ -6,10 +6,7 @@ require_once 'CRM/Core/DAO.php';
 class CRM_IMAP_AJAX {
     private static $db = null;
 
-    // private static $server = "{webmail.senate.state.ny.us/imap/notls}";
-    // private static $user = 'crmdev';
-    // private static $pass = 'p9x64';
-    private static $server = '{imap.gmail.com:993/imap/ssl/novalidate-cert/norsh}Inbox';
+    private static $server = "{webmail.senate.state.ny.us/imap/notls}";
     private static $imap_accounts = array();
     private static $bbconfig = null;
 
@@ -45,7 +42,7 @@ class CRM_IMAP_AJAX {
         self::setupImap();
         //Fetch the IMAP Headers
         $conn = imap_open(self::$server, self::$imap_accounts[0]['user'], self::$imap_accounts[0]['pass']);
-        $ids = imap_search($conn,"SINCE \"24 Jul 2012\" BEFORE \"31 Jul 2012\"",SE_UID);
+        $ids = imap_search($conn,"",SE_UID);
         $headers = imap_fetch_overview($conn,implode(',',$ids),FT_UID);
         $messages = array();
         foreach($headers as $header) {
@@ -263,5 +260,6 @@ EOQ;
       if($result && isset($result['id'])) {
         return $result['id'];
       }
+    }
 
 }

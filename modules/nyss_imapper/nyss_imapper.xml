@@ -17,8 +17,8 @@
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>
-    <path>civicrm/imap/ajax/messageHeaders</path>
-    <page_callback>CRM_IMAP_AJAX::messageHeaders</page_callback>
+    <path>civicrm/imap/ajax/unmatchedMessages</path>
+    <page_callback>CRM_IMAP_AJAX::getUnmatchedMessages</page_callback>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
   <item>

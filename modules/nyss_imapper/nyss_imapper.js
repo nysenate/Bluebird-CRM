@@ -114,15 +114,17 @@ $(document).ready(function(){
 
 function pullMessageHeaders() {
 	cj.ajax({
-		url: '/civicrm/imap/ajax/messageHeaders',
+		url: '/civicrm/imap/ajax/unmatchedMessages',
 		success: function(data,status) {
 			messages = cj.parseJSON(data);
-			buildMessageList(messages);
+			buildMessageList();
 		}
 	});
 }
 
 function buildMessageList() {
+	if(messages == '' || messages == null)
+		return;
 	var messagesHtml = '';
 	$.each(messages, function(key, value) {
 		messagesHtml += '<div class="imapper-message-box" data-id="'+value.uid+'">';
